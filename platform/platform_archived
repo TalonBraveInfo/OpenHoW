@@ -1,0 +1,12 @@
+
+// C++ Colour Class (removed for refactoring to C)
+
+namespace pl {
+    namespace math {
+
+        struct Colour {
+
+        };
+
+    }
+}
