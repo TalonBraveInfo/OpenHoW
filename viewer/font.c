@@ -28,9 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #include "main.h"
 #include "font.h"
 
-#define ILUT_USE_OPENGL
 #include <IL/il.h>
-#include <IL/ilut.h>
+#include <IL/ilu.h>
 
 /*  TAB Format Specification        */
 typedef struct TABIndex {
@@ -100,7 +99,10 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
 
     font->width = (unsigned int)ilGetInteger(IL_IMAGE_WIDTH);
     font->height = (unsigned int)ilGetInteger(IL_IMAGE_HEIGHT);
-    font->texture = ilutGLBindTexImage();
+
+    if(!ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE)) {
+        PRINT_ERROR("Failed to convert image!\n");
+    }
 
     for(unsigned int i = 0; i < font->num_chars; i++) {
         font->chars[i].character = (unsigned char)(33 + i);
@@ -114,6 +116,26 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
             }
         }
     }
+
+    glGenTextures(1, &font->texture);
+    glBindTexture(GL_TEXTURE_2D, font->texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            ilGetInteger(IL_IMAGE_FORMAT),
+            font->width,
+            font->height,
+            0,
+            (GLenum)ilGetInteger(IL_IMAGE_FORMAT),
+            GL_UNSIGNED_BYTE,
+            ilGetData()
+    );
 
     ilDeleteImage(image);
 
