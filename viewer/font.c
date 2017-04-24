@@ -53,7 +53,7 @@ void DrawText(PIGFont *font, int x, int y, const char *msg) {
         return;
     }
 
-    glBindTexture(GL_TEXTURE0, font->texture);
+    glBindTexture(GL_TEXTURE_2D, font->texture);
 
     // Very inefficient but draw each char individually for now...
     for(unsigned int i = 0; i < num_chars; i++) {
@@ -68,7 +68,7 @@ void DrawText(PIGFont *font, int x, int y, const char *msg) {
         plDrawMesh(font_mesh);
     }
 
-    glBindTexture(GL_TEXTURE0, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 PIGFont *CreateFont(const char *path, const char *tab_path) {
