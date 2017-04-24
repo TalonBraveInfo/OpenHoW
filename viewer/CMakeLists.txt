@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(terrain)
+project(viewer)
 
-file(GLOB TERRAIN_SOURCE_FILES *.c *.cpp *.h)
+file(GLOB VIEWER_SOURCE_FILES *.c *.h)
 
-add_executable(terrain ${TERRAIN_SOURCE_FILES})
+add_executable(viewer ${VIEWER_SOURCE_FILES})
 
-target_include_directories(terrain PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(terrain platform glfw IL ILU ILUT)
+target_include_directories(viewer PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(viewer platform glfw IL ILU ILUT)

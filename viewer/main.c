@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "main.h"
 
 #include "mad.h"
+#include "font.h"
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -195,8 +196,7 @@ void load_hir_file(const char *path) {
 
     FILE *file = fopen(path, "r");
     if(!file) {
-        PRINT("Failed to load file %s!\n", path);
-        return;
+        PRINT_ERROR("Failed to load file %s!\n", path);
     }
 
     memset(model.bones, 0, sizeof(HIRBone) * MAX_BONES);
@@ -207,10 +207,10 @@ void load_hir_file(const char *path) {
     }
 
     model.skeleton_mesh = plCreateMesh(
-            PL_PRIMITIVE_LINES,
+            PL_PRIMITIVE_POINTS,
             PL_DRAW_IMMEDIATE,
             0,
-            model.num_bones * 2
+            model.num_bones
     );
     for(unsigned int i = 0; i < model.num_bones; i++) {
 #if 1
@@ -240,21 +240,16 @@ void load_fac_file(const char *path) {
 
     FILE *file = fopen(path, "r");
     if(!file) {
-        PRINT("Failed to load file %s!\n", path);
-        return;
+        PRINT_ERROR("Failed to load file %s!\n", path);
     }
 
     if(fread(&header, sizeof(FACHeader), 1, file) != 1) {
-        PRINT("Invalid file header...\n");
-        fclose(file);
-        return;
+        PRINT_ERROR("Invalid file header...\n");
     }
 
     for(int i = 0; i < plArrayElements(header.padding); i++) {
         if(header.padding[0] != 0) {
-            PRINT("Invalid FAC file!\n");
-            fclose(file);
-            return;
+            PRINT_ERROR("Invalid FAC file!\n");
         }
     }
 
@@ -262,8 +257,7 @@ void load_fac_file(const char *path) {
     FACTriangle triangles[header.num_triangles];
     if(header.num_triangles != 0) {
         if(fread(triangles, sizeof(FACTriangle), header.num_triangles, file) != header.num_triangles) {
-            PRINT("Unexpected block size!\n");
-            goto CLEANUP;
+            PRINT_ERROR("Unexpected block size!\n");
         }
 #if 0
         for(unsigned int i = 0; i < header.num_triangles; i++) {
@@ -513,8 +507,7 @@ void load_vtx_file(const char *path) {
 
     FILE *file = fopen(path, "r");
     if(!file) {
-        PRINT("Failed to load file %s!\n", path);
-        return;
+        PRINT_ERROR("Failed to load file %s!\n", path);
     }
 
     model.num_vertices = (unsigned int) fread(model.coords, sizeof(VTXCoord), 2048, file);
@@ -600,19 +593,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 GlobalVars g_state;
 
 int main(int argc, char **argv) {
-
     memset(&g_state, 0, sizeof(GlobalVars));
 
     plInitialize(argc, argv, PL_SUBSYSTEM_LOG | PL_SUBSYSTEM_LOG);
     plClearLog(LOG);
-
-    // Check if it's the PSX content or PC content.
-    if(plFileExists("./system.cnf")) {
-        PRINT("Found system.cnf, assuming PSX version...\n");
-        g_state.is_psx = true;
-    }
-
-    InitializeMADPackages();
 
     // Initialize GLFW...
 
@@ -642,6 +626,17 @@ int main(int argc, char **argv) {
 
     ilEnable (IL_CONV_PAL);
 
+    // And now for ours...
+
+    // Check if it's the PSX content or PC content.
+    if(plFileExists("./system.cnf")) {
+        PRINT("Found system.cnf, assuming PSX version...\n");
+        g_state.is_psx = true;
+    }
+
+    InitializeMADPackages();
+    InitializeFonts();
+
     ////////////////////////////////////////////////////
 
     plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
@@ -651,14 +646,20 @@ int main(int argc, char **argv) {
 
     PLCamera *camera = plCreateCamera();
     if (!camera) {
-        PRINT("Failed to create camera!");
-        return -1;
+        PRINT_ERROR("Failed to create camera!\n");
     }
 
     camera->mode = PL_CAMERAMODE_PERSPECTIVE;
     camera->fov = 90.f;
 
     glfwGetFramebufferSize(window, (int *) &camera->viewport.width, (int *) &camera->viewport.height);
+
+    PLCamera *camera1 = plCreateCamera();
+    if(!camera1) {
+        PRINT_ERROR("Failed to create secondary camera!\n");
+    }
+    camera1->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
+    camera1->viewport.width = camera->viewport.width; camera1->viewport.height = camera->viewport.height;
 
     const char *arg;
     if ((arg = plGetCommandLineArgument("-model")) && (arg[0] != '\0')) {
@@ -678,6 +679,8 @@ int main(int argc, char **argv) {
         plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
 
 #if 1
+        glEnable(GL_CULL_FACE);
+
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
@@ -686,8 +689,10 @@ int main(int argc, char **argv) {
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+        GLfloat light0_position[] = {12.f, 0, 800.f};
+        glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
         glEnable(GL_LIGHT1);
-        GLfloat light_colour_red[] = {0.5f, 0, 0, 1.f};
+        GLfloat light_colour_red[] = {0.5f, 0.5f, 0.5f, 1.f};
         glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
         GLfloat light_position[] = {0, 12.f, -800.f};
         glLightfv(GL_LIGHT1, GL_POSITION, light_position);
@@ -696,9 +701,19 @@ int main(int argc, char **argv) {
         glLineWidth(2.f);
 #endif
 
+        PLMesh *floor_plane = plCreateMesh(PL_PRIMITIVE_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
+        plClearMesh(floor_plane);
+        plSetMeshVertexPosition3f(floor_plane, 0, -32, 0, 0);
+        plSetMeshVertexPosition3f(floor_plane, 0, 32, 0, 0);
+        plSetMeshVertexPosition3f(floor_plane, 0, -32, 0, 32);
+        plSetMeshVertexPosition3f(floor_plane, 0, -32, 0, -32);
+        plUploadMesh(floor_plane);
+
         while (!glfwWindowShouldClose(window)) {
 
             glfwPollEvents();
+
+            plSetupCamera(camera1);
 
             // input handlers start..
             double xpos, ypos;
@@ -733,11 +748,16 @@ int main(int argc, char **argv) {
 
             plSetupCamera(camera);
 
+            //glLoadIdentity();
+            //plDrawMesh(floor_plane);
+
 #if 1
             glLoadIdentity();
             glRotatef(model.angles.y, 1, 0, 0);
             glRotatef(model.angles.x, 0, 1, 0);
             glRotatef(model.angles.z + 180.f, 0, 0, 1);
+
+            plDrawMesh(floor_plane);
 
             switch (view_mode) {
                 default:

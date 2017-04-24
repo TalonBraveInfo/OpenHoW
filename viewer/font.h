@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 typedef struct PIGChar {
+    int x, y;
     unsigned int width, height;
+    unsigned char character;
 } PIGChar;
 
 typedef struct PIGFont {
@@ -39,3 +41,19 @@ typedef struct PIGFont {
 
     GLuint texture;
 } PIGFont;
+
+enum {
+    FONT_BIG,
+    FONT_BIG_CHARS,
+    FONT_CHARS2,
+    FONT_CHARS3,
+    FONT_GAME_CHARS,
+    FONT_SMALL,
+
+    MAX_FONTS
+};
+
+extern PIGFont *fonts[MAX_FONTS];
+
+void InitializeFonts(void);
+void DrawText(PIGFont *font, int x, int y, const char *msg);

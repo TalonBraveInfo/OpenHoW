@@ -29,9 +29,7 @@ For more information, please refer to <http://unlicense.org>
 #include "font.h"
 
 #define ILUT_USE_OPENGL
-
 #include <IL/il.h>
-#include <IL/ilu.h>
 #include <IL/ilut.h>
 
 /*  TAB Format Specification        */
@@ -46,22 +44,35 @@ typedef struct TABIndex {
 
 PLMesh *font_mesh;
 
-void DrawText(PIGFont *font, int x, int y, unsigned int scale) {
+void DrawText(PIGFont *font, int x, int y, const char *msg) {
     if(x < 0 || x > g_state.width || y < 0 || y > g_state.height) {
         return;
     }
 
-    plClearMesh(font_mesh);
+    unsigned int num_chars = (unsigned int)strlen(msg);
+    if(!num_chars) {
+        return;
+    }
 
-    plSetMeshVertexPosition3f(font_mesh, 0, 0, 0, 0);
-    plSetMeshVertexPosition3f(font_mesh, 1, 0, 0, 0);
-    plSetMeshVertexPosition3f(font_mesh, 2, 0, 0, 0);
-    plSetMeshVertexPosition3f(font_mesh, 3, 0, 0, 0);
+    glBindTexture(GL_TEXTURE0, font->texture);
 
-    plUploadMesh(font_mesh);
+    // Very inefficient but draw each char individually for now...
+    for(unsigned int i = 0; i < num_chars; i++) {
+        plClearMesh(font_mesh);
+
+        plSetMeshVertexPosition2f(font_mesh, 0, 0, 0);
+        plSetMeshVertexPosition2f(font_mesh, 1, 0, 0);
+        plSetMeshVertexPosition2f(font_mesh, 2, 0, 0);
+        plSetMeshVertexPosition2f(font_mesh, 3, 0, 0);
+
+        plUploadMesh(font_mesh);
+        plDrawMesh(font_mesh);
+    }
+
+    glBindTexture(GL_TEXTURE0, 0);
 }
 
-PIGFont *CreatePIGFont(const char *path) {
+PIGFont *CreateFont(const char *path, const char *tab_path) {
     PIGFont *font = (PIGFont*)malloc(sizeof(PIGFont));
     if(!font) {
         PRINT_ERROR("Failed to allocate memory for PIGFont!\n");
@@ -72,15 +83,12 @@ PIGFont *CreatePIGFont(const char *path) {
         PRINT_ERROR("Failed to load file %s!\n", path);
     }
 
+    fseek(file, 16, SEEK_SET);
+
     TABIndex indices[128];
     font->num_chars = (unsigned int)fread(indices, sizeof(TABIndex), 128, file);
     if(font->num_chars == 0) {
         PRINT_ERROR("Invalid number of characters for font! (%s)\n", path);
-    }
-
-    for(unsigned int i = 0; i < font->num_chars; i++) {
-        font->chars[i].width = indices[i].width;
-        font->chars[i].height = indices[i].height;
     }
 
     ILuint image = ilGenImage();
@@ -94,16 +102,42 @@ PIGFont *CreatePIGFont(const char *path) {
     font->height = (unsigned int)ilGetInteger(IL_IMAGE_HEIGHT);
     font->texture = ilutGLBindTexImage();
 
+    for(unsigned int i = 0; i < font->num_chars; i++) {
+        font->chars[i].character = (unsigned char)(33 + i);
+        font->chars[i].width = indices[i].width;
+        font->chars[i].height = indices[i].height;
+
+        if(i > 0) {
+            font->chars[i].x = (font->chars[i - 1].width + font->chars[i - 1].x);
+            if(font->chars[i].x > font->width) {
+                font->chars[i].y += font->chars[i].height;
+            }
+        }
+    }
+
     ilDeleteImage(image);
+
+    fclose(file);
 
     return font;
 }
 
+PIGFont *fonts[MAX_FONTS];
+
 void InitializeFonts(void) {
-    font_mesh = plCreateMesh(PL_PRIMITIVE_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4);
+    font_mesh = plCreateMesh(PL_PRIMITIVE_QUADS, PL_DRAW_DYNAMIC, 2, 4);
     if(!font_mesh) {
         PRINT_ERROR("Failed to create font mesh!\n");
     }
 
-
+    if(g_state.is_psx) {
+        // todo
+    } else {
+        fonts[FONT_BIG]         = CreateFont("./FEText/BIG.BMP", "./FEText/BIG.tab");
+        fonts[FONT_BIG_CHARS]   = CreateFont("./FEText/BigChars.BMP", "./FEText/BigChars.tab");
+        fonts[FONT_CHARS2]      = CreateFont("./FEText/Chars2.bmp", "./FEText/CHARS2.tab");
+        fonts[FONT_CHARS3]      = CreateFont("./FEText/CHARS3.BMP", "./FEText/chars3.tab");
+        fonts[FONT_GAME_CHARS]  = CreateFont("./FEText/GameChars.bmp", "./FEText/GameChars.tab");
+        fonts[FONT_SMALL]       = CreateFont("./FEText/SMALL.BMP", "./FEText/SMALL.tab");
+    }
 }
