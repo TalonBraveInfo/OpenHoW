@@ -116,6 +116,7 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
 
         if(i > 0) {
             font->chars[i].x = (font->chars[i - 1].width + font->chars[i - 1].x);
+            font->chars[i].y = font->chars[i - 1].y;
             if(font->chars[i].x > font->width) {
                 font->chars[i].y += font->chars[i].height;
             }
