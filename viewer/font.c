@@ -29,7 +29,6 @@ For more information, please refer to <http://unlicense.org>
 #include "font.h"
 
 #include <IL/il.h>
-#include <IL/ilu.h>
 
 /*  TAB Format Specification        */
 typedef struct TABIndex {
@@ -84,7 +83,7 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
 
     FILE *file = fopen(tab_path, "rb");
     if(!file) {
-        PRINT_ERROR("Failed to load file %s!\n", path);
+        PRINT_ERROR("Failed to load file %s!\n", tab_path);
     }
 
     fseek(file, 16, SEEK_SET);
@@ -92,7 +91,7 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
     TABIndex indices[128];
     font->num_chars = (unsigned int)fread(indices, sizeof(TABIndex), 128, file);
     if(font->num_chars == 0) {
-        PRINT_ERROR("Invalid number of characters for font! (%s)\n", path);
+        PRINT_ERROR("Invalid number of characters for font! (%s)\n", tab_path);
     }
 
     ILuint image = ilGenImage();
@@ -114,12 +113,16 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
         font->chars[i].width = indices[i].width;
         font->chars[i].height = indices[i].height;
 
-        if(i > 0) {
-            font->chars[i].x = (font->chars[i - 1].width + font->chars[i - 1].x);
-            font->chars[i].y = font->chars[i - 1].y;
-            if(font->chars[i].x > font->width) {
-                font->chars[i].y += font->chars[i].height;
-            }
+        if(i < 1) {
+            font->chars[i].x = 0; font->chars[i].y = 0;
+            continue;
+        }
+
+        font->chars[i].x = (font->chars[i - 1].width + font->chars[i - 1].x);
+        font->chars[i].y = font->chars[i - 1].y;
+        if(font->chars[i].x > font->width) {
+            font->chars[i].y += font->chars[i].height;
+            font->chars[i].x = 0;
         }
     }
 
