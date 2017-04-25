@@ -607,7 +607,8 @@ int main(int argc, char **argv) {
 
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Piggy Viewer", NULL, NULL);
+    g_state.width = WIDTH; g_state.height = HEIGHT;
+    GLFWwindow *window = glfwCreateWindow(g_state.width, g_state.height, "Piggy Viewer", NULL, NULL);
     if (!window) {
         glfwTerminate();
 
@@ -714,6 +715,8 @@ int main(int argc, char **argv) {
             glfwPollEvents();
 
             plSetupCamera(camera1);
+
+            DrawText(fonts[FONT_BIG], 10, 10, "hello world!");
 
             // input handlers start..
             double xpos, ypos;

@@ -59,10 +59,15 @@ void DrawText(PIGFont *font, int x, int y, const char *msg) {
     for(unsigned int i = 0; i < num_chars; i++) {
         plClearMesh(font_mesh);
 
-        plSetMeshVertexPosition2f(font_mesh, 0, 0, 0);
-        plSetMeshVertexPosition2f(font_mesh, 1, 0, 0);
+        plSetMeshVertexPosition2f(font_mesh, 0, x + font->chars[i].x, y + font->chars[i].y);
+        plSetMeshVertexPosition2f(font_mesh, 1, (x - font->chars[i].height), 0);
         plSetMeshVertexPosition2f(font_mesh, 2, 0, 0);
         plSetMeshVertexPosition2f(font_mesh, 3, 0, 0);
+
+        plSetMeshVertexST(font_mesh, 0, 0, 0);
+        plSetMeshVertexST(font_mesh, 1, 0, 1);
+        plSetMeshVertexST(font_mesh, 2, 1, 1);
+        plSetMeshVertexST(font_mesh, 3, 1, 0);
 
         plUploadMesh(font_mesh);
         plDrawMesh(font_mesh);
@@ -77,7 +82,7 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
         PRINT_ERROR("Failed to allocate memory for PIGFont!\n");
     }
 
-    FILE *file = fopen(path, "rb");
+    FILE *file = fopen(tab_path, "rb");
     if(!file) {
         PRINT_ERROR("Failed to load file %s!\n", path);
     }
@@ -147,7 +152,7 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
 PIGFont *fonts[MAX_FONTS];
 
 void InitializeFonts(void) {
-    font_mesh = plCreateMesh(PL_PRIMITIVE_QUADS, PL_DRAW_DYNAMIC, 2, 4);
+    font_mesh = plCreateMesh(PL_PRIMITIVE_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4);
     if(!font_mesh) {
         PRINT_ERROR("Failed to create font mesh!\n");
     }
@@ -162,4 +167,8 @@ void InitializeFonts(void) {
         fonts[FONT_GAME_CHARS]  = CreateFont("./FEText/GameChars.bmp", "./FEText/GameChars.tab");
         fonts[FONT_SMALL]       = CreateFont("./FEText/SMALL.BMP", "./FEText/SMALL.tab");
     }
+}
+
+void ShutdownFontManager(void) {
+
 }
