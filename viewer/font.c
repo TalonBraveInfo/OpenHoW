@@ -31,6 +31,32 @@ For more information, please refer to <http://unlicense.org>
 #include <IL/il.h>
 
 /*  TAB Format Specification        */
+
+/*
+    ?? ?? ?? ?? W     H
+    C0 03 C0 01 0E 00 20 00
+
+    No differential pattern for each value from first two bytes…
+    8
+    10
+    14
+    6
+    6
+    10
+
+    So far I think these are stored as four separate bytes, or two pairs because
+     it’s the only way these could make any sense imo, but I can’t see a pattern here either...
+
+    A  A0 B  B0
+    00 00 00 00
+
+    The first byte is linked in with the spacing of each character, somehow.
+     If I’m correct, then the difference of these should be the space before the next character… Hrrrmm
+
+    B changes for each row within the texture
+    A0 changes twice before the next row within the texture
+*/
+
 typedef struct TABIndex {
     // C0035A00 02001E00
 
