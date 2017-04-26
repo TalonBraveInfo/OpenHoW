@@ -31,6 +31,8 @@ typedef struct PIGChar {
     int x, y;
     unsigned int width, height;
     unsigned char character;
+
+    float s, t; // position within the bitmap
 } PIGChar;
 
 typedef struct PIGFont {
@@ -57,3 +59,4 @@ extern PIGFont *fonts[MAX_FONTS];
 
 void InitializeFonts(void);
 void DrawText(PIGFont *font, int x, int y, const char *msg);
+void DrawCharacter(PIGFont *font, int x, int y, float scale, uint8_t character);

@@ -60,13 +60,76 @@ For more information, please refer to <http://unlicense.org>
 typedef struct TABIndex {
     // C0035A00 02001E00
 
-    int32_t unknown0;
+    uint8_t a0; uint8_t a1; // ?
+    uint8_t b0; uint8_t b1; // ?
 
     uint16_t width;
     uint16_t height;
 } TABIndex;
 
-PLMesh *font_mesh;
+void DrawCharacter(PIGFont *font, int x, int y, float scale, uint8_t character) {
+    if(character < 33 || character > 122) {
+        return;
+    }
+
+    static PLMesh *font_mesh = NULL;
+    if(!font_mesh) {
+        if(!(font_mesh = plCreateRectangleMesh(PL_DRAW_IMMEDIATE))) {
+            PRINT_ERROR("Failed to create font mesh!\n");
+        }
+    }
+
+    character -= 33;
+
+    plClearMesh(font_mesh);
+
+    plSetMeshVertexPosition2f(font_mesh, 0, x,
+                              (y + font->chars[character].height) * scale);
+    plSetMeshVertexPosition2f(font_mesh, 1, x, y);
+    plSetMeshVertexPosition2f(font_mesh, 2,
+                              (x + font->chars[character].width) * scale,
+                              (y + font->chars[character].height) * scale);
+    plSetMeshVertexPosition2f(font_mesh, 3,
+                              (x + font->chars[character].width) * scale, y);
+
+    plSetMeshVertexColour(font_mesh, 0, plCreateColour4b(255, 255, 255, 255));
+    plSetMeshVertexColour(font_mesh, 1, plCreateColour4b(255, 255, 255, 255));
+    plSetMeshVertexColour(font_mesh, 2, plCreateColour4b(255, 255, 255, 255));
+    plSetMeshVertexColour(font_mesh, 3, plCreateColour4b(255, 255, 255, 255));
+
+    float xoffset = 0.25f;
+    float yoffset = 0.25f;
+
+#if 0
+    plSetMeshVertexST(font_mesh, 0, xoffset, yoffset);
+    plSetMeshVertexST(font_mesh, 1, xoffset + 0.025f, yoffset);
+    plSetMeshVertexST(font_mesh, 2, xoffset + 0.025f, yoffset + 0.025f);
+    plSetMeshVertexST(font_mesh, 3, xoffset, yoffset + 0.025f);
+#else
+    plSetMeshVertexST(font_mesh, 0, 0, 1);
+    plSetMeshVertexST(font_mesh, 1, 1, 0);
+    plSetMeshVertexST(font_mesh, 2, 1, 1);
+    plSetMeshVertexST(font_mesh, 3, 0, 0);
+#endif
+
+    /*
+     *
+        glBegin(GL_QUADS);
+     glBindTexture(GL_TEXTURE_2D, m_image);
+     glTexCoord2f(m_tileOffsetX, m_tileOffsetY);
+     glVertex3f(m_positionX, m_positionY, 0.0f);
+     glTexCoord2f(0.025f + m_tileOffsetX, m_tileOffsetY);
+     glVertex3f(m_positionX+16.0f, m_positionY, 0.0f);
+     glTexCoord2f(0.025f + m_tileOffsetX, 0.025f + m_tileOffsetY);
+     glVertex3f(m_positionX+16.0f, m_positionY+16.0f, 0.0f);
+     glTexCoord2f(m_tileOffsetX, 0.025f + m_tileOffsetY);
+     glVertex3f(m_positionX, m_positionY+16.0f, 0.0f);
+     glEnd();
+     */
+
+    plUploadMesh(font_mesh);
+    plDrawMesh(font_mesh);
+}
 
 void DrawText(PIGFont *font, int x, int y, const char *msg) {
     if(x < 0 || x > g_state.width || y < 0 || y > g_state.height) {
@@ -78,27 +141,18 @@ void DrawText(PIGFont *font, int x, int y, const char *msg) {
         return;
     }
 
+    glEnable(GL_BLEND);
+   //plSetBlendMode(PL_BLEND_ADDITIVE);
+
     glBindTexture(GL_TEXTURE_2D, font->texture);
 
-    // Very inefficient but draw each char individually for now...
     for(unsigned int i = 0; i < num_chars; i++) {
-        plClearMesh(font_mesh);
 
-        plSetMeshVertexPosition2f(font_mesh, 0, x + font->chars[i].x, y + font->chars[i].y);
-        plSetMeshVertexPosition2f(font_mesh, 1, (x - font->chars[i].height), 0);
-        plSetMeshVertexPosition2f(font_mesh, 2, 0, 0);
-        plSetMeshVertexPosition2f(font_mesh, 3, 0, 0);
-
-        plSetMeshVertexST(font_mesh, 0, 0, 0);
-        plSetMeshVertexST(font_mesh, 1, 0, 1);
-        plSetMeshVertexST(font_mesh, 2, 1, 1);
-        plSetMeshVertexST(font_mesh, 3, 1, 0);
-
-        plUploadMesh(font_mesh);
-        plDrawMesh(font_mesh);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    glDisable(GL_BLEND);
 }
 
 PIGFont *CreateFont(const char *path, const char *tab_path) {
@@ -157,8 +211,8 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     glTexImage2D(
             GL_TEXTURE_2D,
@@ -182,11 +236,6 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
 PIGFont *fonts[MAX_FONTS];
 
 void InitializeFonts(void) {
-    font_mesh = plCreateMesh(PL_PRIMITIVE_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4);
-    if(!font_mesh) {
-        PRINT_ERROR("Failed to create font mesh!\n");
-    }
-
     if(g_state.is_psx) {
         // todo
     } else {

@@ -71,24 +71,21 @@ void ExtractMADPackage(const char *path) {
 
     FILE *file = fopen(path, "rb");
     if(!file) {
-        PRINT("Failed to load file %s!\n", path);
-        return;
+        PRINT_ERROR("Failed to load file %s!\n", path);
     }
 
     char outpath[PL_SYSTEM_MAX_PATH] = { 0 };
     plStripExtension(outpath, path);
     snprintf(outpath, sizeof(outpath), "./%s", outpath);
     if(!plCreateDirectory(outpath)) {
-        PRINT("Failed to create directory!\n%s\n", plGetError());
-        return;
+        PRINT_ERROR("Failed to create directory!\n%s\n", plGetError());
     }
 
     char foutfile[PL_SYSTEM_MAX_PATH];
     snprintf(foutfile, sizeof(foutfile), "%s.index", outpath);
     FILE *iout = fopen(foutfile, "w");
     if(!iout) {
-        PRINT("Failed to open index!\n");
-        return;
+        PRINT_ERROR("Failed to open index!\n");
     }
 
     unsigned int lowest_offset = UINT32_MAX; fpos_t position; unsigned int cur_index = 0;
@@ -96,8 +93,7 @@ void ExtractMADPackage(const char *path) {
 
         MADIndex index;
         if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
-            PRINT("Invalid index size!\n");
-            break;
+            PRINT_ERROR("Invalid index size! (%s)\n", path);
         }
 
         fgetpos(file, &position);

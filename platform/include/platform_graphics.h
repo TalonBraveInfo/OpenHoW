@@ -98,17 +98,17 @@ typedef PLuint PLFrameBuffer;
 
 typedef enum PLDataFormat {
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    PL_UNSIGNED_BYTE = GL_UNSIGNED_BYTE,
-    PL_UNSIGNED_INT_8_8_8_8_REV = GL_UNSIGNED_INT_8_8_8_8_REV,
+    PL_UNSIGNED_BYTE                = GL_UNSIGNED_BYTE,
+    PL_UNSIGNED_INT_8_8_8_8_REV     = GL_UNSIGNED_INT_8_8_8_8_REV,
 #endif
 } PLDataFormat;
 
 typedef enum PLBufferMask {
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    VL_MASK_COLOUR = GL_COLOR_BUFFER_BIT,
-    VL_MASK_DEPTH = GL_DEPTH_BUFFER_BIT,
+    VL_MASK_COLOUR      = GL_COLOR_BUFFER_BIT,
+    VL_MASK_DEPTH       = GL_DEPTH_BUFFER_BIT,
     VL_MASK_ACCUM,
-    VL_MASK_STENCIL = GL_STENCIL_BUFFER_BIT,
+    VL_MASK_STENCIL     = GL_STENCIL_BUFFER_BIT,
 #else
     VL_MASK_COLOUR		= (1 << 0),
     VL_MASK_DEPTH		= (1 << 1),
@@ -117,29 +117,25 @@ typedef enum PLBufferMask {
 #endif
 } PLBufferMask;
 
-typedef enum VLCullMode {
-    VL_CULL_START = -1,
-
-    VL_CULL_POSTIVE,
-    VL_CULL_NEGATIVE,
-
-    VL_CULL_END
+typedef enum VLCullMode {   
+    PL_CULL_POSTIVE,
+    PL_CULL_NEGATIVE
 } PLCullMode;
 
 // Blending Modes
 typedef enum PLBlend {
 #if defined (PL_MODE_OPENGL)
-    VL_BLEND_ZERO = GL_ZERO,
-    VL_BLEND_ONE = GL_ONE,
-    VL_BLEND_SRC_COLOR = GL_SRC_COLOR,
-    VL_BLEND_ONE_MINUS_SRC_COLOR = GL_ONE_MINUS_SRC_COLOR,
-    VL_BLEND_SRC_ALPHA = GL_SRC_ALPHA,
-    VL_BLEND_ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA,
-    VL_BLEND_DST_ALPHA = GL_DST_ALPHA,
-    VL_BLEND_ONE_MINUS_DST_ALPHA = GL_ONE_MINUS_DST_ALPHA,
-    VL_BLEND_DST_COLOR = GL_DST_COLOR,
-    VL_BLEND_ONE_MINUS_DST_COLOR = GL_ONE_MINUS_DST_COLOR,
-    VL_BLEND_SRC_ALPHA_SATURATE = GL_SRC_ALPHA_SATURATE,
+    PL_BLEND_ZERO                   = GL_ZERO,
+    PL_BLEND_ONE                    = GL_ONE,
+    VL_BLEND_SRC_COLOR              = GL_SRC_COLOR,
+    VL_BLEND_ONE_MINUS_SRC_COLOR    = GL_ONE_MINUS_SRC_COLOR,
+    VL_BLEND_SRC_ALPHA              = GL_SRC_ALPHA,
+    VL_BLEND_ONE_MINUS_SRC_ALPHA    = GL_ONE_MINUS_SRC_ALPHA,
+    VL_BLEND_DST_ALPHA              = GL_DST_ALPHA,
+    VL_BLEND_ONE_MINUS_DST_ALPHA    = GL_ONE_MINUS_DST_ALPHA,
+    VL_BLEND_DST_COLOR              = GL_DST_COLOR,
+    VL_BLEND_ONE_MINUS_DST_COLOR    = GL_ONE_MINUS_DST_COLOR,
+    VL_BLEND_SRC_ALPHA_SATURATE     = GL_SRC_ALPHA_SATURATE,
 #elif defined (VL_MODE_GLIDE)
     VL_BLEND_ZERO					= GR_BLEND_ZERO,
     VL_BLEND_ONE					= GR_BLEND_ONE,
@@ -175,20 +171,20 @@ typedef enum PLBlend {
 // Capabilities
 
 typedef enum PLGraphicsCapability {
-    PL_CAPABILITY_FOG = (1 << 0),           // Fog.
-    PL_CAPABILITY_ALPHA_TEST = (1 << 1),    // Alpha-testing.
-    PL_CAPABILITY_BLEND = (1 << 2),         // Blending.
-    PL_CAPABILITY_TEXTURE_2D = (1 << 3),    // Enables/disables textures.
-    PL_CAPABILITY_TEXTURE_GEN_S = (1 << 4), // Generate S coordinate.
-    PL_CAPABILITY_TEXTURE_GEN_T = (1 << 5), // Generate T coordinate.
-    PL_CAPABILITY_DEPTHTEST = (1 << 6),    // Depth-testing.
-    PL_CAPABILITY_STENCILTEST = (1 << 7),  // Stencil-testing.
-    PL_CAPABILITY_MULTISAMPLE = (1 << 8),   // Multisampling.
-    PL_CAPABILITY_CULL_FACE = (1 << 9),     // Automatically cull faces.
-    PL_CAPABILITY_SCISSORTEST = (1 << 10),  // Scissor test for buffer clear.
+    PL_CAPABILITY_FOG               = (1 << 0),     // Fog.
+    PL_CAPABILITY_ALPHA_TEST        = (1 << 1),     // Alpha-testing.
+    PL_CAPABILITY_BLEND             = (1 << 2),     // Blending.
+    PL_CAPABILITY_TEXTURE_2D        = (1 << 3),     // Enables/disables textures.
+    PL_CAPABILITY_TEXTURE_GEN_S     = (1 << 4),     // Generate S coordinate.
+    PL_CAPABILITY_TEXTURE_GEN_T     = (1 << 5),     // Generate T coordinate.
+    PL_CAPABILITY_DEPTHTEST         = (1 << 6),     // Depth-testing.
+    PL_CAPABILITY_STENCILTEST       = (1 << 7),     // Stencil-testing.
+    PL_CAPABILITY_MULTISAMPLE       = (1 << 8),     // Multisampling.
+    PL_CAPABILITY_CULL_FACE         = (1 << 9),     // Automatically cull faces.
+    PL_CAPABILITY_SCISSORTEST       = (1 << 10),    // Scissor test for buffer clear.
 
     // Texture Generation
-    PL_CAPABILITY_GENERATEMIPMAP = (1 << 20),
+    PL_CAPABILITY_GENERATEMIPMAP    = (1 << 20),
 } PLGraphicsCapability;
 
 PL_EXTERN_C
@@ -299,8 +295,8 @@ typedef struct PLGraphicsState {
     PLColour current_clearcolour;
     PLColour current_colour;        // Current global colour.
 
-    PLuint current_capabilities;    // Enabled capabilities.
-    PLuint current_textureunit;
+    unsigned int current_capabilities;    // Enabled capabilities.
+    unsigned int current_textureunit;
 
     // Textures
 
@@ -308,7 +304,7 @@ typedef struct PLGraphicsState {
 
     // Shader states
 
-    PLuint current_program;
+    unsigned int current_program;
 
     // Hardware / Driver information
 
@@ -317,18 +313,18 @@ typedef struct PLGraphicsState {
     const PLchar *hw_version;
     const PLchar *hw_extensions;
 
-    PLuint hw_maxtexturesize;
-    PLuint hw_maxtextureunits;
-    PLuint hw_maxtextureanistropy;
+    unsigned int hw_maxtexturesize;
+    unsigned int hw_maxtextureunits;
+    unsigned int hw_maxtextureanistropy;
     
     // Lighting
     
-    PLuint num_lights;
+    unsigned int num_lights;
 
     ////////////////////////////////////////
 
-    PLint viewport_x, viewport_y;
-    PLuint viewport_width, viewport_height;
+    int viewport_x, viewport_y;
+    unsigned int viewport_width, viewport_height;
 
     PLbool mode_debug;
 } PLGraphicsState;

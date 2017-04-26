@@ -34,7 +34,7 @@ typedef struct PLVertex {
 typedef struct PLTriangle {
     PLVector3D normal;
 
-    PLuint indices[3];
+    unsigned int indices[3];
 } PLTriangle;
 
 #if defined(PL_MODE_OPENGL)
@@ -72,17 +72,17 @@ enum {
 
 typedef struct PLMesh {
 #if defined(PL_MODE_OPENGL)
-    PLuint id[_PL_NUM_MESHINDEXES];
+    unsigned int id[_PL_NUM_MESHINDEXES];
 #else
-    PLuint id;
+    unsigned int id;
 #endif
 
     PLVertex *vertices;
     PLTriangle *triangles;
-    PLuint8 *indices;
+    uint8_t *indices;
 
-    PLuint numverts;
-    PLuint numtriangles;
+    unsigned int num_verts;
+    unsigned int num_triangles;
 
     PLPrimitive primitive, primitive_restore;
     PLDrawMode mode;
@@ -93,17 +93,20 @@ typedef struct PLMesh {
 PL_EXTERN_C
 
 PL_EXTERN PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PLuint num_verts);
-PL_EXTERN PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height);
-PL_EXTERN PLMesh *plCreateTriangleMesh(PLint x, PLint y, PLuint width, PLuint height);
+PL_EXTERN PLMesh *plCreateRectangleMesh(PLDrawMode mode);
+PL_EXTERN PLMesh *plCreateTriangleMesh(PLDrawMode mode);
 PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
+PL_EXTERN void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height);
+PL_EXTERN void plSetupTriangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height);
+
 PL_EXTERN void plClearMesh(PLMesh *mesh);
-PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, PLuint index, PLVector3D vector);
-PL_EXTERN void plSetMeshVertexPosition3f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y, PLfloat z);
-PL_EXTERN void plSetMeshVertexPosition2f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y);
+PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3D vector);
+PL_EXTERN void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, float x, float y, float z);
+PL_EXTERN void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float x, float y);
 PL_EXTERN void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z);
-PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, PLuint index, PLfloat s, PLfloat t);
-PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour);
+PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t);
+PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour);
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);

@@ -107,6 +107,14 @@ support.
 
 #include "platform_system.h"
 
+#if defined(_DEBUG)
+#   include <assert.h>
+
+#   define plAssert(a) assert(a)
+#else
+#   define plAssert(a) (a)
+#endif
+
 // These are usually expected to be defined already, but in-case they're not then we define them here.
 #ifndef BOOL
 #	define BOOL     bool
@@ -197,14 +205,14 @@ plSetErrorFunction(PL_FUNCTION);
 // C Exceptions, Inspired by the following
 // http://www.di.unipi.it/~nids/docs/longjump_try_trow_catch.html
 
-#include <setjmp.h>
-
 #if 1
 
 #define plFunctionStart()
 #define plFunctionEnd()
 
 #else
+
+#include <setjmp.h>
 
 #ifdef __cplusplus
 

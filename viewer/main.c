@@ -592,6 +592,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 GlobalVars g_state;
 
+void DrawOverlays(void) {
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    glBindTexture(GL_TEXTURE_2D, fonts[FONT_BIG]->texture);
+
+    DrawCharacter(fonts[FONT_BIG], 100, 100, 7.f, 'a');
+
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+}
+
 int main(int argc, char **argv) {
     memset(&g_state, 0, sizeof(GlobalVars));
 
@@ -653,7 +667,7 @@ int main(int argc, char **argv) {
     camera->mode = PL_CAMERAMODE_PERSPECTIVE;
     camera->fov = 90.f;
 
-    glfwGetFramebufferSize(window, (int *) &camera->viewport.width, (int *) &camera->viewport.height);
+    glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
 
     PLCamera *camera1 = plCreateCamera();
     if(!camera1) {
@@ -693,7 +707,7 @@ int main(int argc, char **argv) {
         GLfloat light0_position[] = {12.f, 0, 800.f};
         glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
         glEnable(GL_LIGHT1);
-        GLfloat light_colour_red[] = {0.5f, 0.5f, 0.5f, 1.f};
+        GLfloat light_colour_red[] = {1.5f, 0.5f, 0.5f, 1.f};
         glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
         GLfloat light_position[] = {0, 12.f, -800.f};
         glLightfv(GL_LIGHT1, GL_POSITION, light_position);
@@ -702,21 +716,15 @@ int main(int argc, char **argv) {
         glLineWidth(2.f);
 #endif
 
-        PLMesh *floor_plane = plCreateMesh(PL_PRIMITIVE_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
-        plClearMesh(floor_plane);
-        plSetMeshVertexPosition3f(floor_plane, 0, -32, 0, 0);
-        plSetMeshVertexPosition3f(floor_plane, 0, 32, 0, 0);
-        plSetMeshVertexPosition3f(floor_plane, 0, -32, 0, 32);
-        plSetMeshVertexPosition3f(floor_plane, 0, -32, 0, -32);
-        plUploadMesh(floor_plane);
-
         while (!glfwWindowShouldClose(window)) {
 
             glfwPollEvents();
 
+            plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
+
             plSetupCamera(camera1);
 
-            DrawText(fonts[FONT_BIG], 10, 10, "hello world!");
+            DrawOverlays();
 
             // input handlers start..
             double xpos, ypos;
@@ -747,20 +755,15 @@ int main(int argc, char **argv) {
             }
             // input handlers end...
 
-            plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
-
             plSetupCamera(camera);
-
-            //glLoadIdentity();
-            //plDrawMesh(floor_plane);
 
 #if 1
             glLoadIdentity();
+
+            glPushMatrix();
             glRotatef(model.angles.y, 1, 0, 0);
             glRotatef(model.angles.x, 0, 1, 0);
             glRotatef(model.angles.z + 180.f, 0, 0, 1);
-
-            plDrawMesh(floor_plane);
 
             switch (view_mode) {
                 default:
@@ -790,6 +793,8 @@ int main(int argc, char **argv) {
                     glEnable(GL_DEPTH_TEST);
                 }
             }
+
+            glPopMatrix();
 #endif
 
             glfwSwapBuffers(window);
