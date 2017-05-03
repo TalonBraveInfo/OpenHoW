@@ -75,7 +75,7 @@ typedef struct __attribute__((packed)) FACTriangle {
     int32_t unknown2;
     int32_t unknown3;
 
-    int16_t ST[2];
+    int16_t texture_coords[2];
 } FACTriangle;
 
 typedef struct __attribute__((packed)) FACQuad {
@@ -173,17 +173,20 @@ void load_srl_file(const char *path) {
 #define MAX_BONES       32
 
 typedef struct PIGModel {
-    VTXCoord coords[MAX_VERTICES];
-    HIRBone bones[MAX_BONES];
+    VTXCoord    coords[MAX_VERTICES];
+    HIRBone     bones[MAX_BONES];
     FACTriangle triangles[MAX_TRIANGLES];
-    FACQuad quads[MAX_QUADS];
+    FACQuad     quads[MAX_QUADS];
 
     unsigned int num_vertices;
     unsigned int num_triangles; // triangles * (quads * 2)
     unsigned int num_bones;
+    unsigned int num_meshes;
 
     PLMesh *tri_mesh;       // Our actual output!
     PLMesh *skeleton_mesh;  // preview of skeleton
+
+    PLMesh **meshes;
 
     PLVector3D angles;
     PLVector3D position;
@@ -259,13 +262,29 @@ void load_fac_file(const char *path) {
         if(fread(triangles, sizeof(FACTriangle), header.num_triangles, file) != header.num_triangles) {
             PRINT_ERROR("Unexpected block size!\n");
         }
-#if 0
+
+        int texture_table[32];
+        memset(texture_table, -1, sizeof(int) * 32);
+
+#if 1
         for(unsigned int i = 0; i < header.num_triangles; i++) {
             PRINT("TRIANGLE %d\n", i);
             PRINT("    indices(%d %d %d)\n", triangles[i].indices[0], triangles[i].indices[1], triangles[i].indices[2]);
             PRINT("    normals(%d %d %d)\n", triangles[i].normal[0], triangles[i].normal[1], triangles[i].normal[2]);
             PRINT("    texture index(%d)\n", triangles[i].texture_index);
-            PRINT("    texture coords(%d %d)\n", triangles[i].ST[0], triangles[i].ST[1]);
+            PRINT("    texture coords(%d %d)\n", triangles[i].texture_coords[0], triangles[i].texture_coords[1]);
+
+            for(unsigned int j = 0; j < plArrayElements(texture_table); j++) {
+                if(texture_table[j] == triangles[i].texture_index) {
+                    continue;
+                } else if(texture_table[j] == -1) {
+                    texture_table[j] = triangles[i].texture_index;
+                }
+            }
+        }
+
+        for(unsigned int j = 0; j < plArrayElements(texture_table); j++) {
+            PRINT("%d\n", texture_table[j]);
         }
 #endif
     }
@@ -593,6 +612,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 GlobalVars g_state;
 
 void DrawOverlays(void) {
+#if 1
+    DrawText(fonts[FONT_BIG], 10, 10, 4, "abcd ABCD");
+#else
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
 
@@ -600,10 +622,11 @@ void DrawOverlays(void) {
 
     glBindTexture(GL_TEXTURE_2D, fonts[FONT_BIG]->texture);
 
-    DrawCharacter(fonts[FONT_BIG], 100, 100, 7.f, 'a');
+    DrawCharacter(fonts[FONT_BIG], 100, 100, 2.f, '!');
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+#endif
 }
 
 int main(int argc, char **argv) {
