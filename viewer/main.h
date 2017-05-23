@@ -7,10 +7,16 @@
 #include <platform_model.h>
 #include <platform_filesystem.h>
 
-#define TITLE       "Piggy Viewer"
-#define LOG         "hog_loader"
-#define PRINT(...)  printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__)
-#define PRINT_ERROR(...) PRINT(__VA_ARGS__); exit(-1)
+#define TITLE               "Piggy Viewer"
+#define LOG                 "hog_loader"
+
+#define PRINT(...)          printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__)
+#define PRINT_ERROR(...)    PRINT(__VA_ARGS__); exit(-1)
+#ifdef _DEBUG
+#   define DPRINT(...)      PRINT(__VA_ARGS__)
+#else
+#   define DPRINT(...)      (__VA_ARGS__)
+#endif
 
 typedef struct GlobalVars {
     bool is_psx;

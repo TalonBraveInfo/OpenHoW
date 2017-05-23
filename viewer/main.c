@@ -672,7 +672,19 @@ int main(int argc, char **argv) {
         g_state.is_psx = true;
     }
 
-    InitializeMADPackages();
+    if(!plPathExists("./data")) {
+        DPRINT("Unable to find data directory, extracting game contents...\n");
+        if (
+                !plCreateDirectory("./data") ||
+                !plCreateDirectory("./data/models") ||
+                !plCreateDirectory("./data/textures") ||
+                !plCreateDirectory("./data/maps")) {
+            PRINT_ERROR("Failed to create base directory for data!\n");
+        }
+
+        InitializeMADPackages();
+    }
+
     InitializeFonts();
 
     ////////////////////////////////////////////////////
@@ -686,7 +698,6 @@ int main(int argc, char **argv) {
     if (!camera) {
         PRINT_ERROR("Failed to create camera!\n");
     }
-
     camera->mode = PL_CAMERAMODE_PERSPECTIVE;
     camera->fov = 90.f;
 

@@ -56,34 +56,30 @@ typedef struct __attribute__((packed)) MADIndex {
 //////////////////////////////////////////////////////////
 
 void ExtractMADPackage(const char *path) {
-    const char *name = plGetFileName(path);
-    if(!name || (name[0] == '\0') ||
-       // Known MAD packages that aren't valid
-       (strncmp(name, "mcap.mad", 8) == 0) ||      // animations
-       (strncmp(name, "mcapx.mad", 9) == 0) ||     // looks like some executable code? (psx only)
-       (strncmp(name, "femcap.mad", 10) == 0) ||   // more animations? (psx only)
-       (strncmp(name, "allmad.mad", 10) == 0)      // MORE animations!? (psx only)
-            ) {
+    if(!path || (path[0] == '\0') || (strstr(path, "mcap") != 0) || (strstr(path, "allmad") != 0)) {
+        DPRINT("Encountered invalid MAD %s, aborting!\n", path);
         return;
     }
 
     FILE *file = fopen(path, "rb");
     if(!file) {
-        PRINT_ERROR("Failed to load file %s!\n", path);
+        PRINT_ERROR("Failed to load %s!\n", path);
     }
 
-    char outpath[PL_SYSTEM_MAX_PATH];
-    plStripExtension(outpath, path);
-    PRINT("Creating directory %s\n", outpath);
-    if(!plCreateDirectory(outpath)) {
-        PRINT_ERROR("Failed to create directory!\n%s\n", plGetError());
-    }
+    char package_name[PL_SYSTEM_MAX_PATH] = { 0 };
+    plStripExtension(package_name, plGetFileName(path));
+    plLowerCasePath(package_name);
 
-    char foutfile[PL_SYSTEM_MAX_PATH];
-    snprintf(foutfile, sizeof(foutfile), "%s.index", outpath);
-    FILE *iout = fopen(foutfile, "w");
-    if(!iout) {
-        PRINT_ERROR("Failed to open index!\n");
+    char package_extension[4] = { 0 };
+    snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(path));
+    plLowerCasePath(package_extension);
+
+    char index_path[PL_SYSTEM_MAX_PATH] = { 0 };
+    snprintf(index_path, sizeof(index_path), "./data/%s_%s.index", package_name, package_extension);
+    DPRINT("Opening %s\n", index_path);
+    FILE *out_index = fopen(index_path, "w");
+    if(!out_index) {
+        PRINT_ERROR("Failed to open %s!\n", index_path);
     }
 
     unsigned int lowest_offset = UINT32_MAX;
@@ -91,36 +87,50 @@ void ExtractMADPackage(const char *path) {
     long position;
     do {
 
-        MADIndex index;
+        MADIndex index; cur_index++;
         if (fread(&index, sizeof(MADIndex), 1, file) != 1) {
-            PRINT_ERROR("Invalid index size! (%s)\n", path);
+            PRINT_ERROR("Invalid index size for %s!\n", path);
         }
 
         position = ftell(file);
-
-        fprintf(iout, "%d", cur_index);
-        cur_index++;
-
         if (lowest_offset > index.offset) {
             lowest_offset = index.offset;
-        } else if (index.padding0 != 0) {
+        }
+
+        const char *ext = plGetFileExtension(index.file);
+        if(!ext || ext[0] == '\0') {
+            DPRINT("Missing/invalid extension for %s!\n", index.file);
             continue;
         }
 
-        fprintf(iout, " %s\n", index.file);
-
-        char foutpath[PL_SYSTEM_MAX_PATH];
-        snprintf(foutpath, sizeof(foutpath), "%s/%s", outpath, index.file);
-        if (plFileExists(foutpath)) {
-            continue;
+        char file_path[PL_SYSTEM_MAX_PATH];
+        if(!strncasecmp(ext, "tim", 3) || !strncasecmp(ext, "mgl", 3)) {
+            snprintf(file_path, sizeof(file_path), "./data/textures/%s", package_name);
+            if(!plCreateDirectory(file_path)) {
+                PRINT_ERROR("Failed to create directory at %s!\n");
+            }
+            snprintf(file_path, sizeof(file_path), "./data/textures/%s/%s", package_name, index.file);
+        } else { // we'll assume it's a model
+            snprintf(file_path, sizeof(file_path), "./data/models/%s", package_name);
+            if(!plCreateDirectory(file_path)) {
+                PRINT_ERROR("Failed to create directory at %s!\n");
+            }
+            snprintf(file_path, sizeof(file_path), "./data/models/%s/%s", package_name, index.file);
         }
+
+        plLowerCasePath(file_path);
+
+        fprintf(out_index, "%d", cur_index);
+        fprintf(out_index, " %s (%s)\n", file_path, index.file);
 
         fseek(file, index.offset, SEEK_SET);
         uint8_t *data = calloc(index.length, sizeof(uint8_t));
         if (fread(data, sizeof(uint8_t), index.length, file) == index.length) {
-            FILE *out = fopen(foutpath, "wb");
+            DPRINT("Writing %s...\n", file_path);
+
+            FILE *out = fopen(file_path, "wb");
             if (!out || fwrite(data, sizeof(uint8_t), index.length, out) != index.length) {
-                PRINT_ERROR("Failed to write %s!\n", foutpath);
+                PRINT_ERROR("Failed to write %s!\n", file_path);
             }
             fclose(out);
         }
@@ -128,7 +138,7 @@ void ExtractMADPackage(const char *path) {
         fseek(file, position, SEEK_SET);
     } while(position < lowest_offset);
 
-    fclose(file); fclose(iout);
+    fclose(file); fclose(out_index);
 }
 
 void InitializeMADPackages(void) {

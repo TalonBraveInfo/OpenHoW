@@ -42,4 +42,5 @@ set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c99)
 add_definitions("-D_DEBUG")
 
 add_subdirectory(platform)
+# add_subdirectory(setup)
 add_subdirectory(viewer)
