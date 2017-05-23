@@ -67,16 +67,14 @@ void ExtractMADPackage(const char *path) {
         return;
     }
 
-    PRINT("...");
-
     FILE *file = fopen(path, "rb");
     if(!file) {
         PRINT_ERROR("Failed to load file %s!\n", path);
     }
 
-    char outpath[PL_SYSTEM_MAX_PATH] = { 0 };
+    char outpath[PL_SYSTEM_MAX_PATH];
     plStripExtension(outpath, path);
-    snprintf(outpath, sizeof(outpath), "./%s", outpath);
+    PRINT("Creating directory %s\n", outpath);
     if(!plCreateDirectory(outpath)) {
         PRINT_ERROR("Failed to create directory!\n%s\n", plGetError());
     }
@@ -88,21 +86,24 @@ void ExtractMADPackage(const char *path) {
         PRINT_ERROR("Failed to open index!\n");
     }
 
-    unsigned int lowest_offset = UINT32_MAX; fpos_t position; unsigned int cur_index = 0;
+    unsigned int lowest_offset = UINT32_MAX;
+    unsigned int cur_index = 0;
+    long position;
     do {
 
         MADIndex index;
-        if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
+        if (fread(&index, sizeof(MADIndex), 1, file) != 1) {
             PRINT_ERROR("Invalid index size! (%s)\n", path);
         }
 
-        fgetpos(file, &position);
+        position = ftell(file);
 
-        fprintf(iout, "%d", cur_index); cur_index++;
+        fprintf(iout, "%d", cur_index);
+        cur_index++;
 
-        if(lowest_offset > index.offset) {
+        if (lowest_offset > index.offset) {
             lowest_offset = index.offset;
-        } else if(index.padding0 != 0) {
+        } else if (index.padding0 != 0) {
             continue;
         }
 
@@ -110,22 +111,21 @@ void ExtractMADPackage(const char *path) {
 
         char foutpath[PL_SYSTEM_MAX_PATH];
         snprintf(foutpath, sizeof(foutpath), "%s/%s", outpath, index.file);
-        if(plFileExists(foutpath)) {
+        if (plFileExists(foutpath)) {
             continue;
         }
 
         fseek(file, index.offset, SEEK_SET);
         uint8_t *data = calloc(index.length, sizeof(uint8_t));
-        if(fread(data, sizeof(uint8_t), index.length, file) == index.length) {
+        if (fread(data, sizeof(uint8_t), index.length, file) == index.length) {
             FILE *out = fopen(foutpath, "wb");
-            if(!out || fwrite(data, sizeof(uint8_t), index.length, out) != index.length) {
-                PRINT("Failed!\n");
+            if (!out || fwrite(data, sizeof(uint8_t), index.length, out) != index.length) {
+                PRINT_ERROR("Failed to write %s!\n", foutpath);
             }
             fclose(out);
         }
 
-        fsetpos(file, &position);
-
+        fseek(file, position, SEEK_SET);
     } while(position < lowest_offset);
 
     fclose(file); fclose(iout);
@@ -133,7 +133,7 @@ void ExtractMADPackage(const char *path) {
 
 void InitializeMADPackages(void) {
 
-    PRINT("\nExtracting MAD/MTD packages...");
+    PRINT("\nExtracting MAD/MTD packages...\n");
 
     if (g_state.is_psx) { // tidy file paths
         plScanDirectory("./tims/", ".mad", ExtractMADPackage);
