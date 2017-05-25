@@ -120,8 +120,7 @@ void ExtractMADPackage(const char *path) {
 
         plLowerCasePath(file_path);
 
-        fprintf(out_index, "%d", cur_index);
-        fprintf(out_index, " %s (%s)\n", file_path, index.file);
+        fprintf(out_index, "%d %s (%s)\n", cur_index, file_path, index.file);
 
         fseek(file, index.offset, SEEK_SET);
         uint8_t *data = calloc(index.length, sizeof(uint8_t));

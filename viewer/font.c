@@ -74,7 +74,12 @@ void DrawCharacter(PIGFont *font, int x, int y, float scale, uint8_t character) 
 
     static PLMesh *font_mesh = NULL;
     if(!font_mesh) {
-        if(!(font_mesh = plCreateRectangleMesh(PL_DRAW_IMMEDIATE))) {
+        if(!(font_mesh = plCreateMesh(
+                PL_PRIMITIVE_TRIANGLES,
+                PL_DRAW_IMMEDIATE,
+                2,
+                4
+        ))) {
             PRINT_ERROR("Failed to create font mesh!\n");
         }
     }

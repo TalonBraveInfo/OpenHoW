@@ -36,7 +36,8 @@ enum {
 };
 
 typedef struct PLCamera {
-    float fov, fovx, fovy;
+    double fov;
+    double near, far;
 
     unsigned int mode;
 
@@ -54,10 +55,5 @@ PL_EXTERN PLCamera *plCreateCamera(void);
 PL_EXTERN void plDeleteCamera(PLCamera *camera);
 
 PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN void plPrintCameraAngles(PLCamera *camera);
-
-PL_EXTERN void plSetCameraPosition(PLCamera *camera, PLVector3D position);
-PL_EXTERN void plSetCameraAngles(PLCamera *camera, PLVector3D angles);
 
 PL_EXTERN_C_END

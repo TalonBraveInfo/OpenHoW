@@ -14,9 +14,9 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 0. You just DO WHAT THE FUCK YOU WANT TO.
 */
 
-#include "platform.h"
+#include "PL/platform.h"
 
-#include "platform_model.h"
+#include "PL/platform_model.h"
 
 using namespace pl::graphics;
 

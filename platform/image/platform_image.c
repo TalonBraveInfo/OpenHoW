@@ -25,8 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_image.h"
-#include "platform_filesystem.h"
+#include "PL/platform_image.h"
+#include "PL/platform_filesystem.h"
+#include <PL/platform_math.h>
 
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(!fin) {

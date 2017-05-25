@@ -35,6 +35,7 @@ file(
         image/*.*
 
         include/*.h
+        include/PL/*.h
         )
 
 add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
@@ -45,7 +46,7 @@ target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(platform "-framework OpenGL" -L/usr/X11/lib -L/usr/X11R6/lib)
 else()
-    target_link_libraries(platform GL GLEW)
+    target_link_libraries(platform GL GLU GLEW)
 endif()
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(platform dl tiff X11)

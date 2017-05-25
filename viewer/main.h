@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include <platform_log.h>
-#include <platform_window.h>
-#include <platform_graphics.h>
-#include <platform_model.h>
-#include <platform_filesystem.h>
+#include <PL/platform_log.h>
+#include <PL/platform_window.h>
+#include <PL/platform_graphics.h>
+#include <PL/platform_model.h>
+#include <PL/platform_filesystem.h>
 
 #define TITLE               "Piggy Viewer"
 #define LOG                 "hog_loader"

@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_math.h"
+#include "PL/platform_math.h"
 
 // GLM
 #if 0

@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics.h"
-#include "platform_filesystem.h"
+#include "PL/platform_graphics.h"
+#include "PL/platform_filesystem.h"
 
 using namespace pl::graphics;
 

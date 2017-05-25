@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics.h"
+#include "PL/platform_graphics.h"
 
 #if defined(PL_MODE_OPENGL)
-#   define _PL_USE_VERTEX_BUFFER_OBJECTS
+#   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
 #endif
 
 typedef struct PLTranslatePrimitive {
@@ -85,7 +85,7 @@ unsigned int _plTranslatePrimitiveMode(PLPrimitive mode) {
     return _pl_primitives[0].target;
 }
 
-PLuint _plTranslateDrawMode(PLDrawMode mode) {
+unsigned int _plTranslateDrawMode(PLDrawMode mode) {
 #if defined(PL_MODE_OPENGL)
     if(mode == PL_DRAW_DYNAMIC) {
         return GL_DYNAMIC_DRAW;
@@ -99,36 +99,24 @@ PLuint _plTranslateDrawMode(PLDrawMode mode) {
 #endif
 }
 
-void _plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
+void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
     PLVector3D distvec = position;
     plSubtractVector3D(&distvec, light->position);
     PLfloat distance = (light->radius - plVector3DLength(distvec)) / 100.f;
 
     for(PLuint i = 0; i < mesh->num_verts; i++) {
+        PLVector3D normal = mesh->vertices[i].normal;
+        float angle = (distance * ((normal.x * distvec.x) + (normal.y * distvec.y) + (normal.z * distvec.z)));
+        if(angle < 0) {
+            plClearColour(&mesh->vertices[i].colour);
+        } else {
+            mesh->vertices[i].colour.r = light->colour.r * plFloatToByte(angle);
+            mesh->vertices[i].colour.g = light->colour.g * plFloatToByte(angle);
+            mesh->vertices[i].colour.b = light->colour.b * plFloatToByte(angle);
+        }
     }
 
 #if 0
-    // Calculate the distance.
-    PLVector3f distvec = { 0 };
-    plVectorSubtract3fv(position, light->position, distvec);
-    float distance = (light->radius - plLengthf(distvec)) / 100.0f;
-
-    for(PLuint i = 0; i < object->numverts; i++)
-    {
-        float x = object->vertices[i].normal[0];
-        float y = object->vertices[i].normal[1];
-        float z = object->vertices[i].normal[2];
-
-        float angle = (distance * ((x * distvec[0]) + (y * distvec[1]) + (z * distvec[2])));
-        if(angle < 0)
-            object->vertices[i].colour.Clear();
-        else
-        {
-            object->vertices[i].colour[PL_RED]      = light->colour[PL_RED] * angle;
-            object->vertices[i].colour[PL_GREEN]    = light->colour[PL_GREEN] * angle;
-            object->vertices[i].colour[PL_BLUE]     = light->colour[PL_BLUE] * angle;
-        }
-
         /*
         x = Object->Vertices_normalStat[count].x;
         y = Object->Vertices_normalStat[count].y;
@@ -148,7 +136,6 @@ void _plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
         Object->Vertices_screen[count].g = Object->Vertices_local[count].g * angle;
         }
         */
-    }
 #endif
 }
 
@@ -213,9 +200,9 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tr
         return NULL;
     }
 
-#if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if(mode != PL_DRAW_IMMEDIATE) {
-        glGenBuffers(1, &mesh->id[_PL_MESH_VERTICES]);
+        glGenBuffers(_PLGL_BUFFERS, mesh->_buffers);
     }
 #endif
 
@@ -296,15 +283,15 @@ void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour) {
 }
 
 void plUploadMesh(PLMesh *mesh) {
-#if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PL_PRIMITIVE_QUADS)) {
         // todo, eventually just convert quad primitives to triangles
         return;
     }
 
-#if defined(PL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL_CORE) || defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     // Fill our buffer with data.
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
 #endif
 #endif
@@ -314,7 +301,7 @@ void plDrawMesh(PLMesh *mesh) {
     plAssert(mesh->num_verts);
 
 #if defined(PL_MODE_OPENGL)
-#if !defined(PL_MODE_OPENGL_CORE) //&& !defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if !defined(PL_MODE_OPENGL_CORE) //&& !defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
 #if 1
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));
@@ -368,9 +355,8 @@ void plDrawMesh(PLMesh *mesh) {
 #else
     {
 #endif
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
-
         glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         if (mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
@@ -391,27 +377,31 @@ void plDrawMesh(PLMesh *mesh) {
 
 // Utility Functions
 
-void plCreateCubeMesh() {}
+void plDrawCube() {} // todo
 
 /*  Textured Rectangle Mesh  */
 
-void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height) {
-    plAssert(mesh);
-    plAssert(mesh->num_verts == 4);
-    plAssert(mesh->num_triangles == 2);
-    plAssert(mesh->primitive == PL_PRIMITIVE_TRIANGLE_STRIP);
+void plDrawRectangle(PLRectangle rect) {
+    static PLMesh *mesh = NULL;
+    if(!mesh) {
+        mesh = plCreateMesh(
+                PL_PRIMITIVE_TRIANGLE_STRIP,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                2, 4
+        );
+    }
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y + height);
-    plSetMeshVertexPosition2f(mesh, 1, x, y);
-    plSetMeshVertexPosition2f(mesh, 2, x + width, y + height);
-    plSetMeshVertexPosition2f(mesh, 3, x + width, y);
+    plSetMeshVertexPosition2f(mesh, 0, rect.x, rect.y + rect.height);
+    plSetMeshVertexPosition2f(mesh, 1, rect.x, rect.y);
+    plSetMeshVertexPosition2f(mesh, 2, rect.x + rect.width, rect.y + rect.height);
+    plSetMeshVertexPosition2f(mesh, 3, rect.x + rect.width, rect.y);
 
-    plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 255, 255, 255));
-    plSetMeshVertexColour(mesh, 1, plCreateColour4b(255, 255, 255, 255));
-    plSetMeshVertexColour(mesh, 2, plCreateColour4b(255, 255, 255, 255));
-    plSetMeshVertexColour(mesh, 3, plCreateColour4b(255, 255, 255, 255));
+    plSetMeshVertexColour(mesh, 0, rect.ll);
+    plSetMeshVertexColour(mesh, 1, rect.ul);
+    plSetMeshVertexColour(mesh, 2, rect.lr);
+    plSetMeshVertexColour(mesh, 3, rect.ur);
 
     plSetMeshVertexST(mesh, 0, 0, 0);
     plSetMeshVertexST(mesh, 1, 0, 1);
@@ -419,43 +409,48 @@ void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsign
     plSetMeshVertexST(mesh, 3, 1, 0);
 
     plUploadMesh(mesh);
-}
 
-PLMesh *plCreateRectangleMesh(PLDrawMode mode) {
-    PLMesh *mesh;
-    return (mesh = plCreateMesh(
-            PL_PRIMITIVE_TRIANGLE_STRIP,
-            mode,
-            2, 4
-    ));
+    plDrawMesh(mesh);
 }
 
 /*  Triangle Mesh   */
 
-void plSetupTriangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height) {
-    plAssert(mesh);
-    plAssert(mesh->num_verts == 3);
-    plAssert(mesh->num_triangles == 1);
-    plAssert(mesh->primitive == PL_PRIMITIVE_TRIANGLE_FAN);
+void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
+    static PLMesh *mesh = NULL;
+    if (!mesh) {
+        mesh = plCreateMesh(
+                PL_PRIMITIVE_TRIANGLE_FAN,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                1, 3
+        );
+    }
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y + height);
-    plSetMeshVertexPosition2f(mesh, 1, x + width / 2, x);
-    plSetMeshVertexPosition2f(mesh, 2, x + width, y + height);
+    plSetMeshVertexPosition2f(mesh, 0, x, y + h);
+    plSetMeshVertexPosition2f(mesh, 1, x + w / 2, x);
+    plSetMeshVertexPosition2f(mesh, 2, x + w, y + h);
 
     plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 0, 0, 255));
     plSetMeshVertexColour(mesh, 1, plCreateColour4b(0, 255, 0, 255));
     plSetMeshVertexColour(mesh, 2, plCreateColour4b(0, 0, 255, 255));
 
     plUploadMesh(mesh);
+
+    plDrawMesh(mesh);
 }
 
-PLMesh *plCreateTriangleMesh(PLDrawMode mode) {
-    PLMesh *mesh;
-    return (mesh = plCreateMesh(
-            PL_PRIMITIVE_TRIANGLE_FAN,
-            mode,
-            1, 3
-    ));
+/////////////////////////////////////////////////////////////////////////////////////
+// BITMAP FONT RENDERING
+
+typedef struct PLBitmapFont {
+    PLTexture *texture;
+} PLBitmapFont;
+
+PLBitmapFont *plCreateBitmapFont(const char *path) {
+
+}
+
+void plDeleteBitmapFont(PLBitmapFont *font) {
+
 }

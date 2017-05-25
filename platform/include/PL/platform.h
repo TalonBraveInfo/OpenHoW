@@ -185,8 +185,8 @@ enum {
     PL_SUBSYSTEM_IMAGE      = (1 << 2), // Image loaders
     PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
     PL_SUBSYSTEM_LOG        = (1 << 4), // Logging
-    PL_SUBSYSTEM_MODEL      = (1 << 5), // Model loaders
-    PL_SUBSYSTEM_WINDOW     = (1 << 6), // Windowing
+    PL_SUBSYSTEM_WINDOW     = (1 << 5), // Windowing
+    PL_SUBSYSTEM_CONSOLE    = (1 << 6), // Console
 };
 
 #if defined(PL_INTERNAL)
@@ -241,6 +241,9 @@ void _plShutdownIO(void);
 PLresult _plInitWindow(void);
 void _plShutdownWindow(void);
 
+PLresult _plInitConsole(void);
+void _plShutdownConsole(void);
+
 PL_EXTERN_C_END
 
 #else
@@ -289,10 +292,6 @@ static PL_INLINE time_t plStringToTime(const PLchar *ts) {
     time.tm_isdst = -1;
 
     return mktime(&time);
-}
-
-static PL_INLINE PLbool plIsPowerOfTwo(PLuint num) {
-    return (PLbool)((num != 0) && ((num & (~num + 1)) == num));
 }
 
 //////////////////////////////////////////////////////////////////

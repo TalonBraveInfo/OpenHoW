@@ -25,36 +25,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_log.h"
+#pragma once
 
-/*	Log System	*/
+#include <PL/platform.h>
+#include <PL/platform_math.h>
 
-#define    LOG_FILE_EXTENSION    ".log"
+PL_EXTERN_C
 
-void plWriteLog(const PLchar *path, const PLchar *msg, ...) {
-    plFunctionStart();
+PL_EXTERN void plSetupConsole(unsigned int num_instances);
 
-    PLchar newpath[PL_SYSTEM_MAX_PATH];
-    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
+PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
 
-    static PLchar buffer[1024];
-    va_list args;
-    va_start(args, msg);
-    vsnprintf(buffer, sizeof(buffer), msg, args);
-    va_end(args);
+PL_EXTERN void plShowConsole(bool show);
 
-    size_t size = strlen(buffer);
-    FILE *file = fopen(newpath, "a");
-    if (fwrite(buffer, sizeof(PLchar), size, file) != size) {
-        plSetError("Failed to write to log! (%s)", newpath);
-    }
-    fclose(file);
-}
+PL_EXTERN void plDrawConsole(void);
 
-void plClearLog(const PLchar *path) {
-    plFunctionStart();
-
-    PLchar newpath[PL_SYSTEM_MAX_PATH];
-    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
-    unlink(newpath);
-}
+PL_EXTERN_C_END

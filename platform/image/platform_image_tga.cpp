@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_image.h"
+#include "PL/platform_image.h"
 
 typedef struct TGAHeader {
     PLbyte      id_length;

@@ -17,9 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "platform_window.h"
-#include "platform_log.h"
-#include "platform_math.h"
+#include "PL/platform_window.h"
+#include "PL/platform_log.h"
+#include "PL/platform_math.h"
 
 #if defined(__linux__)
 #   include <X11/X.h>
@@ -294,7 +294,7 @@ void plSwapBuffers(PLWindow *window) {
 
 ////////////////////////////////////////////////////////////////////
 
-#include "platform_log.h"
+#include "PL/platform_log.h"
 #define PL_WINDOW_LOG  "pl_window"
 #ifdef _DEBUG
 #	define plWindowLog(...) plWriteLog(PL_WINDOW_LOG, __VA_ARGS__)

@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <platform_math.h>
-#include "platform_image.h"
+#include <PL/platform_math.h>
+#include "PL/platform_image.h"
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
  *  https://mrclick.zophar.net/TilEd/download/timgfx.txt

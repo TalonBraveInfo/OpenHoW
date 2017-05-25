@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics.h"
-#include "platform_log.h"
-#include "platform_image.h"
+#include "PL/platform_graphics.h"
+#include "PL/platform_log.h"
+#include "PL/platform_image.h"
 
 using namespace pl::graphics;
 
@@ -883,9 +883,7 @@ PLuint plGetMaxTextureSize(void) {
         return pl_graphics_state.hw_maxtexturesize;
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    PLint num_size = 0;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &num_size);
-    pl_graphics_state.hw_maxtexturesize = (PLuint) num_size;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&pl_graphics_state.hw_maxtexturesize);
 #elif defined (VL_MODE_GLIDE)
     grGet(GR_MAX_TEXTURE_SIZE, sizeof(pl_graphics_state.hw_maxtexturesize), &pl_graphics_state.hw_maxtexturesize);
 #endif
@@ -899,9 +897,7 @@ PLuint plGetMaxTextureUnits(void) {
         return pl_graphics_state.hw_maxtextureunits;
 
 #ifdef PL_MODE_OPENGL
-    PLint num_units = 0;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &num_units);
-    pl_graphics_state.hw_maxtextureunits = (PLuint) num_units;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&pl_graphics_state.hw_maxtextureunits);
 #elif defined (VL_MODE_GLIDE)
     grGet(GR_NUM_TMU, sizeof(param), (FxI32*)graphics_state.hw_maxtextureunits);
 #endif
@@ -915,9 +911,7 @@ PLuint plGetMaxTextureAnistropy(void) {
         return pl_graphics_state.hw_maxtextureanistropy;
 
 #if defined (PL_MODE_OPENGL)
-    PLfloat num_anisotropy = 0;
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &num_anisotropy);
-    pl_graphics_state.hw_maxtextureanistropy = (PLuint) num_anisotropy;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, (GLfloat*)&pl_graphics_state.hw_maxtextureanistropy);
 #endif
 
     return pl_graphics_state.hw_maxtextureanistropy;

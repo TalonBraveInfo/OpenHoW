@@ -683,6 +683,8 @@ int main(int argc, char **argv) {
         }
 
         InitializeMADPackages();
+    } else {
+        DPRINT("Found data directory, continuing with normal execution...\n");
     }
 
     InitializeFonts();
@@ -725,7 +727,7 @@ int main(int argc, char **argv) {
         load_vtx_file(vtx_path);
         load_fac_file(fac_path);
 
-        plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
+        camera->position = plCreateVector3D(0, 12, -500);
 
 #if 1
         glEnable(GL_CULL_FACE);

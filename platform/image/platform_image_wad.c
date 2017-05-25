@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "platform_image.h"
+#include "PL/platform_image.h"
 
 typedef struct WADHeader {
     PLchar ident[4];    // WAD2, 2DAW, IWAD, PWAD

@@ -16,9 +16,9 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "platform.h"
+#include "PL/platform.h"
 
-#include "platform_model.h"
+#include "PL/platform_model.h"
 
 /*
 	IQM Skeletal Model Format

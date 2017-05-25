@@ -38,43 +38,17 @@ typedef struct PLTriangle {
 } PLTriangle;
 
 #if defined(PL_MODE_OPENGL)
-/*  Draw calls are horribly complicated in modern GL
- *  and require us to track a number of different indexes
- *  all at once, rather than just the one.
- *
- *  Because of this and for the sake of time, this is why
- *  there is this horrid collection below and 'mode'-specific
- *  code here which I would rather live without in the libraries
- *  own headers.
- *
- *  I can't really think of a solution to this at the moment
- *  because generally the structs here should be the same
- *  regardless of which rendering API we've chosen (otherwise
- *  people using the library might have to refactor code or make
- *  changes depending on which rendering API they want to use which
- *  makes this all slightly redundant).
- *
- *  One solution might be to have a seperate dynamically allocated
- *  array within the platform library itself which carries all of these
- *  for us and knows which ones are assigned to which mesh objects...
- *  But that sounds so overly complicated and stupid that the better
- *  solution in the end might be to just leave this how it is.
- *
- *  ~hogsy
- */
 enum {
-    _PL_MESH_VERTICES,
-    _PL_MESH_INDICES,
+    _PLGL_BUFFER_VERTICES,
+    _PLGL_BUFFER_TEXCOORDS,
 
-    _PL_NUM_MESHINDEXES
+    _PLGL_BUFFERS
 };
 #endif
 
 typedef struct PLMesh {
 #if defined(PL_MODE_OPENGL)
-    unsigned int id[_PL_NUM_MESHINDEXES];
-#else
-    unsigned int id;
+    unsigned int _buffers[_PLGL_BUFFERS];
 #endif
 
     PLVertex *vertices;
@@ -93,12 +67,10 @@ typedef struct PLMesh {
 PL_EXTERN_C
 
 PL_EXTERN PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PLuint num_verts);
-PL_EXTERN PLMesh *plCreateRectangleMesh(PLDrawMode mode);
-PL_EXTERN PLMesh *plCreateTriangleMesh(PLDrawMode mode);
 PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
-PL_EXTERN void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height);
-PL_EXTERN void plSetupTriangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height);
+PL_EXTERN void plDrawRectangle(PLRectangle rect);
+PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
 PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3D vector);

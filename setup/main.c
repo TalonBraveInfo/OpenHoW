@@ -24,37 +24,3 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
-#include "PL/platform_log.h"
-
-/*	Log System	*/
-
-#define    LOG_FILE_EXTENSION    ".log"
-
-void plWriteLog(const PLchar *path, const PLchar *msg, ...) {
-    plFunctionStart();
-
-    PLchar newpath[PL_SYSTEM_MAX_PATH];
-    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
-
-    static PLchar buffer[1024];
-    va_list args;
-    va_start(args, msg);
-    vsnprintf(buffer, sizeof(buffer), msg, args);
-    va_end(args);
-
-    size_t size = strlen(buffer);
-    FILE *file = fopen(newpath, "a");
-    if (fwrite(buffer, sizeof(PLchar), size, file) != size) {
-        plSetError("Failed to write to log! (%s)", newpath);
-    }
-    fclose(file);
-}
-
-void plClearLog(const PLchar *path) {
-    plFunctionStart();
-
-    PLchar newpath[PL_SYSTEM_MAX_PATH];
-    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
-    unlink(newpath);
-}

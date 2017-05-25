@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_image.h"
+#include "PL/platform_image.h"
 
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 

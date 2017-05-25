@@ -25,8 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <platform_filesystem.h>
-#include "platform.h"
+#include <PL/platform_filesystem.h>
 
 /*	Generic functions for platform, such as	error handling.	*/
 
@@ -43,43 +42,37 @@ PLSubSystem pl_subsystems[]= {
         {
                 PL_SUBSYSTEM_GRAPHICS,
                 &_plInitGraphics,
-                &_plShutdownGraphics,
-                PL_FALSE
+                &_plShutdownGraphics
         },
 
         {
                 PL_SUBSYSTEM_IO,
                 &_plInitIO,
-                &_plShutdownIO,
-                PL_FALSE
+                &_plShutdownIO
         },
 
         {
                 PL_SUBSYSTEM_IMAGE,
                 NULL,
-                NULL,
-                PL_FALSE
+                NULL
         },
 
         {
                 PL_SUBSYSTEM_LIBRARY,
                 NULL,
-                NULL,
-                PL_FALSE
+                NULL
         },
 
         {
                 PL_SUBSYSTEM_WINDOW,
                 NULL,
-                NULL,
-                PL_FALSE
+                NULL
         },
 
         {
-                PL_SUBSYSTEM_MODEL,
-                NULL,
-                NULL,
-                PL_FALSE
+                PL_SUBSYSTEM_CONSOLE,
+                &_plInitConsole,
+                &_plShutdownConsole
         }
 };
 

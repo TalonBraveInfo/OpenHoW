@@ -17,7 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "platform_filesystem.h"
+#include "PL/platform_filesystem.h"
 
 /*	File System	*/
 
@@ -64,6 +64,7 @@ time_t plGetFileModifiedTime(const PLchar *path) {
     plFunctionEnd();
 }
 
+// todo, move into platform_string and make safer
 void plLowerCasePath(char *out) {
     plFunctionStart();
     for (int i = 0; out[i]; i++) {
@@ -110,7 +111,7 @@ bool plCreateDirectory(const char *path) {
 }
 
 // Returns the extension for the file.
-const PLchar *plGetFileExtension(const PLchar *in) {
+const char *plGetFileExtension(const char *in) {
     plFunctionStart();
     if (!plIsValidString(in)) {
         return "";
@@ -133,15 +134,15 @@ void plStripExtension(char *dest, const char *in) {
         return;
     }
 
-    const PLchar *s = strrchr(in, '.');
+    const char *s = strrchr(in, '.');
     while (in < s) *dest++ = *in++;
     *dest = 0;
     plFunctionEnd();
 }
 
 // Returns a pointer to the last component in the given filename. 
-const PLchar *plGetFileName(const PLchar *path) {
-    const PLchar *lslash = strrchr(path, '/');
+const char *plGetFileName(const char *path) {
+    const char *lslash = strrchr(path, '/');
     if (lslash != NULL) {
         path = lslash + 1;
     }
@@ -149,7 +150,7 @@ const PLchar *plGetFileName(const PLchar *path) {
 }
 
 // Returns the name of the systems current user.
-void plGetUserName(PLchar *out) {
+void plGetUserName(char *out) {
     plFunctionStart();
 #ifdef _WIN32
     PLchar userstring[PL_MAX_USERNAME];
@@ -160,7 +161,7 @@ void plGetUserName(PLchar *out) {
         // If it fails, just set it to user.
         sprintf(userstring, "user");
 #else   // Linux
-    PLchar *userstring = getenv("LOGNAME");
+    char *userstring = getenv("LOGNAME");
     if (userstring == NULL) {
         // If it fails, just set it to user.
         userstring = "user";

@@ -25,20 +25,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics.h"
+#include "PL/platform_graphics.h"
 
-#define PL_CAMERA_DEFAULT_WIDTH     640
-#define PL_CAMERA_DEFAULT_HEIGHT    480
-#define PL_CAMERA_DEFAULT_BOUNDS    5
+#define PLCAMERA_DEFAULT_WIDTH      640
+#define PLCAMERA_DEFAULT_HEIGHT     480
+#define PLCAMERA_DEFAULT_BOUNDS     5
+#define PLCAMERA_DEFAULT_FOV        90
+#define PLCAMERA_DEFAULT_NEAR       0.1
+#define PLCAMERA_DEFAULT_FAR        100000
 
 PLCamera *plCreateCamera(void) {
     PLCamera *camera = (PLCamera*)calloc(1, sizeof(PLCamera));
     if(!camera) {
+        plSetError("Failed to allocate camera object!\n");
         return NULL;
     }
 
     memset(camera, 0, sizeof(PLCamera));
-    camera->fov     = 90.f;
+    camera->fov     = PLCAMERA_DEFAULT_FOV;
+    camera->near    = PLCAMERA_DEFAULT_NEAR;
+    camera->far     = PLCAMERA_DEFAULT_FAR;
     camera->mode    = PL_CAMERAMODE_PERSPECTIVE;
 
     /*  XY * * * * W
@@ -48,13 +54,13 @@ PLCamera *plCreateCamera(void) {
      *  *
      *  H
      */
-    camera->viewport.width   = PL_CAMERA_DEFAULT_WIDTH;
-    camera->viewport.height  = PL_CAMERA_DEFAULT_HEIGHT;
+    camera->viewport.width   = PLCAMERA_DEFAULT_WIDTH;
+    camera->viewport.height  = PLCAMERA_DEFAULT_HEIGHT;
 
     camera->bounds.mins = plCreateVector3D(
-            -PL_CAMERA_DEFAULT_BOUNDS, -PL_CAMERA_DEFAULT_BOUNDS, -PL_CAMERA_DEFAULT_BOUNDS);
+            -PLCAMERA_DEFAULT_BOUNDS, -PLCAMERA_DEFAULT_BOUNDS, -PLCAMERA_DEFAULT_BOUNDS);
     camera->bounds.maxs = plCreateVector3D(
-            PL_CAMERA_DEFAULT_BOUNDS, PL_CAMERA_DEFAULT_BOUNDS, PL_CAMERA_DEFAULT_BOUNDS);
+            PLCAMERA_DEFAULT_BOUNDS, PLCAMERA_DEFAULT_BOUNDS, PLCAMERA_DEFAULT_BOUNDS);
 
     return camera;
 }
@@ -65,6 +71,13 @@ void plDeleteCamera(PLCamera *camera) {
     }
 
     free(camera);
+}
+
+// http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
+void _plPerspective(double fov_y, double aspect, double near, double far) {
+    double h = tan(fov_y / 360 * PL_PI) * near;
+    double w = h * aspect;
+    glFrustum(-w, w, -h, h, near, far);
 }
 
 void plSetupCamera(PLCamera *camera) {
@@ -86,7 +99,10 @@ void plSetupCamera(PLCamera *camera) {
     switch(camera->mode) {
         default:
         case PL_CAMERAMODE_PERSPECTIVE: {
-            gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 100000.f);
+            _plPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1, 100000);
+
+            // todo, update start
+            //gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 100000.f);
 
             glRotatef(camera->angles.y, 1, 0, 0);
             glRotatef(camera->angles.x, 0, 1, 0);
@@ -95,6 +111,7 @@ void plSetupCamera(PLCamera *camera) {
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
+            // todo, update end
 
             break;
         }
@@ -105,6 +122,7 @@ void plSetupCamera(PLCamera *camera) {
         case PL_CAMERAMODE_ISOMETRIC: {
             glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
 
+            // todo, update start
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
@@ -112,24 +130,9 @@ void plSetupCamera(PLCamera *camera) {
             glRotatef(camera->angles.x, 0, 1, 0);
 
             glTranslatef(camera->position.x, camera->position.y, camera->position.z);
+            // todo, update end
             break;
         }
     }
 //#endif
-}
-
-void plSetCameraPosition(PLCamera *camera, PLVector3D position) {
-    if(!camera || plCompareVector3D(camera->position, position)) {
-        return;
-    }
-
-    camera->position = position;
-}
-
-void plSetCameraAngles(PLCamera *camera, PLVector3D angles) {
-    if(!camera || plCompareVector3D(camera->angles, angles)) {
-        return;
-    }
-
-    camera->angles = angles;
 }
