@@ -629,11 +629,54 @@ void DrawOverlays(void) {
 #endif
 }
 
+////////////////////////////////////////////////////////////////
+
+void CopyFile(const char *path, const char *dest) {
+    FILE *fold = fopen(path, "rb");
+    if(!fold) {
+        PRINT_ERROR("Failed to open %s for copying!\n", path);
+    }
+
+    fseek(fold, 0, SEEK_END);
+    size_t file_size = (size_t)ftell(fold);
+    fseek(fold, 0, SEEK_SET);
+
+    uint8_t *data = calloc(file_size, 1);
+    if(!data) {
+        PRINT_ERROR("Failed to allocate buffer for %s, with size %d!\n", path, file_size);
+    }
+
+    fread(data, 1, file_size, fold);
+
+    DPRINT("Writing %s...\n", dest);
+
+    FILE *out = fopen(dest, "wb");
+    if (!out || fwrite(data, 1, file_size, out) != file_size) {
+        PRINT_ERROR("Failed to write %s!\n", dest);
+    }
+    fclose(out);
+}
+
+void CopyMapFile(const char *path) {
+    char file_path[PL_SYSTEM_MAX_PATH];
+    snprintf(file_path, sizeof(file_path), "./data/maps/%s", plGetFileName(path));
+    plLowerCasePath(file_path);
+    CopyFile(path, file_path);
+}
+
+////////////////////////////////////////////////////////////////
+
 int main(int argc, char **argv) {
     memset(&g_state, 0, sizeof(GlobalVars));
 
-    plInitialize(argc, argv, PL_SUBSYSTEM_LOG | PL_SUBSYSTEM_LOG);
+    plInitialize(argc, argv, PL_SUBSYSTEM_LOG);
     plClearLog(LOG);
+
+    PRINT("\n " TITLE " : Version %d.%d (" __DATE__ ")\n", VERSION_MAJOR, VERSION_MINOR     );
+    PRINT(" Developed by...\n"                                                              );
+    PRINT("   Mark \"hogsy\" Sowden (http://talonbrave.info/)\n"                            );
+    PRINT("   Daniel \"solemnwarning\" Collins (http://solemnwarning.net/)\n"               );
+    PRINT("\n-------------------------------------------------------------------------\n\n" );
 
     // Initialize GLFW...
 
@@ -658,11 +701,11 @@ int main(int argc, char **argv) {
 
     // Initialize DevIL...
 
-    ilInit ();
+    ilInit();
     iluInit();
     ilutRenderer(ILUT_OPENGL);
 
-    ilEnable (IL_CONV_PAL);
+    ilEnable(IL_CONV_PAL);
 
     // And now for ours...
 
@@ -683,6 +726,12 @@ int main(int argc, char **argv) {
         }
 
         InitializeMADPackages();
+
+        // Copy all of the map files over into a new directory.
+        plScanDirectory("./Maps/", ".pog", CopyMapFile);
+        plScanDirectory("./Maps/", ".pmg", CopyMapFile);
+        plScanDirectory("./Maps/", ".ptg", CopyMapFile);
+        plScanDirectory("./Maps/", ".gen", CopyMapFile);
     } else {
         DPRINT("Found data directory, continuing with normal execution...\n");
     }
@@ -729,9 +778,9 @@ int main(int argc, char **argv) {
 
         camera->position = plCreateVector3D(0, 12, -500);
 
-#if 1
         glEnable(GL_CULL_FACE);
 
+#if 1
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 

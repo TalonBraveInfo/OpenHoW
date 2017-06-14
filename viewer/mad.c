@@ -45,9 +45,7 @@ For more information, please refer to <http://unlicense.org>
  */
 
 typedef struct __attribute__((packed)) MADIndex {
-    char file[12];
-
-    int32_t padding0;
+    char file[16];
 
     uint32_t offset;
     uint32_t length;
@@ -74,6 +72,7 @@ void ExtractMADPackage(const char *path) {
     snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(path));
     plLowerCasePath(package_extension);
 
+#if 0
     char index_path[PL_SYSTEM_MAX_PATH] = { 0 };
     snprintf(index_path, sizeof(index_path), "./data/%s_%s.index", package_name, package_extension);
     DPRINT("Opening %s\n", index_path);
@@ -81,6 +80,7 @@ void ExtractMADPackage(const char *path) {
     if(!out_index) {
         PRINT_ERROR("Failed to open %s!\n", index_path);
     }
+#endif
 
     unsigned int lowest_offset = UINT32_MAX;
     unsigned int cur_index = 0;
@@ -120,7 +120,9 @@ void ExtractMADPackage(const char *path) {
 
         plLowerCasePath(file_path);
 
+#if 0
         fprintf(out_index, "%d %s (%s)\n", cur_index, file_path, index.file);
+#endif
 
         fseek(file, index.offset, SEEK_SET);
         uint8_t *data = calloc(index.length, sizeof(uint8_t));
@@ -133,11 +135,15 @@ void ExtractMADPackage(const char *path) {
             }
             fclose(out);
         }
+        free(data);
 
         fseek(file, position, SEEK_SET);
     } while(position < lowest_offset);
 
-    fclose(file); fclose(out_index);
+    fclose(file);
+#if 0
+    fclose(out_index);
+#endif
 }
 
 void InitializeMADPackages(void) {

@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org>
 typedef struct PIGChar {
     int x, y;
     unsigned int width, height;
-    unsigned char character;
+    char character;
 
 #if defined(DEBUG_FONTS)
     GLuint texture;

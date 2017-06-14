@@ -7,8 +7,11 @@
 #include <PL/platform_model.h>
 #include <PL/platform_filesystem.h>
 
-#define TITLE               "Piggy Viewer"
-#define LOG                 "hog_loader"
+#define TITLE   "War Hogs"
+#define LOG     "debug"
+
+#define VERSION_MAJOR   0
+#define VERSION_MINOR   0
 
 #define PRINT(...)          printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__)
 #define PRINT_ERROR(...)    PRINT(__VA_ARGS__); exit(-1)
