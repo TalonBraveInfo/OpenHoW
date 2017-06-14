@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "mad.h"
 #include "font.h"
+#include "model.h"
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -166,11 +167,6 @@ void load_srl_file(const char *path) {
 }
 
 //////////////////////////////////////////////////////
-
-#define MAX_VERTICES    2048
-#define MAX_TRIANGLES   4096
-#define MAX_QUADS       4096
-#define MAX_BONES       32
 
 typedef struct PIGModel {
     VTXCoord    coords[MAX_VERTICES];
@@ -735,6 +731,10 @@ int main(int argc, char **argv) {
     } else {
         DPRINT("Found data directory, continuing with normal execution...\n");
     }
+
+    void LoadPOGFile(const char *path);
+    //LoadPOGFile("./data/maps/tester.pog");
+    plScanDirectory("./data/maps/", ".pog", LoadPOGFile);
 
     InitializeFonts();
 
