@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "mad.h"
 #include "font.h"
 #include "model.h"
+#include "object.h"
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -737,6 +738,7 @@ int main(int argc, char **argv) {
     plScanDirectory("./data/maps/", ".pog", LoadPOGFile);
 
     InitializeFonts();
+    InitializeObjects();
 
     ////////////////////////////////////////////////////
 

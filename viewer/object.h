@@ -29,4 +29,25 @@ For more information, please refer to <http://unlicense.org>
 
 #include "main.h"
 
-void LoadPOGFile(const char *path);
+void InitializeObjects(void);
+
+///////////////////////////////////////////////////
+
+void SpawnObject(const char *name, PLVector3D position, PLVector3D angles);
+
+///////////////////////////////////////////////////
+
+enum {
+    OBJECT_TYPE_STATIC,
+    OBJECT_TYPE_ANIMATED
+};
+
+typedef struct Object {
+    PLVector3D position;
+    PLVector3D angles;
+
+    PLBBox3D bounds;
+} Object;
+
+Object *CreateObject(void);
+void DestroyObject(Object *object);
