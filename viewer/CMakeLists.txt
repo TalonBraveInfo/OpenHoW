@@ -27,7 +27,12 @@ For more information, please refer to <http://unlicense.org>
 
 project(viewer)
 
-file(GLOB VIEWER_SOURCE_FILES *.c *.h)
+file(GLOB VIEWER_SOURCE_FILES
+        *.c *.h
+
+        formats/*.*
+
+        )
 
 add_executable(viewer ${VIEWER_SOURCE_FILES})
 

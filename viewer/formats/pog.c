@@ -54,8 +54,10 @@ typedef struct __attribute__((packed)) POGIndex { // should be 94 bytes
     int16_t unknown5;   // ditto?
     int16_t unknown6;
 
-    int16_t type;       // type of item; for crates determines the object inside
-    int16_t unknown7;
+
+    uint16_t type;      // type of item; for crates determines the object inside
+                        // this actually seems to be a flag; this is going to be fun to figure out...
+    uint16_t unknown;
 
     uint32_t quantity;
 
@@ -96,6 +98,7 @@ void LoadPOGFile(const char *path) {
                "     bounds     (%d %d %d)\n" \
                "     unknown    (%d)\n" \
                "     type       (%d)\n" \
+               "     hrm...     (%d)\n" \
                "     quantity   (%d)\n",
                i,
 
@@ -106,6 +109,7 @@ void LoadPOGFile(const char *path) {
                index.bound_x, index.bound_y, index.bound_z,
                index.unknown4,
                index.type,
+               index.unknown,
                index.quantity
         );
 

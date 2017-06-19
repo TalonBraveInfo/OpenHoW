@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "main.h"
 
-#include "mad.h"
+#include "formats/mad.h"
 #include "font.h"
 #include "model.h"
 #include "object.h"
