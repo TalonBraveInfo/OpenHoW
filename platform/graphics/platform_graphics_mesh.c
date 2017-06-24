@@ -25,29 +25,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_graphics.h"
+#include <PL/platform_graphics.h>
 
 #if defined(PL_MODE_OPENGL)
 #   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
 #endif
 
-typedef struct PLTranslatePrimitive {
-    PLPrimitive mode;
+typedef struct _PLMeshTranslatePrimitive {
+    PLMeshPrimitive mode;
 
     unsigned int target;
 
     const char *name;
-} PLTranslatePrimitive;
+} _PLMeshTranslatePrimitive;
 
-PLTranslatePrimitive _pl_primitives[] = {
+_PLMeshTranslatePrimitive _pl_primitives[] = {
 #if defined (PL_MODE_OPENGL)
-        {PL_PRIMITIVE_LINES, GL_LINES, "LINES"},
-        {PL_PRIMITIVE_POINTS, GL_POINTS, "POINTS"},
-        {PL_PRIMITIVE_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
-        {PL_PRIMITIVE_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
-        {PL_PRIMITIVE_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
-        {PL_PRIMITIVE_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
-        {PL_PRIMITIVE_QUADS, GL_QUADS, "QUADS"}
+        {PLMESH_LINES, GL_LINES, "LINES"},
+        {PLMESH_POINTS, GL_POINTS, "POINTS"},
+        {PLMESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
+        {PLMESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
+        {PLMESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
+        {PLMESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
+        {PLMESH_QUADS, GL_QUADS, "QUADS"}
 #elif defined (VL_MODE_GLIDE)
 { PL_PRIMITIVE_LINES,					GR_LINES,			"LINES" },
     { PL_PRIMITIVE_LINE_STRIP,				GR_LINE_STRIP,		"LINE_STRIP" },
@@ -71,7 +71,7 @@ PLTranslatePrimitive _pl_primitives[] = {
 #endif
 };
 
-unsigned int _plTranslatePrimitiveMode(PLPrimitive mode) {
+unsigned int _plTranslatePrimitiveMode(PLMeshPrimitive mode) {
     if(mode == PL_PRIMITIVE_IGNORE) {
         return 0;
     }
@@ -85,7 +85,7 @@ unsigned int _plTranslatePrimitiveMode(PLPrimitive mode) {
     return _pl_primitives[0].target;
 }
 
-unsigned int _plTranslateDrawMode(PLDrawMode mode) {
+unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
 #if defined(PL_MODE_OPENGL)
     if(mode == PL_DRAW_DYNAMIC) {
         return GL_DYNAMIC_DRAW;
@@ -139,7 +139,7 @@ void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
 #endif
 }
 
-void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
+void _plDrawArrays(PLMeshPrimitive mode, unsigned int first, unsigned int count) {
     plAssert(count); plAssert(first > count);
 
 #if defined(PL_MODE_OPENGL)
@@ -147,7 +147,7 @@ void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
 #endif
 }
 
-void _plDrawElements(PLPrimitive mode, unsigned int count, unsigned int type, const void *indices) {
+void _plDrawElements(PLMeshPrimitive mode, unsigned int count, unsigned int type, const void *indices) {
     plAssert(count); plAssert(indices);
 
 #if defined(PL_MODE_OPENGL)
@@ -155,26 +155,24 @@ void _plDrawElements(PLPrimitive mode, unsigned int count, unsigned int type, co
 #endif
 }
 
-PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
+PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
     plAssert(num_verts);
 
-    if(primitive == PL_PRIMITIVE_IGNORE) {
-        plSetError("Primitive cannot be set to 'ignore' upon creation!\n");
-        return NULL;
-    } else if((primitive < PL_PRIMITIVE_IGNORE) || (primitive > PL_NUM_PRIMITIVES)) {
-        plSetError("Invalid primitive! (%d)\n", primitive);
+    if((primitive == PL_PRIMITIVE_IGNORE) || (primitive < PL_PRIMITIVE_IGNORE) ||
+            (primitive > PL_NUM_PRIMITIVES)) {
+        _plReportError(PL_RESULT_DRAW_PRIMITIVE, "Invalid mesh primitive, %d!\n", primitive);
         return NULL;
     }
 
     PLuint umode = _plTranslateDrawMode(mode);
     if(!umode && (mode != PL_DRAW_IMMEDIATE)) {
-        plSetError("Invalid/unsupported draw mode! (%d)\n", mode);
+        _plReportError(PL_RESULT_DRAW_MODE, "Invalid mesh draw mode, %d!\n", mode);
         return NULL;
     }
 
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
     if(!mesh) {
-        plSetError("Failed to create mesh!\n");
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
     }
 
@@ -186,7 +184,8 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tr
     if(num_tris > 0) {
         mesh->triangles = (PLTriangle*)calloc(num_tris, sizeof(PLTriangle));
         if(!mesh->triangles) {
-            plSetError("Failed to allocate triangles for mesh! (%i)\n", num_tris);
+            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Triangle, %d!\n",
+                           sizeof(PLTriangle) * num_tris);
 
             plDeleteMesh(mesh);
             return NULL;
@@ -194,7 +193,8 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tr
     }
     mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
     if(!mesh->vertices) {
-        plSetError("Failed to allocate vertices for mesh! (%i)\n", num_verts);
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Vertex, %d!\n",
+            sizeof(PLVertex) * num_verts);
 
         plDeleteMesh(mesh);
         return NULL;
@@ -237,15 +237,15 @@ void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3D vector
     mesh->vertices[index].position = vector;
 }
 
-void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, PLfloat x, PLfloat y, PLfloat z) {
+void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
     mesh->vertices[index].position = plCreateVector3D(x, y, z);
 }
 
-void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, PLfloat x, PLfloat y) {
+void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float x, float y) {
     mesh->vertices[index].position = plCreateVector3D(x, y, 0);
 }
 
-void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const PLfloat *v) {
+void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v) {
     size += index;
     if(size > mesh->num_verts) {
         size -= (size - mesh->num_verts);
@@ -266,25 +266,25 @@ void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t) {
     mesh->vertices[index].st[0] = plCreateVector2D(s, t);
 }
 
-void plSetMeshVertexSTv(PLMesh *mesh, PLbyte unit, PLuint index, PLuint size, const PLfloat *st) {
+void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st) {
     size += index;
     if(size > mesh->num_verts) {
         size -= (size - mesh->num_verts);
     }
 
-    for(PLuint i = index; i < size; i++) {
+    for(unsigned int i = index; i < size; i++) {
         mesh->vertices[i].st[unit].x = st[0];
         mesh->vertices[i].st[unit].y = st[1];
     }
 }
 
-void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour) {
+void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
     mesh->vertices[index].colour = colour;
 }
 
 void plUploadMesh(PLMesh *mesh) {
 #if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
-    if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PL_PRIMITIVE_QUADS)) {
+    if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PLMESH_QUADS)) {
         // todo, eventually just convert quad primitives to triangles
         return;
     }
@@ -351,7 +351,7 @@ void plDrawMesh(PLMesh *mesh) {
             }
         }
 #endif
-    } else if(mesh->primitive != PL_PRIMITIVE_QUADS) {
+    } else if(mesh->primitive != PLMESH_QUADS) {
 #else
     {
 #endif
@@ -359,7 +359,7 @@ void plDrawMesh(PLMesh *mesh) {
         glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-        if (mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
+        if (mesh->primitive == PLMESH_TRIANGLES) {
             _plDrawElements(
                     mesh->primitive,
                     mesh->num_triangles * 3,
@@ -385,7 +385,7 @@ void plDrawRectangle(PLRectangle rect) {
     static PLMesh *mesh = NULL;
     if(!mesh) {
         mesh = plCreateMesh(
-                PL_PRIMITIVE_TRIANGLE_STRIP,
+                PLMESH_TRIANGLE_STRIP,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 2, 4
         );
@@ -419,7 +419,7 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     static PLMesh *mesh = NULL;
     if (!mesh) {
         mesh = plCreateMesh(
-                PL_PRIMITIVE_TRIANGLE_FAN,
+                PLMESH_TRIANGLE_FAN,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 1, 3
         );
@@ -438,19 +438,4 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     plUploadMesh(mesh);
 
     plDrawMesh(mesh);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-// BITMAP FONT RENDERING
-
-typedef struct PLBitmapFont {
-    PLTexture *texture;
-} PLBitmapFont;
-
-PLBitmapFont *plCreateBitmapFont(const char *path) {
-
-}
-
-void plDeleteBitmapFont(PLBitmapFont *font) {
-
 }

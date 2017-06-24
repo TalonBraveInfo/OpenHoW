@@ -135,4 +135,11 @@ PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 
 PL_EXTERN const PLchar *plPrintTextureMemoryUsage(void);
 
+#if defined(PL_INTERNAL)
+
+PL_EXTERN unsigned int _plTranslateColourFormat(PLColourFormat format);
+PL_EXTERN unsigned int _plTranslateTextureFormat(PLImageFormat format);
+
+#endif
+
 PL_EXTERN_C_END

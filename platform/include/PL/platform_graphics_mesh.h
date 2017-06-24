@@ -4,17 +4,17 @@
 typedef enum PLPrimitive {
     PL_PRIMITIVE_IGNORE,
 
-    PL_PRIMITIVE_LINES,
+    PLMESH_LINES,
     PL_PRIMITIVE_LINE_STRIP,
-    PL_PRIMITIVE_POINTS,
-    PL_PRIMITIVE_TRIANGLES,
-    PL_PRIMITIVE_TRIANGLE_STRIP,
-    PL_PRIMITIVE_TRIANGLE_FAN,
-    PL_PRIMITIVE_TRIANGLE_FAN_LINE,
-    PL_PRIMITIVE_QUADS,
+    PLMESH_POINTS,
+    PLMESH_TRIANGLES,
+    PLMESH_TRIANGLE_STRIP,
+    PLMESH_TRIANGLE_FAN,
+    PLMESH_TRIANGLE_FAN_LINE,
+    PLMESH_QUADS,
 
     PL_NUM_PRIMITIVES
-} PLPrimitive;
+} PLMeshPrimitive;
 
 typedef enum PLDrawMode {
     PL_DRAW_DYNAMIC,
@@ -22,7 +22,7 @@ typedef enum PLDrawMode {
     PL_DRAW_IMMEDIATE,  // Not necessarily supported in all cases, will just revert to dynamic otherwise!
 
     PL_NUM_DRAWMODES
-} PLDrawMode;
+} PLMeshDrawMode;
 
 typedef struct PLVertex {
     PLVector3D position, normal;
@@ -58,15 +58,15 @@ typedef struct PLMesh {
     unsigned int num_verts;
     unsigned int num_triangles;
 
-    PLPrimitive primitive, primitive_restore;
-    PLDrawMode mode;
+    PLMeshPrimitive primitive, primitive_restore;
+    PLMeshDrawMode mode;
 
     PLVector3D position, angles;
 } PLMesh;
 
 PL_EXTERN_C
 
-PL_EXTERN PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PLuint num_verts);
+PL_EXTERN PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, PLuint num_tris, PLuint num_verts);
 PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawRectangle(PLRectangle rect);

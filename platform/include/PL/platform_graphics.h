@@ -170,6 +170,12 @@ typedef enum PLBlend {
 //-----------------
 // Capabilities
 
+/* Replace these with generic functions, rather than relying on just flags?
+ * plEnableFog(bool active)
+ * plEnableAlphaTest(bool active)
+ * plEnableBlend(bool active)
+ */
+
 typedef enum PLGraphicsCapability {
     PL_CAPABILITY_FOG               = (1 << 0),     // Fog.
     PL_CAPABILITY_ALPHA_TEST        = (1 << 1),     // Alpha-testing.
@@ -189,10 +195,10 @@ typedef enum PLGraphicsCapability {
 
 PL_EXTERN_C
 
-PL_EXTERN PLbool plIsGraphicsStateEnabled(PLuint flags);
+PL_EXTERN bool plIsGraphicsStateEnabled(unsigned int flags);
 
-PL_EXTERN void plEnableGraphicsStates(PLuint flags);
-PL_EXTERN void plDisableGraphicsStates(PLuint flags);
+PL_EXTERN void plEnableGraphicsStates(unsigned int flags);
+PL_EXTERN void plDisableGraphicsStates(unsigned int flags);
 
 PL_EXTERN_C_END
 
@@ -231,7 +237,7 @@ PL_EXTERN_C
 
 PL_EXTERN void plSetClearColour(PLColour rgba);
 
-PL_EXTERN void plClearBuffers(PLuint buffers);
+PL_EXTERN void plClearBuffers(unsigned int buffers);
 
 PL_EXTERN_C_END
 
@@ -239,8 +245,8 @@ PL_EXTERN_C_END
 // Lighting
 
 typedef enum PLLightType {
-    PL_LIGHT_SPOT,  // Spotlight
-    PL_LIGHT_OMNI   // Omni-directional
+    PLLIGHT_TYPE_SPOT,  // Spotlight
+    PLLIGHT_TYPE_OMNI   // Omni-directional
 } PLLightType;
 
 typedef struct PLLight {
@@ -249,10 +255,22 @@ typedef struct PLLight {
 
     PLColour colour;
 
-    PLfloat radius;
+    float radius;
 
     PLLightType type;
 } PLLight;
+
+//-----------------
+// Viewport / Camera
+
+PL_EXTERN_C
+
+PL_EXTERN void plViewport(int x, int y, unsigned int width, unsigned int height);
+PL_EXTERN void plScissor(int x, int y, unsigned int width, unsigned int height);
+
+PL_EXTERN void plPerspective(double fov_y, double aspect, double near, double far);
+
+PL_EXTERN_C_END
 
 //-----------------
 
@@ -260,20 +278,18 @@ PL_EXTERN_C
 
 PL_EXTERN void plSetDefaultGraphicsState(void);
 
-PL_EXTERN void plViewport(PLint x, PLint y, PLuint width, PLuint height);
-PL_EXTERN void plScissor(PLint x, PLint y, PLuint width, PLuint height);
 PL_EXTERN void plFinish(void);
 
 // Hardware Information
-PL_EXTERN const PLchar *_plGetHWExtensions(void);
-PL_EXTERN const PLchar *_plGetHWRenderer(void);
-PL_EXTERN const PLchar *_plGetHWVendor(void);
-PL_EXTERN const PLchar *_plGetHWVersion(void);
+PL_EXTERN const char *_plGetHWExtensions(void);
+PL_EXTERN const char *_plGetHWRenderer(void);
+PL_EXTERN const char *_plGetHWVendor(void);
+PL_EXTERN const char *_plGetHWVersion(void);
 
-PL_EXTERN PLbool plHWSupportsMultitexture(void);
-PL_EXTERN PLbool plHWSupportsShaders(void);
+PL_EXTERN bool plHWSupportsMultitexture(void);
+PL_EXTERN bool plHWSupportsShaders(void);
 
-PL_EXTERN PLuint plGetCurrentShaderProgram(void);
+PL_EXTERN unsigned int plGetCurrentShaderProgram(void);
 
 PL_EXTERN void plEnableShaderProgram(unsigned int program);
 PL_EXTERN void plDisableShaderProgram(unsigned int program);
@@ -288,6 +304,8 @@ PL_EXTERN_C_END
 #include "platform_graphics_camera.h"
 
 /////////////////////////////////////////////////////
+
+#if defined(PL_INTERNAL)
 
 typedef struct PLGraphicsState {
     PLCullMode current_cullmode;
@@ -308,10 +326,10 @@ typedef struct PLGraphicsState {
 
     // Hardware / Driver information
 
-    const PLchar *hw_vendor;
-    const PLchar *hw_renderer;
-    const PLchar *hw_version;
-    const PLchar *hw_extensions;
+    const char *hw_vendor;
+    const char *hw_renderer;
+    const char *hw_version;
+    const char *hw_extensions;
 
     unsigned int hw_maxtexturesize;
     unsigned int hw_maxtextureunits;
@@ -334,3 +352,5 @@ PL_EXTERN_C
 PL_EXTERN PLGraphicsState pl_graphics_state;
 
 PL_EXTERN_C_END
+
+#endif

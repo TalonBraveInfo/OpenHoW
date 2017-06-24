@@ -29,4 +29,4 @@ For more information, please refer to <http://unlicense.org>
 
 #include "main.h"
 
-void LoadPOGFile(const char *path);
+void LoadMapObjects(const char *path);

@@ -104,17 +104,17 @@ typedef struct PLImage {
 
 PL_EXTERN_C
 
-PL_EXTERN PLresult plLoadImage(const PLchar *path, PLImage *out);
+PL_EXTERN bool plLoadImage(const PLchar *path, PLImage *out);
 PL_EXTERN PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out);
 PL_EXTERN PLresult plWriteImage(const PLImage *image, const PLchar *path);
 
 PL_EXTERN PLuint plGetSamplesPerPixel(PLColourFormat format);
 
-PL_EXTERN PLbool plIsValidImageSize(PLuint width, PLuint height);
+PL_EXTERN bool plIsValidImageSize(PLuint width, PLuint height);
 
 #if defined(PL_INTERNAL)
 
-void _plFreeImage(PLImage *image);
+void plFreeImage(PLImage *image);
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
 

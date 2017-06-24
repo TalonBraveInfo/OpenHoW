@@ -35,13 +35,13 @@ void _plShutdownIO(void) {
 bool plIsFileModified(time_t oldtime, const char *path) {
     plFunctionStart();
     if (!oldtime) {
-        plSetError("Invalid time, skipping check!\n");
+        _plSetErrorMessage("Invalid time, skipping check!\n");
         return false;
     }
 
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        plSetError("Failed to get file stats!\n");
+        _plSetErrorMessage("Failed to get file stats!\n");
         return false;
     }
 
@@ -57,7 +57,7 @@ time_t plGetFileModifiedTime(const PLchar *path) {
     plFunctionStart();
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        plSetError("Failed to get modification time!\n");
+        _plSetErrorMessage("Failed to get modification time!\n");
         return 0;
     }
     return attributes.st_mtime;
@@ -92,13 +92,13 @@ bool plCreateDirectory(const char *path) {
             else {
                 switch (errno) {
                     case EACCES:
-                        plSetError("Failed to get permission! (%s)\n", path);
+                        _plSetErrorMessage("Failed to get permission! (%s)\n", path);
                     case EROFS:
-                        plSetError("File system is read only! (%s)\n", path);
+                        _plSetErrorMessage("File system is read only! (%s)\n", path);
                     case ENAMETOOLONG:
-                        plSetError("Path is too long! (%s)\n", path);
+                        _plSetErrorMessage("Path is too long! (%s)\n", path);
                     default:
-                        plSetError("Failed to create directory! (%s)\n", path);
+                        _plSetErrorMessage("Failed to create directory! (%s)\n", path);
                 }
             }
         } else
@@ -233,22 +233,22 @@ void plGetWorkingDirectory(PLchar *out) {
                 break;
 
             case EACCES:
-                plSetError("Permission to read or search a component of the filename was denied!\n");
+                _plSetErrorMessage("Permission to read or search a component of the filename was denied!\n");
                 break;
             case EFAULT:
-                plSetError("buf points to a bad address!\n");
+                _plSetErrorMessage("buf points to a bad address!\n");
                 break;
             case EINVAL:
-                plSetError("The size argument is zero and buf is not a null pointer!\n");
+                _plSetErrorMessage("The size argument is zero and buf is not a null pointer!\n");
                 break;
             case ENOMEM:
-                plSetError("Out of memory!\n");
+                _plSetErrorMessage("Out of memory!\n");
                 break;
             case ENOENT:
-                plSetError("The current working directory has been unlinked!\n");
+                _plSetErrorMessage("The current working directory has been unlinked!\n");
                 break;
             case ERANGE:
-                plSetError("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
+                _plSetErrorMessage("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
 						You need to allocate a bigger array and try again!\n");
                 break;
         }
@@ -265,26 +265,29 @@ void plSetWorkingDirectory(const char *path) {
             default: break;
 
             case EACCES:
-                plSetError("Search permission is denied for any component of pathname!\n");
+                _plSetErrorMessage("Search permission is denied for any component of pathname!\n");
                 break;
             case ELOOP:
-                plSetError("A loop exists in the symbolic links encountered during resolution of the path argument!\n");
+                _plSetErrorMessage(
+                        "A loop exists in the symbolic links encountered during resolution of the path argument!\n");
                 break;
             case ENAMETOOLONG:
-                plSetError("The length of the path argument exceeds PATH_MAX or a pathname component is longer than \
+                _plSetErrorMessage("The length of the path argument exceeds PATH_MAX or a pathname component is longer than \
                 NAME_MAX!\n");
                 break;
             case ENOENT:
-                plSetError("A component of path does not name an existing directory or path is an empty string!\n");
+                _plSetErrorMessage(
+                        "A component of path does not name an existing directory or path is an empty string!\n");
                 break;
             case ENOTDIR:
-                plSetError("A component of the pathname is not a directory!\n");
+                _plSetErrorMessage("A component of the pathname is not a directory!\n");
                 break;
         }
     }
 }
 
-/*	File I/O	*/
+/////////////////////////////////////////////////////////////////////////////////////
+// FILE I/O
 
 // Checks if a file exists or not.
 bool plFileExists(const char *path) {
@@ -299,6 +302,39 @@ bool plPathExists(const char *path) {
         return true;
     }
     return false;
+}
+
+bool plCopyFile(const char *path, const char *dest) {
+    FILE *fold = fopen(path, "rb");
+    if(!fold) {
+        _plReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
+        return false;
+    }
+
+    fseek(fold, 0, SEEK_END);
+    size_t file_size = (size_t)ftell(fold);
+    fseek(fold, 0, SEEK_SET);
+
+    uint8_t *data = calloc(file_size, 1);
+    if(!data) {
+        fclose(fold);
+
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
+        return false;
+    }
+
+    fread(data, 1, file_size, fold);
+
+    FILE *out = fopen(dest, "wb");
+    if(!out || (fwrite(data, 1, file_size, out) != file_size)) {
+        fclose(fold);
+
+        _plReportError(PL_RESULT_FILEREAD, "Failed to write %s!", dest);
+        return false;
+    }
+    fclose(out);
+
+    return true;
 }
 
 int16_t plGetLittleShort(FILE *fin) {

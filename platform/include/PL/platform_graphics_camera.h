@@ -30,9 +30,9 @@ For more information, please refer to <http://unlicense.org>
 #include "platform.h"
 
 enum {
-    PL_CAMERAMODE_PERSPECTIVE,
-    PL_CAMERAMODE_ORTHOGRAPHIC,
-    PL_CAMERAMODE_ISOMETRIC
+    PLCAMERA_MODE_PERSPECTIVE,
+    PLCAMERA_MODE_ORTHOGRAPHIC,
+    PLCAMERA_MODE_ISOMETRIC
 };
 
 typedef struct PLCamera {

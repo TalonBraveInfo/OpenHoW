@@ -41,15 +41,17 @@ enum {
     PL_ROLL,
 
     // Directions
-    PL_UPLEFT = 0,  PL_UP,      PL_UPRIGHT,
-    PL_DOWNLEFT,    PL_DOWN,    PL_DOWNRIGHT,
-    PL_LEFT,                    PL_RIGHT,
+    PL_TOPLEFT = 0,     PL_TOP,         PL_TOPRIGHT,
+    PL_LEFT,            PL_CENTER,      PL_RIGHT,
+    PL_BOTTOMLEFT,      PL_BOTTOM,      PL_BOTTOMRIGHT,
+    PL_NUM_DIRECTIONS,
 
     // Colours
     PL_RED = 0,
     PL_GREEN,
     PL_BLUE,
     PL_ALPHA,
+    PL_NUM_COLOURS,
 };
 
 #define plFloatToByte(a)    (uint8_t)round(a * 255)
@@ -61,6 +63,8 @@ PL_INLINE static bool plIsPowerOfTwo(unsigned int num) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Vectors
+
+// 2D
 
 typedef struct PLVector2D {
     float x, y;
@@ -74,7 +78,7 @@ typedef struct PLVector2D {
         y = a.y;
     }
 
-    void operator=(PLfloat a) {
+    void operator=(float a) {
         x = a;
         y = a;
     }
@@ -84,7 +88,7 @@ typedef struct PLVector2D {
         y *= a.y;
     }
 
-    void operator*=(PLfloat a) {
+    void operator*=(float a) {
         x *= a;
         y *= a;
     }
@@ -94,7 +98,7 @@ typedef struct PLVector2D {
         y /= a.y;
     }
 
-    void operator/=(PLfloat a) {
+    void operator/=(float a) {
         x /= a;
         y /= a;
     }
@@ -108,19 +112,20 @@ typedef struct PLVector2D {
 
     PLVector2D operator*(PLVector2D a) const { return PLVector2D(x * a.x, y * a.y); }
 
-    PLVector2D operator*(PLfloat a) const { return PLVector2D(x * a, y * a); }
+    PLVector2D operator*(float a) const { return PLVector2D(x * a, y * a); }
 
     PLVector2D operator/(PLVector2D a) const { return PLVector2D(x / a.x, y / a.y); }
 
-    PLVector2D operator/(PLfloat a) const { return PLVector2D(x / a, y / a); }
+    PLVector2D operator/(float a) const { return PLVector2D(x / a, y / a); }
 
     PL_INLINE float Length() { return std::sqrt(x * x + y * y); }
 
     PL_INLINE PLVector2D Normalize() {
         PLVector2D out;
-        PLfloat length = Length();
-        if (length != 0)
+        float length = Length();
+        if (length != 0) {
             out.Set(x / length, y / length);
+        }
         return out;
     }
 
@@ -151,9 +156,11 @@ PL_INLINE static void plDivideVector2D(PLVector2D *v, PLVector2D v2) {
     v->x /= v2.x; v->y /= v2.y;
 }
 
-PL_INLINE static PLbool plCompareVector2D(PLVector2D v, PLVector2D v2) {
+PL_INLINE static bool plCompareVector2D(PLVector2D v, PLVector2D v2) {
     return ((v.x == v2.x) && (v.y == v2.y));
 }
+
+// 3D
 
 typedef struct PLVector3D {
     float x, y, z;
@@ -290,7 +297,6 @@ typedef struct PLVector3D {
     void PL_INLINE Set(float _x, float _y, float _z) {
         x = _x; y = _y; z = _z;
     }
-
 #endif
 } PLVector3D;
 
@@ -311,7 +317,7 @@ static PL_INLINE void plScaleVector3D(PLVector3D *v, PLVector3D v2) {
     v->x *= v2.x; v->y *= v2.y; v->z *= v2.z;
 }
 
-static PL_INLINE void plScaleVector3Df(PLVector3D *v, PLfloat f) {
+static PL_INLINE void plScaleVector3Df(PLVector3D *v, float f) {
     v->x *= f; v->y *= f; v->z *= f;
 }
 
@@ -360,23 +366,29 @@ PL_INLINE const static char *plPrintVector3D(PLVector3D v) {
     return s;
 }
 
+#ifndef __cplusplus
+
+#   define PLVector3D(x, y, z) plCreateVector3D(x, y, z)
+#   define PLVector2D(x, y)    plCreateVector2D(x, y)
+
+#endif
+
 #define PLMATH_ORIGIN3D plCreateVector3D(0, 0, 0)
 #define PLMATH_ORIGIN2D plCreateVector2D(0, 0)
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
 
-#define PL_COLOUR_WHITE 255, 255, 255, 255
-#define PL_COLOUR_BLACK 0, 0, 0, 255
-#define PL_COLOUR_RED   255, 0, 0, 255
-#define PL_COLOUR_GREEN 0, 255, 0, 255
-#define PL_COLOUR_BLUE  0, 0, 255, 255
+#define PL_COLOUR_WHITE 255,    255,    255,    255
+#define PL_COLOUR_BLACK 0,      0,      0,      255
+#define PL_COLOUR_RED   255,    0,      0,      255
+#define PL_COLOUR_GREEN 0,      255,    0,      255
+#define PL_COLOUR_BLUE  0,      0,      255,    255
 
 typedef struct PLColour {
     uint8_t r, g, b, a;
 
 #ifdef __cplusplus
-
     PLColour() : PLColour(PL_COLOUR_WHITE) {
 
     }
@@ -485,7 +497,6 @@ typedef struct PLColour {
     PL_INLINE bool operator <= (const PLColour &v) const {
         return ((r <= v.r) && (g <= v.g) && (b <= v.b) && (a <= v.a));
     }
-
 #endif
 } PLColour;
 
@@ -551,10 +562,17 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
     return s;
 }
 
+#ifndef __cplusplus
+
+#   define PLColour(r, g, b, a) plCreateColour4b(r, g, b, a)
+
+#endif
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Matrices
 // todo, none of this is correct yet
 
-typedef PLfloat PLMatrix3[3][3], PLMatrix4[4][4];
+typedef float PLMatrix3[3][3], PLMatrix4[4][4];
 
 PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
     memset(m, 0, sizeof(m[0][0]) * 8);
@@ -942,11 +960,11 @@ static PL_INLINE float plRebound(float x) {
     }
 }
 
-static PL_INLINE PLfloat plExpPulse(PLfloat x, PLfloat k, PLfloat n) {
+static PL_INLINE float plExpPulse(float x, float k, float n) {
     return expf(-k * powf(x, n));
 }
 
-static PL_INLINE PLfloat plInOutBack(PLfloat x) {
+static PL_INLINE float plInOutBack(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {

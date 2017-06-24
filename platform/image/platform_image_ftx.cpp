@@ -31,9 +31,9 @@ For more information, please refer to <http://unlicense.org>
 /*	Ritual's FTX Format	*/
 
 typedef struct FTXHeader {
-    PLuint32 width;
-    PLuint32 height;
-    PLuint32 alpha;
+    uint32_t width;
+    uint32_t height;
+    uint32_t alpha;
 } FTXHeader;
 
 PLresult _plLoadFTXImage(FILE *fin, PLImage *out) {
@@ -41,12 +41,12 @@ PLresult _plLoadFTXImage(FILE *fin, PLImage *out) {
 
     FTXHeader header;
     memset(&header, 0, sizeof(FTXHeader));
-    header.width = (PLuint)plGetLittleLong(fin);
-    header.height = (PLuint)plGetLittleLong(fin);
-    header.alpha = (PLuint)plGetLittleLong(fin);
+    header.width = (unsigned int)plGetLittleLong(fin);
+    header.height = (unsigned int)plGetLittleLong(fin);
+    header.alpha = (unsigned int)plGetLittleLong(fin);
 
     memset(out, 0, sizeof(PLImage));
-    out->size = (PLuint)(header.width * header.height * 4);
+    out->size = (unsigned int)(header.width * header.height * 4);
     out->data = new PLbyte*[1];
     out->data[0] = new PLbyte[out->size];
 

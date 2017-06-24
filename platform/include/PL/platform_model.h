@@ -49,7 +49,7 @@ typedef struct PLStaticModel {
     PLuint num_triangles;
     PLuint num_vertices;
 
-    PLPrimitive primitive;
+    PLMeshPrimitive primitive;
 
     PLModelFrame frame;
 } PLStaticModel;
@@ -60,7 +60,7 @@ typedef struct PLAnimatedModel {
     PLuint num_vertices;
     PLuint num_frames;
 
-    PLPrimitive primitive;
+    PLMeshPrimitive primitive;
 
     PLModelFrame *frames;
 } PLAnimatedModel;
@@ -70,7 +70,7 @@ typedef struct PLSkeletalModel {
     PLuint num_triangles;
     PLuint num_vertices;
 
-    PLPrimitive primitive;
+    PLMeshPrimitive primitive;
 
     // Unfinished...
 } PLSkeletalModel;

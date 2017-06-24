@@ -85,7 +85,7 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
         case TGA_TYPE_COLOURMAPPED:
         case TGA_TYPE_TRUECOLOUR: {
             if(fread(out->data[0], out->size, 1, fin) != out->size) {
-                _plFreeImage(out);
+                plFreeImage(out);
                 return PL_RESULT_FILEREAD;
             }
 

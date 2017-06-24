@@ -29,6 +29,12 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
+enum {
+    PLLOG_LEVEL_ERROR,
+    PLLOG_LEVEL_WARNING,
+    PLLOG_LEVEL_VERBOSE,
+};
+
 PL_EXTERN_C
 
 PL_EXTERN void plWriteLog(const PLchar *path, const PLchar *msg, ...);

@@ -22,21 +22,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "PL/platform_image.h"
 
 typedef struct WADHeader {
-    PLchar ident[4];    // WAD2, 2DAW, IWAD, PWAD
+    char ident[4];    // WAD2, 2DAW, IWAD, PWAD
 
-    PLint32 num_lumps;
-    PLint32 table_offset;
+    int32_t num_lumps;
+    int32_t table_offset;
 } WADHeader;
 
 typedef struct WADLump {
-    PLint32 file_pos;
-    PLint32 disk_size;
-    PLint32 size;
+    int32_t file_pos;
+    int32_t disk_size;
+    int32_t size;
 
-    PLchar type;
-    PLchar compression;
-    PLchar pad1, pad2;
-    PLchar name[16];
+    char type;
+    char compression;
+    char pad1, pad2;
+    char name[16];
 } WADLump;
 
 enum WADType {

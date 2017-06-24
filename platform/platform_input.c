@@ -10,11 +10,7 @@ typedef enum PLKey {
 
 };
 
-typedef enum PLMouseState {
-    PLINPUT_MOUSE_LEFTDOWN, PLINPUT_MOUSE_LEFTUP,
-    PLINPUT_MOUSE_RIGHTDOWN, PLINPUT_MOUSE_RIGHTUP,
-    PLINPUT_MOUSE_MIDDLEDOWN, PLINPUT_MOUSE_MIDDLEUP,
-};
+
 
 void _plInitInput(void) {
 
@@ -27,5 +23,6 @@ void _plShutdownInput(void) {
 // Keyboard
 
 // Mouse
+
 
 

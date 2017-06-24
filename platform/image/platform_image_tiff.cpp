@@ -95,7 +95,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
 
     PLchar error_message[1024];
     if(!TIFFRGBAImageBegin(&image, tif, 0, error_message)) {
-        plSetError("TIFFRGBAImageBegin failed");
+        _plSetErrorMessage("TIFFRGBAImageBegin failed");
 
         TIFFClose(tif);
         return PL_RESULT_FILEREAD;
@@ -109,7 +109,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     }
 
     if(!TIFFRGBAImageGet(&image, raster, image.width, image.height)) {
-        plSetError("TIFFReadRGBAImage failed");
+        _plSetErrorMessage("TIFFReadRGBAImage failed");
 
         TIFFClose(tif);
         _TIFFfree(raster);

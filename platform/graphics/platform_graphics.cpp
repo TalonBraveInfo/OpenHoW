@@ -164,7 +164,7 @@ PLresult _plInitGraphics(void) {
 
     pl_graphics_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
     memset(pl_graphics_state.tmu, 0, sizeof(PLTextureMappingUnit));
-    for (PLuint i = 0; i < plGetMaxTextureUnits(); i++) {
+    for (unsigned int i = 0; i < plGetMaxTextureUnits(); i++) {
         pl_graphics_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
     }
 
@@ -246,7 +246,7 @@ const PLchar *_plGetHWVersion(void) {
 #endif
 }
 
-PLbool plHWSupportsMultitexture(void) {
+bool plHWSupportsMultitexture(void) {
     _PL_GRAPHICS_TRACK();
 
 #if defined(PL_MODE_OPENGL)
@@ -258,7 +258,7 @@ PLbool plHWSupportsMultitexture(void) {
 #endif
 }
 
-PLbool plHWSupportsShaders(void) {
+bool plHWSupportsShaders(void) {
     _PL_GRAPHICS_TRACK();
 
 #if defined(PL_MODE_OPENGL)
@@ -366,13 +366,10 @@ _PLGraphicsCapabilities graphics_capabilities[] =
                 {0}
         };
 
-PLbool plIsGraphicsStateEnabled(PLuint flags) {
+bool plIsGraphicsStateEnabled(PLuint flags) {
     _PL_GRAPHICS_TRACK();
 
-    if (flags & pl_graphics_state.current_capabilities)
-        return PL_TRUE;
-
-    return PL_FALSE;
+    return (bool)(flags & pl_graphics_state.current_capabilities);
 }
 
 void plEnableGraphicsStates(PLuint flags) {
@@ -573,7 +570,7 @@ PLuint _plTranslateTextureTarget(PLTextureTarget target) {
 #endif
 }
 
-PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
+unsigned int _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 #if defined (PL_MODE_OPENGL) && !defined (VL_MODE_OPENGL_CORE)
     switch (mode) {
         default:
@@ -594,7 +591,7 @@ PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 #endif
 }
 
-PLuint _plTranslateColourFormat(PLColourFormat format) {
+unsigned int _plTranslateColourFormat(PLColourFormat format) {
     _PL_GRAPHICS_TRACK();
 
     switch(format) {
@@ -618,7 +615,7 @@ PLuint _plTranslateColourFormat(PLColourFormat format) {
     }
 }
 
-PLuint _plTranslateTextureFormat(PLImageFormat format) {
+unsigned int _plTranslateTextureFormat(PLImageFormat format) {
     _PL_GRAPHICS_TRACK();
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
@@ -755,6 +752,11 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->format = upload->format;
     texture->size = upload->size;
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
 #if defined(PL_MODE_OPENGL)
     PLuint levels = upload->levels;
     if(!levels) {
@@ -762,12 +764,6 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     }
 
     PLuint format = _plTranslateTextureFormat(upload->format);
-#if defined(PL_MODE_OPENGL_CORE)
-    glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
-#else
-    // todo, upload storage for immediate gl
-#endif
-
     for(PLuint i = 0; i < levels; i++) {
         if (_plIsCompressedTextureFormat(upload->format)) {
             glCompressedTexSubImage2D
@@ -782,7 +778,7 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
                             upload->data[i]
                     );
         } else {
-            glTexSubImage2D
+            glTexImage2D
                     (
                             GL_TEXTURE_2D,
                             i,
@@ -1045,7 +1041,7 @@ PLLight *plCreateLight(void) {
     pl_graphics_state.num_lights++;
     light->colour = plCreateColour4b(255, 255, 255, 255);
     light->radius = 128.f;
-    light->type = PL_LIGHT_OMNI;
+    light->type = PLLIGHT_TYPE_OMNI;
 
     return light;
 }
@@ -1090,6 +1086,21 @@ void plSetDefaultGraphicsState(void) {
     plEnableGraphicsStates(PL_CAPABILITY_SCISSORTEST);
 }
 
+void plFinish(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    glFinish();
+#elif defined (VL_MODE_GLIDE)
+    grFinish();
+#elif defined (VL_MODE_DIRECT3D)
+    // Not supported, or rather, we don't need this.
+#endif
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// VIEWPORT/CAMERA
+
 void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
     _PL_GRAPHICS_TRACK();
 
@@ -1122,7 +1133,7 @@ void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
 void plScissor(PLint x, PLint y, PLuint width, PLuint height) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
     glScissor(x, y, width, height);
 #elif defined (VL_MODE_DIRECT3D)
     D3D11_RECT scissor_region;
@@ -1133,14 +1144,13 @@ void plScissor(PLint x, PLint y, PLuint width, PLuint height) {
 #endif
 }
 
-void plFinish(void) {
+// http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
+void plPerspective(double fov_y, double aspect, double near, double far) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    glFinish();
-#elif defined (VL_MODE_GLIDE)
-    grFinish();
-#elif defined (VL_MODE_DIRECT3D)
-    // Not supported, or rather, we don't need this.
+#if defined(PL_MODE_OPENGL)
+    double h = tan(fov_y / 360 * PL_PI) * near;
+    double w = h * aspect;
+    glFrustum(-w, w, -h, h, near, far);
 #endif
 }

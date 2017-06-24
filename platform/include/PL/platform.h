@@ -35,6 +35,9 @@ gives you some standard functions to interact with
 the system and includes defines for basic data-types that
 you can use in your applications for easier multi-platform
 support.
+
+ Anything that uses an underscore before it's name
+ is intended only for internal usage!
 */
 
 // PL_IGNORE_SHARED_HEADERS
@@ -130,11 +133,7 @@ support.
 #define PL_FALSE    FALSE
 
 typedef int                     PLint;
-typedef long int                PLint32;
 typedef unsigned int            PLuint;
-typedef unsigned char           PLuint8;
-typedef unsigned short int      PLuint16;
-typedef unsigned long int       PLuint32;
 typedef char                    PLchar;
 typedef unsigned char           PLuchar, PLbyte;
 #ifdef __cplusplus
@@ -142,9 +141,7 @@ typedef bool					PLbool;
 #else
 typedef unsigned char           PLbool;
 #endif
-typedef void                    PLvoid;
 typedef float                   PLfloat;
-typedef double                  PLdouble;
 typedef short                   PLshort;
 typedef unsigned short          PLushort;
 
@@ -168,6 +165,8 @@ typedef enum {
     PL_RESULT_GRAPHICSINIT,     // Graphics failed to initialise!
     PL_RESULT_SHADERTYPE,       // Unsupported shader type!
     PL_RESULT_SHADERCOMPILE,    // Failed to compile shader!
+    PL_RESULT_DRAW_MODE,        // Invalid mesh draw mode!
+    PL_RESULT_DRAW_PRIMITIVE,   // Invalid mesh primitive!
 
     // IMAGE
     PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
@@ -254,22 +253,41 @@ PL_EXTERN_C_END
 
 PL_EXTERN_C
 
-PL_EXTERN PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems);
+PL_EXTERN PLresult plInitialize(int argc, char **argv, unsigned int subsystems);
 PL_EXTERN void plShutdown(void);
 
+// todo, kill start
 PL_EXTERN void plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
 PL_EXTERN void
-plSetError(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
+_plSetErrorMessage(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
 PL_EXTERN void
-plSetErrorFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
+_plSetCurrentFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
+// kill end
 
-PL_EXTERN const PLchar *plGetResultString(PLresult result);
+PL_EXTERN PLresult plGetFunctionResult(void);
+PL_EXTERN const char *plGetResultString(PLresult result);
 
-PL_EXTERN const PLchar * plGetSystemError(void);  // Returns the error message currently given by the operating system.
-PL_EXTERN const PLchar * plGetError(void);        // Returns the last recorded error.
+// todo, kill start
+PL_EXTERN const char * plGetSystemError(void);  // Returns the error message currently given by the operating system.
+PL_EXTERN const char * plGetError(void);        // Returns the last recorded error.
+// kill end
 
 // CL Arguments
 PL_EXTERN const char *plGetCommandLineArgument(const char *arg);
+
+#if defined(PL_INTERNAL)
+
+PL_EXTERN void _plSetFunctionResult(PLresult result);
+
+#define _plUpdateErrorFunction()    _plSetCurrentFunction(PL_FUNCTION)
+#define _plReportError(type, message, ...) \
+    _plUpdateErrorFunction(); \
+    _plSetFunctionResult(type); \
+    _plSetErrorMessage(message, __VA_ARGS__)
+
+#endif
+
+#include <PL/platform_string.h>
 
 PL_EXTERN_C_END
 

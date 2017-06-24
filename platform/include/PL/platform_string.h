@@ -25,23 +25,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+PL_INLINE static void plGetLowerCaseString(char *out, const char *in, unsigned int length) {
+    for(unsigned int i = 0; i < length; i++) {
+        out[i] = (char)tolower(in[i]);
+    }
+}
 
-#include "platform.h"
+#if 0
+PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
+    const char *s = strrchr(in, '.');
+    if(!s || s[0] == '\0') {
+        return;
+    }
 
-typedef struct PLModuleFunction {
-    const char *name;
+    strncpy(out, s + 1, length);
+}
 
-    void **Function;
-} PLModuleFunction;
-
-PL_EXTERN_C
-
-PL_EXTERN PL_FARPROC plFindLibraryFunction(PL_INSTANCE instance, const char *function);
-
-PL_EXTERN void *plLoadLibraryInterface(PL_INSTANCE instance, const char *path, const char *entry, void *handle);
-
-PL_INSTANCE plLoadLibrary(const char *path);    // Loads new library instance.
-PL_EXTERN void plUnloadLibrary(PL_INSTANCE instance);    // Unloads library instance.
-
-PL_EXTERN_C_END
+PL_INLINE static void plStripStringExtension(char *out, const char *in, unsigned int length) {
+    const char *s = strrchr(in, '.');
+    while(in < s) {
+        *out++ = *in++;
+    }
+    *out = 0;
+}
+#endif

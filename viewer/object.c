@@ -45,8 +45,7 @@ void ProcessObjects(void) {
     }
 }
 
-#define FLAG_ITEM_SPECIALOPS    16
-#define FLAG_ITEM_POISONGAS     32
+#define OBJECT_PICKUP_RANDOM    0
 
 ///////////////////////////////////////////////////
 

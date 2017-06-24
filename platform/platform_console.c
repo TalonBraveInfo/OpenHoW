@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
+#include <PL/platform_graphics_font.h>
+#include <PL/platform_input.h>
 
 /* Multi Console Manager */
 // todo, should the console be case-sensitive?
@@ -77,7 +79,8 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
             if (!cmd) {
                 cmd = (PLConsoleCommand *) malloc(sizeof(PLConsoleCommand));
                 if (!cmd) {
-                    plSetError("malloc(%d)\n", sizeof(PLConsoleCommand));
+                    _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                                   sizeof(PLConsoleCommand));
                     break;
                 }
                 memcpy(cmd, &cmds[i], sizeof(PLConsoleCommand));
@@ -85,10 +88,6 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
             }
         }
     }
-}
-
-void plRegisterConsoleCommand(PLConsoleCommand cmd) {
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -113,23 +112,28 @@ bool _pl_console_visible = false;
 // PRIVATE
 
 PLMesh *_pl_mesh_line = NULL;
+PLBitmapFont *_pl_console_font = NULL;
 
 PLresult _plInitConsole(void) {
-    plFunctionStart();
-
     _pl_console_visible = false;
+
+    _pl_console_font = plCreateBitmapFont("fonts/console.font");
+    if(!_pl_console_font) {
+        return PL_RESULT_MEMORYALLOC;
+    }
 
     memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
-    _pl_mesh_line = plCreateMesh(PL_PRIMITIVE_LINES, PL_DRAW_IMMEDIATE, 0, 4);
+    _pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4);
     if(!_pl_mesh_line) {
         return PL_RESULT_MEMORYALLOC;
     }
 
     _pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand) * _pl_commands_size);
     if(!_pl_commands) {
-        plSetError("malloc(%d * %d)\n", sizeof(PLConsoleCommand), _pl_commands_size);
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand array, %d!\n",
+                       sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORYALLOC;
     }
 
@@ -139,9 +143,9 @@ PLresult _plInitConsole(void) {
 }
 
 void _plShutdownConsole(void) {
-    plFunctionStart();
-
     _pl_console_visible = false;
+
+    plDeleteBitmapFont(_pl_console_font);
 
     memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
     _pl_active_console_pane = _pl_num_console_panes = 0;
@@ -217,8 +221,60 @@ bool _plConsolePaneVisible(unsigned int id) {
 
 // INPUT
 
-void _plConsoleInput(int m_x, int m_y) {
+void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) {
+    if(!is_pressed) {
+        return;
+    }
 
+    for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
+        if(!_plConsolePaneVisible(i)) {
+            continue;
+        }
+
+        PLConsolePane *pane = &_pl_console_pane[i];
+
+        int pane_min_x = pane->display.x;
+        int pane_max_x = pane_min_x + pane->display.width;
+        if(m_x < pane_min_x || m_x > pane_max_x) {
+            continue;
+        }
+
+        int pane_min_y = pane->display.y;
+        int pane_max_y = pane_min_y + pane->display.height;
+        if(m_y < pane_min_y || m_y > pane_max_y) {
+            continue;
+        }
+
+        if(m_buttons & PLINPUT_MOUSE_LEFT) {
+            _pl_active_console_pane = i;
+
+            pane->display.x += m_x; pane->display.y += m_y;
+            if(pane->display.x <= pl_graphics_state.viewport_x) {
+                pane->display.x = pl_graphics_state.viewport_x + 1;
+            } else if(pane->display.x >= pl_graphics_state.viewport_width) {
+                pane->display.x = pl_graphics_state.viewport_width - 1;
+            } else if(pane->display.y <= pl_graphics_state.viewport_y) {
+                pane->display.y = pl_graphics_state.viewport_y + 1;
+            } else if(pane->display.y >= pl_graphics_state.viewport_height) {
+                pane->display.y = pl_graphics_state.viewport_height - 1;
+            }
+
+            static int old_x = 0, old_y = 0;
+
+            return;
+        } else if(m_buttons & PLINPUT_MOUSE_RIGHT) {
+        // todo, display context menu
+            return;
+        }
+
+        return;
+    }
+
+    // If we reached here, then we failed to hit anything...
+
+    if(m_buttons & PLINPUT_MOUSE_RIGHT) {
+    // todo, display context menu
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -247,6 +303,10 @@ void plSetupConsole(unsigned int num_instances) {
 
 void plShowConsole(bool show) {
     _pl_console_visible = show;
+}
+
+bool plIsConsoleVisible(void) {
+    return _pl_console_visible;
 }
 
 void plSetConsoleColour(unsigned int id, PLColour colour) {
@@ -314,28 +374,28 @@ void plDrawConsole(void) {
                     _pl_console_pane[i].display.width,
                     _pl_console_pane[i].display.height,
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ul.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ur.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ll.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.b / 2),
                             _COLOUR_INACTIVE_ALPHA_BOTTOM
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.lr.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.b / 2),
@@ -361,4 +421,15 @@ void plDrawConsole(void) {
         // todo, display buffer size display
         // todo, display buffer text
     }
+
+    glEnable(GL_TEXTURE_RECTANGLE);
+
+    glBindTexture(GL_TEXTURE_RECTANGLE, _pl_console_font->texture->id);
+
+    plDrawCharacter(_pl_console_font, 20, 20, 2, 'A');
+    plDrawCharacter(_pl_console_font, 20, 30, 2, 'B');
+    plDrawCharacter(_pl_console_font, 20, 40, 2, 'C');
+    plDrawCharacter(_pl_console_font, 20, 50, 4, 'D');
+
+    glEnable(GL_TEXTURE_RECTANGLE);
 }

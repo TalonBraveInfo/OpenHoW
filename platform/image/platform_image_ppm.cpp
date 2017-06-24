@@ -21,14 +21,14 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #define    PPM_HEADER_SIZE    70
 
 PLresult _plLoadPPMImage(FILE *fin, PLImage *out) {
-    plSetErrorFunction("_plLoadPPMImage");
+    _plSetCurrentFunction("_plLoadPPMImage");
 
     char header[PPM_HEADER_SIZE];
     memset(&header, 0, sizeof(header));
 
     fgets(header, PPM_HEADER_SIZE, fin);
     if (strncmp(header, "P6", 2)) {
-        plSetError("Unsupported PPM type!\n");
+        _plSetErrorMessage("Unsupported PPM type!\n");
         return PL_RESULT_FILEVERSION;
     }
 

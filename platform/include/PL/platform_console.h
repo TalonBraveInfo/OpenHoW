@@ -37,7 +37,8 @@ PL_EXTERN void plSetupConsole(unsigned int num_instances);
 PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
 
 PL_EXTERN void plShowConsole(bool show);
-
 PL_EXTERN void plDrawConsole(void);
+
+PL_EXTERN bool plIsConsoleVisible(void);
 
 PL_EXTERN_C_END

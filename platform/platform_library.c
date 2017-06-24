@@ -40,7 +40,7 @@ PL_FARPROC plFindLibraryFunction(PL_INSTANCE instance, const PLchar *function) {
 }
 
 // Frees library instance.
-PLvoid _plFreeLibrary(PL_INSTANCE instance) {
+void _plFreeLibrary(PL_INSTANCE instance) {
     plFunctionStart();
 #ifdef _WIN32
     FreeLibrary(instance);
@@ -50,7 +50,7 @@ PLvoid _plFreeLibrary(PL_INSTANCE instance) {
     plFunctionEnd();
 }
 
-PLvoid plUnloadLibrary(PL_INSTANCE instance) {
+void plUnloadLibrary(PL_INSTANCE instance) {
     plFunctionStart();
     if (instance) {
         _plFreeLibrary(instance);
@@ -75,7 +75,7 @@ PL_INSTANCE plLoadLibrary(const PLchar *path) {
     dlopen(newpath, RTLD_NOW);
 #endif
     if (!instance) {
-        plSetError("Failed to load module! (%s)\n%s\n", newpath, plGetSystemError());
+        _plSetErrorMessage("Failed to load module! (%s)\n%s\n", newpath, plGetSystemError());
         return NULL;
     }
 
@@ -84,14 +84,14 @@ PL_INSTANCE plLoadLibrary(const PLchar *path) {
 
 /*	Generic interface to allow loading of an external module.
 */
-PLvoid *plLoadLibraryInterface(PL_INSTANCE instance, const PLchar *path, const PLchar *entry, PLvoid *handle) {
+void *plLoadLibraryInterface(PL_INSTANCE instance, const PLchar *path, const PLchar *entry, void *handle) {
     instance = plLoadLibrary(path);
     if (!instance)
         return NULL;
 
-    PLvoid *(*EntryFunction)(PLvoid *) = plFindLibraryFunction(instance, entry);
+    void *(*EntryFunction)(void *) = plFindLibraryFunction(instance, entry);
     if (!EntryFunction) {
-        plSetError("Failed to find entry function! (%s)\n", entry);
+        _plSetErrorMessage("Failed to find entry function! (%s)\n", entry);
         return NULL;
     }
 

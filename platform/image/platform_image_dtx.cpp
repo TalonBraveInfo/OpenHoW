@@ -30,15 +30,15 @@ For more information, please refer to <http://unlicense.org>
 /*	Monolith's DTX Format (http://www.cnblogs.com/crsky/p/4702916.html)	*/
 
 typedef struct {
-    PLint32 version;    // Version of the format, Lithtech used negative numbers.
+    int32_t version;    // Version of the format, Lithtech used negative numbers.
 
-    PLuint16 width, height;     // Width and height of the texture.
-    PLuint16 mipmaps;           // Number of mipmaps included.
-    PLuint16 sections;
+    uint16_t width, height;     // Width and height of the texture.
+    uint16_t mipmaps;           // Number of mipmaps included.
+    uint16_t sections;
 
-    PLint32 flags, userflags;
-    PLbyte extra[12];
-    PLchar commandstring[128];
+    int32_t flags, userflags;
+    uint8_t extra[12];
+    char commandstring[128];
 } DTXHeader;
 
 typedef struct {
@@ -108,7 +108,7 @@ bool _plDTXFormatCheck(FILE *fin) {
 }
 
 PLresult _plLoadDTXImage(FILE *fin, PLImage *out) {
-    plSetErrorFunction("_plLoadDTXImage");
+    _plSetCurrentFunction("_plLoadDTXImage");
 
     DTXHeader header;
     memset(&header, 0, sizeof(header));

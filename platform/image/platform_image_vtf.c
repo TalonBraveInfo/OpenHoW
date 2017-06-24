@@ -249,7 +249,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
         return PL_RESULT_IMAGERESOLUTION;
     } else {
         if(header.lowresimageformat != VTF_FORMAT_DXT1) {
-            plSetError("Invalid texture format for lowresimage in VTF");
+            _plSetErrorMessage("Invalid texture format for lowresimage in VTF");
             return PL_RESULT_IMAGEFORMAT;
         }
 
@@ -308,7 +308,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
                     if(mipmap == (header.mipmaps - 1)) {
                         out->data[0] = (PLbyte*)calloc(mipsize, sizeof(PLbyte));
                         if (fread(out->data[0], sizeof(PLbyte), mipsize, fin) != mipsize) {
-                            _plFreeImage(out);
+                            plFreeImage(out);
                             return PL_RESULT_FILEREAD;
                         }
                     } else {

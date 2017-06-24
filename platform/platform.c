@@ -30,12 +30,12 @@ For more information, please refer to <http://unlicense.org>
 /*	Generic functions for platform, such as	error handling.	*/
 
 typedef struct PLSubSystem {
-    PLuint subsystem;
+    unsigned int subsystem;
 
     PLresult(*InitFunction)(void);
-    PLvoid(*ShutdownFunction)(void);
+    void(*ShutdownFunction)(void);
 
-    PLbool active;
+    bool active;
 } PLSubSystem;
 
 PLSubSystem pl_subsystems[]= {
@@ -79,8 +79,21 @@ PLSubSystem pl_subsystems[]= {
 typedef struct PLArgument {
     const char *parm;
 
-    void*(*Callback)();
+    void*(*Callback)(const char *arg);
 } PLArgument;
+
+PLArgument arguments[]={
+        { "arg0" },
+        { "arg1" },
+};
+
+void plParseArguments(PLArgument arguments[], unsigned int size) {
+    for(unsigned int i = 0; i < size; i++) {
+        if(arguments[i].Callback) {
+            arguments[i].Callback("");
+        }
+    }
+}
 
 typedef struct PLArguments {
     const char *exe_name;
@@ -91,7 +104,7 @@ typedef struct PLArguments {
 
 PLArguments pl_arguments;
 
-PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
+PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
     for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
             if(pl_subsystems[i].InitFunction) {
@@ -101,7 +114,7 @@ PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
                 }
             }
 
-            pl_subsystems[i].active = PL_TRUE;
+            pl_subsystems[i].active = true;
         }
     }
 
@@ -128,6 +141,7 @@ const char *plGetExecutableName(void) {
     return pl_arguments.exe_name;
 }
 
+// Returns result for a single command line argument.
 const char *plGetCommandLineArgument(const char *arg) {
     if(pl_arguments.num_arguments < 2) {
         return '\0';
@@ -146,7 +160,7 @@ const char *plGetCommandLineArgument(const char *arg) {
 }
 
 void plShutdown(void) {
-    for(PLuint i = 0; i < plArrayElements(pl_subsystems); i++) {
+    for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active) {
             continue;
         }
@@ -164,15 +178,17 @@ void plShutdown(void) {
 #define    MAX_FUNCTION_LENGTH    64
 #define    MAX_ERROR_LENGTH    2048
 
-PLchar
+char
         sys_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_function[MAX_FUNCTION_LENGTH]   = { '\0' };
 
+PLresult _pl_global_result = PL_RESULT_SUCCESS;
+
 // Sets the name of the current function.
-void plSetErrorFunction(const char *function, ...) {
+void _plSetCurrentFunction(const char *function, ...) {
 #ifdef _DEBUG
-    PLchar out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
+    char out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
     va_list args;
 
     va_start(args, function);
@@ -183,16 +199,14 @@ void plSetErrorFunction(const char *function, ...) {
 #endif
 }
 
-void plResetError(void) {
-#ifdef _DEBUG
-    loc_function[0] = loc_error[0] = sys_error[0] = '\0';
-#endif
+void _plSetFunctionResult(PLresult result) {
+    _pl_global_result = result;
 }
 
 // Sets the local error message.
-void plSetError(const char *msg, ...) {
+void _plSetErrorMessage(const char *msg, ...) {
 #ifdef _DEBUG
-    PLchar out[MAX_ERROR_LENGTH];
+    char out[MAX_ERROR_LENGTH];
     va_list args;
 
     va_start(args, msg);
@@ -204,13 +218,13 @@ void plSetError(const char *msg, ...) {
 }
 
 // Returns locally generated error message.
-const PLchar * plGetError(void) {
+const char * plGetError(void) {
     return loc_error;
 }
 
 /*	Returns a system error message.
 */
-const PLchar * plGetSystemError(void) {
+const char * plGetSystemError(void) {
 #ifdef _WIN32
     char	*buffer = NULL;
     int		error;
@@ -239,7 +253,14 @@ const PLchar * plGetSystemError(void) {
 #endif
 }
 
-const PLchar *plGetResultString(PLresult result) {
+/////////////////////////////////////////////////////////////////////////////////////
+// PUBLIC
+
+PLresult plGetFunctionResult(void) {
+    return _pl_global_result;
+}
+
+const char *plGetResultString(PLresult result) {
     switch (result) {
         case PL_RESULT_SUCCESS: return "Success";
 
@@ -264,4 +285,9 @@ const PLchar *plGetResultString(PLresult result) {
 
         default:    return "An unknown error occurred!";
     }
+}
+
+void plResetError(void) {
+    loc_function[0] = loc_error[0] = sys_error[0] = '\0';
+    _pl_global_result = PL_RESULT_SUCCESS;
 }

@@ -87,7 +87,7 @@ void plGenerateSkeletalModelNormals(PLSkeletalModel *model) {
 /*	Static Model    */
 
 PLStaticModel *plCreateStaticModel(void) {
-    plSetErrorFunction("plCreateStaticModel");
+    _plSetCurrentFunction("plCreateStaticModel");
 
     PLStaticModel *model = new PLStaticModel;
     memset(model, 0, sizeof(PLStaticModel));
@@ -111,7 +111,7 @@ PLStaticModel *plLoadStaticModel(const char *path) {
 
 void plDeleteStaticModel(PLStaticModel *model) {
     if (!model) {
-        plSetError("Invalid model!\n");
+        _plSetErrorMessage("Invalid model!\n");
         return;
     }
 
@@ -128,7 +128,7 @@ void plDeleteStaticModel(PLStaticModel *model) {
 */
 
 PLAnimatedModel *plCreateAnimatedModel(void) {
-    plSetErrorFunction("plCreateAnimatedModel");
+    _plSetCurrentFunction("plCreateAnimatedModel");
 
     PLAnimatedModel *model = new PLAnimatedModel;
     memset(model, 0, sizeof(PLAnimatedModel));
@@ -138,10 +138,10 @@ PLAnimatedModel *plCreateAnimatedModel(void) {
 
 // Less direct implementation to load a model (less efficient too).
 PLAnimatedModel *plLoadAnimatedModel(const char *path) {
-    plSetErrorFunction("plLoadAnimatedModel");
+    _plSetCurrentFunction("plLoadAnimatedModel");
 
     if (!path || path[0] == ' ') {
-        plSetError("Invalid path!\n");
+        _plSetErrorMessage("Invalid path!\n");
         return nullptr;
     }
 
@@ -149,10 +149,10 @@ PLAnimatedModel *plLoadAnimatedModel(const char *path) {
 }
 
 void plDeleteAnimatedModel(PLAnimatedModel *model) {
-    plSetErrorFunction("plDeleteAnimatedModel");
+    _plSetCurrentFunction("plDeleteAnimatedModel");
 
     if (!model) {
-        plSetError("Invalid model!\n");
+        _plSetErrorMessage("Invalid model!\n");
         return;
     }
 

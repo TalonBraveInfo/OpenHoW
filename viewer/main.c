@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #include "main.h"
 
 #include "formats/mad.h"
+#include "formats/pog.h"
+
 #include "font.h"
 #include "model.h"
 #include "object.h"
@@ -207,7 +209,7 @@ void load_hir_file(const char *path) {
     }
 
     model.skeleton_mesh = plCreateMesh(
-            PL_PRIMITIVE_POINTS,
+            PLMESH_QUADS,
             PL_DRAW_IMMEDIATE,
             0,
             model.num_bones
@@ -305,7 +307,7 @@ void load_fac_file(const char *path) {
     model.num_vertices = model.num_triangles * 3;
 
     model.tri_mesh = plCreateMesh(
-            PL_PRIMITIVE_TRIANGLES,
+            PLMESH_TRIANGLES,
             PL_DRAW_IMMEDIATE,
             model.num_triangles,
             model.num_vertices
@@ -733,9 +735,8 @@ int main(int argc, char **argv) {
         DPRINT("Found data directory, continuing with normal execution...\n");
     }
 
-    void LoadPOGFile(const char *path);
-    //LoadPOGFile("./data/maps/tester.pog");
-    plScanDirectory("./data/maps/", ".pog", LoadPOGFile);
+    //LoadMapObjects("./data/maps/tester.pog");
+    plScanDirectory("./data/maps/", ".pog", LoadMapObjects);
 
     InitializeFonts();
     InitializeObjects();
@@ -751,7 +752,7 @@ int main(int argc, char **argv) {
     if (!camera) {
         PRINT_ERROR("Failed to create camera!\n");
     }
-    camera->mode = PL_CAMERAMODE_PERSPECTIVE;
+    camera->mode = PLCAMERA_MODE_PERSPECTIVE;
     camera->fov = 90.f;
 
     glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
@@ -760,7 +761,7 @@ int main(int argc, char **argv) {
     if(!camera1) {
         PRINT_ERROR("Failed to create secondary camera!\n");
     }
-    camera1->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
+    camera1->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
     camera1->viewport.width = camera->viewport.width; camera1->viewport.height = camera->viewport.height;
 
     const char *arg;

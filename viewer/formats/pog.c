@@ -57,14 +57,14 @@ typedef struct __attribute__((packed)) POGIndex { // should be 94 bytes
 
     uint16_t type;      // type of item; for crates determines the object inside
                         // this actually seems to be a flag; this is going to be fun to figure out...
-    uint16_t unknown;
+    uint16_t unknown;   // Seems to also effect the item type...
 
     uint32_t quantity;
 
     int8_t unknown8[26];
 } POGIndex;
 
-void LoadPOGFile(const char *path) {
+void LoadMapObjects(const char *path) {
     DPRINT("\nOpening %s...\n", path);
 
     FILE *file = fopen(path, "rb");
@@ -73,8 +73,7 @@ void LoadPOGFile(const char *path) {
     }
 
     uint16_t num_indices = 0;
-    fread(&num_indices, sizeof(uint16_t), 1, file);
-    if(num_indices == 0) {
+    if(fread(&num_indices, sizeof(uint16_t), 1, file) != 1 || num_indices == 0) {
         PRINT_ERROR("Invalid number of indices within %s!\n", path);
     }
 
@@ -100,8 +99,8 @@ void LoadPOGFile(const char *path) {
                "     type       (%d)\n" \
                "     hrm...     (%d)\n" \
                "     quantity   (%d)\n",
-               i,
 
+               i,
                index.name,
                index.unused0,
                index.x, index.y, index.z,

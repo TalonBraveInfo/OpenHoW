@@ -27,21 +27,30 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
+#include <PL/platform_graphics.h>
 
-typedef struct PLModuleFunction {
-    const char *name;
+typedef struct PLBitmapFontChar {
+    int x, y;
+    unsigned int w, h;
 
-    void **Function;
-} PLModuleFunction;
+    //char character;
+
+    float s, t;
+} PLBitmapFontChar;
+
+#define PLFONT_MAX_CHARS    256
+
+typedef struct PLBitmapFont {
+    PLTexture *texture;
+
+    PLBitmapFontChar chars[PLFONT_MAX_CHARS];
+} PLBitmapFont;
 
 PL_EXTERN_C
 
-PL_EXTERN PL_FARPROC plFindLibraryFunction(PL_INSTANCE instance, const char *function);
+PL_EXTERN PLBitmapFont *plCreateBitmapFont(const char *path);
+PL_EXTERN void plDeleteBitmapFont(PLBitmapFont *font);
 
-PL_EXTERN void *plLoadLibraryInterface(PL_INSTANCE instance, const char *path, const char *entry, void *handle);
-
-PL_INSTANCE plLoadLibrary(const char *path);    // Loads new library instance.
-PL_EXTERN void plUnloadLibrary(PL_INSTANCE instance);    // Unloads library instance.
+PL_EXTERN void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t character);
 
 PL_EXTERN_C_END

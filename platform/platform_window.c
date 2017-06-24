@@ -39,13 +39,13 @@ PLuint plGetScreenWidth(void) {
 #else
     Display *display = XOpenDisplay(NULL);
     if (!display) {
-        plSetError("Failed to open display!\n");
+        _plSetErrorMessage("Failed to open display!\n");
         return PL_WINDOW_WIDTH;
     }
 
     Screen *screen = DefaultScreenOfDisplay(display);
     if (!screen) {
-        plSetError("Failed to get screen of display!\n");
+        _plSetErrorMessage("Failed to get screen of display!\n");
         return PL_WINDOW_WIDTH;
     }
 
@@ -60,13 +60,13 @@ PLuint plGetScreenHeight(void) {
 #else
     Display *display = XOpenDisplay(NULL);
     if (!display) {
-        plSetError("Failed to open display!\n");
+        _plSetErrorMessage("Failed to open display!\n");
         return PL_WINDOW_HEIGHT;
     }
 
     Screen *screen = DefaultScreenOfDisplay(display);
     if (!screen) {
-        plSetError("Failed to get screen of display!\n");
+        _plSetErrorMessage("Failed to get screen of display!\n");
         return PL_WINDOW_HEIGHT;
     }
 
@@ -79,17 +79,15 @@ Display *dMainDisplay;
 Window wRootWindow;
 #endif
 
-PLint plGetScreenCount(void) {
+unsigned int plGetScreenCount(void) {
 #ifdef _WIN32
     return GetSystemMetrics(SM_CMONITORS);
 #else
-    return XScreenCount(dMainDisplay);
+    return (unsigned int)XScreenCount(dMainDisplay);
 #endif
 }
 
-/*
-	Window Creation
-*/
+/*	Window Creation */
 
 PL_INSTANCE iGlobalInstance;
 
@@ -103,7 +101,7 @@ void plCreateWindow(PLWindow *window) {
 
     // Make sure the window has been initialized.
     if (!window) {
-        plSetError("Window has not been allocated!\n");
+        _plSetErrorMessage("Window has not been allocated!\n");
         return;
     }
 #if 0
@@ -184,7 +182,7 @@ void plCreateWindow(PLWindow *window) {
                 BlackPixel(dMainDisplay, iScreen),
                 WhitePixel(dMainDisplay, iScreen));
         if (!window->instance) {
-            plSetError("Failed to create window!\n");
+            _plSetErrorMessage("Failed to create window!\n");
             return;
         }
 
@@ -198,7 +196,7 @@ void plCreateWindow(PLWindow *window) {
 
 /*  
 */
-PLvoid plShowCursor(PLbool show) {
+void plShowCursor(PLbool show) {
     static bool _cursorvisible = true;
     if (show == _cursorvisible)
         return;
@@ -247,7 +245,7 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
 
         display = XOpenDisplay(NULL);
         if (!display) {
-            plSetError("Failed to open display!\n");
+            _plSetErrorMessage("Failed to open display!\n");
             return;
         }
 
