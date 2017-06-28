@@ -735,8 +735,8 @@ int main(int argc, char **argv) {
         DPRINT("Found data directory, continuing with normal execution...\n");
     }
 
-    //LoadMapObjects("./data/maps/tester.pog");
-    plScanDirectory("./data/maps/", ".pog", LoadMapObjects);
+    //LoadPOG("./data/maps/tester.pog");
+    plScanDirectory("./data/maps/", ".pog", LoadPOG);
 
     InitializeFonts();
     InitializeObjects();
@@ -808,6 +808,12 @@ int main(int argc, char **argv) {
 
             glfwPollEvents();
 
+            // Logic start
+
+            ProcessObjects();
+
+            // Rendering start
+
             plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
             plSetupCamera(camera1);
@@ -844,6 +850,8 @@ int main(int argc, char **argv) {
             // input handlers end...
 
             plSetupCamera(camera);
+
+            DrawObjects();
 
 #if 1
             glLoadIdentity();

@@ -29,25 +29,41 @@ For more information, please refer to <http://unlicense.org>
 
 #include "main.h"
 
-void InitializeObjects(void);
-
 ///////////////////////////////////////////////////
 
-void SpawnObject(const char *name, PLVector3D position, PLVector3D angles);
-
-///////////////////////////////////////////////////
-
-enum {
-    OBJECT_TYPE_STATIC,
-    OBJECT_TYPE_ANIMATED
-};
-
-typedef struct Object {
+typedef struct PlayerObject {
     PLVector3D position;
     PLVector3D angles;
-
     PLBBox3D bounds;
-} Object;
+    PLVector3D velocity;
 
-Object *CreateObject(void);
-void DestroyObject(Object *object);
+    bool active;
+
+    unsigned int team;
+
+    PLSkeletalModel *model;
+} PlayerObject;
+
+typedef struct StaticObject {
+    PLVector3D position;
+    PLVector3D angles;
+    PLBBox3D bounds;
+
+    PLStaticModel *model;
+} StaticObject;
+
+typedef struct DynamicObject {} DynamicObject;
+
+///////////////////////////////////////////////////
+
+void InitializeObjects(void);
+void SpawnObject(
+        const char *name,
+        PLVector3D position,
+        PLVector3D angles
+);
+
+void ProcessObjects(void);
+void DrawObjects(void);
+
+///////////////////////////////////////////////////

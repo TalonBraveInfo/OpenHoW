@@ -27,31 +27,73 @@ For more information, please refer to <http://unlicense.org>
 
 #include "object.h"
 
-Object **_objects;
-unsigned int num_objects;
+StaticObject **static_objects;
+unsigned int num_static_objects;
+
+///////////////////////////////////////////////////
+
+PlayerObject player_objects[MAX_PLAYERS];
+unsigned int num_player_objects;
+
+///////////////////////////////////////////////////
 
 void InitializeObjects(void) {
     PRINT("Initializing objects...\n");
 
-    // todo, see how much memory we have available for this?
+    memset(&player_objects, 0, sizeof(PlayerObject) * MAX_PLAYERS);
 
-    num_objects = 0;
-    _objects = (Object**)calloc(4096, sizeof(Object));
+    // todo, see how much memory we have available for this?
+    //static_objects = (StaticObject**)calloc(4096, sizeof(StaticObject));
+
+    num_player_objects =
+    num_static_objects = 0;
 }
 
 void ProcessObjects(void) {
-    for(Object *object = _objects[0]; object; object++) {
+   // for(StaticObject *decoration = static_objects[0]; decoration; ++decoration) {
+
+    //}
+
+    for(PlayerObject *player = player_objects; player; ++player) {
+        if(!player->active) {
+            continue;
+        }
+
 
     }
 }
 
-#define OBJECT_PICKUP_RANDOM    0
+void DrawObjects(void) {
+    //for(StaticObject *decoration = static_objects[0]; decoration; ++decoration) {
+
+   // }
+
+    for(PlayerObject *player = player_objects; player; ++player) {
+        if(!player->active) {
+            continue;
+        }
+
+
+    }
+}
+
+void ClearObjects(void) {
+    memset(&player_objects, 0, sizeof(PlayerObject) * MAX_PLAYERS);
+}
 
 ///////////////////////////////////////////////////
+
+enum {
+    OBJECT_TYPE_STATIC,
+    OBJECT_TYPE_PLAYER,
+    OBJECT_TYPE_DYNAMIC
+};
 
 typedef struct ObjectSpawn {
     const char *name;
     const char *model_path;
+
+    unsigned int type;
 
     void(*Callback)(void);
 } ObjectSpawn;
@@ -104,8 +146,8 @@ ObjectSpawn spawn_objects[]={
         {"BARBWIR2", NULL},
 
         // Crates
-        {"CRATE1", NULL},
-        {"CRATE2", NULL},
+        {"CRATE1", NULL, OBJECT_TYPE_DYNAMIC},
+        {"CRATE2", NULL, OBJECT_TYPE_DYNAMIC},
 
         {"FISH", NULL},
 
@@ -155,15 +197,15 @@ ObjectSpawn spawn_objects[]={
         {"WIND2H", NULL},
 
         // Pigs
-        {"GR_ME", NULL},
-        {"HV_ME", NULL},
-        {"AC_ME", NULL},
-        {"SB_ME", NULL},
-        {"LE_ME", NULL},
-        {"SN_ME", NULL},
-        {"CO_ME", NULL},
-        {"ME_ME", NULL},
-        {"SP_ME", NULL},
+        {"GR_ME", "/british/pcgr_hi", OBJECT_TYPE_PLAYER},
+        {"HV_ME", "/british/pchvy_hi", OBJECT_TYPE_PLAYER},
+        {"AC_ME", "/british/pcace_hi", OBJECT_TYPE_PLAYER},
+        {"SB_ME", "/british/pcsap_hi", OBJECT_TYPE_PLAYER},
+        {"LE_ME", "/british/gr_hi", OBJECT_TYPE_PLAYER},
+        {"SN_ME", "/british/pcsni_hi", OBJECT_TYPE_PLAYER},
+        {"CO_ME", "/british/gr_hi", OBJECT_TYPE_PLAYER},
+        {"ME_ME", "/british/pcmed_hi", OBJECT_TYPE_PLAYER},
+        {"SP_ME", "/british/pcspy_hi", OBJECT_TYPE_PLAYER},
 
         {"M_TENT1", NULL},
         {"M_TENT2", NULL},
@@ -185,16 +227,22 @@ void SpawnObject(const char *name, PLVector3D position, PLVector3D angles) {
         return;
     }
 
-#if 0
-    Object *object = CreateObject();
-    object->angles = angles;
-    object->position = position;
-#endif
+    switch(decor->type) {
+        case OBJECT_TYPE_PLAYER: {
+            player_objects[num_player_objects].active = true;
+            player_objects[num_player_objects].position = position;
+            num_player_objects++;
+            break;
+        }
+
+        case OBJECT_TYPE_DYNAMIC: {
+            break;
+        }
+
+        case OBJECT_TYPE_STATIC: {
+            break;
+        }
+
+        default: PRINT_ERROR("Invalid object type, %d!\n", decor->type);
+    }
 }
-
-///////////////////////////////////////////////////
-
-Object *CreateObject(void) {return NULL;}
-void DestroyObject(Object *object) {}
-
-

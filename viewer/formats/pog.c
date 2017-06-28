@@ -44,17 +44,19 @@ typedef struct __attribute__((packed)) POGIndex { // should be 94 bytes
     int8_t unknown3[10];
 
     // these seem to scale out from the origin point
-    int16_t bound_x;
-    int16_t bound_y;
-    int16_t bound_z;
+    uint16_t bound_x;
+    uint16_t bound_y;
+    uint16_t bound_z;
 
-    int16_t unknown4;   // if this is set to anything other than 0, then the object doesn't show...?
+    uint16_t unknown4;  // if this is set to anything other than 0, then the object doesn't show...?
                         // It LOOKS like this might be used to determine if an object is destroyable/simulated
                         // used for a lot of the block and bridge objects, hrm
-    int16_t unknown5;   // ditto?
-    int16_t unknown6;
 
+    int16_t spawn_delay;
 
+    int8_t unknown6;
+
+    uint8_t team;
     uint16_t type;      // type of item; for crates determines the object inside
                         // this actually seems to be a flag; this is going to be fun to figure out...
     uint16_t unknown;   // Seems to also effect the item type...
@@ -64,7 +66,7 @@ typedef struct __attribute__((packed)) POGIndex { // should be 94 bytes
     int8_t unknown8[26];
 } POGIndex;
 
-void LoadMapObjects(const char *path) {
+void LoadPOG(const char *path) {
     DPRINT("\nOpening %s...\n", path);
 
     FILE *file = fopen(path, "rb");

@@ -25,6 +25,16 @@ typedef struct GlobalVars {
     bool is_psx;
 
     unsigned int width, height;
+
+    struct {
+        unsigned int num_players;
+
+        bool is_paused;
+    } game;
 } GlobalVars;
 
 extern GlobalVars g_state;
+
+///////////////////////////////////////////////////
+
+#define MAX_PLAYERS 64
