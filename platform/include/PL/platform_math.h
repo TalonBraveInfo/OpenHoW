@@ -54,8 +54,8 @@ enum {
     PL_NUM_COLOURS,
 };
 
-#define plFloatToByte(a)    (uint8_t)round(a * 255)
-#define plByteToFloat(a)    (a / (float)255)
+#define plFloatToByte(a)    (uint8_t)round((a) * 255)
+#define plByteToFloat(a)    ((a) / (float)255)
 
 PL_INLINE static bool plIsPowerOfTwo(unsigned int num) {
     return (bool)((num != 0) && ((num & (~num + 1)) == num));
@@ -108,15 +108,16 @@ typedef struct PLVector2D {
         y += a.y;
     }
 
-    PLbool operator==(PLVector2D a) const { return ((x == a.x) && (y == a.y)); }
+    bool operator==(PLVector2D a) const { return ((x == a.x) && (y == a.y)); }
 
     PLVector2D operator*(PLVector2D a) const { return PLVector2D(x * a.x, y * a.y); }
-
     PLVector2D operator*(float a) const { return PLVector2D(x * a, y * a); }
 
     PLVector2D operator/(PLVector2D a) const { return PLVector2D(x / a.x, y / a.y); }
-
     PLVector2D operator/(float a) const { return PLVector2D(x / a, y / a); }
+
+    PLVector2D operator-(PLVector2D a) const { return PLVector2D(x - a.x, y - a.y); }
+    PLVector2D operator-(float a) const { return PLVector2D(x - a, y - a); }
 
     PL_INLINE float Length() { return std::sqrt(x * x + y * y); }
 
@@ -180,7 +181,7 @@ typedef struct PLVector3D {
     }
 #endif
 
-    PL_INLINE void operator = (PLfloat a) {
+    PL_INLINE void operator = (float a) {
         x = a;
         y = a;
         z = a;
@@ -190,7 +191,7 @@ typedef struct PLVector3D {
         x *= v.x; y *= v.y; z *= v.z;
     }
 
-    PL_INLINE void operator *= (PLfloat a) {
+    PL_INLINE void operator *= (float a) {
         x *= a; y *= a; z *= a;
     }
 
@@ -198,7 +199,7 @@ typedef struct PLVector3D {
         x += a.x; y += a.y; z += a.z;
     }
 
-    PL_INLINE void operator += (PLfloat a) {
+    PL_INLINE void operator += (float a) {
         x += a; y += a; z += a;
     }
 
@@ -206,7 +207,7 @@ typedef struct PLVector3D {
         return ((x == a.x) && (y == a.y) && (z == a.z));
     }
 
-    PL_INLINE bool operator == (PLfloat f) const {
+    PL_INLINE bool operator == (float f) const {
         return ((x == f) && (y == f) && (z == f));
     }
 
@@ -214,7 +215,7 @@ typedef struct PLVector3D {
         return !(a == *this);
     }
 
-    PL_INLINE bool operator != (PLfloat f) const {
+    PL_INLINE bool operator != (float f) const {
         return ((x != f) && (y != f) && (z != f));
     }
 
@@ -222,7 +223,7 @@ typedef struct PLVector3D {
         return PLVector3D(x * a.x, y * a.y, z * a.z);
     }
 
-    PLVector3D PL_INLINE operator * (PLfloat a) const {
+    PLVector3D PL_INLINE operator * (float a) const {
         return PLVector3D(x * a, y * a, z * a);
     }
 
@@ -230,7 +231,7 @@ typedef struct PLVector3D {
         return PLVector3D(x - a.x, y - a.y, z - a.z);
     }
 
-    PLVector3D PL_INLINE operator - (PLfloat a) const {
+    PLVector3D PL_INLINE operator - (float a) const {
         return PLVector3D(x - a, y - a, z - a);
     }
 
@@ -242,7 +243,7 @@ typedef struct PLVector3D {
         return PLVector3D(x + a.x, y + a.y, z + a.z);
     }
 
-    PLVector3D PL_INLINE operator + (PLfloat a) const {
+    PLVector3D PL_INLINE operator + (float a) const {
         return PLVector3D(x + a, y + a, z + a);
     }
 
@@ -250,11 +251,11 @@ typedef struct PLVector3D {
         return PLVector3D(x / a.x, y / a.y, z / a.z);
     }
 
-    PLVector3D PL_INLINE operator / (PLfloat a) const {
+    PLVector3D PL_INLINE operator / (float a) const {
         return PLVector3D(x / a, y / a, z / a);
     }
 
-    PL_INLINE PLfloat& operator [] (const unsigned int i) {
+    PL_INLINE float& operator [] (const unsigned int i) {
         return *((&x) + i);
     }
 
@@ -353,11 +354,12 @@ PL_INLINE static float plVector3DLength(PLVector3D v) {
     return sqrtf(v.x * v.x + v.y * v.y);
 }
 
-PL_INLINE static void plNormalizeVector3D(PLVector3D *v) {
-    PLfloat length = plVector3DLength(*v);
+PL_INLINE static PLVector3D plNormalizeVector3D(PLVector3D v) {
+    float length = plVector3DLength(v);
     if(length != 0) {
-        v->x /= length; v->y /= length; v->z /= length;
+        v.x /= length; v.y /= length; v.z /= length;
     }
+    return v;
 }
 
 PL_INLINE const static char *plPrintVector3D(PLVector3D v) {
@@ -397,7 +399,7 @@ typedef struct PLColour {
 
     }
 
-    PLColour(PLint c, PLint c2, PLint c3, PLint c4 = 255) :
+    PLColour(int c, int c2, int c3, int c4 = 255) :
             PLColour((uint8_t) c, (uint8_t) c2, (uint8_t) c3, (uint8_t) c4) {
 
     }
@@ -446,7 +448,7 @@ typedef struct PLColour {
         return PLColour(r - plFloatToByte(c), g - plFloatToByte(c), b - plFloatToByte(c), a - plFloatToByte(c));
     }
 
-    PL_INLINE PLColour operator - (PLbyte c) const {
+    PL_INLINE PLColour operator - (uint8_t c) const {
         return PLColour(r - c, g - c, b - c, a - c);
     }
 
@@ -478,7 +480,7 @@ typedef struct PLColour {
         return PLColour(r / c, g / c, b / c, a / c);
     }
 
-    PL_INLINE PLbyte& operator [] (const unsigned int i) {
+    PL_INLINE uint8_t& operator [] (const unsigned int i) {
         return *((&r) + i);
     }
 
@@ -542,8 +544,8 @@ PL_INLINE static void plMultiplyColour(PLColour *c, PLColour c2) {
     c->r *= c2.r; c->g *= c2.g; c->b *= c2.b; c->a *= c2.a;
 }
 
-PL_INLINE static void plMultiplyColourf(PLColour *c, PLfloat a) {
-    PLbyte a2 = plFloatToByte(a);
+PL_INLINE static void plMultiplyColourf(PLColour *c, float a) {
+    uint8_t a2 = plFloatToByte(a);
     c->r *= a2; c->g *= a2; c->b *= a2; c->a *= a2;
 }
 
@@ -551,8 +553,8 @@ PL_INLINE static void plDivideColour(PLColour *c, PLColour c2) {
     c->r /= c2.r; c->g /= c2.g; c->b /= c2.b; c->a /= c2.a;
 }
 
-PL_INLINE static void plDivideColourf(PLColour *c, PLfloat a) {
-    PLbyte a2 = plFloatToByte(a);
+PL_INLINE static void plDivideColourf(PLColour *c, float a) {
+    uint8_t a2 = plFloatToByte(a);
     c->r /= a2; c->g /= a2; c->b /= a2; c->a /= a2;
 }
 
@@ -579,40 +581,40 @@ PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
 }
 
 PL_INLINE static void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(PLint i = 0; i < 4; i++) {
-        for(PLint j = 0; j < 4; j++) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
             m[i][j] += m2[i][j];
         }
     }
 }
 
 PL_INLINE static void plMultiplyMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(PLint i = 0; i < 4; i++) {
-        for(PLint j = 0; j < 4; j++) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
             m[i][j] *= m2[i][j];
         }
     }
 }
 
-PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, PLfloat a) {
-    for(PLint i = 0; i < 4; i++) {
-        for(PLint j = 0; j < 4; j++) {
+PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, float a) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
             m[i][j] *= a;
         }
     }
 }
 
 PL_INLINE static void plDivisionMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(PLint i = 0; i < 4; i++) {
-        for(PLint j = 0; j < 4; j++) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
             m[i][j] /= m2[i][j];
         }
     }
 }
 
-PL_INLINE static void plDivisionMatrix4f(PLMatrix4 m, PLfloat a) {
-    for(PLint i = 0; i < 4; i++) {
-        for(PLint j = 0; j < 4; j++) {
+PL_INLINE static void plDivisionMatrix4f(PLMatrix4 m, float a) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
             m[i][j] /= a;
         }
     }
@@ -625,10 +627,10 @@ PL_INLINE static const PLchar *plPrintMatrix4(const PLMatrix4 m) {
             "%i %i %i %i\n"
             "%i %i %i %i\n"
             "%i %i %i %i",
-            (PLint)m[0][0], (PLint)m[0][1], (PLint)m[0][2], (PLint)m[0][3],
-            (PLint)m[1][0], (PLint)m[1][1], (PLint)m[1][2], (PLint)m[1][3],
-            (PLint)m[2][0], (PLint)m[2][1], (PLint)m[2][2], (PLint)m[2][3],
-            (PLint)m[3][0], (PLint)m[3][1], (PLint)m[3][2], (PLint)m[3][3]
+            (int)m[0][0], (int)m[0][1], (int)m[0][2], (int)m[0][3],
+            (int)m[1][0], (int)m[1][1], (int)m[1][2], (int)m[1][3],
+            (int)m[2][0], (int)m[2][1], (int)m[2][2], (int)m[2][3],
+            (int)m[3][0], (int)m[3][1], (int)m[3][2], (int)m[3][3]
             );
     return s;
 }
@@ -637,7 +639,7 @@ PL_INLINE static const PLchar *plPrintMatrix4(const PLMatrix4 m) {
 
 #if 0
 
-typedef PLfloat PLQuaternion[4];
+typedef float PLQuaternion[4];
 
 static PL_INLINE void plClearQuaternion(PLQuaternion q) {
     memset(q, 0, sizeof(PLQuaternion));
@@ -647,7 +649,7 @@ static PL_INLINE void plMultiplyQuaternion(PLQuaternion q, const PLQuaternion q2
     q[0] *= q2[0]; q[1] *= q2[1]; q[2] *= q2[2]; q[3] *= q2[3];
 }
 
-static PL_INLINE void plMultiplyQuaternionf(PLQuaternion q, PLfloat a) {
+static PL_INLINE void plMultiplyQuaternionf(PLQuaternion q, float a) {
     q[0] *= a; q[1] *= a; q[2] *= a; q[3] *= a;
 }
 
@@ -655,7 +657,7 @@ static PL_INLINE void plAddQuaternion(PLQuaternion q, const PLQuaternion q2) {
     q[0] += q2[0]; q[1] += q2[1]; q[2] += q2[2]; q[3] += q2[3];
 }
 
-static PL_INLINE void plAddQuaternionf(PLQuaternion q, PLfloat a) {
+static PL_INLINE void plAddQuaternionf(PLQuaternion q, float a) {
     q[0] += a; q[1] += a; q[2] += a; q[3] += a;
 }
 
@@ -663,13 +665,13 @@ static PL_INLINE void plInverseQuaternion(PLQuaternion q) {
     q[0] = -q[0]; q[1] = -q[1]; q[2] = -q[2]; q[3] = -q[3];
 }
 
-static PL_INLINE PLfloat plQuaternionLength(PLQuaternion q) {
+static PL_INLINE float plQuaternionLength(PLQuaternion q) {
     return sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
 }
 
-static PL_INLINE const PLchar *plPrintQuaternion(const PLQuaternion q) {
-    static PLchar s[32] = {0};
-    snprintf(s, 32, "%i %i %i %i", (PLint)q[0], (PLint)q[1], (PLint)q[2], (PLint)q[3]);
+static PL_INLINE const char *plPrintQuaternion(const PLQuaternion q) {
+    static char s[32] = {0};
+    snprintf(s, 32, "%i %i %i %i", (int)q[0], (int)q[1], (int)q[2], (int)q[3]);
     return s;
 }
 
@@ -688,7 +690,7 @@ typedef struct PLQuaternion {
         x = a.x; y = a.y; z = a.z; w = a.w;
     }
 
-    PL_INLINE void operator *= (PLfloat a) {
+    PL_INLINE void operator *= (float a) {
         x *= a; y *= a; z *= a; w *= a;
     }
 
@@ -703,7 +705,7 @@ typedef struct PLQuaternion {
         return ((x == a.x) && (y == a.y) && (z == a.z) && (w == a.w));
     }
 
-    PL_INLINE PLQuaternion operator * (PLfloat a) {
+    PL_INLINE PLQuaternion operator * (float a) {
         return PLQuaternion(x * a, y * a, z * a, w * a);
     }
 
@@ -838,7 +840,7 @@ static PL_INLINE float plOutPow(float x, float p) {
         return 1.0f;
     }
 
-    PLint sign = (PLint) p % 2 == 0 ? -1 : 1;
+    int sign = (int) p % 2 == 0 ? -1 : 1;
     return (sign * (powf(x - 1.0f, p) + sign));
 }
 
@@ -1014,7 +1016,7 @@ static PL_INLINE float plInOutSin(float x) {
         return 1.0f;
     }
 
-    return -0.5f * (cosf((PLfloat) PL_PI * x) - 1.0f);
+    return -0.5f * (cosf((float) PL_PI * x) - 1.0f);
 }
 
 static PL_INLINE float plInOutPow(float x, float p) {

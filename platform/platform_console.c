@@ -25,8 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include "graphics/graphics_private.h"
+
 #include <PL/platform_console.h>
-#include <PL/platform_graphics.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_input.h>
 
@@ -43,29 +44,28 @@ typedef struct PLConsoleCommand {
     char description[512];
 } PLConsoleCommand;
 
-#define IMPLEMENT_COMMAND(a) void a(unsigned int argc, char *argv[])
-
-IMPLEMENT_COMMAND(CLSCommand) {}
-IMPLEMENT_COMMAND(COLOURCommand) {}
-IMPLEMENT_COMMAND(TIMECommand) {}
-IMPLEMENT_COMMAND(MEMCommand) {}
-IMPLEMENT_COMMAND(HELPCommand) {}
-
 PLConsoleCommand **_pl_commands = NULL;
-PLConsoleCommand _pl_base_commands[]={
-        { "cls", CLSCommand, "Clears the console buffer." },
-        { "colour", COLOURCommand, "Changes the colour of the current console." },
-        { "time", TIMECommand },
-        { "mem", MEMCommand },
-        { "help", HELPCommand },
-};
-
 size_t _pl_num_commands = 0;
 size_t _pl_commands_size = 512;
 
-void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
-    if(num_cmds > _pl_commands_size) {
+#define IMPLEMENT_COMMAND(NAME, DESC) \
+    void NAME ## _func(unsigned int argc, char *argv[]); \
+    PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
+    void NAME ## _func(unsigned int argc, char *argv[])
 
+void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
+
+    // Deal with resizing the array dynamically...
+    if((num_cmds + _pl_num_commands) > _pl_commands_size) {
+        PLConsoleCommand **old_mem = _pl_commands;
+        _pl_commands = (PLConsoleCommand**)realloc(_pl_commands, (_pl_commands_size += 128) * sizeof(PLConsoleCommand));
+        if(!_pl_commands) {
+            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+                           _pl_commands_size * sizeof(PLConsoleCommand));
+            _pl_commands = old_mem;
+            _pl_commands_size -= 128;
+            return;
+        }
     }
 
     for(unsigned int i = 0; i < num_cmds; i++) {
@@ -73,19 +73,58 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
             continue;
         }
 
-        // todo, necessary to scan through? We know where the last slot was...
-        PLConsoleCommand *cmd = _pl_commands[0];
-        for (size_t j = 0; j < _pl_commands_size; j++, cmd++) {
-            if (!cmd) {
-                cmd = (PLConsoleCommand *) malloc(sizeof(PLConsoleCommand));
-                if (!cmd) {
-                    _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
-                                   sizeof(PLConsoleCommand));
-                    break;
-                }
-                memcpy(cmd, &cmds[i], sizeof(PLConsoleCommand));
+        if(_pl_num_commands < _pl_commands_size) {
+            _pl_commands[_pl_num_commands] = (PLConsoleCommand*)malloc(sizeof(PLConsoleCommand));
+            if(!_pl_commands[_pl_num_commands]) {
+                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                               sizeof(PLConsoleCommand));
                 break;
             }
+            memcpy(_pl_commands[_pl_num_commands], &cmds[i], sizeof(PLConsoleCommand));
+            _pl_num_commands++;
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+// todo, console variable implementation goes here!
+
+PLConsoleVariable **_pl_variables = NULL;
+size_t _pl_num_variables = 0;
+size_t _pl_variables_size = 512;
+
+void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars) {
+    plAssert(_pl_variables);
+
+    // Deal with resizing the array dynamically...
+    if((num_vars + _pl_num_variables) > _pl_variables_size) {
+        PLConsoleVariable **old_mem = _pl_variables;
+        _pl_variables = (PLConsoleVariable**)realloc(_pl_variables, (_pl_variables_size += 128) * sizeof(PLConsoleVariable));
+        if(!_pl_variables) {
+            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+                           _pl_variables_size * sizeof(PLConsoleVariable));
+            _pl_variables = old_mem;
+            _pl_variables_size -= 128;
+            return;
+        }
+    }
+
+    for(unsigned int i = 0; i < num_vars; i++) {
+        if(vars[i].var[0] == '\0') {
+            continue;
+        }
+
+        if(_pl_num_variables < _pl_variables_size) {
+            _pl_variables[_pl_num_variables] = (PLConsoleVariable*)malloc(sizeof(PLConsoleVariable));
+            if(!_pl_variables[_pl_num_variables]) {
+                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                               sizeof(PLConsoleVariable));
+                break;
+            }
+            memcpy(_pl_variables[_pl_num_variables], &vars[i], sizeof(PLConsoleVariable));
+            _pl_variables[_pl_num_variables]->default_value = _pl_variables[_pl_num_variables]->value;
+            _pl_num_variables++;
         }
     }
 }
@@ -111,33 +150,84 @@ bool _pl_console_visible = false;
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
+IMPLEMENT_COMMAND(cls, "Clears the console buffer.") {
+
+}
+IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
+
+}
+IMPLEMENT_COMMAND(time, "Prints out the current time.") {
+
+}
+IMPLEMENT_COMMAND(mem, "Prints out current memory usage.") {
+
+}
+IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
+    for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
+        printf(" %-20s : %-20s\n", (*cmd)->cmd, (*cmd)->description);
+    }
+    printf("%zu commands in total\n", _pl_num_commands);
+}
+IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
+    for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
+        printf(" %-20s : %-5s / %-15s : %-20s\n",
+               (*var)->var, (*var)->value, (*var)->default_value, (*var)->description);
+    }
+    printf("%zu variables in total\n", _pl_num_variables);
+}
+IMPLEMENT_COMMAND(help, "") {
+    if(argc > 1) { // looking for assistance on a command probably...
+
+    }
+}
+
 PLMesh *_pl_mesh_line = NULL;
 PLBitmapFont *_pl_console_font = NULL;
 
 PLresult _plInitConsole(void) {
     _pl_console_visible = false;
 
-    _pl_console_font = plCreateBitmapFont("fonts/console.font");
-    if(!_pl_console_font) {
-        return PL_RESULT_MEMORYALLOC;
+    if(!(_pl_console_font = plCreateBitmapFont("fonts/console.font"))) {
+        // todo, print warning...
     }
 
     memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
-    _pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4);
-    if(!_pl_mesh_line) {
+    if(!(_pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4))) {
         return PL_RESULT_MEMORYALLOC;
     }
 
-    _pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand) * _pl_commands_size);
-    if(!_pl_commands) {
+    if(!(_pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand*) * _pl_commands_size))) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand array, %d!\n",
                        sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORYALLOC;
     }
 
-    plRegisterConsoleCommands(_pl_base_commands, plArrayElements(_pl_base_commands));
+    if(!(_pl_variables = (PLConsoleVariable**)malloc(sizeof(PLConsoleVariable*) * _pl_variables_size))) {
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleVariable array, %d!\n",
+                       sizeof(PLConsoleCommand) * _pl_commands_size);
+        return PL_RESULT_MEMORYALLOC;
+    }
+
+    PLConsoleCommand base_commands[]={
+            cls_var,
+            help_var,
+            time_var,
+            mem_var,
+            colour_var,
+    };
+    plRegisterConsoleCommands(base_commands, plArrayElements(base_commands));
+
+    plAddConsoleVariable(MyVar, "true", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(YourVar, "false", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(HisVar, "apple", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
+
+    // todo, temporary
+    cmds_func(0, NULL);
+    vars_func(0, NULL);
+
+    // todo, parse config
 
     return PL_RESULT_SUCCESS;
 }
@@ -151,16 +241,26 @@ void _plShutdownConsole(void) {
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
     if(_pl_commands) {
-        PLConsoleCommand *cmd = _pl_commands[0];
-        for (size_t i = 0; i < _pl_num_commands; i++, cmd++) {
+        for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
             // todo, should we return here; assume it's the end?
-            if (!cmd) {
+            if (!(*cmd)) {
                 continue;
             }
 
-            free(cmd);
+            free((*cmd));
         }
+        free(_pl_commands);
+    }
 
+    if(_pl_variables) {
+        for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
+            // todo, should we return here; assume it's the end?
+            if (!(*var)) {
+                continue;
+            }
+
+            free((*var));
+        }
         free(_pl_commands);
     }
 }
@@ -205,10 +305,12 @@ void _plResizeConsoles(void) {
     }
 }
 
-bool _plConsolePaneVisible(unsigned int id) {
+bool _plIsConsolePaneVisible(unsigned int id) {
     if(!_pl_console_visible) {
         return false;
-    } else if(
+    }
+
+    if(
         _pl_console_pane[id].display.ll.a == 0 &&
         _pl_console_pane[id].display.lr.a == 0 &&
         _pl_console_pane[id].display.ul.a == 0 &&
@@ -227,7 +329,7 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
     }
 
     for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
-        if(!_plConsolePaneVisible(i)) {
+        if(!_plIsConsolePaneVisible(i)) {
             continue;
         }
 
@@ -262,7 +364,9 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
             static int old_x = 0, old_y = 0;
 
             return;
-        } else if(m_buttons & PLINPUT_MOUSE_RIGHT) {
+        }
+
+        if(m_buttons & PLINPUT_MOUSE_RIGHT) {
         // todo, display context menu
             return;
         }
@@ -305,10 +409,6 @@ void plShowConsole(bool show) {
     _pl_console_visible = show;
 }
 
-bool plIsConsoleVisible(void) {
-    return _pl_console_visible;
-}
-
 void plSetConsoleColour(unsigned int id, PLColour colour) {
     plSetRectangleUniformColour(&_pl_console_pane[id-1].display, colour);
 }
@@ -346,7 +446,7 @@ void plDrawConsole(void) {
     _plResizeConsoles();
 
     for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
-        if(!_plConsolePaneVisible(i)) {
+        if(!_plIsConsolePaneVisible(i)) {
             continue;
         }
 
@@ -422,14 +522,22 @@ void plDrawConsole(void) {
         // todo, display buffer text
     }
 
+    if(!_pl_console_font) {
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
     glEnable(GL_TEXTURE_RECTANGLE);
 
     glBindTexture(GL_TEXTURE_RECTANGLE, _pl_console_font->texture->id);
+#endif
 
     plDrawCharacter(_pl_console_font, 20, 20, 2, 'A');
     plDrawCharacter(_pl_console_font, 20, 30, 2, 'B');
     plDrawCharacter(_pl_console_font, 20, 40, 2, 'C');
     plDrawCharacter(_pl_console_font, 20, 50, 4, 'D');
 
-    glEnable(GL_TEXTURE_RECTANGLE);
+#if defined(PL_MODE_OPENGL)
+    glDisable(GL_TEXTURE_RECTANGLE);
+#endif
 }

@@ -87,13 +87,12 @@ unsigned int _plTranslatePrimitiveMode(PLMeshPrimitive mode) {
 
 unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
 #if defined(PL_MODE_OPENGL)
-    if(mode == PL_DRAW_DYNAMIC) {
-        return GL_DYNAMIC_DRAW;
-    } else if(mode == PL_DRAW_STATIC) {
-        return GL_STATIC_DRAW;
-    }
+    switch(mode) {
+        case PL_DRAW_DYNAMIC:   return GL_DYNAMIC_DRAW;
+        case PL_DRAW_STATIC:    return GL_STATIC_DRAW;
 
-    return 0;
+        default: return 0;
+    }
 #else
     return mode;
 #endif
@@ -102,9 +101,9 @@ unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
 void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
     PLVector3D distvec = position;
     plSubtractVector3D(&distvec, light->position);
-    PLfloat distance = (light->radius - plVector3DLength(distvec)) / 100.f;
+    float distance = (light->colour.a - plVector3DLength(distvec)) / 100.f;
 
-    for(PLuint i = 0; i < mesh->num_verts; i++) {
+    for(unsigned int i = 0; i < mesh->num_verts; i++) {
         PLVector3D normal = mesh->vertices[i].normal;
         float angle = (distance * ((normal.x * distvec.x) + (normal.y * distvec.y) + (normal.z * distvec.z)));
         if(angle < 0) {
@@ -321,7 +320,7 @@ void plDrawMesh(PLMesh *mesh) {
         glVertexPointer(3, GL_FLOAT, 0, &vert->position);
         glColorPointer(4, GL_FLOAT, 0, &vert->colour);
         glNormalPointer(GL_FLOAT, 0, &vert->normal);
-        for(PLint i = 0; i < plGetMaxTextureUnits(); i++) {
+        for(int i = 0; i < plGetMaxTextureUnits(); i++) {
             if (pl_graphics_state.tmu[i].active) {
                 glClientActiveTexture((GLenum) GL_TEXTURE0 + i);
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -344,7 +343,7 @@ void plDrawMesh(PLMesh *mesh) {
         glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_NORMAL_ARRAY);
-        for(PLint i = 0; i < plGetMaxTextureUnits(); i++) {
+        for(int i = 0; i < plGetMaxTextureUnits(); i++) {
             if(pl_graphics_state.tmu[i].active) {
                 glClientActiveTexture((GLenum)GL_TEXTURE0 + i);
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);

@@ -47,8 +47,8 @@ PLresult _plLoadFTXImage(FILE *fin, PLImage *out) {
 
     memset(out, 0, sizeof(PLImage));
     out->size = (unsigned int)(header.width * header.height * 4);
-    out->data = new PLbyte*[1];
-    out->data[0] = new PLbyte[out->size];
+    out->data = new uint8_t*[1];
+    out->data[0] = new uint8_t[out->size];
 
     if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size) {
         return PL_RESULT_FILEREAD;

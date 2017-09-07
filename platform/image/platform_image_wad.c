@@ -51,11 +51,11 @@ enum WADType {
     WAD_TYPE_MIPTEX
 } WADType;
 
-PLbool _plWADFormatCheck(FILE *fin) {
+bool _plWADFormatCheck(FILE *fin) {
     rewind(fin);
 
-    PLchar ident[4];
-    fread(ident, sizeof(PLchar), 4, fin);
+    char ident[4];
+    fread(ident, sizeof(char), 4, fin);
 
-    return (PLbool)(strncmp(ident, "IWAD", 3) == 0);
+    return (bool)(strncmp(ident, "IWAD", 3) == 0);
 }

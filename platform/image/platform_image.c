@@ -90,14 +90,14 @@ bool plLoadImage(const PLchar *path, PLImage *out) {
     return result;
 }
 
-PLresult plWriteImage(const PLImage *image, const PLchar *path) {
+PLresult plWriteImage(const PLImage *image, const char *path) {
     if (!plIsValidString(path)) {
         return PL_RESULT_FILEPATH;
     }
 
     PLresult result = PL_RESULT_FILETYPE;
 
-    const PLchar *extension = plGetFileExtension(path);
+    const char *extension = plGetFileExtension(path);
     if(plIsValidString(extension)) {
         if (!strncmp(extension, PLIMAGE_EXTENSION_TIFF, 3)) {
             result = plWriteTIFFImage(image, path);
@@ -157,7 +157,7 @@ unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned 
 }
 
 void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
-    image->data = (PLbyte**)calloc(levels, sizeof(PLbyte));
+    image->data = (uint8_t**)calloc(levels, sizeof(uint8_t));
 }
 
 void plFreeImage(PLImage *image) {
@@ -184,4 +184,16 @@ bool plIsValidImageSize(PLuint width, PLuint height) {
     }
 
     return true;
+}
+
+bool plIsCompressedImageFormat(PLImageFormat format) {
+    switch (format) {
+        default:    return false;
+        case PL_IMAGEFORMAT_RGBA_DXT1:
+        case PL_IMAGEFORMAT_RGBA_DXT3:
+        case PL_IMAGEFORMAT_RGBA_DXT5:
+        case PL_IMAGEFORMAT_RGB_DXT1:
+        case PL_IMAGEFORMAT_RGB_FXT1:
+            return true;
+    }
 }

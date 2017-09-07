@@ -32,8 +32,8 @@ For more information, please refer to <http://unlicense.org>
 bool _plTIFFFormatCheck(FILE *fin) {
     rewind(fin);
 
-    PLchar ident[2];
-    fread(ident, sizeof(PLchar), 2, fin);
+    char ident[2];
+    fread(ident, sizeof(char), 2, fin);
 
     return (bool)((strncmp(ident, "II", 2) == 0) || (strncmp(ident, "MM", 2) == 0));
 }
@@ -54,7 +54,7 @@ PLresult plWriteTIFFImage(const PLImage *image, const PLchar *path) {
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 
     size_t line_bytes = spp * image->width;
-    PLbyte *buf = (PLbyte*)_TIFFmalloc(TIFFScanlineSize(tif));
+    uint8_t *buf = (uint8_t*)_TIFFmalloc(TIFFScanlineSize(tif));
     if(!buf) {
         std::cout << "Failed to allocate memory for image buffer\n";
 
@@ -93,7 +93,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     TIFFRGBAImage image;
     memset(&image, 0, sizeof(TIFFRGBAImage));
 
-    PLchar error_message[1024];
+    char error_message[1024];
     if(!TIFFRGBAImageBegin(&image, tif, 0, error_message)) {
         _plSetErrorMessage("TIFFRGBAImageBegin failed");
 
@@ -120,8 +120,8 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     out->size           = image.width * image.height * 4;
     out->levels         = 1;
     out->colour_format  = PL_COLOURFORMAT_RGBA;
-    out->data           = new PLbyte*[1];
-    out->data[0]        = new PLbyte[out->size];
+    out->data           = new uint8_t*[1];
+    out->data[0]        = new uint8_t[out->size];
     out->format         = PL_IMAGEFORMAT_RGBA8;
     out->width          = image.width;
     out->height         = image.height;

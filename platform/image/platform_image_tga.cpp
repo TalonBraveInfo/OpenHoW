@@ -28,18 +28,18 @@ For more information, please refer to <http://unlicense.org>
 #include "PL/platform_image.h"
 
 typedef struct TGAHeader {
-    PLbyte      id_length;
-    PLbyte      cm_type;
-    PLbyte      image_type;
-    PLushort    cm_start;
-    PLushort    cm_length;
-    PLbyte      cm_depth;
-    PLushort    x_offset;
-    PLushort    y_offset;
-    PLushort    width;
-    PLushort    height;
-    PLbyte      pixel_depth;
-    PLbyte      image_desc;
+    uint8_t      id_length;
+    uint8_t      cm_type;
+    uint8_t      image_type;
+    uint16_t    cm_start;
+    uint16_t    cm_length;
+    uint8_t      cm_depth;
+    uint16_t    x_offset;
+    uint16_t    y_offset;
+    uint16_t    width;
+    uint16_t    height;
+    uint8_t      pixel_depth;
+    uint8_t      image_desc;
 } TGAHeader;
 
 enum TGAType {
@@ -59,7 +59,9 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
     memset(&header, 0, sizeof(TGAHeader));
     if (fread(&header, sizeof(TGAHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
-    } else if (!plIsValidImageSize(header.width, header.height)) {
+    }
+
+    if (!plIsValidImageSize(header.width, header.height)) {
         return PL_RESULT_IMAGERESOLUTION;
     }
 
@@ -77,8 +79,8 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
     out->size = header.pixel_depth * header.width * header.height;
     out->levels = 1;
 
-    out->data = new PLbyte*[out->levels];
-    out->data[0] = new PLbyte[out->size];
+    out->data = new uint8_t*[out->levels];
+    out->data[0] = new uint8_t[out->size];
 
     switch(header.image_type) {
         case TGA_TYPE_MONOCHROME:
@@ -89,7 +91,7 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
                 return PL_RESULT_FILEREAD;
             }
 
-            for(PLuint swap = 0; swap < (PLint)out->size; swap += 4) {
+            for(PLuint swap = 0; swap < (int)out->size; swap += 4) {
 
             }
             break;

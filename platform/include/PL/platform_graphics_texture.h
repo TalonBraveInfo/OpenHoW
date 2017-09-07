@@ -1,3 +1,29 @@
+/*
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>
+*/
 
 #pragma once
 
@@ -48,7 +74,7 @@ enum PLTextureFlag {
 };
 
 typedef struct PLTextureMappingUnit {
-    PLbool active;
+    bool active;
 
     PLuint current_texture;
     PLuint current_capabilities;
@@ -56,90 +82,49 @@ typedef struct PLTextureMappingUnit {
     PLTextureEnvironmentMode current_envmode;
 } PLTextureMappingUnit;
 
-#ifdef __cplusplus
+typedef struct PLTexture {
+    unsigned int id;
 
-typedef struct PLTexture PLTexture;
-
-extern "C" {
-
-PL_EXTERN void plBindTexture(PLTexture *texture);
-
-}
-
+#if defined(PL_MODE_OPENGL)
+    unsigned int gl_id;
 #endif
 
-typedef struct PLTexture {
-    PLuint id;
+    unsigned int flags;
 
-    PLuint flags;
+    unsigned int x, y;
+    unsigned int width, height;
 
-    PLuint x, y;
-    PLuint width, height;
+    unsigned int size;
+    unsigned int levels;
+    unsigned int crc;
 
-    PLuint size;
-    PLuint levels;
-    PLuint crc;
-
-    const PLchar *path;
+    const char *path;
 
     PLImageFormat format;
     PLDataFormat storage;
     PLColourFormat pixel;
-
-#ifdef __cplusplus
-
-    PL_INLINE void Bind() {
-        plBindTexture(this);
-    }
-
-    PL_INLINE PLuint GetFlags() const {
-        return flags;
-    }
-
-    PL_INLINE void AddFlags(PLuint f) {
-        flags |= f;
-    }
-
-    PL_INLINE void SetFlags(PLuint f) {
-        flags = f;
-    }
-
-    PL_INLINE void RemoveFlags(PLuint f) {
-        flags &= ~f;
-    }
-
-    PL_INLINE void ClearFlags() {
-        flags = 0;
-    }
-
-#endif
 } PLTexture;
 
 PL_EXTERN_C
 
 PL_EXTERN PLTexture *plCreateTexture(void);
-PL_EXTERN void plDeleteTexture(PLTexture *texture, PLbool force);
+PL_EXTERN void plDeleteTexture(PLTexture *texture, bool force);
+
+PL_EXTERN void plBindTexture(PLTexture *texture);
 
 //PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
-PL_EXTERN PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload);
+PL_EXTERN bool plUploadTextureImage(PLTexture *texture, const PLImage *upload);
 
 PL_EXTERN PLuint plGetMaxTextureSize(void);
 PL_EXTERN PLuint plGetMaxTextureUnits(void);
 PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
 
-PL_EXTERN PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
-PL_EXTERN PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount);
+PL_EXTERN void plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
+PL_EXTERN void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount);
 
-PL_EXTERN void plSetTextureUnit(PLuint target);
+PL_EXTERN void plSetTextureUnit(unsigned int target);
 PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 
 PL_EXTERN const PLchar *plPrintTextureMemoryUsage(void);
-
-#if defined(PL_INTERNAL)
-
-PL_EXTERN unsigned int _plTranslateColourFormat(PLColourFormat format);
-PL_EXTERN unsigned int _plTranslateTextureFormat(PLImageFormat format);
-
-#endif
 
 PL_EXTERN_C_END

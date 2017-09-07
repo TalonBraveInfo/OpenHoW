@@ -50,8 +50,8 @@ PLresult _plLoadPPMImage(FILE *fin, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
 
     out->size = w * h * 3;
-    out->data = new PLbyte*[1];
-    out->data[0] = new PLbyte[out->size];
+    out->data = new uint8_t*[1];
+    out->data[0] = new uint8_t[out->size];
 
     fread(out->data[0], sizeof(uint8_t), out->size, fin);
 

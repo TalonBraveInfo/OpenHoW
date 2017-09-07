@@ -114,7 +114,11 @@ void LoadPOG(const char *path) {
                index.quantity
         );
 
-#if 1
+#if 0
+        Object object = {
+                plCreateVector3D(index.x, index.y, index.z),
+                //plCreateVector3D()
+        };
         SpawnObject(
                 index.name,
                 plCreateVector3D(index.x, index.y, index.z),

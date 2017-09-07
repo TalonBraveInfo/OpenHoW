@@ -33,6 +33,7 @@ file(
 
         graphics/*.*
         image/*.*
+        string/*.*
 
         include/*.h
         include/PL/*.h
@@ -49,4 +50,4 @@ else()
     target_link_libraries(platform GL GLU GLEW)
 endif()
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(platform dl tiff X11)
+target_link_libraries(platform m dl tiff X11 SDL2)

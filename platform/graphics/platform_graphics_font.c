@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include "graphics_private.h"
+
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
 
@@ -36,7 +38,7 @@ For more information, please refer to <http://unlicense.org>
 
 #define _PLFONT_MAX_LINE    256
 
-struct PLFontScript {
+struct {
     char buffer[_PLFONT_MAX_LENGTH];
     char line_buffer[_PLFONT_MAX_LINE];
 
@@ -80,13 +82,19 @@ void _plParseFontLine(void) {
         if((_pl_font.buffer[_pl_font.position] == '-') && ((_pl_font.buffer[_pl_font.position + 1] == '-'))) {
             _plSkipFontComment();
             continue;
-        } else if((_pl_font.line_position == 0) && (_pl_font.buffer[_pl_font.position] == '\n')) {
+        }
+
+        if((_pl_font.line_position == 0) && (_pl_font.buffer[_pl_font.position] == '\n')) {
             _pl_font.position++;
             continue;
-        } else if(_pl_font.buffer[_pl_font.position] == '\t') {
+        }
+
+        if(_pl_font.buffer[_pl_font.position] == '\t') {
             _pl_font.position++;
             continue;
-        } else if(_pl_font.buffer[_pl_font.position] == '\n') {
+        }
+
+        if(_pl_font.buffer[_pl_font.position] == '\n') {
             _pl_font.line_buffer[_pl_font.line_position + 1] = '\0';
 
             _plNextFontLine();
@@ -123,7 +131,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
 
     _plParseFontLine();
     if(!strncmp(_pl_font.line_buffer, "VERSION ", 8)) {
-        int version = atoi(_pl_font.line_buffer + 8);
+        long version = strtol(_pl_font.line_buffer + 8, NULL, 0);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
             _plReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
                            _PLFONT_FORMAT_VERSION, version, path);
@@ -157,8 +165,6 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         if(!strncmp(_pl_font.line_buffer, "FILTER ", 7)) {
             if(_pl_font.line_buffer[8] == '1') {
                 enable_filter = true;
-            } else if(_pl_font.line_buffer[8] != '0') {
-                // todo, output a warning for this
             }
             continue;
         }
@@ -168,18 +174,19 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
             continue;
         }
 
-        sscanf(_pl_font.line_buffer + 2, "%d %d %d %d",
-                         &font->chars[character].x, &font->chars[character].y,
-                         &font->chars[character].w, &font->chars[character].h
-        );
+        char *pos;
+        font->chars[character].x = (int)strtol(_pl_font.line_buffer + 2, &pos, 10);
+        font->chars[character].y = (int)strtol(pos, &pos, 10);
+        font->chars[character].w = (int)strtoul(pos, &pos, 10);
+        font->chars[character].h = (int)strtoul(pos, &pos, 10);
 
-#if 0
+#if 1
         printf("CHAR(%c) X(%d) Y(%d) W(%d) H(%d)\n",
-               font->chars[_BUFFER_LINE[0]].character,
-               font->chars[_BUFFER_LINE[0]].x,
-               font->chars[_BUFFER_LINE[0]].y,
-               font->chars[_BUFFER_LINE[0]].w,
-               font->chars[_BUFFER_LINE[0]].h
+               character,
+               font->chars[character].x,
+               font->chars[character].y,
+               font->chars[character].w,
+               font->chars[character].h
         );
 #endif
     }
@@ -190,13 +197,13 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         return NULL;
     }
 
-    font->texture = plCreateTexture();
-    if(!font->texture) {
+    if(!(font->texture = plCreateTexture())) {
         plDeleteBitmapFont(font);
         plFreeImage(&image);
         return NULL;
     }
 
+#if defined(PL_MODE_OPENGL)
     glBindTexture(GL_TEXTURE_RECTANGLE, font->texture->id);
 
     glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -220,6 +227,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
             GL_UNSIGNED_BYTE,
             image.data[0]
     );
+#endif
 
 //    plFreeImage(&image);
 

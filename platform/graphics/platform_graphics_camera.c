@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_graphics.h>
+#include "graphics_private.h"
 
 #define PLCAMERA_DEFAULT_WIDTH      640
 #define PLCAMERA_DEFAULT_HEIGHT     480
@@ -33,6 +33,21 @@ For more information, please refer to <http://unlicense.org>
 #define PLCAMERA_DEFAULT_FOV        90
 #define PLCAMERA_DEFAULT_NEAR       0.1
 #define PLCAMERA_DEFAULT_FAR        100000
+
+#define PLCAMERA_BUFFER_COLOUR  0
+#define PLCAMERA_BUFFER_DEPTH   1
+
+void _plInitCameras(void) {
+    pl_graphics_state.max_cameras   = 1024;
+    pl_graphics_state.cameras       = (PLCamera**)malloc(sizeof(PLCamera) * pl_graphics_state.max_cameras);
+    pl_graphics_state.num_cameras   = 0;
+}
+
+void _plShutdownCameras(void) {
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 PLCamera *plCreateCamera(void) {
     PLCamera *camera = (PLCamera*)calloc(1, sizeof(PLCamera));
@@ -54,8 +69,16 @@ PLCamera *plCreateCamera(void) {
      *  *
      *  H
      */
-    camera->viewport.width   = PLCAMERA_DEFAULT_WIDTH;
-    camera->viewport.height  = PLCAMERA_DEFAULT_HEIGHT;
+    camera->viewport.width  = PLCAMERA_DEFAULT_WIDTH;
+    camera->viewport.height = PLCAMERA_DEFAULT_HEIGHT;
+    camera->r_width         = 0;
+    camera->r_height        = 0;
+
+#if defined(PL_MODE_OPENG)
+    glGenFramebuffers(1, &camera->gl_framebuffer[0]);
+    glGenRenderbuffers(1, &camera->gl_renderbuffer[PLCAMERA_BUFFER_COLOUR]);
+    glGenRenderbuffers(1, &camera->gl_renderbuffer[PLCAMERA_BUFFER_DEPTH]);
+#endif
 
     camera->bounds.mins = plCreateVector3D(
             -PLCAMERA_DEFAULT_BOUNDS, -PLCAMERA_DEFAULT_BOUNDS, -PLCAMERA_DEFAULT_BOUNDS);
@@ -70,17 +93,64 @@ void plDeleteCamera(PLCamera *camera) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
+    glDeleteFramebuffers(4, camera->gl_framebuffer);
+    glDeleteRenderbuffers(4, camera->gl_renderbuffer);
+#endif
+
     free(camera);
 }
 
+#define _plUseBufferScaling(a) \
+    ((a)->r_width != 0 && (a)->r_height != 0) && \
+    ((a)->r_width != (a)->viewport.width && (a)->r_height != (a)->viewport.height)
+
 void plSetupCamera(PLCamera *camera) {
-    if(!camera) {
-        return;
+    plAssert(camera);
+
+    if(_plUseBufferScaling(camera)) {
+
+        if(camera->old_r_height != camera->r_height && camera->old_r_width != camera->r_width) {
+            if (camera->v_buffer) {
+                free(camera->v_buffer);
+            }
+            camera->v_buffer = (uint8_t *) malloc(camera->r_width * camera->r_height * 4);
+
+            camera->old_r_width = camera->r_width;
+            camera->old_r_height = camera->r_height;
+
+            glDeleteFramebuffers(1, &camera->gl_framebuffer[0]);
+            glDeleteRenderbuffers(1, &camera->gl_renderbuffer[PLCAMERA_BUFFER_DEPTH]);
+            glDeleteRenderbuffers(1, &camera->gl_renderbuffer[PLCAMERA_BUFFER_COLOUR]);
+        }
+
+#if defined(PL_MODE_OPENG)
+
+        // Colour
+        glBindRenderbuffer(GL_RENDERBUFFER, camera->gl_renderbuffer[PLCAMERA_BUFFER_COLOUR]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB4, camera->r_width, camera->r_height);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->gl_framebuffer[0]);
+        glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+                                  camera->gl_renderbuffer[PLCAMERA_BUFFER_COLOUR]);
+
+        // Depth
+        glBindRenderbuffer(GL_RENDERBUFFER, camera->gl_renderbuffer[PLCAMERA_BUFFER_DEPTH]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camera->r_width, camera->r_height);
+        glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                  camera->gl_renderbuffer[PLCAMERA_BUFFER_DEPTH]);
+
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            PRINT(glErrorStringREGAL(glGetError()));
+        }
+
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+#endif
     }
 
     plViewport(camera->viewport.x, camera->viewport.y, camera->viewport.width, camera->viewport.height);
     plScissor(camera->viewport.x, camera->viewport.y, camera->viewport.width, camera->viewport.height);
 
+#if defined(PL_MODE_OPENGL)
     // todo, modernize start
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -124,5 +194,33 @@ void plSetupCamera(PLCamera *camera) {
         }
 
         default: break;
+    }
+#endif
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+void plDrawPerspective(void) {
+    for(PLCamera **camera = pl_graphics_state.cameras;
+        camera < pl_graphics_state.cameras + pl_graphics_state.num_cameras; ++camera) {
+        plAssert(camera);
+
+        plSetupCamera((*camera));
+
+        // todo, draw stuff...
+
+        if(_plUseBufferScaling((*camera))) {
+
+            glReadBuffer(GL_COLOR_ATTACHMENT0);
+            glReadPixels(0, 0, (*camera)->r_width, (*camera)->r_height, GL_BGRA, GL_UNSIGNED_BYTE,
+                         &(*camera)->v_buffer[0]);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+            plScissor(0, 0, (*camera)->viewport.width, (*camera)->viewport.height);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, (*camera)->gl_framebuffer[0]);
+            glBlitFramebuffer(0, 0, (*camera)->r_width, (*camera)->r_height, 0, 0, (*camera)->viewport.width,
+                              (*camera)->viewport.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        }
     }
 }

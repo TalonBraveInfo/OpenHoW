@@ -32,11 +32,14 @@ using namespace pl::graphics;
 /*	PLATFORM MODEL LOADER	*/
 
 PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c) {
+#if 0
     PLVector3D x = c - b;
     PLVector3D y = a - b;
-
-    PLVector3D normal = x.CrossProduct(y);
-    return normal.Normalize();
+    return x.CrossProduct(y).Normalize();
+#else
+    return plNormalizeVector3D(plVector3DCrossProduct(
+            plCreateVector3D(c.x - b.x, c.y - b.y, c.z - b.z), plCreateVector3D(a.x - b.x, a.y - b.y, a.z - b.z)));
+#endif
 }
 
 void plGenerateStaticModelNormals(PLStaticModel *model) {

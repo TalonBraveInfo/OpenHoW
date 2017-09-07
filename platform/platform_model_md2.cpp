@@ -38,45 +38,45 @@ Model format introduced in id Software's Quake 2.
 #define MD2_MAX_VERTICES    8192
 
 typedef struct {
-    PLshort index_xyz[3];
-    PLshort index_st[3];
+    int16_t index_xyz[3];
+    int16_t index_st[3];
 } MD2Triangle_t;
 
 typedef struct {
-    PLuchar v[3];                // scaled byte to fit in frame mins/maxs
-    PLuchar lightnormalindex;
+    unsigned char v[3];                // scaled byte to fit in frame mins/maxs
+    unsigned char lightnormalindex;
 } MD2TriangleVertex_t;
 
 typedef struct {
-    PLfloat scale[3];                    // multiply byte verts by this
-    PLfloat translate[3];                // then add this
+    float scale[3];                    // multiply byte verts by this
+    float translate[3];                // then add this
 
     PLchar name[16];                // frame name from grabbing
     MD2TriangleVertex_t verts[1];    // variable sized
 } MD2Frame_t;
 
 typedef struct {
-    PLshort S, T;
+    int16_t S, T;
 } MD2TextureCoordinate_t;
 
 typedef struct {
-    PLint ident;
-    PLint version;
-    PLuint skinwidth;
-    PLuint skinheight;
-    PLint framesize;        // Byte size of each frame.
-    PLint num_skins;
-    PLint num_xyz;
-    PLint num_st;            // Greater than num_xyz for seams.
-    PLint numtris;
-    PLint num_glcmds;        // Dwords in strip/fan command list.
-    PLint num_frames;
-    PLint ofs_skins;        // Each skin is a MAX_SKINNAME string.
-    PLint ofs_st;            // Byte offset from start for stverts.
-    PLint ofs_tris;        // Offset for dtriangles.
-    PLint ofs_frames;        // Offset for first frame.
-    PLint ofs_glcmds;
-    PLint ofs_end;        // End of file.
+    int ident;
+    int version;
+    unsigned int skinwidth;
+    unsigned int skinheight;
+    int framesize;        // Byte size of each frame.
+    int num_skins;
+    int num_xyz;
+    int num_st;            // Greater than num_xyz for seams.
+    int numtris;
+    int num_glcmds;        // Dwords in strip/fan command list.
+    int num_frames;
+    int ofs_skins;        // Each skin is a MAX_SKINNAME string.
+    int ofs_st;            // Byte offset from start for stverts.
+    int ofs_tris;        // Offset for dtriangles.
+    int ofs_frames;        // Offset for first frame.
+    int ofs_glcmds;
+    int ofs_end;        // End of file.
 } MD2_t;
 
 PLAnimatedModel *plLoadMD2Model(const PLchar *path) {

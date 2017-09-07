@@ -17,23 +17,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#ifndef _WIN32
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 #include "PL/platform_filesystem.h"
 
 /*	File System	*/
 
 PLresult _plInitIO(void) {
-    plFunctionStart();
-
     return PL_RESULT_SUCCESS;
 }
 
 void _plShutdownIO(void) {
-    plFunctionStart();
+
 }
 
 // Checks whether a file has been modified or not.
 bool plIsFileModified(time_t oldtime, const char *path) {
-    plFunctionStart();
     if (!oldtime) {
         _plSetErrorMessage("Invalid time, skipping check!\n");
         return false;
@@ -50,32 +53,26 @@ bool plIsFileModified(time_t oldtime, const char *path) {
     }
 
     return false;
-    plFunctionEnd();
 }
 
 time_t plGetFileModifiedTime(const PLchar *path) {
-    plFunctionStart();
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
         _plSetErrorMessage("Failed to get modification time!\n");
         return 0;
     }
     return attributes.st_mtime;
-    plFunctionEnd();
 }
 
 // todo, move into platform_string and make safer
 void plLowerCasePath(char *out) {
-    plFunctionStart();
     for (int i = 0; out[i]; i++) {
         out[i] = (PLchar) tolower(out[i]);
     }
-    plFunctionEnd();
 }
 
 // Creates a folder at the given path.
 bool plCreateDirectory(const char *path) {
-    plFunctionStart();
 #ifdef _WIN32
     if(CreateDirectory(path, NULL) || (GetLastError() == ERROR_ALREADY_EXISTS))
         return true;
@@ -89,17 +86,16 @@ bool plCreateDirectory(const char *path) {
         if (stat(path, &buffer) == -1) {
             if (mkdir(path, 0777) == 0)
                 return true;
-            else {
-                switch (errno) {
-                    case EACCES:
-                        _plSetErrorMessage("Failed to get permission! (%s)\n", path);
-                    case EROFS:
-                        _plSetErrorMessage("File system is read only! (%s)\n", path);
-                    case ENAMETOOLONG:
-                        _plSetErrorMessage("Path is too long! (%s)\n", path);
-                    default:
-                        _plSetErrorMessage("Failed to create directory! (%s)\n", path);
-                }
+
+            switch (errno) {
+                case EACCES:
+                    _plSetErrorMessage("Failed to get permission! (%s)\n", path);
+                case EROFS:
+                    _plSetErrorMessage("File system is read only! (%s)\n", path);
+                case ENAMETOOLONG:
+                    _plSetErrorMessage("Path is too long! (%s)\n", path);
+                default:
+                    _plSetErrorMessage("Failed to create directory! (%s)\n", path);
             }
         } else
             // Path already exists, so this is fine.
@@ -112,7 +108,6 @@ bool plCreateDirectory(const char *path) {
 
 // Returns the extension for the file.
 const char *plGetFileExtension(const char *in) {
-    plFunctionStart();
     if (!plIsValidString(in)) {
         return "";
     }
@@ -123,12 +118,10 @@ const char *plGetFileExtension(const char *in) {
     }
 
     return s + 1;
-    plFunctionEnd();
 }
 
 // Strips the extension from the filename.
 void plStripExtension(char *dest, const char *in) {
-    plFunctionStart();
     if (!plIsValidString(in)) {
         *dest = 0;
         return;
@@ -137,7 +130,6 @@ void plStripExtension(char *dest, const char *in) {
     const char *s = strrchr(in, '.');
     while (in < s) *dest++ = *in++;
     *dest = 0;
-    plFunctionEnd();
 }
 
 // Returns a pointer to the last component in the given filename. 
@@ -151,7 +143,6 @@ const char *plGetFileName(const char *path) {
 
 // Returns the name of the systems current user.
 void plGetUserName(char *out) {
-    plFunctionStart();
 #ifdef _WIN32
     PLchar userstring[PL_MAX_USERNAME];
 
@@ -177,56 +168,75 @@ void plGetUserName(char *out) {
     }
 
     //strncpy(out, cUser, sizeof(out));
-    plFunctionEnd();
 }
 
 /*	Scans the given directory.
 	On each found file it calls the given function to handle the file.
 */
-void plScanDirectory(const char *path, const char *extension, void(*Function)(const char *filepath)) {
-    plFunctionStart();
-
+void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive) {
     char filestring[PL_SYSTEM_MAX_PATH];
 #ifdef _WIN32
-    {
         WIN32_FIND_DATA	finddata;
         HANDLE			find;
 
-        sprintf(filestring, "%s/*%s", path, extension);
+        snprintf(filestring, sizeof(filestring), "%s/*", path);
 
         find = FindFirstFile(filestring, &finddata);
-        if (find == INVALID_HANDLE_VALUE)
-        {
+        if (find == INVALID_HANDLE_VALUE) {
             plSetError("Failed to find an initial file!\n");
             return;
         }
 
-        do
-        {
-            // Pass the entire dir + filename.
-            sprintf(filestring, "%s/%s", path, finddata.cFileName);
-            Function(filestring);
+        do {
+            if(strcmp(finddata.cFileName, ".") == 0 || strcmp(finddata.cFileName, "..") == 0) {
+                continue;
+            }
+
+            snprintf(filestring, sizeof(filestring), "%s/%s", path, finddata.cFileName);
+
+            if(finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                if(recursive) {
+                    plScanDirectory(filestring, extension, Function, recursive);
+                }
+            }
+            else{
+                if(pl_strcasecmp(plGetFileExtension(finddata.cFileName), extension) == 0) {
+                    Function(filestring);
+                }
+            }
         } while(FindNextFile(find, &finddata));
-    }
+
+        FindClose(find);
 #else
     DIR *directory = opendir(path);
     if (directory) {
         struct dirent *entry;
         while ((entry = readdir(directory))) {
-            if (strcasestr(entry->d_name, extension)) {
-                sprintf(filestring, "%s/%s", path, entry->d_name);
-                Function(filestring);
+            if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue;
+            }
+
+            snprintf(filestring, sizeof(filestring), "%s/%s", path, entry->d_name);
+
+            struct stat st;
+            if(stat(filestring, &st) == 0) {
+                if(S_ISREG(st.st_mode)) {
+                    if(pl_strcasecmp(plGetFileExtension(entry->d_name), extension) == 0) {
+                        Function(filestring);
+                    }
+                }
+                else if(S_ISDIR(st.st_mode) && recursive) {
+                    plScanDirectory(filestring, extension, Function, recursive);
+                }
             }
         }
 
         closedir(directory);
     }
 #endif
-    plFunctionEnd();
 }
 
 void plGetWorkingDirectory(PLchar *out) {
-    plFunctionStart();
     if (!getcwd(out, PL_SYSTEM_MAX_PATH)) {
         switch (errno) {
             default:
@@ -258,8 +268,6 @@ void plGetWorkingDirectory(PLchar *out) {
 }
 
 void plSetWorkingDirectory(const char *path) {
-    plFunctionStart();
-
     if(chdir(path) != 0) {
         switch(errno) {
             default: break;
@@ -304,6 +312,7 @@ bool plPathExists(const char *path) {
     return false;
 }
 
+// todo, return plresult instead
 bool plCopyFile(const char *path, const char *dest) {
     FILE *fold = fopen(path, "rb");
     if(!fold) {

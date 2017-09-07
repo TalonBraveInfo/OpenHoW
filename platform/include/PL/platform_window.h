@@ -26,6 +26,8 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #endif
 
 typedef struct PLWindow {
+    unsigned int sys_id;
+
     char *title, *classname;
 
     unsigned int width, height;
@@ -36,24 +38,15 @@ typedef struct PLWindow {
     bool is_unlocked;
 
     int vsync_interval;
-
-#ifdef _WIN32
-    HWND	instance;
-    HDC		dc;
-#else	// Linux
-    Window instance;
-#endif
 } PLWindow;
 
 PL_EXTERN_C
 
 PL_EXTERN void plMessageBox(const char *title, const char *msg, ...);
 
-PL_EXTERN void plShowCursor(PLbool show);    // Shows or hides the cursor for the active window.
-PL_EXTERN void plGetCursorPosition(int *x, int *y);
-
 // Window Management
-PL_EXTERN void plCreateWindow(PLWindow *window);
+PL_EXTERN PLWindow *plCreateWindow(const char *title, int x, int y, unsigned int w, unsigned int h);
+PL_EXTERN void plDeleteWindow(PLWindow *window);
 
 PL_EXTERN unsigned int plGetScreenWidth(void);    // Returns width of current screen.
 PL_EXTERN unsigned int plGetScreenHeight(void);    // Returns height of current screen.

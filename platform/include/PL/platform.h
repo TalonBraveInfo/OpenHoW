@@ -118,35 +118,11 @@ support.
 #   define plAssert(a) (a)
 #endif
 
-// These are usually expected to be defined already, but in-case they're not then we define them here.
-#ifndef BOOL
-#	define BOOL     bool
-#endif
-#ifndef TRUE
-#	define TRUE     true
-#endif
-#ifndef FALSE
-#	define FALSE    false
-#endif
-#define PL_BOOL     BOOL
-#define PL_TRUE     TRUE
-#define PL_FALSE    FALSE
-
-typedef int                     PLint;
 typedef unsigned int            PLuint;
 typedef char                    PLchar;
-typedef unsigned char           PLuchar, PLbyte;
-#ifdef __cplusplus
-typedef bool					PLbool;
-#else
-typedef unsigned char           PLbool;
-#endif
-typedef float                   PLfloat;
-typedef short                   PLshort;
-typedef unsigned short          PLushort;
 
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
-#define plIsValidString(a)  ((a[0] != '\0') && (a[0] != ' '))
+#define plIsValidString(a)  (((a)[0] != '\0') && ((a)[0] != ' '))
 
 //////////////////////////////////////////////////////////////////
 
@@ -168,6 +144,9 @@ typedef enum {
     PL_RESULT_DRAW_MODE,        // Invalid mesh draw mode!
     PL_RESULT_DRAW_PRIMITIVE,   // Invalid mesh primitive!
 
+    // WINDOW
+    PL_RESULT_DISPLAY,  // Failed to open/create display!
+
     // IMAGE
     PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
     PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
@@ -185,7 +164,7 @@ enum {
     PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
     PL_SUBSYSTEM_LOG        = (1 << 4), // Logging
     PL_SUBSYSTEM_WINDOW     = (1 << 5), // Windowing
-    PL_SUBSYSTEM_CONSOLE    = (1 << 6), // Console
+    //PL_SUBSYSTEM_CONSOLE    = (1 << 6), // Console
 };
 
 #if defined(PL_INTERNAL)
@@ -275,19 +254,44 @@ PL_EXTERN const char * plGetError(void);        // Returns the last recorded err
 // CL Arguments
 PL_EXTERN const char *plGetCommandLineArgument(const char *arg);
 
+//////////////////////////////////////////////////////////////////
+
+PL_EXTERN void pl_crc32(const void *data, size_t n_bytes, uint32_t *crc);
+
+//////////////////////////////////////////////////////////////////
+
 #if defined(PL_INTERNAL)
+
+PL_EXTERN bool _plIsSubSystemActive(unsigned int subsystem);
+
+//////////////////////////////////////////////////////////////////
 
 PL_EXTERN void _plSetFunctionResult(PLresult result);
 
 #define _plUpdateErrorFunction()    _plSetCurrentFunction(PL_FUNCTION)
-#define _plReportError(type, message, ...) \
+#define _plReportError(type, ...) \
     _plUpdateErrorFunction(); \
     _plSetFunctionResult(type); \
-    _plSetErrorMessage(message, __VA_ARGS__)
+    _plSetErrorMessage(__VA_ARGS__)
 
 #endif
 
 #include <PL/platform_string.h>
+
+//////////////////////////////////////////////////////////////////
+
+#define PRINT(...)          printf(__VA_ARGS__)
+#ifdef _DEBUG
+#   define DPRINT(...)      PRINT(__VA_ARGS__)
+#else
+#   define DPRINT(...)      (__VA_ARGS__)
+#endif
+
+PL_EXTERN bool plIsRunning(void);
+
+PL_EXTERN double plGetDeltaTime(void);
+
+PL_EXTERN void plProcess(double delta);
 
 PL_EXTERN_C_END
 
@@ -298,11 +302,11 @@ PL_EXTERN_C_END
 */
 static PL_INLINE time_t plStringToTime(const PLchar *ts) {
     PLchar s_month[5];
-    PLint day, year;
+    int day, year;
     sscanf(ts, "%s %d %d", s_month, &day, &year);
 
     static const PLchar months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-    PLint month = (PLint)((strstr(months, s_month) - months) / 3);
+    int month = (int)((strstr(months, s_month) - months) / 3);
     struct tm time = {0};
     time.tm_mon = month;
     time.tm_mday = day;

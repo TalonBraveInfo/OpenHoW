@@ -30,6 +30,27 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
+enum {
+    PL_VAR_FLOAT,
+    PL_VAR_INTEGER,
+    PL_VAR_STRING,
+    PL_VAR_BOOLEAN,
+};
+
+typedef struct PLConsoleVariable {
+    const char *var, *value;
+
+    unsigned int type;
+
+    void(*Callback)(unsigned int argc, char *argv[]);
+
+    char description[512];
+
+    /////////////////////////////
+
+    const char *default_value;
+} PLConsoleVariable;
+
 PL_EXTERN_C
 
 PL_EXTERN void plSetupConsole(unsigned int num_instances);
@@ -39,6 +60,11 @@ PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
 PL_EXTERN void plShowConsole(bool show);
 PL_EXTERN void plDrawConsole(void);
 
-PL_EXTERN bool plIsConsoleVisible(void);
+// CONSOLE VARIABLES
+void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
+
+#define plAddConsoleVariable(NAME, ...) \
+    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
+    plRegisterConsoleVariables(&NAME, 1);
 
 PL_EXTERN_C_END

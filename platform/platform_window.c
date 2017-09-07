@@ -19,21 +19,78 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "PL/platform_window.h"
 #include "PL/platform_log.h"
-#include "PL/platform_math.h"
 
-#if defined(__linux__)
-#   include <X11/X.h>
-#   include <X11/Xlib.h>
+#if defined(PL_USE_SDL2)
+#   include <SDL2/SDL.h>
+#else
+#   if defined(__linux__)
+#       include <X11/X.h>
+#       include <X11/Xlib.h>
+#   endif
 #endif
 
 /*	Simple Window/Display Handling	*/
-// todo, rewrite ALL of this.
 
 #define PL_WINDOW_WIDTH    640
 #define PL_WINDOW_HEIGHT   480
 
-PLuint plGetScreenWidth(void) {
+#if !defined(PL_USE_SDL2) && (defined(__linux__) || defined(__APPLE__))
+Display *_plwindow_x11_display;
+Window _plwindow_x11_root;
+#endif
+
+#include "PL/platform_log.h"
+#define PL_WINDOW_LOG  "pl_window"
+#ifdef _DEBUG
+#	define plWindowLog(...) plWriteLog(PL_WINDOW_LOG, __VA_ARGS__)
+#else
+#   define plWindowLog(...)
+#endif
+
+PLresult _plInitWindow(void) {
+    plClearLog(PL_WINDOW_LOG);
+
+#if defined(PL_USE_SDL2)
+
+
+    SDL_DisableScreenSaver();
+
+#elif defined(__linux__) || defined(__APPLE__)
+    // todo, finish...
+
+    _plwindow_x11_display = XOpenDisplay(NULL);
+    if(!_plwindow_x11_display) {
+        _plSetErrorMessage("Failed to create display!\n");
+        return PL_RESULT_DISPLAY;
+    }
+
+#endif
+
+    return PL_RESULT_SUCCESS;
+}
+
+void _plShutdownWindow(void) {
+#if defined(PL_USE_SDL2)
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+#endif
+}
+
+///////////////////////////////////////////////////////////
+
+#define DEFAULT_SCREEN_WIDTH    640
+#define DEFAULT_SCREEN_HEIGHT   480
+
+unsigned int plGetScreenWidth(void) {
     plFunctionStart();
+#if defined(PL_USE_SDL2)
+    SDL_Rect screen;
+    if(SDL_GetDisplayBounds(0, &screen) == 0) {
+        plWindowLog("Failed to get display bounds!\n");
+        return DEFAULT_SCREEN_WIDTH;
+    }
+
+    return (unsigned int) screen.w;
+#else
 #ifdef _WIN32
     return GetSystemMetrics(SM_CXSCREEN);
 #else
@@ -49,12 +106,22 @@ PLuint plGetScreenWidth(void) {
         return PL_WINDOW_WIDTH;
     }
 
-    return (PLuint) screen->width;
+    return (unsigned int) screen->width;
+#endif
 #endif
 }
 
-PLuint plGetScreenHeight(void) {
+unsigned int plGetScreenHeight(void) {
     plFunctionStart();
+#if defined(PL_USE_SDL2)
+    SDL_Rect screen;
+    if(SDL_GetDisplayBounds(0, &screen) == 0) {
+        plWindowLog("Failed to get display bounds!\n");
+        return DEFAULT_SCREEN_HEIGHT;
+    }
+
+    return (unsigned int) screen.h;
+#else
 #ifdef _WIN32
     return GetSystemMetrics(SM_CYSCREEN);
 #else
@@ -70,156 +137,78 @@ PLuint plGetScreenHeight(void) {
         return PL_WINDOW_HEIGHT;
     }
 
-    return (PLuint) screen->height;
+    return (unsigned int) screen->height;
+#endif
 #endif
 }
 
-#if defined(__linux__) || defined(__APPLE__)
-Display *dMainDisplay;
-Window wRootWindow;
-#endif
+///////////////////////////////////////////////////////////
 
 unsigned int plGetScreenCount(void) {
+#if defined(PL_USE_SDL2)
+    int screens = SDL_GetNumVideoDisplays();
+    if(!screens) {
+        return 0;
+    }
+    return (unsigned int) screens;
+#else
 #ifdef _WIN32
     return GetSystemMetrics(SM_CMONITORS);
 #else
-    return (unsigned int)XScreenCount(dMainDisplay);
+    return (unsigned int)XScreenCount(_plwindow_x11_display);
+#endif
 #endif
 }
+
+///////////////////////////////////////////////////////////
 
 /*	Window Creation */
 
-PL_INSTANCE iGlobalInstance;
-
-int iActive = 0,    // Number of current active windows.
-        iScreen;            // Default screen.
-
-/*	Create a new window.
-*/
-void plCreateWindow(PLWindow *window) {
+PLWindow *plCreateWindow(const char *title, int x, int y, unsigned int w, unsigned int h) {
     plFunctionStart();
 
-    // Make sure the window has been initialized.
-    if (!window) {
-        _plSetErrorMessage("Window has not been allocated!\n");
-        return;
+    // todo, add to global pool
+    PLWindow *window = (PLWindow*)malloc(sizeof(PLWindow));
+    if (!window) { // Make sure the window has been initialized.
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate window! (%d)\n", sizeof(PLWindow));
+        return NULL;
     }
-#if 0
-    // Make sure that any platform specific window systems are set up.
-    else if()
-    {
-#ifdef __linux__
-        dMainDisplay = XOpenDisplay(NULL);
-        if(!dMainDisplay)
-        {
-            plSetError("Failed to open display!\n");
-            return;
-        }
 
-        iScreen = DefaultScreen(dMainDisplay);
-#else
-#endif
+    memset(window, 0, sizeof(PLWindow));
+
+#if defined(PL_USE_SDL2)
+    SDL_Window *sdl_window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_OPENGL);
+    if(!sdl_window) {
+        plDeleteWindow(window);
+        return NULL;
     }
-#endif
+    SDL_GL_MakeCurrent(sdl_window, SDL_GL_CreateContext(sdl_window));
 
-#ifdef _WIN32
-    {
-        WNDCLASSEX wWindowClass;
-
-        wWindowClass.cbClsExtra		= 0;
-        wWindowClass.cbSize			= sizeof(WNDCLASSEX);
-        wWindowClass.cbWndExtra		= 0;
-        wWindowClass.hbrBackground	= NULL;
-        wWindowClass.hCursor		= LoadCursor(iGlobalInstance,IDC_ARROW);
-        wWindowClass.hIcon			= LoadIcon(iGlobalInstance,IDI_APPLICATION);
-        wWindowClass.hIconSm		= 0;
-        wWindowClass.hInstance		= iGlobalInstance;
-        wWindowClass.lpfnWndProc	= NULL;	// (WNDPROC)Platform_WindowProcedure;
-        wWindowClass.lpszClassName	= window->classname;
-        wWindowClass.lpszMenuName	= 0;
-        wWindowClass.style			= CS_OWNDC;
-
-        if(!RegisterClassEx(&wWindowClass))
-        {
-            plSetError("Failed to register window class!\n");
-            return;
-        }
-
-        window->instance = CreateWindowEx(
-            0,
-            window->classname,
-            window->title,
-            WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_CLIPCHILDREN|WS_CLIPSIBLINGS,
-            window->x,
-            window->y,
-            window->width,
-            window->height,
-            NULL,NULL,
-            iGlobalInstance,
-            NULL);
-        if (!window->instance)
-        {
-            plSetError("Failed to create window!\n");
-            return;
-        }
-
-        UpdateWindow(window->instance);
-        SetForegroundWindow(window->instance);
-
-        window->dc = GetDC(window->instance);
-    }
-#else	// Linux
-    {
-        // Create our window.
-        window->instance = XCreateSimpleWindow(
-                dMainDisplay,
-                RootWindow(dMainDisplay, iScreen),
-                window->x,
-                window->y,
-                window->width,
-                window->height,
-                1,
-                BlackPixel(dMainDisplay, iScreen),
-                WhitePixel(dMainDisplay, iScreen));
-        if (!window->instance) {
-            _plSetErrorMessage("Failed to create window!\n");
-            return;
-        }
-
-        // Set the window title.
-        XStoreName(dMainDisplay, window->instance, window->title);
-    }
+    window->sys_id = SDL_GetWindowID(sdl_window);
 #endif
 
     window->is_active = true;
+
+    return window;
 }
 
-/*  
-*/
-void plShowCursor(PLbool show) {
-    static bool _cursorvisible = true;
-    if (show == _cursorvisible)
+void plDeleteWindow(PLWindow *window) {
+    if(!window) {
         return;
-#ifdef _WIN32
-    ShowCursor(show);
-#else	// Linux
+    }
+
+#if defined(PL_USE_SDL2)
+    SDL_Window *sdl_window = SDL_GetWindowFromID(window->sys_id);
+    if(sdl_window) {
+        SDL_DestroyWindow(sdl_window);
+    }
 #endif
-    _cursorvisible = show;
+
+    // todo, remove from global pool
+    free(window);
 }
 
-/*	Gets the position of the cursor.
-	TODO:
-		Move into platform_input.
-*/
-void plGetCursorPosition(int *x, int *y) {
-#ifdef _WIN32
-    POINT	pPoint;
-    GetCursorPos(&pPoint);
-    *x = pPoint.x; *y = pPoint.y;
-#else	// Linux
-    // todo, implement me!
-#endif
-}
+///////////////////////////////////////////////////////////
 
 /*	Displays a simple dialogue window.
 */
@@ -268,7 +257,7 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
 
             if (xEvent.type == Expose) {
                 XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 10, cOut,
-                            (PLint) strlen(cOut));
+                            (int) strlen(cOut));
                 XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 54,
                             "Press any key to continue...", 32);
             } else if (xEvent.type == KeyPress)
@@ -283,42 +272,13 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
 }
 
 void plSwapBuffers(PLWindow *window) {
+#if defined(PL_USE_SDL2)
+    SDL_GL_SwapWindow(SDL_GetWindowFromID(window->sys_id));
+#else
 #ifdef _WIN32
     SwapBuffers(window->dc);
 #else	// Linux
     //glXSwapBuffers() // todo
 #endif
-}
-
-////////////////////////////////////////////////////////////////////
-
-#include "PL/platform_log.h"
-#define PL_WINDOW_LOG  "pl_window"
-#ifdef _DEBUG
-#	define plWindowLog(...) plWriteLog(PL_WINDOW_LOG, __VA_ARGS__)
-#else
-#   define plWindowLog(...)
 #endif
-
-#if !defined(_WIN32)
-
-PLint _plHandleX11Error(Display *display, XErrorEvent *error) {
-//    XGetErrorText()
-    return 0;
-}
-
-#endif
-
-PLresult _plInitWindow(void) {
-    plFunctionStart();
-
-    plClearLog(PL_WINDOW_LOG);
-
-    XSetErrorHandler(_plHandleX11Error);
-
-    return PL_RESULT_SUCCESS;
-}
-
-void _plShutdownWindow(void) {
-    plFunctionStart();
 }

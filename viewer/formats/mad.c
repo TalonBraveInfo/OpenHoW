@@ -151,14 +151,14 @@ void InitializeMADPackages(void) {
     PRINT("\nExtracting MAD/MTD packages...\n");
 
     if (g_state.is_psx) { // tidy file paths
-        plScanDirectory("./tims/", ".mad", ExtractMADPackage);
-        plScanDirectory("./fe/", ".mad", ExtractMADPackage);
-        plScanDirectory("./chars/", ".mad", ExtractMADPackage);
+        plScanDirectory("./tims/", ".mad", ExtractMADPackage, false);
+        plScanDirectory("./fe/", ".mad", ExtractMADPackage, false);
+        plScanDirectory("./chars/", ".mad", ExtractMADPackage, false);
     } else { // sloppy file paths
-        plScanDirectory("./Chars/", ".mad", ExtractMADPackage);
-        plScanDirectory("./Chars/", ".mtd", ExtractMADPackage);
-        plScanDirectory("./Maps/", ".mad", ExtractMADPackage);
-        plScanDirectory("./Maps/", ".mtd", ExtractMADPackage);
+        plScanDirectory("./Chars/", ".mad", ExtractMADPackage, false);
+        plScanDirectory("./Chars/", ".mtd", ExtractMADPackage, false);
+        plScanDirectory("./Maps/", ".mad", ExtractMADPackage, false);
+        plScanDirectory("./Maps/", ".mtd", ExtractMADPackage, false);
     }
 
     PRINT("Done!\n");

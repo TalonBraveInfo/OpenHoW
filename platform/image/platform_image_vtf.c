@@ -228,8 +228,8 @@ void _plConvertVTFFormat(PLImage *image, unsigned int in) {
 bool _plVTFFormatCheck(FILE *fin) {
     rewind(fin);
 
-    PLchar ident[4];
-    fread(ident, sizeof(PLchar), 4, fin);
+    char ident[4];
+    fread(ident, sizeof(char), 4, fin);
 
     return (bool)(strncmp(ident, "VTF", 3) == 0);
 }
@@ -239,24 +239,28 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
 
     VTFHeader header;
     memset(&header, 0, sizeof(VTFHeader));
-#define VTF_VERSION(maj, min)   ((maj == header.version[1] && min <= header.version[0]) || maj < header.version[0])
+#define VTF_VERSION(maj, min)   ((((maj)) == header.version[1] && (min) <= header.version[0]) || (maj) < header.version[0])
 
     if (fread(&header, sizeof(VTFHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
-    } else if (VTF_VERSION(7, 5)) {
-        return PL_RESULT_FILEVERSION;
-    } else if (!plIsValidImageSize(header.width, header.height)) {
-        return PL_RESULT_IMAGERESOLUTION;
-    } else {
-        if(header.lowresimageformat != VTF_FORMAT_DXT1) {
-            _plSetErrorMessage("Invalid texture format for lowresimage in VTF");
-            return PL_RESULT_IMAGEFORMAT;
-        }
+    }
 
-        if ((header.lowresimagewidth > 16) || (header.lowresimageheight > 16) ||
-            (header.lowresimagewidth > header.width) || (header.lowresimageheight > header.height)) {
-            return PL_RESULT_IMAGERESOLUTION;
-        }
+    if (VTF_VERSION(7, 5)) {
+        return PL_RESULT_FILEVERSION;
+    }
+
+    if (!plIsValidImageSize(header.width, header.height)) {
+        return PL_RESULT_IMAGERESOLUTION;
+    }
+
+    if(header.lowresimageformat != VTF_FORMAT_DXT1) {
+        _plSetErrorMessage("Invalid texture format for lowresimage in VTF");
+        return PL_RESULT_IMAGEFORMAT;
+    }
+
+    if ((header.lowresimagewidth > 16) || (header.lowresimageheight > 16) ||
+        (header.lowresimagewidth > header.width) || (header.lowresimageheight > header.height)) {
+        return PL_RESULT_IMAGERESOLUTION;
     }
 
     // todo, use the headersize flag so we can load this more intelligently!
@@ -282,7 +286,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
     _plConvertVTFFormat(out, header.highresimageformat);
 
     out->levels = 1;
-    out->data = (PLbyte**)calloc(1, sizeof(PLbyte*));
+    out->data = (uint8_t**)calloc(1, sizeof(uint8_t*));
 
     /*
     if (header.version[1] >= 3) {
@@ -306,8 +310,8 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
                     miph *= (unsigned int)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
                     PLuint mipsize = _plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
-                        out->data[0] = (PLbyte*)calloc(mipsize, sizeof(PLbyte));
-                        if (fread(out->data[0], sizeof(PLbyte), mipsize, fin) != mipsize) {
+                        out->data[0] = (uint8_t*)calloc(mipsize, sizeof(uint8_t));
+                        if (fread(out->data[0], sizeof(uint8_t), mipsize, fin) != mipsize) {
                             plFreeImage(out);
                             return PL_RESULT_FILEREAD;
                         }

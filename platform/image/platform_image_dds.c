@@ -54,21 +54,15 @@ enum DDSFlag {
 };
 
 bool _plDDSFormatCheck(FILE *fin) {
-    plFunctionStart();
-
     rewind(fin);
 
     PLchar ident[4];
     fread(ident, sizeof(PLchar), 4, fin);
 
-    return (PLbool)(strncmp(ident, "DDS", 3) == 0);
-
-    plFunctionEnd();
+    return (bool)(strncmp(ident, "DDS", 3) == 0);
 }
 
 PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
-    plFunctionStart();
-
     DDSHeader header;
     memset(&header, 0, sizeof(DDSHeader));
     if(fread(&header, sizeof(DDSHeader), 1, fin) != 1) {
@@ -81,6 +75,4 @@ PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
     out->height = header.height;
 
     return PL_RESULT_SUCCESS;
-
-    plFunctionEnd();
 }

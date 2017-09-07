@@ -74,22 +74,22 @@ typedef enum PLColourFormat {
 
 typedef struct PLImage {
 #if 1
-    PLbyte **data;
+    uint8_t **data;
 #else
-    PLbyte *data;
+    uint8_t *data;
 #endif
 
-    PLuint x, y;
-    PLuint width, height;
-    PLuint size;
-    PLuint levels;
+    unsigned int x, y;
+    unsigned int width, height;
+    unsigned int size;
+    unsigned int levels;
 
-    PLchar path[PL_SYSTEM_MAX_PATH];
+    char path[PL_SYSTEM_MAX_PATH];
 
     PLImageFormat format;
     PLColourFormat colour_format;
 
-    PLuint flags;
+    unsigned int flags;
 } PLImage;
 
 #define PLIMAGE_EXTENSION_FTX   "ftx"   // Ritual's FTX image format
@@ -104,19 +104,22 @@ typedef struct PLImage {
 
 PL_EXTERN_C
 
-PL_EXTERN bool plLoadImage(const PLchar *path, PLImage *out);
+
+
+PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
 PL_EXTERN PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out);
-PL_EXTERN PLresult plWriteImage(const PLImage *image, const PLchar *path);
+PL_EXTERN PLresult plWriteImage(const PLImage *image, const char *path);
 
-PL_EXTERN PLuint plGetSamplesPerPixel(PLColourFormat format);
+PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
 
-PL_EXTERN bool plIsValidImageSize(PLuint width, PLuint height);
+PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
+PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
 #if defined(PL_INTERNAL)
 
 void plFreeImage(PLImage *image);
 
-PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
+unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 
 bool _plDDSFormatCheck(FILE *fin);
 bool _plDTXFormatCheck(FILE *fin);
@@ -132,10 +135,10 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF imag
 PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
 PLresult _plLoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadBMPImage(FILE *fin, PLImage *out);
-PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out);
+PLresult _plLoadTIFFImage(const char *path, PLImage *out);
 
 #endif
 
-PLresult plWriteTIFFImage(const PLImage *image, const PLchar *path);
+PLresult plWriteTIFFImage(const PLImage *image, const char *path);
 
 PL_EXTERN_C_END

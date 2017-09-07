@@ -43,4 +43,5 @@ add_definitions("-D_DEBUG")
 
 add_subdirectory(platform)
 # add_subdirectory(setup)
+add_subdirectory(editor)
 add_subdirectory(viewer)

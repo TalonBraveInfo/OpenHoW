@@ -41,7 +41,7 @@ PL_EXTERN void plStripExtension(PLchar *dest, const PLchar *in);
 PL_EXTERN const PLchar *plGetFileExtension(const PLchar *in);
 PL_EXTERN const PLchar *plGetFileName(const PLchar *path);
 
-PL_EXTERN void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function)(const char *filepath));
+PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
 
 PL_EXTERN void plLowerCasePath(char *out);
 

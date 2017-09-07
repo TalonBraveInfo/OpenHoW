@@ -82,15 +82,15 @@ PL_EXTERN_C
 
 // Static
 PLStaticModel *plCreateStaticModel(void);
-PLStaticModel *plLoadStaticModel(const PLchar *path);
+PLStaticModel *plLoadStaticModel(const char *path);
 void plDeleteStaticModel(PLStaticModel *model);
 
 // Animated
 PLAnimatedModel *plCreateAnimatedModel(void);
-PLAnimatedModel *plLoadAnimatedModel(const PLchar *path);
+PLAnimatedModel *plLoadAnimatedModel(const char *path);
 void plDeleteAnimatedModel(PLAnimatedModel *model);
 
-PLAnimatedModel *plLoadU3DModel(const PLchar *path);
+PLAnimatedModel *plLoadU3DModel(const char *path);
 
 // Utility
 void plGenerateStaticModelNormals(PLStaticModel *model);

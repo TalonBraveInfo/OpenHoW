@@ -29,6 +29,6 @@ For more information, please refer to <http://unlicense.org>
 
 PL_EXTERN_C
 
-PLAnimatedModel *plLoadU3DModel(const PLchar *path);
+PLAnimatedModel *plLoadU3DModel(const char *path);
 
 PL_EXTERN_C_END

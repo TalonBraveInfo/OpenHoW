@@ -25,11 +25,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(setup)
+project(editor)
 
-file(GLOB SETUP_SOURCE_FILES *.c *.h)
+file(GLOB SOURCE_FILES
+        *.c *.h *.cpp
 
-add_executable(setup ${SETUP_SOURCE_FILES})
+        )
 
-target_include_directories(setup PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(setup platform)
+find_package(wxWidgets REQUIRED gl core base aui)
+include(${wxWidgets_USE_FILE})
+
+add_executable(editor ${SOURCE_FILES})
+
+target_include_directories(editor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(editor platform IL ILU ILUT ${wxWidgets_LIBRARIES})

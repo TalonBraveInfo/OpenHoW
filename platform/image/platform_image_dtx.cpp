@@ -82,7 +82,7 @@ enum DTXFormat {
     DTX_FORMAT_S3TC_DXT5,
 } DTXFormat;
 
-PLbyte _plGetDTXFormat(DTXHeader *dtx) {
+uint8_t _plGetDTXFormat(DTXHeader *dtx) {
     // This is a little hacky, DTX version 2 images don't seem to use
     // the extra[2] slot the same way as later versions. So we need to
     // basically switch it to 0 since 99.9% of textures from that period
@@ -100,7 +100,7 @@ bool _plDTXFormatCheck(FILE *fin) {
 
     // Try reading in the type first, as Lithtech has "resource types" rather than idents.
     int type;
-    if((fread(&type, sizeof(int), 1, fin) != 1)) {
+    if(fread(&type, sizeof(int), 1, fin) != 1) {
         return false;
     }
 
@@ -167,10 +167,10 @@ PLresult _plLoadDTXImage(FILE *fin, PLImage *out) {
     for (int i = 0; i < header.mipmaps; i++) {
     }
 
-    out->data = new PLbyte*[header.mipmaps];
-    out->data[0] = new PLbyte[out->size];
+    out->data = new uint8_t*[header.mipmaps];
+    out->data[0] = new uint8_t[out->size];
 
-    fread(out->data[0], sizeof(PLbyte), out->size, fin);
+    fread(out->data[0], sizeof(uint8_t), out->size, fin);
 
     /*	for (PLuint i = 0; i < (PLuint)size; i += 4)
     {

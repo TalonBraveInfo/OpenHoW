@@ -27,58 +27,56 @@ For more information, please refer to <http://unlicense.org>
 
 #include "object.h"
 
-StaticObject **static_objects;
-unsigned int num_static_objects;
-
 ///////////////////////////////////////////////////
 
 PlayerObject player_objects[MAX_PLAYERS];
 unsigned int num_player_objects;
+
+StaticObject static_objects[MAX_STATIC_OBJECTS];
+unsigned int num_static_objects;
+
+void ClearObjects(void) {
+    memset(&player_objects, 0, sizeof(PlayerObject) * MAX_PLAYERS);
+    memset(&static_objects, 0, sizeof(StaticObject) * MAX_STATIC_OBJECTS);
+
+    num_player_objects =
+    num_static_objects = 0;
+}
 
 ///////////////////////////////////////////////////
 
 void InitializeObjects(void) {
     PRINT("Initializing objects...\n");
 
-    memset(&player_objects, 0, sizeof(PlayerObject) * MAX_PLAYERS);
-
-    // todo, see how much memory we have available for this?
-    //static_objects = (StaticObject**)calloc(4096, sizeof(StaticObject));
-
-    num_player_objects =
-    num_static_objects = 0;
+    ClearObjects();
 }
 
 void ProcessObjects(void) {
-   // for(StaticObject *decoration = static_objects[0]; decoration; ++decoration) {
+    for(StaticObject *object = static_objects; object < static_objects + num_static_objects; ++object) {
+        // todo, stuff
+    }
 
-    //}
-
-    for(PlayerObject *player = player_objects; player; ++player) {
+    for(PlayerObject *player = player_objects; player < player_objects + num_player_objects; ++player) {
         if(!player->active) {
             continue;
         }
 
-
+        // todo, stuff
     }
 }
 
 void DrawObjects(void) {
-    //for(StaticObject *decoration = static_objects[0]; decoration; ++decoration) {
+    for(StaticObject *object = static_objects; object < static_objects + num_static_objects; ++object) {
+        // todo, stuff
+    }
 
-   // }
-
-    for(PlayerObject *player = player_objects; player; ++player) {
+    for(PlayerObject *player = player_objects; player < player_objects + num_player_objects; ++player) {
         if(!player->active) {
             continue;
         }
 
-
+        // todo, stuff
     }
-}
-
-void ClearObjects(void) {
-    memset(&player_objects, 0, sizeof(PlayerObject) * MAX_PLAYERS);
 }
 
 ///////////////////////////////////////////////////
@@ -149,7 +147,7 @@ ObjectSpawn spawn_objects[]={
         {"CRATE1", NULL, OBJECT_TYPE_DYNAMIC},
         {"CRATE2", NULL, OBJECT_TYPE_DYNAMIC},
 
-        {"FISH", NULL},
+        {"FISH", NULL, OBJECT_TYPE_DYNAMIC},
 
         {"STF02PPP", NULL},
         {"STF03PPP", NULL},
@@ -189,8 +187,8 @@ ObjectSpawn spawn_objects[]={
         {"AM_TANK", NULL},
 
         // Swill Rigs
-        {"SWILL2", NULL},
-        {"SW2ARM", NULL},
+        {"SWILL2", "/decor/swill2", OBJECT_TYPE_STATIC},
+        {"SW2ARM", "/decor/sw2arm", OBJECT_TYPE_DYNAMIC},
 
         {"WIND2", NULL},
         {"WIND2V", NULL},
@@ -230,7 +228,7 @@ void SpawnObject(const char *name, PLVector3D position, PLVector3D angles) {
     switch(decor->type) {
         case OBJECT_TYPE_PLAYER: {
             player_objects[num_player_objects].active = true;
-            player_objects[num_player_objects].position = position;
+            player_objects[num_player_objects].state.position = position;
             num_player_objects++;
             break;
         }

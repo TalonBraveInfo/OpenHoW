@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org>
 //#define	PL_MODE_GLIDE
 //#define	PL_MODE_DIRECT3D
 //			PL_MODE_VULKAN
-//          PL_MODE_SOFTWARE
+//#define   PL_MODE_SOFTWARE
 
 // todo, move these into platform_graphics.cpp
 #if defined (PL_MODE_OPENGL)
@@ -59,27 +59,46 @@ For more information, please refer to <http://unlicense.org>
 #           include <OpenGL/gl3ext.h>
 #       endif
 #   else
-#	    include <GL/glew.h>
+//#	    include <GL/glew.h>
+#       if !defined(PL_MODE_OPENGL_CORE)
+#           define GL_GLEXT_PROTOTYPES
+#           include <GL/gl.h>
+#           include <GL/glcorearb.h>
+#           include <GL/glext.h>
+#       else
+#           include <GL/glcorearb.h>
+#       endif
 #   endif
 
 #	ifdef _WIN32
 #		include <GL/wglew.h>
 #	endif
 #elif defined (VL_MODE_OPENGL_CORE)
+
 #	include <GL/glcorearb.h>
+
 #elif defined (VL_MODE_GLIDE)
+
 #	ifdef _MSC_VER
 #		define __MSC__
 #	endif
 
 #	include <glide.h>
+
 #elif defined (VL_MODE_DIRECT3D)
+
 #	include <d3d11.h>
 
 #	pragma comment (lib, "d3d11.lib")
 #	pragma comment (lib, "d3dx11.lib")
 #	pragma comment (lib, "d3dx10.lib")
+
 #elif defined (VL_MODE_VULKAN)
+
+#else
+
+#   define PLGRAPHICS_SW_MAX_TEXTUREUNITS  16
+
 #endif
 
 #if defined(PL_INTERNAL)
@@ -92,19 +111,26 @@ For more information, please refer to <http://unlicense.org>
 #   endif
 #endif
 
-typedef PLuint PLVertexArray;
-typedef PLuint PLRenderBuffer;
-typedef PLuint PLFrameBuffer;
+typedef unsigned int PLVertexArray;
+typedef unsigned int PLRenderBuffer;
+
+typedef struct PLFrameBuffer {
+#if defined(PL_MODE_OPENGL)
+    unsigned int fbo, rbo;
+#endif
+} PLFrameBuffer;
 
 typedef enum PLDataFormat {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
     PL_UNSIGNED_BYTE                = GL_UNSIGNED_BYTE,
     PL_UNSIGNED_INT_8_8_8_8_REV     = GL_UNSIGNED_INT_8_8_8_8_REV,
+#else
+    PL_UNSIGNED_BYTE,
 #endif
 } PLDataFormat;
 
 typedef enum PLBufferMask {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
     VL_MASK_COLOUR      = GL_COLOR_BUFFER_BIT,
     VL_MASK_DEPTH       = GL_DEPTH_BUFFER_BIT,
     VL_MASK_ACCUM,
@@ -255,8 +281,6 @@ typedef struct PLLight {
 
     PLColour colour;
 
-    float radius;
-
     PLLightType type;
 } PLLight;
 
@@ -298,59 +322,9 @@ PL_EXTERN void plSetCullMode(PLCullMode mode);
 
 PL_EXTERN void plSetBlendMode(PLBlend modea, PLBlend modeb);
 
+PL_EXTERN void plProcessGraphics(void);
+
 PL_EXTERN_C_END
 
 #include "platform_graphics_shader.h"
 #include "platform_graphics_camera.h"
-
-/////////////////////////////////////////////////////
-
-#if defined(PL_INTERNAL)
-
-typedef struct PLGraphicsState {
-    PLCullMode current_cullmode;
-
-    PLColour current_clearcolour;
-    PLColour current_colour;        // Current global colour.
-
-    unsigned int current_capabilities;    // Enabled capabilities.
-    unsigned int current_textureunit;
-
-    // Textures
-
-    PLTextureMappingUnit *tmu;
-
-    // Shader states
-
-    unsigned int current_program;
-
-    // Hardware / Driver information
-
-    const char *hw_vendor;
-    const char *hw_renderer;
-    const char *hw_version;
-    const char *hw_extensions;
-
-    unsigned int hw_maxtexturesize;
-    unsigned int hw_maxtextureunits;
-    unsigned int hw_maxtextureanistropy;
-    
-    // Lighting
-    
-    unsigned int num_lights;
-
-    ////////////////////////////////////////
-
-    int viewport_x, viewport_y;
-    unsigned int viewport_width, viewport_height;
-
-    PLbool mode_debug;
-} PLGraphicsState;
-
-PL_EXTERN_C
-
-PL_EXTERN PLGraphicsState pl_graphics_state;
-
-PL_EXTERN_C_END
-
-#endif

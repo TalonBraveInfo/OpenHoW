@@ -33,6 +33,7 @@ For more information, please refer to <http://unlicense.org>
 #include "font.h"
 #include "model.h"
 #include "object.h"
+#include "map.h"
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -148,12 +149,8 @@ typedef struct NO2Index { // todo
 typedef struct __attribute__((packed)) HIRBone {
     uint32_t parent; // not 100% on this, links in with
                      // animations from the looks of it, urgh...
-
     int16_t coords[3];
-    int16_t padding;
-
-    int32_t unknown0;
-    int32_t unknown1;
+    uint8_t unused[10];
 } HIRBone;
 
 /*  SRL Format Specification        */
@@ -209,13 +206,13 @@ void load_hir_file(const char *path) {
     }
 
     model.skeleton_mesh = plCreateMesh(
-            PLMESH_QUADS,
+            PLMESH_LINES,
             PL_DRAW_IMMEDIATE,
             0,
-            model.num_bones
+            model.num_bones * 2
     );
-    for(unsigned int i = 0; i < model.num_bones; i++) {
-#if 1
+    for(unsigned int i = 0, vert = 0; i < model.num_bones; i++, vert += 2) {
+#if 0
         PRINT("BONE %d\n", i);
         PRINT("    parent(%d)\n", model.bones[i].parent);
         PRINT("    coords(%d %d %d)\n",
@@ -223,12 +220,19 @@ void load_hir_file(const char *path) {
               model.bones[i].coords[1],
               model.bones[i].coords[2]);
 #endif
-
-        plSetMeshVertexPosition3f(model.skeleton_mesh, i,
+        // Start
+        plSetMeshVertexPosition3f(model.skeleton_mesh, vert,
                                   model.bones[i].coords[0],
                                   model.bones[i].coords[1],
                                   model.bones[i].coords[2]);
-        plSetMeshVertexColour(model.skeleton_mesh, i, plCreateColour4b(PL_COLOUR_RED));
+        plSetMeshVertexColour(model.skeleton_mesh, vert, plCreateColour4b(PL_COLOUR_RED));
+
+        // End
+        plSetMeshVertexPosition3f(model.skeleton_mesh, vert + 1,
+                                  model.bones[model.bones[i].parent].coords[0],
+                                  model.bones[model.bones[i].parent].coords[1],
+                                  model.bones[model.bones[i].parent].coords[2]);
+        plSetMeshVertexColour(model.skeleton_mesh, vert + 1, plCreateColour4b(PL_COLOUR_GREEN));
     }
 
     fclose(file);
@@ -248,12 +252,13 @@ void load_fac_file(const char *path) {
     if(fread(&header, sizeof(FACHeader), 1, file) != 1) {
         PRINT_ERROR("Invalid file header...\n");
     }
-
-    for(int i = 0; i < plArrayElements(header.padding); i++) {
-        if(header.padding[0] != 0) {
+#if 0
+    for(int i = 0; i < plArrayElements(header.unknown0); i++) {
+        if(header.unknown0[0] != '\0') {
             PRINT_ERROR("Invalid FAC file!\n");
         }
     }
+#endif
 
     PRINT("triangles: %d\n", header.num_triangles);
     FACTriangle triangles[header.num_triangles];
@@ -271,7 +276,7 @@ void load_fac_file(const char *path) {
             PRINT("    indices(%d %d %d)\n", triangles[i].indices[0], triangles[i].indices[1], triangles[i].indices[2]);
             PRINT("    normals(%d %d %d)\n", triangles[i].normal[0], triangles[i].normal[1], triangles[i].normal[2]);
             PRINT("    texture index(%d)\n", triangles[i].texture_index);
-            PRINT("    texture coords(%d %d)\n", triangles[i].texture_coords[0], triangles[i].texture_coords[1]);
+            //PRINT("    texture coords(%d %d)\n", triangles[i].texture_coords[0], triangles[i].texture_coords[1]);
 
             for(unsigned int j = 0; j < plArrayElements(texture_table); j++) {
                 if(texture_table[j] == triangles[i].texture_index) {
@@ -588,6 +593,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             break;
         }
 
+        case GLFW_KEY_TAB: {
+            if(action == GLFW_PRESS) {
+                g_state.is_psx_mode = !(g_state.is_psx_mode);
+                if(!g_state.is_psx_mode) {
+                    glfwGetFramebufferSize(window,
+                                           (int*)&g_state.main_camera->viewport.width,
+                                           (int*)&g_state.main_camera->viewport.height);
+                } else {
+                    g_state.main_camera->viewport.width = PSX_WIDTH;
+                    g_state.main_camera->viewport.height = PSX_HEIGHT;
+                }
+            }
+            break;
+        }
+
         case GLFW_KEY_ESCAPE: {
             if(action == GLFW_PRESS) {
                 glfwSetWindowShouldClose(window, true);
@@ -628,6 +648,10 @@ void DrawOverlays(void) {
 #endif
 }
 
+void DrawBones(void) {
+
+}
+
 ////////////////////////////////////////////////////////////////
 
 void CopyFile(const char *path, const char *dest) {
@@ -665,6 +689,10 @@ void CopyMapFile(const char *path) {
 
 ////////////////////////////////////////////////////////////////
 
+void DrawScene(void) {
+
+}
+
 int main(int argc, char **argv) {
     memset(&g_state, 0, sizeof(GlobalVars));
 
@@ -698,6 +726,11 @@ int main(int argc, char **argv) {
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
 
+#if 0
+    glewExperimental=TRUE;
+    glewInit();
+#endif
+
     // Initialize DevIL...
 
     ilInit();
@@ -727,16 +760,16 @@ int main(int argc, char **argv) {
         InitializeMADPackages();
 
         // Copy all of the map files over into a new directory.
-        plScanDirectory("./Maps/", ".pog", CopyMapFile);
-        plScanDirectory("./Maps/", ".pmg", CopyMapFile);
-        plScanDirectory("./Maps/", ".ptg", CopyMapFile);
-        plScanDirectory("./Maps/", ".gen", CopyMapFile);
+        plScanDirectory("./Maps/", ".pog", CopyMapFile, false);
+        plScanDirectory("./Maps/", ".pmg", CopyMapFile, false);
+        plScanDirectory("./Maps/", ".ptg", CopyMapFile, false);
+        plScanDirectory("./Maps/", ".gen", CopyMapFile, false);
     } else {
         DPRINT("Found data directory, continuing with normal execution...\n");
     }
 
     //LoadPOG("./data/maps/tester.pog");
-    plScanDirectory("./data/maps/", ".pog", LoadPOG);
+    plScanDirectory("./data/maps/", ".pog", LoadPOG, false);
 
     InitializeFonts();
     InitializeObjects();
@@ -748,21 +781,46 @@ int main(int argc, char **argv) {
     plSetDefaultGraphicsState();
     plSetClearColour(plCreateColour4b(0, 0, 128, 255));
 
-    PLCamera *camera = plCreateCamera();
-    if (!camera) {
+#if 1
+    glGenFramebuffers(1, &g_state.gl.psx_fbo);
+    glGenRenderbuffers(1, &g_state.gl.colour_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, g_state.gl.colour_rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB4, PSX_WIDTH, PSX_HEIGHT);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_state.gl.psx_fbo);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, g_state.gl.colour_rbo);
+
+    glGenRenderbuffers(1, &g_state.gl.depth_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, g_state.gl.depth_rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, PSX_WIDTH, PSX_HEIGHT);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, g_state.gl.depth_rbo);
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+#if 0 // bring this back at some stage...
+        PRINT(glErrorStringREGAL(glGetError()));
+#endif
+    }
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+#endif
+
+    g_state.main_camera = plCreateCamera();
+    if (!g_state.main_camera) {
         PRINT_ERROR("Failed to create camera!\n");
     }
-    camera->mode = PLCAMERA_MODE_PERSPECTIVE;
-    camera->fov = 90.f;
-
-    glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
+    g_state.main_camera->mode = PLCAMERA_MODE_PERSPECTIVE;
+    g_state.main_camera->fov = 90.f;
+    glfwGetFramebufferSize(window,
+                           (int*)&g_state.main_camera->viewport.width,
+                           (int*)&g_state.main_camera->viewport.height);
 
     PLCamera *camera1 = plCreateCamera();
     if(!camera1) {
         PRINT_ERROR("Failed to create secondary camera!\n");
     }
-    camera1->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
-    camera1->viewport.width = camera->viewport.width; camera1->viewport.height = camera->viewport.height;
+    camera1->mode               = PLCAMERA_MODE_ORTHOGRAPHIC;
+    camera1->viewport.width     = g_state.main_camera->viewport.width;
+    camera1->viewport.height    = g_state.main_camera->viewport.height;
 
     const char *arg;
     if ((arg = plGetCommandLineArgument("-model")) && (arg[0] != '\0')) {
@@ -779,14 +837,14 @@ int main(int argc, char **argv) {
         load_vtx_file(vtx_path);
         load_fac_file(fac_path);
 
-        camera->position = plCreateVector3D(0, 12, -500);
+        g_state.main_camera->position = plCreateVector3D(0, 12, -500);
 
         glEnable(GL_CULL_FACE);
 
-#if 1
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
+#if 0
         // ol' gl lighting, just for testing
         GLfloat light_ambient[] = {0.6f, 0.6f, 0.6f, 1.f};
         glEnable(GL_LIGHTING);
@@ -799,10 +857,16 @@ int main(int argc, char **argv) {
         glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
         GLfloat light_position[] = {0, 12.f, -800.f};
         glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+#else
+        PLLight light[4];
+        memset(&light, 0, sizeof(PLLight) * 4);
+        light[0].position   = plCreateVector3D(0, 12.f, -800.f);
+        light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
+        light[0].type       = PLLIGHT_TYPE_OMNI;
+#endif
 
         glPointSize(5.f);
         glLineWidth(2.f);
-#endif
 
         while (!glfwWindowShouldClose(window)) {
 
@@ -813,6 +877,14 @@ int main(int argc, char **argv) {
             ProcessObjects();
 
             // Rendering start
+
+            DrawScene();
+
+            if(g_state.is_psx_mode) {
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_state.gl.psx_fbo);
+            } else {
+                glEnable(GL_LINE_SMOOTH);
+            }
 
             plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
@@ -842,14 +914,14 @@ int main(int argc, char **argv) {
             state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
             if (state == GLFW_PRESS) {
                 double nypos = ypos - oldrmpos[1];
-                camera->position.z += (nypos / 20.f);
+                g_state.main_camera->position.z += (nypos / 20.f);
             } else {
                 oldrmpos[0] = xpos;
                 oldrmpos[1] = ypos;
             }
             // input handlers end...
 
-            plSetupCamera(camera);
+            plSetupCamera(g_state.main_camera);
 
             DrawObjects();
 
@@ -893,6 +965,24 @@ int main(int argc, char **argv) {
             glPopMatrix();
 #endif
 
+            if(g_state.is_psx_mode) {
+                static uint8_t *psx_buffer = NULL;
+                if(!psx_buffer) {
+                    psx_buffer = (uint8_t*)malloc(PSX_WIDTH * PSX_HEIGHT * 4);
+                }
+
+                glReadBuffer(GL_COLOR_ATTACHMENT0);
+                glReadPixels(0, 0, PSX_WIDTH, PSX_HEIGHT, GL_BGRA, GL_UNSIGNED_BYTE, &psx_buffer[0]);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+                plScissor(0, 0, WIDTH, HEIGHT);
+
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, g_state.gl.psx_fbo);
+                glBlitFramebuffer(0, 0, PSX_WIDTH, PSX_HEIGHT, 0, 0, WIDTH, HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            } else {
+                glDisable(GL_LINE_SMOOTH);
+            }
+
             glfwSwapBuffers(window);
         }
 
@@ -902,7 +992,7 @@ int main(int argc, char **argv) {
         glfwTerminate();
     }
 
-    plDeleteCamera(camera);
+    plDeleteCamera(g_state.main_camera);
 
     plShutdown();
 

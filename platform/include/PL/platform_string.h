@@ -25,15 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-PL_INLINE static void plGetLowerCaseString(char *out, const char *in, unsigned int length) {
-    for(unsigned int i = 0; i < length; i++) {
-        out[i] = (char)tolower(in[i]);
-    }
-}
-
 #if 0
 PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
-    const char *s = strrchr(in, '.');
+    const char *s = strrchr(in, '.');type
     if(!s || s[0] == '\0') {
         return;
     }
@@ -49,3 +43,13 @@ PL_INLINE static void plStripStringExtension(char *out, const char *in, unsigned
     *out = 0;
 }
 #endif
+
+char *pl_strtolower(char *s);
+char *pl_strntolower(char *s, size_t n);
+char *pl_strtoupper(char *s);
+char *pl_strntoupper(char *s, size_t n);
+
+char *pl_strcasestr(const char *s, const char *find);
+
+int pl_strcasecmp(const char *s1, const char *s2);
+int pl_strncasecmp(const char *s1, const char *s2, size_t n);
