@@ -25,40 +25,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include <strings.h>
+#include <ctype.h>
 
-#include "platform.h"
+char *pl_strtoupper(char *s) {
+    for(size_t i = 0; s[i] != '\0'; ++i) {
+        s[i] = (char)toupper(s[i]);
+    }
+    return s;
+}
 
-PL_EXTERN_C
-
-PL_EXTERN void plGetUserName(PLchar *out);
-
-PL_EXTERN const char *plGetWorkingDirectory(void);
-PL_EXTERN void plSetWorkingDirectory(const char *path);
-
-PL_EXTERN void plStripExtension(PLchar *dest, const PLchar *in);
-
-PL_EXTERN const PLchar *plGetFileExtension(const PLchar *in);
-PL_EXTERN const PLchar *plGetFileName(const PLchar *path);
-
-PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
-
-PL_EXTERN void plLowerCasePath(char *out);
-
-PL_EXTERN bool plCreateDirectory(const char *path);
-
-// File I/O ...
-
-PL_EXTERN bool plFileExists(const char *path);
-PL_EXTERN bool plPathExists(const char *path);
-
-PL_EXTERN bool plCopyFile(const char *path, const char *dest);
-
-PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
-
-PL_EXTERN time_t plGetFileModifiedTime(const PLchar *path);
-
-PL_EXTERN int16_t plGetLittleShort(FILE *fin);
-PL_EXTERN int32_t plGetLittleLong(FILE *fin);
-
-PL_EXTERN_C_END
+char *pl_strntoupper(char *s, size_t n) {
+    for(size_t i = 0; i < n; ++i) {
+        if(s[i] == '\0') {
+            break;
+        }
+        s[i] = (char)toupper(s[i]);
+    }
+    return s;
+}

@@ -153,21 +153,26 @@ bool _pl_console_visible = false;
 IMPLEMENT_COMMAND(cls, "Clears the console buffer.") {
 
 }
+
 IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
 
 }
+
 IMPLEMENT_COMMAND(time, "Prints out the current time.") {
 
 }
+
 IMPLEMENT_COMMAND(mem, "Prints out current memory usage.") {
 
 }
+
 IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
     for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
         printf(" %-20s : %-20s\n", (*cmd)->cmd, (*cmd)->description);
     }
     printf("%zu commands in total\n", _pl_num_commands);
 }
+
 IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
     for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
         printf(" %-20s : %-5s / %-15s : %-20s\n",
@@ -175,11 +180,14 @@ IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
     }
     printf("%zu variables in total\n", _pl_num_variables);
 }
+
 IMPLEMENT_COMMAND(help, "") {
     if(argc > 1) { // looking for assistance on a command probably...
 
     }
 }
+
+//////////////////////////////////////////////
 
 PLMesh *_pl_mesh_line = NULL;
 PLBitmapFont *_pl_console_font = NULL;
@@ -298,10 +306,10 @@ void _plResizeConsoles(void) {
             }
         }
 
-        _pl_console_pane[i].display.width = width;
-        _pl_console_pane[i].display.height = height;
-        _pl_console_pane[i].display.x = position_x;
-        _pl_console_pane[i].display.y = position_y;
+        _pl_console_pane[i].display.wh.x = width;
+        _pl_console_pane[i].display.wh.y = height;
+        _pl_console_pane[i].display.xy.x = position_x;
+        _pl_console_pane[i].display.xy.x = position_y;
     }
 }
 
@@ -335,14 +343,14 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
 
         PLConsolePane *pane = &_pl_console_pane[i];
 
-        int pane_min_x = pane->display.x;
-        int pane_max_x = pane_min_x + pane->display.width;
+        int pane_min_x = (int)pane->display.xy.x;
+        int pane_max_x = pane_min_x + (int)(pane->display.wh.x);
         if(m_x < pane_min_x || m_x > pane_max_x) {
             continue;
         }
 
-        int pane_min_y = pane->display.y;
-        int pane_max_y = pane_min_y + pane->display.height;
+        int pane_min_y = (int)pane->display.xy.y;
+        int pane_max_y = pane_min_y + (int)(pane->display.wh.y);
         if(m_y < pane_min_y || m_y > pane_max_y) {
             continue;
         }
@@ -350,15 +358,15 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
         if(m_buttons & PLINPUT_MOUSE_LEFT) {
             _pl_active_console_pane = i;
 
-            pane->display.x += m_x; pane->display.y += m_y;
-            if(pane->display.x <= pl_graphics_state.viewport_x) {
-                pane->display.x = pl_graphics_state.viewport_x + 1;
-            } else if(pane->display.x >= pl_graphics_state.viewport_width) {
-                pane->display.x = pl_graphics_state.viewport_width - 1;
-            } else if(pane->display.y <= pl_graphics_state.viewport_y) {
-                pane->display.y = pl_graphics_state.viewport_y + 1;
-            } else if(pane->display.y >= pl_graphics_state.viewport_height) {
-                pane->display.y = pl_graphics_state.viewport_height - 1;
+            pane->display.xy.x += m_x; pane->display.xy.y += m_y;
+            if(pane->display.xy.x <= pl_graphics_state.viewport_x) {
+                pane->display.xy.x = pl_graphics_state.viewport_x + 1;
+            } else if(pane->display.xy.x >= pl_graphics_state.viewport_width) {
+                pane->display.xy.x = pl_graphics_state.viewport_width - 1;
+            } else if(pane->display.xy.y <= pl_graphics_state.viewport_y) {
+                pane->display.xy.y = pl_graphics_state.viewport_y + 1;
+            } else if(pane->display.xy.y >= pl_graphics_state.viewport_height) {
+                pane->display.xy.y = pl_graphics_state.viewport_height - 1;
             }
 
             static int old_x = 0, old_y = 0;
@@ -454,10 +462,16 @@ void plDrawConsole(void) {
             plDrawRectangle(_pl_console_pane[i].display);
 
             plDrawRectangle(plCreateRectangle(
-                    _pl_console_pane[i].display.x + 4,
-                    _pl_console_pane[i].display.y + 4,
-                    _pl_console_pane[i].display.width - 8,
-                    20,
+
+                    plCreateVector2D(
+                            _pl_console_pane[i].display.xy.x + 4,
+                            _pl_console_pane[i].display.xy.y + 4
+                    ),
+
+                    plCreateVector2D(
+                            _pl_console_pane[i].display.wh.x - 8,
+                            20
+                    ),
 
                     plCreateColour4b(_COLOUR_HEADER_ACTIVE_TOP),
                     plCreateColour4b(_COLOUR_HEADER_ACTIVE_TOP),
@@ -469,33 +483,39 @@ void plDrawConsole(void) {
             // todo, display scroll bar
         } else {
             plDrawRectangle(plCreateRectangle(
-                    _pl_console_pane[i].display.x,
-                    _pl_console_pane[i].display.y,
-                    _pl_console_pane[i].display.width,
-                    _pl_console_pane[i].display.height,
 
-                    PLColour(
+                    plCreateVector2D(
+                            _pl_console_pane[i].display.xy.x,
+                            _pl_console_pane[i].display.xy.y
+                    ),
+
+                    plCreateVector2D(
+                            _pl_console_pane[i].display.wh.x,
+                            _pl_console_pane[i].display.wh.y
+                    ),
+
+                    plCreateColour4b(
                             (uint8_t) (_pl_console_pane[i].display.ul.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    PLColour(
+                    plCreateColour4b(
                             (uint8_t) (_pl_console_pane[i].display.ur.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    PLColour(
+                    plCreateColour4b(
                             (uint8_t) (_pl_console_pane[i].display.ll.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.b / 2),
                             _COLOUR_INACTIVE_ALPHA_BOTTOM
                     ),
 
-                    PLColour(
+                    plCreateColour4b(
                             (uint8_t) (_pl_console_pane[i].display.lr.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.b / 2),
@@ -504,10 +524,16 @@ void plDrawConsole(void) {
             ));
 
             plDrawRectangle(plCreateRectangle(
-                    _pl_console_pane[i].display.x + 4,
-                    _pl_console_pane[i].display.y + 4,
-                    _pl_console_pane[i].display.width - 8,
-                    20,
+
+                    plCreateVector2D(
+                            _pl_console_pane[i].display.xy.x + 4,
+                            _pl_console_pane[i].display.xy.y + 4
+                    ),
+
+                    plCreateVector2D(
+                            _pl_console_pane[i].display.wh.x - 8,
+                            20
+                    ),
 
                     plCreateColour4b(_COLOUR_HEADER_INACTIVE),
                     plCreateColour4b(_COLOUR_HEADER_INACTIVE),

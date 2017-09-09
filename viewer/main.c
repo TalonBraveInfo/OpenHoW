@@ -598,11 +598,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 g_state.is_psx_mode = !(g_state.is_psx_mode);
                 if(!g_state.is_psx_mode) {
                     glfwGetFramebufferSize(window,
-                                           (int*)&g_state.main_camera->viewport.width,
-                                           (int*)&g_state.main_camera->viewport.height);
+                                           (int*)&g_state.main_camera->viewport.w,
+                                           (int*)&g_state.main_camera->viewport.h);
                 } else {
-                    g_state.main_camera->viewport.width = PSX_WIDTH;
-                    g_state.main_camera->viewport.height = PSX_HEIGHT;
+                    g_state.main_camera->viewport.w = PSX_WIDTH;
+                    g_state.main_camera->viewport.h = PSX_HEIGHT;
                 }
             }
             break;
@@ -811,16 +811,16 @@ int main(int argc, char **argv) {
     g_state.main_camera->mode = PLCAMERA_MODE_PERSPECTIVE;
     g_state.main_camera->fov = 90.f;
     glfwGetFramebufferSize(window,
-                           (int*)&g_state.main_camera->viewport.width,
-                           (int*)&g_state.main_camera->viewport.height);
+                           (int*)&g_state.main_camera->viewport.w,
+                           (int*)&g_state.main_camera->viewport.h);
 
     PLCamera *camera1 = plCreateCamera();
     if(!camera1) {
         PRINT_ERROR("Failed to create secondary camera!\n");
     }
-    camera1->mode               = PLCAMERA_MODE_ORTHOGRAPHIC;
-    camera1->viewport.width     = g_state.main_camera->viewport.width;
-    camera1->viewport.height    = g_state.main_camera->viewport.height;
+    camera1->mode       = PLCAMERA_MODE_ORTHOGRAPHIC;
+    camera1->viewport.w = g_state.main_camera->viewport.w;
+    camera1->viewport.h = g_state.main_camera->viewport.h;
 
     const char *arg;
     if ((arg = plGetCommandLineArgument("-model")) && (arg[0] != '\0')) {

@@ -27,38 +27,14 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
+#include <PL/platform_format.h>
 
-PL_EXTERN_C
+/*  Platform Level Format   */
 
-PL_EXTERN void plGetUserName(PLchar *out);
+typedef struct {
+} PLLevelIndex;
 
-PL_EXTERN const char *plGetWorkingDirectory(void);
-PL_EXTERN void plSetWorkingDirectory(const char *path);
-
-PL_EXTERN void plStripExtension(PLchar *dest, const PLchar *in);
-
-PL_EXTERN const PLchar *plGetFileExtension(const PLchar *in);
-PL_EXTERN const PLchar *plGetFileName(const PLchar *path);
-
-PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
-
-PL_EXTERN void plLowerCasePath(char *out);
-
-PL_EXTERN bool plCreateDirectory(const char *path);
-
-// File I/O ...
-
-PL_EXTERN bool plFileExists(const char *path);
-PL_EXTERN bool plPathExists(const char *path);
-
-PL_EXTERN bool plCopyFile(const char *path, const char *dest);
-
-PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
-
-PL_EXTERN time_t plGetFileModifiedTime(const PLchar *path);
-
-PL_EXTERN int16_t plGetLittleShort(FILE *fin);
-PL_EXTERN int32_t plGetLittleLong(FILE *fin);
-
-PL_EXTERN_C_END
+typedef struct {
+    uint32_t num_triangles;
+    uint32_t num_portals;
+} PLLevelSector;

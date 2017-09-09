@@ -95,8 +95,6 @@ void _plDebugVector3D(PLVector3D *v, PLVector3D *v3) {
 }
 
 void _plDebugMath(void) {
-plFunctionStart();
-
     PLVector3D v1, v2;
     _plDebugVector3D(&v1, &v2);
 
@@ -122,8 +120,6 @@ plFunctionStart();
     printf("%s", plPrintColour(red));
     printf("%s", plPrintColour(green));
     printf("%s", plPrintColour(blue));
-
-    plFunctionEnd();
 }
 
 #endif

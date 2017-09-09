@@ -559,7 +559,7 @@ PL_INLINE static void plDivideColourf(PLColour *c, float a) {
 }
 
 PL_INLINE static const char *plPrintColour(PLColour c) {
-    static char s[16] = {0};
+    static char s[16] = { '\0' };
     snprintf(s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a);
     return s;
 }
@@ -574,108 +574,58 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 // Matrices
 // todo, none of this is correct yet
 
-typedef float PLMatrix3[3][3], PLMatrix4[4][4];
+typedef float PLMatrix4[16];
 
 PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
-    memset(m, 0, sizeof(m[0][0]) * 8);
+    memset(m, 0, sizeof(PLMatrix4));
 }
 
 PL_INLINE static void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] += m2[i][j];
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] += m2[i];
     }
 }
 
 PL_INLINE static void plMultiplyMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] *= m2[i][j];
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] *= m2[i];
     }
 }
 
 PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, float a) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] *= a;
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] *= a;
     }
 }
 
 PL_INLINE static void plDivisionMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] /= m2[i][j];
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] /= m2[i];
     }
 }
 
 PL_INLINE static void plDivisionMatrix4f(PLMatrix4 m, float a) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] /= a;
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] /= a;
     }
 }
 
-PL_INLINE static const PLchar *plPrintMatrix4(const PLMatrix4 m) {
-    static PLchar s[256] = {0};
+PL_INLINE static const char *plPrintMatrix4(const PLMatrix4 m) {
+    static char s[256] = { '\0' };
     snprintf(s, 256,
             "%i %i %i %i\n"
             "%i %i %i %i\n"
             "%i %i %i %i\n"
             "%i %i %i %i",
-            (int)m[0][0], (int)m[0][1], (int)m[0][2], (int)m[0][3],
-            (int)m[1][0], (int)m[1][1], (int)m[1][2], (int)m[1][3],
-            (int)m[2][0], (int)m[2][1], (int)m[2][2], (int)m[2][3],
-            (int)m[3][0], (int)m[3][1], (int)m[3][2], (int)m[3][3]
+            (int)m[0], (int)m[4], (int)m[8], (int)m[12],
+            (int)m[1], (int)m[5], (int)m[9], (int)m[13],
+            (int)m[2], (int)m[6], (int)m[10], (int)m[14],
+            (int)m[3], (int)m[7], (int)m[11], (int)m[15]
             );
     return s;
 }
 
 // Quaternion
-
-#if 0
-
-typedef float PLQuaternion[4];
-
-static PL_INLINE void plClearQuaternion(PLQuaternion q) {
-    memset(q, 0, sizeof(PLQuaternion));
-}
-
-static PL_INLINE void plMultiplyQuaternion(PLQuaternion q, const PLQuaternion q2) {
-    q[0] *= q2[0]; q[1] *= q2[1]; q[2] *= q2[2]; q[3] *= q2[3];
-}
-
-static PL_INLINE void plMultiplyQuaternionf(PLQuaternion q, float a) {
-    q[0] *= a; q[1] *= a; q[2] *= a; q[3] *= a;
-}
-
-static PL_INLINE void plAddQuaternion(PLQuaternion q, const PLQuaternion q2) {
-    q[0] += q2[0]; q[1] += q2[1]; q[2] += q2[2]; q[3] += q2[3];
-}
-
-static PL_INLINE void plAddQuaternionf(PLQuaternion q, float a) {
-    q[0] += a; q[1] += a; q[2] += a; q[3] += a;
-}
-
-static PL_INLINE void plInverseQuaternion(PLQuaternion q) {
-    q[0] = -q[0]; q[1] = -q[1]; q[2] = -q[2]; q[3] = -q[3];
-}
-
-static PL_INLINE float plQuaternionLength(PLQuaternion q) {
-    return sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-}
-
-static PL_INLINE const char *plPrintQuaternion(const PLQuaternion q) {
-    static char s[32] = {0};
-    snprintf(s, 32, "%i %i %i %i", (int)q[0], (int)q[1], (int)q[2], (int)q[3]);
-    return s;
-}
-
-#endif
 
 typedef struct PLQuaternion {
     float x, y, z, w;
@@ -754,38 +704,113 @@ typedef struct PLQuaternion {
 #endif
 } PLQuaternion;
 
+static PL_INLINE void plClearQuaternion(PLQuaternion *q) {
+    memset(q, 0, sizeof(PLQuaternion));
+}
+
+static PL_INLINE void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
+    q->x *= q2.x; q->y *= q2.y; q->z *= q2.z; q->w *= q2.w;
+}
+
+static PL_INLINE void plMultiplyQuaternionf(PLQuaternion *q, float a) {
+    q->x *= a; q->y *= a; q->z *= a; q->w *= a;
+}
+
+static PL_INLINE void plAddQuaternion(PLQuaternion *q, PLQuaternion q2) {
+    q->x += q2.x; q->y += q2.y; q->z += q2.z; q->w += q2.w;
+}
+
+static PL_INLINE void plAddQuaternionf(PLQuaternion *q, float a) {
+    q->x += a; q->y += a; q->z += a; q->w += a;
+}
+
+static PL_INLINE void plInverseQuaternion(PLQuaternion *q) {
+    q->x = -q->x; q->y = -q->y; q->z = -q->z; q->w = -q->w;
+}
+
+static PL_INLINE float plQuaternionLength(PLQuaternion q) {
+    return sqrtf(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+}
+
+static PL_INLINE const char *plPrintQuaternion(PLQuaternion q) {
+    static char s[32] = { '\0' };
+    snprintf(s, 32, "%i %i %i %i", (int)q.x, (int)q.y, (int)q.z, (int)q.w);
+    return s;
+}
+
 // Bounding Boxes
 
 typedef struct PLBBox3D {
     PLVector3D mins, maxs;
 } PLBBox3D;
 
+PL_INLINE static void plClearBBox3D(PLBBox3D *b) {
+    memset(b, 0, sizeof(PLBBox3D));
+}
+
 typedef struct PLBBox2D {
     PLVector2D mins, maxs;
 } PLBBox2D;
 
+PL_INLINE static void plClearBBox2D(PLBBox2D *b) {
+    memset(b, 0, sizeof(PLBBox2D));
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Primitives
 
+// Sphere
+
+typedef struct PLSphere {
+    PLVector3D position;
+    float radius;
+
+    PLColour colour;
+} PLSphere;
+
 // Line
+
+typedef struct PLLine {
+    PLVector3D a, b;
+    unsigned int width;
+
+    PLColour a_colour, b_colour;
+} PLLine;
+
+PL_INLINE static PLLine plCreateLine(
+        PLVector3D a, PLVector3D b, unsigned int width, PLColour a_colour, PLColour b_colour) {
+    PLLine line = {
+            a, b, width, a_colour, b_colour
+    };
+    return line;
+}
+
+PL_INLINE static void plClearLine(PLLine *l) {
+    memset(l, 0, sizeof(PLLine));
+}
+
+PL_INLINE static void plSetLineColour(PLLine *line, PLColour a, PLColour b) {
+    line->a_colour = a; line->b_colour = b;
+}
 
 // Rectangle
 
 typedef struct PLRectangle {
-    int x, y;
-    unsigned int width, height;
+    PLVector2D xy;
+    PLVector2D wh;
 
     PLColour ul, ur, ll, lr;
 } PLRectangle;
 
 PL_INLINE static PLRectangle plCreateRectangle(
-        int x, int y, unsigned int w, unsigned int h,
+        PLVector2D xy, PLVector2D wh,
         PLColour ul, PLColour ur,
         PLColour ll, PLColour lr
 ) {
     PLRectangle rect = {
-            x, y, w, h,
-            ul, ur, ll, lr
+            xy, wh,
+            ul, ur,
+            ll, lr
     };
     return rect;
 }

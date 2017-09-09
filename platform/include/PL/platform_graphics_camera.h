@@ -37,6 +37,20 @@ enum {
 
 typedef struct PLWindow PLWindow;
 
+typedef struct PLViewport {
+    int x, y;
+    unsigned int w, h;
+
+    uint8_t *v_buffer;
+#if defined(PL_MODE_OPENGL)
+    unsigned int gl_framebuffer[4];
+    unsigned int gl_renderbuffer[4];
+#endif
+
+    unsigned int r_width, r_height;
+    unsigned int old_r_width, old_r_height;
+} PLViewport;
+
 typedef struct PLCamera {
     double fov;
     double near, far;
@@ -46,15 +60,7 @@ typedef struct PLCamera {
     PLBBox3D bounds;
 
     // Viewport
-    PLRectangle viewport;
-    uint8_t *v_buffer;
-#if defined(PL_MODE_OPENGL)
-    unsigned int gl_framebuffer[4];
-    unsigned int gl_renderbuffer[4];
-#endif
-
-    unsigned int r_width, r_height;
-    unsigned int old_r_width, old_r_height;
+    PLViewport viewport;
 } PLCamera;
 
 PL_EXTERN_C

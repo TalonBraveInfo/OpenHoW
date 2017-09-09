@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_graphics.h>
+#include "graphics_private.h"
 
 #if defined(PL_MODE_OPENGL)
 #   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
@@ -288,11 +288,9 @@ void plUploadMesh(PLMesh *mesh) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL_CORE) || defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     // Fill our buffer with data.
     glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
-#endif
+    glBufferData(GL_ARRAY_BUFFER, sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
 #endif
 }
 
@@ -392,10 +390,10 @@ void plDrawRectangle(PLRectangle rect) {
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, rect.x, rect.y + rect.height);
-    plSetMeshVertexPosition2f(mesh, 1, rect.x, rect.y);
-    plSetMeshVertexPosition2f(mesh, 2, rect.x + rect.width, rect.y + rect.height);
-    plSetMeshVertexPosition2f(mesh, 3, rect.x + rect.width, rect.y);
+    plSetMeshVertexPosition2f(mesh, 0, rect.xy.x, rect.xy.y + rect.wh.y);
+    plSetMeshVertexPosition2f(mesh, 1, rect.xy.x, rect.xy.y);
+    plSetMeshVertexPosition2f(mesh, 2, rect.xy.x + rect.wh.x, rect.xy.y + rect.wh.y);
+    plSetMeshVertexPosition2f(mesh, 3, rect.xy.x + rect.wh.x, rect.xy.y);
 
     plSetMeshVertexColour(mesh, 0, rect.ll);
     plSetMeshVertexColour(mesh, 1, rect.ul);

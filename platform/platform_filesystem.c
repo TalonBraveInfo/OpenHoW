@@ -236,11 +236,11 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
 #endif
 }
 
-void plGetWorkingDirectory(PLchar *out) {
-    if (!getcwd(out, PL_SYSTEM_MAX_PATH)) {
-        switch (errno) {
-            default:
-                break;
+const char *plGetWorkingDirectory(void) {
+    static char out[PL_SYSTEM_MAX_PATH] = { '\0' };
+    if (getcwd(out, PL_SYSTEM_MAX_PATH) == NULL) {
+        switch (errno) { // todo, fix cases for Windows
+            default: break;
 
             case EACCES:
                 _plSetErrorMessage("Permission to read or search a component of the filename was denied!\n");
@@ -262,14 +262,14 @@ void plGetWorkingDirectory(PLchar *out) {
 						You need to allocate a bigger array and try again!\n");
                 break;
         }
-        return;
+        return NULL;
     }
-    strcat(out, "\\");
+    return out;
 }
 
 void plSetWorkingDirectory(const char *path) {
     if(chdir(path) != 0) {
-        switch(errno) {
+        switch(errno) { // todo, fix cases for Windows
             default: break;
 
             case EACCES:
