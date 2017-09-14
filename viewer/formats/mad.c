@@ -64,11 +64,11 @@ void ExtractMADPackage(const char *path) {
         PRINT_ERROR("Failed to load %s!\n", path);
     }
 
-    char package_name[PL_SYSTEM_MAX_PATH] = { 0 };
+    char package_name[PL_SYSTEM_MAX_PATH] = { '\0' };
     plStripExtension(package_name, plGetFileName(path));
     plLowerCasePath(package_name);
 
-    char package_extension[4] = { 0 };
+    char package_extension[4] = { '\0' };
     snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(path));
     plLowerCasePath(package_extension);
 

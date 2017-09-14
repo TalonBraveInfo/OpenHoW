@@ -1,6 +1,4 @@
-//
-// Created by hogsy on 20/06/17.
-//
+/*  Copyright (C) 2017 Mark E Sowden    */
 
 #include "map.h"
 
@@ -27,6 +25,7 @@ void DrawWater(void) {
         }
     }
 
+    plDrawMesh(water_mesh);
 }
 
 ////////////////////////////////////////////
@@ -38,5 +37,5 @@ void LoadMap(const char *path) {
 }
 
 void DrawMap(void) {
-
+    DrawWater();
 }

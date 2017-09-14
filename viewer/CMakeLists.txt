@@ -30,7 +30,8 @@ project(viewer)
 file(GLOB VIEWER_SOURCE_FILES
         *.c *.h
 
-        formats/*.*
+        game/*.*
+        #formats/*.*
 
         )
 

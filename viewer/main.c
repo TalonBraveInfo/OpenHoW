@@ -40,6 +40,7 @@ For more information, please refer to <http://unlicense.org>
 #include <IL/ilut.h>
 
 #include <GLFW/glfw3.h>
+#include <PL/platform_console.h>
 
 #define WIDTH 1024
 #define HEIGHT 768
@@ -781,6 +782,10 @@ int main(int argc, char **argv) {
     plSetDefaultGraphicsState();
     plSetClearColour(plCreateColour4b(0, 0, 128, 255));
 
+    plSetupConsole(1);
+    plShowConsole(true);
+    plSetConsoleColour(1, plCreateColour4b(128, 0, 0, 128));
+
 #if 1
     glGenFramebuffers(1, &g_state.gl.psx_fbo);
     glGenRenderbuffers(1, &g_state.gl.colour_rbo);
@@ -888,10 +893,6 @@ int main(int argc, char **argv) {
 
             plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
-            plSetupCamera(camera1);
-
-            DrawOverlays();
-
             // input handlers start..
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
@@ -964,6 +965,12 @@ int main(int argc, char **argv) {
 
             glPopMatrix();
 #endif
+
+            plSetupCamera(camera1);
+
+            DrawOverlays();
+
+            plDrawConsole();
 
             if(g_state.is_psx_mode) {
                 static uint8_t *psx_buffer = NULL;

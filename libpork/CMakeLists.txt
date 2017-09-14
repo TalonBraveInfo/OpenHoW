@@ -1,4 +1,4 @@
-/*
+#[[
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,38 +23,22 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-*/
+]]
 
-#pragma once
+project(libpork)
 
-#include <pork/pork.h>
+file(
+        GLOB LIBPORK_SOURCE_FILES
+        *.cpp *.c
+        *.h
 
-#define TITLE   "OpenPork"
-#define LOG     "debug"
+        include/pork/*.h
+        )
 
-#define VERSION_MAJOR   0
-#define VERSION_MINOR   0
+add_library(libpork STATIC ${LIBPORK_SOURCE_FILES})
 
-#define PSX_WIDTH   320
-#define PSX_HEIGHT  240
+#set_target_properties(libpork PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
-typedef struct GlobalVars {
-    bool is_psx, is_psx_mode;
-
-    unsigned int width, height;
-
-    PLCamera *main_camera;
-
-    struct {
-        unsigned int num_players;
-
-        bool is_paused;
-    } game;
-
-    struct {
-        unsigned int colour_rbo, depth_rbo;
-        unsigned int psx_fbo;
-    } gl;
-} GlobalVars;
-
-extern GlobalVars g_state;
+target_compile_options(libpork PUBLIC -fPIC)
+target_include_directories(libpork PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(libpork platform)

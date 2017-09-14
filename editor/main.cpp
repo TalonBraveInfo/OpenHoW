@@ -3,12 +3,53 @@
 #include "main.h"
 #include "PreferencesDialog.h"
 #include "ConsolePanel.h"
+#include "ViewportPanel.h"
 
 #include <wx/aui/aui.h>
+#include <wx/splash.h>
 
-class PIGEditorFrame : public wxFrame {
+class PerspectiveViewportPanel : public ViewportPanel {
 public:
-    PIGEditorFrame(const wxPoint &pos, const wxSize &size);
+    PerspectiveViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+
+    virtual void Draw() {
+        ViewportPanel::Draw();
+    }
+
+protected:
+private:
+};
+
+class TopViewportPanel : public ViewportPanel {
+public:
+    TopViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+
+    virtual void Draw() {
+        ViewportPanel::Draw();
+    }
+
+protected:
+private:
+};
+
+class SideViewportPanel : public ViewportPanel {
+public:
+    SideViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+
+    virtual void Draw() {
+        ViewportPanel::Draw();
+    }
+
+protected:
+private:
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+class EditorFrame : public wxFrame {
+public:
+    EditorFrame(const wxPoint &pos, const wxSize &size);
+    ~EditorFrame();
 
 protected:
 private:
@@ -22,20 +63,49 @@ private:
 };
 
 enum {
-    EVENT_OPEN_MODELVIEWER,
-    EVENT_OPEN_TEXTUREVIEWER,
+    ID_MODEL,
+    ID_TEXTURE,
+
+    ID_WIREFRAME,
+    ID_FLAT,
+    ID_TEXTURED,
+    ID_LIT,
+
+    ID_RELOAD,
+
+    ID_CONSOLE,
+
+    ID_TRANSFORM,
+    ID_ROTATE,
+    ID_SCALE,
 };
 
-wxBEGIN_EVENT_TABLE(PIGEditorFrame, wxFrame)
-EVT_MENU(wxID_EXIT, PIGEditorFrame::OnExit)
-EVT_MENU(wxID_ABOUT, PIGEditorFrame::OnAbout)
-EVT_MENU(wxID_PREFERENCES, PIGEditorFrame::OnPreferences)
+wxBEGIN_EVENT_TABLE(EditorFrame, wxFrame)
+EVT_MENU(wxID_EXIT, EditorFrame::OnExit)
+EVT_MENU(wxID_ABOUT, EditorFrame::OnAbout)
+EVT_MENU(wxID_PREFERENCES, EditorFrame::OnPreferences)
 wxEND_EVENT_TABLE()
 
-PIGEditorFrame::PIGEditorFrame(const wxPoint &pos, const wxSize &size) :
+EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         wxFrame(nullptr, wxID_ANY, APP_TITLE, pos, size) {
 
-    //aui_manager_ = new wxAuiManager(this);
+    aui_manager_ = new wxAuiManager(this);
+
+#if 0
+    wxBitmap splash;
+    if(splash.LoadFile("rc/splash.png", wxBITMAP_TYPE_PNG)) {
+        new wxSplashScreen(
+                splash,
+                wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT,
+                2000,
+                NULL,
+                wxID_ANY,
+                wxDefaultPosition, wxDefaultSize,
+                wxBORDER_SIMPLE | wxSTAY_ON_TOP | wxFRAME_NO_TASKBAR);
+    }
+#endif
+
+    /////////////////////////////////////////////
 
     wxToolBar *toolbar = new wxToolBar();
     toolbar->Realize();
@@ -59,29 +129,45 @@ PIGEditorFrame::PIGEditorFrame(const wxPoint &pos, const wxSize &size) :
         menu_edit->Append(wxID_UNDO);
         menu_edit->Append(wxID_REDO);
         menu_edit->AppendSeparator();
+        menu_edit->AppendCheckItem(ID_TRANSFORM, "&Transform");
+        menu_edit->AppendCheckItem(ID_ROTATE, "&Rotate");
+        menu_edit->AppendCheckItem(ID_SCALE, "&Scale");
+        menu_edit->AppendSeparator();
         menu_edit->Append(wxID_PREFERENCES);
+
+        menu_edit->Check(ID_TRANSFORM, true);
     }
 
     wxMenu *menu_view = new wxMenu;
-    {}
+    {
+        menu_view->Append(ID_RELOAD, "&Reload Resources...");
+        menu_view->AppendSeparator();
+
+        wxMenu *menu_view_panels = new wxMenu;
+        {
+            menu_view_panels->Append(ID_CONSOLE, "&Console");
+        }
+
+        menu_view->AppendSubMenu(menu_view_panels, "&Panels");
+    }
+
+    wxMenu *menu_tools = new wxMenu;
+    {
+        wxMenuItem *tools_model = new wxMenuItem(menu_tools, ID_MODEL, "&Model Tool...");
+        wxMenuItem *tools_texture = new wxMenuItem(menu_tools, ID_TEXTURE, "&Texture Tool...");
+
+        menu_tools->Append(ID_MODEL, "&Model Viewer");
+        menu_tools->Append(tools_texture);
+    }
 
     wxMenu *menu_help = new wxMenu;
     {
         menu_help->Append(wxID_ABOUT);
     }
 
-    wxMenu *menu_tools = new wxMenu;
-    {
-        wxMenuItem *tools_model = new wxMenuItem(menu_tools, EVENT_OPEN_MODELVIEWER, "&Model Tool...");
-        wxMenuItem *tools_texture = new wxMenuItem(menu_tools, EVENT_OPEN_TEXTUREVIEWER, "&Texture Tool...");
-
-        menu_tools->Append(tools_model);
-        menu_tools->Append(tools_texture);
-    }
-
     wxMenu *menu_window = new wxMenu;
     {
-
+        //menu_window->AppendCheckItem(ID_CONSOLE, "&Console");
     }
 
     wxMenuBar *menu_bar = new wxMenuBar;
@@ -89,8 +175,27 @@ PIGEditorFrame::PIGEditorFrame(const wxPoint &pos, const wxSize &size) :
     menu_bar->Append(menu_edit, "&Edit");
     menu_bar->Append(menu_view, "&View");
     menu_bar->Append(menu_tools, "&Tools");
+    menu_bar->Append(menu_window, "&Window");
     menu_bar->Append(menu_help, "&Help");
     SetMenuBar(menu_bar);
+
+    CreateStatusBar(3);
+
+    ////////////////////////////////////////////
+    // Create the toolbar...
+
+    wxAuiPaneInfo toolbar_info;
+    toolbar_info.Caption("Toolbar");
+    toolbar_info.ToolbarPane();
+    toolbar_info.Top();
+
+    wxAuiToolBar *toolbar_file = new wxAuiToolBar(this);
+    {
+        toolbar_info.Position(0);
+    }
+    aui_manager_->AddPane(toolbar_file, toolbar_info);
+
+    ////////////////////////////////////////////
 
     ConsolePanel *console = new ConsolePanel(this);
     wxAuiPaneInfo console_info;
@@ -100,23 +205,24 @@ PIGEditorFrame::PIGEditorFrame(const wxPoint &pos, const wxSize &size) :
     console_info.Floatable(true);
     console_info.CloseButton(false);
     console_info.MaximizeButton(true);
+    aui_manager_->AddPane(console, console_info);
 
-    //aui_manager_->AddPane(console, console_info);
-
-    //aui_manager_->Update();
-
-    CreateStatusBar();
+    aui_manager_->Update();
 }
 
-void PIGEditorFrame::OnExit(wxCommandEvent &event) {
+EditorFrame::~EditorFrame() {
+    aui_manager_->UnInit();
+}
+
+void EditorFrame::OnExit(wxCommandEvent &event) {
     Close(true);
 }
 
-void PIGEditorFrame::OnAbout(wxCommandEvent &event) {
+void EditorFrame::OnAbout(wxCommandEvent &event) {
     wxMessageBox("blah", APP_TITLE, wxOK | wxICON_INFORMATION);
 }
 
-void PIGEditorFrame::OnPreferences(wxCommandEvent &event) {
+void EditorFrame::OnPreferences(wxCommandEvent &event) {
     static PreferencesDialog *preferences = nullptr;
     if(preferences == nullptr) {
         preferences = new PreferencesDialog(this);
@@ -126,32 +232,33 @@ void PIGEditorFrame::OnPreferences(wxCommandEvent &event) {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class PIGEditorApp : public wxApp {
+class EditorApp : public wxApp {
 public:
     virtual bool OnInit();
 
 protected:
 private:
-    PIGEditorFrame *main_frame_;
+    EditorFrame *main_frame_;
 };
 
-bool PIGEditorApp::OnInit() {
+bool EditorApp::OnInit() {
     int width, height;
     wxDisplaySize(&width, &height);
-    main_frame_ = new PIGEditorFrame(wxDefaultPosition, wxSize(1024, 768));
-    main_frame_->Show(true);
-    main_frame_->Maximize(true);
-
-    SetTopWindow(main_frame_);
 
     wxImage::AddHandler(new wxGIFHandler);
     wxImage::AddHandler(new wxICOHandler);
     wxImage::AddHandler(new wxTGAHandler);
     wxImage::AddHandler(new wxPNGHandler);
 
+    main_frame_ = new EditorFrame(wxDefaultPosition, wxSize(1024, 768));
+    main_frame_->Show(true);
+    main_frame_->Maximize(true);
+
+    SetTopWindow(main_frame_);
+
     return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-wxIMPLEMENT_APP(PIGEditorApp);
+wxIMPLEMENT_APP(EditorApp);

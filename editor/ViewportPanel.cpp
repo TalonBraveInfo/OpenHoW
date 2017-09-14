@@ -2,6 +2,10 @@
 
 #include "ViewportPanel.h"
 
+wxBEGIN_EVENT_TABLE(ViewportPanel, wxPanel)
+                EVT_TIMER(-1, ViewportPanel::OnTimer)
+wxEND_EVENT_TABLE()
+
 ViewportPanel::ViewportPanel(wxWindow *parent, const wxSize &size) :
         wxPanel(parent, wxID_ANY, wxDefaultPosition, size, wxFULL_REPAINT_ON_RESIZE) {
     timer_ = new wxTimer(this);
@@ -13,7 +17,7 @@ ViewportPanel::~ViewportPanel() {
 }
 
 void ViewportPanel::Initialize() {
-    int attributes[] = {
+    static int attributes[] = {
             WX_GL_DEPTH_SIZE, 24,
             WX_GL_STENCIL_SIZE, 8,
             WX_GL_MIN_RED, 8,

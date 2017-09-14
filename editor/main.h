@@ -10,7 +10,7 @@
 
 /////////////////////////////////////////////
 
-#define APP_TITLE "Pig Editor"
+#define APP_TITLE "Pork Editor"
 
 #define APP_VERSION_MAJOR   0
 #define APP_VERSION_MINOR   0

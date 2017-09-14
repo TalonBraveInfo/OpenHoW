@@ -27,6 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "main.h"
+#include <PL/platform.h>
+
+PL_EXTERN_C
 
 void LoadPOG(const char *path);
+
+PL_EXTERN_C_END

@@ -12,7 +12,7 @@ DrawCanvas::DrawCanvas(wxWindow *parent, int *attrib_list) :
 }
 
 void DrawCanvas::SetCurrent() {
-    cur_context->SetCurrent(this);
+    cur_context->SetCurrent(*this);
 
     const wxSize size = GetClientSize();
     width_ = static_cast<unsigned int>(size.GetWidth());
