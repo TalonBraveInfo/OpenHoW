@@ -27,49 +27,17 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
+typedef struct PLPackageIndex {
+    char name[256];
+    size_t length;
+    size_t offset;
 
-enum {
-    PLCAMERA_MODE_PERSPECTIVE,
-    PLCAMERA_MODE_ORTHOGRAPHIC,
-    PLCAMERA_MODE_ISOMETRIC
-};
+    uint8_t *data;
+} PLPackageIndex;
 
-typedef struct PLWindow PLWindow;
+typedef struct PLPackage {
+    char *path;
 
-typedef struct PLViewport {
-    int x, y;
-    unsigned int w, h;
-
-    uint8_t *v_buffer;
-#if defined(PL_MODE_OPENGL)
-    unsigned int gl_framebuffer[4];
-    unsigned int gl_renderbuffer[4];
-#endif
-
-    unsigned int r_width, r_height;
-    unsigned int old_r_width, old_r_height;
-} PLViewport;
-
-typedef struct PLCamera {
-    double fov;
-    double near, far;
-    unsigned int mode;
-
-    PLVector3D angles, position;
-    PLPhysicsAABB bounds;
-
-    // Viewport
-    PLViewport viewport;
-} PLCamera;
-
-PL_EXTERN_C
-
-PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
-
-PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN void plDrawPerspective(void);
-
-PL_EXTERN_C_END
+    unsigned int table_size;
+    PLPackageIndex *table;
+} PLPackage;

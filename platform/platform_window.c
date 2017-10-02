@@ -273,7 +273,11 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
 
 void plSwapBuffers(PLWindow *window) {
 #if defined(PL_USE_SDL2)
-    SDL_GL_SwapWindow(SDL_GetWindowFromID(window->sys_id));
+    SDL_Window *sdl_window = SDL_GetWindowFromID(window->sys_id);
+    if(sdl_window == NULL) {
+        return;
+    }
+    SDL_GL_SwapWindow(sdl_window);
 #else
 #ifdef _WIN32
     SwapBuffers(window->dc);

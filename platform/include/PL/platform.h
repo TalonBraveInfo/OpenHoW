@@ -236,7 +236,7 @@ PL_EXTERN PLresult plInitialize(int argc, char **argv, unsigned int subsystems);
 PL_EXTERN void plShutdown(void);
 
 // todo, kill start
-PL_EXTERN void plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
+PL_EXTERN void _plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
 PL_EXTERN void
 _plSetErrorMessage(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
 PL_EXTERN void
@@ -248,6 +248,7 @@ PL_EXTERN const char *plGetResultString(PLresult result);
 
 // todo, kill start
 PL_EXTERN const char * plGetSystemError(void);  // Returns the error message currently given by the operating system.
+PL_EXTERN const char * plGetSystemErrorString(void); // ditto... urgh
 PL_EXTERN const char * plGetError(void);        // Returns the last recorded error.
 // kill end
 
@@ -278,14 +279,16 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 
 #include <PL/platform_string.h>
 
-//////////////////////////////////////////////////////////////////
-
-#define PRINT(...)          printf(__VA_ARGS__)
+// these exist so that internal logging crap can be wedged in... until
+// we have a better system in place
+#define _plPrint(...) printf(__VA_ARGS__)
 #ifdef _DEBUG
-#   define DPRINT(...)      PRINT(__VA_ARGS__)
+#   define _plDebugPrint(...)      _plPrint(__VA_ARGS__)
 #else
-#   define DPRINT(...)      (__VA_ARGS__)
+#   define _plDebugPrint(...)      (__VA_ARGS__)
 #endif
+
+//////////////////////////////////////////////////////////////////
 
 PL_EXTERN bool plIsRunning(void);
 

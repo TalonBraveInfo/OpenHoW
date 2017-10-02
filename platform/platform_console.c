@@ -269,7 +269,7 @@ void _plShutdownConsole(void) {
 
             free((*var));
         }
-        free(_pl_commands);
+        free(_pl_variables);
     }
 }
 
@@ -548,7 +548,7 @@ void plDrawConsole(void) {
         // todo, display buffer text
     }
 
-    if(!_pl_console_font) {
+    if(_pl_console_font == NULL) {
         return;
     }
 

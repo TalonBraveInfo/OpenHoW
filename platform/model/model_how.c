@@ -25,51 +25,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include "model_private.h"
 
-#include "platform.h"
+/* Hogs of War Model Loader
+ * Written by Mark E Sowden
+ */
 
-enum {
-    PLCAMERA_MODE_PERSPECTIVE,
-    PLCAMERA_MODE_ORTHOGRAPHIC,
-    PLCAMERA_MODE_ISOMETRIC
-};
+/* VTX Format   */
+typedef struct VTXCoord {
+    int16_t x, y, z;
+    uint16_t bone_index;
+} VTXCoord;
 
-typedef struct PLWindow PLWindow;
+/* FAC Format   */
+typedef struct FACHeader {
+    uint32_t padding[4];    // always blank
+    uint32_t num_triangles; // Number of blocks
+    uint32_t unknown;
+} FACHeader;
 
-typedef struct PLViewport {
-    int x, y;
-    unsigned int w, h;
+typedef struct __attribute__((packed)) FACTriangle {
+    uint16_t unknown1;
 
-    uint8_t *v_buffer;
-#if defined(PL_MODE_OPENGL)
-    unsigned int gl_framebuffer[4];
-    unsigned int gl_renderbuffer[4];
-#endif
+    uint16_t indices[3];    // Vertex indices
+    uint16_t normal[3];     // Normals
+    uint16_t unknown11;     // ??
+    uint16_t texture_index; // Matches TIM listed in MTD package.
 
-    unsigned int r_width, r_height;
-    unsigned int old_r_width, old_r_height;
-} PLViewport;
+    uint16_t padding;
 
-typedef struct PLCamera {
-    double fov;
-    double near, far;
-    unsigned int mode;
+    int32_t unknown2;
+    int32_t unknown3;
 
-    PLVector3D angles, position;
-    PLPhysicsAABB bounds;
+    int16_t texture_coords[2];
+} FACTriangle;
 
-    // Viewport
-    PLViewport viewport;
-} PLCamera;
+////////////////////////////////////////////////////////////////////////////
 
-PL_EXTERN_C
-
-PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
-
-PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN void plDrawPerspective(void);
-
-PL_EXTERN_C_END

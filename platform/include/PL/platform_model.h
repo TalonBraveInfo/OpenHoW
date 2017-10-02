@@ -31,72 +31,45 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_math.h"
 #include "platform_graphics.h"
 
-enum {
-    PL_MODELTYPE_STATIC,
-    PL_MODELTYPE_ANIMATED,
-    PL_MODELTYPE_SKELETAL
-};
+#define PLMODEL_MAX_MESHES  32
+#define PLMODEL_MAX_FRAMES  512
 
-typedef struct PLModelFrame {
-    PLTriangle  *triangles;
-    PLVertex    *vertices;
+// Standard mesh
+typedef struct PLModel {
+    unsigned int num_triangles;
+    unsigned int num_vertices;
+    unsigned int num_meshes;
+    unsigned int num_animations;
 
-    PLVector3D mins, maxs; // Bounds
-} PLModelFrame;
+    PLMesh *meshes[PLMODEL_MAX_MESHES];
 
-// Static animated mesh.
-typedef struct PLStaticModel {
-    PLuint num_triangles;
-    PLuint num_vertices;
-
-    PLMeshPrimitive primitive;
-
-    PLModelFrame frame;
-} PLStaticModel;
+    PLPhysicsAABB bounds;
+} PLModel;
 
 // Per-vertex animated mesh.
+typedef struct PLModelFrame {
+    unsigned int num_meshes;
+
+    PLMesh *meshes[PLMODEL_MAX_MESHES];
+
+    PLPhysicsAABB bounds;
+} PLModelFrame;
+
 typedef struct PLAnimatedModel {
-    PLuint num_triangles;
-    PLuint num_vertices;
-    PLuint num_frames;
+    unsigned int num_triangles;
+    unsigned int num_vertices;
+    unsigned int num_frames;
 
     PLMeshPrimitive primitive;
 
-    PLModelFrame *frames;
+    PLModelFrame frames[PLMODEL_MAX_FRAMES];
 } PLAnimatedModel;
-
-// Mesh with bone structure.
-typedef struct PLSkeletalModel {
-    PLuint num_triangles;
-    PLuint num_vertices;
-
-    PLMeshPrimitive primitive;
-
-    // Unfinished...
-} PLSkeletalModel;
-
-#include "platform_model_u3d.h"
-#include "platform_model_obj.h"
 
 PL_EXTERN_C
 
-// Static
-PLStaticModel *plCreateStaticModel(void);
-PLStaticModel *plLoadStaticModel(const char *path);
-void plDeleteStaticModel(PLStaticModel *model);
+PLModel *plLoadModel(const char *path);
 
-// Animated
-PLAnimatedModel *plCreateAnimatedModel(void);
-PLAnimatedModel *plLoadAnimatedModel(const char *path);
-void plDeleteAnimatedModel(PLAnimatedModel *model);
-
-PLAnimatedModel *plLoadU3DModel(const char *path);
-
-// Utility
-void plGenerateStaticModelNormals(PLStaticModel *model);
-void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
-void plGenerateSkeletalModelNormals(PLSkeletalModel *model);
-
-PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c);
+void plDeleteModel(PLModel *model);
+void plDrawModel(PLModel *model);
 
 PL_EXTERN_C_END

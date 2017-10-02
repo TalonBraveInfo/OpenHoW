@@ -53,7 +53,7 @@ void _plUnloadOBJModel() {
     normals.shrink_to_fit();
 }
 
-PLStaticModel *plLoadOBJModel(const PLchar *path) {
+PLModel *_plLoadOBJModel(const PLchar *path) {
     _plSetCurrentFunction("plLoadOBJModel");
 
     pl_obj_data.open(path, std::ifstream::binary);
@@ -78,6 +78,7 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
         switch (line[0]) {
             case OBJ_SYNTAX_COMMENT:
                 continue;
+
             case OBJ_SYNTAX_VERTEX: {
                 if (line[1] == OBJ_SYNTAX_VERTEX_NORMAL) {
                     PLVector3D normal = {0, 0, 0};
@@ -90,12 +91,12 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
                     std::sscanf(line.c_str() + 2, "%f %f %f", &position.x, &position.y, &position.z);
                     vertices.push_back(PLVector3D(position.x, position.y, position.z));
                 }
-            }
-                break;
+            } break;
+                
             case OBJ_SYNTAX_FACE: {
 
-            }
-                break;
+            } break;
+
             default:
                 // Materials are ignored for now, do we want these?
                 if (!strncmp("mtllib", line.c_str(), 6))
@@ -106,9 +107,9 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
         }
     }
 
-    PLStaticModel *model = plCreateStaticModel();
-    if (!model) {
-        _plSetErrorMessage("Failed to create static model!\n");
+    PLModel *model = (PLModel*)malloc(sizeof(PLModel));
+    if (model == NULL) {
+        _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
 
         _plUnloadOBJModel();
         return nullptr;
@@ -116,15 +117,15 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
 
     model->num_triangles = 0;
     model->num_vertices = (unsigned int) vertices.size();
-    model->primitive = PLMESH_POINTS;
-
+    //model->primitive = PLMESH_POINTS; // todo, set this within the mesh instead!
+#if 0
     // Allocate vertex/triangle arrays.
     model->frame.vertices = new PLVertex[model->num_vertices];
     for (unsigned int i = 0; i < model->num_vertices; i++) {
         PLVertex *vertex = &model->frame.vertices[0];
         //vertex->position = vertices[i];
     }
-
+#endif
     _plUnloadOBJModel();
 
     return model;

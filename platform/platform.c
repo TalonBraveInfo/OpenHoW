@@ -215,8 +215,8 @@ void plShutdown(void) {
 
 /*	ERROR HANDLING	*/
 
-#define    MAX_FUNCTION_LENGTH    64
-#define    MAX_ERROR_LENGTH    2048
+#define    MAX_FUNCTION_LENGTH  64
+#define    MAX_ERROR_LENGTH     2048
 
 char
         sys_error[MAX_ERROR_LENGTH]         = { '\0' },
@@ -258,13 +258,13 @@ void _plSetErrorMessage(const char *msg, ...) {
 }
 
 // Returns locally generated error message.
-const char * plGetError(void) {
+const char *plGetError(void) {
     return loc_error;
 }
 
 /*	Returns a system error message.
 */
-const char * plGetSystemError(void) {
+const char *plGetSystemError(void) {
 #ifdef _WIN32
     char	*buffer = NULL;
     int		error;
@@ -290,6 +290,13 @@ const char * plGetSystemError(void) {
 #else
     strcpy(sys_error, dlerror());
     return sys_error;
+#endif
+}
+
+const char *plGetSystemErrorString(void) { // todo, replace the above!!
+#ifdef _WIN32 // todo
+#else
+    return strerror(errno);
 #endif
 }
 
@@ -327,7 +334,7 @@ const char *plGetResultString(PLresult result) {
     }
 }
 
-void plResetError(void) {
+void _plResetError(void) {
     loc_function[0] = loc_error[0] = sys_error[0] = '\0';
     _pl_global_result = PL_RESULT_SUCCESS;
 }

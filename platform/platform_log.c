@@ -45,10 +45,15 @@ void plWriteLog(const char *path, const char *msg, ...) {
 
     size_t size = strlen(buffer);
     FILE *file = fopen(newpath, "a");
-    if (fwrite(buffer, sizeof(char), size, file) != size) {
-        _plSetErrorMessage("Failed to write to log! (%s)", newpath);
+    if(file != NULL) {
+        if (fwrite(buffer, sizeof(char), size, file) != size) {
+            _plSetErrorMessage("Failed to write to log! (%s)", newpath);
+        }
+        fclose(file);
+    } else {
+        // todo, needs to be more appropriate; return details on exact issue
+        _plReportError(PL_RESULT_FILEREAD, "Failed to open %s!", newpath);
     }
-    fclose(file);
 }
 
 void plClearLog(const char *path) {

@@ -740,12 +740,17 @@ static PL_INLINE const char *plPrintQuaternion(PLQuaternion q) {
 
 // Bounding Boxes
 
-typedef struct PLBBox3D {
+typedef struct PLPhysicsAABB {
     PLVector3D mins, maxs;
-} PLBBox3D;
+} PLPhysicsAABB;
 
-PL_INLINE static void plClearBBox3D(PLBBox3D *b) {
-    memset(b, 0, sizeof(PLBBox3D));
+PL_INLINE static void plAddAABB(PLPhysicsAABB *b, PLPhysicsAABB b2) {
+    plAddVector3D(&b->maxs, b2.maxs);
+    plAddVector3D(&b->mins, b2.mins);
+}
+
+PL_INLINE static void plClearAABB(PLPhysicsAABB *b) {
+    memset(b, 0, sizeof(PLPhysicsAABB));
 }
 
 typedef struct PLBBox2D {

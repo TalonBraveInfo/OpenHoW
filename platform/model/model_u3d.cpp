@@ -102,7 +102,8 @@ void _plUnloadU3DModel() {
     }
 }
 
-PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
+PLAnimatedModel *_plLoadU3DModel(const PLchar *path) {
+#if 0
     _plSetCurrentFunction("plLoadU3DModel");
 
     pl_u3d_dataf = std::fopen(path, "rb");
@@ -163,8 +164,8 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
         return nullptr;
     }
 
-    PLAnimatedModel *model = plCreateAnimatedModel();
-    if (!model) {
+    PLAnimatedModel *model = (PLAnimatedModel*)malloc(sizeof(PLAnimatedModel));
+    if (model == nullptr) {
         _plSetErrorMessage("Failed to allocate animated model!\n");
 
         _plUnloadU3DModel();
@@ -222,9 +223,12 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
     }
 
     // Calculate normals.
-    plGenerateAnimatedModelNormals(model);
+    _plGenerateAnimatedModelNormals(model);
 
     _plUnloadU3DModel();
 
     return model;
+#else
+    return nullptr;
+#endif
 }

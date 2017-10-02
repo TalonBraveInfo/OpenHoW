@@ -27,8 +27,5 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-PL_EXTERN_C
-
-PLAnimatedModel *plLoadU3DModel(const char *path);
-
-PL_EXTERN_C_END
+#include <PL/platform.h>
+#include <PL/platform_math.h>

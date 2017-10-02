@@ -29,6 +29,11 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
+typedef struct PLBuffer {
+    size_t size;
+    uint8_t data[0];
+} PLBuffer;
+
 PL_EXTERN_C
 
 PL_EXTERN void plGetUserName(PLchar *out);
@@ -57,6 +62,8 @@ PL_EXTERN bool plCopyFile(const char *path, const char *dest);
 PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
 
 PL_EXTERN time_t plGetFileModifiedTime(const PLchar *path);
+
+PL_EXTERN size_t plGetFileSize(const char *path);
 
 PL_EXTERN int16_t plGetLittleShort(FILE *fin);
 PL_EXTERN int32_t plGetLittleLong(FILE *fin);
