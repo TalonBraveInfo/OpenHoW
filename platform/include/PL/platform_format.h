@@ -54,7 +54,7 @@ enum {
 #define PLPACKAGE_VERSION_MAJOR     1
 #define PLPACKAGE_VERSION_MINOR     0
 
-typedef struct { // (PACKAGE)
+typedef struct PLPackageHeader { // (PACKAGE)
     uint8_t     identity[4];    // Descriptor/name of the data type. "PACK"
     uint8_t     version[2];     // Version of this type.
 
@@ -64,7 +64,7 @@ typedef struct { // (PACKAGE)
     // then followed by rest of data
 } PLPackageHeader;
 
-typedef struct {
+typedef struct PLPackageIndexHeader {
     uint16_t type;
     uint32_t length;
 

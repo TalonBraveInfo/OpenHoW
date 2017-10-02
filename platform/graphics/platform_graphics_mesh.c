@@ -98,6 +98,45 @@ unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
 #endif
 }
 
+void plGenerateMeshNormals(PLMesh *mesh) {
+    plAssert(mesh);
+
+#if 1 // per face...
+    for (unsigned int j = 0; j < mesh->num_triangles; j++) {
+        mesh->triangles[j].normal = plGenerateVertexNormal(
+                mesh->vertices[mesh->triangles[j].indices[0]].position,
+                mesh->vertices[mesh->triangles[j].indices[1]].position,
+                mesh->vertices[mesh->triangles[j].indices[2]].position
+        );
+    }
+#else // per vertex... todo
+    for (PLVertex *vertex = &mesh->vertices[0]; vertex; ++vertex) {
+            for (PLTriangle *triangle = &mesh->triangles[0]; triangle; ++triangle) {
+
+            }
+        }
+#endif
+}
+
+PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c) {
+#if 0
+    PLVector3D x = c - b;
+    PLVector3D y = a - b;
+    return x.CrossProduct(y).Normalize();
+#else
+    return plNormalizeVector3D(
+            plVector3DCrossProduct(
+                    plCreateVector3D(
+                            c.x - b.x, c.y - b.y, c.z - b.z
+                    ),
+                    plCreateVector3D(
+                            a.x - b.x, a.y - b.y, a.z - b.z
+                    )
+            )
+    );
+#endif
+}
+
 void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
     PLVector3D distvec = position;
     plSubtractVector3D(&distvec, light->position);
@@ -170,7 +209,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     }
 
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
-    if(!mesh) {
+    if(mesh == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
     }
@@ -191,7 +230,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         }
     }
     mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
-    if(!mesh->vertices) {
+    if(mesh->vertices == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Vertex, %d!\n",
             sizeof(PLVertex) * num_verts);
 
@@ -373,6 +412,41 @@ void plDrawMesh(PLMesh *mesh) {
 }
 
 // Utility Functions
+
+PLPhysicsAABB plCalculateMeshAABB(PLMesh *mesh) {
+    plAssert(mesh);
+
+    static PLPhysicsAABB bounds;
+    memset(&bounds, 0, sizeof(PLPhysicsAABB));
+
+    for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+        if(bounds.maxs.x < mesh->vertices[i].position.x) {
+            bounds.maxs.x = mesh->vertices[i].position.x;
+        }
+
+        if(bounds.mins.x > mesh->vertices[i].position.x) {
+            bounds.mins.x = mesh->vertices[i].position.x;
+        }
+
+        if(bounds.maxs.y < mesh->vertices[i].position.y) {
+            bounds.maxs.y = mesh->vertices[i].position.y;
+        }
+
+        if(bounds.mins.y > mesh->vertices[i].position.y) {
+            bounds.mins.y = mesh->vertices[i].position.y;
+        }
+
+        if(bounds.maxs.z < mesh->vertices[i].position.z) {
+            bounds.maxs.z = mesh->vertices[i].position.z;
+        }
+
+        if(bounds.mins.z > mesh->vertices[i].position.z) {
+            bounds.mins.z = mesh->vertices[i].position.z;
+        }
+    }
+
+    return bounds;
+}
 
 void plDrawCube() {} // todo
 

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct {
     PLVector3D position, angles, velocity;
-    PLBBox3D bounds;
+    PLPhysicsAABB bounds;
 
     void *custom_vars;
 } PLGameObject;

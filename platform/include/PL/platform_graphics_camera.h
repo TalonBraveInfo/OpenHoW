@@ -57,7 +57,7 @@ typedef struct PLCamera {
     unsigned int mode;
 
     PLVector3D angles, position;
-    PLBBox3D bounds;
+    PLPhysicsAABB bounds;
 
     // Viewport
     PLViewport viewport;

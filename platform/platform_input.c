@@ -142,7 +142,7 @@ void _plInitInput(void) {
             }
         }
     } else {
-        DPRINT("Failed to initialise controller support!\n%s", SDL_GetError());
+        _plDebugPrint("Failed to initialise controller support!\n%s", SDL_GetError());
     }
 #endif
 }

@@ -346,6 +346,18 @@ bool plCopyFile(const char *path, const char *dest) {
     return true;
 }
 
+size_t plGetFileSize(const char *path) {
+    _plResetError();
+
+    struct stat buf;
+    if(stat(path, &buf) != 0) {
+        _plReportError(PL_RESULT_FILEREAD, plGetSystemErrorString());
+        return 0;
+    }
+
+    return (size_t)buf.st_size;
+}
+
 int16_t plGetLittleShort(FILE *fin) {
     int b1 = fgetc(fin);
     int b2 = fgetc(fin);

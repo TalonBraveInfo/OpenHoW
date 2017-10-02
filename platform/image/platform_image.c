@@ -49,7 +49,7 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     } else if(_plBMPFormatCheck(fin)) {
         result = _plLoadBMPImage(fin, out);
     } else {
-        const PLchar *extension = plGetFileExtension(path);
+        const char *extension = plGetFileExtension(path);
         if(plIsValidString(extension)) {
             if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3)) {
                 result = _plLoadFTXImage(fin, out);
