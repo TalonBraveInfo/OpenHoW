@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-class HexChoiceBox : public wxWindow, wxItemContainer {
+class HexChoiceBox : public wxControl {
 public:
     HexChoiceBox(wxWindow *parent);
     ~HexChoiceBox();

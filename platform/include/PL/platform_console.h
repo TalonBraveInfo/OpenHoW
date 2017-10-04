@@ -53,18 +53,41 @@ typedef struct PLConsoleVariable {
 
 PL_EXTERN_C
 
+void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars);
+
+void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
+
+#define plAddConsoleVariable(NAME, ...) \
+    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
+    plRegisterConsoleVariables(&NAME, 1);
+
+PL_EXTERN_C_END
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+typedef struct PLConsoleCommand {
+    char cmd[24];
+
+    void(*Callback)(unsigned int argc, char *argv[]);
+
+    char description[512];
+} PLConsoleCommand;
+
+PL_EXTERN_C
+
+void plGetConsoleCommands(PLConsoleCommand *** const cmds, size_t * const num_cmds);
+
+PL_EXTERN_C_END
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+PL_EXTERN_C
+
 PL_EXTERN void plSetupConsole(unsigned int num_instances);
 
 PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
 
 PL_EXTERN void plShowConsole(bool show);
 PL_EXTERN void plDrawConsole(void);
-
-// CONSOLE VARIABLES
-void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
-
-#define plAddConsoleVariable(NAME, ...) \
-    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
-    plRegisterConsoleVariables(&NAME, 1);
 
 PL_EXTERN_C_END

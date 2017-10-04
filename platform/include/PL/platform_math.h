@@ -340,10 +340,26 @@ PL_INLINE static bool plCompareVector3D(PLVector3D v, PLVector3D v2) {
 
 PL_INLINE static PLVector3D plVector3DCrossProduct(PLVector3D v, PLVector3D v2) {
       return plCreateVector3D(
-              v.y * v2.z - v.z * v2.y,
-              v.z * v2.x - v.x * v2.z,
-              v.x * v2.y - v.y * v2.x
+        v.y * v2.z - v.z * v2.y,
+        v.z * v2.x - v.x * v2.z,
+        v.x * v2.y - v.y * v2.x
       );
+}
+
+PL_INLINE static PLVector3D plVector3DMax(PLVector3D v, PLVector3D v2) {
+    return plCreateVector3D(
+        v.x > v2.x ? v.x : v2.x,
+        v.y > v2.y ? v.y : v2.y,
+        v.z > v2.z ? v.z : v2.z
+    );
+}
+
+PL_INLINE static PLVector3D plVector3DMin(PLVector3D v, PLVector3D v2) {
+    return plCreateVector3D(
+        v.x < v2.x ? v.x : v2.x,
+        v.y < v2.y ? v.y : v2.y,
+        v.z < v2.z ? v.z : v2.z
+    );
 }
 
 PL_INLINE static float plVector3DDotProduct(PLVector3D v, PLVector3D v2) {
@@ -747,6 +763,14 @@ typedef struct PLPhysicsAABB {
 PL_INLINE static void plAddAABB(PLPhysicsAABB *b, PLPhysicsAABB b2) {
     plAddVector3D(&b->maxs, b2.maxs);
     plAddVector3D(&b->mins, b2.mins);
+}
+
+PL_INLINE static bool plIntersectAABB(PLPhysicsAABB b, PLPhysicsAABB b2) {
+    PLVector3D dist_a = b2.mins;
+    plSubtractVector3D(&dist_a, b.maxs);
+    PLVector3D dist_b = b.mins;
+    plSubtractVector3D(&dist_b, b2.maxs);
+    PLVector3D dist = plVector3DMax(dist_a, dist_b);
 }
 
 PL_INLINE static void plClearAABB(PLPhysicsAABB *b) {

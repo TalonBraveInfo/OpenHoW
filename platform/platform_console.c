@@ -36,14 +36,6 @@ For more information, please refer to <http://unlicense.org>
 // todo, mouse input callback
 // todo, keyboard input callback
 
-typedef struct PLConsoleCommand {
-    char cmd[24];
-
-    void(*Callback)(unsigned int argc, char *argv[]);
-
-    char description[512];
-} PLConsoleCommand;
-
 PLConsoleCommand **_pl_commands = NULL;
 size_t _pl_num_commands = 0;
 size_t _pl_commands_size = 512;
@@ -84,6 +76,11 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
             _pl_num_commands++;
         }
     }
+}
+
+void plGetConsoleCommands(PLConsoleCommand *** const cmds, size_t * const num_cmds) {
+    *cmds = _pl_commands;
+    *num_cmds = _pl_num_commands;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -127,6 +124,11 @@ void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars)
             _pl_num_variables++;
         }
     }
+}
+
+void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars) {
+    *vars = _pl_variables;
+    *num_vars = _pl_num_variables;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

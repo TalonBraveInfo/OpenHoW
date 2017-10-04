@@ -6,7 +6,8 @@
 #include "ViewportPanel.h"
 
 #include <wx/aui/aui.h>
-#include <wx/splash.h>
+
+#include <PL/platform.h>
 
 class PerspectiveViewportPanel : public ViewportPanel {
 public:
@@ -207,6 +208,12 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     console_info.MaximizeButton(true);
     aui_manager_->AddPane(console, console_info);
 
+#if 1
+    console->PrintMessage("Standard message\n");
+    console->PrintWarning("Warning message\n");
+    console->PrintError("Error message\n");
+#endif
+
     aui_manager_->Update();
 }
 
@@ -242,13 +249,15 @@ private:
 };
 
 bool EditorApp::OnInit() {
+
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
+
+    wxLog::SetLogLevel(wxLOG_Warning);
+
+    wxInitAllImageHandlers();
+
     int width, height;
     wxDisplaySize(&width, &height);
-
-    wxImage::AddHandler(new wxGIFHandler);
-    wxImage::AddHandler(new wxICOHandler);
-    wxImage::AddHandler(new wxTGAHandler);
-    wxImage::AddHandler(new wxPNGHandler);
 
     main_frame_ = new EditorFrame(wxDefaultPosition, wxSize(1024, 768));
     main_frame_->Show(true);
@@ -258,7 +267,5 @@ bool EditorApp::OnInit() {
 
     return true;
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////
 
 wxIMPLEMENT_APP(EditorApp);
