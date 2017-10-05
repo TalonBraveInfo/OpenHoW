@@ -288,6 +288,8 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 #   define _plDebugPrint(...)      (__VA_ARGS__)
 #endif
 
+const char *plGetFormattedTime(void);
+
 //////////////////////////////////////////////////////////////////
 
 PL_EXTERN bool plIsRunning(void);

@@ -61,9 +61,8 @@ ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
 
 void ConsolePanel::OnCommand(wxCommandEvent &event) {
     if(event.GetEventType() == wxEVT_TEXT_ENTER) {
-        // todo, pass command onto platform lib
+        plParseConsoleString(c_in_->GetValue());
         c_in_->SetValue("");
-
     }
 }
 

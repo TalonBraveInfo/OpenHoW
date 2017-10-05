@@ -40,6 +40,8 @@ For more information, please refer to <http://unlicense.org>
 
 #endif
 
+#include <sys/time.h>
+
 /*	Generic functions for platform, such as	error handling.	*/
 
 typedef struct PLSubSystem {
@@ -337,6 +339,21 @@ const char *plGetResultString(PLresult result) {
 void _plResetError(void) {
     loc_function[0] = loc_error[0] = sys_error[0] = '\0';
     _pl_global_result = PL_RESULT_SUCCESS;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Time
+
+const char *plGetFormattedTime(void) {
+    struct timeval time;
+    if(gettimeofday(&time, NULL) != 0) {
+        return "unknown";
+    }
+
+    static char time_out[32] = { '\0' };
+    time_t sec = time.tv_sec;
+    strftime(time_out, sizeof(time_out), "%F %T", localtime(&sec));
+    return time_out;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

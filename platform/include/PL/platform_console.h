@@ -38,7 +38,7 @@ enum {
 };
 
 typedef struct PLConsoleVariable {
-    const char *var, *value;
+    const char *var, *default_value;
 
     unsigned int type;
 
@@ -48,12 +48,13 @@ typedef struct PLConsoleVariable {
 
     /////////////////////////////
 
-    const char *default_value;
+    char value[1024];
 } PLConsoleVariable;
 
 PL_EXTERN_C
 
 void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars);
+PLConsoleVariable *plGetConsoleVariable(const char *name);
 
 void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
 
@@ -76,6 +77,7 @@ typedef struct PLConsoleCommand {
 PL_EXTERN_C
 
 void plGetConsoleCommands(PLConsoleCommand *** const cmds, size_t * const num_cmds);
+PLConsoleCommand *plGetConsoleCommand(const char *name);
 
 PL_EXTERN_C_END
 
@@ -86,6 +88,8 @@ PL_EXTERN_C
 PL_EXTERN void plSetupConsole(unsigned int num_instances);
 
 PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
+
+PL_EXTERN void plParseConsoleString(const char *string);
 
 PL_EXTERN void plShowConsole(bool show);
 PL_EXTERN void plDrawConsole(void);
