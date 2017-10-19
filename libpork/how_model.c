@@ -25,36 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include <pork/pork.h>
 
-#include <PL/platform_log.h>
-#include <PL/platform_window.h>
-#include <PL/platform_graphics.h>
-#include <PL/platform_model.h>
-#include <PL/platform_filesystem.h>
 
-#define PRINT(...)          printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__)
-#define PRINT_ERROR(...)    PRINT(__VA_ARGS__); exit(-1)
-#ifdef _DEBUG
-#   define DPRINT(...)      PRINT(__VA_ARGS__)
-#else
-#   define DPRINT(...)      (__VA_ARGS__)
-#endif
 
-// todo, the below is a basic outline for API
+/////////////////////////////////////
 
-///////////////////////////////////////////////////
+PLSkeletalModel *LoadSkeletalModel(const char *path) {
 
-#define MAX_MESHES  64
+}
 
-typedef struct Model {
-    PLMesh *meshes[MAX_MESHES];
-} Model;
-
-Model *LoadModel(const char *path);
-
-///////////////////////////////////////////////////
-
-#define MAX_PLAYERS 16
-
-#define MAX_STATIC_OBJECTS  1024
+PLStaticModel *LoadStaticModel(const char *path) {
+    PLStaticModel *model = plCreateStaticModel();
+}

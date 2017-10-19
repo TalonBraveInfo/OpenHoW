@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "main.h"
 
 #include "formats/mad.h"
-#include "formats/pog.h"
+//#include "formats/pog.h"
 
 #include "font.h"
 #include "model.h"
@@ -770,7 +770,7 @@ int main(int argc, char **argv) {
     }
 
     //LoadPOG("./data/maps/tester.pog");
-    plScanDirectory("./data/maps/", ".pog", LoadPOG, false);
+    //plScanDirectory("./data/maps/", ".pog", LoadPOG, false);
 
     InitializeFonts();
     InitializeObjects();

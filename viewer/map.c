@@ -2,8 +2,6 @@
 
 #include "map.h"
 
-#include "formats/pog.h"
-
 /////////////////////////////////////////////
 // WATER
 

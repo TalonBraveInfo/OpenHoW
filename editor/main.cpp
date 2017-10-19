@@ -208,7 +208,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     console_info.MaximizeButton(true);
     aui_manager_->AddPane(console, console_info);
 
-#if 1
+#if 0
     console->PrintMessage("Standard message\n");
     console->PrintWarning("Warning message\n");
     console->PrintError("Error message\n");

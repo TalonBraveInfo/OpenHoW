@@ -25,9 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform.h>
-#include <PL/platform_stdint.h>
-
 #include <pork/pog.h>
 
 // POG Loader
