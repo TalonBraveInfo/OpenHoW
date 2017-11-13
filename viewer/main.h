@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include <pork/pork.h>
+#include <pork/model.h>
 
 #define TITLE   "OpenPork"
 #define LOG     "debug"

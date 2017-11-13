@@ -88,7 +88,7 @@ EVT_MENU(wxID_PREFERENCES, EditorFrame::OnPreferences)
 wxEND_EVENT_TABLE()
 
 EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
-        wxFrame(nullptr, wxID_ANY, APP_TITLE, pos, size) {
+        wxFrame(nullptr, wxID_ANY, PORK_EDITOR_TITLE, pos, size) {
 
     aui_manager_ = new wxAuiManager(this);
 
@@ -108,11 +108,11 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
 
     /////////////////////////////////////////////
 
-    wxToolBar *toolbar = new wxToolBar();
+    auto *toolbar = new wxToolBar();
     toolbar->Realize();
     SetToolBar(toolbar);
 
-    wxMenu *menu_file = new wxMenu;
+    auto *menu_file = new wxMenu;
     {
         menu_file->Append(wxID_NEW);
         menu_file->Append(wxID_OPEN);
@@ -125,7 +125,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         menu_file->Append(wxID_EXIT);
     }
 
-    wxMenu *menu_edit = new wxMenu;
+    auto *menu_edit = new wxMenu;
     {
         menu_edit->Append(wxID_UNDO);
         menu_edit->Append(wxID_REDO);
@@ -139,12 +139,12 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         menu_edit->Check(ID_TRANSFORM, true);
     }
 
-    wxMenu *menu_view = new wxMenu;
+    auto *menu_view = new wxMenu;
     {
         menu_view->Append(ID_RELOAD, "&Reload Resources...");
         menu_view->AppendSeparator();
 
-        wxMenu *menu_view_panels = new wxMenu;
+        auto *menu_view_panels = new wxMenu;
         {
             menu_view_panels->Append(ID_CONSOLE, "&Console");
         }
@@ -152,7 +152,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         menu_view->AppendSubMenu(menu_view_panels, "&Panels");
     }
 
-    wxMenu *menu_tools = new wxMenu;
+    auto *menu_tools = new wxMenu;
     {
         wxMenuItem *tools_model = new wxMenuItem(menu_tools, ID_MODEL, "&Model Tool...");
         wxMenuItem *tools_texture = new wxMenuItem(menu_tools, ID_TEXTURE, "&Texture Tool...");
@@ -161,17 +161,17 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         menu_tools->Append(tools_texture);
     }
 
-    wxMenu *menu_help = new wxMenu;
+    auto *menu_help = new wxMenu;
     {
         menu_help->Append(wxID_ABOUT);
     }
 
-    wxMenu *menu_window = new wxMenu;
+    auto *menu_window = new wxMenu;
     {
         //menu_window->AppendCheckItem(ID_CONSOLE, "&Console");
     }
 
-    wxMenuBar *menu_bar = new wxMenuBar;
+    auto *menu_bar = new wxMenuBar;
     menu_bar->Append(menu_file, "&File");
     menu_bar->Append(menu_edit, "&Edit");
     menu_bar->Append(menu_view, "&View");
@@ -190,7 +190,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     toolbar_info.ToolbarPane();
     toolbar_info.Top();
 
-    wxAuiToolBar *toolbar_file = new wxAuiToolBar(this);
+    auto *toolbar_file = new wxAuiToolBar(this);
     {
         toolbar_info.Position(0);
     }
@@ -198,7 +198,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
 
     ////////////////////////////////////////////
 
-    ConsolePanel *console = new ConsolePanel(this);
+    auto *console = new ConsolePanel(this);
     wxAuiPaneInfo console_info;
     console_info.Caption("Console");
     console_info.Bottom();
@@ -226,7 +226,7 @@ void EditorFrame::OnExit(wxCommandEvent &event) {
 }
 
 void EditorFrame::OnAbout(wxCommandEvent &event) {
-    wxMessageBox("blah", APP_TITLE, wxOK | wxICON_INFORMATION);
+    wxMessageBox("blah", PORK_EDITOR_TITLE, wxOK | wxICON_INFORMATION);
 }
 
 void EditorFrame::OnPreferences(wxCommandEvent &event) {
@@ -241,11 +241,11 @@ void EditorFrame::OnPreferences(wxCommandEvent &event) {
 
 class EditorApp : public wxApp {
 public:
-    virtual bool OnInit();
+    bool OnInit() override;
 
 protected:
 private:
-    EditorFrame *main_frame_;
+    EditorFrame *main_frame_{};
 };
 
 bool EditorApp::OnInit() {

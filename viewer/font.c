@@ -80,7 +80,7 @@ void DrawCharacter(PIGFont *font, int x, int y, float scale, uint8_t character) 
                 2,
                 4
         ))) {
-            PRINT_ERROR("Failed to create font mesh!\n");
+            print_error("Failed to create font mesh!\n");
         }
     }
 
@@ -171,12 +171,12 @@ void DrawText(PIGFont *font, int x, int y, float scale, const char *msg) {
 PIGFont *CreateFont(const char *path, const char *tab_path) {
     PIGFont *font = (PIGFont*)malloc(sizeof(PIGFont));
     if(!font) {
-        PRINT_ERROR("Failed to allocate memory for PIGFont!\n");
+        print_error("Failed to allocate memory for PIGFont!\n");
     }
 
     FILE *file = fopen(tab_path, "rb");
     if(!file) {
-        PRINT_ERROR("Failed to load file %s!\n", tab_path);
+        print_error("Failed to load file %s!\n", tab_path);
     }
 
     fseek(file, 16, SEEK_SET);
@@ -184,21 +184,21 @@ PIGFont *CreateFont(const char *path, const char *tab_path) {
     TABIndex indices[FONT_CHARACTERS];
     font->num_chars = (unsigned int)fread(indices, sizeof(TABIndex), FONT_CHARACTERS, file);
     if(font->num_chars == 0) {
-        PRINT_ERROR("Invalid number of characters for font! (%s)\n", tab_path);
+        print_error("Invalid number of characters for font! (%s)\n", tab_path);
     }
 
     ILuint image = ilGenImage();
     ilBindImage(image);
 
     if(!ilLoadImage(path)) {
-        PRINT_ERROR("Failed to load image! (%s)\n", path);
+        print_error("Failed to load image! (%s)\n", path);
     }
 
     font->width = (unsigned int)ilGetInteger(IL_IMAGE_WIDTH);
     font->height = (unsigned int)ilGetInteger(IL_IMAGE_HEIGHT);
 
     if(!ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE)) {
-        PRINT_ERROR("Failed to convert image!\n");
+        print_error("Failed to convert image!\n");
     }
 
     memset(font->chars, 0, sizeof(PIGChar) * FONT_CHARACTERS);

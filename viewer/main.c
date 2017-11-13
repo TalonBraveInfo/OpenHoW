@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org>
 //#include "formats/pog.h"
 
 #include "font.h"
-#include "model.h"
 #include "object.h"
 #include "map.h"
 
@@ -40,119 +39,9 @@ For more information, please refer to <http://unlicense.org>
 #include <IL/ilut.h>
 
 #include <GLFW/glfw3.h>
-#include <PL/platform_console.h>
 
 #define WIDTH 1024
 #define HEIGHT 768
-
-/*  VTX Format Specification    */
-
-typedef struct VTXCoord {
-    int16_t x;
-    int16_t y;
-    int16_t z;
-    uint16_t bone_index;
-} VTXCoord;
-
-/*  FAC Format Specification    */
-
-typedef struct FACHeader {
-    uint32_t padding[4];    // This is always blank
-    uint32_t num_triangles;    // Number of FACBlocks
-    uint32_t unknown3;
-} FACHeader;
-
-// ?   I0   I1  I2   N0  N1   N2  ?    TI  P    ?   ?    ?   ?    S   T
-// 01000F00 0E001300 0F000E00 13003420 50000000 30203134 00002031 001F001F
-// 01001000 0F001300 10000F00 13003420 50000000 30203331 00003432 001F001F
-// 01001100 10001300 11001000 13003120 50000000 36203331 00003220 021F001F
-// 01001200 11001300 12001100 1300390D 50000000 36203333 00003220 031F021F
-
-typedef struct __attribute__((packed)) FACTriangle {
-    uint16_t unknown1;
-
-    uint16_t indices[3];    // Vertex indices
-    uint16_t normal[3];     // Normals
-    uint16_t unknown11;     // ??
-    uint16_t texture_index; // Matches TIM listed in MTD package.
-
-    uint16_t padding;
-
-    int32_t unknown2;
-    int32_t unknown3;
-
-    int16_t texture_coords[2];
-} FACTriangle;
-
-typedef struct __attribute__((packed)) FACQuad {
-
-    uint32_t unknown4;
-    uint32_t unknown5;
-
-    uint16_t indices[4];    // Vertex indices
-
-    uint16_t normal[4];     // Normals
-
-    uint16_t texture_index; // Matches TIM listed in MTD package.
-
-    uint16_t padding;
-
-    uint16_t unknown3;
-    int32_t unknown6;
-    int16_t unknown7;
-} FACQuad;
-
-/*  NO2 Format Specification    */
-/* The NO2 format is used by Hogs of War to store pre-calculated normals
- * for the mesh, as far as we've determined.
- */
-
-typedef struct NO2Index { // todo
-    // D2C7003F 7EE456BD 38D75CBF 00004041
-
-    int32_t unknown0;
-    int32_t unknown1;
-    int32_t unknown2;
-    int32_t unknown3;
-} NO2Index;
-
-/*  ANIM Format Specification   */
-/* Don't actually have a name / extension
- * for this one, so we'll just dub it 'anim'
- * for now.
- */
-
-/*
- * 00000000 8AFFFFFF 02000000 00000000 00000000 00000000 00000000 00000000
- * 8C8BD5BD EE4695BC B88630BE 0000803F 3DDD9D3C CD372CBD 4E1FA9BE 0000803F
- * 51E1B8BC A3E2303D 87D81F3C 0000803F 9FBCA43F F246B83E FDAFBB3D 0000803F
- * D11BA13B 509AFABE 8D244E3C 0000803F 2E9B8D3E FD10D23D D640B1BE 0000803F
- * F0045DBF 72A5843E 66EECBBE 0000803F 62CD4740 3C4AA73F 151A4840 0000803F
- * F5F14ABF 3BB1593E 0815BA3E 0000803F 5E4425BE 86B3F33D 5EED7FBD 0000803F
- * F30AC93A ADA5B137 C43162BC 0000803F 7ACA8F3E E3682C3E E724033E 0000803F
- * E92BA3BA BC220BBE DA57963E 0000803F FB0BC9BA DFE89DB7 CB0F49BC 0000803F
- * EF5F9C3D FD2C27BC 1A2BB5BD 0000803F
- */
-
-/*  HIR Format Specification    */
-/* Used to store our piggy bones.
- */
-
-// P        X   Y    Z   ?    ?   ?    ?   ?
-
-// 00000000 0000EBFF 01000000 00000000 00000000
-// 01000000 06004FFF 02000000 00000000 00000000
-// 01000000 FDFF9BFF 58000000 00000000 00000000
-// 03000000 03000000 6E000000 00000000 00000000
-// 04000000 FDFF0000 6F000000 00000000 00000000
-// 01000000 FEFF9BFF A9FF0000 00000000 00000000
-
-typedef struct __attribute__((packed)) HIRBone {
-    uint32_t parent; // not 100% on this, links in with
-                     // animations from the looks of it, urgh...
-    int16_t coords[3];
-    uint8_t unused[10];
-} HIRBone;
 
 /*  SRL Format Specification        */
 /* The SRL format is used as an index for sounds used
@@ -168,76 +57,6 @@ void load_srl_file(const char *path) {
 }
 
 //////////////////////////////////////////////////////
-
-typedef struct PIGModel {
-    VTXCoord    coords[MAX_VERTICES];
-    HIRBone     bones[MAX_BONES];
-    FACTriangle triangles[MAX_TRIANGLES];
-    FACQuad     quads[MAX_QUADS];
-
-    unsigned int num_vertices;
-    unsigned int num_triangles; // triangles * (quads * 2)
-    unsigned int num_bones;
-    unsigned int num_meshes;
-
-    PLMesh *tri_mesh;       // Our actual output!
-    PLMesh *skeleton_mesh;  // preview of skeleton
-
-    PLMesh **meshes;
-
-    PLVector3D angles;
-    PLVector3D position;
-} PIGModel;
-
-PIGModel model;
-
-void load_hir_file(const char *path) {
-    PRINT("\nOpening %s\n", path);
-
-    FILE *file = fopen(path, "r");
-    if(!file) {
-        PRINT_ERROR("Failed to load file %s!\n", path);
-    }
-
-    memset(model.bones, 0, sizeof(HIRBone) * MAX_BONES);
-    model.num_bones = (unsigned int) fread(model.bones, sizeof(HIRBone), 32, file);
-    if(model.num_bones > MAX_BONES) {
-        PRINT("Unexpected number of bones, greater than 32! (%d)\n", model.num_bones);
-        model.num_bones = MAX_BONES;
-    }
-
-    model.skeleton_mesh = plCreateMesh(
-            PLMESH_LINES,
-            PL_DRAW_IMMEDIATE,
-            0,
-            model.num_bones * 2
-    );
-    for(unsigned int i = 0, vert = 0; i < model.num_bones; i++, vert += 2) {
-#if 0
-        PRINT("BONE %d\n", i);
-        PRINT("    parent(%d)\n", model.bones[i].parent);
-        PRINT("    coords(%d %d %d)\n",
-              model.bones[i].coords[0],
-              model.bones[i].coords[1],
-              model.bones[i].coords[2]);
-#endif
-        // Start
-        plSetMeshVertexPosition3f(model.skeleton_mesh, vert,
-                                  model.bones[i].coords[0],
-                                  model.bones[i].coords[1],
-                                  model.bones[i].coords[2]);
-        plSetMeshVertexColour(model.skeleton_mesh, vert, plCreateColour4b(PL_COLOUR_RED));
-
-        // End
-        plSetMeshVertexPosition3f(model.skeleton_mesh, vert + 1,
-                                  model.bones[model.bones[i].parent].coords[0],
-                                  model.bones[model.bones[i].parent].coords[1],
-                                  model.bones[model.bones[i].parent].coords[2]);
-        plSetMeshVertexColour(model.skeleton_mesh, vert + 1, plCreateColour4b(PL_COLOUR_GREEN));
-    }
-
-    fclose(file);
-}
 
 void load_fac_file(const char *path) {
     FACHeader header;
@@ -526,24 +345,6 @@ void load_fac_file(const char *path) {
     fclose(file);
 }
 
-void load_vtx_file(const char *path) {
-    PRINT("\nOpening %s\n", path);
-
-    FILE *file = fopen(path, "r");
-    if(!file) {
-        PRINT_ERROR("Failed to load file %s!\n", path);
-    }
-
-    model.num_vertices = (unsigned int) fread(model.coords, sizeof(VTXCoord), 2048, file);
-    if(!model.num_vertices) {
-        PRINT("Empty model!\n");
-        fclose(file);
-        return;
-    }
-
-    PRINT("Vertices: %d\n", model.num_vertices);
-}
-
 enum {
     VIEW_MODE_LIT,
     VIEW_MODE_WIREFRAME,
@@ -649,49 +450,15 @@ void DrawOverlays(void) {
 #endif
 }
 
-void DrawBones(void) {
+void DrawScene(void) {
 
 }
 
-////////////////////////////////////////////////////////////////
-
-void CopyFile(const char *path, const char *dest) {
-    FILE *fold = fopen(path, "rb");
-    if(!fold) {
-        PRINT_ERROR("Failed to open %s for copying!\n", path);
-    }
-
-    fseek(fold, 0, SEEK_END);
-    size_t file_size = (size_t)ftell(fold);
-    fseek(fold, 0, SEEK_SET);
-
-    uint8_t *data = calloc(file_size, 1);
-    if(!data) {
-        PRINT_ERROR("Failed to allocate buffer for %s, with size %d!\n", path, file_size);
-    }
-
-    fread(data, 1, file_size, fold);
-
-    DPRINT("Writing %s...\n", dest);
-
-    FILE *out = fopen(dest, "wb");
-    if (!out || fwrite(data, 1, file_size, out) != file_size) {
-        PRINT_ERROR("Failed to write %s!\n", dest);
-    }
-    fclose(out);
-}
-
-void CopyMapFile(const char *path) {
+void copy_map_file(const char *path) {
     char file_path[PL_SYSTEM_MAX_PATH];
     snprintf(file_path, sizeof(file_path), "./data/maps/%s", plGetFileName(path));
     plLowerCasePath(file_path);
-    CopyFile(path, file_path);
-}
-
-////////////////////////////////////////////////////////////////
-
-void DrawScene(void) {
-
+    plCopyFile(path, file_path);
 }
 
 int main(int argc, char **argv) {
@@ -742,29 +509,32 @@ int main(int argc, char **argv) {
 
     // And now for ours...
 
+    // todo, move all of this out into separate setup executable
+
     // Check if it's the PSX content or PC content.
     if(plFileExists("./system.cnf")) {
         PRINT("Found system.cnf, assuming PSX version...\n");
         g_state.is_psx = true;
     }
 
-    if(!plPathExists("./data")) {
+    if(!plPathExists("./" PORK_BASE_DIR)) {
         DPRINT("Unable to find data directory, extracting game contents...\n");
         if (
-                !plCreateDirectory("./data") ||
-                !plCreateDirectory("./data/models") ||
-                !plCreateDirectory("./data/textures") ||
-                !plCreateDirectory("./data/maps")) {
+                !plCreateDirectory("./" PORK_BASE_DIR)          ||
+                !plCreateDirectory("./" PORK_BASE_DIR "/chars") ||
+                !plCreateDirectory("./" PORK_BASE_DIR "/maps")) {
             PRINT_ERROR("Failed to create base directory for data!\n");
         }
 
         InitializeMADPackages();
 
         // Copy all of the map files over into a new directory.
-        plScanDirectory("./Maps/", ".pog", CopyMapFile, false);
-        plScanDirectory("./Maps/", ".pmg", CopyMapFile, false);
-        plScanDirectory("./Maps/", ".ptg", CopyMapFile, false);
-        plScanDirectory("./Maps/", ".gen", CopyMapFile, false);
+        plScanDirectory("./Maps/", ".pog", copy_map_file, false);
+        plScanDirectory("./Maps/", ".pmg", copy_map_file, false);
+        plScanDirectory("./Maps/", ".ptg", copy_map_file, false);
+        plScanDirectory("./Maps/", ".gen", copy_map_file, false);
+
+        plCopyFile("./Chars/pig.HIR", "./" PORK_BASE_DIR "/pig.hir");
     } else {
         DPRINT("Found data directory, continuing with normal execution...\n");
     }
@@ -772,8 +542,10 @@ int main(int argc, char **argv) {
     //LoadPOG("./data/maps/tester.pog");
     //plScanDirectory("./data/maps/", ".pog", LoadPOG, false);
 
+    init_model_cache();
+
     InitializeFonts();
-    InitializeObjects();
+    init_objects();
 
     ////////////////////////////////////////////////////
 
@@ -879,7 +651,7 @@ int main(int argc, char **argv) {
 
             // Logic start
 
-            ProcessObjects();
+            process_objects();
 
             // Rendering start
 
@@ -924,7 +696,7 @@ int main(int argc, char **argv) {
 
             plSetupCamera(g_state.main_camera);
 
-            DrawObjects();
+            draw_objects();
 
 #if 1
             glLoadIdentity();

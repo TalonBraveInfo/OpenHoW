@@ -44,16 +44,7 @@ For more information, please refer to <http://unlicense.org>
  * Thanks to solemnwarning for his help on this one!
  */
 
-typedef struct __attribute__((packed)) MADIndex {
-    char file[16];
-
-    uint32_t offset;
-    uint32_t length;
-} MADIndex;
-
-//////////////////////////////////////////////////////////
-
-void ExtractMADPackage(const char *path) {
+void extract_mad_package(const char *path) {
     if(!path || (path[0] == '\0') || (strstr(path, "mcap") != 0) || (strstr(path, "allmad") != 0)) {
         DPRINT("Encountered invalid MAD %s, aborting!\n", path);
         return;
@@ -81,6 +72,13 @@ void ExtractMADPackage(const char *path) {
         PRINT_ERROR("Failed to open %s!\n", index_path);
     }
 #endif
+
+    typedef struct __attribute__((packed)) MADIndex {
+        char file[16];
+
+        uint32_t offset;
+        uint32_t length;
+    } MADIndex;
 
     unsigned int lowest_offset = UINT32_MAX;
     unsigned int cur_index = 0;

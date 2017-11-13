@@ -35,7 +35,7 @@ unsigned int num_player_objects;
 StaticObject static_objects[MAX_STATIC_OBJECTS];
 unsigned int num_static_objects;
 
-void ClearObjects(void) {
+void clear_objects(void) {
     memset(&player_objects, 0, sizeof(PlayerObject) * MAX_PLAYERS);
     memset(&static_objects, 0, sizeof(StaticObject) * MAX_STATIC_OBJECTS);
 
@@ -45,13 +45,13 @@ void ClearObjects(void) {
 
 ///////////////////////////////////////////////////
 
-void InitializeObjects(void) {
-    PRINT("Initializing objects...\n");
+void init_objects(void) {
+    print("Initializing objects...\n");
 
-    ClearObjects();
+    clear_objects();
 }
 
-void ProcessObjects(void) {
+void process_objects(void) {
     for(StaticObject *object = static_objects; object < static_objects + num_static_objects; ++object) {
         // todo, stuff
     }
@@ -65,7 +65,7 @@ void ProcessObjects(void) {
     }
 }
 
-void DrawObjects(void) {
+void draw_objects(void) {
     for(StaticObject *object = static_objects; object < static_objects + num_static_objects; ++object) {
         // todo, stuff
     }
@@ -211,7 +211,7 @@ ObjectSpawn spawn_objects[]={
         {"PIST", NULL},
 };
 
-void SpawnObject(const char *name, PLVector3D position, PLVector3D angles) {
+void spawn_object(const char *name, PLVector3D position, PLVector3D angles) {
     ObjectSpawn *decor = NULL;
     for(unsigned int i = 0; i < plArrayElements(spawn_objects); ++i) {
         if(!strncmp(spawn_objects[i].name, name, 8)) {
