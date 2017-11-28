@@ -1,5 +1,5 @@
 /* OpenHOW
- * Copyright (C) 2017 Mark E Sowden
+ * Copyright (C) 2017-2018 Mark E Sowden
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,4 +18,38 @@
 
 #include "main.h"
 
-void InitializeMADPackages(void);
+
+
+///////////////////////////////////////////////////
+
+typedef struct PlayerObject {
+    Object state;
+
+    PLVector3D velocity;
+
+    bool active;
+
+    Model *model;
+} PlayerObject;
+
+typedef struct StaticObject {
+    Object state;
+
+    Model *model;
+} StaticObject;
+
+typedef struct DynamicObject {} DynamicObject;
+
+///////////////////////////////////////////////////
+
+void init_objects(void);
+void spawn_object(
+        const char *name,
+        PLVector3D position,
+        PLVector3D angles
+);
+
+void process_objects(void);
+void draw_objects(void);
+
+///////////////////////////////////////////////////

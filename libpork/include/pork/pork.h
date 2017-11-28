@@ -1,5 +1,5 @@
 /* OpenHOW
- * Copyright (C) 2017 Mark E Sowden
+ * Copyright (C) 2017-2018 Mark E Sowden
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,7 @@
 
 /* libpork - base library shared between launcher and editor */
 
-#include <PL/platform_log.h>
-#include <PL/platform_window.h>
-#include <PL/platform_graphics.h>
-#include <PL/platform_model.h>
-#include <PL/platform_filesystem.h>
+#include <pork/math.h>
 
 #define PORK_TITLE          "OpenHOW"
 #define PORK_EDITOR_TITLE   "Crispy Bacon"
@@ -99,8 +95,8 @@ enum { // event types
 };
 
 typedef struct Object { // Generic Object Properties
-    PLVector3D position, angles;
-    PLVector3D bounds[2];
+    vector3 position, angles;
+    vector3 bounds[2];
 
     unsigned int spawn_delay;
     unsigned int team;
@@ -118,33 +114,33 @@ enum {
     ITEM_CATTLEPROD,
     ITEM_PISTOL,
     ITEM_RIFLE,
-    ITEM_RIFLEBURST,
+    ITEM_RIFLE_BURST,
     ITEM_MACHINEGUN,
     ITEM_HMG,
-    ITEM_SNIPERRIFLE,
+    ITEM_SNIPER_RIFLE,
     ITEM_SHOTGUN,
     ITEM_FLAMETHROWER,
-    ITEM_ROCKETLAUNCHER = 0x0E,
-    ITEM_GUIDEDMISSILE = 0x0F,
-    ITEM_MEDICINEDART = 0x10,
+    ITEM_ROCKET_LAUNCHER = 0x0E,
+    ITEM_GUIDED_MISSILE = 0x0F,
+    ITEM_MEDICINE_DART = 0x10,
     ITEM_TRANQ = 0x11,
     ITEM_GRENADE = 0x12,
-    ITEM_CLUSTERGRENADE = 0x13,
-    ITEM_HXGRENADE = 0x14,
-    RollerGrenade = 0x15,
-    ConfusionGas = 0x16,
-    FreezeGas = 0x17,
-    MadnessGas = 0x18,
-    PoisonGas = 0x19,
-    Mortar = 0x1A,
-    Bazooka = 0x1B,
-    Airburst = 0x1C,
-    SuperAirburst = 0x1D,
-    MedicineBall = 0x1E,
-    HomingMissile = 0x1F,
-    Mine = 0x20,
+    ITEM_CLUSTER_GRENADE = 0x13,
+    ITEM_HX_GRENADE = 0x14,
+    ITEM_ROLLER_GRENADE = 0x15,
+    ITEM_CONFUSION_GAS = 0x16,
+    ITEM_FREEZE_GAS = 0x17,
+    ITEM_MADNESS_GAS = 0x18,
+    ITEM_POISON_GAS = 0x19,
+    ITEM_MORTAR = 0x1A,
+    ITEM_BAZOOKA = 0x1B,
+    ITEM_AIRBURST = 0x1C,
+    ITEM_SUPER_AIRBURST = 0x1D,
+    ITEM_MEDICINE_BALL = 0x1E,
+    ITEM_HOMING_MISSILE = 0x1F,
+    ITEM_MINE = 0x20,
     AntiPMine = 0x21,
-    TNT = 0x22,
+    ITEM_TNT = 0x22,
 
     //Vehicle weapons
     VehLongRangeShell = 35,
@@ -155,9 +151,9 @@ enum {
     VehMineShell = 0x28,
     VehHeavyMachineGun = 0x29,
     VehFlamethrower = 0x2A,
-    VehAirburst = 0x2B,
-    VehBazooka = 0x2C,
-    VehMortar = 0x2D,
+    ITEM_VEHICLE_AIRBURST = 0x2B,
+    ITEM_VEHICLE_BAZOOKA = 0x2C,
+    ITEM_VEHICLE_MORTAR = 0x2D,
 
     //Missing 0x2E
     //Missing 0x2F

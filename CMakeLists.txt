@@ -32,16 +32,17 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
-include_directories(${CMAKE_SOURCE_DIR}/platform/include/)    # Platform lib headers get used for everything.
-include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)     # libpork headers
+include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platform lib headers get used for everything.
+include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)               # libpork headers
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c99)
 
 add_definitions("-D_DEBUG")
 
-add_subdirectory(platform)
+add_subdirectory(platform/platform)
+
 add_subdirectory(libpork)
 # add_subdirectory(setup)
 add_subdirectory(editor)
-add_subdirectory(viewer)
+add_subdirectory(launcher_sdl2)

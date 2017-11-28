@@ -1,5 +1,5 @@
 /* OpenHOW
- * Copyright (C) 2017 Mark E Sowden
+ * Copyright (C) 2017-2018 Mark E Sowden
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
     c_out_->SetBackgroundColour(wxColour(0, 0, 0));
     c_out_->SetForegroundColour(wxColour(128, 128, 128));
 
-    c_in_ = new wxComboBox(this, CONSOLE_EVENT_INPUT, "", wxDefaultPosition, wxDefaultSize, 0, NULL,
+    c_in_ = new wxComboBox(this, CONSOLE_EVENT_INPUT, "", wxDefaultPosition, wxDefaultSize, 0, nullptr,
                            wxCB_SORT | wxTE_PROCESS_ENTER
     );
 
@@ -57,10 +57,10 @@ ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
 
     c_in_->AutoComplete(c_in_->GetStrings());
 
-    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    auto *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(c_out_, 1, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT);
 
-    wxBoxSizer *h_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto *h_sizer = new wxBoxSizer(wxHORIZONTAL);
     h_sizer->Add(new wxButton(this, CONSOLE_EVENT_COMMAND, "Submit"), 0, wxRIGHT);
     h_sizer->Add(c_in_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP);
     h_sizer->SetSizeHints(this);

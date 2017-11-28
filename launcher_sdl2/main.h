@@ -1,5 +1,5 @@
 /* OpenHOW
- * Copyright (C) 2017 Mark E Sowden
+ * Copyright (C) 2017-2018 Mark E Sowden
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,5 +16,35 @@
  */
 #pragma once
 
-#include "main.h"
+#include <pork/pork.h>
+#include <pork/model.h>
 
+#define TITLE   "OpenPork"
+#define LOG     "debug"
+
+#define VERSION_MAJOR   0
+#define VERSION_MINOR   0
+
+#define PSX_WIDTH   320
+#define PSX_HEIGHT  240
+
+typedef struct GlobalVars {
+    bool is_psx, is_psx_mode;
+
+    unsigned int width, height;
+
+    PLCamera *main_camera;
+
+    struct {
+        unsigned int num_players;
+
+        bool is_paused;
+    } game;
+
+    struct {
+        unsigned int colour_rbo, depth_rbo;
+        unsigned int psx_fbo;
+    } gl;
+} GlobalVars;
+
+extern GlobalVars g_state;
