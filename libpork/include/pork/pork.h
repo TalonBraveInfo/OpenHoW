@@ -20,8 +20,8 @@
 
 #include <PL/platform_math.h>
 
-#define PORK_TITLE          "OpenHOW"
-#define PORK_EDITOR_TITLE   "OpenHOW Editor"
+#define PORK_TITLE          "OpenHoW"
+#define PORK_EDITOR_TITLE   "OpenHoW Editor"
 #define PORK_LOG            "pork"
 #define PORK_EDITOR_LOG     "pork-editor"
 #define PORK_BASE_DIR       "pork"
@@ -94,9 +94,9 @@ enum { // event types
     OBJECT_EVENT_GROUP_OBJECT,         // spawns group when object's group is destroyed
 };
 
-typedef struct Object { // Generic Object Properties
-    PLVector3D position, angles;
-    PLVector3D bounds[2];
+typedef struct Actor { // Generic Object Properties
+    PLVector3 position, angles;
+    PLVector3 bounds[2];
 
     unsigned int spawn_delay;
     unsigned int team;
@@ -104,7 +104,7 @@ typedef struct Object { // Generic Object Properties
     int16_t health;
 
     unsigned int type;
-} Object;
+} Actor;
 
 enum {
     ITEM_TROTTER = 1,
