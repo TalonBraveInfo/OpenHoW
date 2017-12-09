@@ -35,8 +35,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platform lib headers get used for everything.
 include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)               # libpork headers
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c99)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c11")
 
 add_definitions("-D_DEBUG")
 

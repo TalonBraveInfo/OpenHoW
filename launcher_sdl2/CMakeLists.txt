@@ -25,17 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(viewer)
+project(launcher_sdl2)
 
-file(GLOB VIEWER_SOURCE_FILES
-        *.c *.h
+file(GLOB VIEWER_SOURCE_FILES *.c *.h)
 
-        game/*.*
-        #formats/*.*
+add_executable(launcher_sdl2 ${VIEWER_SOURCE_FILES})
 
-        )
-
-add_executable(viewer ${VIEWER_SOURCE_FILES})
-
-target_include_directories(viewer PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(viewer platform glfw IL ILU ILUT)
+target_include_directories(launcher_sdl2 PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(launcher_sdl2 platform pork SDL2 IL ILU ILUT)

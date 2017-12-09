@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(libpork)
+project(pork)
 
 file(
         GLOB LIBPORK_SOURCE_FILES
@@ -35,10 +35,10 @@ file(
         include/pork/*.h
         )
 
-add_library(libpork STATIC ${LIBPORK_SOURCE_FILES})
+add_library(pork STATIC ${LIBPORK_SOURCE_FILES})
 
 #set_target_properties(libpork PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
-target_compile_options(libpork PUBLIC -fPIC)
-target_include_directories(libpork PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(libpork platform)
+target_compile_options(pork PUBLIC -fPIC)
+target_include_directories(pork PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(pork platform)

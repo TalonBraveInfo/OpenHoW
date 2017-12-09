@@ -19,12 +19,17 @@
 /* libpork - base library shared between launcher and editor */
 
 #include <PL/platform_math.h>
+#include <PL/platform_log.h>
 
 #define PORK_TITLE              "OpenHoW"
 #define PORK_EDITOR_TITLE       "OpenHoW Editor"
 #define PORK_LOG                "debug"
 #define PORK_EDITOR_LOG         "editor"
-#define PORK_BASE_DIR           "pork"
+
+#define PORK_BASE_DIR       "pork"
+#define PORK_MAPS_DIR       PORK_BASE_DIR "/maps"
+#define PORK_MODELS_DIR     PORK_BASE_DIR "/models"
+#define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
 
 ///////////////////////////////////////////////////
 
@@ -38,7 +43,12 @@
 
 ///////////////////////////////////////////////////
 
+#define pork_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
+#define pork_free(DATA) if((DATA) != NULL) { free((DATA)); (DATA) = NULL; }
+
 // todo, the below is a basic outline for API
+
+PL_EXTERN bool ExtractGameData(const char *path);
 
 ///////////////////////////////////////////////////
 
