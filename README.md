@@ -29,6 +29,4 @@ Consider this more of a wish-list at this  point in time ;)
 
 ----
 
-<p style="text-align: center;">
 ![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/wireframe00.png?raw=true)
-</p>
