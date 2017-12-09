@@ -1,5 +1,5 @@
 /* OpenHOW
- * Copyright (C) 2017-2018 Mark E Sowden
+ * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 
 #include <PL/platform_math.h>
 
-#define PORK_TITLE          "OpenHoW"
-#define PORK_EDITOR_TITLE   "OpenHoW Editor"
-#define PORK_LOG            "pork"
-#define PORK_EDITOR_LOG     "pork-editor"
-#define PORK_BASE_DIR       "pork"
+#define PORK_TITLE              "OpenHoW"
+#define PORK_EDITOR_TITLE       "OpenHoW Editor"
+#define PORK_LOG                "debug"
+#define PORK_EDITOR_LOG         "editor"
+#define PORK_BASE_DIR           "pork"
 
 ///////////////////////////////////////////////////
 
