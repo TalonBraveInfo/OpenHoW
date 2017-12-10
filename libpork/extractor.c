@@ -146,7 +146,7 @@ void ExtractMADPackage(const char *path) {
     // position within the MTD package - yay...
     if(strcmp(package_extension, "mtd") == 0) {
         char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-        sprintf(index_path, "%s/mtd_index", out_path);
+        sprintf(index_path, "%s/%s.index", out_path, package_name);
         out_index = fopen(index_path, "w");
         if (out_index == NULL) {
             printf("failed to open %s for writing!\n", index_path);
