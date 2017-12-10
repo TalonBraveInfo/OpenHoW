@@ -122,15 +122,23 @@ void ExtractMADPackage(const char *path) {
         return;
     }
 
+    char package_extension[4] = {'\0'};
+    snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(path));
+    pl_strtolower(package_extension);
+
+    // output directory
+    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    sprintf(out_path, "%s/%s", current_target, package_name);
+    if(!plCreatePath(out_path)) {
+        printf("failed to create path %s, aborting!\n", out_path);
+        return;
+    }
+
     FILE *file = fopen(path, "rb");
     if(file == NULL) {
         printf("failed to load %s, aborting!\n", path);
         return;
     }
-
-    char package_extension[4] = {'\0'};
-    snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(path));
-    pl_strtolower(package_extension);
 
     FILE *out_index = NULL;
     // check if it's necessary for us to produce an index file
@@ -138,7 +146,7 @@ void ExtractMADPackage(const char *path) {
     // position within the MTD package - yay...
     if(strcmp(package_extension, "mtd") == 0) {
         char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-        snprintf(index_path, sizeof(index_path), "%s/%s/mtd_index", current_target, package_name);
+        sprintf(index_path, "%s/mtd_index", out_path);
         out_index = fopen(index_path, "w");
         if (out_index == NULL) {
             printf("failed to open %s for writing!\n", index_path);
@@ -173,18 +181,13 @@ void ExtractMADPackage(const char *path) {
 
         // this is where the fun begins...
 
-        // create the path we're going to extract the file to
-        char file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-        sprintf(file_path, "%s/%s", current_target, package_name);
-        if(!plCreatePath(file_path)) {
-            printf("failed to create path %s, aborting!\n", file_path);
-            continue;
-        }
-
-        // now append that with the file name
+        // how uses mixed case file-names, to make things
+        // easier for linux/macos support we'll just output
+        // everything as lowercase
         pl_strtolower(index.file);
-        strcat(file_path, "/");
-        strcat(file_path, index.file);
+
+        char file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+        sprintf(file_path, "%s/%s", out_path, index.file);
 
         // then check if we need to amend our index file
         if(out_index != NULL) {
