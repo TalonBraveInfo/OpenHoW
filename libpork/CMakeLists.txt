@@ -41,4 +41,4 @@ add_library(pork STATIC ${LIBPORK_SOURCE_FILES})
 
 target_compile_options(pork PUBLIC -fPIC)
 target_include_directories(pork PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(pork platform)
+target_link_libraries(pork platform IL ILU ILUT)

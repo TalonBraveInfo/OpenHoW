@@ -16,9 +16,13 @@
  */
 #include <pork/pork.h>
 
+#include <IL/il.h>
+
 int main(int argc, char **argv) {
     plInitialize(argc, argv);
     plClearLog(PORK_LOG);
+
+    ilInit();
 
     ExtractGameData(argv[1]);
 

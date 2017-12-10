@@ -26,12 +26,18 @@
 #define PORK_LOG                "debug"
 #define PORK_EDITOR_LOG         "editor"
 
-#define PORK_BASE_DIR       "pork"
-#define PORK_MAPS_DIR       PORK_BASE_DIR "/maps"
-#define PORK_MODELS_DIR     PORK_BASE_DIR "/models"
-#define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
-#define PORK_FONTS_DIR      PORK_BASE_DIR "/fonts"
-#define PORK_SOUNDS_DIR     PORK_BASE_DIR "/sounds"
+#define PORK_BASE_DIR   "pork"
+
+#define PORK_MAPS_DIR   PORK_BASE_DIR "/maps"
+#define PORK_CHARS_DIR  PORK_BASE_DIR "/chars"
+#define PORK_AUDIO_DIR  PORK_BASE_DIR "/audio"
+#define PORK_SKYS_DIR   PORK_BASE_DIR "/skys"
+#define PORK_SPEECH_DIR PORK_BASE_DIR "/speech"
+
+// Frontend
+#define PORK_FETEXT_DIR     PORK_BASE_DIR "/fetext"
+#define PORK_FEBMPS_DIR     PORK_BASE_DIR "/febmps"
+#define PORK_FESOUNDS_DIR   PORK_BASE_DIR "/fesounds"
 
 ///////////////////////////////////////////////////
 
