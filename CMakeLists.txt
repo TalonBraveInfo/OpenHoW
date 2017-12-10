@@ -36,7 +36,7 @@ include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platfo
 include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)               # libpork headers
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare -Wold-style-declaration -std=c11")
 
 add_definitions("-D_DEBUG")
 

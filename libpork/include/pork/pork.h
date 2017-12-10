@@ -30,6 +30,8 @@
 #define PORK_MAPS_DIR       PORK_BASE_DIR "/maps"
 #define PORK_MODELS_DIR     PORK_BASE_DIR "/models"
 #define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
+#define PORK_FONTS_DIR      PORK_BASE_DIR "/fonts"
+#define PORK_SOUNDS_DIR     PORK_BASE_DIR "/sounds"
 
 ///////////////////////////////////////////////////
 
@@ -48,7 +50,7 @@
 
 // todo, the below is a basic outline for API
 
-PL_EXTERN bool ExtractGameData(const char *path);
+PL_EXTERN void ExtractGameData(const char *path);
 
 ///////////////////////////////////////////////////
 
