@@ -14,16 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
+
 #include <pork/pork.h>
 
-int main(int argc, char **argv) {
-    InitPork(argc, argv);
+#include <PL/platform_graphics.h>
 
-    if(argc > 1) {
-        if(argv[1] != NULL && argv[1][0] != '\0') {
-            ExtractGameData(argv[1]);
-        }
-    }
+///////////////////////////////////////////////////
 
-    return EXIT_SUCCESS;
-}
+// Functions provided by the host application
+void(*DisplayMessageBox)(const char *msg, ...);
+
+///////////////////////////////////////////////////
+
+struct {
+    PLCamera *camera;       // camera used for general gameplay
+    PLCamera *fly_camera;   // camera used for flybys and other fun stuff
+    PLCamera *ui_camera;    // camera used for UI elements, orthographic
+} g_state;

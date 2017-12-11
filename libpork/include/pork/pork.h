@@ -26,6 +26,9 @@
 #define PORK_LOG                "debug"
 #define PORK_EDITOR_LOG         "editor"
 
+#define PORK_MAJOR_VERSION  0
+#define PORK_MINOR_VERSION  0
+
 #define PORK_BASE_DIR   "pork"
 
 #define PORK_MAPS_DIR   PORK_BASE_DIR "/maps"
@@ -56,7 +59,13 @@
 
 // todo, the below is a basic outline for API
 
+PL_EXTERN_C
+
+PL_EXTERN void InitPork(int argc, char **argv);
+
 PL_EXTERN void ExtractGameData(const char *path);
+
+PL_EXTERN_C_END
 
 ///////////////////////////////////////////////////
 
