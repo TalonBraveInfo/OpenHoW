@@ -14,26 +14,5 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include "engine.h"
 
-#include <pork/pork.h>
-
-#include <PL/platform_graphics.h>
-
-///////////////////////////////////////////////////
-// LIMITS
-
-#define MAX_BONES   32
-
-///////////////////////////////////////////////////
-
-// Functions provided by the host application
-void(*DisplayMessageBox)(const char *msg, ...);
-
-///////////////////////////////////////////////////
-
-struct {
-    PLCamera *camera;       // camera used for general gameplay
-    PLCamera *fly_camera;   // camera used for flybys and other fun stuff
-    PLCamera *ui_camera;    // camera used for UI elements, orthographic
-} g_state;
