@@ -258,29 +258,9 @@ void ExtractMADPackage(const char *path) {
     pork_fclose(file);
 }
 
-void CopyTextDirectory(const char *path) {
+void CopyDirectory(const char *path) {
     char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "./" PORK_FETEXT_DIR "/%s", plGetFileName(path));
-    pl_strtolower(out_path);
-    print(" %s\n", out_path);
-    if(!plCopyFile(path, out_path)) {
-        print("%s\n", plGetResultString(plGetFunctionResult()));
-    }
-}
-
-void CopyAudioDirectory(const char *path) {
-    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "./" PORK_AUDIO_DIR "/%s", plGetFileName(path));
-    pl_strtolower(out_path);
-    print(" %s\n", out_path);
-    if(!plCopyFile(path, out_path)) {
-        print("%s\n", plGetResultString(plGetFunctionResult()));
-    }
-}
-
-void CopyMapsDirectory(const char *path) {
-    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "./" PORK_MAPS_DIR "/%s", plGetFileName(path));
+    sprintf(out_path, "%s/%s", current_target, plGetFileName(path));
     pl_strtolower(out_path);
     print(" %s\n", out_path);
     if(!plCopyFile(path, out_path)) {
@@ -398,24 +378,27 @@ void ExtractGameData(const char *path) {
         }
 
         if(plCreateDirectory("./" PORK_FETEXT_DIR)) {
+            sprintf(current_target, "./" PORK_FETEXT_DIR);
             sprintf(file_path, "%s/FEText", path);
-            plScanDirectory(file_path, "bmp", CopyTextDirectory, false);
-            plScanDirectory(file_path, "tab", CopyTextDirectory, false);
+            plScanDirectory(file_path, "bmp", CopyDirectory, false);
+            plScanDirectory(file_path, "tab", CopyDirectory, false);
         } else {
             print("failed to create directory, \"./" PORK_FETEXT_DIR "\"!\n");
         }
 
         if(plCreateDirectory("./" PORK_AUDIO_DIR)) {
+            sprintf(current_target, "./" PORK_AUDIO_DIR);
             sprintf(file_path, "%s/Audio", path);
-            plScanDirectory(file_path, "wav", CopyAudioDirectory, false);
+            plScanDirectory(file_path, "wav", CopyDirectory, false);
         } else {
             print("failed to create directory, \"./" PORK_AUDIO_DIR "\"!\n");
         }
 
+        sprintf(current_target, "./" PORK_MAPS_DIR);
         sprintf(file_path, "%s/Maps", path);
-        plScanDirectory(file_path, "pog", CopyMapsDirectory, false);
-        plScanDirectory(file_path, "pmg", CopyMapsDirectory, false);
-        plScanDirectory(file_path, "gen", CopyMapsDirectory, false);
+        plScanDirectory(file_path, "pog", CopyDirectory, false);
+        plScanDirectory(file_path, "pmg", CopyDirectory, false);
+        plScanDirectory(file_path, "gen", CopyDirectory, false);
     }
 
     print("\nextraction complete!\n\nconverting TIM to PNG...\n");
