@@ -20,7 +20,10 @@
 
 void InitPork(int argc, char **argv) {
     plInitialize(argc, argv);
-    plClearLog(PORK_LOG);
+    plSetupLogOutput(PORK_LOG);
+
+    plSetupLogLevel(LOG_LEVEL_PORK, "pork", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(LOG_LEVEL_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
 
     print("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
 

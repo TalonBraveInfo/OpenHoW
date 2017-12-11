@@ -19,7 +19,7 @@
 /* libpork - base library shared between launcher and editor */
 
 #include <PL/platform_math.h>
-#include <PL/platform_log.h>
+#include <PL/platform_console.h>
 
 #define PORK_TITLE              "OpenHoW"
 #define PORK_EDITOR_TITLE       "OpenHoW Editor"
@@ -44,8 +44,13 @@
 
 ///////////////////////////////////////////////////
 
-#define print(...)          printf(__VA_ARGS__); plWriteLog(PORK_LOG, __VA_ARGS__)
-#define print_error(...)    print(__VA_ARGS__); plWriteLog(PORK_LOG, __VA_ARGS__); exit(-1)
+enum {
+    LOG_LEVEL_PORK,
+    LOG_LEVEL_LAUNCHER,
+};
+
+#define print(...)          plLogMessage(LOG_LEVEL_PORK, __VA_ARGS__)
+#define print_error(...)    plLogMessage(LOG_LEVEL_PORK, __VA_ARGS__); exit(-1)
 #ifdef _DEBUG
 #   define print_debug(...)      print(__VA_ARGS__)
 #else
