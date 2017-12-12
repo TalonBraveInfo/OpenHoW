@@ -28,9 +28,15 @@ void CacheModelData(void) {
 
     print("caching pig.hir\n");
 
-    FILE *file = fopen("./" PORK_CHARS_DIR "/pig.hir", "rb");
+    const char *hir_path = "./" PORK_CHARS_DIR "/pig.hir";
+    size_t hir_bytes = plGetFileSize(hir_path);
+    if(hir_bytes == 0) {
+        print_error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
+    }
+
+    FILE *file = fopen(hir_path, "rb");
     if(file == NULL) {
-        print_error("failed to load \"./" PORK_CHARS_DIR "/pig.hir\"!\n");
+        print_error("failed to load \"%s\"!\n", hir_path);
     }
 
     /* HIR Format Specification
@@ -42,9 +48,9 @@ void CacheModelData(void) {
         int8_t unknown[10];
     } HIRBone;
 
-    unsigned int num_bones = (unsigned int)(plGetFileSize("./" PORK_CHARS_DIR "/pig.hir") / sizeof(HIRBone));
+    unsigned int num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
     if(num_bones > MAX_BONES) {
-        print_error("number of bones within \"./" PORK_CHARS_DIR "\" exceeds %d limit!\n", MAX_BONES);
+        print_error("number of bones within \"%s\" exceeds %d limit!\n", hir_path, MAX_BONES);
     }
 
     HIRBone bones[num_bones];
@@ -65,16 +71,18 @@ void CacheModelData(void) {
 
     print("caching mcap.mad\n");
 
+    const char *mcap_path = "./" PORK_CHARS_DIR "/mcap.mad";
+
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
-    size_t mcap_bytes = plGetFileSize("./" PORK_CHARS_DIR "/mcap.mad");
+    size_t mcap_bytes = plGetFileSize(mcap_path);
     if(mcap_bytes < 272) {
-        print_error("unexpected mcap size, %d, aborting!\n", mcap_bytes);
+        print_error("unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
     }
 
-    file = fopen("./" PORK_CHARS_DIR "/mcap.mad", "rb");
+    file = fopen(mcap_path, "rb");
     if(file == NULL) {
-        print_error("failed to load \"./" PORK_CHARS_DIR "/mcap.mad\"!\n");
+        print_error("failed to load \"%s\", aborting!\n", mcap_path);
     }
 
     // names included for debugging
