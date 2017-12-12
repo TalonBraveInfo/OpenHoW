@@ -45,16 +45,15 @@
 ///////////////////////////////////////////////////
 
 enum {
-    LOG_LEVEL_PORK,
-    LOG_LEVEL_LAUNCHER,
+    PORK_LOG_ENGINE,
+    PORK_LOG_LAUNCHER,
+    PORK_LOG_DEBUG,
 };
 
-#define print(...)          plLogMessage(LOG_LEVEL_PORK, __VA_ARGS__)
-#define print_error(...)    plLogMessage(LOG_LEVEL_PORK, __VA_ARGS__); exit(-1)
 #ifdef _DEBUG
-#   define print_debug(...)      print(__VA_ARGS__)
+#   define print_debug(...)     plLogMessage(PORK_LOG_DEBUG, __VA_ARGS__)
 #else
-#   define DPRINT(...)      (__VA_ARGS__)
+#   define print_debug(...)     (__VA_ARGS__)
 #endif
 
 ///////////////////////////////////////////////////
@@ -138,22 +137,25 @@ typedef struct Actor { // Generic Object Properties
     unsigned int type;
 } Actor;
 
-enum {
-    ITEM_TROTTER = 1,
-    ITEM_KNIFE,
-    ITEM_BAYONET,
-    ITEM_SWORD,
-    ITEM_CATTLEPROD,
-    ITEM_PISTOL,
-    ITEM_RIFLE,
-    ITEM_RIFLE_BURST,
-    ITEM_MACHINEGUN,
-    ITEM_HMG,
-    ITEM_SNIPER_RIFLE,
-    ITEM_SHOTGUN,
-    ITEM_FLAMETHROWER,
-    ITEM_ROCKET_LAUNCHER = 0x0E,
-    ITEM_GUIDED_MISSILE = 0x0F,
+// Weapons
+#define ITEM_WEAPON_TROTTER             1
+#define ITEM_WEAPON_KNIFE               2
+#define ITEM_WEAPON_BAYONET             3
+#define ITEM_WEAPON_SWORD               4
+#define ITEM_WEAPON_CATTLEPROD          5
+#define ITEM_WEAPON_PISTOL              6
+#define ITEM_WEAPON_RIFLE               7
+#define ITEM_WEAPON_RIFLE_BURST         8
+#define ITEM_WEAPON_MACHINE_GUN         9
+#define ITEM_WEAPON_HMG                 10
+#define ITEM_WEAPON_SNIPER_RIFLE        11
+#define ITEM_WEAPON_SHOTGUN             12
+#define ITEM_WEAPON_FLAMETHROWER        13
+#define ITEM_WEAPON_ROCKET_LAUNCHER     14
+#define ITEM_WEAPON_GUIDED_MISSILE      15
+
+enum { // todo, switch over to using macros here
+
     ITEM_MEDICINE_DART = 0x10,
     ITEM_TRANQ = 0x11,
     ITEM_GRENADE = 0x12,
@@ -226,8 +228,10 @@ enum {
     // Any custom types go here!!!
 };
 
-enum {
-    
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+// Animations
+
+enum { // todo, switch over to using macros here
     //MCAP (in-game)
     ANI_RUN_NORMAL = 0,         // Run cycle (normal)
     ANI_RUN_WOUNDED1 = 1,       // Run cycle (wounded)
@@ -288,7 +292,7 @@ enum {
     ANI_USE_AIRSHIP = 56,       // Air strike
     ANI_USE_SUICIDE = 57,       // Hari Kiri
     ANI_PARACHUTE = 58,         // Parachuting
-    
+
     //FEMCAP (front-end)
     ANI_59 = 59,                //
     ANI_60 = 60,                //
@@ -325,3 +329,5 @@ enum {
     ANI_91 = 91,                //
     ANI_92 = 92,                //
 };
+
+#define ANI_END 93

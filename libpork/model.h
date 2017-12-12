@@ -14,16 +14,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "engine.h"
+#pragma once
 
-typedef struct MapTile {
+typedef struct Bone {
+    unsigned int parent;
+    PLVector3 coords;
+} Bone;
 
-} MapTile;
+typedef struct Keyframe {
+    PLVector3 transforms[10];
+    PLQuaternion rotations[15];
+} Keyframe;
 
-typedef struct MapBlock {
+typedef struct Animation {
+    unsigned int id;
+    const char *name;
 
-} MapBlock;
+    Keyframe *frames;
+    unsigned int num_frames;
+} Animation;
 
-typedef struct Map {
+typedef struct ModelCache {
+    Bone bones[MAX_BONES];
+    Animation animations[ANI_END];
+} ModelCache;
 
-} Map;
+extern ModelCache g_model_cache;
+
+void CacheModelData(void);

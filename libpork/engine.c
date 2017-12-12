@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engine.h"
+#include "model.h"
 
 #include <IL/il.h>
 
@@ -22,14 +23,17 @@ void InitPork(int argc, char **argv) {
     plInitialize(argc, argv);
     plSetupLogOutput(PORK_LOG);
 
-    plSetupLogLevel(LOG_LEVEL_PORK, "pork", PLColour(0, 255, 0, 255), true);
-    plSetupLogLevel(LOG_LEVEL_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_ENGINE, "p-engine", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_LAUNCHER, "p-launcher", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_DEBUG, "p-debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
 
     print("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
 
     memset(&g_state, 0, sizeof(g_state));
 
     ilInit();
+
+    CacheModelData();
 }
 
 void SetMessageBoxCallback(void(*MessageBoxCallback)(const char *msg, ...)) {

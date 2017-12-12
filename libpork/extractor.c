@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <pork/pork.h>
+#include "engine.h"
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_image.h>
@@ -401,9 +401,9 @@ void ExtractGameData(const char *path) {
         plScanDirectory(file_path, "gen", CopyDirectory, false);
     }
 
-    print("\nextraction complete!\n\nconverting TIM to PNG...\n");
+    print("\nextraction complete\n\nconverting TIM to PNG...\n");
 
     plScanDirectory("./" PORK_BASE_DIR, "tim", ConvertTIMtoPNG, true);
 
-    print("conversion completed, have a nice day! (>^v^)>\n");
+    print("conversion completed\n");
 }

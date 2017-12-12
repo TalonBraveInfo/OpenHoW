@@ -20,10 +20,14 @@
 
 #include <PL/platform_graphics.h>
 
+#define print(...)              plLogMessage(PORK_LOG_ENGINE, __VA_ARGS__)
+#define print_error(...)        plLogMessage(PORK_LOG_ENGINE, __VA_ARGS__); exit(-1)
+
 ///////////////////////////////////////////////////
 // LIMITS
 
-#define MAX_BONES   32
+#define MAX_BONES       32
+#define MAX_KEYFRAMES   8192
 
 ///////////////////////////////////////////////////
 
