@@ -19,25 +19,44 @@
 
 #include <IL/il.h>
 
-void InitPork(int argc, char **argv) {
+void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
     plSetupLogOutput(PORK_LOG);
 
-    plSetupLogLevel(PORK_LOG_ENGINE, "p-engine", PLColour(0, 255, 0, 255), true);
-    plSetupLogLevel(PORK_LOG_LAUNCHER, "p-launcher", PLColour(0, 255, 0, 255), true);
-    plSetupLogLevel(PORK_LOG_DEBUG, "p-debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
+    plSetupLogLevel(PORK_LOG_ENGINE, "engine", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_ENGINE_WARNING, "engine-warning", PLColour(255, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_ENGINE_ERROR, "engine-error", PLColour(255, 0, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
 
     print("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
 
+    g_launcher = interface;
+
     memset(&g_state, 0, sizeof(g_state));
+
+    for(unsigned int i = 1; i < argc; ++i) {
+        if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
+            const char *parm = argv[i + 1];
+            if(parm == NULL || parm[0] == '\0') {
+                continue;
+            }
+
+            ExtractGameData(parm);
+            ++i;
+        } else if(pl_strncasecmp("+", argv[i], 1) == 0) {
+            // todo, pass to platform console command crap...
+            // maybe store them and pass them over once all initialisation is
+            // complete?
+            ++i;
+        } else {
+            print_warning("unknown/invalid command line argument, %s!\n", argv[i]);
+        }
+    }
 
     ilInit();
 
     CacheModelData();
-}
-
-void SetMessageBoxCallback(void(*MessageBoxCallback)(const char *msg, ...)) {
-    DisplayMessageBox = MessageBoxCallback;
 }
 
 void InitDisplay(void) {

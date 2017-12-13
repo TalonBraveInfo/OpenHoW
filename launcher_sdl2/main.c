@@ -16,14 +16,42 @@
  */
 #include <pork/pork.h>
 
-int main(int argc, char **argv) {
-    InitPork(argc, argv);
+#include <SDL2/SDL.h>
 
-    if(argc > 1) {
-        if(argv[1] != NULL && argv[1][0] != '\0') {
-            ExtractGameData(argv[1]);
-        }
+SDL_Window *window = NULL;
+
+void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
+    switch(level) {
+        case PORK_MBOX_ERROR: {
+            level = SDL_MESSAGEBOX_ERROR;
+        } break;
+        case PORK_MBOX_WARNING: {
+            level = SDL_MESSAGEBOX_WARNING;
+        } break;
+        case PORK_MBOX_INFORMATION: {
+            level = SDL_MESSAGEBOX_INFORMATION;
+        } break;
+
+        default: return;
     }
+
+    char buf[2048] = {'\0'};
+    va_list args;
+    va_start(args, msg);
+    vsnprintf(buf, sizeof(buf), msg, args);
+    va_end(args);
+
+    SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
+}
+
+///////////////////////////////////////////////////
+
+int main(int argc, char **argv) {
+    PorkLauncherInterface interface;
+    memset(&interface, 0, sizeof(PorkLauncherInterface));
+    interface.DisplayMessageBox = IDisplayMessageBox;
+
+    InitPork(argc, argv, interface);
 
     return EXIT_SUCCESS;
 }

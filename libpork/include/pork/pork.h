@@ -46,6 +46,9 @@
 
 enum {
     PORK_LOG_ENGINE,
+    PORK_LOG_ENGINE_WARNING,
+    PORK_LOG_ENGINE_ERROR,
+
     PORK_LOG_LAUNCHER,
     PORK_LOG_DEBUG,
 };
@@ -61,11 +64,21 @@ enum {
 #define pork_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
 #define pork_free(DATA) if((DATA) != NULL) { free((DATA)); (DATA) = NULL; }
 
+enum {
+    PORK_MBOX_INFORMATION,
+    PORK_MBOX_WARNING,
+    PORK_MBOX_ERROR,
+};
+
+typedef struct PorkLauncherInterface {
+    void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
+} PorkLauncherInterface;
+
 // todo, the below is a basic outline for API
 
 PL_EXTERN_C
 
-PL_EXTERN void InitPork(int argc, char **argv);
+PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
 
 PL_EXTERN void ExtractGameData(const char *path);
 

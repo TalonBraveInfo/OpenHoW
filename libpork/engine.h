@@ -21,7 +21,8 @@
 #include <PL/platform_graphics.h>
 
 #define print(...)              plLogMessage(PORK_LOG_ENGINE, __VA_ARGS__)
-#define print_error(...)        plLogMessage(PORK_LOG_ENGINE, __VA_ARGS__); exit(-1)
+#define print_warning(...)      plLogMessage(PORK_LOG_ENGINE_WARNING, "(" PL_FUNCTION ") " __VA_ARGS__)
+#define print_error(...)        plLogMessage(PORK_LOG_ENGINE_ERROR, "(" PL_FUNCTION ") " __VA_ARGS__); exit(-1)
 
 ///////////////////////////////////////////////////
 // LIMITS
@@ -32,7 +33,7 @@
 ///////////////////////////////////////////////////
 
 // Functions provided by the host application
-void(*DisplayMessageBox)(const char *msg, ...);
+PorkLauncherInterface g_launcher;
 
 ///////////////////////////////////////////////////
 
