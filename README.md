@@ -27,6 +27,17 @@ Consider this more of a wish-list at this  point in time ;)
 * An editor to allow for easy modification of game-data
 * Enhanced graphics over the original game
 
+### Contributing :hammer:
+Interested in contributing to the project? Know C/C++ and looking to get deep down
+into some code? Then what are you waiting for!?
+
+The best place right now to get in touch is through our [Discord](https://discord.gg/YMHJa6p),
+and makes things a hell of a lot easier to coordinate and collaborate as well. If you're
+interested then jump on in!
+
+Otherwise if you're just simply interested in the progression of the project, you too
+are more than welcome to join us. :smirk:
+
 ----
 
 ![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/wireframe00.png?raw=true)
