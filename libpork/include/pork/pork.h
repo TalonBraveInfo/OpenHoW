@@ -72,6 +72,9 @@ enum {
 
 typedef struct PorkLauncherInterface {
     void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
+    void(*DisplayViewport)(unsigned int width, unsigned int height);
+
+    void(*ShutdownLauncher)(void);
 } PorkLauncherInterface;
 
 // todo, the below is a basic outline for API

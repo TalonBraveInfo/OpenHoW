@@ -27,8 +27,10 @@
 ///////////////////////////////////////////////////
 // LIMITS
 
+#define BASE_WIDTH  640
+#define BASE_HEIGHT 480
+
 #define MAX_BONES       32
-#define MAX_KEYFRAMES   8192
 
 ///////////////////////////////////////////////////
 
@@ -41,4 +43,8 @@ struct {
     PLCamera *camera;       // camera used for general gameplay
     PLCamera *fly_camera;   // camera used for flybys and other fun stuff
     PLCamera *ui_camera;    // camera used for UI elements, orthographic
+
+    // viewport
+    unsigned int display_width;
+    unsigned int display_height;
 } g_state;

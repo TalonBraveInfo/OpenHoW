@@ -20,6 +20,8 @@
 
 SDL_Window *window = NULL;
 
+#define print(...)  plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
+
 void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     switch(level) {
         case PORK_MBOX_ERROR: {
@@ -44,14 +46,36 @@ void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
 }
 
+void IDisplayViewport(unsigned int width, unsigned int height) {
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+}
+
+void IShutdownLauncher(void) {
+    SDL_Quit();
+
+    exit(EXIT_SUCCESS);
+}
+
 ///////////////////////////////////////////////////
 
 int main(int argc, char **argv) {
+    if(SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+        IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to initialize SDL2!\n%s", SDL_GetError());
+        return EXIT_FAILURE;
+    }
+
     PorkLauncherInterface interface;
     memset(&interface, 0, sizeof(PorkLauncherInterface));
     interface.DisplayMessageBox = IDisplayMessageBox;
+    interface.DisplayViewport = IDisplayViewport;
+    interface.ShutdownLauncher = IShutdownLauncher;
 
     InitPork(argc, argv, interface);
+
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_ShowCursor(0);
 
     return EXIT_SUCCESS;
 }

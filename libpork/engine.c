@@ -34,16 +34,43 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_launcher = interface;
 
     memset(&g_state, 0, sizeof(g_state));
+    g_state.display_width = BASE_WIDTH;
+    g_state.display_height = BASE_HEIGHT;
+
+    // todo, parse config file
 
     for(unsigned int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
             if(parm == NULL || parm[0] == '\0') {
                 continue;
-            }
+            } ++i;
 
             ExtractGameData(parm);
-            ++i;
+        } else if(pl_strncasecmp("-width", argv[i], 6) == 0) {
+            const char *parm = argv[i + 1];
+            if(parm == NULL || parm[0] == '\0') {
+                continue;
+            } ++i;
+
+            unsigned int width = (unsigned int)strtoul(parm, NULL, 0);
+            if(width == 0) {
+                print_warning("invalid width passed, ignoring!\n");
+                continue;
+            }
+            g_state.display_width = width;
+        } else if(pl_strncasecmp("-height", argv[i], 7) == 0) {
+            const char *parm = argv[i + 1];
+            if(parm == NULL || parm[0] == '\0') {
+                continue;
+            } ++i;
+
+            unsigned int height = (unsigned int)strtoul(parm, NULL, 0);
+            if(height == 0) {
+                print_warning("invalid height passed, ignoring!\n");
+                continue;
+            }
+            g_state.display_height = height;
         } else if(pl_strncasecmp("+", argv[i], 1) == 0) {
             // todo, pass to platform console command crap...
             // maybe store them and pass them over once all initialisation is
@@ -60,19 +87,26 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 }
 
 void InitDisplay(void) {
+    g_launcher.DisplayViewport(g_state.display_width, g_state.display_height);
+
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
 
-    g_state.camera = plCreateCamera();
-    if(g_state.camera == NULL) {
-        print_error("failed to create camera, aborting!\n");
+    if((g_state.camera = plCreateCamera()) == NULL) {
+        print_error("failed to create camera, aborting!\n%s\n", plGetError());
     }
-
     g_state.camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
     g_state.camera->bounds  = (PLAABB){{-20, -20},{20, 20}};
     g_state.camera->fov     = 90;
 
-    g_state.fly_camera = plCreateCamera();
+    if((g_state.fly_camera = plCreateCamera()) == NULL) {
+        print_error("failed to create fly camera, aborting!\n%s\n", plGetError());
+    }
+    g_state.fly_camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
+    g_state.fly_camera->bounds  = (PLAABB){{-20, -20},{20, 20}};
+    g_state.fly_camera->fov     = 90;
 
-    g_state.ui_camera = plCreateCamera();
+    if((g_state.ui_camera = plCreateCamera()) == NULL) {
+        print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
+    }
     g_state.ui_camera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
 }
