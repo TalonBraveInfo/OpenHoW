@@ -20,9 +20,19 @@
 
 #include <PL/platform_graphics.h>
 
-#define print(...)              plLogMessage(PORK_LOG_ENGINE, __VA_ARGS__)
-#define print_warning(...)      plLogMessage(PORK_LOG_ENGINE_WARNING, "(" PL_FUNCTION ") " __VA_ARGS__)
-#define print_error(...)        plLogMessage(PORK_LOG_ENGINE_ERROR, "(" PL_FUNCTION ") " __VA_ARGS__); exit(-1)
+#define _print_engine(LEVEL, ...) { \
+    char __buf[2048];                                                   \
+    int __c = snprintf(__buf, sizeof(__buf), "(%s) ", PL_FUNCTION);     \
+    snprintf(__buf + __c, sizeof(__buf) - __c, __VA_ARGS__);            \
+    plLogMessage((LEVEL), __buf);                                       \
+}
+
+#define print(...)          _print_engine(PORK_LOG_ENGINE, __VA_ARGS__)
+#define print_warning(...)  _print_engine(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
+#define print_error(...) {                                              \
+    _print_engine(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);                  \
+    exit(EXIT_FAILURE);                                                 \
+}
 
 ///////////////////////////////////////////////////
 // LIMITS

@@ -16,8 +16,20 @@
  */
 #include "engine.h"
 #include "model.h"
+#include "actor.h"
 
 #include <IL/il.h>
+
+void SimulateFrame(void) {
+    SimulateActors(0);
+}
+
+void DrawFrame(void) {
+    DrawActors();
+    // todo, DrawInterface
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 void InitDisplay(void) {
     g_launcher.DisplayViewport(&g_state.display_fullscreen, &g_state.display_width, &g_state.display_height);
@@ -48,6 +60,8 @@ void InitDisplay(void) {
     g_state.ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
     g_state.ui_camera->viewport.w   = g_state.display_width;
     g_state.ui_camera->viewport.h   = g_state.display_height;
+
+    CacheModelData();
 }
 
 void ExtractGameData(const char *path);
@@ -70,6 +84,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     // todo, parse config file
 
+    ilInit();
+
     for(unsigned int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
@@ -78,6 +94,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             } ++i;
 
             ExtractGameData(parm);
+        } else if(pl_strncasecmp("-window", argv[i], 7) == 0) {
+            g_state.display_fullscreen = false;
         } else if(pl_strncasecmp("-width", argv[i], 6) == 0) {
             const char *parm = argv[i + 1];
             if(parm == NULL || parm[0] == '\0') {
@@ -113,8 +131,5 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     }
 
     InitDisplay();
-
-    ilInit();
-
-    CacheModelData();
+    InitActors();
 }

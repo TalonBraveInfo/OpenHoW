@@ -28,7 +28,7 @@ void CacheModelData(void) {
 
     print("caching pig.hir\n");
 
-    const char *hir_path = "./" PORK_CHARS_DIR "/pig.hir";
+    const char *hir_path = "./" PORK_MODELS_DIR "/pig.hir";
     size_t hir_bytes = plGetFileSize(hir_path);
     if(hir_bytes == 0) {
         print_error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
@@ -71,7 +71,7 @@ void CacheModelData(void) {
 
     print("caching mcap.mad\n");
 
-    const char *mcap_path = "./" PORK_CHARS_DIR "/mcap.mad";
+    const char *mcap_path = "./" PORK_MODELS_DIR "/mcap.mad";
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later

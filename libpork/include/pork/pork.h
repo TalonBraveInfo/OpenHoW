@@ -20,6 +20,7 @@
 
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
+#include <PL/platform_model.h>
 
 #define PORK_TITLE              "OpenHoW"
 #define PORK_EDITOR_TITLE       "OpenHoW Editor"
@@ -31,16 +32,14 @@
 
 #define PORK_BASE_DIR   "pork"
 
-#define PORK_MAPS_DIR   PORK_BASE_DIR "/maps"
-#define PORK_CHARS_DIR  PORK_BASE_DIR "/chars"
-#define PORK_AUDIO_DIR  PORK_BASE_DIR "/audio"
-#define PORK_SKYS_DIR   PORK_BASE_DIR "/skys"
-#define PORK_SPEECH_DIR PORK_BASE_DIR "/speech"
+#define PORK_MAPS_DIR       PORK_BASE_DIR "/maps"
+#define PORK_MODELS_DIR     PORK_BASE_DIR "/models"
+#define PORK_SOUNDS_DIR     PORK_BASE_DIR "/sounds"
+#define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
+#define PORK_FONTS_DIR      PORK_BASE_DIR "/fonts"
 
 // Frontend
-#define PORK_FETEXT_DIR     PORK_BASE_DIR "/fetext"
 #define PORK_FEBMPS_DIR     PORK_BASE_DIR "/febmps"
-#define PORK_FESOUNDS_DIR   PORK_BASE_DIR "/fesounds"
 
 ///////////////////////////////////////////////////
 
@@ -57,7 +56,7 @@ enum {
 };
 
 #ifdef _DEBUG
-#   define print_debug(...)     plLogMessage(PORK_LOG_DEBUG, __VA_ARGS__)
+#   define print_debug(...)     plLogMessage(PORK_LOG_DEBUG, PL_FUNCTION, __VA_ARGS__)
 #else
 #   define print_debug(...)     (__VA_ARGS__)
 #endif
@@ -112,8 +111,77 @@ enum {
 #define TILE_FLAG_WALL      128
 
 ///////////////////////////////////////////////////
+// Player
 
 #define MAX_PLAYERS 16
+#define MAX_PIGS    64
+
+typedef struct Player {
+    char name[24];
+    uint8_t team;
+
+    unsigned int num_pigs;
+    unsigned int current_pig;
+} Player;
+
+///////////////////////////////////////////////////
+// Actor
+
+typedef struct Actor {
+    char name[32]; //aka, class... used as simple ident
+
+    bool is_reserved; // if the actor is free, we can use it as a new actor
+    bool is_visible;
+
+    Player *controller; // which player is currently controlling us?
+
+    PLVector3 position;
+    PLVector3 angles;
+    PLVector3 bounds;   // extend from origin
+
+    uint16_t flags;
+
+    struct { // special logic
+        uint16_t type;
+        uint8_t group;
+        uint8_t parameters[19];
+        PLVector3 target_position;
+
+        uint16_t spawn_delay; // counted in turns
+    } logic;
+
+    // allow us to implement custom interfaces through PLModel?
+    // would let us add support for Hogs of War's model format while
+    // also leaving leg room for supporting other formats! Would be neato :)
+    PLModel *model;
+
+    struct {
+        uint32_t item_id;
+        int16_t quantity; // -1 value denotes infinite?
+        /* once thrown, should negate quantity if more than 1 (otherwise remove if 0)
+         * and then should spawn an actor necessary for the weapon projectile to
+         * function as it should - can have a table for this of some description?
+         */
+    } inventory[32];
+    uint8_t current_item; // matched against inventory slot
+
+    struct {
+        void(*EPossess)(struct Actor *self, Player *controller);
+    } callback;
+
+    uint8_t team;   // red, green, blue etc.
+    uint8_t class;  // spy, sniper, engineer etc.
+
+    // might need old_animation_index? for interpolation... hum
+    uint8_t animation_index;  // current animation
+    uint8_t frame_index;      // current frame in animation
+
+    // some objects in hogs of war have other crap
+    // attached / involved in it's behaviour - for
+    // this we'll just include child/parent pointers
+    struct Actor *child;
+    struct Actor *parent;
+} Actor;
 
 ///////////////////////////////////////////////////
 
@@ -141,18 +209,6 @@ enum { // event types
     OBJECT_EVENT_BURST,                // spawns group upon destruction by TNT
     OBJECT_EVENT_GROUP_OBJECT,         // spawns group when object's group is destroyed
 };
-
-typedef struct Actor { // Generic Object Properties
-    PLVector3 position, angles;
-    PLVector3 bounds[2];
-
-    unsigned int spawn_delay;
-    unsigned int team;
-
-    int16_t health;
-
-    unsigned int type;
-} Actor;
 
 // Weapons
 #define ITEM_WEAPON_TROTTER             1

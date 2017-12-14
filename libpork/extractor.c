@@ -33,8 +33,6 @@
  *     Speech
  */
 
-bool is_psx = false;
-
 char current_target[PL_SYSTEM_MAX_PATH] = {'\0'};
 
 void ExtractPTGPackage(const char *path) {
@@ -213,7 +211,7 @@ void ExtractMADPackage(const char *path) {
 
             // this part should never happen, but we'll check for it anyway, call me paranoid!
             print("duplicate file found for %s at %s with differing size (%d vs %zu), renaming!\n",
-                   index.file, file_path, index.length, size);
+                  index.file, file_path, index.length, size);
             strcat(file_path, "_");
             goto CHECK_AGAIN;
         }
@@ -260,11 +258,17 @@ void ExtractMADPackage(const char *path) {
 
 void CopyDirectory(const char *path) {
     char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "%s/%s", current_target, plGetFileName(path));
+    sprintf(out_path, "%s/", current_target);
+    if(!plCreatePath(out_path)) {
+        print("%s\n", plGetError());
+        return;
+    }
+
+    strcat(out_path, plGetFileName(path));
     pl_strtolower(out_path);
     print(" %s\n", out_path);
     if(!plCopyFile(path, out_path)) {
-        print("%s\n", plGetResultString(plGetFunctionResult()));
+        print("%s\n", plGetError());
     }
 }
 
@@ -278,7 +282,7 @@ void ConvertTIMtoPNG(const char *path) {
     plStripExtension(out_path, path);
     strcat(out_path, ".png");
     if(plFileExists(out_path)) {
-        print("file already exists at \"%s\", skipping!\n", out_path);
+        plDeleteFile(path);
         return;
     }
 
@@ -291,51 +295,40 @@ void ConvertTIMtoPNG(const char *path) {
 
     // ensure that it's a format we're able to convert from
     if(image.format != PL_IMAGEFORMAT_RGB5A1) {
+        plFreeImage(&image);
         print("unexpected pixel format in \"%s\", aborting!\n", path);
-        plFreeImage(&image);
         return;
     }
 
-    plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8);
-    if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
+    if(!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
+        plFreeImage(&image);
         print("failed to convert TIM, \"%s\", %s, aborting!\n", path, plGetError());
-        plFreeImage(&image);
         return;
     }
-
-    print(" %s\n", out_path);
 
     // todo, eventually this should run through the platform lib
-
     ILuint image_id = ilGenImage();
     ilBindImage(image_id);
     ilTexImage(image.width, image.height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, image.data[0]);
-    iluFlipImage();
-
     ilEnable(IL_FILE_OVERWRITE);
     ilSaveImage(out_path);
-
     ilDeleteImage(image_id);
 
     plFreeImage(&image);
     plDeleteFile(path);
 }
 
-void ExtractGameData(const char *path) {
-    if(plPathExists("./" PORK_BASE_DIR)) {
-        printf("please delete your ./" PORK_BASE_DIR " if you want to begin extraction again!\n");
-        return;
-    }
-
-    print("unable to find data directory\nextracting game contents from %s...\n", path);
+void ExtractGameData(const char *path) { // I have no words to express how horrible this is...
+    print("extracting game contents from %s...\n", path);
 
     // Check if it's the PSX or PC version.
     char file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     sprintf(file_path, "%s/system.cnf", path);
     if(plFileExists(file_path)) {
         print("found system.cnf, assuming psx version...\n");
-        is_psx = true;
-        // todo, continue here? currently unsupported!
+#if 1
+        print_error("psx version of the game currently isn't supported, aborting!\n");
+#endif
     }
 
     if(!plCreateDirectory("./" PORK_BASE_DIR)) {
@@ -343,57 +336,85 @@ void ExtractGameData(const char *path) {
         return;
     }
 
-    print("extracting MAD/MTD packages...\n");
+    print("copying model data...\n");
+    {
+        sprintf(current_target, "./" PORK_MODELS_DIR);
+        sprintf(file_path, "%s/Chars", path);
+        plScanDirectory(file_path, "mad", ExtractMADPackage, false);
 
-    sprintf(current_target, "./" PORK_MAPS_DIR);
-    sprintf(file_path, "%s/Maps", path);
-    plScanDirectory(file_path, "mad", ExtractMADPackage, false);
-    plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
-
-    sprintf(current_target, "./" PORK_CHARS_DIR);
-    sprintf(file_path, "%s/Chars", path);
-    plScanDirectory(file_path, "mad", ExtractMADPackage, false);
-    plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
-
-    print("extracting PTG packages...\n");
-
-    sprintf(current_target, "./" PORK_MAPS_DIR);
-    sprintf(file_path, "%s/Maps", path);
-    plScanDirectory(file_path, "ptg", ExtractPTGPackage, true);
-
-    sprintf(current_target, "./" PORK_SKYS_DIR);
-    sprintf(file_path, "%s/Skys", path);
-    plScanDirectory(file_path, "ptg", ExtractPTGPackage, true);
-
-    print("\ncopying remaining files...\n");
-    if(!is_psx) {
         sprintf(file_path, "%s/Chars/mcap.mad", path);
-        if(!plCopyFile(file_path, "./" PORK_CHARS_DIR "/mcap.mad")) {
-            print("failed to copy %s!\n", file_path);
+        if(!plCopyFile(file_path, "./" PORK_MODELS_DIR "/mcap.mad")) {
+            print_warning("failed to copy %s!\n", file_path);
         }
 
         sprintf(file_path, "%s/Chars/pig.HIR", path);
-        if(!plCopyFile(file_path, "./" PORK_CHARS_DIR "/pig.hir")) {
-            print("failed to copy %s!\n", file_path);
+        if(!plCopyFile(file_path, "./" PORK_MODELS_DIR "/pig.hir")) {
+            print_warning("failed to copy %s!\n", file_path);
         }
+    }
+    print("copying texture data...\n");
+    {
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/skys");
+        sprintf(file_path, "%s/Skys", path);
+        plScanDirectory(file_path, "ptg", ExtractPTGPackage, false);
 
-        if(plCreateDirectory("./" PORK_FETEXT_DIR)) {
-            sprintf(current_target, "./" PORK_FETEXT_DIR);
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/maps");
+        sprintf(file_path, "%s/Maps", path);
+        plScanDirectory(file_path, "ptg", ExtractPTGPackage, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/models");
+        sprintf(file_path, "%s/Chars", path);
+        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/models/maps");
+        sprintf(file_path, "%s/Maps", path);
+        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface");
+        sprintf(file_path, "%s/Language/Tims", path);
+        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
+        plScanDirectory(file_path, "mad", ExtractMADPackage, false);
+        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/title");
+        sprintf(file_path, "%s/Language/Tims/Title", path);
+        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/briefing");
+        sprintf(file_path, "%s/Language/Tims/Briefing", path);
+        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/debrief");
+        sprintf(file_path, "%s/Language/Tims/Debrief", path);
+        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
+        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+
+        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/map");
+        sprintf(file_path, "%s/Language/Tims/PigMap", path);
+        plScanDirectory(file_path, "mad", ExtractMADPackage, false);
+        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+
+        if(plCreateDirectory("./" PORK_FONTS_DIR)) {
+            sprintf(current_target, "./" PORK_FONTS_DIR);
             sprintf(file_path, "%s/FEText", path);
             plScanDirectory(file_path, "bmp", CopyDirectory, false);
             plScanDirectory(file_path, "tab", CopyDirectory, false);
         } else {
-            print("failed to create directory, \"./" PORK_FETEXT_DIR "\"!\n");
+            print_warning("failed to create directory, \"./" PORK_FONTS_DIR "\"!\n");
         }
-
-        if(plCreateDirectory("./" PORK_AUDIO_DIR)) {
-            sprintf(current_target, "./" PORK_AUDIO_DIR);
+    }
+    print("copying sound data...\n");
+    {
+        if(plCreateDirectory("./" PORK_SOUNDS_DIR)) {
+            sprintf(current_target, "./" PORK_SOUNDS_DIR);
             sprintf(file_path, "%s/Audio", path);
             plScanDirectory(file_path, "wav", CopyDirectory, false);
         } else {
-            print("failed to create directory, \"./" PORK_AUDIO_DIR "\"!\n");
+            print_warning("failed to create directory, \"./" PORK_SOUNDS_DIR "\"!\n");
         }
-
+    }
+    print("copying map data...\n");
+    {
         sprintf(current_target, "./" PORK_MAPS_DIR);
         sprintf(file_path, "%s/Maps", path);
         plScanDirectory(file_path, "pog", CopyDirectory, false);
@@ -401,9 +422,9 @@ void ExtractGameData(const char *path) {
         plScanDirectory(file_path, "gen", CopyDirectory, false);
     }
 
-    print("\nextraction complete\n\nconverting TIM to PNG...\n");
+    print("\ncomplete\n\nconverting TIM to PNG...\n");
 
-    plScanDirectory("./" PORK_BASE_DIR, "tim", ConvertTIMtoPNG, true);
+    plScanDirectory("./" PORK_TEXTURES_DIR, "tim", ConvertTIMtoPNG, true);
 
     print("conversion completed\n");
 }
