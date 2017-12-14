@@ -45,6 +45,7 @@ struct {
     PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
     // viewport
+    bool display_fullscreen;
     unsigned int display_width;
     unsigned int display_height;
 } g_state;

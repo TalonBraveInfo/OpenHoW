@@ -19,14 +19,45 @@
 
 #include <IL/il.h>
 
+void InitDisplay(void) {
+    g_launcher.DisplayViewport(&g_state.display_fullscreen, &g_state.display_width, &g_state.display_height);
+
+    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
+
+    if((g_state.camera = plCreateCamera()) == NULL) {
+        print_error("failed to create camera, aborting!\n%s\n", plGetError());
+    }
+    g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
+    g_state.camera->bounds      = (PLAABB){{-20, -20},{20, 20}};
+    g_state.camera->fov         = 90;
+    g_state.camera->viewport.w  = g_state.display_width;
+    g_state.camera->viewport.h  = g_state.display_height;
+
+    if((g_state.fly_camera = plCreateCamera()) == NULL) {
+        print_error("failed to create fly camera, aborting!\n%s\n", plGetError());
+    }
+    g_state.fly_camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
+    g_state.fly_camera->bounds      = (PLAABB){{-20, -20},{20, 20}};
+    g_state.fly_camera->fov         = 90;
+    g_state.fly_camera->viewport.w  = g_state.display_width;
+    g_state.fly_camera->viewport.h  = g_state.display_height;
+
+    if((g_state.ui_camera = plCreateCamera()) == NULL) {
+        print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
+    }
+    g_state.ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    g_state.ui_camera->viewport.w   = g_state.display_width;
+    g_state.ui_camera->viewport.h   = g_state.display_height;
+}
+
+void ExtractGameData(const char *path);
+
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
-    plSetupLogOutput(PORK_LOG);
 
     plSetupLogLevel(PORK_LOG_ENGINE, "engine", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_ENGINE_WARNING, "engine-warning", PLColour(255, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_ENGINE_ERROR, "engine-error", PLColour(255, 0, 0, 255), true);
-    plSetupLogLevel(PORK_LOG_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
 
     print("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
@@ -81,32 +112,9 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
         }
     }
 
+    InitDisplay();
+
     ilInit();
 
     CacheModelData();
-}
-
-void InitDisplay(void) {
-    g_launcher.DisplayViewport(g_state.display_width, g_state.display_height);
-
-    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
-
-    if((g_state.camera = plCreateCamera()) == NULL) {
-        print_error("failed to create camera, aborting!\n%s\n", plGetError());
-    }
-    g_state.camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.camera->bounds  = (PLAABB){{-20, -20},{20, 20}};
-    g_state.camera->fov     = 90;
-
-    if((g_state.fly_camera = plCreateCamera()) == NULL) {
-        print_error("failed to create fly camera, aborting!\n%s\n", plGetError());
-    }
-    g_state.fly_camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.fly_camera->bounds  = (PLAABB){{-20, -20},{20, 20}};
-    g_state.fly_camera->fov     = 90;
-
-    if((g_state.ui_camera = plCreateCamera()) == NULL) {
-        print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
-    }
-    g_state.ui_camera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
 }

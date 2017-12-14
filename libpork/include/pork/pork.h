@@ -50,6 +50,9 @@ enum {
     PORK_LOG_ENGINE_ERROR,
 
     PORK_LOG_LAUNCHER,
+    PORK_LOG_LAUNCHER_WARNING,
+    PORK_LOG_LAUNCHER_ERROR,
+
     PORK_LOG_DEBUG,
 };
 
@@ -72,7 +75,7 @@ enum {
 
 typedef struct PorkLauncherInterface {
     void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
-    void(*DisplayViewport)(unsigned int width, unsigned int height);
+    void(*DisplayViewport)(bool *fullscreen, unsigned int *width, unsigned int *height);
 
     void(*ShutdownLauncher)(void);
 } PorkLauncherInterface;
@@ -82,8 +85,6 @@ typedef struct PorkLauncherInterface {
 PL_EXTERN_C
 
 PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
-
-PL_EXTERN void ExtractGameData(const char *path);
 
 PL_EXTERN_C_END
 
