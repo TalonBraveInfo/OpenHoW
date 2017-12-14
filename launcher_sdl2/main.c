@@ -27,12 +27,6 @@ SDL_Window *window = NULL;
 void IShutdownLauncher(void);
 
 void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
-    char buf[2048] = {'\0'};
-    va_list args;
-    va_start(args, msg);
-    vsnprintf(buf, sizeof(buf), msg, args);
-    va_end(args);
-
     switch(level) {
         case PORK_MBOX_ERROR: {
             level = SDL_MESSAGEBOX_ERROR;
@@ -46,6 +40,12 @@ void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
 
         default: return;
     }
+
+    char buf[2048];
+    va_list args;
+    va_start(args, msg);
+    vsnprintf(buf, sizeof(buf), msg, args);
+    va_end(args);
 
     SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
 }
