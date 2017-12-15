@@ -47,7 +47,6 @@ PorkLauncherInterface g_launcher;
 
 struct {
     PLCamera *camera;       // camera used for general gameplay
-    PLCamera *fly_camera;   // camera used for flybys and other fun stuff
     PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
     // viewport

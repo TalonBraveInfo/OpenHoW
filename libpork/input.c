@@ -14,14 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+#include <pork/pork.h>
 
-void InitActors(void);
-void ClearActors(void);
-void DrawActors(void);
-void SimulateActors(float delta);
-
-Actor *Actor_Spawn(void);
-void Actor_Destroy(Actor *self);
-void Actor_Possess(Actor *self, Player *player);
-void Actor_Depossess(Actor *self, Player *player);
+void InitInput(void) {}

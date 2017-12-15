@@ -21,21 +21,29 @@
 
 #include <IL/il.h>
 
-void SimulateFrame(void) {
+void SimulatePork(void) {
     SimulateActors(0);
 }
 
-void DrawFrame(void) {
+void DrawPork(void) {
+    plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+
+    plSetupCamera(g_state.camera);
+
     DrawActors();
     // todo, DrawInterface
+
+    g_launcher.SwapWindow();
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 void InitDisplay(void) {
-    g_launcher.DisplayViewport(&g_state.display_fullscreen, &g_state.display_width, &g_state.display_height);
+    g_launcher.DisplayWindow(&g_state.display_fullscreen, &g_state.display_width, &g_state.display_height);
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
+
+    plSetClearColour(PLColour(255, 0, 0, 255));
 
     if((g_state.camera = plCreateCamera()) == NULL) {
         print_error("failed to create camera, aborting!\n%s\n", plGetError());
@@ -45,15 +53,6 @@ void InitDisplay(void) {
     g_state.camera->fov         = 90;
     g_state.camera->viewport.w  = g_state.display_width;
     g_state.camera->viewport.h  = g_state.display_height;
-
-    if((g_state.fly_camera = plCreateCamera()) == NULL) {
-        print_error("failed to create fly camera, aborting!\n%s\n", plGetError());
-    }
-    g_state.fly_camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.fly_camera->bounds      = (PLAABB){{-20, -20},{20, 20}};
-    g_state.fly_camera->fov         = 90;
-    g_state.fly_camera->viewport.w  = g_state.display_width;
-    g_state.fly_camera->viewport.h  = g_state.display_height;
 
     if((g_state.ui_camera = plCreateCamera()) == NULL) {
         print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
@@ -66,6 +65,8 @@ void InitDisplay(void) {
 }
 
 void ExtractGameData(const char *path);
+
+void InitConfig(void);
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
@@ -84,6 +85,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_state.display_height = BASE_HEIGHT;
 
     // todo, parse config file
+
+    InitConfig();
 
     ilInit();
 
@@ -134,4 +137,11 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitDisplay();
     InitPlayers();
     InitActors();
+}
+
+void ShutdownPork(void) {
+    ClearPlayers();
+    ClearActors();
+
+    plShutdown();
 }

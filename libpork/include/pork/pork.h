@@ -38,6 +38,8 @@
 #define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
 #define PORK_FONTS_DIR      PORK_BASE_DIR "/fonts"
 
+#define PORK_CONFIG PORK_BASE_DIR "/config.json"
+
 // Frontend
 #define PORK_FEBMPS_DIR     PORK_BASE_DIR "/febmps"
 
@@ -76,7 +78,9 @@ enum {
 
 typedef struct PorkLauncherInterface {
     void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
-    void(*DisplayViewport)(bool *fullscreen, unsigned int *width, unsigned int *height);
+
+    void(*DisplayWindow)(bool fullscreen, unsigned int width, unsigned int height);
+    void(*SwapWindow)(void);
 
     void(*ShutdownLauncher)(void);
 } PorkLauncherInterface;
@@ -86,6 +90,14 @@ typedef struct PorkLauncherInterface {
 PL_EXTERN_C
 
 PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
+PL_EXTERN void ShutdownPork(void);
+
+PL_EXTERN void DrawPork(void);
+PL_EXTERN void SimulatePork(void);
+
+/* DISPLAY  */
+
+PL_EXTERN void UpdateViewport(bool fullscreen, unsigned int width, unsigned int height);
 
 PL_EXTERN_C_END
 

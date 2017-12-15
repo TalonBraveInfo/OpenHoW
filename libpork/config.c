@@ -1,0 +1,61 @@
+/* OpenHOW
+ * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#include <pork/pork.h>
+#include <PL/platform_filesystem.h>
+#include "jsmn/jsmn.h"
+#include "engine.h"
+
+void SaveConfig(void) {
+    // todo, take current state and save it to config.json
+}
+
+void InitConfig(void) {
+    size_t len = plGetFileSize(PORK_CONFIG);
+    if(len == 0) {
+        print("blank config, skipping out on bothering read\n");
+        return;
+    }
+
+    char buffer[len];
+    memset(buffer, 0, sizeof(buffer));
+
+    jsmn_parser p;
+    jsmn_init(&p);
+
+    int ret = jsmn_parse(&p, buffer, len, NULL, 256);
+    if(ret < 0) {
+        if(ret == JSMN_ERROR_INVAL) {
+            print_warning("bad token, JSON string is corrupted!\n");
+        } else if(ret == JSMN_ERROR_NOMEM) {
+            print_warning("not enough tokens, JSON string is too large!\n");
+        } else if(ret == JSMN_ERROR_PART) {
+            print_warning("JSON string is too short, expecting more JSON data!\n");
+        }
+        return;
+    }
+
+    unsigned int num_tokens = (unsigned int) ret;
+    jsmntok_t *tokens = malloc(num_tokens * sizeof(jsmntok_t));
+    if(tokens == NULL) {
+        print_error("failed to allocate enough memory for tokens, aborting!\n");
+    }
+
+    jsmn_parse(&p, buffer, len, tokens, num_tokens);
+    for(unsigned int i = 0; i < num_tokens; ++i) {
+
+    }
+}

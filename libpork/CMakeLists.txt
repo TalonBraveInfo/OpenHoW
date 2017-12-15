@@ -32,6 +32,9 @@ file(
         *.cpp *.c
         *.h
 
+        jsmn/jsmn.c
+        jsmn/jsmn.h
+
         include/pork/*.h
         )
 

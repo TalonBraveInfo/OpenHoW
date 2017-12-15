@@ -51,7 +51,7 @@ void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
 }
 
-void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *height) {
+void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -70,7 +70,7 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
     }
 
     unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
-    if(*fullscreen) {
+    if(fullscreen) {
         flags |= SDL_WINDOW_FULLSCREEN;
     } else {
         flags |= SDL_WINDOW_SHOWN;
@@ -80,7 +80,7 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
             PORK_TITLE,
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            *width, *height,
+            width, height,
             flags
     );
     if(window == NULL) {
@@ -91,8 +91,10 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
     if((context = SDL_GL_CreateContext(window)) == NULL) {
         IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to create context!\n%s", SDL_GetError());
     }
+}
 
-    //SDL_GL_GetDrawableSize(window, width, height);
+void ISwapDisplay(void) {
+    SDL_GL_SwapWindow(window);
 }
 
 void IShutdownLauncher(void) {
@@ -114,6 +116,28 @@ void IShutdownLauncher(void) {
 
 ///////////////////////////////////////////////////
 
+void PollEvents(void) {
+    SDL_Event event;
+    while(SDL_PollEvent(&event)) {
+        switch(event.type) {
+            default:break;
+
+            case SDL_QUIT: {
+                ShutdownPork();
+            } break;
+
+            case SDL_WINDOWEVENT: {
+                if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    unsigned int flags = SDL_GetWindowFlags(window);
+                    UpdateViewport((bool)(flags & SDL_WINDOW_FULLSCREEN),
+                                   (unsigned int)event.window.data1,
+                                   (unsigned int)event.window.data2);
+                }
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     plSetupLogOutput(PORK_LOG);
 
@@ -131,13 +155,25 @@ int main(int argc, char **argv) {
     PorkLauncherInterface interface;
     memset(&interface, 0, sizeof(PorkLauncherInterface));
     interface.DisplayMessageBox = IDisplayMessageBox;
-    interface.DisplayViewport = IDisplayViewport;
+    interface.DisplayWindow = IDisplayWindow;
+    interface.SwapWindow = ISwapDisplay;
     interface.ShutdownLauncher = IShutdownLauncher;
 
     InitPork(argc, argv, interface);
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_ShowCursor(0);
+
+    // todo, timing...
+    while(true) {
+        PollEvents();
+
+        SimulatePork();
+
+        DrawPork();
+    }
+
+    ShutdownPork();
 
     return EXIT_SUCCESS;
 }

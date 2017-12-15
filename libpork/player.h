@@ -16,18 +16,14 @@
  */
 #pragma once
 
-typedef struct Actor Actor;
-
 typedef struct Player {
     char name[24];
     uint8_t team;
 
-    Actor *pigs[MAX_PIGS];
+    struct Actor *pigs[MAX_PIGS];
     unsigned int num_pigs;
     unsigned int current_pig;
 } Player;
-
-extern Player g_players[MAX_PLAYERS];
 
 void InitPlayers(void);
 void ClearPlayers(void);

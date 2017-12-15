@@ -1,3 +1,6 @@
 [submodule "platform"]
 	path = platform
 	url = https://github.com/TalonBraveInfo/platform
+[submodule "libpork/jsmn"]
+	path = libpork/jsmn
+	url = https://github.com/zserge/jsmn
