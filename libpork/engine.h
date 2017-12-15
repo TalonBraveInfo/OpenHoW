@@ -20,18 +20,11 @@
 
 #include <PL/platform_graphics.h>
 
-#define _print_engine(LEVEL, ...) { \
-    char __buf[2048];                                                   \
-    int __c = snprintf(__buf, sizeof(__buf), "(%s) ", PL_FUNCTION);     \
-    snprintf(__buf + __c, sizeof(__buf) - __c, __VA_ARGS__);            \
-    plLogMessage((LEVEL), __buf);                                       \
-}
-
-#define print(...)          _print_engine(PORK_LOG_ENGINE, __VA_ARGS__)
-#define print_warning(...)  _print_engine(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
-#define print_error(...) {                                              \
-    _print_engine(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);                  \
-    exit(EXIT_FAILURE);                                                 \
+#define print(...)          _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
+#define print_warning(...)  _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
+#define print_error(...) {                              \
+    _print_w_function(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);      \
+    exit(EXIT_FAILURE);                                         \
 }
 
 ///////////////////////////////////////////////////
@@ -40,7 +33,7 @@
 #define BASE_WIDTH  640
 #define BASE_HEIGHT 480
 
-#define MAX_BONES       32
+#define MAX_BONES   32
 
 ///////////////////////////////////////////////////
 

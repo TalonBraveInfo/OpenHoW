@@ -86,7 +86,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     ilInit();
 
-    for(unsigned int i = 1; i < argc; ++i) {
+    for(int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
             if(parm == NULL || parm[0] == '\0') {

@@ -71,7 +71,7 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
     }
 
     unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
-    if(fullscreen) {
+    if(*fullscreen) {
         flags |= SDL_WINDOW_FULLSCREEN;
     } else {
         flags |= SDL_WINDOW_SHOWN;
@@ -89,13 +89,15 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
         IShutdownLauncher();
     }
 
-    SDL_GL_GetDrawableSize(window, (int *)width, (int *)height);
+    //SDL_GL_GetDrawableSize(window, width, height);
 }
 
 void IShutdownLauncher(void) {
     if(window != NULL) {
         SDL_DestroyWindow(window);
     }
+
+    SDL_ShowCursor(1);
 
     SDL_EnableScreenSaver();
     SDL_Quit();
