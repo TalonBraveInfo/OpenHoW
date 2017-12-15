@@ -19,6 +19,7 @@
 #include <SDL2/SDL.h>
 
 SDL_Window *window = NULL;
+SDL_GLContext *context = NULL;
 
 #define print(...)          plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
 #define print_warning(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
@@ -60,9 +61,7 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
     SDL_GL_SetAttribute(SDL_GL_ACCUM_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ACCUM_ALPHA_SIZE, 8);
 
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
@@ -89,10 +88,18 @@ void IDisplayViewport(bool *fullscreen, unsigned int *width, unsigned int *heigh
         IShutdownLauncher();
     }
 
+    if((context = SDL_GL_CreateContext(window)) == NULL) {
+        IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to create context!\n%s", SDL_GetError());
+    }
+
     //SDL_GL_GetDrawableSize(window, width, height);
 }
 
 void IShutdownLauncher(void) {
+    if(context != NULL) {
+        SDL_GL_DeleteContext(context);
+    }
+
     if(window != NULL) {
         SDL_DestroyWindow(window);
     }
