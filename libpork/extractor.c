@@ -82,8 +82,7 @@ void ExtractPTGPackage(const char *path) {
             goto ABORT_PTG;
         }
 
-        print(" %s\n", out_path);
-
+        //print(" %s\n", out_path);
         if(fwrite(tim, tim_size, 1, out) != 1) {
             print("failed to write %s, aborting!\n", out_path);
             goto ABORT_PTG;
@@ -235,7 +234,7 @@ void ExtractMADPackage(const char *path) {
             goto ABORT_MAD;
         }
 
-        print(" %s\n", file_path);
+        //print(" %s\n", file_path);
         if(fwrite(data, sizeof(uint8_t), index.length, out) != index.length) {
             print("failed to write %s!\n", file_path);
             goto ABORT_MAD;
@@ -266,7 +265,7 @@ void CopyDirectory(const char *path) {
 
     strcat(out_path, plGetFileName(path));
     pl_strtolower(out_path);
-    print(" %s\n", out_path);
+    //print(" %s\n", out_path);
     if(!plCopyFile(path, out_path)) {
         print("%s\n", plGetError());
     }

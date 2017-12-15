@@ -64,7 +64,7 @@ void InitActors(void) {
 
 //////////////////////////////////////////////////////////////
 
-Actor *Actor_Reserve(void) {
+Actor *Actor_Spawn(void) {
     for(unsigned int i = 0; i < num_actors; ++i) {
         if(!g_actors[i].is_reserved) {
             Actor *actor = &g_actors[i];
@@ -78,10 +78,10 @@ Actor *Actor_Reserve(void) {
     // todo, update the array size
     // ensure all new actors all nullified...
     memset(g_actors + old_num_actors, 0, sizeof(Actor) * (num_actors - old_num_actors));
-    return Actor_Reserve();
+    return Actor_Spawn();
 }
 
-void Actor_Unreserve(Actor *self) {
+void Actor_Destroy(Actor *self) {
     if(self == NULL) {
         print_warning("attempted to free an invalid actor, we'll probably crash!\n");
         return;
