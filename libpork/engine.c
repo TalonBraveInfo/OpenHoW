@@ -39,7 +39,7 @@ void DrawPork(void) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitDisplay(void) {
-    g_launcher.DisplayWindow(&g_state.display_fullscreen, &g_state.display_width, &g_state.display_height);
+    g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
 
@@ -60,8 +60,6 @@ void InitDisplay(void) {
     g_state.ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
     g_state.ui_camera->viewport.w   = g_state.display_width;
     g_state.ui_camera->viewport.h   = g_state.display_height;
-
-    CacheModelData();
 }
 
 void ExtractGameData(const char *path);
@@ -137,6 +135,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitDisplay();
     InitPlayers();
     InitActors();
+
+    CacheModelData();
 }
 
 void ShutdownPork(void) {
