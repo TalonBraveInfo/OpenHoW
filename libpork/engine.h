@@ -20,10 +20,13 @@
 
 #include <PL/platform_graphics.h>
 
+#include "player.h"
+
 #define print(...)          _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
 #define print_warning(...)  _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
-#define print_error(...) {                              \
+#define print_error(...) {                                      \
     _print_w_function(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);      \
+    g_launcher.DisplayMessageBox(PORK_MBOX_ERROR, __VA_ARGS__); \
     exit(EXIT_FAILURE);                                         \
 }
 
@@ -51,4 +54,6 @@ struct {
     bool display_fullscreen;
     unsigned int display_width;
     unsigned int display_height;
+
+    Player players[MAX_PLAYERS];
 } g_state;

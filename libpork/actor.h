@@ -19,3 +19,8 @@
 void InitActors(void);
 void DrawActors(void);
 void SimulateActors(float delta);
+
+Actor *Actor_Spawn(void);
+void Actor_Destroy(Actor *self);
+void Actor_Possess(Actor *self, Player *player);
+void Actor_Depossess(Actor *self, Player *player);

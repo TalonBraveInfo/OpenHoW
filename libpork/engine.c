@@ -17,6 +17,7 @@
 #include "engine.h"
 #include "model.h"
 #include "actor.h"
+#include "player.h"
 
 #include <IL/il.h>
 
@@ -131,5 +132,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     }
 
     InitDisplay();
+    InitPlayers();
     InitActors();
 }

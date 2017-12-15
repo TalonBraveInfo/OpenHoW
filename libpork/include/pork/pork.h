@@ -115,16 +115,8 @@ enum {
 ///////////////////////////////////////////////////
 // Player
 
-#define MAX_PLAYERS 16
-#define MAX_PIGS    64
-
-typedef struct Player {
-    char name[24];
-    uint8_t team;
-
-    unsigned int num_pigs;
-    unsigned int current_pig;
-} Player;
+#define MAX_PLAYERS 4
+#define MAX_PIGS    24
 
 ///////////////////////////////////////////////////
 // Actor
@@ -135,7 +127,7 @@ typedef struct Actor {
     bool is_reserved; // if the actor is free, we can use it as a new actor
     bool is_visible;
 
-    Player *controller; // which player is currently controlling us?
+    struct Player *controller; // which player is currently controlling us?
 
     PLVector3 position;
     PLVector3 angles;
@@ -168,11 +160,15 @@ typedef struct Actor {
     uint8_t current_item; // matched against inventory slot
 
     struct {
-        void(*EPossess)(struct Actor *self, Player *controller);
+        void(*EPossess)(struct Actor *self, struct Player *controller);
+        void(*EDepossess)(struct Actor *self, struct Player *controller);
     } callback;
 
     uint8_t team;   // red, green, blue etc.
     uint8_t class;  // spy, sniper, engineer etc.
+
+    uint8_t eyes_frame;
+    uint8_t gob_frame;
 
     // might need old_animation_index? for interpolation... hum
     uint8_t animation_index;  // current animation

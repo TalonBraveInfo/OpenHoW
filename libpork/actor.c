@@ -107,3 +107,16 @@ void Actor_Possess(Actor *self, Player *player) {
         self->callback.EPossess(self, player);
     }
 }
+
+void Actor_Depossess(Actor *self, Player *player) {
+    if(self->controller == NULL || self->controller != player) {
+        return;
+    }
+
+    print_debug("%s released control of actor %s\n", self->name);
+
+    self->controller = NULL;
+    if(self->callback.EDepossess) {
+        self->callback.EDepossess(self, player);
+    }
+}

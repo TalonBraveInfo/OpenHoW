@@ -16,14 +16,12 @@
  */
 #include <pork/pork.h>
 
-#include "player.h"
+#include "engine.h"
+#include "actor.h"
 
-Player g_players[MAX_PLAYERS];
-
-/* Suggest changing ine 107/108 to player->pigs[slot] = player->pigs[--(player->num_pigs)];
- * Then you can ditch the +1 in the qsort call and the comparator doesn't need to handle NULL pointers
- * Probably don't even need the qsort actually
- */
+void ClearPlayers(void) {
+    memset(g_state.players, 0, sizeof(Player) * MAX_PLAYERS);
+}
 
 void InitPlayers(void) {
     print_debug("initializing player data\n");
@@ -31,6 +29,52 @@ void InitPlayers(void) {
     ClearPlayers();
 }
 
-void ClearPlayers(void) {
-    memset(g_players, 0, sizeof(Player) * MAX_PLAYERS);
+//////////////////////////////////////////////////////////////
+
+Actor *Player_GetPig(Player *self, unsigned int slot) {
+    assert(self != NULL);
+
+    if(slot >= MAX_PIGS) {
+        print_warning("failed to grab pig, slot %d exceeds limit %d, ignoring!\n", slot, MAX_PIGS);
+        return NULL;
+    }
+
+    Actor *pig = self->pigs[slot];
+    if(pig == NULL) {
+        print_warning("failed to grab pig, invalid slot %d, ignoring!\n", slot);
+        return NULL;
+    }
+
+    return pig;
 }
+
+void Player_AssignPig(Player *self, Actor *pig) {
+    assert(self != NULL);
+
+    if(pig == NULL) {
+        print_warning("attempted to assign an invalid pig, ignoring!\n");
+        return;
+    }
+
+    if(pig->team != self->team) {
+        print_warning("pig isn't on same team as player, ignoring!\n");
+        return;
+    }
+
+    self->pigs[++self->num_pigs] = pig;
+}
+
+/* doesn't actually remove the pig from the game, just removes
+ * it from the players list, so they can no longer possess it.
+ */
+void Player_RemovePig(Player *self, unsigned int slot) {
+    Actor *pig = Player_GetPig(self, slot);
+    if(pig == NULL) {
+        return;
+    }
+
+    if(self->current_pig == slot) {
+        Actor_Depossess(pig, self);
+    }
+}
+
