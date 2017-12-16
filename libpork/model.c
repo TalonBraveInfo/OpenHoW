@@ -75,12 +75,32 @@ void CacheModelData(void) {
     }
     fclose(file);
 
+    // scary shit - assumes this matches up with indices in pig.hir, if not, boo hoo!
+    const char *bone_names[]={
+          "Hip",
+          "Spine",
+          "Head",
+          "UpperArm.L",
+          "LowerArm.L",
+          "Hand.L",
+          "UpperArm.R",
+          "LowerArm.R",
+          "Hand.R",
+          "UpperLeg.L",
+          "LowerLeg.L",
+          "Foot.L",
+          "UpperLeg.R",
+          "LowerLeg.R",
+          "Foot.R",
+    };
+
     // copy each bone into our global bones list
     for(unsigned int i = 0; i < num_bones; ++i) {
         g_model_cache.bones[i].parent = bones[i].parent;
         g_model_cache.bones[i].coords.x = bones[i].coords[0];
         g_model_cache.bones[i].coords.y = bones[i].coords[1];
         g_model_cache.bones[i].coords.z = bones[i].coords[2];
+        strncpy(g_model_cache.bones[i].name, bone_names[i], sizeof(g_model_cache.bones[i].name));
     }
 
     // animations

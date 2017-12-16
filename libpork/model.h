@@ -17,6 +17,7 @@
 #pragma once
 
 typedef struct Bone {
+    char name[32];
     unsigned int parent;
     PLVector3 coords;
 } Bone;
