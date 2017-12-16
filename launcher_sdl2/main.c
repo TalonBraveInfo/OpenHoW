@@ -163,13 +163,26 @@ int main(int argc, char **argv) {
     SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_ShowCursor(0);
 
-    // todo, timing...
+#define TICKS_PER_SECOND    25
+#define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
+#define MAX_FRAMESKIP       5
+
+    unsigned int next_tick = SDL_GetTicks();
+    unsigned int loops;
+    double delta_time;
+
     while(true) {
-        PollEvents();
+        loops = 0;
 
-        SimulatePork();
+        // simulate the game at TICKS_PER_SECOND, might need adjusting
+        while(SDL_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
+            SimulatePork();
+            next_tick += SKIP_TICKS;
+            loops++;
+        }
 
-        DrawPork();
+        delta_time = (double)(SDL_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
+        DrawPork(delta_time);
     }
 
     ShutdownPork();

@@ -25,7 +25,7 @@ void SimulatePork(void) {
     SimulateActors(0);
 }
 
-void DrawPork(void) {
+void DrawPork(double delta_time) {
     plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
 
     plSetupCamera(g_state.camera);

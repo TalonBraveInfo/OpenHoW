@@ -21,6 +21,22 @@
 
 ModelCache g_model_cache;
 
+//00: Hip
+//01: Spine
+//02: Head
+//03: UpperArm.L
+//04: LowerArm.L
+//05: Hand.L
+//06: UpperArm.R
+//07: LowerArm.R
+//08: Hand.R
+//09: UpperLeg.L
+//10: LowerLeg.L
+//11: Foot.L
+//12: UpperLeg.R
+//13: LowerLeg.R
+//14: Foot.R
+
 // cache the pigs data into memory, since we
 // share it between all of them anyway :)
 void CacheModelData(void) {
