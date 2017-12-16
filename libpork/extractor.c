@@ -274,7 +274,7 @@ void CopyDirectory(const char *path) {
 #include <IL/il.h>
 #include <IL/ilu.h>
 
-void ConvertTIMtoPNG(const char *path) {
+void ConvertImageToPNG(const char *path) {
     // figure out if the file already exists before
     // we even start trying to convert this thing
     char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
@@ -288,20 +288,29 @@ void ConvertTIMtoPNG(const char *path) {
     PLImage image;
     PLresult result = (PLresult)plLoadImage(path, &image);
     if(result != PL_RESULT_SUCCESS) {
-        print("failed to load TIM, \"%s\", %s, aborting!\n", path, plGetError());
+        print("failed to load \"%s\", %s, aborting!\n", path, plGetError());
         return;
     }
 
-    // ensure that it's a format we're able to convert from
-    if(image.format != PL_IMAGEFORMAT_RGB5A1) {
-        plFreeImage(&image);
-        print("unexpected pixel format in \"%s\", aborting!\n", path);
-        return;
+    const char *ext = plGetFileExtension(path);
+    if(ext != NULL && ext[0] != '\0' && strcmp(ext, "tim") == 0) {
+        // ensure that it's a format we're able to convert from
+        if (image.format != PL_IMAGEFORMAT_RGB5A1) {
+            plFreeImage(&image);
+            print("unexpected pixel format in \"%s\", aborting!\n", path);
+            return;
+        }
+
+        if (!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
+            plFreeImage(&image);
+            print("failed to convert \"%s\", %s, aborting!\n", path, plGetError());
+            return;
+        }
     }
 
-    if(!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
+    if(!plFlipImageVertical(&image)) {
         plFreeImage(&image);
-        print("failed to convert TIM, \"%s\", %s, aborting!\n", path, plGetError());
+        print("failed to flip \"%s\", %s, aborting!\n", path, plGetError());
         return;
     }
 
@@ -423,7 +432,8 @@ void ExtractGameData(const char *path) { // I have no words to express how horri
 
     print("\ncomplete\n\nconverting TIM to PNG...\n");
 
-    plScanDirectory("./" PORK_TEXTURES_DIR, "tim", ConvertTIMtoPNG, true);
+    plScanDirectory("./" PORK_TEXTURES_DIR, "tim", ConvertImageToPNG, true);
+    plScanDirectory("./" PORK_TEXTURES_DIR, "bmp", ConvertImageToPNG, true);
 
     print("conversion completed\n");
 }

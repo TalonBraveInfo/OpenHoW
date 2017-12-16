@@ -97,7 +97,7 @@ PL_EXTERN void SimulatePork(void);
 
 /* DISPLAY  */
 
-PL_EXTERN void UpdateViewport(bool fullscreen, unsigned int width, unsigned int height);
+PL_EXTERN void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height);
 
 PL_EXTERN_C_END
 

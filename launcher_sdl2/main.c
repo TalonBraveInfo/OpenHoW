@@ -128,9 +128,9 @@ void PollEvents(void) {
             case SDL_WINDOWEVENT: {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
                     unsigned int flags = SDL_GetWindowFlags(window);
-                    UpdateViewport((bool)(flags & SDL_WINDOW_FULLSCREEN),
-                                   (unsigned int)event.window.data1,
-                                   (unsigned int)event.window.data2);
+                    UpdatePorkViewport((bool) (flags & SDL_WINDOW_FULLSCREEN),
+                                       (unsigned int) event.window.data1,
+                                       (unsigned int) event.window.data2);
                 }
             }
         }

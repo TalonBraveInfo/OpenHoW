@@ -62,13 +62,20 @@ void InitDisplay(void) {
     g_state.ui_camera->viewport.h   = g_state.display_height;
 }
 
-void UpdateDisplay(bool fullscreen, unsigned int width, unsigned int height) {
+void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height) {
+    if(g_state.camera == NULL || g_state.ui_camera == NULL) {
+        // display probably hasn't been initialised
+        return;
+    }
 
+    g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
+    g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 }
 
 void ExtractGameData(const char *path);
 
 void InitConfig(void);
+void InitFonts(void);
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
@@ -137,6 +144,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     }
 
     InitDisplay();
+    InitFonts();
     InitPlayers();
     InitActors();
 

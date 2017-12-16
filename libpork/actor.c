@@ -34,7 +34,7 @@ void ClearActors(void) {
 void SimulateActors(float delta) {
     assert(g_actors != NULL);
 
-    for(Actor *actor = &g_actors[0]; actor != NULL; ++actor) {
+    for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
         if(!actor->is_reserved) {
             continue;
         }
@@ -46,7 +46,7 @@ void SimulateActors(float delta) {
 void DrawActors(void) {
     assert(g_actors != NULL);
 
-    for(Actor *actor = &g_actors[0]; actor != NULL; ++actor) {
+    for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
         if(!actor->is_reserved || !actor->is_visible) {
             continue;
         }
