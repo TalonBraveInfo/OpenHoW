@@ -62,6 +62,10 @@ void InitDisplay(void) {
     g_state.ui_camera->viewport.h   = g_state.display_height;
 }
 
+void UpdateDisplay(bool fullscreen, unsigned int width, unsigned int height) {
+
+}
+
 void ExtractGameData(const char *path);
 
 void InitConfig(void);

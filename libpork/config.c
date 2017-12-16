@@ -23,20 +23,20 @@ void SaveConfig(void) {
     // todo, take current state and save it to config.json
 }
 
-void InitConfig(void) {
+// wrapper function thing, simplifying jsmn a little
+jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path) {
     size_t len = plGetFileSize(PORK_CONFIG);
     if(len == 0) {
         print("blank config, skipping out on bothering read\n");
-        return;
+        return NULL;
     }
 
     char buffer[len];
     memset(buffer, 0, sizeof(buffer));
 
-    jsmn_parser p;
-    jsmn_init(&p);
+    jsmn_init(p);
 
-    int ret = jsmn_parse(&p, buffer, len, NULL, 256);
+    int ret = jsmn_parse(p, buffer, len, NULL, 256);
     if(ret < 0) {
         if(ret == JSMN_ERROR_INVAL) {
             print_warning("bad token, JSON string is corrupted!\n");
@@ -45,16 +45,23 @@ void InitConfig(void) {
         } else if(ret == JSMN_ERROR_PART) {
             print_warning("JSON string is too short, expecting more JSON data!\n");
         }
-        return;
+        return NULL;
     }
 
-    unsigned int num_tokens = (unsigned int) ret;
-    jsmntok_t *tokens = malloc(num_tokens * sizeof(jsmntok_t));
+    *num_tokens = (unsigned int) ret;
+    jsmntok_t *tokens = malloc(*num_tokens * sizeof(jsmntok_t));
     if(tokens == NULL) {
         print_error("failed to allocate enough memory for tokens, aborting!\n");
     }
 
-    jsmn_parse(&p, buffer, len, tokens, num_tokens);
+    jsmn_parse(p, buffer, len, tokens, *num_tokens);
+    return tokens;
+}
+
+void InitConfig(void) {
+    jsmn_parser p;
+    unsigned int num_tokens;
+    jsmntok_t *tokens = ParseJSON(&p, &num_tokens, PORK_CONFIG);
     for(unsigned int i = 0; i < num_tokens; ++i) {
 
     }
