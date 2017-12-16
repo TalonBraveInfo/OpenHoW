@@ -172,9 +172,10 @@ int main(int argc, char **argv) {
     double delta_time;
 
     while(true) {
-        loops = 0;
+        PollEvents();
 
         // simulate the game at TICKS_PER_SECOND, might need adjusting
+        loops = 0;
         while(SDL_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
             SimulatePork();
             next_tick += SKIP_TICKS;

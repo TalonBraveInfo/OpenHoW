@@ -296,22 +296,19 @@ void ConvertImageToPNG(const char *path) {
     if(ext != NULL && ext[0] != '\0' && strcmp(ext, "tim") == 0) {
         // ensure that it's a format we're able to convert from
         if (image.format != PL_IMAGEFORMAT_RGB5A1) {
-            plFreeImage(&image);
             print("unexpected pixel format in \"%s\", aborting!\n", path);
-            return;
+            goto ABORT;
         }
 
         if (!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
-            plFreeImage(&image);
             print("failed to convert \"%s\", %s, aborting!\n", path, plGetError());
-            return;
+            goto ABORT;
         }
     }
 
     if(!plFlipImageVertical(&image)) {
-        plFreeImage(&image);
         print("failed to flip \"%s\", %s, aborting!\n", path, plGetError());
-        return;
+        goto ABORT;
     }
 
     // todo, eventually this should run through the platform lib
@@ -324,6 +321,9 @@ void ConvertImageToPNG(const char *path) {
 
     plFreeImage(&image);
     plDeleteFile(path);
+
+    ABORT:
+    plFreeImage(&image);
 }
 
 void ExtractGameData(const char *path) { // I have no words to express how horrible this is...
@@ -433,7 +433,7 @@ void ExtractGameData(const char *path) { // I have no words to express how horri
     print("\ncomplete\n\nconverting TIM to PNG...\n");
 
     plScanDirectory("./" PORK_TEXTURES_DIR, "tim", ConvertImageToPNG, true);
-    plScanDirectory("./" PORK_TEXTURES_DIR, "bmp", ConvertImageToPNG, true);
+    //plScanDirectory("./" PORK_BASE_DIR, "bmp", ConvertImageToPNG, true);
 
     print("conversion completed\n");
 }
