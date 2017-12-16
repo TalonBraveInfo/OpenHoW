@@ -25,8 +25,6 @@ SDL_GLContext *context = NULL;
 #define print_warning(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
 #define print_error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
 
-void IShutdownLauncher(void);
-
 void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     switch(level) {
         case PORK_MBOX_ERROR: {
@@ -85,11 +83,12 @@ void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
     );
     if(window == NULL) {
         IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to create window!\n%s", SDL_GetError());
-        IShutdownLauncher();
+        ShutdownPork();
     }
 
     if((context = SDL_GL_CreateContext(window)) == NULL) {
         IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to create context!\n%s", SDL_GetError());
+        ShutdownPork();
     }
 }
 
