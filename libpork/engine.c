@@ -15,22 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engine.h"
+#include "engine_gl.h"
 #include "model.h"
 #include "actor.h"
-#include "player.h"
 
 #include <IL/il.h>
 
 void SimulatePork(void) {
-    SimulateActors(0);
+    SimulateActors();
 }
 
-void DrawPork(double delta_time) {
-    plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+void DrawPork(double delta) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     plSetupCamera(g_state.camera);
 
-    DrawActors();
+    DrawActors(0);
     // todo, DrawInterface
 
     g_launcher.SwapWindow();
@@ -38,12 +38,40 @@ void DrawPork(double delta_time) {
 
 //////////////////////////////////////////////////////////////////////////
 
+GLState gl_state;
+
 void InitDisplay(void) {
     g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
 
+    GLenum err = glewInit();
+    if(err != GLEW_OK) {
+        print_error("failed to initialize glew, %s, aborting!\n", glewGetErrorString(err));
+    }
+
+    plSetGraphicsMode(PL_GFX_MODE_CUSTOM);
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
 
-    plSetClearColour(PLColour(255, 0, 0, 255));
+    memset(&gl_state, 0, sizeof(GLState));
+    gl_state.renderer = (const char*)glGetString(GL_RENDERER);
+    gl_state.vendor = (const char*)glGetString(GL_VENDOR);
+
+    glGetIntegerv(GL_MINOR_VERSION, &gl_state.version_minor);
+    glGetIntegerv(GL_MAJOR_VERSION, &gl_state.version_major);
+
+    print_debug("GL_MAJOR_VERSION(%d)\nGL_MINOR_VERSION(%d)\n", gl_state.version_major, gl_state.version_minor);
+    print_debug("GL_RENDERER(%s)\n", gl_state.renderer);
+    print_debug("GL_VENDOR(%s)\n", gl_state.vendor);
+
+    glGetIntegerv(GL_NUM_EXTENSIONS, &gl_state.num_extensions);
+    for(unsigned int i = 0; i < gl_state.num_extensions; ++i) {
+        const GLubyte *extension = glGetStringi(GL_EXTENSIONS, i);
+        sprintf(gl_state.extensions[i], "%s", extension);
+        print_debug(" %s\n", gl_state.extensions[i]);
+    }
+
+    //////////////////////////////////////////////////////////
+
+    glClearColor(1.f, 0, 0, 1.f);
 
     if((g_state.camera = plCreateCamera()) == NULL) {
         print_error("failed to create camera, aborting!\n%s\n", plGetError());
@@ -53,13 +81,6 @@ void InitDisplay(void) {
     g_state.camera->fov         = 90;
     g_state.camera->viewport.w  = g_state.display_width;
     g_state.camera->viewport.h  = g_state.display_height;
-
-    if((g_state.ui_camera = plCreateCamera()) == NULL) {
-        print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
-    }
-    g_state.ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    g_state.ui_camera->viewport.w   = g_state.display_width;
-    g_state.ui_camera->viewport.h   = g_state.display_height;
 }
 
 void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height) {
@@ -75,6 +96,8 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 void ExtractGameData(const char *path);
 
 void InitConfig(void);
+void InitPlayers(void);
+void InitActors(void);
 void InitFonts(void);
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {

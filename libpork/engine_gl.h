@@ -16,11 +16,18 @@
  */
 #pragma once
 
-void ClearActors(void);
-void DrawActors(double delta);
-void SimulateActors();
+#include <GL/glew.h>
 
-Actor *Actor_Spawn(void);
-void Actor_Destroy(Actor *self);
-void Actor_Possess(Actor *self, Player *player);
-void Actor_Depossess(Actor *self, Player *player);
+typedef struct GLState {
+    const char *renderer;
+    const char *vendor;
+
+    GLint version_major;
+    GLint version_minor;
+
+    // todo, allocate this on InitDisplay!
+    char extensions[4096][4096];
+    GLint num_extensions;
+} GLState;
+
+extern GLState gl_state;

@@ -25,5 +25,4 @@ typedef struct Player {
     unsigned int current_pig;
 } Player;
 
-void InitPlayers(void);
 void ClearPlayers(void);

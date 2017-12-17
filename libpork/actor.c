@@ -31,7 +31,7 @@ void ClearActors(void) {
     memset(g_actors, 0, sizeof(Actor) * num_actors);
 }
 
-void SimulateActors(float delta) {
+void SimulateActors() {
     assert(g_actors != NULL);
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
@@ -43,7 +43,7 @@ void SimulateActors(float delta) {
     }
 }
 
-void DrawActors(void) {
+void DrawActors(double delta) {
     assert(g_actors != NULL);
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
@@ -53,6 +53,29 @@ void DrawActors(void) {
     }
 }
 
+/* Actor declarations are passed from
+ * json and used for determining the
+ * properties of each actor upon spawn
+ * and within the editor itself.
+ */
+typedef struct ActorDeclaration {
+    char class[32];         // class name of the actor, so we know what we're spawning
+    char description[256];  // short description of the actor - used for editor
+
+    unsigned int type;  // item, pig, vehicle, etc
+
+    char model_path[PL_SYSTEM_MAX_PATH];
+
+    struct {
+        struct ActorDeclaration *component;
+
+        PLVector3 position; // position relative to parent
+        float angle;        // angle relative to parent
+    } components[512];
+} ActorDeclaration;
+
+ActorDeclaration actor_declarations[4096];
+
 void InitActors(void) {
     g_actors = calloc(num_actors, sizeof(Actor));
     if(g_actors == NULL) {
@@ -60,6 +83,8 @@ void InitActors(void) {
     }
 
     ClearActors();
+
+    // todo, load in actor_decl.json (or something), containing an outline of how each actor class functions
 }
 
 //////////////////////////////////////////////////////////////
