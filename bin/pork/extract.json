@@ -1,0 +1,14 @@
+{
+  "packages":{
+      "/maps/blah.mad": {
+        "example.tim":"/textures/maps/example.tim",
+        "example2.tim":"/textures/maps/example2.tim"
+      },
+      "/maps.blah.mtd":{
+
+      }
+  },
+  "files":{
+    "/language/tims/example.bmp":"/textures/menus/example.bmp"
+  }
+}

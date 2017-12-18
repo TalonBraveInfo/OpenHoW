@@ -55,6 +55,38 @@ enum {
 
 BitmapFont *g_fonts[NUM_FONTS];
 
+PLMesh *font_mesh = NULL;
+
+void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t character) {
+    // ensure that the character we're being passed fits within HoW's bitmap set
+    if(character < 33 || character > 138) {
+        return;
+    }
+    character -= 33;
+
+
+}
+
+void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *msg) {
+    unsigned int num_chars = (unsigned int)strlen(msg);
+    if(num_chars == 0) {
+        return;
+    }
+
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+    glBindTexture(GL_TEXTURE_2D, font->texture_id);
+
+    for(unsigned int i = 0; i < num_chars; ++i) {
+
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+}
+
 BitmapFont *LoadBitmapFont(const char *path) {
     char tab_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     snprintf(tab_path, sizeof(tab_path), "%s.tab", path);
@@ -74,19 +106,14 @@ BitmapFont *LoadBitmapFont(const char *path) {
         print_error("failed to load tab \"%s\", aborting!\n", tab_path);
     }
 
-    // seek over some crap? (what was this again... ???)
-    fseek(tab_file, 16, SEEK_SET);
-
+#define MAX_CHARS   128
     struct {
-        // C0035A00 02001E00
-
-        uint8_t a0; uint8_t a1; // ?
-        uint8_t b0; uint8_t b1; // ?
-
-        uint16_t width;
-        uint16_t height;
-    } tab_indices[128];
-    unsigned int num_chars = (unsigned int)fread(tab_indices, sizeof(tab_indices) / 128, 128, tab_file);
+        uint16_t x;
+        uint16_t y;
+        uint16_t w;
+        uint16_t h;
+    } tab_indices[MAX_CHARS];
+    unsigned int num_chars = (unsigned int)fread(tab_indices, sizeof(tab_indices) / MAX_CHARS, MAX_CHARS, tab_file);
     if(num_chars == 0) {
         print_error("invalid number of characters for \"%s\", aborting!\n", tab_path);
     }
@@ -106,29 +133,37 @@ BitmapFont *LoadBitmapFont(const char *path) {
     font->height = image.height;
     font->num_chars = num_chars;
 
+    unsigned int origin_x = tab_indices[2].x;
+    unsigned int origin_y = tab_indices[2].y;
     for(unsigned int i = 0; i < font->num_chars; ++i) {
-        font->chars[i].character = (unsigned char)(33 + i);
-        font->chars[i].w = tab_indices[i].width;
-        font->chars[i].h = tab_indices[i].height;
-
-        if(i < 1) {
-            continue;
-        }
-
-        font->chars[i].x = font->chars[i - 1].w + font->chars[i - 1].x;
-        font->chars[i].y = font->chars[i - 1].y;
-        if(font->chars[i].x > font->width) {
-            font->chars[i].y += font->chars[i].h;
-        }
-    }
-#if 0
-    PLTexture *texture = plCreateTexture();
-    if(texture == NULL) {
-        print_error("failed to create texture, %s, aborting!\n", plGetError());
+        font->chars[i].w = tab_indices[i].w;
+        font->chars[i].h = tab_indices[i].h;
+        font->chars[i].x = tab_indices[i].x - origin_x;
+        font->chars[i].y = tab_indices[i].y - origin_y;
     }
 
-    plUploadTextureImage(texture, &image);
-#endif
+    // upload the texture to the GPU
+
+    glGenTextures(1, &font->texture_id);
+    glBindTexture(GL_TEXTURE_2D, font->texture_id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA8,
+            font->width,
+            font->height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            image.data[0]
+    );
+
     plFreeImage(&image);
 
     return font;
@@ -137,6 +172,11 @@ BitmapFont *LoadBitmapFont(const char *path) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitFonts(void) {
+    font_mesh = plCreateMesh(PLMESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4);
+    if(font_mesh == NULL) {
+        print_error("failed to create font mesh, %s, aborting!\n", plGetError());
+    }
+
     g_fonts[FONT_BIG]        = LoadBitmapFont("./" PORK_FONTS_DIR "/big");
     g_fonts[FONT_BIG_CHARS]  = LoadBitmapFont("./" PORK_FONTS_DIR "/bigchars");
     g_fonts[FONT_CHARS2]     = LoadBitmapFont("./" PORK_FONTS_DIR "/chars2");
@@ -156,7 +196,6 @@ void ShutdownFonts(void) {
         }
 
         glDeleteTextures(1, &g_fonts[i]->texture_id);
-
         free(g_fonts[i]);
     }
 }

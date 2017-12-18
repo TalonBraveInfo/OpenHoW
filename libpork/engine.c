@@ -26,9 +26,11 @@ void SimulatePork(void) {
 }
 
 void DrawPork(double delta) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
     plSetupCamera(g_state.camera);
+
+    plDrawTriangle(0, 0, g_state.camera->viewport.w, g_state.camera->viewport.h);
 
     DrawActors(0);
     // todo, DrawInterface
@@ -43,14 +45,10 @@ GLState gl_state;
 void InitDisplay(void) {
     g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
 
-    GLenum err = glewInit();
-    if(err != GLEW_OK) {
-        print_error("failed to initialize glew, %s, aborting!\n", glewGetErrorString(err));
-    }
-
-    plSetGraphicsMode(PL_GFX_MODE_CUSTOM);
+    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
 
+#if 0 // platform lib checks this for us :)
     memset(&gl_state, 0, sizeof(GLState));
     gl_state.renderer = (const char*)glGetString(GL_RENDERER);
     gl_state.vendor = (const char*)glGetString(GL_VENDOR);
@@ -63,15 +61,16 @@ void InitDisplay(void) {
     print_debug("GL_VENDOR(%s)\n", gl_state.vendor);
 
     glGetIntegerv(GL_NUM_EXTENSIONS, &gl_state.num_extensions);
-    for(unsigned int i = 0; i < gl_state.num_extensions; ++i) {
+    for(int i = 0; i < gl_state.num_extensions; ++i) {
         const GLubyte *extension = glGetStringi(GL_EXTENSIONS, i);
         sprintf(gl_state.extensions[i], "%s", extension);
         print_debug(" %s\n", gl_state.extensions[i]);
     }
+#endif
 
     //////////////////////////////////////////////////////////
 
-    glClearColor(1.f, 0, 0, 1.f);
+    plSetClearColour(PLColour(255, 0, 0, 255));
 
     if((g_state.camera = plCreateCamera()) == NULL) {
         print_error("failed to create camera, aborting!\n%s\n", plGetError());
