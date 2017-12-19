@@ -40,9 +40,6 @@
 
 #define PORK_CONFIG PORK_BASE_DIR "/config.json"
 
-// Frontend
-#define PORK_FEBMPS_DIR     PORK_BASE_DIR "/febmps"
-
 ///////////////////////////////////////////////////
 
 enum {

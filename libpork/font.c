@@ -55,7 +55,7 @@ enum {
 
 BitmapFont *g_fonts[NUM_FONTS];
 
-PLMesh *font_mesh = NULL;
+Mesh *font_mesh = NULL;
 
 void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t character) {
     // ensure that the character we're being passed fits within HoW's bitmap set
@@ -64,7 +64,9 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t ch
     }
     character -= 33;
 
-
+    if(font_mesh == NULL) {
+        print_error("attempted to draw font before font init, aborting!\n");
+    }
 }
 
 void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *msg) {
@@ -172,7 +174,7 @@ BitmapFont *LoadBitmapFont(const char *path) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitFonts(void) {
-    font_mesh = plCreateMesh(PLMESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4);
+    font_mesh = CreateMesh(GL_TRIANGLES, GL_DYNAMIC_DRAW, 2, 4);
     if(font_mesh == NULL) {
         print_error("failed to create font mesh, %s, aborting!\n", plGetError());
     }

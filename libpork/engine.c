@@ -26,11 +26,9 @@ void SimulatePork(void) {
 }
 
 void DrawPork(double delta) {
-    plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     plSetupCamera(g_state.camera);
-
-    plDrawTriangle(0, 0, g_state.camera->viewport.w, g_state.camera->viewport.h);
 
     DrawActors(0);
     // todo, DrawInterface
@@ -45,10 +43,14 @@ GLState gl_state;
 void InitDisplay(void) {
     g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
 
-    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
+    plSetGraphicsMode(PL_GFX_MODE_NONE);
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
 
-#if 0 // platform lib checks this for us :)
+    GLenum err = glewInit();
+    if(err != GLEW_OK) {
+        print_error("failed to initialize glew, %s, aborting!\n", glewGetErrorString(err));
+    }
+
     memset(&gl_state, 0, sizeof(GLState));
     gl_state.renderer = (const char*)glGetString(GL_RENDERER);
     gl_state.vendor = (const char*)glGetString(GL_VENDOR);
@@ -60,17 +62,18 @@ void InitDisplay(void) {
     print_debug("GL_RENDERER(%s)\n", gl_state.renderer);
     print_debug("GL_VENDOR(%s)\n", gl_state.vendor);
 
-    glGetIntegerv(GL_NUM_EXTENSIONS, &gl_state.num_extensions);
-    for(int i = 0; i < gl_state.num_extensions; ++i) {
+    glGetIntegerv(GL_NUM_EXTENSIONS, (GLint *) &gl_state.num_extensions);
+    for(unsigned int i = 0; i < gl_state.num_extensions; ++i) {
         const GLubyte *extension = glGetStringi(GL_EXTENSIONS, i);
         sprintf(gl_state.extensions[i], "%s", extension);
         print_debug(" %s\n", gl_state.extensions[i]);
     }
-#endif
+
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint *) &gl_state.max_texture_units);
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(255, 0, 0, 255));
+    glClearColor(1.f, 0, 0, 1.f);
 
     if((g_state.camera = plCreateCamera()) == NULL) {
         print_error("failed to create camera, aborting!\n%s\n", plGetError());
@@ -98,6 +101,7 @@ void InitConfig(void);
 void InitPlayers(void);
 void InitActors(void);
 void InitFonts(void);
+void InitShaders(void);
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
@@ -166,6 +170,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     }
 
     InitDisplay();
+    InitShaders();
     InitFonts();
     InitPlayers();
     InitActors();

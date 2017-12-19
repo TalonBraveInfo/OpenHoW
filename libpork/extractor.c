@@ -432,7 +432,7 @@ void ExtractGameData(const char *path) { // I have no words to express how horri
 
     print("\ncomplete\n\nconverting TIM to PNG...\n");
 
-    plScanDirectory("./" PORK_TEXTURES_DIR, "tim", ConvertImageToPNG, true);
+    plScanDirectory("./" PORK_BASE_DIR, "tim", ConvertImageToPNG, true);
     //plScanDirectory("./" PORK_BASE_DIR, "bmp", ConvertImageToPNG, true);
 
     print("conversion completed\n");
