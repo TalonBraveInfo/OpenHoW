@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engine.h"
-#include "engine_gl.h"
 #include "model.h"
 #include "actor.h"
 
@@ -26,7 +25,7 @@ void SimulatePork(void) {
 }
 
 void DrawPork(double delta) {
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
     plSetupCamera(g_state.camera);
 
@@ -38,42 +37,15 @@ void DrawPork(double delta) {
 
 //////////////////////////////////////////////////////////////////////////
 
-GLState gl_state;
-
 void InitDisplay(void) {
     g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
 
-    plSetGraphicsMode(PL_GFX_MODE_NONE);
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
-
-    GLenum err = glewInit();
-    if(err != GLEW_OK) {
-        print_error("failed to initialize glew, %s, aborting!\n", glewGetErrorString(err));
-    }
-
-    memset(&gl_state, 0, sizeof(GLState));
-    gl_state.renderer = (const char*)glGetString(GL_RENDERER);
-    gl_state.vendor = (const char*)glGetString(GL_VENDOR);
-
-    glGetIntegerv(GL_MINOR_VERSION, &gl_state.version_minor);
-    glGetIntegerv(GL_MAJOR_VERSION, &gl_state.version_major);
-
-    print_debug("GL_MAJOR_VERSION(%d)\nGL_MINOR_VERSION(%d)\n", gl_state.version_major, gl_state.version_minor);
-    print_debug("GL_RENDERER(%s)\n", gl_state.renderer);
-    print_debug("GL_VENDOR(%s)\n", gl_state.vendor);
-
-    glGetIntegerv(GL_NUM_EXTENSIONS, (GLint *) &gl_state.num_extensions);
-    for(unsigned int i = 0; i < gl_state.num_extensions; ++i) {
-        const GLubyte *extension = glGetStringi(GL_EXTENSIONS, i);
-        sprintf(gl_state.extensions[i], "%s", extension);
-        print_debug(" %s\n", gl_state.extensions[i]);
-    }
-
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint *) &gl_state.max_texture_units);
+    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
     //////////////////////////////////////////////////////////
 
-    glClearColor(1.f, 0, 0, 1.f);
+    plSetClearColour(PLColour(255, 0, 0, 255));
 
     if((g_state.camera = plCreateCamera()) == NULL) {
         print_error("failed to create camera, aborting!\n%s\n", plGetError());

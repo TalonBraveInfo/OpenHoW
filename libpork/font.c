@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engine.h"
-#include "engine_gl.h"
 
 #include <PL/platform_filesystem.h>
 
@@ -39,7 +38,7 @@ typedef struct BitmapFont {
     unsigned int width;
     unsigned int height;
 
-    GLuint texture_id;
+    PLTexture *texture;
 } BitmapFont;
 
 enum {
@@ -55,7 +54,7 @@ enum {
 
 BitmapFont *g_fonts[NUM_FONTS];
 
-Mesh *font_mesh = NULL;
+PLMesh *font_mesh = NULL;
 
 void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t character) {
     // ensure that the character we're being passed fits within HoW's bitmap set
@@ -74,7 +73,7 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     if(num_chars == 0) {
         return;
     }
-
+#if 0
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -87,6 +86,7 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+#endif
 }
 
 BitmapFont *LoadBitmapFont(const char *path) {
@@ -145,7 +145,7 @@ BitmapFont *LoadBitmapFont(const char *path) {
     }
 
     // upload the texture to the GPU
-
+#if 0
     glGenTextures(1, &font->texture_id);
     glBindTexture(GL_TEXTURE_2D, font->texture_id);
 
@@ -165,7 +165,7 @@ BitmapFont *LoadBitmapFont(const char *path) {
             GL_UNSIGNED_BYTE,
             image.data[0]
     );
-
+#endif
     plFreeImage(&image);
 
     return font;
@@ -174,7 +174,7 @@ BitmapFont *LoadBitmapFont(const char *path) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitFonts(void) {
-    font_mesh = CreateMesh(GL_TRIANGLES, GL_DYNAMIC_DRAW, 2, 4);
+    font_mesh = plCreateMesh(PLMESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4);
     if(font_mesh == NULL) {
         print_error("failed to create font mesh, %s, aborting!\n", plGetError());
     }
@@ -197,7 +197,7 @@ void ShutdownFonts(void) {
             break;
         }
 
-        glDeleteTextures(1, &g_fonts[i]->texture_id);
+        //glDeleteTextures(1, &g_fonts[i]->texture_id);
         free(g_fonts[i]);
     }
 }

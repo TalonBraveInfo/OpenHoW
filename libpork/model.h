@@ -35,16 +35,6 @@ typedef struct Animation {
     unsigned int num_frames;
 } Animation;
 
-typedef struct Mesh Mesh;
-
-typedef struct Model {
-    char path[PL_SYSTEM_MAX_PATH];
-
-    Mesh *mesh;
-
-    Bone skeleton[MAX_BONES];
-} Model;
-
 typedef struct ModelCache {
     Bone bones[MAX_BONES];
     Animation animations[ANI_END];

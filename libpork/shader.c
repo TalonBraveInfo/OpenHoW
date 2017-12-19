@@ -15,32 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engine.h"
-#include "engine_gl.h"
-
-typedef struct ShaderProgram {
-    GLuint program_id;
-} ShaderProgram;
-
-ShaderProgram *gl_programs;
-unsigned int num_gl_programs;
 
 enum {
     SHADER_PROGRAM_DEFAULT,
 };
 
 void InitShaders(void) {
-    num_gl_programs = 12;
-    gl_programs = calloc(num_gl_programs, sizeof(ShaderProgram));
-    if(gl_programs == NULL) {
-        print_error("failed to allocate memory for %d shader programs, aborting!\n");
-    }
 
-    gl_programs[SHADER_PROGRAM_DEFAULT] = LoadShaderProgram();
 }
 
 void ClearShaders(void) {}
-
-ShaderProgram *LoadShaderProgram(void) {
-    ShaderProgram *program = calloc(1, sizeof(ShaderProgram));
-
-}
