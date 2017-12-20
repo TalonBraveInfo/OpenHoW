@@ -73,6 +73,17 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     if(num_chars == 0) {
         return;
     }
+
+    font_mesh->texture = font->texture;
+
+    plSetBlendMode(PL_BLEND_ADDITIVE);
+
+    for(unsigned int i = 0; i < num_chars; ++i) {
+
+    }
+
+    plSetBlendMode(PL_BLEND_DEFAULT);
+
 #if 0
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -145,27 +156,15 @@ BitmapFont *LoadBitmapFont(const char *path) {
     }
 
     // upload the texture to the GPU
-#if 0
-    glGenTextures(1, &font->texture_id);
-    glBindTexture(GL_TEXTURE_2D, font->texture_id);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    font->texture = plCreateTexture();
+    if(font->texture == NULL) {
+        print_error("failed to create texture for font, %s, aborting!\n", plGetError());
+    }
 
-    glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA8,
-            font->width,
-            font->height,
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            image.data[0]
-    );
-#endif
+    font->texture->filter = PL_TEXTURE_FILTER_NEAREST;
+
+    plUploadTextureImage(font->texture, &image);
     plFreeImage(&image);
 
     return font;
@@ -194,10 +193,11 @@ void ShutdownFonts(void) {
              * failed loading at this point. so we'll just
              * break here.
              */
+            print_debug("hit null font in shutdown fonts, skipping the rest!\n");
             break;
         }
 
-        //glDeleteTextures(1, &g_fonts[i]->texture_id);
+        plDeleteTexture(g_fonts[i]->texture, true);
         free(g_fonts[i]);
     }
 }

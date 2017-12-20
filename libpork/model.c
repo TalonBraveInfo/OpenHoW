@@ -19,6 +19,12 @@
 #include "engine.h"
 #include "model.h"
 
+PLModel *LoadVTXModel(const char *path) {
+    return NULL;
+}
+
+////////////////////////////////////////////////////////////////
+
 ModelCache g_model_cache;
 
 //00: Hip
@@ -324,4 +330,10 @@ void CacheModelData(void) {
         }
     }
 #endif
+}
+
+void InitModels(void) {
+    plRegisterModelLoader("vtx", LoadVTXModel);
+
+    CacheModelData();
 }

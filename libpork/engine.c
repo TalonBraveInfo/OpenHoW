@@ -18,17 +18,18 @@
 #include "model.h"
 #include "actor.h"
 
-#include <IL/il.h>
-
 void SimulatePork(void) {
     SimulateActors();
 }
+
+void DrawMap(void);
 
 void DrawPork(double delta) {
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
     plSetupCamera(g_state.camera);
 
+    DrawMap();
     DrawActors(0);
     // todo, DrawInterface
 
@@ -70,10 +71,12 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 void ExtractGameData(const char *path);
 
 void InitConfig(void);
+void InitMaps(void);
 void InitPlayers(void);
 void InitActors(void);
 void InitFonts(void);
 void InitShaders(void);
+void InitModels(void);
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
@@ -94,8 +97,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     // todo, parse config file
 
     InitConfig();
-
-    ilInit();
 
     for(int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
@@ -146,6 +147,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitFonts();
     InitPlayers();
     InitActors();
+    InitModels();
+    InitMaps();
 
     CacheModelData();
 }

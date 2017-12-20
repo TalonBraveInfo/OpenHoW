@@ -121,6 +121,27 @@ void PollEvents(void) {
         switch(event.type) {
             default:break;
 
+            case SDL_KEYUP:
+            case SDL_KEYDOWN: {
+                if(event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && event.key.state == SDL_PRESSED) {
+                    ShutdownPork();
+                }
+
+
+            } break;
+
+            case SDL_MOUSEBUTTONDOWN: {
+
+            } break;
+
+            case SDL_MOUSEWHEEL: {
+
+            } break;
+
+            case SDL_MOUSEMOTION: {
+
+            } break;
+
             case SDL_QUIT: {
                 ShutdownPork();
             } break;

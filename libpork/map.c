@@ -132,5 +132,44 @@ typedef struct Map {
 
 } Map;
 
+Map current_map;
+
+PLMesh *water_mesh = NULL;
+PLMesh *terrain_mesh = NULL;
+
+/* possible optimisations...
+ *  a) tiles that use the same texture are part of the same mesh instance
+ *  b) convert all tiles into a single texture, upload to GPU - using all tiles as single mesh
+ *  c) keep all tiles separate, apply simple ray tracing algorithm to check whether tile is visible from camera
+ */
+
+void InitMaps(void) {
+    terrain_mesh = plCreateMesh(PLMESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
+    if(terrain_mesh == NULL) {
+        print_error("failed to create terrain mesh, %s, aborting!\n", plGetError());
+    }
+
+    water_mesh = plCreateMesh(PLMESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 16, 64);
+    if(water_mesh == NULL) {
+        print_error("failed to create water mesh, %s, aborting!\n", plGetError());
+    }
+
+    plClearMesh(water_mesh);
+
+    // todo, outline water mesh...
+
+    plUploadMesh(water_mesh);
+}
+
 void LoadMap(const char *name) {
+
+}
+
+void DrawMap(void) {
+    // todo, draw sky, clouds
+
+    plDrawMesh(water_mesh);
+
+    // todo, update parts of terrain mesh from deformation etc?
+    plDrawMesh(terrain_mesh);
 }
