@@ -74,12 +74,17 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
 
     plSetBlendMode(PL_BLEND_ADDITIVE);
 
+    int n_x = x;
+    int n_y = y;
     for(unsigned int i = 0; i < num_chars; ++i) {
-        DrawBitmapCharacter(font, x, y, scale, (uint8_t) msg[i]);
+        DrawBitmapCharacter(font, n_x, n_y, scale, (uint8_t) msg[i]);
         if(msg[i] >= 33 && msg[i] <= 122) {
-            x += font->chars[msg[i] - 31].w;
+            n_x += font->chars[msg[i] - 31].w;
+        } else if(msg[i] == '\n') {
+            n_y += font->chars[2].h;
+            n_x = x;
         } else {
-            x += 5;
+            n_x += 5;
         }
 
     }

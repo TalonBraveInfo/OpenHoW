@@ -35,14 +35,17 @@ void DrawPork(double delta) {
 
     plSetupCamera(g_state.ui_camera);
 
-    plDrawTriangle(0, 0, 320, 240);
+    DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 1.f, "FPS: 40\nTESTING 123");
 
+#if 0
+    plDrawTriangle(0, 0, 320, 240);
     DrawBitmapString(g_fonts[FONT_BIG], 10, 10, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
     DrawBitmapString(g_fonts[FONT_BIG_CHARS], 10, 42, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
     DrawBitmapString(g_fonts[FONT_CHARS2], 10, 74, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
     DrawBitmapString(g_fonts[FONT_CHARS3], 10, 106, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
     DrawBitmapString(g_fonts[FONT_GAME_CHARS], 10, 138, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
     DrawBitmapString(g_fonts[FONT_SMALL], 10, 170, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+#endif
 
     g_launcher.SwapWindow();
 }
@@ -63,7 +66,7 @@ void InitDisplay(void) {
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(0, 0, 255, 255));
+    plSetClearColour(PLColour(0, 0, 0, 255));
 
     g_state.camera = plCreateCamera();
     if(g_state.camera == NULL) {
