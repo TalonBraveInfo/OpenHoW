@@ -144,12 +144,12 @@ PLMesh *terrain_mesh = NULL;
  */
 
 void InitMaps(void) {
-    terrain_mesh = plCreateMesh(PLMESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
+    terrain_mesh = plCreateMesh(PL_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
     if(terrain_mesh == NULL) {
         print_error("failed to create terrain mesh, %s, aborting!\n", plGetError());
     }
 
-    water_mesh = plCreateMesh(PLMESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 16, 64);
+    water_mesh = plCreateMesh(PL_TRIANGLE_STRIP, PL_DRAW_STATIC, 16, 64);
     if(water_mesh == NULL) {
         print_error("failed to create water mesh, %s, aborting!\n", plGetError());
     }

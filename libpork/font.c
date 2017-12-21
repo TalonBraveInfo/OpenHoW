@@ -15,42 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engine.h"
+#include "font.h"
 
 #include <PL/platform_filesystem.h>
-
-typedef struct BitmapChar {
-    unsigned int x;
-    unsigned int y;
-
-    unsigned int w;
-    unsigned int h;
-
-    char character;
-
-    float s;
-    float t;
-} BitmapChar;
-
-typedef struct BitmapFont {
-    BitmapChar chars[128];
-    unsigned int num_chars;
-
-    unsigned int width;
-    unsigned int height;
-
-    PLTexture *texture;
-} BitmapFont;
-
-enum {
-    FONT_BIG,
-    FONT_BIG_CHARS,
-    FONT_CHARS2,
-    FONT_CHARS3,
-    FONT_GAME_CHARS,
-    FONT_SMALL,
-
-    NUM_FONTS
-};
 
 BitmapFont *g_fonts[NUM_FONTS];
 
@@ -61,11 +28,38 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t ch
     if(character < 33 || character > 138) {
         return;
     }
-    character -= 33;
+    character -= 31;
+
+    if(font->texture == NULL) {
+        print_error("attempted to draw bitmap font with invalid texture, aborting!\n");
+    }
 
     if(font_mesh == NULL) {
         print_error("attempted to draw font before font init, aborting!\n");
     }
+
+    plClearMesh(font_mesh);
+    font_mesh->texture = font->texture;
+
+    plSetMeshUniformColour(font_mesh, PLColour(255, 255, 255, 255));
+
+    BitmapChar *bitmap_char = &font->chars[character];
+    plSetMeshVertexPosition(font_mesh, 0, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(font_mesh, 1, PLVector3(x, y + bitmap_char->h, 0));
+    plSetMeshVertexPosition(font_mesh, 2, PLVector3(x + bitmap_char->w, y, 0));
+    plSetMeshVertexPosition(font_mesh, 3, PLVector3(x + bitmap_char->w, y + bitmap_char->h, 0));
+
+    float tw = (float)bitmap_char->w / font->width;
+    float th = (float)bitmap_char->h / font->height;
+    float tx = (float)bitmap_char->x / font->width;
+    float ty = (float)bitmap_char->y / font->height;
+    plSetMeshVertexST(font_mesh, 0, tx, ty);
+    plSetMeshVertexST(font_mesh, 1, tx, ty + th);
+    plSetMeshVertexST(font_mesh, 2, tx + tw, ty);
+    plSetMeshVertexST(font_mesh, 3, tx + tw, ty + th);
+
+    plUploadMesh(font_mesh);
+    plDrawMesh(font_mesh);
 }
 
 void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *msg) {
@@ -74,30 +68,23 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
         return;
     }
 
-    font_mesh->texture = font->texture;
+    if(font->texture == NULL) {
+        print_error("attempted to draw bitmap font with invalid texture, aborting!\n");
+    }
 
     plSetBlendMode(PL_BLEND_ADDITIVE);
 
     for(unsigned int i = 0; i < num_chars; ++i) {
+        DrawBitmapCharacter(font, x, y, scale, (uint8_t) msg[i]);
+        if(msg[i] >= 33 && msg[i] <= 122) {
+            x += font->chars[msg[i] - 31].w;
+        } else {
+            x += 5;
+        }
 
     }
 
-    plSetBlendMode(PL_BLEND_DEFAULT);
-
-#if 0
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-    glBindTexture(GL_TEXTURE_2D, font->texture_id);
-
-    for(unsigned int i = 0; i < num_chars; ++i) {
-
-    }
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
-#endif
+    plSetBlendMode(PL_BLEND_DISABLE);
 }
 
 BitmapFont *LoadBitmapFont(const char *path) {
@@ -153,6 +140,16 @@ BitmapFont *LoadBitmapFont(const char *path) {
         font->chars[i].h = tab_indices[i].h;
         font->chars[i].x = tab_indices[i].x - origin_x;
         font->chars[i].y = tab_indices[i].y - origin_y;
+#if 1 // debug
+        print(
+                "font char %d: w(%d) h(%d) x(%d) y(%d)\n",
+                i,
+                font->chars[i].w,
+                font->chars[i].h,
+                font->chars[i].x,
+                font->chars[i].y
+        );
+#endif
     }
 
     // upload the texture to the GPU
@@ -173,7 +170,7 @@ BitmapFont *LoadBitmapFont(const char *path) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitFonts(void) {
-    font_mesh = plCreateMesh(PLMESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4);
+    font_mesh = plCreateMesh(PL_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
     if(font_mesh == NULL) {
         print_error("failed to create font mesh, %s, aborting!\n", plGetError());
     }

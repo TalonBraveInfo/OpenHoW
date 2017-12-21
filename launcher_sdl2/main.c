@@ -181,8 +181,8 @@ int main(int argc, char **argv) {
 
     InitPork(argc, argv, interface);
 
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-    SDL_ShowCursor(0);
+    //SDL_SetRelativeMouseMode(SDL_TRUE);
+    //SDL_ShowCursor(0);
 
 #define TICKS_PER_SECOND    25
 #define SKIP_TICKS          (1000 / TICKS_PER_SECOND)

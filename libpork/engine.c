@@ -17,6 +17,7 @@
 #include "engine.h"
 #include "model.h"
 #include "actor.h"
+#include "font.h"
 
 void SimulatePork(void) {
     SimulateActors();
@@ -28,12 +29,28 @@ void DrawPork(double delta) {
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
     plSetupCamera(g_state.camera);
-
     DrawMap();
     DrawActors(0);
     // todo, DrawInterface
 
+    plSetupCamera(g_state.ui_camera);
+
+    plDrawTriangle(0, 0, 320, 240);
+
+    DrawBitmapString(g_fonts[FONT_BIG], 10, 10, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+    DrawBitmapString(g_fonts[FONT_BIG_CHARS], 10, 42, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+    DrawBitmapString(g_fonts[FONT_CHARS2], 10, 74, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+    DrawBitmapString(g_fonts[FONT_CHARS3], 10, 106, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+    DrawBitmapString(g_fonts[FONT_GAME_CHARS], 10, 138, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+    DrawBitmapString(g_fonts[FONT_SMALL], 10, 170, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+
     g_launcher.SwapWindow();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+void DebugModeCallback(const PLConsoleVariable *variable) {
+    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,9 +63,10 @@ void InitDisplay(void) {
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(255, 0, 0, 255));
+    plSetClearColour(PLColour(0, 0, 255, 255));
 
-    if((g_state.camera = plCreateCamera()) == NULL) {
+    g_state.camera = plCreateCamera();
+    if(g_state.camera == NULL) {
         print_error("failed to create camera, aborting!\n%s\n", plGetError());
     }
     g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
@@ -56,6 +74,16 @@ void InitDisplay(void) {
     g_state.camera->fov         = 90;
     g_state.camera->viewport.w  = g_state.display_width;
     g_state.camera->viewport.h  = g_state.display_height;
+    g_state.camera->position    = PLVector3(0, 0, 0);
+
+    g_state.ui_camera = plCreateCamera();
+    if(g_state.ui_camera == NULL) {
+        print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
+    }
+    g_state.ui_camera->mode        = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    g_state.ui_camera->fov         = 90;
+    g_state.ui_camera->viewport.w  = g_state.display_width;
+    g_state.ui_camera->viewport.h  = g_state.display_height;
 }
 
 void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height) {
@@ -77,6 +105,8 @@ void InitActors(void);
 void InitFonts(void);
 void InitShaders(void);
 void InitModels(void);
+
+PLConsoleVariable *cv_debug_mode = NULL;
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
@@ -141,6 +171,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             print_warning("unknown/invalid command line argument, %s!\n", argv[i]);
         }
     }
+
+    cv_debug_mode = plRegisterConsoleVariable("debug_mode", "1", pl_int_var, DebugModeCallback, ""); // todo, disable by default
 
     InitDisplay();
     InitShaders();

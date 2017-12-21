@@ -43,6 +43,8 @@
 // Functions provided by the host application
 PorkLauncherInterface g_launcher;
 
+extern PLConsoleVariable *cv_debug_mode;
+
 ///////////////////////////////////////////////////
 
 struct {

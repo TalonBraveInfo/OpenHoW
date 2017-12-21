@@ -310,7 +310,7 @@ void CacheModelData(void) {
     }
     fclose(file);
 
-#if 1 // debug
+#if 0 // debug
     for(unsigned int i = 0; i < ANI_END; ++i) {
         for(unsigned int j = 0; j < g_model_cache.animations[i].num_frames; ++j) {
             print_debug("anim(%s) frame(%d) transformation(x:%d y:%d z:%d) angles(%d %d %d %d)\n",
