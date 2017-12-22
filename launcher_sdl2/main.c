@@ -62,11 +62,11 @@ void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-
+#if 0
     if(SDL_GL_SetSwapInterval(-1) != 0) {
         SDL_GL_SetSwapInterval(1);
     }
-
+#endif
     unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
     if(fullscreen) {
         flags |= SDL_WINDOW_FULLSCREEN;

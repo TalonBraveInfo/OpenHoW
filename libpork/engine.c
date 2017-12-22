@@ -29,10 +29,6 @@ void DrawMap(void);
 
 void DrawPork(unsigned int ticks, double delta) {
     g_state.ticks = ticks;
-    // horrible hack, to avoid first frame division by 0
-    if(g_state.ticks == g_state.last_tick) {
-        g_state.ticks += 1;
-    }
 
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
@@ -44,11 +40,18 @@ void DrawPork(unsigned int ticks, double delta) {
 
     plSetupCamera(g_state.ui_camera);
 
-    DrawBitmapString(g_fonts[FONT_SMALL], 10, GetViewportHeight() - 60, 1.f, "DISPLAY STATS");
+    static unsigned int fps = 0;
+    static unsigned int ms = 0;
+    static unsigned int update_delay = 60;
+    if(update_delay < g_state.ticks) {
+        ms = g_state.ticks - g_state.last_tick;
+        fps = 1000 / ms;
+        update_delay = g_state.ticks + 60;
+    }
 
-    char ms_count[64];
-    sprintf(ms_count, "DRAW FPS %d", 1000 / (g_state.ticks - g_state.last_tick));
-    DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 40, 1.f, ms_count);
+    char ms_count[32];
+    sprintf(ms_count, "FPS: %d (%d)", fps, ms);
+    DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 1.f, ms_count);
 
     g_launcher.SwapWindow();
 
