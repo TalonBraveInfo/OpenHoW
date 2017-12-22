@@ -175,9 +175,9 @@ int main(int argc, char **argv) {
     PorkLauncherInterface interface;
     memset(&interface, 0, sizeof(PorkLauncherInterface));
     interface.DisplayMessageBox = IDisplayMessageBox;
-    interface.DisplayWindow = IDisplayWindow;
-    interface.SwapWindow = ISwapDisplay;
-    interface.ShutdownLauncher = IShutdownLauncher;
+    interface.DisplayWindow     = IDisplayWindow;
+    interface.SwapWindow        = ISwapDisplay;
+    interface.ShutdownLauncher  = IShutdownLauncher;
 
     InitPork(argc, argv, interface);
 
@@ -198,13 +198,13 @@ int main(int argc, char **argv) {
         // simulate the game at TICKS_PER_SECOND, might need adjusting
         loops = 0;
         while(SDL_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-            SimulatePork();
+            SimulatePork(SDL_GetTicks());
             next_tick += SKIP_TICKS;
             loops++;
         }
 
         delta_time = (double)(SDL_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        DrawPork(delta_time);
+        DrawPork(SDL_GetTicks(), delta_time);
     }
 
     ShutdownPork();

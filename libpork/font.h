@@ -50,6 +50,17 @@ enum {
     NUM_FONTS
 };
 
+// these are for FONT_SMALL, and probably will be made
+// redundant once we get our own icons in etc.
+#define CHAR_PSX_TRIANGLE   "c"
+#define CHAR_PSX_CIRCLE     "d"
+#define CHAR_PSX_CROSS      "e"
+#define CHAR_PSX_SQUARE     "f"
+#define CHAR_PSX_L1         "g"
+#define CHAR_PSX_L2         "h"
+#define CHAR_PSX_R1         "i"
+#define CHAR_PSX_R2         "j"
+
 extern BitmapFont *g_fonts[NUM_FONTS];
 
 void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t character);

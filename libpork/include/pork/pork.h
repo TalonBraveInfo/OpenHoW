@@ -89,8 +89,8 @@ PL_EXTERN_C
 PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
 PL_EXTERN void ShutdownPork(void);
 
-PL_EXTERN void DrawPork(double delta);
-PL_EXTERN void SimulatePork(void);
+PL_EXTERN void DrawPork(unsigned int ticks, double delta);
+PL_EXTERN void SimulatePork(unsigned int ticks);
 
 /* DISPLAY  */
 

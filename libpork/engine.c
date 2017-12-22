@@ -19,35 +19,40 @@
 #include "actor.h"
 #include "font.h"
 
-void SimulatePork(void) {
+void SimulatePork(unsigned int ticks) {
+    g_state.ticks = ticks;
+
     SimulateActors();
 }
 
 void DrawMap(void);
 
-void DrawPork(double delta) {
+void DrawPork(unsigned int ticks, double delta) {
+    g_state.ticks = ticks;
+    // horrible hack, to avoid first frame division by 0
+    if(g_state.ticks == g_state.last_tick) {
+        g_state.ticks += 1;
+    }
+
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
     plSetupCamera(g_state.camera);
+
     DrawMap();
-    DrawActors(0);
+    DrawActors(delta);
     // todo, DrawInterface
 
     plSetupCamera(g_state.ui_camera);
 
-    DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 1.f, "FPS: 40\nTESTING 123");
+    DrawBitmapString(g_fonts[FONT_SMALL], 10, GetViewportHeight() - 60, 1.f, "DISPLAY STATS");
 
-#if 0
-    plDrawTriangle(0, 0, 320, 240);
-    DrawBitmapString(g_fonts[FONT_BIG], 10, 10, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-    DrawBitmapString(g_fonts[FONT_BIG_CHARS], 10, 42, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-    DrawBitmapString(g_fonts[FONT_CHARS2], 10, 74, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-    DrawBitmapString(g_fonts[FONT_CHARS3], 10, 106, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-    DrawBitmapString(g_fonts[FONT_GAME_CHARS], 10, 138, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-    DrawBitmapString(g_fonts[FONT_SMALL], 10, 170, 1.f, "! A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-#endif
+    char ms_count[64];
+    sprintf(ms_count, "DRAW FPS %d", 1000 / (g_state.ticks - g_state.last_tick));
+    DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 40, 1.f, ms_count);
 
     g_launcher.SwapWindow();
+
+    g_state.last_tick = g_state.ticks;
 }
 
 //////////////////////////////////////////////////////////////////////////

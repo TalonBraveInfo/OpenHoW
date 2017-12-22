@@ -56,5 +56,11 @@ struct {
     unsigned int display_width;
     unsigned int display_height;
 
+    unsigned int ticks;
+    unsigned int last_tick;
+
     Player players[MAX_PLAYERS];
 } g_state;
+
+#define GetViewportWidth()  g_state.camera->viewport.w
+#define GetViewportHeight() g_state.camera->viewport.h
