@@ -19,6 +19,11 @@
 #include "actor.h"
 #include "font.h"
 
+PLConsoleVariable *cv_debug_mode = NULL;
+PLConsoleVariable *cv_debug_fps = NULL;
+
+////////////////////////////////////////////
+
 void SimulatePork() {
     g_state.sim_ticks = g_launcher.GetTicks();
 
@@ -44,18 +49,20 @@ void DrawPork(double delta) {
 
     plDrawTriangle(0, 0, 320, 240);
 
-    static unsigned int fps = 0;
-    static unsigned int ms = 0;
-    static unsigned int update_delay = 60;
-    if(update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0) {
-        ms = g_state.last_draw_ms;
-        fps = 1000 / ms;
-        update_delay = g_state.draw_ticks + 60;
-    }
+    if(cv_debug_fps->b_value) {
+        static unsigned int fps = 0;
+        static unsigned int ms = 0;
+        static unsigned int update_delay = 60;
+        if (update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0) {
+            ms = g_state.last_draw_ms;
+            fps = 1000 / ms;
+            update_delay = g_state.draw_ticks + 60;
+        }
 
-    char ms_count[32];
-    sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-    DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 1.f, ms_count);
+        char ms_count[32];
+        sprintf(ms_count, "FPS: %d (%d)", fps, ms);
+        DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 1.f, ms_count);
+    }
 
     // todo, need a better name for this function
     plDrawPerspectivePOST(g_state.ui_camera);
@@ -128,8 +135,6 @@ void InitFonts(void);
 void InitShaders(void);
 void InitModels(void);
 
-PLConsoleVariable *cv_debug_mode = NULL;
-
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plInitialize(argc, argv);
 
@@ -146,7 +151,11 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_state.display_width = BASE_WIDTH;
     g_state.display_height = BASE_HEIGHT;
 
-    // todo, parse config file
+    // todo, disable by default
+    cv_debug_mode = plRegisterConsoleVariable("debug_mode", "1", pl_int_var, DebugModeCallback, "");
+    cv_debug_fps = plRegisterConsoleVariable("debug_fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
+
+    plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
 
     InitConfig();
 
@@ -185,18 +194,12 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             }
             g_state.display_height = height;
         } else if(pl_strncasecmp("+", argv[i], 1) == 0) {
-            // todo, pass to platform console command crap...
-            // maybe store them and pass them over once all initialisation is
-            // complete?
+            plParseConsoleString(argv[i] + 1);
             ++i;
         } else {
             print_warning("unknown/invalid command line argument, %s!\n", argv[i]);
         }
     }
-
-    cv_debug_mode = plRegisterConsoleVariable("debug_mode", "1", pl_int_var, DebugModeCallback, ""); // todo, disable by default
-
-    plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
 
     InitDisplay();
     InitShaders();
