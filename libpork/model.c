@@ -33,9 +33,15 @@ PLModel *LoadVTXModel(const char *path) {
         print_error("failed to load ftx \"%s\", aborting!\n", path);
     }
 
-    //plLoadPackage
-
     char no2_path[PL_SYSTEM_MAX_PATH];
+    strncpy(no2_path, path, strlen(path) - 3);
+    strcat(no2_path, "no2");
+    FILE *no2_file = fopen(path, "rb");
+    if(no2_file == NULL) {
+        print_error("failed to load no2 \"%s\", aborting!\n", path);
+    }
+
+
 
     return NULL;
 }

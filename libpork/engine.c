@@ -22,7 +22,7 @@
 PLConsoleVariable *cv_debug_mode = NULL;
 PLConsoleVariable *cv_debug_fps = NULL;
 
-////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
 void SimulatePork() {
     g_state.sim_ticks = g_launcher.GetTicks();
@@ -152,8 +152,10 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_state.display_height = BASE_HEIGHT;
 
     // todo, disable by default
-    cv_debug_mode = plRegisterConsoleVariable("debug_mode", "1", pl_int_var, DebugModeCallback, "");
-    cv_debug_fps = plRegisterConsoleVariable("debug_fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
+    cv_debug_mode = plRegisterConsoleVariable(
+            "debug_mode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
+    cv_debug_fps = plRegisterConsoleVariable(
+            "debug_fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
 
     plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
 
