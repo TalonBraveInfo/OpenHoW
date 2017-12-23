@@ -197,6 +197,20 @@ typedef struct Actor {
 
 #define MAX_STATIC_OBJECTS  1024
 
+enum {
+    PIG_CLASS_ACE,
+    PIG_CLASS_LEGEND,
+    PIG_CLASS_MEDIC,
+    PIG_CLASS_COMMANDO,
+    PIG_CLASS_SPY,
+    PIG_CLASS_SNIPER,
+    PIG_CLASS_SABOTEUR,
+    PIG_CLASS_HEAVY,
+    PIG_CLASS_GRUNT,
+
+    PIG_CLASS_END
+};
+
 enum { // Object flags
     OBJECT_FLAG_PLAYABLE    = 1,
     OBJECT_FLAG_SCRIPTED    = 16,

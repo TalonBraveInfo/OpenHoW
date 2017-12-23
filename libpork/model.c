@@ -25,6 +25,27 @@ PLModel *LoadVTXModel(const char *path) {
         print_error("failed to load vtx \"%s\", aborting!\n", path);
     }
 
+    // read in the vertices
+
+    typedef struct VTXCoord {
+        int16_t x;
+        int16_t y;
+        int16_t z;
+        uint16_t bone_index;
+    } VTXCoord;
+    unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VTXCoord));
+    VTXCoord vertices[num_vertices];
+    if(fread(vertices, sizeof(VTXCoord), num_vertices, vtx_file) != num_vertices) {
+        print_error("failed to read in all vertices from \"%s\", aborting!\n", path);
+    }
+
+#if 0
+    print_debug("%d vertices\n", num_vertices);
+    for(unsigned int i = 0; i < num_vertices; ++i) {
+        print_debug("vtx %d %d %d (%d)\n", vertices[i].x, vertices[i].y, vertices[i].z, vertices[i].bone_index);
+    }
+#endif
+
     char ftx_path[PL_SYSTEM_MAX_PATH];
     strncpy(ftx_path, path, strlen(path) - 3);
     strcat(ftx_path, "ftx");
@@ -41,10 +62,12 @@ PLModel *LoadVTXModel(const char *path) {
         print_error("failed to load no2 \"%s\", aborting!\n", path);
     }
 
-
-
     return NULL;
 }
+
+// todo, load hir from anywhere - open the potential to have
+// multiple hirs for different models :)
+Bone **LoadBones(const char *path) { return NULL; }
 
 ////////////////////////////////////////////////////////////////
 
@@ -93,14 +116,14 @@ void CacheModelData(void) {
         int8_t unknown[10];
     } HIRBone;
 
-    unsigned int num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
-    if(num_bones > MAX_BONES) {
+    g_model_cache.num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
+    if(g_model_cache.num_bones > MAX_BONES) {
         print_error("number of bones within \"%s\" exceeds %d limit!\n", hir_path, MAX_BONES);
     }
 
-    HIRBone bones[num_bones];
-    if(fread(bones, sizeof(HIRBone), num_bones, file) != num_bones) {
-        print_error("failed to read in all bones, expected %d!\n", num_bones);
+    HIRBone bones[g_model_cache.num_bones];
+    if(fread(bones, sizeof(HIRBone), g_model_cache.num_bones, file) != g_model_cache.num_bones) {
+        print_error("failed to read in all bones, expected %d!\n", g_model_cache.num_bones);
     }
     fclose(file);
 
@@ -124,12 +147,14 @@ void CacheModelData(void) {
     };
 
     // copy each bone into our global bones list
-    for(unsigned int i = 0; i < num_bones; ++i) {
+    for(unsigned int i = 0; i < g_model_cache.num_bones; ++i) {
         g_model_cache.bones[i].parent = bones[i].parent;
         g_model_cache.bones[i].coords.x = bones[i].coords[0];
         g_model_cache.bones[i].coords.y = bones[i].coords[1];
         g_model_cache.bones[i].coords.z = bones[i].coords[2];
         strncpy(g_model_cache.bones[i].name, bone_names[i], sizeof(g_model_cache.bones[i].name));
+
+        //plScaleVector3f(&g_model_cache.bones[i].coords, 4);
     }
 
     // animations
@@ -353,10 +378,40 @@ void CacheModelData(void) {
         }
     }
 #endif
+
+    g_model_cache.pigs[PIG_CLASS_ACE] = plLoadModel("./" PORK_MODELS_DIR "/british/ac_hi.vtx");
 }
 
 void InitModels(void) {
     plRegisterModelLoader("vtx", LoadVTXModel);
 
     CacheModelData();
+}
+
+////////////////////////////////////////////////////////////////
+
+void DEBUGDrawSkeleton(void) {
+    if(!cv_debug_skeleton->b_value) {
+        return;
+    }
+
+    static PLMesh *skeleton_mesh = NULL;
+    if(skeleton_mesh == NULL) {
+        skeleton_mesh = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, g_model_cache.num_bones * 2);
+    }
+
+    plClearMesh(skeleton_mesh);
+
+    for(unsigned int i = 0, vert = 0; i < g_model_cache.num_bones; ++i, vert += 2) {
+        //start
+        plSetMeshVertexPosition(skeleton_mesh, vert, g_model_cache.bones[i].coords);
+        plSetMeshVertexColour(skeleton_mesh, vert, PLColour(255, 0, 0, 255));
+
+        //end
+        plSetMeshVertexPosition(skeleton_mesh, vert + 1, g_model_cache.bones[g_model_cache.bones[i].parent].coords);
+        plSetMeshVertexColour(skeleton_mesh, vert + 1, PLColour(0, 255, 0, 255));
+    }
+
+    plUploadMesh(skeleton_mesh);
+    plDrawMesh(skeleton_mesh);
 }

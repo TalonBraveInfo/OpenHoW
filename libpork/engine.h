@@ -36,8 +36,6 @@
 #define BASE_WIDTH  640
 #define BASE_HEIGHT 480
 
-#define MAX_BONES   32
-
 ///////////////////////////////////////////////////
 
 // Functions provided by the host application
@@ -45,6 +43,7 @@ PorkLauncherInterface g_launcher;
 
 extern PLConsoleVariable *cv_debug_mode;
 extern PLConsoleVariable *cv_debug_fps;
+extern PLConsoleVariable *cv_debug_skeleton;
 
 ///////////////////////////////////////////////////
 

@@ -21,6 +21,7 @@
 
 PLConsoleVariable *cv_debug_mode = NULL;
 PLConsoleVariable *cv_debug_fps = NULL;
+PLConsoleVariable *cv_debug_skeleton = NULL;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -33,11 +34,15 @@ void SimulatePork() {
 }
 
 void DrawMap(void);
+void DEBUGDrawSkeleton(void);
 
 void DrawPork(double delta) {
     g_state.draw_ticks = g_launcher.GetTicks();
 
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
+
+    g_state.camera->position = PLVector3(0, 0, 0);
+    g_state.camera->angles.x += 2.05f;
 
     plSetupCamera(g_state.camera);
 
@@ -45,6 +50,10 @@ void DrawPork(double delta) {
     DrawActors(delta);
     // todo, DrawInterface
 
+    // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
+    // in the future, do this through "ACTOR %s SHOW SKELETON" command?
+    DEBUGDrawSkeleton();
+#if 0
     plSetupCamera(g_state.ui_camera);
 
     plDrawTriangle(0, 0, 320, 240);
@@ -66,7 +75,7 @@ void DrawPork(double delta) {
 
     // todo, need a better name for this function
     plDrawPerspectivePOST(g_state.ui_camera);
-
+#endif
     g_launcher.SwapWindow();
 
     g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
@@ -151,11 +160,13 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_state.display_width = BASE_WIDTH;
     g_state.display_height = BASE_HEIGHT;
 
-    // todo, disable by default
+    // todo, disable these by default
     cv_debug_mode = plRegisterConsoleVariable(
             "debug_mode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
     cv_debug_fps = plRegisterConsoleVariable(
             "debug_fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
+    cv_debug_skeleton = plRegisterConsoleVariable(
+            "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
 
     plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
 

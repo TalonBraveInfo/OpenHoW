@@ -16,6 +16,8 @@
  */
 #pragma once
 
+#define MAX_BONES   32
+
 typedef struct Bone {
     char name[32];
     unsigned int parent;
@@ -37,7 +39,13 @@ typedef struct Animation {
 
 typedef struct ModelCache {
     Bone bones[MAX_BONES];
+    unsigned int num_bones;
+
     Animation animations[ANI_END];
+    unsigned int num_animations;
+
+    // todo, introduce PLModelLod struct within PLModel, for storing multiple levels of detail
+    PLModel *pigs[PIG_CLASS_END];
 } ModelCache;
 
 extern ModelCache g_model_cache;
