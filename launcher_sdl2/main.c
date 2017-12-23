@@ -25,6 +25,10 @@ SDL_GLContext *context = NULL;
 #define print_warning(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
 #define print_error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
 
+unsigned int IGetTicks(void) {
+    return SDL_GetTicks();
+}
+
 void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     switch(level) {
         case PORK_MBOX_ERROR: {
@@ -62,11 +66,13 @@ void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-#if 0
+
+#if 1
     if(SDL_GL_SetSwapInterval(-1) != 0) {
         SDL_GL_SetSwapInterval(1);
     }
 #endif
+
     unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
     if(fullscreen) {
         flags |= SDL_WINDOW_FULLSCREEN;
@@ -127,7 +133,7 @@ void PollEvents(void) {
                     ShutdownPork();
                 }
 
-
+//                KeyboardPork();
             } break;
 
             case SDL_MOUSEBUTTONDOWN: {
@@ -174,6 +180,7 @@ int main(int argc, char **argv) {
 
     PorkLauncherInterface interface;
     memset(&interface, 0, sizeof(PorkLauncherInterface));
+    interface.GetTicks          = IGetTicks;
     interface.DisplayMessageBox = IDisplayMessageBox;
     interface.DisplayWindow     = IDisplayWindow;
     interface.SwapWindow        = ISwapDisplay;
@@ -198,13 +205,13 @@ int main(int argc, char **argv) {
         // simulate the game at TICKS_PER_SECOND, might need adjusting
         loops = 0;
         while(SDL_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-            SimulatePork(SDL_GetTicks());
+            SimulatePork();
             next_tick += SKIP_TICKS;
             loops++;
         }
 
         delta_time = (double)(SDL_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        DrawPork(SDL_GetTicks(), delta_time);
+        DrawPork(delta_time);
     }
 
     ShutdownPork();

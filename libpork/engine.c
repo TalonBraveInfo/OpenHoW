@@ -19,16 +19,18 @@
 #include "actor.h"
 #include "font.h"
 
-void SimulatePork(unsigned int ticks) {
-    g_state.ticks = ticks;
+void SimulatePork() {
+    g_state.sim_ticks = g_launcher.GetTicks();
 
     SimulateActors();
+
+    g_state.last_sim_tick = g_launcher.GetTicks();
 }
 
 void DrawMap(void);
 
-void DrawPork(unsigned int ticks, double delta) {
-    g_state.ticks = ticks;
+void DrawPork(double delta) {
+    g_state.draw_ticks = g_launcher.GetTicks();
 
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
@@ -40,22 +42,27 @@ void DrawPork(unsigned int ticks, double delta) {
 
     plSetupCamera(g_state.ui_camera);
 
+    plDrawTriangle(0, 0, 320, 240);
+
     static unsigned int fps = 0;
     static unsigned int ms = 0;
     static unsigned int update_delay = 60;
-    if(update_delay < g_state.ticks) {
-        ms = g_state.ticks - g_state.last_tick;
+    if(update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0) {
+        ms = g_state.last_draw_ms;
         fps = 1000 / ms;
-        update_delay = g_state.ticks + 60;
+        update_delay = g_state.draw_ticks + 60;
     }
 
     char ms_count[32];
     sprintf(ms_count, "FPS: %d (%d)", fps, ms);
     DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 1.f, ms_count);
 
+    // todo, need a better name for this function
+    plDrawPerspectivePOST(g_state.ui_camera);
+
     g_launcher.SwapWindow();
 
-    g_state.last_tick = g_state.ticks;
+    g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -95,6 +102,8 @@ void InitDisplay(void) {
     g_state.ui_camera->fov         = 90;
     g_state.ui_camera->viewport.w  = g_state.display_width;
     g_state.ui_camera->viewport.h  = g_state.display_height;
+    //g_state.ui_camera->viewport.r_w = 320;
+    //g_state.ui_camera->viewport.r_h = 240;
 }
 
 void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height) {
@@ -107,7 +116,9 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 }
 
+// extractor.c
 void ExtractGameData(const char *path);
+void ConvertImageCallback(unsigned int argc, char *argv[]);
 
 void InitConfig(void);
 void InitMaps(void);
@@ -185,6 +196,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     cv_debug_mode = plRegisterConsoleVariable("debug_mode", "1", pl_int_var, DebugModeCallback, ""); // todo, disable by default
 
+    plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
+
     InitDisplay();
     InitShaders();
     InitFonts();
@@ -192,8 +205,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitActors();
     InitModels();
     InitMaps();
-
-    CacheModelData();
 }
 
 void ShutdownPork(void) {

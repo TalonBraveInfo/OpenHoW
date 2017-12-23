@@ -56,8 +56,11 @@ struct {
     unsigned int display_width;
     unsigned int display_height;
 
-    unsigned int ticks;
-    unsigned int last_tick;
+    unsigned int sim_ticks;
+    unsigned int last_sim_tick;
+
+    unsigned int draw_ticks;
+    unsigned int last_draw_ms;
 
     Player players[MAX_PLAYERS];
 } g_state;

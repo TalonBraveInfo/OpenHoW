@@ -275,12 +275,15 @@ void CopyDirectory(const char *path) {
 #include <IL/ilu.h>
 
 void ConvertImageToPNG(const char *path) {
+    print("converting %s...\n", path);
+
     // figure out if the file already exists before
     // we even start trying to convert this thing
     char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     plStripExtension(out_path, path);
     strcat(out_path, ".png");
     if(plFileExists(out_path)) {
+        print("tim already converted, deleting original\n");
         plDeleteFile(path);
         return;
     }
@@ -324,6 +327,14 @@ void ConvertImageToPNG(const char *path) {
 
     ABORT:
     plFreeImage(&image);
+}
+
+void ConvertImageCallback(unsigned int argc, char *argv[]) {
+    ilInit();
+
+    plScanDirectory("./" PORK_BASE_DIR, "tim", ConvertImageToPNG, true);
+
+    ilShutDown();
 }
 
 void ExtractGameData(const char *path) { // I have no words to express how horrible this is...
@@ -430,14 +441,5 @@ void ExtractGameData(const char *path) { // I have no words to express how horri
         plScanDirectory(file_path, "gen", CopyDirectory, false);
     }
 
-    print("\ncomplete\n\nconverting TIM to PNG...\n");
-
-    ilInit();
-
-    plScanDirectory("./" PORK_BASE_DIR, "tim", ConvertImageToPNG, true);
-    //plScanDirectory("./" PORK_BASE_DIR, "bmp", ConvertImageToPNG, true);
-
-    ilShutDown();
-
-    print("conversion completed\n");
+    print("\ncomplete\n");
 }

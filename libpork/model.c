@@ -20,6 +20,23 @@
 #include "model.h"
 
 PLModel *LoadVTXModel(const char *path) {
+    FILE *vtx_file = fopen(path, "rb");
+    if(vtx_file == NULL) {
+        print_error("failed to load vtx \"%s\", aborting!\n", path);
+    }
+
+    char ftx_path[PL_SYSTEM_MAX_PATH];
+    strncpy(ftx_path, path, strlen(path) - 3);
+    strcat(ftx_path, "ftx");
+    FILE *ftx_file = fopen(path, "rb");
+    if(ftx_file == NULL) {
+        print_error("failed to load ftx \"%s\", aborting!\n", path);
+    }
+
+    //plLoadPackage
+
+    char no2_path[PL_SYSTEM_MAX_PATH];
+
     return NULL;
 }
 

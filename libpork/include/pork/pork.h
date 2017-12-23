@@ -28,15 +28,17 @@
 #define PORK_EDITOR_LOG         "editor"
 
 #define PORK_MAJOR_VERSION  0
-#define PORK_MINOR_VERSION  0
+#define PORK_MINOR_VERSION  1
 
 #define PORK_BASE_DIR   "pork"
 
+// new path structure?
 #define PORK_MAPS_DIR       PORK_BASE_DIR "/maps"
 #define PORK_MODELS_DIR     PORK_BASE_DIR "/models"
 #define PORK_SOUNDS_DIR     PORK_BASE_DIR "/sounds"
 #define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
 #define PORK_FONTS_DIR      PORK_BASE_DIR "/fonts"
+#define PORK_SHADERS_DIR    PORK_BASE_DIR "/shaders"
 
 #define PORK_CONFIG PORK_BASE_DIR "/config.json"
 
@@ -74,8 +76,9 @@ enum {
 };
 
 typedef struct PorkLauncherInterface {
-    void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
+    unsigned int(*GetTicks)(void);
 
+    void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
     void(*DisplayWindow)(bool fullscreen, unsigned int width, unsigned int height);
     void(*SwapWindow)(void);
 
@@ -89,8 +92,8 @@ PL_EXTERN_C
 PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
 PL_EXTERN void ShutdownPork(void);
 
-PL_EXTERN void DrawPork(unsigned int ticks, double delta);
-PL_EXTERN void SimulatePork(unsigned int ticks);
+PL_EXTERN void DrawPork(double delta);
+PL_EXTERN void SimulatePork();
 
 /* DISPLAY  */
 

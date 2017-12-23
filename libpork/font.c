@@ -28,7 +28,7 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t ch
     if(character < 33 || character > 138) {
         return;
     }
-    character -= 31;
+    character -= 33;
 
     if(font->texture == NULL) {
         print_error("attempted to draw bitmap font with invalid texture, aborting!\n");
@@ -79,9 +79,9 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     for(unsigned int i = 0; i < num_chars; ++i) {
         DrawBitmapCharacter(font, n_x, n_y, scale, (uint8_t) msg[i]);
         if(msg[i] >= 33 && msg[i] <= 122) {
-            n_x += font->chars[msg[i] - 31].w;
+            n_x += font->chars[msg[i] - 33].w;
         } else if(msg[i] == '\n') {
-            n_y += font->chars[2].h;
+            n_y += font->chars[0].h;
             n_x = x;
         } else {
             n_x += 5;
@@ -111,7 +111,9 @@ BitmapFont *LoadBitmapFont(const char *path) {
         print_error("failed to load tab \"%s\", aborting!\n", tab_path);
     }
 
-#define MAX_CHARS   128
+    fseek(tab_file, 16, SEEK_CUR);
+
+#define MAX_CHARS   256
     struct {
         uint16_t x;
         uint16_t y;
@@ -138,14 +140,14 @@ BitmapFont *LoadBitmapFont(const char *path) {
     font->height = image.height;
     font->num_chars = num_chars;
 
-    unsigned int origin_x = tab_indices[2].x;
-    unsigned int origin_y = tab_indices[2].y;
+    unsigned int origin_x = tab_indices[0].x;
+    unsigned int origin_y = tab_indices[0].y;
     for(unsigned int i = 0; i < font->num_chars; ++i) {
         font->chars[i].w = tab_indices[i].w;
         font->chars[i].h = tab_indices[i].h;
         font->chars[i].x = tab_indices[i].x - origin_x;
         font->chars[i].y = tab_indices[i].y - origin_y;
-#if 1 // debug
+#if 0 // debug
         print(
                 "font char %d: w(%d) h(%d) x(%d) y(%d)\n",
                 i,
