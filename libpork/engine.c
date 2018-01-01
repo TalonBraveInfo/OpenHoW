@@ -19,6 +19,8 @@
 #include "actor.h"
 #include "font.h"
 
+#include <PL/platform_filesystem.h>
+
 PLConsoleVariable *cv_debug_mode = NULL;
 PLConsoleVariable *cv_debug_fps = NULL;
 PLConsoleVariable *cv_debug_skeleton = NULL;
@@ -169,6 +171,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     InitConfig();
 
+    sprintf(g_state.base_path, "./");
     for(int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
@@ -191,6 +194,17 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
                 continue;
             }
             g_state.display_width = width;
+        } else if(pl_strncasecmp("-path", argv[i], 5) == 0) {
+            const char *parm = argv[i + 1];
+            if(parm == NULL || parm[0] == '\0') {
+                continue;
+            } ++i;
+
+            if(!plPathExists(argv[i])) {
+                print_warning("invalid path \"%s\", does not exist, ignoring!\n");
+            }
+
+            strncpy(g_state.base_path, argv[i], sizeof(g_state.base_path));
         } else if(pl_strncasecmp("-height", argv[i], 7) == 0) {
             const char *parm = argv[i + 1];
             if(parm == NULL || parm[0] == '\0') {

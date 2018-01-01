@@ -52,6 +52,8 @@ struct {
     PLCamera *camera;       // camera used for general gameplay
     PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
+    char base_path[PL_SYSTEM_MAX_PATH];
+
     // viewport
     bool display_fullscreen;
     unsigned int display_width;

@@ -33,8 +33,6 @@
  *     Speech
  */
 
-char current_target[PL_SYSTEM_MAX_PATH] = {'\0'};
-
 void ExtractPTGPackage(const char *path) {
     if(path == NULL || path[0] == '\0') { // technically, this should never, ever, ever, ever happen...
         print("encountered invalid path for PTG, aborting!\n");
@@ -46,7 +44,7 @@ void ExtractPTGPackage(const char *path) {
     pl_strtolower(ptg_name);
 
     char output_dir[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(output_dir, "%s/%s", current_target, ptg_name);
+    sprintf(output_dir, "%s/%s", output_path, ptg_name);
     if(!plCreatePath(output_dir)) {
         print("failed to create path %s, aborting!\n", output_dir);
         return;
@@ -96,44 +94,33 @@ void ExtractPTGPackage(const char *path) {
     pork_fclose(file);
 }
 
-void ExtractMADPackage(const char *path) {
-    if(path == NULL || path[0] == '\0') { // technically, this should never, ever, ever, ever happen...
+void ExtractMADPackage(const char *input_path, const char *output_path) {
+    if(input_path == NULL || input_path[0] == '\0') { // technically, this should never, ever, ever, ever happen...
         print("encountered invalid path for MAD, aborting!\n");
         return;
     }
 
     char package_name[PL_SYSTEM_MAX_PATH] = {'\0'};
-    plStripExtension(package_name, plGetFileName(path));
+    plStripExtension(package_name, plGetFileName(input_path));
     pl_strtolower(package_name);
 
-    // certain packages in how are special cases, or
-    // completely unnecessary altogether - we'll either
-    // ignore these or will be dealing with them later
-    if(strcmp(package_name, "mcap") == 0 ||     // Used for storing animation data
-       strcmp(package_name, "allmad") == 0 ||
-       strcmp(package_name, "white") == 0 ||
-       strcmp(package_name, "febmp") == 0) {    // FEBMP isn't necessary, because the MGL files are already outside!
-        print("skipping %s, we'll deal with this later!\n", package_name);
+    // output_path directory
+    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    sprintf(out_path, "%s/%s", output_path, package_name);
+    if(!plCreatePath(out_path)) {
+        print("failed to create input_path %s, aborting!\n", out_path);
+        return;
+    }
+
+    FILE *file = fopen(input_path, "rb");
+    if(file == NULL) {
+        print("failed to load %s, aborting!\n", input_path);
         return;
     }
 
     char package_extension[4] = {'\0'};
-    snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(path));
+    snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(input_path));
     pl_strtolower(package_extension);
-
-    // output directory
-    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "%s/%s", current_target, package_name);
-    if(!plCreatePath(out_path)) {
-        print("failed to create path %s, aborting!\n", out_path);
-        return;
-    }
-
-    FILE *file = fopen(path, "rb");
-    if(file == NULL) {
-        print("failed to load %s, aborting!\n", path);
-        return;
-    }
 
     FILE *out_index = NULL;
     // check if it's necessary for us to produce an index file
@@ -177,7 +164,7 @@ void ExtractMADPackage(const char *path) {
         // this is where the fun begins...
 
         // how uses mixed case file-names, to make things
-        // easier for linux/macos support we'll just output
+        // easier for linux/macos support we'll just output_path
         // everything as lowercase
         pl_strtolower(index.file);
 
@@ -257,7 +244,7 @@ void ExtractMADPackage(const char *path) {
 
 void CopyDirectory(const char *path) {
     char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "%s/", current_target);
+    sprintf(out_path, "%s/", output_path);
     if(!plCreatePath(out_path)) {
         print("%s\n", plGetError());
         return;
@@ -331,115 +318,121 @@ void ConvertImageToPNG(const char *path) {
 
 void ConvertImageCallback(unsigned int argc, char *argv[]) {
     ilInit();
-
-    plScanDirectory("./" PORK_BASE_DIR, "tim", ConvertImageToPNG, true);
-
+    plScanDirectory(g_state.base_path, "tim", ConvertImageToPNG, true);
     ilShutDown();
 }
 
-void ExtractGameData(const char *path) { // I have no words to express how horrible this is...
+void ExtractGameData(const char *path) {
     print("extracting game contents from %s...\n", path);
 
-    // Check if it's the PSX or PC version.
-    char file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(file_path, "%s/system.cnf", path);
-    if(plFileExists(file_path)) {
-        print("found system.cnf, assuming psx version...\n");
-#if 1
-        print_error("psx version of the game currently isn't supported, aborting!\n");
-#endif
+    char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    char output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+
+    /* check if we're trying to load in the PSX version */
+    sprintf(input_path, "%s/system.cnf", path);
+    if(plFileExists(input_path)) {
+        print_error("found system.cnf, assuming psx version...\n");
+        /* todo, psx still needs a lot of thought here... I don't know if we even want to bother? */
     }
 
-    if(!plCreateDirectory("./" PORK_BASE_DIR)) {
-        print("failed to create base directory, ./" PORK_BASE_DIR ", aborting!\n");
-        return;
-    }
-
-    print("copying model data...\n");
+    print("copying chars data...\n");
     {
-        sprintf(current_target, "./" PORK_MODELS_DIR);
-        sprintf(file_path, "%s/Chars", path);
-        plScanDirectory(file_path, "mad", ExtractMADPackage, false);
+        /* animations */
+        sprintf(output_path, "%s/chars/anims", g_state.base_path);
+        plCreatePath(output_path);
+        sprintf(input_path, "%s/Chars/mcap.mad", path);
+        sprintf(output_path, "%s/chars/anims/mcap.mad", g_state.base_path);
+        plCopyFile(input_path, output_path);
 
-        sprintf(file_path, "%s/Chars/mcap.mad", path);
-        if(!plCopyFile(file_path, "./" PORK_MODELS_DIR "/mcap.mad")) {
-            print_warning("failed to copy %s!\n", file_path);
-        }
+        /* skeleton */
+        sprintf(input_path, "%s/Chars/pig.HIR", path);
+        sprintf(output_path, "%s/chars/pig.hir", g_state.base_path);
+        plCopyFile(input_path, output_path);
 
-        sprintf(file_path, "%s/Chars/pig.HIR", path);
-        if(!plCopyFile(file_path, "./" PORK_MODELS_DIR "/pig.hir")) {
-            print_warning("failed to copy %s!\n", file_path);
-        }
+        /* british */
+        sprintf(input_path, "%s/Chars/british.mad", path);
+        sprintf(output_path, "%s/chars/british/", g_state.base_path);
+        ExtractMADPackage(input_path, output_path);
     }
+
     print("copying texture data...\n");
     {
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/skys");
-        sprintf(file_path, "%s/Skys", path);
-        plScanDirectory(file_path, "ptg", ExtractPTGPackage, false);
+#if 0
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/skys");
+        sprintf(input_path, "%s/Skys", path);
+        plScanDirectory(input_path, "ptg", ExtractPTGPackage, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/maps");
-        sprintf(file_path, "%s/Maps", path);
-        plScanDirectory(file_path, "ptg", ExtractPTGPackage, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/maps");
+        sprintf(input_path, "%s/Maps", path);
+        plScanDirectory(input_path, "ptg", ExtractPTGPackage, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/models");
-        sprintf(file_path, "%s/Chars", path);
-        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/models");
+        sprintf(input_path, "%s/Chars", path);
+        plScanDirectory(input_path, "mtd", ExtractMADPackage, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/models/maps");
-        sprintf(file_path, "%s/Maps", path);
-        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/models/maps");
+        sprintf(input_path, "%s/Maps", path);
+        plScanDirectory(input_path, "mtd", ExtractMADPackage, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface");
-        sprintf(file_path, "%s/Language/Tims", path);
-        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
-        plScanDirectory(file_path, "mad", ExtractMADPackage, false);
-        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/interface");
+        sprintf(input_path, "%s/Language/Tims", path);
+        plScanDirectory(input_path, "mtd", ExtractMADPackage, false);
+        plScanDirectory(input_path, "mad", ExtractMADPackage, false);
+        plScanDirectory(input_path, "bmp", CopyDirectory, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/title");
-        sprintf(file_path, "%s/Language/Tims/Title", path);
-        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/interface/title");
+        sprintf(input_path, "%s/Language/Tims/Title", path);
+        plScanDirectory(input_path, "bmp", CopyDirectory, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/briefing");
-        sprintf(file_path, "%s/Language/Tims/Briefing", path);
-        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/interface/briefing");
+        sprintf(input_path, "%s/Language/Tims/Briefing", path);
+        plScanDirectory(input_path, "bmp", CopyDirectory, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/debrief");
-        sprintf(file_path, "%s/Language/Tims/Debrief", path);
-        plScanDirectory(file_path, "mtd", ExtractMADPackage, false);
-        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/interface/debrief");
+        sprintf(input_path, "%s/Language/Tims/Debrief", path);
+        plScanDirectory(input_path, "mtd", ExtractMADPackage, false);
+        plScanDirectory(input_path, "bmp", CopyDirectory, false);
 
-        sprintf(current_target, "./" PORK_TEXTURES_DIR "/interface/map");
-        sprintf(file_path, "%s/Language/Tims/PigMap", path);
-        plScanDirectory(file_path, "mad", ExtractMADPackage, false);
-        plScanDirectory(file_path, "bmp", CopyDirectory, false);
+        sprintf(output_path, "./" PORK_TEXTURES_DIR "/interface/map");
+        sprintf(input_path, "%s/Language/Tims/PigMap", path);
+        plScanDirectory(input_path, "mad", ExtractMADPackage, false);
+        plScanDirectory(input_path, "bmp", CopyDirectory, false);
 
         if(plCreateDirectory("./" PORK_FONTS_DIR)) {
-            sprintf(current_target, "./" PORK_FONTS_DIR);
-            sprintf(file_path, "%s/FEText", path);
-            plScanDirectory(file_path, "bmp", CopyDirectory, false);
-            plScanDirectory(file_path, "tab", CopyDirectory, false);
+            sprintf(output_path, "./" PORK_FONTS_DIR);
+            sprintf(input_path, "%s/FEText", path);
+            plScanDirectory(input_path, "bmp", CopyDirectory, false);
+            plScanDirectory(input_path, "tab", CopyDirectory, false);
         } else {
             print_warning("failed to create directory, \"./" PORK_FONTS_DIR "\"!\n");
         }
+#endif
     }
-    print("copying sound data...\n");
+#if 0
+    print("copying audio data...\n");
     {
-        if(plCreateDirectory("./" PORK_SOUNDS_DIR)) {
-            sprintf(current_target, "./" PORK_SOUNDS_DIR);
-            sprintf(file_path, "%s/Audio", path);
-            plScanDirectory(file_path, "wav", CopyDirectory, false);
+        sprintf(output_path, "%s" PORK_AUDIO_DIR, g_state.base_path);
+        if(plCreateDirectory(output_path)) {
+            sprintf(input_path, "%s/Audio", path);
+            plScanDirectory(input_path, "wav", CopyDirectory, false);
         } else {
-            print_warning("failed to create directory, \"./" PORK_SOUNDS_DIR "\"!\n");
+            print_warning("failed to create directory, \"%s" PORK_AUDIO_DIR "\"!\n", g_state.base_path);
         }
     }
+
     print("copying map data...\n");
     {
-        sprintf(current_target, "./" PORK_MAPS_DIR);
-        sprintf(file_path, "%s/Maps", path);
-        plScanDirectory(file_path, "pog", CopyDirectory, false);
-        plScanDirectory(file_path, "pmg", CopyDirectory, false);
-        plScanDirectory(file_path, "gen", CopyDirectory, false);
+        sprintf(output_path, "%s" PORK_MAPS_DIR, g_state.base_path);
+        if(plCreateDirectory(output_path)) {
+            sprintf(input_path, "%s/Maps", path);
+            plScanDirectory(input_path, "pog", CopyDirectory, false);
+            plScanDirectory(input_path, "pmg", CopyDirectory, false);
+            plScanDirectory(input_path, "gen", CopyDirectory, false);
+        } else {
+            print_warning("failed to create directory, \"%s" PORK_MAPS_DIR "\"!\n", g_state.base_path);
+        }
     }
+#endif
 
     print("\ncomplete\n");
 }

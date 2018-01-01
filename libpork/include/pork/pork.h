@@ -30,17 +30,15 @@
 #define PORK_MAJOR_VERSION  0
 #define PORK_MINOR_VERSION  1
 
-#define PORK_BASE_DIR   "pork"
+#define PORK_CONFIG "/config.json"
 
-// new path structure?
-#define PORK_MAPS_DIR       PORK_BASE_DIR "/maps"
-#define PORK_MODELS_DIR     PORK_BASE_DIR "/models"
-#define PORK_SOUNDS_DIR     PORK_BASE_DIR "/sounds"
-#define PORK_TEXTURES_DIR   PORK_BASE_DIR "/textures"
-#define PORK_FONTS_DIR      PORK_BASE_DIR "/fonts"
-#define PORK_SHADERS_DIR    PORK_BASE_DIR "/shaders"
-
-#define PORK_CONFIG PORK_BASE_DIR "/config.json"
+enum { // supported languages
+    LANG_ENGLISH,
+    LANG_FRENCH,
+    LANG_GERMAN,
+    LANG_ITALIAN,
+    LANG_SPANISH,
+};
 
 ///////////////////////////////////////////////////
 
