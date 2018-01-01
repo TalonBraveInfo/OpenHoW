@@ -20,6 +20,7 @@
 
 #include <PL/platform_graphics.h>
 
+#include "pork_math.h"
 #include "player.h"
 
 #define print(...)          _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)

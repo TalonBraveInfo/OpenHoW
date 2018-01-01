@@ -41,8 +41,7 @@ void DrawPork(double delta) {
 
     plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
 
-    g_state.camera->position = PLVector3(0, 0, 0);
-    g_state.camera->angles.x += 2.05f;
+    g_state.camera->position = PLVector3(0, 0, -200);
 
     plSetupCamera(g_state.camera);
 
@@ -53,10 +52,8 @@ void DrawPork(double delta) {
     // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
     // in the future, do this through "ACTOR %s SHOW SKELETON" command?
     DEBUGDrawSkeleton();
-#if 0
-    plSetupCamera(g_state.ui_camera);
 
-    plDrawTriangle(0, 0, 320, 240);
+    plSetupCamera(g_state.ui_camera);
 
     if(cv_debug_fps->b_value) {
         static unsigned int fps = 0;
@@ -75,7 +72,7 @@ void DrawPork(double delta) {
 
     // todo, need a better name for this function
     plDrawPerspectivePOST(g_state.ui_camera);
-#endif
+
     g_launcher.SwapWindow();
 
     g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
