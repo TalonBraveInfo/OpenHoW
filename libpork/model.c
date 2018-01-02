@@ -67,7 +67,9 @@ PLModel *LoadVTXModel(const char *path) {
 
 // todo, load hir from anywhere - open the potential to have
 // multiple hirs for different models :)
-Bone **LoadBones(const char *path) { return NULL; }
+Bone *LoadBones(const char *path) {
+    return NULL;
+}
 
 ////////////////////////////////////////////////////////////////
 
@@ -96,7 +98,8 @@ void CacheModelData(void) {
 
     print("caching pig.hir\n");
 
-    const char *hir_path = "./" PORK_MODELS_DIR "/pig.hir";
+    char hir_path[PL_SYSTEM_MAX_PATH];
+    sprintf(hir_path, "%s/chars/pig.hir", g_state.base_path);
     size_t hir_bytes = plGetFileSize(hir_path);
     if(hir_bytes == 0) {
         print_error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
@@ -161,7 +164,8 @@ void CacheModelData(void) {
 
     print("caching mcap.mad\n");
 
-    const char *mcap_path = "./" PORK_MODELS_DIR "/mcap.mad";
+    char mcap_path[PL_SYSTEM_MAX_PATH];
+    sprintf(mcap_path, "%s/chars/anims/mcap.mad", g_state.base_path);
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
@@ -175,7 +179,7 @@ void CacheModelData(void) {
         print_error("failed to load \"%s\", aborting!\n", mcap_path);
     }
 
-    // names included for debugging
+    /* todo, split this up, as the psx version deals with these as separate files */
     const char *animation_names[ANI_END]={
             "Run cycle (normal)",
             "Run cycle (wounded)",
@@ -379,7 +383,12 @@ void CacheModelData(void) {
     }
 #endif
 
-    g_model_cache.pigs[PIG_CLASS_ACE] = plLoadModel("./" PORK_MODELS_DIR "/british/ac_hi.vtx");
+    char pig_model_path[PL_SYSTEM_MAX_PATH];
+
+    sprintf(pig_model_path, "%s/chars/british/ac_hi.vtx", g_state.base_path);
+    g_model_cache.pigs[PIG_CLASS_ACE] = plLoadModel(pig_model_path);
+    //g_model_cache.pigs[PIG_CLASS_COMMANDO] = plLoadModel(pig_model_path);
+    //g_model_cache.pigs[PIG_CLASS_GRUNT] = plLoadModel(pig_model_path);
 }
 
 void InitModels(void) {
@@ -389,6 +398,10 @@ void InitModels(void) {
 }
 
 ////////////////////////////////////////////////////////////////
+
+#if 1
+#include <GL/glew.h>
+#endif
 
 void DEBUGDrawSkeleton(void) {
     if(!cv_debug_skeleton->b_value) {
@@ -400,7 +413,28 @@ void DEBUGDrawSkeleton(void) {
         skeleton_mesh = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, g_model_cache.num_bones * 2);
     }
 
+#if 1
+    glPushMatrix();
+
+    static float rotation = 90;
+    rotation += 0.5f;
+    glRotatef(0, 1, 0, 0);
+    glRotatef(rotation, 0, 1, 0);
+    glRotatef(180.f, 0, 0, 1);
+#endif
+
     plClearMesh(skeleton_mesh);
+
+    static unsigned int frame = 0;
+    static double delay = 20;
+    if(g_state.sim_ticks > delay) {
+        frame++;
+        delay = g_state.sim_ticks + 20;
+    }
+
+    if(frame == g_model_cache.animations[0].num_frames) {
+        frame = 0;
+    }
 
     for(unsigned int i = 0, vert = 0; i < g_model_cache.num_bones; ++i, vert += 2) {
         //start
@@ -414,4 +448,8 @@ void DEBUGDrawSkeleton(void) {
 
     plUploadMesh(skeleton_mesh);
     plDrawMesh(skeleton_mesh);
+
+#if 1
+    glPopMatrix();
+#endif
 }

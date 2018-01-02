@@ -44,7 +44,6 @@ typedef struct ModelCache {
     Animation animations[ANI_END];
     unsigned int num_animations;
 
-    // todo, introduce PLModelLod struct within PLModel, for storing multiple levels of detail
     PLModel *pigs[PIG_CLASS_END];
 } ModelCache;
 

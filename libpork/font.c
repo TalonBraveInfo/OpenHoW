@@ -92,18 +92,21 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     plSetBlendMode(PL_BLEND_DISABLE);
 }
 
-BitmapFont *LoadBitmapFont(const char *path) {
-    char tab_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    snprintf(tab_path, sizeof(tab_path), "%s.tab", path);
+BitmapFont *LoadBitmapFont(const char *name) {
+    char tab_path[PL_SYSTEM_MAX_PATH];
+    snprintf(tab_path, sizeof(tab_path), "%s/text/%s.tab", g_state.base_path, name);
     if(!plFileExists(tab_path)) {
-        print_error("failed to load tab \"%s\", aborting!\n", tab_path);
+        print_error("failed to load tab for \"%s\", aborting!\n", name);
     }
 
-    // todo, we don't care about the image type...
-    char tex_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    snprintf(tex_path, sizeof(tex_path), "%s.bmp", path);
+    char tex_path[PL_SYSTEM_MAX_PATH];
+    snprintf(tex_path, sizeof(tex_path), "%s/text/%s.bmp", g_state.base_path, name);
     if(!plFileExists(tex_path)) {
-        print_error("failed to load tab \"%s\", aborting!\n", tex_path);
+        /* try again, just in case it's in the TIM format */
+        snprintf(tex_path, sizeof(tex_path), "%s/text/%s.tim", g_state.base_path, name);
+        if(!plFileExists(tex_path)) {
+            print_error("failed to load texture for \"%s\", aborting!\n", name);
+        }
     }
 
     FILE *tab_file = fopen(tab_path, "rb");
@@ -182,12 +185,12 @@ void InitFonts(void) {
         print_error("failed to create font mesh, %s, aborting!\n", plGetError());
     }
 
-    g_fonts[FONT_BIG]        = LoadBitmapFont("./" PORK_FONTS_DIR "/big");
-    g_fonts[FONT_BIG_CHARS]  = LoadBitmapFont("./" PORK_FONTS_DIR "/bigchars");
-    g_fonts[FONT_CHARS2]     = LoadBitmapFont("./" PORK_FONTS_DIR "/chars2");
-    g_fonts[FONT_CHARS3]     = LoadBitmapFont("./" PORK_FONTS_DIR "/chars3");
-    g_fonts[FONT_GAME_CHARS] = LoadBitmapFont("./" PORK_FONTS_DIR "/gamechars");
-    g_fonts[FONT_SMALL]      = LoadBitmapFont("./" PORK_FONTS_DIR "/small");
+    g_fonts[FONT_BIG]        = LoadBitmapFont("big");
+    g_fonts[FONT_BIG_CHARS]  = LoadBitmapFont("bigchars");
+    g_fonts[FONT_CHARS2]     = LoadBitmapFont("chars2");
+    g_fonts[FONT_CHARS3]     = LoadBitmapFont("chars3");
+    g_fonts[FONT_GAME_CHARS] = LoadBitmapFont("gamechars");
+    g_fonts[FONT_SMALL]      = LoadBitmapFont("small");
 }
 
 void ShutdownFonts(void) {
