@@ -264,7 +264,10 @@ private:
 
 bool EditorApp::OnInit() {
 
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
+    plInitialize(argc, argv);
+
+    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
+    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
     wxLog::SetLogLevel(wxLOG_Warning);
 

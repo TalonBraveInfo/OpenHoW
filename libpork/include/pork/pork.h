@@ -174,8 +174,8 @@ typedef struct Actor {
         void(*EDepossess)(struct Actor *self, struct Player *controller);
     } callback;
 
-    uint8_t team;   // red, green, blue etc.
-    uint8_t class;  // spy, sniper, engineer etc.
+    uint8_t team;       // red, green, blue etc.
+    uint8_t class_num;  // spy, sniper, engineer etc.
 
     uint8_t eyes_frame;
     uint8_t gob_frame;

@@ -103,7 +103,7 @@ void CacheModelData(void) {
     print("caching pig.hir\n");
 
     char hir_path[PL_SYSTEM_MAX_PATH];
-    sprintf(hir_path, "%s/chars/pig.hir", g_state.base_path);
+    snprintf(hir_path, sizeof(hir_path), "%s/chars/pig.hir", g_state.base_path);
     size_t hir_bytes = plGetFileSize(hir_path);
     if(hir_bytes == 0) {
         print_error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
@@ -169,7 +169,7 @@ void CacheModelData(void) {
     print("caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    sprintf(mcap_path, "%s/chars/anims/mcap.mad", g_state.base_path);
+    snprintf(mcap_path, sizeof(mcap_path), "%s/chars/anims/mcap.mad", g_state.base_path);
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
@@ -388,8 +388,7 @@ void CacheModelData(void) {
 #endif
 
     char pig_model_path[PL_SYSTEM_MAX_PATH];
-
-    sprintf(pig_model_path, "%s/chars/british/ac_hi.vtx", g_state.base_path);
+    snprintf(pig_model_path, sizeof(pig_model_path), "%s/chars/british/ac_hi.vtx", g_state.base_path);
     g_model_cache.pigs[PIG_CLASS_ACE] = plLoadModel(pig_model_path);
     //g_model_cache.pigs[PIG_CLASS_COMMANDO] = plLoadModel(pig_model_path);
     //g_model_cache.pigs[PIG_CLASS_GRUNT] = plLoadModel(pig_model_path);
