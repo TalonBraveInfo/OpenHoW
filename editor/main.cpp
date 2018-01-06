@@ -20,14 +20,16 @@
 #include "ViewportPanel.h"
 
 #include <wx/aui/aui.h>
+#include <wx/splash.h>
+#include <wx/aboutdlg.h>
 
 #include <PL/platform.h>
 
 class PerspectiveViewportPanel : public ViewportPanel {
 public:
-    PerspectiveViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+    explicit PerspectiveViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
 
-    virtual void Draw() {
+    void Draw() override {
         ViewportPanel::Draw();
     }
 
@@ -37,9 +39,9 @@ private:
 
 class TopViewportPanel : public ViewportPanel {
 public:
-    TopViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+    explicit TopViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
 
-    virtual void Draw() {
+    void Draw() override {
         ViewportPanel::Draw();
     }
 
@@ -49,9 +51,9 @@ private:
 
 class SideViewportPanel : public ViewportPanel {
 public:
-    SideViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+    explicit SideViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
 
-    virtual void Draw() {
+    void Draw() override {
         ViewportPanel::Draw();
     }
 
@@ -64,7 +66,7 @@ private:
 class EditorFrame : public wxFrame {
 public:
     EditorFrame(const wxPoint &pos, const wxSize &size);
-    ~EditorFrame();
+    ~EditorFrame() override;
 
 protected:
 private:
@@ -104,21 +106,14 @@ wxEND_EVENT_TABLE()
 EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         wxFrame(nullptr, wxID_ANY, PORK_EDITOR_TITLE, pos, size) {
 
-    aui_manager_ = new wxAuiManager(this);
-
-#if 0
-    wxBitmap splash;
-    if(splash.LoadFile("rc/splash.png", wxBITMAP_TYPE_PNG)) {
-        new wxSplashScreen(
-                splash,
-                wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT,
-                2000,
-                NULL,
-                wxID_ANY,
-                wxDefaultPosition, wxDefaultSize,
-                wxBORDER_SIMPLE | wxSTAY_ON_TOP | wxFRAME_NO_TASKBAR);
+    wxBitmap app_bitmap;
+    if(app_bitmap.LoadFile("./rc/icon.png", wxBITMAP_TYPE_PNG)) {
+        wxIcon app_icon;
+        app_icon.CopyFromBitmap(app_icon);
+        SetIcon(app_icon);
     }
-#endif
+
+    aui_manager_ = new wxAuiManager(this);
 
     /////////////////////////////////////////////
 
@@ -235,6 +230,12 @@ void EditorFrame::OnExit(wxCommandEvent &event) {
 
 void EditorFrame::OnAbout(wxCommandEvent &event) {
     wxMessageBox("blah", PORK_EDITOR_TITLE, wxOK | wxICON_INFORMATION);
+
+    wxAboutDialogInfo info;
+    info.SetName(_(PORK_EDITOR_TITLE));
+    info.SetVersion(_(PORK_MAJOR_VERSION + "." + PORK_MINOR_VERSION));
+    info.SetWebSite("http://talonbrave.info/", _("TalonBrave.info"));
+    wxAboutBox(info);
 }
 
 void EditorFrame::OnPreferences(wxCommandEvent &event) {
@@ -306,6 +307,21 @@ bool EditorApp::OnInit() {
 
     wxInitAllImageHandlers();
 
+    wxSplashScreen *splash = nullptr;
+    wxBitmap splash_bitmap;
+    if(splash_bitmap.LoadFile("./rc/splash.png", wxBITMAP_TYPE_PNG)) {
+        splash = new wxSplashScreen(
+                splash_bitmap,
+                wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_NO_TIMEOUT,
+                0,
+                nullptr,
+                -1,
+                wxDefaultPosition,
+                wxDefaultSize,
+                wxBORDER_SIMPLE | wxSTAY_ON_TOP
+        );
+    }
+
     int width, height;
     wxDisplaySize(&width, &height);
 
@@ -323,6 +339,8 @@ bool EditorApp::OnInit() {
     interface.SwapWindow        = ISwapWindow;
 
     InitPork(argc, argv, interface);
+
+    delete splash;
     return true;
 }
 

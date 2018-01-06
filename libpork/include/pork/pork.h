@@ -65,7 +65,7 @@ enum {
 ///////////////////////////////////////////////////
 
 #define pork_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
-#define pork_free(DATA) if((DATA) != NULL) { free((DATA)); (DATA) = NULL; }
+#define pork_free(DATA) free((DATA)); (DATA) = NULL
 
 enum {
     PORK_MBOX_INFORMATION,

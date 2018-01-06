@@ -33,4 +33,6 @@ void DrawCanvas::SetCurrent() {
     height_ = static_cast<unsigned int>(size.GetHeight());
 
     // todo, set this up manually with pl viewport crap?
+
+    UpdatePorkViewport(false, width_, height_);
 }
