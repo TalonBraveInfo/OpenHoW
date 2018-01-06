@@ -20,6 +20,7 @@
 #include "font.h"
 
 #include <PL/platform_filesystem.h>
+#include <PL/platform_graphics_camera.h>
 
 PLConsoleVariable *cv_debug_mode = NULL;
 PLConsoleVariable *cv_debug_fps = NULL;

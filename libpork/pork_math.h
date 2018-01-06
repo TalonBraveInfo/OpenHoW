@@ -22,11 +22,11 @@
  * a lot of these are borrowed from ioq3 to fill gaps
  */
 
-inline static void Mat4Copy(PLMatrix in, PLMatrix *out) {
-    memcpy(out, &in, sizeof(PLMatrix));
+inline static void Mat4Copy(PLMatrix4x4 in, PLMatrix4x4 *out) {
+    memcpy(out, &in, sizeof(PLMatrix4x4));
 }
 
-inline static void Mat4Multiply(PLMatrix in1, PLMatrix in2, PLMatrix *out) {
+inline static void Mat4Multiply(PLMatrix4x4 in1, PLMatrix4x4 in2, PLMatrix4x4 *out) {
     out->m[ 0] = in1.m[ 0] * in2.m[ 0] + in1.m[ 4] * in2.m[ 1] + in1.m[ 8] * in2.m[ 2] + in1.m[12] * in2.m[ 3];
     out->m[ 1] = in1.m[ 1] * in2.m[ 0] + in1.m[ 5] * in2.m[ 1] + in1.m[ 9] * in2.m[ 2] + in1.m[13] * in2.m[ 3];
     out->m[ 2] = in1.m[ 2] * in2.m[ 0] + in1.m[ 6] * in2.m[ 1] + in1.m[10] * in2.m[ 2] + in1.m[14] * in2.m[ 3];
@@ -48,14 +48,15 @@ inline static void Mat4Multiply(PLMatrix in1, PLMatrix in2, PLMatrix *out) {
     out->m[15] = in1.m[ 3] * in2.m[12] + in1.m[ 7] * in2.m[13] + in1.m[11] * in2.m[14] + in1.m[15] * in2.m[15];
 }
 
-inline static void Mat4Translation(PLVector3 vec, PLMatrix *out) {
+inline static void Mat4Translation(PLVector3 vec, PLMatrix4x4 *out) {
     out->m[ 0] = 1.0f; out->m[ 4] = 0.0f; out->m[ 8] = 0.0f; out->m[12] = vec.x;
     out->m[ 1] = 0.0f; out->m[ 5] = 1.0f; out->m[ 9] = 0.0f; out->m[13] = vec.y;
     out->m[ 2] = 0.0f; out->m[ 6] = 0.0f; out->m[10] = 1.0f; out->m[14] = vec.z;
     out->m[ 3] = 0.0f; out->m[ 7] = 0.0f; out->m[11] = 0.0f; out->m[15] = 1.0f;
 }
 
-inline static void Mat4Ortho(float left, float right, float bottom, float top, float znear, float zfar, PLMatrix *out) {
+inline static void Mat4Ortho(float left, float right, float bottom, float top, float znear, float zfar,
+                             PLMatrix4x4 *out) {
     out->m[ 0] = 2.0f / (right - left); out->m[ 4] = 0.0f;                  out->m[ 8] = 0.0f;                  out->m[12] = -(right + left) / (right - left);
     out->m[ 1] = 0.0f;                  out->m[ 5] = 2.0f / (top - bottom); out->m[ 9] = 0.0f;                  out->m[13] = -(top + bottom) / (top - bottom);
     out->m[ 2] = 0.0f;                  out->m[ 6] = 0.0f;                  out->m[10] = 2.0f / (zfar - znear); out->m[14] = -(zfar + znear) / (zfar - znear);

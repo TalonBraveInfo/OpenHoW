@@ -180,7 +180,7 @@ BitmapFont *LoadBitmapFont(const char *name) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitFonts(void) {
-    font_mesh = plCreateMesh(PL_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
+    font_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
     if(font_mesh == NULL) {
         print_error("failed to create font mesh, %s, aborting!\n", plGetError());
     }

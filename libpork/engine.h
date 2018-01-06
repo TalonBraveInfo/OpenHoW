@@ -49,8 +49,8 @@ extern PLConsoleVariable *cv_debug_skeleton;
 ///////////////////////////////////////////////////
 
 struct {
-    PLCamera *camera;       // camera used for general gameplay
-    PLCamera *ui_camera;    // camera used for UI elements, orthographic
+    struct PLCamera *camera;       // camera used for general gameplay
+    struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
     char base_path[PL_SYSTEM_MAX_PATH];
 
