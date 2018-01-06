@@ -35,3 +35,5 @@ private:
 
     wxDECLARE_EVENT_TABLE();
 };
+
+extern ConsolePanel *g_console_panel;

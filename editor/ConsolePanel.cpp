@@ -18,6 +18,24 @@
 
 #include "ConsolePanel.h"
 
+ConsolePanel *g_console_panel = nullptr;
+
+void ConsoleCallbackFunction(int level, const char *msg) {
+    switch(level) {
+        default:
+            g_console_panel->PrintMessage(msg);
+            break;
+
+        case PORK_LOG_ENGINE_ERROR:
+            g_console_panel->PrintError(msg);
+            break;
+
+        case PORK_LOG_ENGINE_WARNING:
+            g_console_panel->PrintWarning(msg);
+            break;
+    }
+}
+
 enum {
     CONSOLE_EVENT_INPUT,
     CONSOLE_EVENT_COMMAND
@@ -31,7 +49,6 @@ wxBEGIN_EVENT_TABLE(ConsolePanel, wxPanel)
 wxEND_EVENT_TABLE()
 
 ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
-
     c_out_ = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize,
                             wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP | wxTE_AUTO_URL);
     c_out_->SetBackgroundColour(wxColour(0, 0, 0));
@@ -69,6 +86,8 @@ ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
 
     SetSizer(sizer);
     SetSize(wxSize(wxDefaultSize.x, 256));
+
+    plSetConsoleOutputCallback(ConsoleCallbackFunction);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////

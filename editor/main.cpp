@@ -212,7 +212,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
 
     ////////////////////////////////////////////
 
-    auto *console = new ConsolePanel(this);
+    g_console_panel = new ConsolePanel(this);
     wxAuiPaneInfo console_info;
     console_info.Caption("Console");
     console_info.Bottom();
@@ -220,7 +220,7 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     console_info.Floatable(true);
     console_info.CloseButton(false);
     console_info.MaximizeButton(true);
-    aui_manager_->AddPane(console, console_info);
+    aui_manager_->AddPane(g_console_panel, console_info);
 
 #if 0
     console->PrintMessage("Standard message\n");
