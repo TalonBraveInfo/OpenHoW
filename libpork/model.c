@@ -71,6 +71,10 @@ Bone *LoadBones(const char *path) {
     return NULL;
 }
 
+Animation *LoadAnimations(const char *path) {
+    return NULL;
+}
+
 ////////////////////////////////////////////////////////////////
 
 ModelCache g_model_cache;
