@@ -169,9 +169,9 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     auto *menu_tools = new wxMenu;
     {
         wxMenuItem *tools_model = new wxMenuItem(menu_tools, ID_MODEL, "&Model Tool...");
-        wxMenuItem *tools_texture = new wxMenuItem(menu_tools, ID_TEXTURE, "&Texture Tool...");
+        menu_tools->Append(tools_model);
 
-        menu_tools->Append(ID_MODEL, "&Model Viewer");
+        wxMenuItem *tools_texture = new wxMenuItem(menu_tools, ID_TEXTURE, "&Texture Tool...");
         menu_tools->Append(tools_texture);
     }
 
@@ -222,12 +222,6 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     console_info.MaximizeButton(true);
     aui_manager_->AddPane(g_console_panel, console_info);
 
-#if 0
-    console->PrintMessage("Standard message\n");
-    console->PrintWarning("Warning message\n");
-    console->PrintError("Error message\n");
-#endif
-
     aui_manager_->Update();
 }
 
@@ -252,6 +246,49 @@ void EditorFrame::OnPreferences(wxCommandEvent &event) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// Pork Interface
+
+unsigned int IGetTicks() {
+    static wxTimer timer;
+    if(!timer.IsRunning()) {
+        timer.Start();
+    }
+    return static_cast<unsigned int>(timer.GetInterval());
+}
+
+void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
+    switch(level) {
+        case PORK_MBOX_ERROR: {
+            level = wxICON_ERROR;
+        } break;
+        case PORK_MBOX_WARNING: {
+            level = wxICON_WARNING;
+        } break;
+        case PORK_MBOX_INFORMATION: {
+            level = wxICON_INFORMATION;
+        } break;
+
+        default: return;
+    }
+
+    char buf[2048];
+    va_list args;
+    va_start(args, msg);
+    vsnprintf(buf, sizeof(buf), msg, args);
+    va_end(args);
+
+    wxMessageBox(buf, PORK_TITLE, level);
+}
+
+void IShutdownLauncher() {
+
+}
+
+void ISwapWindow() {
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 class EditorApp : public wxApp {
 public:
@@ -263,11 +300,7 @@ private:
 };
 
 bool EditorApp::OnInit() {
-
     plInitialize(argc, argv);
-
-    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
-    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
     wxLog::SetLogLevel(wxLOG_Warning);
 
@@ -282,6 +315,14 @@ bool EditorApp::OnInit() {
 
     SetTopWindow(main_frame_);
 
+    PorkLauncherInterface interface{};
+    memset(&interface, 0, sizeof(PorkLauncherInterface));
+    interface.GetTicks          = IGetTicks;
+    interface.DisplayMessageBox = IDisplayMessageBox;
+    interface.ShutdownLauncher  = IShutdownLauncher;
+    interface.SwapWindow        = ISwapWindow;
+
+    InitPork(argc, argv, interface);
     return true;
 }
 

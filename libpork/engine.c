@@ -90,7 +90,9 @@ void DebugModeCallback(const PLConsoleVariable *variable) {
 //////////////////////////////////////////////////////////////////////////
 
 void InitDisplay(void) {
-    g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
+    if(g_launcher.DisplayWindow) {
+        g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
+    }
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);

@@ -55,8 +55,7 @@ ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
     c_out_->SetForegroundColour(wxColour(128, 128, 128));
 
     c_in_ = new wxComboBox(this, CONSOLE_EVENT_INPUT, "", wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                           wxCB_SORT | wxTE_PROCESS_ENTER
-    );
+                           wxCB_SORT | wxTE_PROCESS_ENTER);
 
     size_t num_c;
 
@@ -75,14 +74,14 @@ ConsolePanel::ConsolePanel(wxWindow *parent) : wxPanel(parent) {
     c_in_->AutoComplete(c_in_->GetStrings());
 
     auto *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(c_out_, 1, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT);
+    sizer->Add(c_out_, 1, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT);
 
     auto *h_sizer = new wxBoxSizer(wxHORIZONTAL);
     h_sizer->Add(new wxButton(this, CONSOLE_EVENT_COMMAND, "Submit"), 0, wxRIGHT);
-    h_sizer->Add(c_in_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP);
+    h_sizer->Add(c_in_, 1, wxEXPAND | wxRIGHT | wxTOP);
     h_sizer->SetSizeHints(this);
 
-    sizer->Add(h_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP);
+    sizer->Add(h_sizer, 0, wxEXPAND | wxRIGHT | wxTOP);
 
     SetSizer(sizer);
     SetSize(wxSize(wxDefaultSize.x, 256));

@@ -20,7 +20,7 @@
 
 class ConsolePanel : public wxPanel {
 public:
-    ConsolePanel(wxWindow *parent);
+    explicit ConsolePanel(wxWindow *parent);
 
     void PrintMessage(std::string msg);
     void PrintWarning(std::string war);

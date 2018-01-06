@@ -38,4 +38,4 @@ include(${wxWidgets_USE_FILE})
 add_executable(editor ${SOURCE_FILES})
 
 target_include_directories(editor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(editor platform IL ILU ILUT ${wxWidgets_LIBRARIES})
+target_link_libraries(editor platform pork IL ILU ILUT ${wxWidgets_LIBRARIES})
