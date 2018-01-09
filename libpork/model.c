@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 PLModel *LoadVTXModel(const char *path) {
     FILE *vtx_file = fopen(path, "rb");
     if(vtx_file == NULL) {
-        print_error("failed to load vtx \"%s\", aborting!\n", path);
+        Error("failed to load vtx \"%s\", aborting!\n", path);
     }
 
     // read in the vertices
@@ -36,7 +36,7 @@ PLModel *LoadVTXModel(const char *path) {
     unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VTXCoord));
     VTXCoord vertices[num_vertices];
     if(fread(vertices, sizeof(VTXCoord), num_vertices, vtx_file) != num_vertices) {
-        print_error("failed to read in all vertices from \"%s\", aborting!\n", path);
+        Error("failed to read in all vertices from \"%s\", aborting!\n", path);
     }
 
 #if 0
@@ -51,7 +51,7 @@ PLModel *LoadVTXModel(const char *path) {
     strcat(ftx_path, "ftx");
     FILE *ftx_file = fopen(path, "rb");
     if(ftx_file == NULL) {
-        print_error("failed to load ftx \"%s\", aborting!\n", path);
+        Error("failed to load ftx \"%s\", aborting!\n", path);
     }
 
     char no2_path[PL_SYSTEM_MAX_PATH];
@@ -59,7 +59,7 @@ PLModel *LoadVTXModel(const char *path) {
     strcat(no2_path, "no2");
     FILE *no2_file = fopen(path, "rb");
     if(no2_file == NULL) {
-        print_error("failed to load no2 \"%s\", aborting!\n", path);
+        Error("failed to load no2 \"%s\", aborting!\n", path);
     }
 
     return NULL;
@@ -100,18 +100,18 @@ ModelCache g_model_cache;
 void CacheModelData(void) {
     memset(&g_model_cache, 0, sizeof(ModelCache));
 
-    print("caching pig.hir\n");
+    LogInfo("caching pig.hir\n");
 
     char hir_path[PL_SYSTEM_MAX_PATH];
     snprintf(hir_path, sizeof(hir_path), "%s/chars/pig.hir", g_state.base_path);
     size_t hir_bytes = plGetFileSize(hir_path);
     if(hir_bytes == 0) {
-        print_error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
+        Error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
     }
 
     FILE *file = fopen(hir_path, "rb");
     if(file == NULL) {
-        print_error("failed to load \"%s\"!\n", hir_path);
+        Error("failed to load \"%s\"!\n", hir_path);
     }
 
     /* HIR Format Specification
@@ -125,12 +125,12 @@ void CacheModelData(void) {
 
     g_model_cache.num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
     if(g_model_cache.num_bones > MAX_BONES) {
-        print_error("number of bones within \"%s\" exceeds %d limit!\n", hir_path, MAX_BONES);
+        Error("number of bones within \"%s\" exceeds %d limit!\n", hir_path, MAX_BONES);
     }
 
     HIRBone bones[g_model_cache.num_bones];
     if(fread(bones, sizeof(HIRBone), g_model_cache.num_bones, file) != g_model_cache.num_bones) {
-        print_error("failed to read in all bones, expected %d!\n", g_model_cache.num_bones);
+        Error("failed to read in all bones, expected %d!\n", g_model_cache.num_bones);
     }
     fclose(file);
 
@@ -166,7 +166,7 @@ void CacheModelData(void) {
 
     // animations
 
-    print("caching mcap.mad\n");
+    LogInfo("caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
     snprintf(mcap_path, sizeof(mcap_path), "%s/chars/anims/mcap.mad", g_state.base_path);
@@ -175,12 +175,12 @@ void CacheModelData(void) {
     // to determine the length of animations later
     size_t mcap_bytes = plGetFileSize(mcap_path);
     if(mcap_bytes < 272) {
-        print_error("unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
+        Error("unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
     }
 
     file = fopen(mcap_path, "rb");
     if(file == NULL) {
-        print_error("failed to load \"%s\", aborting!\n", mcap_path);
+        Error("failed to load \"%s\", aborting!\n", mcap_path);
     }
 
     /* todo, split this up, as the psx version deals with these as separate files */
@@ -290,7 +290,7 @@ void CacheModelData(void) {
             uint32_t length;
         } index;
         if(fread(&index, sizeof(index), 1, file) != 1) {
-            print_error("failed to read index, aborting!\n");
+            Error("failed to read index, aborting!\n");
         }
 
         // position we'll return to for the next index
@@ -318,26 +318,26 @@ void CacheModelData(void) {
 
         unsigned int num_keyframes = (unsigned int) (index.length / sizeof(MCAPKeyframe));
         if(num_keyframes == 0) {
-            print_error("odd keyframe at index, aborting!\n");
+            Error("odd keyframe at index, aborting!\n");
         }
 
         // copy everything into our global animations array
 
         g_model_cache.animations[i].frames = malloc(sizeof(Keyframe) * num_keyframes);
         if(g_model_cache.animations[i].frames == NULL) {
-            print_error("failed to allocate for %d keyframes, aborting!\n", num_keyframes);
+            Error("failed to allocate for %d keyframes, aborting!\n", num_keyframes);
         }
 
         // move to where the first keyframe is
         if(fseek(file, index.offset, SEEK_SET) != 0) {
-            print_error("failed to seek to offset %d in file, aborting!\n", index.offset);
+            Error("failed to seek to offset %d in file, aborting!\n", index.offset);
         }
 
         for(unsigned int j = 0; j < num_keyframes; ++j) {
             // read in the keyframe data
             MCAPKeyframe frame;
             if(fread(&frame, sizeof(MCAPKeyframe), 1, file) != 1) {
-                print_error("failed to read animation keyframe, aborting!\n");
+                Error("failed to read animation keyframe, aborting!\n");
             }
 
             // copy transforms
@@ -361,7 +361,7 @@ void CacheModelData(void) {
 
         // return us from whence we came
         if(fseek(file, position, SEEK_SET) != 0) {
-            print_error("failed to seek back to original position %d in file, aborting!\n", position);
+            Error("failed to seek back to original position %d in file, aborting!\n", position);
         }
     }
     fclose(file);

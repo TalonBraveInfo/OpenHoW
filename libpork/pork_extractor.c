@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  * Copyright (C) 2017 Daniel Collins <solemnwarning@solemnwarning.net>
  *
@@ -35,7 +35,7 @@
 
 void ExtractPTGPackage(const char *input_path, const char *output_path) {
     if(input_path == NULL || input_path[0] == '\0') {
-        print("encountered invalid path for PTG, aborting!\n");
+        LogInfo("encountered invalid path for PTG, aborting!\n");
         return;
     }
 
@@ -46,13 +46,13 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
     char output_dir[PL_SYSTEM_MAX_PATH] = {'\0'};
     sprintf(output_dir, "%s/%s", output_path, ptg_name);
     if(!plCreatePath(output_dir)) {
-        print("failed to create path %s, aborting!\n", output_dir);
+        LogInfo("failed to create path %s, aborting!\n", output_dir);
         return;
     }
 
     FILE *file = fopen(input_path, "rb");
     if(file == NULL) {
-        print("failed to load %s, aborting!\n", input_path);
+        LogInfo("failed to load %s, aborting!\n", input_path);
         return;
     }
 
@@ -60,7 +60,7 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
 
     uint32_t num_textures;
     if(fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
-        print("invalid PTG file, failed to get number of textures!\n");
+        LogInfo("invalid PTG file, failed to get number of textures!\n");
         goto ABORT_PTG;
     }
 
@@ -68,7 +68,7 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
     for(unsigned int i = 0; i < num_textures; ++i) {
         uint8_t tim[tim_size];
         if(fread(tim, tim_size, 1, file) != 1) {
-            print("failed to read tim, aborting!\n");
+            LogInfo("failed to read tim, aborting!\n");
             goto ABORT_PTG;
         }
 
@@ -76,13 +76,13 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
         sprintf(out_path, "%s/%d.tim", output_dir, i);
         out = fopen(out_path, "wb");
         if(out == NULL) {
-            print("failed to open %s for writing, aborting!\n", out_path);
+            LogInfo("failed to open %s for writing, aborting!\n", out_path);
             goto ABORT_PTG;
         }
 
         //print(" %s\n", out_path);
         if(fwrite(tim, tim_size, 1, out) != 1) {
-            print("failed to write %s, aborting!\n", out_path);
+            LogInfo("failed to write %s, aborting!\n", out_path);
             goto ABORT_PTG;
         }
 
@@ -96,7 +96,7 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
 
 void ExtractMADPackage(const char *input_path, const char *output_path) {
     if(input_path == NULL || input_path[0] == '\0') { // technically, this should never, ever, ever, ever happen...
-        print("encountered invalid path for MAD, aborting!\n");
+        LogInfo("encountered invalid path for MAD, aborting!\n");
         return;
     }
 
@@ -105,13 +105,13 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
     pl_strtolower(package_name);
 
     if(!plCreatePath(output_path)) {
-        print("failed to create input_path %s, aborting!\n", output_path);
+        LogInfo("failed to create input_path %s, aborting!\n", output_path);
         return;
     }
 
     FILE *file = fopen(input_path, "rb");
     if(file == NULL) {
-        print("failed to load %s, aborting!\n", input_path);
+        LogInfo("failed to load %s, aborting!\n", input_path);
         return;
     }
 
@@ -149,7 +149,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
     do {
         MADIndex index; cur_index++;
         if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
-            print("invalid index size for %s, aborting!\n", package_name);
+            LogInfo("invalid index size for %s, aborting!\n", package_name);
             goto ABORT_MAD;
         }
 
@@ -188,12 +188,12 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
         if(plFileExists(file_path)) {
             size_t size = plGetFileSize(file_path);
             if(size == index.length) {
-                print("duplicate file found for %s at %s, skipping!\n", index.file, file_path);
+                LogInfo("duplicate file found for %s at %s, skipping!\n", index.file, file_path);
                 continue;
             }
 
             // this part should never happen, but we'll check for it anyway, call me paranoid!
-            print("duplicate file found for %s at %s with differing size (%d vs %zu), renaming!\n",
+            LogInfo("duplicate file found for %s at %s with differing size (%d vs %zu), renaming!\n",
                   index.file, file_path, index.length, size);
             strcat(file_path, "_");
             goto CHECK_AGAIN;
@@ -201,26 +201,26 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
 
         data = calloc(index.length, sizeof(uint8_t));
         if(data == NULL) {
-            print("failed to allocate %d bytes for export of %s, aborting!\n", index.length, index.file);
+            LogInfo("failed to allocate %d bytes for export of %s, aborting!\n", index.length, index.file);
             goto ABORT_MAD;
         }
 
         // go and grab the data so we can export!
         fseek(file, index.offset, SEEK_SET);
         if(fread(data, sizeof(uint8_t), index.length, file) != index.length) {
-            print("failed to read %s in %s, aborting!\n", index.file, package_name);
+            LogInfo("failed to read %s in %s, aborting!\n", index.file, package_name);
             goto ABORT_MAD;
         }
 
         out = fopen(file_path, "wb");
         if(out == NULL) {
-            print("failed to open %s for writing, aborting!\n", file_path);
+            LogInfo("failed to open %s for writing, aborting!\n", file_path);
             goto ABORT_MAD;
         }
 
         //print(" %s\n", file_path);
         if(fwrite(data, sizeof(uint8_t), index.length, out) != index.length) {
-            print("failed to write %s!\n", file_path);
+            LogInfo("failed to write %s!\n", file_path);
             goto ABORT_MAD;
         }
 
@@ -243,7 +243,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
 #include <IL/ilu.h>
 
 void ConvertImageToPNG(const char *path) {
-    print("converting %s...\n", path);
+    LogInfo("converting %s...\n", path);
 
     // figure out if the file already exists before
     // we even start trying to convert this thing
@@ -251,7 +251,7 @@ void ConvertImageToPNG(const char *path) {
     plStripExtension(out_path, path);
     strcat(out_path, ".png");
     if(plFileExists(out_path)) {
-        print("tim already converted, deleting original\n");
+        LogInfo("tim already converted, deleting original\n");
         plDeleteFile(path);
         return;
     }
@@ -259,7 +259,7 @@ void ConvertImageToPNG(const char *path) {
     PLImage image;
     PLresult result = (PLresult)plLoadImage(path, &image);
     if(result != PL_RESULT_SUCCESS) {
-        print("failed to load \"%s\", %s, aborting!\n", path, plGetError());
+        LogInfo("failed to load \"%s\", %s, aborting!\n", path, plGetError());
         return;
     }
 
@@ -267,18 +267,18 @@ void ConvertImageToPNG(const char *path) {
     if(ext != NULL && ext[0] != '\0' && strcmp(ext, "tim") == 0) {
         // ensure that it's a format we're able to convert from
         if (image.format != PL_IMAGEFORMAT_RGB5A1) {
-            print("unexpected pixel format in \"%s\", aborting!\n", path);
+            LogInfo("unexpected pixel format in \"%s\", aborting!\n", path);
             goto ABORT;
         }
 
         if (!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
-            print("failed to convert \"%s\", %s, aborting!\n", path, plGetError());
+            LogInfo("failed to convert \"%s\", %s, aborting!\n", path, plGetError());
             goto ABORT;
         }
     }
 
     if(!plFlipImageVertical(&image)) {
-        print("failed to flip \"%s\", %s, aborting!\n", path, plGetError());
+        LogInfo("failed to flip \"%s\", %s, aborting!\n", path, plGetError());
         goto ABORT;
     }
 
@@ -304,7 +304,7 @@ void ConvertImageCallback(unsigned int argc, char *argv[]) {
 }
 
 void ExtractGameData(const char *path) {
-    print("extracting game contents from %s...\n", path);
+    LogInfo("extracting game contents from %s...\n", path);
 
     char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     char output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
@@ -312,7 +312,7 @@ void ExtractGameData(const char *path) {
     /* check if we're trying to load in the PSX version */
     sprintf(input_path, "%s/system.cnf", path);
     if(plFileExists(input_path)) {
-        print_error("found system.cnf, assuming psx version...\n");
+        Error("found system.cnf, assuming psx version...\n");
         /* todo, psx still needs a lot of thought here... I don't know if we even want to bother? */
     }
 
@@ -320,15 +320,20 @@ void ExtractGameData(const char *path) {
         const char *input, *output;
     } ExtractorFileIO;
 
-    ExtractorFileIO package_paths[]={
+    ExtractorFileIO mad_paths[]={
             /* british */
             {"/Chars/british.mad", "/chars/british/"},
             {"/Chars/british.mtd", "/chars/british/"},
     };
 
-    for(unsigned int i = 0; i < plArrayElements(package_paths); ++i) {
-        snprintf(input_path, sizeof(input_path), "%s%s", path, package_paths[i].input);
-        snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, package_paths[i].output);
+    for(unsigned int i = 0; i < plArrayElements(mad_paths); ++i) {
+        snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, mad_paths[i].output);
+        if(!plCreatePath(output_path)) {
+            LogWarn("%s\n", plGetError());
+            continue;
+        }
+
+        snprintf(input_path, sizeof(input_path), "%s%s", path, mad_paths[i].input);
         ExtractMADPackage(input_path, output_path);
     }
 
@@ -349,6 +354,10 @@ void ExtractGameData(const char *path) {
             {"/FEText/GameChars.bmp", "/text/"},
             {"/FEText/SMALL.BMP", "/text/"},
 
+            /* maps */
+            {"/Maps/ARCHI.PMG", "/maps/archi/"},
+            {"/Maps/ARCHI.POG", "/maps/archi/"},
+
             /* chars */
             {"/Chars/pig.HIR", "/chars/"},
             {"/Chars/mcap.mad", "/chars/anims/"},
@@ -357,7 +366,7 @@ void ExtractGameData(const char *path) {
     for(unsigned int i = 0; i < plArrayElements(copy_paths); ++i) {
         snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, copy_paths[i].output);
         if(!plCreatePath(output_path)) {
-            print_warning("%s\n", plGetError());
+            LogWarn("%s\n", plGetError());
             continue;
         }
 
@@ -368,5 +377,20 @@ void ExtractGameData(const char *path) {
         plCopyFile(input_path, output_path);
     }
 
-    print("complete\n");
+    ExtractorFileIO ptg_paths[]={
+            {"/Maps/ARCHI.PTG", "/maps/archi/tiles/"},
+    };
+
+    for(unsigned int i = 0; i < plArrayElements(ptg_paths); ++i) {
+        snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, ptg_paths[i].output);
+        if(!plCreatePath(output_path)) {
+            LogWarn("%s\n", plGetError());
+            continue;
+        }
+
+        snprintf(input_path, sizeof(input_path), "%s%s", path, ptg_paths[i].input);
+        ExtractPTGPackage(input_path, output_path);
+    }
+
+    LogInfo("complete\n");
 }

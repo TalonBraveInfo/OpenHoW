@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,9 @@
 SDL_Window *window = NULL;
 SDL_GLContext *context = NULL;
 
-#define print(...)          plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
-#define print_warning(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
-#define print_error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
+#define LogInfo(...)          plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
+#define LogWarn(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
+#define Error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
 
 unsigned int IGetTicks(void) {
     return SDL_GetTicks();

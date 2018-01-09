@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ void SaveConfig(void) {
 jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path) {
     size_t len = plGetFileSize(PORK_CONFIG);
     if(len == 0) {
-        print("blank config, skipping out on bothering read\n");
+        LogInfo("blank config, skipping out on bothering read\n");
         return NULL;
     }
 
@@ -39,11 +39,11 @@ jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path)
     int ret = jsmn_parse(p, buffer, len, NULL, 256);
     if(ret < 0) {
         if(ret == JSMN_ERROR_INVAL) {
-            print_warning("bad token, JSON string is corrupted!\n");
+            LogWarn("bad token, JSON string is corrupted!\n");
         } else if(ret == JSMN_ERROR_NOMEM) {
-            print_warning("not enough tokens, JSON string is too large!\n");
+            LogWarn("not enough tokens, JSON string is too large!\n");
         } else if(ret == JSMN_ERROR_PART) {
-            print_warning("JSON string is too short, expecting more JSON data!\n");
+            LogWarn("JSON string is too short, expecting more JSON data!\n");
         }
         return NULL;
     }
@@ -51,7 +51,7 @@ jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path)
     *num_tokens = (unsigned int) ret;
     jsmntok_t *tokens = malloc(*num_tokens * sizeof(jsmntok_t));
     if(tokens == NULL) {
-        print_error("failed to allocate enough memory for tokens, aborting!\n");
+        Error("failed to allocate enough memory for tokens, aborting!\n");
     }
 
     jsmn_parse(p, buffer, len, tokens, *num_tokens);

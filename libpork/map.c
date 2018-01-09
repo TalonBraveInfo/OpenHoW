@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <PL/platform_filesystem.h>
+
 #include "engine.h"
 
 #define MAP_MODE_SINGLEPLAYER   (1 << 1)
@@ -25,16 +27,17 @@
 
 #define MAP_MODE_GENERATED  (1 << 6)
 
-typedef struct MapEntry {
+typedef struct MapDesc {
     const char *name;
     const char *description;
-    unsigned int mode_flags;
-} MapEntry;
+    unsigned int flags;
+} MapDesc;
 
-// for now these are hard-coded, but
-// eventually we'll do this through a
-// script instead
-MapEntry maps_list[]={
+/* for now these are hard-coded, but
+ * eventually we'll do this through a
+ * script instead
+ */
+MapDesc map_descriptors[]={
         // Single-player
 
         {"camp", "Boot camp", MAP_MODE_SINGLEPLAYER},
@@ -120,6 +123,28 @@ MapEntry maps_list[]={
         {"tdd", NULL, 0},
 };
 
+MapDesc *GetMapDescription(const char *name) {
+    for(unsigned int i = 0; i < plArrayElements(map_descriptors); ++i) {
+        if(strncmp(name, map_descriptors[i].name, sizeof(map_descriptors[i].name)) == 0) {
+            return &map_descriptors[i];
+        }
+    }
+
+    /* todo, dynamically load these in from an external list of sorts
+     * this is probably best done by scanning through the maps directory
+     * for some sort of extension file that describes each map such as it's
+     * name, supported modes and anything else we might want to do in the
+     * future.
+     *
+     * doing it this way will ensure it's easier to package up custom maps
+     * in the future :)
+     */
+
+    return NULL;
+}
+
+////////////////////////////////////////////////////////////////
+
 typedef struct MapTile {
 
 } MapTile;
@@ -128,11 +153,11 @@ typedef struct MapBlock {
 
 } MapBlock;
 
-typedef struct Map {
+struct {
+    char name[24];
 
-} Map;
-
-Map current_map;
+    unsigned int flags;
+} current_map;
 
 PLMesh *water_mesh = NULL;
 PLMesh *terrain_mesh = NULL;
@@ -146,12 +171,12 @@ PLMesh *terrain_mesh = NULL;
 void InitMaps(void) {
     terrain_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
     if(terrain_mesh == NULL) {
-        print_error("failed to create terrain mesh, %s, aborting!\n", plGetError());
+        Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
     }
 
     water_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 16, 64);
     if(water_mesh == NULL) {
-        print_error("failed to create water mesh, %s, aborting!\n", plGetError());
+        Error("failed to create water mesh, %s, aborting!\n", plGetError());
     }
 
     plClearMesh(water_mesh);
@@ -161,7 +186,78 @@ void InitMaps(void) {
     plUploadMesh(water_mesh);
 }
 
-void LoadMap(const char *name) {
+/* unloads the current map from memory
+ */
+void UnloadMap(void) {
+    if(current_map.name[0] == '\0') {
+        return;
+    }
+
+    memset(&current_map, 0, sizeof(current_map));
+}
+
+/* resets the state of the map to how
+ * it was when it was first loaded into
+ * memory
+ */
+void ResetMap(void) {
+    if(current_map.name[0] == '\0') {
+        LogWarn("attempted to reset map, but no map is currently loaded, aborting\n");
+        return;
+    }
+}
+
+/* loads a new map into memory - if the config
+ * matches that of the currently loaded map
+ * then it's ignored
+ */
+void LoadMap(const char *name, unsigned int flags) {
+    if(current_map.name[0] != '\0') {
+        if(strncmp(current_map.name, name, sizeof(current_map.name)) == 0) {
+            if(current_map.flags == flags) {
+                LogWarn("attempted to load duplicate map, \"%s\", aborting\n", name);
+                return;
+            }
+
+            LogInfo("attempted to load duplicate map, \"%s\", but with alternate state, resetting\n", name);
+            ResetMap();
+            return;
+        }
+    }
+
+    MapDesc *desc = GetMapDescription(name);
+    if(desc == NULL) {
+        LogWarn("failed to get descriptor for map, \"%s\", aborting\n", name);
+        return;
+    }
+
+    if(!(desc->flags & flags)) {
+        LogWarn("the mode you're attempting to use is unsupported by this map, \"%s\", aborting\n", name);
+        return;
+    }
+
+    UnloadMap();
+
+    char map_path[PL_SYSTEM_MAX_PATH];
+    snprintf(map_path, sizeof(map_path), "%s/maps/%s/", g_state.base_path, name);
+    if(!plPathExists(map_path)) {
+        LogWarn("failed to load map, path \"%s\" doesn't exist, aborting\n", map_path);
+        return;
+    }
+
+    char pog_path[PL_SYSTEM_MAX_PATH];
+    snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
+    if(!plFileExists(pog_path)) {
+        LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
+        return;
+    }
+
+    char pmg_path[PL_SYSTEM_MAX_PATH];
+    snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
+    if(!plFileExists(pmg_path)) {
+        LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
+        return;
+    }
 
 }
 

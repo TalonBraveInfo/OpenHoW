@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,13 +35,13 @@ Actor *Player_GetPig(Player *self, unsigned int slot) {
     assert(self != NULL);
 
     if(slot >= MAX_PIGS) {
-        print_warning("failed to grab pig, slot %d exceeds limit %d, ignoring!\n", slot, MAX_PIGS);
+        LogWarn("failed to grab pig, slot %d exceeds limit %d, ignoring!\n", slot, MAX_PIGS);
         return NULL;
     }
 
     Actor *pig = self->pigs[slot];
     if(pig == NULL) {
-        print_warning("failed to grab pig, invalid slot %d, ignoring!\n", slot);
+        LogWarn("failed to grab pig, invalid slot %d, ignoring!\n", slot);
         return NULL;
     }
 
@@ -52,12 +52,12 @@ void Player_AssignPig(Player *self, Actor *pig) {
     assert(self != NULL);
 
     if(pig == NULL) {
-        print_warning("attempted to assign an invalid pig, ignoring!\n");
+        LogWarn("attempted to assign an invalid pig, ignoring!\n");
         return;
     }
 
     if(pig->team != self->team) {
-        print_warning("pig isn't on same team as player, ignoring!\n");
+        LogWarn("pig isn't on same team as player, ignoring!\n");
         return;
     }
 

@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,11 +31,11 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t ch
     character -= 33;
 
     if(font->texture == NULL) {
-        print_error("attempted to draw bitmap font with invalid texture, aborting!\n");
+        Error("attempted to draw bitmap font with invalid texture, aborting!\n");
     }
 
     if(font_mesh == NULL) {
-        print_error("attempted to draw font before font init, aborting!\n");
+        Error("attempted to draw font before font init, aborting!\n");
     }
 
     plClearMesh(font_mesh);
@@ -69,7 +69,7 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     }
 
     if(font->texture == NULL) {
-        print_error("attempted to draw bitmap font with invalid texture, aborting!\n");
+        Error("attempted to draw bitmap font with invalid texture, aborting!\n");
     }
 
     plSetBlendMode(PL_BLEND_ADDITIVE);
@@ -96,7 +96,7 @@ BitmapFont *LoadBitmapFont(const char *name) {
     char tab_path[PL_SYSTEM_MAX_PATH];
     snprintf(tab_path, sizeof(tab_path), "%s/text/%s.tab", g_state.base_path, name);
     if(!plFileExists(tab_path)) {
-        print_error("failed to load tab for \"%s\", aborting!\n", name);
+        Error("failed to load tab for \"%s\", aborting!\n", name);
     }
 
     char tex_path[PL_SYSTEM_MAX_PATH];
@@ -105,13 +105,13 @@ BitmapFont *LoadBitmapFont(const char *name) {
         /* try again, just in case it's in the TIM format */
         snprintf(tex_path, sizeof(tex_path), "%s/text/%s.tim", g_state.base_path, name);
         if(!plFileExists(tex_path)) {
-            print_error("failed to load texture for \"%s\", aborting!\n", name);
+            Error("failed to load texture for \"%s\", aborting!\n", name);
         }
     }
 
     FILE *tab_file = fopen(tab_path, "rb");
     if(tab_file == NULL) {
-        print_error("failed to load tab \"%s\", aborting!\n", tab_path);
+        Error("failed to load tab \"%s\", aborting!\n", tab_path);
     }
 
     fseek(tab_file, 16, SEEK_CUR);
@@ -125,7 +125,7 @@ BitmapFont *LoadBitmapFont(const char *name) {
     } tab_indices[MAX_CHARS];
     unsigned int num_chars = (unsigned int)fread(tab_indices, sizeof(tab_indices) / MAX_CHARS, MAX_CHARS, tab_file);
     if(num_chars == 0) {
-        print_error("invalid number of characters for \"%s\", aborting!\n", tab_path);
+        Error("invalid number of characters for \"%s\", aborting!\n", tab_path);
     }
     fclose(tab_file);
 
@@ -133,7 +133,7 @@ BitmapFont *LoadBitmapFont(const char *name) {
 
     PLImage image;
     if(plLoadImage(tex_path, &image) != PL_RESULT_SUCCESS) {
-        print_error("failed to load in image, %s, aborting!\n", plGetError());
+        Error("failed to load in image, %s, aborting!\n", plGetError());
     }
 
     BitmapFont *font = calloc(1, sizeof(BitmapFont));
@@ -166,7 +166,7 @@ BitmapFont *LoadBitmapFont(const char *name) {
 
     font->texture = plCreateTexture();
     if(font->texture == NULL) {
-        print_error("failed to create texture for font, %s, aborting!\n", plGetError());
+        Error("failed to create texture for font, %s, aborting!\n", plGetError());
     }
 
     font->texture->filter = PL_TEXTURE_FILTER_NEAREST;
@@ -182,7 +182,7 @@ BitmapFont *LoadBitmapFont(const char *name) {
 void InitFonts(void) {
     font_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
     if(font_mesh == NULL) {
-        print_error("failed to create font mesh, %s, aborting!\n", plGetError());
+        Error("failed to create font mesh, %s, aborting!\n", plGetError());
     }
 
     g_fonts[FONT_BIG]        = LoadBitmapFont("big");

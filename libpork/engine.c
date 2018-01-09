@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -103,7 +103,7 @@ void InitDisplay(void) {
 
     g_state.camera = plCreateCamera();
     if(g_state.camera == NULL) {
-        print_error("failed to create camera, aborting!\n%s\n", plGetError());
+        Error("failed to create camera, aborting!\n%s\n", plGetError());
     }
     g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
     g_state.camera->bounds      = (PLAABB){{-20, -20},{20, 20}};
@@ -114,7 +114,7 @@ void InitDisplay(void) {
 
     g_state.ui_camera = plCreateCamera();
     if(g_state.ui_camera == NULL) {
-        print_error("failed to create ui camera, aborting!\n%s\n", plGetError());
+        Error("failed to create ui camera, aborting!\n%s\n", plGetError());
     }
     g_state.ui_camera->mode        = PL_CAMERA_MODE_ORTHOGRAPHIC;
     g_state.ui_camera->fov         = 90;
@@ -154,7 +154,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plSetupLogLevel(PORK_LOG_ENGINE_ERROR, "engine-error", PLColour(255, 0, 0, 255), true);
     plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
 
-    print("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
+    LogInfo("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
 
     g_launcher = interface;
 
@@ -193,7 +193,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
             unsigned int width = (unsigned int)strtoul(parm, NULL, 0);
             if(width == 0) {
-                print_warning("invalid width passed, ignoring!\n");
+                LogWarn("invalid width passed, ignoring!\n");
                 continue;
             }
             g_state.display_width = width;
@@ -204,7 +204,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             } ++i;
 
             if(!plPathExists(argv[i])) {
-                print_warning("invalid path \"%s\", does not exist, ignoring!\n");
+                LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
             }
 
             strncpy(g_state.base_path, argv[i], sizeof(g_state.base_path));
@@ -216,7 +216,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
             unsigned int height = (unsigned int)strtoul(parm, NULL, 0);
             if(height == 0) {
-                print_warning("invalid height passed, ignoring!\n");
+                LogWarn("invalid height passed, ignoring!\n");
                 continue;
             }
             g_state.display_height = height;
@@ -224,7 +224,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             plParseConsoleString(argv[i] + 1);
             ++i;
         } else {
-            print_warning("unknown/invalid command line argument, %s!\n", argv[i]);
+            LogWarn("unknown/invalid command line argument, %s!\n", argv[i]);
         }
     }
 

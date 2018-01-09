@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,9 +23,9 @@
 #include "pork_math.h"
 #include "player.h"
 
-#define print(...)          _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
-#define print_warning(...)  _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
-#define print_error(...) {                                      \
+#define LogInfo(...)    _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
+#define LogWarn(...)    _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
+#define Error(...) {                                            \
     _print_w_function(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);      \
     g_launcher.DisplayMessageBox(PORK_MBOX_ERROR, __VA_ARGS__); \
     exit(EXIT_FAILURE);                                         \

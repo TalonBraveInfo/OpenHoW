@@ -1,4 +1,4 @@
-/* OpenHOW
+/* OpenHoW
  * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -79,7 +79,7 @@ ActorDeclaration actor_declarations[4096];
 void InitActors(void) {
     g_actors = calloc(num_actors, sizeof(Actor));
     if(g_actors == NULL) {
-        print_error("failed to allocate memory for actors, aborting!\n");
+        Error("failed to allocate memory for actors, aborting!\n");
     }
 
     ClearActors();
@@ -108,7 +108,7 @@ Actor *Actor_Spawn(void) {
 
 void Actor_Destroy(Actor *self) {
     if(self == NULL) {
-        print_warning("attempted to free an invalid actor, we'll probably crash!\n");
+        LogWarn("attempted to free an invalid actor, we'll probably crash!\n");
         return;
     }
 
