@@ -125,7 +125,7 @@ MapDesc map_descriptors[]={
 
 MapDesc *GetMapDescription(const char *name) {
     for(unsigned int i = 0; i < plArrayElements(map_descriptors); ++i) {
-        if(strncmp(name, map_descriptors[i].name, sizeof(map_descriptors[i].name)) == 0) {
+        if(strncmp(map_descriptors[i].name, name, sizeof(map_descriptors[i].name)) == 0) {
             return &map_descriptors[i];
         }
     }
@@ -232,7 +232,19 @@ void LoadMapSpawns(const char *path) {
         Error("failed to open actor data, \"%s\", aborting\n", path);
     }
 
-    typedef struct __attribute__((packed)) POGIndex {
+    uint16_t num_indices;
+    if(fread(&num_indices, sizeof(uint16_t), 1, fh) != 1) {
+        Error("failed to get number of indices from pog, \"%s\", aborting\n", path);
+    }
+
+    map_state.spawns = calloc(num_indices, sizeof(map_state.spawns));
+    if(map_state.spawns == NULL) {
+        Error("failed to allocate enough memory for actor spawns, aborting\n");
+    }
+
+    memset(map_state.spawns, 0, sizeof(map_state.spawns) * num_indices);
+
+    struct __attribute__((packed)) {
         char name[16];
         char unused[16];
 
@@ -262,52 +274,45 @@ void LoadMapSpawns(const char *path) {
         uint16_t flag;
         uint16_t turn_delay;
         uint16_t unknown3;
-    } POGIndex;
+    } *indices;
 
-    size_t size = plGetFileSize(path);
-    unsigned int num_indices = (unsigned int)(size / sizeof(POGIndex));
-    map_state.spawns = calloc(num_indices, sizeof(map_state.spawns));
+    indices = calloc(num_indices, sizeof(indices));
     if(map_state.spawns == NULL) {
         Error("failed to allocate enough memory for actor spawns, aborting\n");
     }
 
-    memset(map_state.spawns, 0, sizeof(map_state.spawns) * num_indices);
-
-    POGIndex *indices = calloc(num_indices, sizeof(POGIndex));
-    if(map_state.spawns == NULL) {
-        Error("failed to allocate enough memory for actor spawns, aborting\n");
-    }
-
-    if(fread(indices, sizeof(POGIndex), num_indices, fh) != num_indices) {
+    if(fread(indices, sizeof(indices), num_indices, fh) != num_indices) {
         Error("failed to load in all indices from pog, \"%s\"\n", path);
     }
 
-    fclose(fh);
+    pork_fclose(fh);
 
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
         strncpy(map_state.spawns[i].name, pl_strtolower(indices[i].name), sizeof(map_state.spawns[i].name));
+        LogDebug("name %s\n", map_state.spawns[i].name);
 
         map_state.spawns[i].position.x = indices[i].offset[0];
         map_state.spawns[i].position.y = indices[i].offset[1];
         map_state.spawns[i].position.z = indices[i].offset[2];
+        LogDebug("position %s\n", plPrintVector3(map_state.spawns[i].position));
 
         map_state.spawns[i].bounds.x = indices[i].bounds[0];
         map_state.spawns[i].bounds.y = indices[i].bounds[1];
         map_state.spawns[i].bounds.z = indices[i].bounds[2];
+        LogDebug("bounds %s\n", plPrintVector3(map_state.spawns[i].bounds));
 
         map_state.spawns[i].type = indices[i].type;
+        map_state.spawns[i].team = indices[i].team;
+
         if(strncmp("crate", map_state.spawns[i].name, 5) != 0) {
             map_state.spawns[i].health = map_state.spawns[i].spawn_delay;
         } else {
             map_state.spawns[i].spawn_delay = map_state.spawns[i].spawn_delay;
         }
 
-        map_state.spawns[i].team = indices[i].team;
-        if(indices[i].)
-            map_state.spawns[i].health = indices[i].spawn_delay;
-
         map_state.spawns[i].angles.y = indices[i].angle;
+        LogDebug("angles %s\n", plPrintVector3(map_state.spawns[i].angles));
     }
 
     pork_free(indices);

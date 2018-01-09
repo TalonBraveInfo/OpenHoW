@@ -27,7 +27,7 @@ void ClearActors(void) {
         return;
     }
 
-    print_debug("clearing %d actors\n", num_actors);
+    LogDebug("clearing %d actors\n", num_actors);
     memset(g_actors, 0, sizeof(Actor) * num_actors);
 }
 
@@ -125,7 +125,7 @@ void Actor_Possess(Actor *self, Player *player) {
  * because it's been occupied by a player - otherwise it
  * will operate on it's own accord.
  */
-    print_debug("%s took control of actor %s\n", self->name);
+    LogDebug("%s took control of actor %s\n", self->name);
 
     self->controller = player;
     if(self->callback.EPossess) {
@@ -138,7 +138,7 @@ void Actor_Depossess(Actor *self, Player *player) {
         return;
     }
 
-    print_debug("%s released control of actor %s\n", self->name);
+    LogDebug("%s released control of actor %s\n", self->name);
 
     self->controller = NULL;
     if(self->callback.EDepossess) {

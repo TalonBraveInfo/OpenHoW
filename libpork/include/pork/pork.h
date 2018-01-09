@@ -57,9 +57,9 @@ enum {
 #define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
 
 #ifdef _DEBUG
-#   define print_debug(...) _print_w_function(PORK_LOG_DEBUG, __VA_ARGS__)
+#   define LogDebug(...) _print_w_function(PORK_LOG_DEBUG, __VA_ARGS__)
 #else
-#   define print_debug(...) ()
+#   define LogDebug(...) ()
 #endif
 
 ///////////////////////////////////////////////////

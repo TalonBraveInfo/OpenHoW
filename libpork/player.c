@@ -24,7 +24,7 @@ void ClearPlayers(void) {
 }
 
 void InitPlayers(void) {
-    print_debug("initializing player data\n");
+    LogDebug("initializing player data\n");
 
     ClearPlayers();
 }

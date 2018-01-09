@@ -200,7 +200,7 @@ void ShutdownFonts(void) {
              * failed loading at this point. so we'll just
              * break here.
              */
-            print_debug("hit null font in shutdown fonts, skipping the rest!\n");
+            LogDebug("hit null font in shutdown fonts, skipping the rest!\n");
             break;
         }
 
