@@ -155,9 +155,26 @@ typedef struct MapBlock {
 
 struct {
     char name[24];
+    char desc[256];
 
     unsigned int flags;
-} current_map;
+
+    struct {
+        char name[16];
+
+        unsigned int type;
+
+        PLVector3 position;
+        PLVector3 angles;
+        PLVector3 bounds;
+
+        uint16_t health;
+        uint8_t team;
+
+        uint16_t spawn_delay;
+    } *spawns;
+    unsigned int num_spawns;
+} map_state;
 
 PLMesh *water_mesh = NULL;
 PLMesh *terrain_mesh = NULL;
@@ -189,11 +206,13 @@ void InitMaps(void) {
 /* unloads the current map from memory
  */
 void UnloadMap(void) {
-    if(current_map.name[0] == '\0') {
+    if(map_state.name[0] == '\0') {
         return;
     }
 
-    memset(&current_map, 0, sizeof(current_map));
+    pork_free(map_state.spawns);
+
+    memset(&map_state, 0, sizeof(map_state));
 }
 
 /* resets the state of the map to how
@@ -201,10 +220,97 @@ void UnloadMap(void) {
  * memory
  */
 void ResetMap(void) {
-    if(current_map.name[0] == '\0') {
+    if(map_state.name[0] == '\0') {
         LogWarn("attempted to reset map, but no map is currently loaded, aborting\n");
         return;
     }
+}
+
+void LoadMapSpawns(const char *path) {
+    FILE *fh = fopen(path, "rb");
+    if(fh == NULL) {
+        Error("failed to open actor data, \"%s\", aborting\n", path);
+    }
+
+    typedef struct __attribute__((packed)) POGIndex {
+        char name[16];
+        char unused[16];
+
+        uint16_t offset[3];
+
+        uint16_t id;
+        uint16_t unknown0;
+        uint16_t angle;
+        uint16_t unknown1;
+
+        uint16_t type;
+
+        uint16_t bounds[3];
+
+        uint16_t bridge_flag;
+
+        uint16_t spawn_delay;
+
+        uint8_t unknown2;
+        uint8_t team;
+
+        uint16_t event_type;
+        uint8_t event_group;
+        uint8_t event_parms[19];
+        uint16_t event_offset[3];
+
+        uint16_t flag;
+        uint16_t turn_delay;
+        uint16_t unknown3;
+    } POGIndex;
+
+    size_t size = plGetFileSize(path);
+    unsigned int num_indices = (unsigned int)(size / sizeof(POGIndex));
+    map_state.spawns = calloc(num_indices, sizeof(map_state.spawns));
+    if(map_state.spawns == NULL) {
+        Error("failed to allocate enough memory for actor spawns, aborting\n");
+    }
+
+    memset(map_state.spawns, 0, sizeof(map_state.spawns) * num_indices);
+
+    POGIndex *indices = calloc(num_indices, sizeof(POGIndex));
+    if(map_state.spawns == NULL) {
+        Error("failed to allocate enough memory for actor spawns, aborting\n");
+    }
+
+    if(fread(indices, sizeof(POGIndex), num_indices, fh) != num_indices) {
+        Error("failed to load in all indices from pog, \"%s\"\n", path);
+    }
+
+    fclose(fh);
+
+    map_state.num_spawns = num_indices;
+    for(unsigned int i = 0; i < num_indices; ++i) {
+        strncpy(map_state.spawns[i].name, pl_strtolower(indices[i].name), sizeof(map_state.spawns[i].name));
+
+        map_state.spawns[i].position.x = indices[i].offset[0];
+        map_state.spawns[i].position.y = indices[i].offset[1];
+        map_state.spawns[i].position.z = indices[i].offset[2];
+
+        map_state.spawns[i].bounds.x = indices[i].bounds[0];
+        map_state.spawns[i].bounds.y = indices[i].bounds[1];
+        map_state.spawns[i].bounds.z = indices[i].bounds[2];
+
+        map_state.spawns[i].type = indices[i].type;
+        if(strncmp("crate", map_state.spawns[i].name, 5) != 0) {
+            map_state.spawns[i].health = map_state.spawns[i].spawn_delay;
+        } else {
+            map_state.spawns[i].spawn_delay = map_state.spawns[i].spawn_delay;
+        }
+
+        map_state.spawns[i].team = indices[i].team;
+        if(indices[i].)
+            map_state.spawns[i].health = indices[i].spawn_delay;
+
+        map_state.spawns[i].angles.y = indices[i].angle;
+    }
+
+    pork_free(indices);
 }
 
 /* loads a new map into memory - if the config
@@ -212,9 +318,9 @@ void ResetMap(void) {
  * then it's ignored
  */
 void LoadMap(const char *name, unsigned int flags) {
-    if(current_map.name[0] != '\0') {
-        if(strncmp(current_map.name, name, sizeof(current_map.name)) == 0) {
-            if(current_map.flags == flags) {
+    if(map_state.name[0] != '\0') {
+        if(strncmp(map_state.name, name, sizeof(map_state.name)) == 0) {
+            if(map_state.flags == flags) {
                 LogWarn("attempted to load duplicate map, \"%s\", aborting\n", name);
                 return;
             }
@@ -251,6 +357,8 @@ void LoadMap(const char *name, unsigned int flags) {
         LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
         return;
     }
+
+    LoadMapSpawns(pog_path);
 
     char pmg_path[PL_SYSTEM_MAX_PATH];
     snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
