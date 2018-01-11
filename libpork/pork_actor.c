@@ -16,7 +16,7 @@
  */
 #include <pork/pork.h>
 
-#include "engine.h"
+#include "pork_engine.h"
 
 unsigned int num_actors = 256;
 Actor *g_actors = NULL;

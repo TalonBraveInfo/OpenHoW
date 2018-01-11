@@ -16,7 +16,7 @@
  */
 #include <PL/platform_filesystem.h>
 
-#include "engine.h"
+#include "pork_engine.h"
 
 #define MAP_MODE_SINGLEPLAYER   (1 << 1)
 #define MAP_MODE_DEATHMATCH     (1 << 2)
@@ -125,7 +125,7 @@ MapDesc map_descriptors[]={
 
 MapDesc *GetMapDescription(const char *name) {
     for(unsigned int i = 0; i < plArrayElements(map_descriptors); ++i) {
-        if(strncmp(map_descriptors[i].name, name, sizeof(map_descriptors[i].name)) == 0) {
+        if(strcmp(map_descriptors[i].name, name) == 0) {
             return &map_descriptors[i];
         }
     }
@@ -201,6 +201,10 @@ void InitMaps(void) {
     // todo, outline water mesh...
 
     plUploadMesh(water_mesh);
+}
+
+void ShutdownMaps(void) {
+
 }
 
 /* unloads the current map from memory

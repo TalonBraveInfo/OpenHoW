@@ -21,7 +21,7 @@
 #include <PL/platform_graphics.h>
 
 #include "pork_math.h"
-#include "player.h"
+#include "pork_player.h"
 
 #define LogInfo(...)    _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
 #define LogWarn(...)    _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)

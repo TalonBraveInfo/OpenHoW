@@ -16,8 +16,8 @@
  */
 #include <PL/platform_filesystem.h>
 
-#include "engine.h"
-#include "model.h"
+#include "pork_engine.h"
+#include "pork_model.h"
 
 PLModel *LoadVTXModel(const char *path) {
     FILE *vtx_file = fopen(path, "rb");

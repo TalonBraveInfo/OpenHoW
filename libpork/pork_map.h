@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "pork_engine.h"
+#pragma once
 
-void InitAudio(void) {
+void InitMaps(void);
+void ShutdownMaps(void);
 
-}
-
-void ShutdownAudio(void) {
-
-}
+void UnloadMap(void);
+void ResetMap(void);
+void LoadMap(const char *name, unsigned int flags);
+void DrawMap(void);

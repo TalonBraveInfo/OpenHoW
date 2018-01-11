@@ -17,7 +17,7 @@
 #include <pork/pork.h>
 #include <PL/platform_filesystem.h>
 #include "jsmn/jsmn.h"
-#include "engine.h"
+#include "pork_engine.h"
 
 void SaveConfig(void) {
     // todo, take current state and save it to config.json

@@ -14,10 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "engine.h"
-#include "model.h"
-#include "actor.h"
-#include "font.h"
+#include "pork_engine.h"
+#include "pork_model.h"
+#include "pork_map.h"
+#include "pork_actor.h"
+#include "pork_font.h"
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
@@ -36,7 +37,6 @@ void SimulatePork() {
     g_state.last_sim_tick = g_launcher.GetTicks();
 }
 
-void DrawMap(void);
 void DEBUGDrawSkeleton(void);
 
 void DrawPork(double delta) {
@@ -139,7 +139,6 @@ void ExtractGameData(const char *path);
 void ConvertImageCallback(unsigned int argc, char *argv[]);
 
 void InitConfig(void);
-void InitMaps(void);
 void InitPlayers(void);
 void InitActors(void);
 void InitFonts(void);
