@@ -234,6 +234,10 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitActors();
     InitModels();
     InitMaps();
+
+#if 1
+    LoadMap("archi", MAP_MODE_DEATHMATCH);
+#endif
 }
 
 void ShutdownPork(void) {

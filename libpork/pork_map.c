@@ -17,15 +17,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
-
-#define MAP_MODE_SINGLEPLAYER   (1 << 1)
-#define MAP_MODE_DEATHMATCH     (1 << 2)
-
-#define MAP_MODE_SURVIVAL_NOVICE    (1 << 3)
-#define MAP_MODE_SURVIVAL_EXPERT    (1 << 4)
-#define MAP_MODE_SURVIVAL_STRATEGY  (1 << 5)
-
-#define MAP_MODE_GENERATED  (1 << 6)
+#include "pork_map.h"
 
 typedef struct MapDesc {
     const char *name;
@@ -248,66 +240,59 @@ void LoadMapSpawns(const char *path) {
 
     memset(map_state.spawns, 0, sizeof(map_state.spawns) * num_indices);
 
-    struct __attribute__((packed)) {
-        char name[16];
-        char unused[16];
-
-        uint16_t offset[3];
-
-        uint16_t id;
-        uint16_t unknown0;
-        uint16_t angle;
-        uint16_t unknown1;
-
-        uint16_t type;
-
-        uint16_t bounds[3];
-
-        uint16_t bridge_flag;
-
-        uint16_t spawn_delay;
-
-        uint8_t unknown2;
-        uint8_t team;
-
-        uint16_t event_type;
-        uint8_t event_group;
-        uint8_t event_parms[19];
-        uint16_t event_offset[3];
-
-        uint16_t flag;
-        uint16_t turn_delay;
-        uint16_t unknown3;
-    } *indices;
-
-    indices = calloc(num_indices, sizeof(indices));
-    if(map_state.spawns == NULL) {
-        Error("failed to allocate enough memory for actor spawns, aborting\n");
-    }
-
-    if(fread(indices, sizeof(indices), num_indices, fh) != num_indices) {
-        Error("failed to load in all indices from pog, \"%s\"\n", path);
-    }
-
-    pork_fclose(fh);
-
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
-        strncpy(map_state.spawns[i].name, pl_strtolower(indices[i].name), sizeof(map_state.spawns[i].name));
+        struct __attribute__((packed)) { /* this should be 94 bytes */
+            char name[16];
+            char unused[16];
+
+            uint16_t offset[3];
+
+            uint16_t id;
+            uint16_t unknown0;
+            uint16_t angle;
+            uint16_t unknown1;
+
+            uint16_t type;
+
+            uint16_t bounds[3];
+
+            uint16_t bridge_flag;
+
+            uint16_t spawn_delay;
+
+            uint8_t unknown2;
+            uint8_t team;
+
+            uint16_t event_type;
+            uint8_t event_group;
+            uint8_t event_parms[19];
+            uint16_t event_offset[3];
+
+            uint16_t flag;
+            uint16_t turn_delay;
+            uint16_t unknown3;
+        } index;
+
+        if(fread(&index, sizeof(index), 1, fh) != 1) {
+            Error("failed to load index %d from pog, \"%s\"\n", i, path);
+        }
+
+        strncpy(map_state.spawns[i].name, pl_strtolower(index.name), sizeof(map_state.spawns[i].name));
         LogDebug("name %s\n", map_state.spawns[i].name);
 
-        map_state.spawns[i].position.x = indices[i].offset[0];
-        map_state.spawns[i].position.y = indices[i].offset[1];
-        map_state.spawns[i].position.z = indices[i].offset[2];
+        map_state.spawns[i].position.x = index.offset[0];
+        map_state.spawns[i].position.y = index.offset[1];
+        map_state.spawns[i].position.z = index.offset[2];
         LogDebug("position %s\n", plPrintVector3(map_state.spawns[i].position));
 
-        map_state.spawns[i].bounds.x = indices[i].bounds[0];
-        map_state.spawns[i].bounds.y = indices[i].bounds[1];
-        map_state.spawns[i].bounds.z = indices[i].bounds[2];
+        map_state.spawns[i].bounds.x = index.bounds[0];
+        map_state.spawns[i].bounds.y = index.bounds[1];
+        map_state.spawns[i].bounds.z = index.bounds[2];
         LogDebug("bounds %s\n", plPrintVector3(map_state.spawns[i].bounds));
 
-        map_state.spawns[i].type = indices[i].type;
-        map_state.spawns[i].team = indices[i].team;
+        map_state.spawns[i].type = index.type;
+        map_state.spawns[i].team = index.team;
 
         if(strncmp("crate", map_state.spawns[i].name, 5) != 0) {
             map_state.spawns[i].health = map_state.spawns[i].spawn_delay;
@@ -315,21 +300,21 @@ void LoadMapSpawns(const char *path) {
             map_state.spawns[i].spawn_delay = map_state.spawns[i].spawn_delay;
         }
 
-        map_state.spawns[i].angles.y = indices[i].angle;
+        map_state.spawns[i].angles.y = index.angle;
         LogDebug("angles %s\n", plPrintVector3(map_state.spawns[i].angles));
     }
 
-    pork_free(indices);
+    pork_fclose(fh);
 }
 
 /* loads a new map into memory - if the config
  * matches that of the currently loaded map
  * then it's ignored
  */
-void LoadMap(const char *name, unsigned int flags) {
+void LoadMap(const char *name, unsigned int mode) {
     if(map_state.name[0] != '\0') {
         if(strncmp(map_state.name, name, sizeof(map_state.name)) == 0) {
-            if(map_state.flags == flags) {
+            if(map_state.flags == mode) {
                 LogWarn("attempted to load duplicate map, \"%s\", aborting\n", name);
                 return;
             }
@@ -346,7 +331,7 @@ void LoadMap(const char *name, unsigned int flags) {
         return;
     }
 
-    if(!(desc->flags & flags)) {
+    if(!(desc->flags & mode)) {
         LogWarn("the mode you're attempting to use is unsupported by this map, \"%s\", aborting\n", name);
         return;
     }
@@ -375,7 +360,6 @@ void LoadMap(const char *name, unsigned int flags) {
         LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
         return;
     }
-
 }
 
 void DrawMap(void) {

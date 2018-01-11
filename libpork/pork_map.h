@@ -16,10 +16,19 @@
  */
 #pragma once
 
+#define MAP_MODE_SINGLEPLAYER   (1 << 1)
+#define MAP_MODE_DEATHMATCH     (1 << 2)
+
+#define MAP_MODE_SURVIVAL_NOVICE    (1 << 3)
+#define MAP_MODE_SURVIVAL_EXPERT    (1 << 4)
+#define MAP_MODE_SURVIVAL_STRATEGY  (1 << 5)
+
+#define MAP_MODE_GENERATED  (1 << 6)
+
 void InitMaps(void);
 void ShutdownMaps(void);
 
 void UnloadMap(void);
 void ResetMap(void);
-void LoadMap(const char *name, unsigned int flags);
+void LoadMap(const char *name, unsigned int mode);
 void DrawMap(void);
