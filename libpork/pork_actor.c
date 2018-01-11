@@ -40,6 +40,7 @@ void SimulateActors() {
         }
 
         // todo
+        actor->is_visible = true;
     }
 }
 
@@ -50,7 +51,39 @@ void DrawActors(double delta) {
         if(!actor->is_reserved || !actor->is_visible) {
             continue;
         }
+
+        if(actor->model != NULL) {
+            if(cv_debug_skeleton->b_value) {
+                plDrawModelSkeleton(actor->model);
+            } else {
+                plDrawModel(actor->model);
+            }
+        }
     }
+}
+
+/* returns the first actor with that specific name */
+Actor *GetActor(const char *name) {
+    int slot = 0;
+    bool is_num = false;
+    if(pl_strisdigit(name)) {
+        slot = atoi(name);
+        is_num = true;
+    }
+
+    for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
+        if(!actor->is_reserved) {
+            continue;
+        }
+
+        if(!is_num && strncmp(name, actor->name, sizeof(actor->name)) == 0) {
+            return actor;
+        } else {
+            // todo
+        }
+    }
+
+    return NULL;
 }
 
 /* Actor declarations are passed from

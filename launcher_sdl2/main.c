@@ -21,7 +21,7 @@
 SDL_Window *window = NULL;
 SDL_GLContext *context = NULL;
 
-#define LogInfo(...)          plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
+#define LogInfo(...)  plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
 #define LogWarn(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
 #define Error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
 

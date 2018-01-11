@@ -20,6 +20,8 @@ void ClearActors(void);
 void DrawActors(double delta);
 void SimulateActors();
 
+Actor *GetActor(const char *name);
+
 Actor *Actor_Spawn(void);
 void Actor_Destroy(Actor *self);
 void Actor_Possess(Actor *self, Player *player);

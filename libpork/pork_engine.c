@@ -32,6 +32,17 @@ PLConsoleVariable *cv_debug_skeleton = NULL;
 void SimulatePork() {
     g_state.sim_ticks = g_launcher.GetTicks();
 
+#if 1
+    //LoadMap("archi", MAP_MODE_DEATHMATCH);
+
+    static Actor *skel_test = NULL;
+    if(skel_test == NULL) {
+        skel_test = Actor_Spawn();
+        skel_test->model = g_model_cache.pigs[0];
+        snprintf(skel_test->name, sizeof(skel_test->name), "Skeleton Rig");
+    }
+#endif
+
     SimulateActors();
 
     g_state.last_sim_tick = g_launcher.GetTicks();
@@ -138,6 +149,9 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 void ExtractGameData(const char *path);
 void ConvertImageCallback(unsigned int argc, char *argv[]);
 
+// pork_console.c
+void SetCommand(unsigned int argc, char *argv[]);
+
 void InitConfig(void);
 void InitPlayers(void);
 void InitActors(void);
@@ -170,6 +184,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
 
     plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
+    plRegisterConsoleCommand("set", SetCommand, "");
 
     InitConfig();
 
@@ -234,10 +249,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitActors();
     InitModels();
     InitMaps();
-
-#if 1
-    LoadMap("archi", MAP_MODE_DEATHMATCH);
-#endif
 }
 
 void ShutdownPork(void) {
