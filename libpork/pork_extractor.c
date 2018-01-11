@@ -43,10 +43,8 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
     plStripExtension(ptg_name, plGetFileName(input_path));
     pl_strtolower(ptg_name);
 
-    char output_dir[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(output_dir, "%s/%s", output_path, ptg_name);
-    if(!plCreatePath(output_dir)) {
-        LogInfo("failed to create path %s, aborting!\n", output_dir);
+    if(!plCreatePath(output_path)) {
+        LogInfo("failed to create path %s, aborting!\n", output_path);
         return;
     }
 
@@ -73,7 +71,7 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
         }
 
         char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-        sprintf(out_path, "%s/%d.tim", output_dir, i);
+        sprintf(out_path, "%s/%d.tim", output_path, i);
         out = fopen(out_path, "wb");
         if(out == NULL) {
             LogInfo("failed to open %s for writing, aborting!\n", out_path);
