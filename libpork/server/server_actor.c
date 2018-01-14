@@ -31,7 +31,7 @@ void ClearActors(void) {
     memset(g_actors, 0, sizeof(Actor) * num_actors);
 }
 
-void SimulateActors() {
+void SimulateActors(void) {
     assert(g_actors != NULL);
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
@@ -159,7 +159,8 @@ void Actor_Destroy(Actor *self) {
         return;
     }
 
-    memset(self, 0, sizeof(Actor)); // will set 'reserved' to false
+    /* will set 'reserved' to false */
+    memset(self, 0, sizeof(Actor));
 }
 
 void Actor_Possess(Actor *self, Player *player) {

@@ -14,15 +14,3 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
-
-void ClearActors(void);
-void DrawActors(double delta);
-void SimulateActors();
-
-Actor *GetActor(const char *name);
-
-Actor *Actor_Spawn(void);
-void Actor_Destroy(Actor *self);
-void Actor_Possess(Actor *self, Player *player);
-void Actor_Depossess(Actor *self, Player *player);

@@ -14,20 +14,5 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
-
-typedef struct Player {
-    uint8_t ident;
-
-    bool is_local;
-    bool is_active;
-
-    char name[24];
-    uint8_t team;
-
-    struct Actor *pigs[MAX_PIGS];
-    unsigned int num_pigs;
-    unsigned int current_pig;
-} Player;
-
-void ClearPlayers(void);
+#include "pork_engine.h"
+#include "client_actor.h"

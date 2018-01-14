@@ -32,6 +32,12 @@ file(
         *.cpp *.c
         *.h
 
+        server/*.c
+        server/*.h
+
+        client/*.c
+        client/*.h
+
         jsmn/jsmn.c
         jsmn/jsmn.h
 

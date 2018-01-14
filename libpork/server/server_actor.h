@@ -16,18 +16,13 @@
  */
 #pragma once
 
-typedef struct Player {
-    uint8_t ident;
+void ClearActors(void);
+void DrawActors(double delta);
+void SimulateActors(void);
 
-    bool is_local;
-    bool is_active;
+Actor *GetActor(const char *name);
 
-    char name[24];
-    uint8_t team;
-
-    struct Actor *pigs[MAX_PIGS];
-    unsigned int num_pigs;
-    unsigned int current_pig;
-} Player;
-
-void ClearPlayers(void);
+Actor *Actor_Spawn(void);
+void Actor_Destroy(Actor *self);
+void Actor_Possess(Actor *self, Player *player);
+void Actor_Depossess(Actor *self, Player *player);

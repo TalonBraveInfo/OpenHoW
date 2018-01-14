@@ -54,6 +54,9 @@ struct {
 
     char base_path[PL_SYSTEM_MAX_PATH];
 
+    /* server / client logic */
+    bool is_host;
+
     // viewport
     bool display_fullscreen;
     unsigned int display_width;

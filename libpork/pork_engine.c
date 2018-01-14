@@ -17,7 +17,7 @@
 #include "pork_engine.h"
 #include "pork_model.h"
 #include "pork_map.h"
-#include "pork_actor.h"
+#include "server/server_actor.h"
 #include "pork_font.h"
 
 #include <PL/platform_filesystem.h>
@@ -32,18 +32,22 @@ PLConsoleVariable *cv_debug_skeleton = NULL;
 void SimulatePork(void) {
     g_state.sim_ticks = g_launcher.GetTicks();
 
-#if 1
-    //LoadMap("archi", MAP_MODE_DEATHMATCH);
+    /* todo, handle input and pass to server */
 
-    static Actor *skel_test = NULL;
-    if(skel_test == NULL) {
-        skel_test = Actor_Spawn();
-        skel_test->model = g_model_cache.pigs[0];
-        snprintf(skel_test->name, sizeof(skel_test->name), "Skeleton Rig");
-    }
+    if(g_state.is_host) {
+#if 1
+        //LoadMap("archi", MAP_MODE_DEATHMATCH);
+
+        static Actor *skel_test = NULL;
+        if (skel_test == NULL) {
+            skel_test = Actor_Spawn();
+            skel_test->model = g_model_cache.pigs[0];
+            snprintf(skel_test->name, sizeof(skel_test->name), "Skeleton Rig");
+        }
 #endif
 
-    SimulateActors();
+        SimulateActors();
+    }
 
     g_state.last_sim_tick = g_launcher.GetTicks();
 }

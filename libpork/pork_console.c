@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pork_engine.h"
-#include "pork_actor.h"
+#include "server/server_actor.h"
 
 void GetCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {

@@ -16,18 +16,6 @@
  */
 #pragma once
 
-typedef struct Player {
-    uint8_t ident;
-
-    bool is_local;
-    bool is_active;
-
-    char name[24];
-    uint8_t team;
-
-    struct Actor *pigs[MAX_PIGS];
-    unsigned int num_pigs;
-    unsigned int current_pig;
-} Player;
-
-void ClearPlayers(void);
+typedef struct CActor {
+    PLVector3 position;
+} CActor;

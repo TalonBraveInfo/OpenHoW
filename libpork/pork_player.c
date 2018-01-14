@@ -17,7 +17,7 @@
 #include <pork/pork.h>
 
 #include "pork_engine.h"
-#include "pork_actor.h"
+#include "server/server_actor.h"
 
 void ClearPlayers(void) {
     memset(g_state.players, 0, sizeof(Player) * MAX_PLAYERS);
