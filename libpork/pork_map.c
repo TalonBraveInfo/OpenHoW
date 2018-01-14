@@ -19,6 +19,8 @@
 #include "pork_engine.h"
 #include "pork_map.h"
 
+#include "server/server_actor.h"
+
 typedef struct MapDesc {
     const char *name;
     const char *description;
@@ -305,6 +307,8 @@ void LoadMapSpawns(const char *path) {
     }
 
     pork_fclose(fh);
+
+    SVClearActors();
 }
 
 /* loads a new map into memory - if the config
@@ -345,20 +349,22 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
-    char pog_path[PL_SYSTEM_MAX_PATH];
-    snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
-    if(!plFileExists(pog_path)) {
-        LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
-        return;
-    }
-
-    LoadMapSpawns(pog_path);
-
     char pmg_path[PL_SYSTEM_MAX_PATH];
     snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
     if(!plFileExists(pmg_path)) {
         LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
         return;
+    }
+
+    if(g_state.is_host) {
+        char pog_path[PL_SYSTEM_MAX_PATH];
+        snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
+        if (!plFileExists(pog_path)) {
+            LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
+            return;
+        }
+
+        LoadMapSpawns(pog_path);
     }
 }
 

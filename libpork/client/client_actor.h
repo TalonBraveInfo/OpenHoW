@@ -16,6 +16,29 @@
  */
 #pragma once
 
-typedef struct CActor {
+typedef struct CLActor {
+    bool is_reserved;
+    bool is_visible;
+
+    uint32_t type;
+
+    int16_t health;
+    struct {
+        uint32_t item_id;
+        int16_t quantity;
+    } inventory[MAX_INVENTORY];
+    uint8_t current_item;
+
     PLVector3 position;
-} CActor;
+    PLVector3 angles;
+    PLVector3 bounds;
+
+    PLModel *model;
+    uint8_t eyes_frame;
+    uint8_t gob_frame;
+
+    /* animation */
+    PLAnimation *cur_animation;
+} CLActor;
+
+void DrawActors(double delta);

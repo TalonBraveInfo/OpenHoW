@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pork_engine.h"
-#include "pork_model.h"
 #include "pork_map.h"
-#include "server/server_actor.h"
 #include "pork_font.h"
+
+#include "server/server.h"
+#include "client/client.h"
+#include "client/client_actor.h"
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
@@ -32,21 +34,10 @@ PLConsoleVariable *cv_debug_skeleton = NULL;
 void SimulatePork(void) {
     g_state.sim_ticks = g_launcher.GetTicks();
 
-    /* todo, handle input and pass to server */
+    SimulateClient();
 
     if(g_state.is_host) {
-#if 1
-        //LoadMap("archi", MAP_MODE_DEATHMATCH);
-
-        static Actor *skel_test = NULL;
-        if (skel_test == NULL) {
-            skel_test = Actor_Spawn();
-            skel_test->model = g_model_cache.pigs[0];
-            snprintf(skel_test->name, sizeof(skel_test->name), "Skeleton Rig");
-        }
-#endif
-
-        SimulateActors();
+        SimulateServer();
     }
 
     g_state.last_sim_tick = g_launcher.GetTicks();
@@ -158,7 +149,6 @@ void SetCommand(unsigned int argc, char *argv[]);
 
 void InitConfig(void);
 void InitPlayers(void);
-void InitActors(void);
 void InitFonts(void);
 void InitShaders(void);
 void InitModels(void);
@@ -250,14 +240,14 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitShaders();
     InitFonts();
     InitPlayers();
-    InitActors();
     InitModels();
     InitMaps();
 }
 
 void ShutdownPork(void) {
     ClearPlayers();
-    ClearActors();
+
+    ShutdownServer();
 
     plShutdown();
 }

@@ -16,3 +16,25 @@
  */
 #include "pork_engine.h"
 #include "client_actor.h"
+
+CLActor *client_actors = NULL;
+
+void DrawActors(double delta) {
+#if 0
+    assert(g_actors != NULL);
+
+    for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
+        if(!actor->is_reserved || !actor->is_visible) {
+            continue;
+        }
+
+        if(actor->model != NULL) {
+            plDrawModel(actor->model);
+            if(cv_debug_skeleton->b_value) {
+                plDrawModelSkeleton(actor->model);
+            }
+        }
+    }
+#else
+#endif
+}

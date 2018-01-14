@@ -128,68 +128,7 @@ enum {
 #define MAX_PLAYERS 4
 #define MAX_PIGS    24
 
-///////////////////////////////////////////////////
-// Actor
-
-typedef struct Actor {
-    char name[32]; //aka, class... used as simple ident
-
-    bool is_reserved; // if the actor is free, we can use it as a new actor
-    bool is_visible;
-
-    struct Player *controller; // which player is currently controlling us?
-
-    PLVector3 position;
-    PLVector3 angles;
-    PLVector3 bounds;   // extend from origin
-
-    uint16_t flags;
-
-    struct { // special logic
-        uint16_t type;
-        uint8_t group;
-        uint8_t parameters[19];
-        PLVector3 target_position;
-
-        uint16_t spawn_delay; // counted in turns
-    } logic;
-
-    // allow us to implement custom interfaces through PLModel?
-    // would let us add support for Hogs of War's model format while
-    // also leaving leg room for supporting other formats! Would be neato :)
-    PLModel *model;
-
-    struct {
-        uint32_t item_id;
-        int16_t quantity; // -1 value denotes infinite?
-        /* once thrown, should negate quantity if more than 1 (otherwise remove if 0)
-         * and then should spawn an actor necessary for the weapon projectile to
-         * function as it should - can have a table for this of some description?
-         */
-    } inventory[32];
-    uint8_t current_item; // matched against inventory slot
-
-    struct {
-        void(*EPossess)(struct Actor *self, struct Player *controller);
-        void(*EDepossess)(struct Actor *self, struct Player *controller);
-    } callback;
-
-    uint8_t team;       // red, green, blue etc.
-    uint8_t class_num;  // spy, sniper, engineer etc.
-
-    uint8_t eyes_frame;
-    uint8_t gob_frame;
-
-    // might need old_animation_index? for interpolation... hum
-    uint8_t animation_index;  // current animation
-    uint8_t frame_index;      // current frame in animation
-
-    // some objects in hogs of war have other crap
-    // attached / involved in it's behaviour - for
-    // this we'll just include child/parent pointers
-    struct Actor *child;
-    struct Actor *parent;
-} Actor;
+#define MAX_INVENTORY   32
 
 ///////////////////////////////////////////////////
 

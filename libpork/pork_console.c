@@ -40,32 +40,36 @@ void SetCommand(unsigned int argc, char *argv[]) {
                 return;
             }
 
-            Actor *actor = GetActor(actor_name);
-            if(actor == NULL) {
-                LogWarn("unable to find actor %s, aborting\n", actor_name);
-                return;
-            }
-
-            const char *modifier = argv[++i];
-            if(modifier == NULL || modifier[0] == '\0') {
-                LogWarn("no modifier provided for actor %s, aborting\n", actor_name);
-                return;
-            }
-
-            /* todo, add table of string + parm so we don't need to hard-code most of this */
-            if(pl_strncasecmp("name", modifier, 4) == 0) {
-                const char *name = argv[++i];
-                if(name == NULL || name[0] == '\0') {
-                    LogWarn("invalid name, aborting\n");
+            if(g_state.is_host) {
+                Actor *actor = SVGetActor(actor_name);
+                if (actor == NULL) {
+                    LogWarn("unable to find actor %s, aborting\n", actor_name);
                     return;
                 }
 
-                strncpy(actor->name, name, sizeof(actor->name));
-                return;
-            } else if(pl_strncasecmp("position", modifier, 8) == 0) {
+                const char *modifier = argv[++i];
+                if (modifier == NULL || modifier[0] == '\0') {
+                    LogWarn("no modifier provided for actor %s, aborting\n", actor_name);
+                    return;
+                }
 
-            } else if(pl_strncasecmp("bounds", modifier, 6) == 0) {
+                /* todo, add table of string + parm so we don't need to hard-code most of this */
+                if (pl_strncasecmp("name", modifier, 4) == 0) {
+                    const char *name = argv[++i];
+                    if (name == NULL || name[0] == '\0') {
+                        LogWarn("invalid name, aborting\n");
+                        return;
+                    }
 
+                    strncpy(actor->name, name, sizeof(actor->name));
+                    return;
+                } else if (pl_strncasecmp("position", modifier, 8) == 0) {
+
+                } else if (pl_strncasecmp("bounds", modifier, 6) == 0) {
+
+                }
+            } else {
+                /* todo, client-side equivalent */
             }
             return;
         } else if(pl_strncasecmp("map", argv[i], 3) == 0) {

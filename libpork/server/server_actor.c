@@ -17,52 +17,34 @@
 #include <pork/pork.h>
 
 #include "pork_engine.h"
+#include "server_actor.h"
 
 unsigned int num_actors = 256;
 Actor *g_actors = NULL;
 
-void ClearActors(void) {
-    // check so we can use this on shutdown...
+void SVClearActors(void) {
     if(g_actors == NULL) {
-        return;
+        if((g_actors = calloc(num_actors, sizeof(Actor))) == NULL) {
+            Error("failed to allocate memory for actors, aborting!\n");
+        }
     }
 
     LogDebug("clearing %d actors\n", num_actors);
     memset(g_actors, 0, sizeof(Actor) * num_actors);
 }
 
-void SimulateActors(void) {
+void SVSimulateActors(void) {
     assert(g_actors != NULL);
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
         if(!actor->is_reserved) {
             continue;
         }
-
-        // todo
-        actor->is_visible = true;
-    }
-}
-
-void DrawActors(double delta) {
-    assert(g_actors != NULL);
-
-    for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
-        if(!actor->is_reserved || !actor->is_visible) {
-            continue;
-        }
-
-        if(actor->model != NULL) {
-            plDrawModel(actor->model);
-            if(cv_debug_skeleton->b_value) {
-                plDrawModelSkeleton(actor->model);
-            }
-        }
     }
 }
 
 /* returns the first actor with that specific name */
-Actor *GetActor(const char *name) {
+Actor *SVGetActor(const char *name) {
     /* slightly ugly, but check if the whole string is numeric */
     if(pl_strisalpha(name) == -1) {
         unsigned long slot = strtoul(name, NULL, 0);
@@ -117,12 +99,8 @@ typedef struct ActorDeclaration {
 ActorDeclaration actor_declarations[4096];
 
 void InitActors(void) {
-    g_actors = calloc(num_actors, sizeof(Actor));
-    if(g_actors == NULL) {
-        Error("failed to allocate memory for actors, aborting!\n");
-    }
 
-    ClearActors();
+    SVClearActors();
 
     // todo, load in actor_decl.json (or something), containing an outline of how each actor class functions
 }
