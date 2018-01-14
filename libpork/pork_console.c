@@ -22,7 +22,7 @@ void GetCommand(unsigned int argc, char *argv[]) {
         return;
     }
 
-    for(int i = 1; i < argc; ++i) {
+    for(unsigned int i = 1; i < argc; ++i) {
 
     }
 }
@@ -32,7 +32,7 @@ void SetCommand(unsigned int argc, char *argv[]) {
         return;
     }
 
-    for(int i = 1; i < argc; ++i) {
+    for(unsigned int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("actor", argv[i], 5) == 0) {
             const char *actor_name = argv[++i];
             if(actor_name == NULL || actor_name[0] == '\0') {
