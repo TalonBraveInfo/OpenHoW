@@ -29,7 +29,7 @@ PLConsoleVariable *cv_debug_skeleton = NULL;
 
 //////////////////////////////////////////////////////////////////////////
 
-void SimulatePork() {
+void SimulatePork(void) {
     g_state.sim_ticks = g_launcher.GetTicks();
 
 #if 1

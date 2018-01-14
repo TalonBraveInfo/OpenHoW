@@ -53,10 +53,9 @@ void DrawActors(double delta) {
         }
 
         if(actor->model != NULL) {
+            plDrawModel(actor->model);
             if(cv_debug_skeleton->b_value) {
                 plDrawModelSkeleton(actor->model);
-            } else {
-                plDrawModel(actor->model);
             }
         }
     }
