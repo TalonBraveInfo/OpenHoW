@@ -63,11 +63,21 @@ void DrawActors(double delta) {
 
 /* returns the first actor with that specific name */
 Actor *GetActor(const char *name) {
-    int slot = 0;
-    bool is_num = false;
-    if(pl_strisdigit(name)) {
-        slot = atoi(name);
-        is_num = true;
+    /* slightly ugly, but check if the whole string is numeric */
+    if(pl_strisalpha(name) == -1) {
+        int slot = atoi(name);
+        if(slot > num_actors) {
+            LogWarn("slot is greater than the number of available actors, aborting!\n");
+            return NULL;
+        }
+
+        Actor *actor = &g_actors[slot];
+        if(!actor->is_reserved) {
+            LogWarn("chosen actor is not active, aborting!\n");
+            return NULL;
+        }
+
+        return actor;
     }
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
@@ -75,10 +85,8 @@ Actor *GetActor(const char *name) {
             continue;
         }
 
-        if(!is_num && strncmp(name, actor->name, sizeof(actor->name)) == 0) {
+        if(strncmp(name, actor->name, sizeof(actor->name)) == 0) {
             return actor;
-        } else {
-            // todo
         }
     }
 
