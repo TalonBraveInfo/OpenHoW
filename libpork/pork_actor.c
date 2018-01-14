@@ -65,7 +65,7 @@ void DrawActors(double delta) {
 Actor *GetActor(const char *name) {
     /* slightly ugly, but check if the whole string is numeric */
     if(pl_strisalpha(name) == -1) {
-        int slot = atoi(name);
+        unsigned long slot = strtoul(name, NULL, 0);
         if(slot > num_actors) {
             LogWarn("slot is greater than the number of available actors, aborting!\n");
             return NULL;
