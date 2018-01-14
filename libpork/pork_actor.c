@@ -130,19 +130,26 @@ void InitActors(void) {
 //////////////////////////////////////////////////////////////
 
 Actor *Actor_Spawn(void) {
-    for(unsigned int i = 0; i < num_actors; ++i) {
-        if(!g_actors[i].is_reserved) {
-            Actor *actor = &g_actors[i];
-            snprintf(actor->name, sizeof(actor->name), "actor_%d", i);
+    for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
+        if(!actor->is_reserved) {
             actor->is_reserved = true;
             return actor;
         }
     }
 
+    /* otherwise, attempt to resize the array to accomidate any additional
+     * actors we want to add
+     *
+     * todo, in future, let's be more graceful with this, but for now we'll crash and burn!
+     */
+
     unsigned int old_num_actors = num_actors;
-    // todo, update the array size
-    // ensure all new actors all nullified...
+    num_actors += 512;
+    if((g_actors = realloc(g_actors, sizeof(Actor) * num_actors)) == NULL) {
+        Error("failed to resize actors array to %ul, aborting!\n", num_actors);
+    }
     memset(g_actors + old_num_actors, 0, sizeof(Actor) * (num_actors - old_num_actors));
+
     return Actor_Spawn();
 }
 
