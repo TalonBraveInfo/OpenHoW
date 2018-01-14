@@ -137,7 +137,7 @@ Actor *Actor_Spawn(void) {
         }
     }
 
-    /* otherwise, attempt to resize the array to accomidate any additional
+    /* otherwise, attempt to resize the array to accommodate any additional
      * actors we want to add
      *
      * todo, in future, let's be more graceful with this, but for now we'll crash and burn!
