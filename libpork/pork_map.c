@@ -158,6 +158,12 @@ struct {
             unsigned int tex;
             unsigned int flip;
         } tiles[16];
+
+        struct {
+            unsigned int height;
+        } vertices[10];
+
+        PLVector3 offset;
     } *blocks;
     unsigned int num_blocks;
 
@@ -371,6 +377,8 @@ void LoadMapTiles(const char *path, bool is_extended) {
 
     for(unsigned int block_y = 0; block_y < block_size; ++block_y) {
         for(unsigned int block_x = 0; block_x < block_size; ++block_x) {
+#define CUR_BLOCK map_state.blocks[block_x * block_y + block_x]
+
             struct __attribute__((packed)) {
                 /* offsets */
                 uint16_t x;
@@ -382,6 +390,20 @@ void LoadMapTiles(const char *path, bool is_extended) {
             if(fread(&block, sizeof(block), 1, fh) != 1) {
 
             }
+            CUR_BLOCK.offset = PLVector3(block.x, block.y, block.z);
+
+            for(unsigned int vertex_y = 0; vertex_y < 5; ++vertex_y) {
+                for(unsigned int vertex_x = 0; vertex_x < 5; ++vertex_x) {
+                    struct __attribute__((packed)) {
+                        uint16_t height;
+                        uint16_t unknown;
+                    } vertex;
+                    if(fread(&vertex, sizeof(vertex), 1, fh) != 1) {
+
+                    }
+                    CUR_BLOCK.vertices[vertex_x * vertex_y + vertex_x].height = vertex.height;
+                }
+            }
 
             fseek(fh, 4, SEEK_CUR);
 
@@ -392,7 +414,7 @@ void LoadMapTiles(const char *path, bool is_extended) {
 
                         /* surface properties */
                         uint8_t type;
-                        uint16_t slippery;
+                        uint16_t slip;
 
                         uint8_t unknown1;
 
@@ -405,6 +427,16 @@ void LoadMapTiles(const char *path, bool is_extended) {
                     if(fread(&tile, sizeof(tile), 1, fh) != 1) {
 
                     }
+
+                    /* todo, load texture and apply it to texture atlas
+                     * let's do this per-block? i'm paranoid about people
+                     * trying to add massive textures for each tile... :(
+                     */
+
+                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].type   = tile.type;
+                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].flip   = tile.rotation_flip;
+                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].slip   = tile.slip;
+                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].tex    = tile.texture_index;
                 }
             }
         }

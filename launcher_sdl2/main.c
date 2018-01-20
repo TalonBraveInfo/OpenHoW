@@ -130,13 +130,16 @@ void PollEvents(void) {
         switch(event.type) {
             default:break;
 
-            case SDL_KEYUP:
+            case SDL_KEYUP: {
+//                PorkKeyboardInput(event.key.keysym.sym, false);
+            } break;
+
             case SDL_KEYDOWN: {
                 if(event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && event.key.state == SDL_PRESSED) {
                     ShutdownPork();
                 }
 
-//                KeyboardPork();
+//                PorkKeyboardInput(event.key.keysym.sym, true);
             } break;
 
             case SDL_MOUSEBUTTONDOWN: {

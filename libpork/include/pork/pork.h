@@ -93,6 +93,11 @@ PL_EXTERN void ShutdownPork(void);
 PL_EXTERN void DrawPork(double delta);
 PL_EXTERN void SimulatePork(void);
 
+/* Input    */
+
+PL_EXTERN void PorkKeyboardInput(int key, bool status);
+PL_EXTERN void PorkMouseInput(int x, int y, int button, bool status);
+
 /* DISPLAY  */
 
 PL_EXTERN void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height);

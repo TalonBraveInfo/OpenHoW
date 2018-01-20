@@ -54,8 +54,8 @@ void DrawPork(double delta) {
 
     plSetupCamera(g_state.camera);
 
-    DrawMap();
-    DrawActors(delta);
+    //DrawMap();
+    //DrawActors(delta);
     // todo, DrawInterface
 
     // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
@@ -63,6 +63,21 @@ void DrawPork(double delta) {
     DEBUGDrawSkeleton();
 
     plSetupCamera(g_state.ui_camera);
+
+#if 0 /* debug crap */
+    plDrawBevelledBorder(20, 20, 256, 256);
+
+    plSetBlendMode(PL_BLEND_ADDITIVE);
+    plDrawRectangle((PLRectangle2D){
+            (PLVector2){0, 0},
+            (PLVector2){GetViewportWidth(), GetViewportHeight()},
+            PLColourRGB(0, 0, 128),
+            PLColourRGB(0, 0, 128),
+            PLColour(0, 0, 40, 0),
+            PLColour(0, 0, 40, 0),
+    });
+    plSetBlendMode(PL_BLEND_DISABLE);
+#endif
 
     if(cv_debug_fps->b_value) {
         static unsigned int fps = 0;
