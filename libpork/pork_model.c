@@ -19,6 +19,16 @@
 #include "pork_engine.h"
 #include "pork_model.h"
 
+struct {
+    Bone bones[MAX_BONES];
+    unsigned int num_bones;
+
+    Animation animations[ANI_END];
+    unsigned int num_animations;
+
+    PLModel *pigs[PIG_CLASS_END];
+} model_cache;
+
 PLModel *LoadVTXModel(const char *path) {
     FILE *vtx_file = fopen(path, "rb");
     if(vtx_file == NULL) {
@@ -77,8 +87,6 @@ Animation *LoadAnimations(const char *path) {
 
 ////////////////////////////////////////////////////////////////
 
-ModelCache g_model_cache;
-
 //00: Hip
 //01: Spine
 //02: Head
@@ -98,7 +106,7 @@ ModelCache g_model_cache;
 // cache the pigs data into memory, since we
 // share it between all of them anyway :)
 void CacheModelData(void) {
-    memset(&g_model_cache, 0, sizeof(ModelCache));
+    memset(&model_cache, 0, sizeof(model_cache));
 
     LogInfo("caching pig.hir\n");
 
@@ -123,14 +131,14 @@ void CacheModelData(void) {
         int8_t unknown[10];
     } HIRBone;
 
-    g_model_cache.num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
-    if(g_model_cache.num_bones > MAX_BONES) {
+    model_cache.num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
+    if(model_cache.num_bones > MAX_BONES) {
         Error("number of bones within \"%s\" exceeds %d limit!\n", hir_path, MAX_BONES);
     }
 
-    HIRBone bones[g_model_cache.num_bones];
-    if(fread(bones, sizeof(HIRBone), g_model_cache.num_bones, file) != g_model_cache.num_bones) {
-        Error("failed to read in all bones, expected %d!\n", g_model_cache.num_bones);
+    HIRBone bones[model_cache.num_bones];
+    if(fread(bones, sizeof(HIRBone), model_cache.num_bones, file) != model_cache.num_bones) {
+        Error("failed to read in all bones, expected %d!\n", model_cache.num_bones);
     }
     fclose(file);
 
@@ -154,12 +162,12 @@ void CacheModelData(void) {
     };
 
     // copy each bone into our global bones list
-    for(unsigned int i = 0; i < g_model_cache.num_bones; ++i) {
-        g_model_cache.bones[i].parent = bones[i].parent;
-        g_model_cache.bones[i].coords.x = bones[i].coords[0];
-        g_model_cache.bones[i].coords.y = bones[i].coords[1];
-        g_model_cache.bones[i].coords.z = bones[i].coords[2];
-        strncpy(g_model_cache.bones[i].name, bone_names[i], sizeof(g_model_cache.bones[i].name));
+    for(unsigned int i = 0; i < model_cache.num_bones; ++i) {
+        model_cache.bones[i].parent = bones[i].parent;
+        model_cache.bones[i].coords.x = bones[i].coords[0];
+        model_cache.bones[i].coords.y = bones[i].coords[1];
+        model_cache.bones[i].coords.z = bones[i].coords[2];
+        strncpy(model_cache.bones[i].name, bone_names[i], sizeof(model_cache.bones[i].name));
 
         //plScaleVector3f(&g_model_cache.bones[i].coords, 4);
     }
@@ -323,8 +331,8 @@ void CacheModelData(void) {
 
         // copy everything into our global animations array
 
-        g_model_cache.animations[i].frames = malloc(sizeof(Keyframe) * num_keyframes);
-        if(g_model_cache.animations[i].frames == NULL) {
+        model_cache.animations[i].frames = malloc(sizeof(Keyframe) * num_keyframes);
+        if(model_cache.animations[i].frames == NULL) {
             Error("failed to allocate for %d keyframes, aborting!\n", num_keyframes);
         }
 
@@ -342,22 +350,22 @@ void CacheModelData(void) {
 
             // copy transforms
             for(unsigned int k = 0; k < 10; ++k) {
-                g_model_cache.animations[i].frames[j].transforms[k].x = frame.transforms[k].x;
-                g_model_cache.animations[i].frames[j].transforms[k].y = frame.transforms[k].y;
-                g_model_cache.animations[i].frames[j].transforms[k].z = frame.transforms[k].z;
+                model_cache.animations[i].frames[j].transforms[k].x = frame.transforms[k].x;
+                model_cache.animations[i].frames[j].transforms[k].y = frame.transforms[k].y;
+                model_cache.animations[i].frames[j].transforms[k].z = frame.transforms[k].z;
             }
 
             // copy rotations
             for(unsigned int k = 0; k < 15; ++k) {
-                g_model_cache.animations[i].frames[j].rotations[k].x = frame.rotations[k].x;
-                g_model_cache.animations[i].frames[j].rotations[k].y = frame.rotations[k].y;
-                g_model_cache.animations[i].frames[j].rotations[k].z = frame.rotations[k].z;
-                g_model_cache.animations[i].frames[j].rotations[k].w = frame.rotations[k].w;
+                model_cache.animations[i].frames[j].rotations[k].x = frame.rotations[k].x;
+                model_cache.animations[i].frames[j].rotations[k].y = frame.rotations[k].y;
+                model_cache.animations[i].frames[j].rotations[k].z = frame.rotations[k].z;
+                model_cache.animations[i].frames[j].rotations[k].w = frame.rotations[k].w;
             }
         }
 
-        g_model_cache.animations[i].num_frames = num_keyframes;
-        g_model_cache.animations[i].name = animation_names[i];
+        model_cache.animations[i].num_frames = num_keyframes;
+        model_cache.animations[i].name = animation_names[i];
 
         // return us from whence we came
         if(fseek(file, position, SEEK_SET) != 0) {
@@ -389,7 +397,7 @@ void CacheModelData(void) {
 
     char pig_model_path[PL_SYSTEM_MAX_PATH];
     snprintf(pig_model_path, sizeof(pig_model_path), "%s/chars/british/ac_hi.vtx", g_state.base_path);
-    g_model_cache.pigs[PIG_CLASS_ACE] = plLoadModel(pig_model_path);
+    model_cache.pigs[PIG_CLASS_ACE] = plLoadModel(pig_model_path);
     //g_model_cache.pigs[PIG_CLASS_COMMANDO] = plLoadModel(pig_model_path);
     //g_model_cache.pigs[PIG_CLASS_GRUNT] = plLoadModel(pig_model_path);
 }
@@ -413,7 +421,7 @@ void DEBUGDrawSkeleton(void) {
 
     static PLMesh *skeleton_mesh = NULL;
     if(skeleton_mesh == NULL) {
-        skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, g_model_cache.num_bones * 2);
+        skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, model_cache.num_bones * 2);
     }
 
 #if 1
@@ -435,17 +443,17 @@ void DEBUGDrawSkeleton(void) {
         delay = g_state.sim_ticks + 20;
     }
 
-    if(frame == g_model_cache.animations[0].num_frames) {
+    if(frame == model_cache.animations[0].num_frames) {
         frame = 0;
     }
 
-    for(unsigned int i = 0, vert = 0; i < g_model_cache.num_bones; ++i, vert += 2) {
+    for(unsigned int i = 0, vert = 0; i < model_cache.num_bones; ++i, vert += 2) {
         //start
-        plSetMeshVertexPosition(skeleton_mesh, vert, g_model_cache.bones[i].coords);
+        plSetMeshVertexPosition(skeleton_mesh, vert, model_cache.bones[i].coords);
         plSetMeshVertexColour(skeleton_mesh, vert, PLColour(255, 0, 0, 255));
 
         //end
-        plSetMeshVertexPosition(skeleton_mesh, vert + 1, g_model_cache.bones[g_model_cache.bones[i].parent].coords);
+        plSetMeshVertexPosition(skeleton_mesh, vert + 1, model_cache.bones[model_cache.bones[i].parent].coords);
         plSetMeshVertexColour(skeleton_mesh, vert + 1, PLColour(0, 255, 0, 255));
     }
 

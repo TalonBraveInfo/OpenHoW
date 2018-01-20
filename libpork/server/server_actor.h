@@ -63,6 +63,7 @@ typedef struct Actor {
 
     uint8_t team;       // red, green, blue etc.
     uint8_t class_num;  // spy, sniper, engineer etc.
+    int16_t health;
 
     // some objects in hogs of war have other crap
     // attached / involved in it's behaviour - for

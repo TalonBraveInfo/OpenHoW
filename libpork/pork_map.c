@@ -222,6 +222,30 @@ void ResetMap(void) {
         LogWarn("attempted to reset map, but no map is currently loaded, aborting\n");
         return;
     }
+
+    SVClearActors();
+
+    for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
+        Actor *actor = Actor_Spawn();
+        if(actor == NULL) {
+            /* warn, and try to keep going for as long as we can :( */
+            LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
+            break;
+        }
+
+        actor->position = map_state.spawns[i].position;
+        actor->bounds   = map_state.spawns[i].bounds;
+        actor->angles   = map_state.spawns[i].angles;
+        actor->team     = map_state.spawns[i].team;
+
+        strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
+        /* todo, setup the actor here - name represents class - this will then
+         * set the model and other parms here
+         */
+
+        actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
+
+    }
 }
 
 void LoadMapSpawns(const char *path) {
@@ -282,6 +306,9 @@ void LoadMapSpawns(const char *path) {
 
         strncpy(map_state.spawns[i].name, pl_strtolower(index.name), sizeof(map_state.spawns[i].name));
         LogDebug("name %s\n", map_state.spawns[i].name);
+
+        /* attempt to load and cache the model */
+
 
         map_state.spawns[i].position.x = index.offset[0];
         map_state.spawns[i].position.y = index.offset[1];

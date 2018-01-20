@@ -16,25 +16,10 @@
  */
 #pragma once
 
-#define MAX_BONES   32
+typedef struct PigActor {
+    struct Actor base;
 
-typedef struct Bone {
-    char name[32];
-    unsigned int parent;
-    PLVector3 coords;
-} Bone;
+    /*********************************/
 
-typedef struct Keyframe {
-    PLVector3 transforms[10];
-    PLQuaternion rotations[15];
-} Keyframe;
 
-typedef struct Animation {
-    unsigned int id;
-    const char *name;
-
-    Keyframe *frames;
-    unsigned int num_frames;
-} Animation;
-
-void CacheModelData(void);
+} PigActor;
