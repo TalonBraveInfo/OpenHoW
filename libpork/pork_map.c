@@ -368,7 +368,14 @@ void LoadMap(const char *name, unsigned int mode) {
     }
 }
 
+/* draws the currently loaded
+ * map
+ */
 void DrawMap(void) {
+    if(map_state.name[0] == '\0') {
+        return;
+    }
+
     // todo, draw sky, clouds
 
     plDrawMesh(water_mesh);
