@@ -139,17 +139,27 @@ MapDesc *GetMapDescription(const char *name) {
 
 ////////////////////////////////////////////////////////////////
 
-typedef struct MapTile {
-
-} MapTile;
-
-typedef struct MapBlock {
-
-} MapBlock;
+#define FLIP_FLAG_X             1
+#define FLIP_FLAG_ROTATE_90     2
+#define FLIP_FLAG_ROTATE_180    4
+#define FLIP_FLAG_ROTATE_270    6
 
 struct {
     char name[24];
     char desc[256];
+
+    struct {
+        struct {
+            /* surface properties */
+            unsigned int type;  /* e.g. wood? */
+            unsigned int slip;  /* e.g. full, bottom or left? */
+
+            /* texture */
+            unsigned int tex;
+            unsigned int flip;
+        } tiles[16];
+    } *blocks;
+    unsigned int num_blocks;
 
     unsigned int flags;
 
@@ -344,7 +354,61 @@ void LoadMapTiles(const char *path, bool is_extended) {
         Error("failed to open tile data, \"%s\", aborting\n", path);
     }
 
-    //for(unsigned int block_y = 0; block_y < )
+    unsigned int block_size = 16;
+    if(is_extended) {
+        /* todo */
+    }
+
+    /* done here in case the enhanced format supports larger block sizes */
+    map_state.num_blocks = block_size * block_size;
+    map_state.blocks = calloc(sizeof(*map_state.blocks), map_state.num_blocks);
+    if(map_state.blocks == NULL) {
+        Error("failed to allocate memory for map blocks, %ul bytes, aborting\n", sizeof(*map_state.blocks) *
+                map_state.num_blocks);
+    }
+
+    memset(map_state.blocks, 0, sizeof(*map_state.blocks) * map_state.num_blocks);
+
+    for(unsigned int block_y = 0; block_y < block_size; ++block_y) {
+        for(unsigned int block_x = 0; block_x < block_size; ++block_x) {
+            struct __attribute__((packed)) {
+                /* offsets */
+                uint16_t x;
+                uint16_t y;
+                uint16_t z;
+
+                uint16_t unknown0;
+            } block;
+            if(fread(&block, sizeof(block), 1, fh) != 1) {
+
+            }
+
+            fseek(fh, 4, SEEK_CUR);
+
+            for(unsigned int tile_y = 0; tile_y < 4; ++tile_y) {
+                for(unsigned int tile_x = 0; tile_x < 4; ++tile_x) {
+                    struct __attribute__((packed)) {
+                        uint8_t unknown0[6];
+
+                        /* surface properties */
+                        uint8_t type;
+                        uint16_t slippery;
+
+                        uint8_t unknown1;
+
+                        /* texture */
+                        uint8_t     rotation_flip;
+                        uint32_t    texture_index;
+
+                        uint8_t unknown2;
+                    } tile;
+                    if(fread(&tile, sizeof(tile), 1, fh) != 1) {
+
+                    }
+                }
+            }
+        }
+    }
 
     pork_fclose(fh);
 }
