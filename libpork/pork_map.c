@@ -248,7 +248,7 @@ void ResetMap(void) {
     }
 }
 
-void LoadMapSpawns(const char *path) {
+void LoadMapSpawns(const char *path, bool is_extended) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         Error("failed to open actor data, \"%s\", aborting\n", path);
@@ -338,6 +338,17 @@ void LoadMapSpawns(const char *path) {
     SVClearActors();
 }
 
+void LoadMapTiles(const char *path, bool is_extended) {
+    FILE *fh = fopen(path, "rb");
+    if(fh == NULL) {
+        Error("failed to open tile data, \"%s\", aborting\n", path);
+    }
+
+    //for(unsigned int block_y = 0; block_y < )
+
+    pork_fclose(fh);
+}
+
 /* loads a new map into memory - if the config
  * matches that of the currently loaded map
  * then it's ignored
@@ -379,19 +390,31 @@ void LoadMap(const char *name, unsigned int mode) {
     char pmg_path[PL_SYSTEM_MAX_PATH];
     snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
     if(!plFileExists(pmg_path)) {
-        LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
-        return;
+        snprintf(pmg_path, sizeof(pmg_path), "%s/%s.epmg", map_path, name);
+        if(!plFileExists(pmg_path)) {
+            LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
+            return;
+        } else {
+            LoadMapTiles(pmg_path, true);
+        }
+    } else {
+        LoadMapTiles(pmg_path, false);
     }
 
     if(g_state.is_host) {
         char pog_path[PL_SYSTEM_MAX_PATH];
         snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
         if (!plFileExists(pog_path)) {
-            LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
-            return;
+            snprintf(pog_path, sizeof(pog_path), "%s/%s.epog", map_path, name);
+            if(!plFileExists(pog_path)) {
+                LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
+                return;
+            } else {
+                LoadMapSpawns(pog_path, true);
+            }
+        } else {
+            LoadMapSpawns(pog_path, false);
         }
-
-        LoadMapSpawns(pog_path);
     }
 }
 
