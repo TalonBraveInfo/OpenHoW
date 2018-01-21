@@ -46,6 +46,11 @@ bool GetKeyState(int key) {
     return input_state.keyboard.key_states[key];
 }
 
+bool GetButtonState(unsigned int controller, int button) {
+    assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
+    return input_state.controllers[controller].button_states[button];
+}
+
 /* public interface ****************************************************************/
 
 void SetPorkButtonState(unsigned int controller, int button, bool status) {
