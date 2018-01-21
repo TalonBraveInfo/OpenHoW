@@ -154,7 +154,7 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
     g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 
-    ResetKeyboardState();
+    ResetInputStates();
 }
 
 // extractor.c

@@ -21,6 +21,9 @@
 SDL_Window *window = NULL;
 SDL_GLContext *context = NULL;
 
+/* controller support */
+SDL_GameController *controller = NULL;
+
 #define LogInfo(...)  plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
 #define LogWarn(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
 #define Error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
@@ -130,25 +133,49 @@ int TranslateSDLKey(int key) {
     }
 
     switch(key) {
-        case SDLK_F1: return KEY_F1;
-        case SDLK_F2: return KEY_F2;
-        case SDLK_F3: return KEY_F3;
-        case SDLK_F4: return KEY_F4;
-        case SDLK_F5: return KEY_F5;
-        case SDLK_F6: return KEY_F6;
-        case SDLK_F7: return KEY_F7;
-        case SDLK_F8: return KEY_F8;
-        case SDLK_F9: return KEY_F9;
-        case SDLK_F10: return KEY_F10;
-        case SDLK_F11: return KEY_F11;
-        case SDLK_F12: return KEY_F12;
+        case SDLK_F1: return PORK_KEY_F1;
+        case SDLK_F2: return PORK_KEY_F2;
+        case SDLK_F3: return PORK_KEY_F3;
+        case SDLK_F4: return PORK_KEY_F4;
+        case SDLK_F5: return PORK_KEY_F5;
+        case SDLK_F6: return PORK_KEY_F6;
+        case SDLK_F7: return PORK_KEY_F7;
+        case SDLK_F8: return PORK_KEY_F8;
+        case SDLK_F9: return PORK_KEY_F9;
+        case SDLK_F10: return PORK_KEY_F10;
+        case SDLK_F11: return PORK_KEY_F11;
+        case SDLK_F12: return PORK_KEY_F12;
 
-        case SDLK_PAUSE: return KEY_PAUSE;
-        case SDLK_INSERT: return KEY_INSERT;
-        case SDLK_HOME: return KEY_HOME;
+        case SDLK_PAUSE: return PORK_KEY_PAUSE;
+        case SDLK_INSERT: return PORK_KEY_INSERT;
+        case SDLK_HOME: return PORK_KEY_HOME;
 
-        case SDLK_PAGEUP: return KEY_PAGEUP;
-        case SDLK_PAGEDOWN: return KEY_PAGEDOWN;
+        case SDLK_PAGEUP: return PORK_KEY_PAGEUP;
+        case SDLK_PAGEDOWN: return PORK_KEY_PAGEDOWN;
+
+        default: return -1;
+    }
+}
+
+int TranslateSDLButton(int button) {
+    switch(button) {
+        case SDL_CONTROLLER_BUTTON_A: return PORK_BUTTON_CROSS;
+        case SDL_CONTROLLER_BUTTON_B: return PORK_BUTTON_CIRCLE;
+        case SDL_CONTROLLER_BUTTON_X: return PORK_BUTTON_SQUARE;
+        case SDL_CONTROLLER_BUTTON_Y: return PORK_BUTTON_TRIANGLE;
+
+        case SDL_CONTROLLER_BUTTON_BACK: return PORK_BUTTON_SELECT;
+        case SDL_CONTROLLER_BUTTON_START: return PORK_BUTTON_START;
+
+        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: return PORK_BUTTON_L1;
+        case SDL_CONTROLLER_BUTTON_LEFTSTICK: return PORK_BUTTON_L3;
+        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: return PORK_BUTTON_R1;
+        case SDL_CONTROLLER_BUTTON_RIGHTSTICK: return PORK_BUTTON_R3;
+
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return PORK_BUTTON_DOWN;
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return PORK_BUTTON_LEFT;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return PORK_BUTTON_RIGHT;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP: return PORK_BUTTON_UP;
 
         default: return -1;
     }
@@ -163,7 +190,7 @@ void PollEvents(void) {
             case SDL_KEYUP: {
                 int key = TranslateSDLKey(event.key.keysym.sym);
                 if(key != -1) {
-                    PorkKeyboardInput(key, false);
+                    SetPorkKeyState(key, false);
                 }
             } break;
 
@@ -174,7 +201,7 @@ void PollEvents(void) {
 
                 int key = TranslateSDLKey(event.key.keysym.sym);
                 if(key != -1) {
-                    PorkKeyboardInput(key, true);
+                    SetPorkKeyState(key, true);
                 }
             } break;
 
@@ -188,6 +215,20 @@ void PollEvents(void) {
 
             case SDL_MOUSEMOTION: {
 
+            } break;
+
+            case SDL_CONTROLLERBUTTONUP: {
+                int button = TranslateSDLButton(event.cbutton.button);
+                if(button != -1) {
+                    SetPorkButtonState(0, button, false);
+                }
+            } break;
+
+            case SDL_CONTROLLERBUTTONDOWN: {
+                int button = TranslateSDLButton(event.cbutton.button);
+                if(button != -1) {
+                    SetPorkButtonState(0, button, true);
+                }
             } break;
 
             case SDL_QUIT: {
@@ -228,6 +269,27 @@ int main(int argc, char **argv) {
     interface.SwapWindow        = ISwapDisplay;
     interface.ShutdownLauncher  = IShutdownLauncher;
 
+    int num_joysticks = SDL_NumJoysticks();
+    if(num_joysticks < 0) {
+        LogWarn("%s\n", SDL_GetError());
+    } else {
+        for (int i = 0; i < num_joysticks; ++i) {
+            if(SDL_IsGameController(i)) {
+                controller = SDL_GameControllerOpen(i);
+                if(controller == NULL) {
+                    LogWarn("%s\n", SDL_GetError());
+                } else {
+                    const char *name = SDL_GameControllerName(controller);
+                    if(name == NULL) {
+                        name = "unknown";
+                    }
+                    LogInfo("found controller: %s\n", name);
+                    break;
+                }
+            }
+        }
+    }
+
     InitPork(argc, argv, interface);
 
     //SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -257,6 +319,10 @@ int main(int argc, char **argv) {
     }
 
     ShutdownPork();
+
+    if(controller != NULL) {
+        SDL_GameControllerClose(controller);
+    }
 
     return EXIT_SUCCESS;
 }

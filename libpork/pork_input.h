@@ -17,6 +17,6 @@
 #pragma once
 
 void InitInput(void);
-void ResetKeyboardState(void);
+void ResetInputStates(void);
 
 bool GetKeyState(int key);

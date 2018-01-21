@@ -18,37 +18,46 @@
 #include "pork_input.h"
 
 struct {
-    bool key_states[END_KEY];
+    struct {
+        bool key_states[PORK_MAX_KEYS];
+    } keyboard;
+
+    struct {
+        int x, y;
+        bool button_states[PORK_MAX_MOUSE_BUTTONS];
+    } mouse;
+
+    struct {
+        bool button_states[PORK_MAX_KEYS];
+    } controllers[PORK_MAX_CONTROLLERS];
 } input_state;
 
 void InitInput(void) {
     memset(&input_state, 0, sizeof(input_state));
 }
 
-void ResetKeyboardState(void) {
-    memset(input_state.key_states, 0, END_KEY);
+void ResetInputStates(void) {
+    memset(input_state.keyboard.key_states, 0, PORK_MAX_KEYS);
+    memset(input_state.mouse.button_states, 0, PORK_MAX_MOUSE_BUTTONS);
 }
 
 bool GetKeyState(int key) {
-    if(key >= END_KEY) {
-        LogWarn("passed invalid input key %d, aborting\n", key);
-        return false;
-    }
-
-    return input_state.key_states[key];
+    assert(key < PORK_MAX_KEYS);
+    return input_state.keyboard.key_states[key];
 }
 
-/* interface with host */
+/* public interface ****************************************************************/
 
-void PorkKeyboardInput(int key, bool status) {
-    if(key >= END_KEY) {
-        LogWarn("passed invalid input key %d, aborting\n", key);
-        return;
-    }
-
-    input_state.key_states[key] = status;
+void SetPorkButtonState(unsigned int controller, int button, bool status) {
+    assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
+    input_state.controllers[controller].button_states[button] = status;
 }
 
-void PorkMouseInput(int x, int y, int button, bool status) {
+void SetPorkKeyState(int key, bool status) {
+    assert(key < PORK_MAX_KEYS);
+    input_state.keyboard.key_states[key] = status;
+}
+
+void SetPorkMouseState(int x, int y, int button, bool status) {
 
 }
