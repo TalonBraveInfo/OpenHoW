@@ -25,9 +25,10 @@
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
 
-PLConsoleVariable *cv_debug_mode = NULL;
-PLConsoleVariable *cv_debug_fps = NULL;
-PLConsoleVariable *cv_debug_skeleton = NULL;
+PLConsoleVariable *cv_debug_mode        = NULL;
+PLConsoleVariable *cv_debug_fps         = NULL;
+PLConsoleVariable *cv_debug_skeleton    = NULL;
+PLConsoleVariable *cv_debug_input       = NULL;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -92,6 +93,22 @@ void DrawPork(double delta) {
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
         DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 1.f, ms_count);
+    }
+
+    if(cv_debug_input->b_value) {
+        DrawBitmapString(g_fonts[FONT_SMALL], 20, 2, 1.f, "KEYBOARD STATE");
+        for(unsigned int i = 0, y = 15, x = 30; i < PORK_MAX_KEYS; ++i) {
+            bool status = GetKeyState(i);
+            char key_state[64];
+            snprintf(key_state, sizeof(key_state), "K%d S(%s)", i, status ? "TRUE" : "FALSE");
+            DrawBitmapString(g_fonts[FONT_SMALL], x, y, 1.f, key_state);
+            if(y + 100 > GetViewportHeight()) {
+                x += 100;
+                y = 15;
+            } else {
+                y += 15;
+            }
+        }
     }
 
     // todo, need a better name for this function
@@ -193,6 +210,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             "debug_fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
     cv_debug_skeleton = plRegisterConsoleVariable(
             "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
+    cv_debug_input = plRegisterConsoleVariable(
+            "debug_input", "1", pl_bool_var, NULL, "If enabled, displays details on current input states.");
 
     plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "");
