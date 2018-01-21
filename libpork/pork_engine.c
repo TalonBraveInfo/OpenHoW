@@ -92,24 +92,75 @@ void DrawPork(double delta) {
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 1.f, ms_count);
+        DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 0, 1.f, ms_count);
     }
 
-    if(cv_debug_input->b_value) {
-        DrawBitmapString(g_fonts[FONT_SMALL], 20, 2, 1.f, "KEYBOARD STATE");
-        unsigned int x = 20, y = 20;
-        for(unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
-            bool status = GetKeyState(i);
-            char key_state[64];
-            snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
-            DrawBitmapString(g_fonts[FONT_SMALL], x, y, 1.f, key_state);
-            if(y + 15 > GetViewportHeight() - 50) {
-                x += 90;
-                y = 20;
-            } else {
-                y += 15;
-            }
+    if(cv_debug_input->i_value > 0) {
+        switch(cv_debug_input->i_value) {
+            default: {
+                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, "KEYBOARD STATE");
+                unsigned int x = 20, y = 50;
+                for(unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
+                    bool status = GetKeyState(i);
+                    char key_state[64];
+                    snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
+                    DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, key_state);
+                    if(y + 15 > GetViewportHeight() - 50) {
+                        x += 90;
+                        y = 50;
+                    } else {
+                        y += 15;
+                    }
+                }
+            } break;
+
+            case 2: {
+                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, "CONTROLLER STATE");
+
+                char button_state[64];
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_CROSS,
+                         GetButtonState(0, PORK_BUTTON_CROSS) ? "TRUE" : "FALSE");
+                unsigned int y = 50;
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_TRIANGLE,
+                         GetButtonState(0, PORK_BUTTON_TRIANGLE) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_CIRCLE,
+                         GetButtonState(0, PORK_BUTTON_CIRCLE) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_SQUARE,
+                         GetButtonState(0, PORK_BUTTON_SQUARE) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_L1,
+                         GetButtonState(0, PORK_BUTTON_L1) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_L2,
+                         GetButtonState(0, PORK_BUTTON_L2) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_R1,
+                         GetButtonState(0, PORK_BUTTON_R1) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_R2,
+                         GetButtonState(0, PORK_BUTTON_R2) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "START (%s)",
+                         GetButtonState(0, PORK_BUTTON_START) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "SELECT (%s)",
+                         GetButtonState(0, PORK_BUTTON_SELECT) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+            } break;
         }
+
     }
 
     // todo, need a better name for this function
@@ -212,7 +263,14 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     cv_debug_skeleton = plRegisterConsoleVariable(
             "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
     cv_debug_input = plRegisterConsoleVariable(
-            "debug_input", "1", pl_bool_var, NULL, "If enabled, displays details on current input states.");
+            "debug_input",
+            "2",
+            pl_int_var,
+            NULL,
+            "Changing this cycles between different modes of debugging input\n"
+            "1: keyboard states\n"
+            "2: controller states"
+    );
 
     plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "");

@@ -20,3 +20,4 @@ void InitInput(void);
 void ResetInputStates(void);
 
 bool GetKeyState(int key);
+bool GetButtonState(unsigned int controller, int button);

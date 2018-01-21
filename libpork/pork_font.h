@@ -64,4 +64,4 @@ enum {
 extern BitmapFont *g_fonts[NUM_FONTS];
 
 void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t character);
-void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *msg);
+void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, const char *msg);

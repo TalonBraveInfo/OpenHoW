@@ -278,18 +278,24 @@ int main(int argc, char **argv) {
     if(num_joysticks < 0) {
         LogWarn("%s\n", SDL_GetError());
     } else {
-        for (int i = 0; i < num_joysticks; ++i) {
-            if(SDL_IsGameController(i)) {
-                controller = SDL_GameControllerOpen(i);
-                if(controller == NULL) {
-                    LogWarn("%s\n", SDL_GetError());
-                } else {
-                    const char *name = SDL_GameControllerName(controller);
-                    if(name == NULL) {
-                        name = "unknown";
+        if(SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt") == -1) {
+            LogWarn("%s\n", SDL_GetError());
+        } else {
+            for (int i = 0; i < num_joysticks; ++i) {
+                if (SDL_IsGameController(i)) {
+                    controller = SDL_GameControllerOpen(i);
+                    if (controller == NULL) {
+                        LogWarn("%s\n", SDL_GetError());
+                    } else {
+                        const char *name = SDL_GameControllerName(controller);
+                        if (name == NULL) {
+                            name = "unknown";
+                        }
+
+                        LogInfo("found controller: %s\n", name);
+                        SDL_GameControllerEventState(SDL_ENABLE);
+                        break;
                     }
-                    LogInfo("found controller: %s\n", name);
-                    break;
                 }
             }
         }

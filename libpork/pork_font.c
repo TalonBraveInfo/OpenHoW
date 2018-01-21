@@ -62,7 +62,7 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, uint8_t ch
     plDrawMesh(font_mesh);
 }
 
-void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *msg) {
+void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, const char *msg) {
     unsigned int num_chars = (unsigned int)strlen(msg);
     if(num_chars == 0) {
         return;
@@ -79,7 +79,7 @@ void DrawBitmapString(BitmapFont *font, int x, int y, float scale, const char *m
     for(unsigned int i = 0; i < num_chars; ++i) {
         DrawBitmapCharacter(font, n_x, n_y, scale, (uint8_t) msg[i]);
         if(msg[i] >= 33 && msg[i] <= 122) {
-            n_x += font->chars[msg[i] - 33].w;
+            n_x += font->chars[msg[i] - 33].w + spacing;
         } else if(msg[i] == '\n') {
             n_y += font->chars[0].h;
             n_x = x;
