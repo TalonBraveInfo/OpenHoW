@@ -124,6 +124,36 @@ void IShutdownLauncher(void) {
 
 ///////////////////////////////////////////////////
 
+int TranslateSDLKey(int key) {
+    if(key < 128) {
+        return key;
+    }
+
+    switch(key) {
+        case SDLK_F1: return KEY_F1;
+        case SDLK_F2: return KEY_F2;
+        case SDLK_F3: return KEY_F3;
+        case SDLK_F4: return KEY_F4;
+        case SDLK_F5: return KEY_F5;
+        case SDLK_F6: return KEY_F6;
+        case SDLK_F7: return KEY_F7;
+        case SDLK_F8: return KEY_F8;
+        case SDLK_F9: return KEY_F9;
+        case SDLK_F10: return KEY_F10;
+        case SDLK_F11: return KEY_F11;
+        case SDLK_F12: return KEY_F12;
+
+        case SDLK_PAUSE: return KEY_PAUSE;
+        case SDLK_INSERT: return KEY_INSERT;
+        case SDLK_HOME: return KEY_HOME;
+
+        case SDLK_PAGEUP: return KEY_PAGEUP;
+        case SDLK_PAGEDOWN: return KEY_PAGEDOWN;
+
+        default: return -1;
+    }
+}
+
 void PollEvents(void) {
     SDL_Event event;
     while(SDL_PollEvent(&event)) {
@@ -131,7 +161,10 @@ void PollEvents(void) {
             default:break;
 
             case SDL_KEYUP: {
-//                PorkKeyboardInput(event.key.keysym.sym, false);
+                int key = TranslateSDLKey(event.key.keysym.sym);
+                if(key != -1) {
+                    PorkKeyboardInput(key, false);
+                }
             } break;
 
             case SDL_KEYDOWN: {
@@ -139,7 +172,10 @@ void PollEvents(void) {
                     ShutdownPork();
                 }
 
-//                PorkKeyboardInput(event.key.keysym.sym, true);
+                int key = TranslateSDLKey(event.key.keysym.sym);
+                if(key != -1) {
+                    PorkKeyboardInput(key, true);
+                }
             } break;
 
             case SDL_MOUSEBUTTONDOWN: {

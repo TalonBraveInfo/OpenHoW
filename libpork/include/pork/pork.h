@@ -87,16 +87,49 @@ typedef struct PorkLauncherInterface {
 
 PL_EXTERN_C
 
+/* pork_engine.c */
+
 PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
 PL_EXTERN void ShutdownPork(void);
 
 PL_EXTERN void DrawPork(double delta);
 PL_EXTERN void SimulatePork(void);
 
-/* Input    */
+/* pork_input.c */
 
 PL_EXTERN void PorkKeyboardInput(int key, bool status);
 PL_EXTERN void PorkMouseInput(int x, int y, int button, bool status);
+
+enum {
+    KEY_F1 = 128,
+    KEY_F2,
+    KEY_F3,
+    KEY_F4,
+    KEY_F5,
+    KEY_F6,
+    KEY_F7,
+    KEY_F8,
+    KEY_F9,
+    KEY_F10,
+    KEY_F11,
+    KEY_F12,
+
+    KEY_PAUSE,
+    KEY_INSERT,
+    KEY_HOME,
+
+    KEY_PAGEUP,
+    KEY_PAGEDOWN,
+
+    KEY_LCTRL,
+    KEY_LSHIFT,
+    KEY_LALT,
+    KEY_RCTRL,
+    KEY_RSHIFT,
+    KEY_RALT,
+
+    END_KEY
+};
 
 /* DISPLAY  */
 

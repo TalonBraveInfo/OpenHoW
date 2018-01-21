@@ -17,10 +17,10 @@
 #include "pork_engine.h"
 #include "pork_map.h"
 #include "pork_font.h"
+#include "pork_input.h"
 
 #include "server/server.h"
 #include "client/client.h"
-#include "client/client_actor.h"
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
@@ -153,6 +153,8 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 
     g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
+
+    ResetKeyboardState();
 }
 
 // extractor.c
@@ -251,6 +253,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
         }
     }
 
+    InitInput();
     InitDisplay();
     InitShaders();
     InitFonts();
