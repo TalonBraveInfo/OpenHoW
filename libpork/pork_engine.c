@@ -97,14 +97,15 @@ void DrawPork(double delta) {
 
     if(cv_debug_input->b_value) {
         DrawBitmapString(g_fonts[FONT_SMALL], 20, 2, 1.f, "KEYBOARD STATE");
-        for(unsigned int i = 0, y = 15, x = 30; i < PORK_MAX_KEYS; ++i) {
+        unsigned int x = 20, y = 20;
+        for(unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
             bool status = GetKeyState(i);
             char key_state[64];
-            snprintf(key_state, sizeof(key_state), "K%d S(%s)", i, status ? "TRUE" : "FALSE");
+            snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
             DrawBitmapString(g_fonts[FONT_SMALL], x, y, 1.f, key_state);
-            if(y + 100 > GetViewportHeight()) {
-                x += 100;
-                y = 15;
+            if(y + 15 > GetViewportHeight() - 50) {
+                x += 90;
+                y = 20;
             } else {
                 y += 15;
             }

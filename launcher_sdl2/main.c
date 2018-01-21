@@ -150,6 +150,11 @@ int TranslateSDLKey(int key) {
         case SDLK_INSERT: return PORK_KEY_INSERT;
         case SDLK_HOME: return PORK_KEY_HOME;
 
+        case SDLK_UP: return PORK_KEY_UP;
+        case SDLK_DOWN: return PORK_KEY_DOWN;
+        case SDLK_LEFT: return PORK_KEY_LEFT;
+        case SDLK_RIGHT: return PORK_KEY_RIGHT;
+
         case SDLK_PAGEUP: return PORK_KEY_PAGEUP;
         case SDLK_PAGEDOWN: return PORK_KEY_PAGEDOWN;
 
