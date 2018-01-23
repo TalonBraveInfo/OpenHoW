@@ -158,6 +158,22 @@ void DrawPork(double delta) {
                 snprintf(button_state, sizeof(button_state), "SELECT (%s)",
                          GetButtonState(0, PORK_BUTTON_SELECT) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "UP (%s)",
+                         GetButtonState(0, PORK_BUTTON_UP) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "DOWN (%s)",
+                         GetButtonState(0, PORK_BUTTON_DOWN) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "LEFT (%s)",
+                         GetButtonState(0, PORK_BUTTON_LEFT) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+
+                snprintf(button_state, sizeof(button_state), "RIGHT (%s)",
+                         GetButtonState(0, PORK_BUTTON_RIGHT) ? "TRUE" : "FALSE");
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
             } break;
         }
 
@@ -264,7 +280,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
     cv_debug_input = plRegisterConsoleVariable(
             "debug_input",
-            "2",
+            "1",
             pl_int_var,
             NULL,
             "Changing this cycles between different modes of debugging input\n"

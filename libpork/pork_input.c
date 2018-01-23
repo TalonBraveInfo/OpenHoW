@@ -20,6 +20,7 @@
 struct {
     struct {
         bool key_states[PORK_MAX_KEYS];
+        int bindings[MAX_ACTIONS];
     } keyboard;
 
     struct {
@@ -29,11 +30,31 @@ struct {
 
     struct {
         bool button_states[PORK_MAX_KEYS];
+        int bindings[MAX_ACTIONS];
     } controllers[PORK_MAX_CONTROLLERS];
 } input_state;
 
 void InitInput(void) {
     memset(&input_state, 0, sizeof(input_state));
+
+    /* setup the default keyboard bindings */
+    input_state.keyboard.bindings[ACTION_MOVE_FORWARD]  = PORK_KEY_UP;
+    input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = PORK_KEY_DOWN;
+    input_state.keyboard.bindings[ACTION_MOVE_LEFT]     = PORK_KEY_LEFT;
+    input_state.keyboard.bindings[ACTION_MOVE_RIGHT]    = PORK_KEY_RIGHT;
+
+    /* setup the default controller bindings */
+    for(unsigned int i = 0; i < PORK_MAX_CONTROLLERS; ++i) {
+        input_state.controllers[i].bindings[ACTION_MOVE_FORWARD]    = PORK_BUTTON_UP;
+        input_state.controllers[i].bindings[ACTION_MOVE_BACKWARD]   = PORK_BUTTON_DOWN;
+        input_state.controllers[i].bindings[ACTION_MOVE_LEFT]       = PORK_BUTTON_LEFT;
+        input_state.controllers[i].bindings[ACTION_MOVE_RIGHT]      = PORK_BUTTON_RIGHT;
+    }
+
+    /* todo, cv_input_kb_config, 'KEY_UP;KEY_DOWN;KEY_LEFT;KEY_RIGHT' follows
+     * the order of the action enum? Parsed on any update to config and then
+     * updates the above through callback...
+     */
 }
 
 void ResetInputStates(void) {
@@ -49,6 +70,12 @@ bool GetKeyState(int key) {
 bool GetButtonState(unsigned int controller, int button) {
     assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
     return input_state.controllers[controller].button_states[button];
+}
+
+bool GetActionState(unsigned int controller, int action) {
+    assert(controller < PORK_MAX_CONTROLLERS);
+    return (GetButtonState(controller, input_state.controllers[controller].bindings[action]) ||
+            GetKeyState(input_state.keyboard.bindings[action]));
 }
 
 /* public interface ****************************************************************/

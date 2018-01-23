@@ -16,8 +16,28 @@
  */
 #pragma once
 
+enum {
+    ACTION_MOVE_FORWARD,
+    ACTION_MOVE_BACKWARD,
+    ACTION_MOVE_LEFT,
+    ACTION_MOVE_RIGHT,
+
+    ACTION_AIM,
+    ACTION_JUMP,
+
+    ACTION_PAUSE,
+
+    ACTION_FIRE,
+
+    ACTION_SELECT,
+    ACTION_DESELECT,
+
+    MAX_ACTIONS
+};
+
 void InitInput(void);
 void ResetInputStates(void);
 
 bool GetKeyState(int key);
 bool GetButtonState(unsigned int controller, int button);
+bool GetActionState(unsigned int controller, int action);

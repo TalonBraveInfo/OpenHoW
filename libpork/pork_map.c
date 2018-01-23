@@ -164,8 +164,8 @@ struct {
         } vertices[10];
 
         PLVector3 offset;
-    } *blocks;
-    unsigned int num_blocks;
+    } *chunks;
+    unsigned int num_chunks;
 
     unsigned int flags;
 
@@ -365,19 +365,19 @@ void LoadMapTiles(const char *path, bool is_extended) {
         /* todo */
     }
 
-    /* done here in case the enhanced format supports larger block sizes */
-    map_state.num_blocks = block_size * block_size;
-    map_state.blocks = calloc(sizeof(*map_state.blocks), map_state.num_blocks);
-    if(map_state.blocks == NULL) {
-        Error("failed to allocate memory for map blocks, %ul bytes, aborting\n", sizeof(*map_state.blocks) *
-                map_state.num_blocks);
+    /* done here in case the enhanced format supports larger chunk sizes */
+    map_state.num_chunks = block_size * block_size;
+    map_state.chunks = calloc(sizeof(*map_state.chunks), map_state.num_chunks);
+    if(map_state.chunks == NULL) {
+        Error("failed to allocate memory for map chunks, %ul bytes, aborting\n", sizeof(*map_state.chunks) *
+                map_state.num_chunks);
     }
 
-    memset(map_state.blocks, 0, sizeof(*map_state.blocks) * map_state.num_blocks);
+    memset(map_state.chunks, 0, sizeof(*map_state.chunks) * map_state.num_chunks);
 
     for(unsigned int block_y = 0; block_y < block_size; ++block_y) {
         for(unsigned int block_x = 0; block_x < block_size; ++block_x) {
-#define CUR_BLOCK map_state.blocks[block_x * block_y + block_x]
+#define CUR_BLOCK map_state.chunks[block_x * block_y + block_x]
 
             struct __attribute__((packed)) {
                 /* offsets */
