@@ -15,7 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pork_engine.h"
+#include "pork_input.h"
+#include "pork_font.h"
+
 #include "server/server_actor.h"
+
+/*****************************************************/
 
 void GetCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
@@ -68,8 +73,6 @@ void SetCommand(unsigned int argc, char *argv[]) {
                 } else if (pl_strncasecmp("bounds", modifier, 6) == 0) {
 
                 }
-            } else {
-                /* todo, client-side equivalent */
             }
             return;
         } else if(pl_strncasecmp("map", argv[i], 3) == 0) {
@@ -79,4 +82,71 @@ void SetCommand(unsigned int argc, char *argv[]) {
     }
 
     LogWarn("invalid parameters provided for set command\n");
+}
+
+/*****************************************************/
+
+struct {
+    char buffer[2048];
+    unsigned int buffer_pos;
+} console_state;
+
+bool console_enabled = false;
+
+bool IsConsoleEnabled(void) {
+    return console_enabled;
+}
+
+void DrawConsole(void) {
+    if(!console_enabled) {
+        return;
+    }
+
+    char msg_buf[2048];
+    strncpy(msg_buf, console_state.buffer, sizeof(msg_buf));
+    pl_strtoupper(msg_buf);
+
+    unsigned int x = 20;
+    unsigned int w = g_fonts[FONT_SMALL]->chars[0].w;
+    DrawBitmapCharacter(g_fonts[FONT_SMALL], x += w, 20, 1.f, '>');
+    if(console_state.buffer_pos > 0) {
+        DrawBitmapString(g_fonts[FONT_SMALL], x += w, 20, 0, 1.f, msg_buf);
+    }
+}
+
+void ConsoleInputCallback(int key, bool is_pressed) {
+    if(!is_pressed) {
+        return;
+    }
+
+    if(key == '\r') {
+        plParseConsoleString(console_state.buffer);
+        memset(console_state.buffer, 0, sizeof(console_state.buffer));
+        return;
+    }
+
+    if(key == '\b' && console_state.buffer_pos > 0) {
+        console_state.buffer[--console_state.buffer_pos] = '\0';
+        return;
+    }
+
+    if(console_state.buffer_pos > sizeof(console_state.buffer)) {
+        /* todo, dynamically size the buffer? */
+        return;
+    }
+
+    console_state.buffer[console_state.buffer_pos++] = (char) key;
+}
+
+void ToggleConsole(void) {
+    console_enabled = !console_enabled;
+    if(console_enabled) {
+        SetKeyboardFocusCallback(ConsoleInputCallback);
+        memset(console_state.buffer, 0, sizeof(console_state.buffer));
+        console_state.buffer_pos = 0;
+    } else {
+        SetKeyboardFocusCallback(NULL);
+    }
+
+    ResetInputStates();
 }

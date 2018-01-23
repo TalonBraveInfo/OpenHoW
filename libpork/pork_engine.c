@@ -18,6 +18,7 @@
 #include "pork_map.h"
 #include "pork_font.h"
 #include "pork_input.h"
+#include "pork_console.h"
 
 #include "server/server.h"
 #include "client/client.h"
@@ -179,6 +180,8 @@ void DrawPork(double delta) {
 
     }
 
+    DrawConsole();
+
     // todo, need a better name for this function
     plDrawPerspectivePOST(g_state.ui_camera);
 
@@ -280,7 +283,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
     cv_debug_input = plRegisterConsoleVariable(
             "debug_input",
-            "1",
+            "0",
             pl_int_var,
             NULL,
             "Changing this cycles between different modes of debugging input\n"

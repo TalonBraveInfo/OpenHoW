@@ -14,28 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "pork_engine.h"
-#include "pork_input.h"
-#include "pork_console.h"
+#pragma once
 
-#include "client.h"
+bool IsConsoleEnabled(void);
 
-/*****************************************************/
-
-void ProcessClientInput(void) {
-    static double input_delay = 0;
-    if(input_delay < g_state.sim_ticks) {
-        input_delay = g_state.sim_ticks + 50;
-
-        if (GetKeyState(9)) {
-            ToggleConsole();
-            return;
-        }
-    }
-}
-
-/*****************************************************/
-
-void SimulateClient(void) {
-    ProcessClientInput();
-}
+void ToggleConsole(void);
+void DrawConsole(void);

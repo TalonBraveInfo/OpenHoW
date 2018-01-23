@@ -32,6 +32,8 @@ struct {
         bool button_states[PORK_MAX_KEYS];
         int bindings[MAX_ACTIONS];
     } controllers[PORK_MAX_CONTROLLERS];
+
+    void(*InputFocusCallback)(int key, bool is_pressed);
 } input_state;
 
 void InitInput(void) {
@@ -62,6 +64,10 @@ void ResetInputStates(void) {
     memset(input_state.mouse.button_states, 0, PORK_MAX_MOUSE_BUTTONS);
 }
 
+void SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed)) {
+    input_state.InputFocusCallback = Callback;
+}
+
 bool GetKeyState(int key) {
     assert(key < PORK_MAX_KEYS);
     return input_state.keyboard.key_states[key];
@@ -87,6 +93,10 @@ void SetPorkButtonState(unsigned int controller, int button, bool status) {
 
 void SetPorkKeyState(int key, bool status) {
     assert(key < PORK_MAX_KEYS);
+    if(input_state.InputFocusCallback) {
+        input_state.InputFocusCallback(key, status);
+    }
+
     input_state.keyboard.key_states[key] = status;
 }
 

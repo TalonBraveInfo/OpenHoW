@@ -38,6 +38,8 @@ enum {
 void InitInput(void);
 void ResetInputStates(void);
 
+void SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed));
+
 bool GetKeyState(int key);
 bool GetButtonState(unsigned int controller, int button);
 bool GetActionState(unsigned int controller, int action);

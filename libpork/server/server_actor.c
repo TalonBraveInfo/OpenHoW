@@ -54,6 +54,11 @@ Actor *SVGetActor(const char *name) {
         }
 
         Actor *actor = &g_actors[slot];
+        if(actor == NULL) {
+            LogWarn("unallocated actor, aborting!\n");
+            return NULL;
+        }
+
         if(!actor->is_reserved) {
             LogWarn("chosen actor is not active, aborting!\n");
             return NULL;
