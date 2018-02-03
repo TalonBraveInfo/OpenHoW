@@ -18,10 +18,10 @@
 
 #include "pork_engine.h"
 #include "pork_input.h"
-#include "client_font.h"
 #include "pork_console.h"
 #include "pork_map.h"
 
+#include "client_font.h"
 #include "client_actor.h"
 
 void InitDisplay(void) {
@@ -45,7 +45,7 @@ void InitDisplay(void) {
     g_state.camera->fov         = 90;
     g_state.camera->viewport.w  = g_state.display_width;
     g_state.camera->viewport.h  = g_state.display_height;
-    g_state.camera->position    = PLVector3(0, 0, 0);
+    g_state.camera->position    = PLVector3(0, 0, -200);
 
     g_state.ui_camera = plCreateCamera();
     if(g_state.ui_camera == NULL) {
@@ -57,6 +57,8 @@ void InitDisplay(void) {
     g_state.ui_camera->viewport.h  = g_state.display_height;
     //g_state.ui_camera->viewport.r_w = 320;
     //g_state.ui_camera->viewport.r_h = 240;
+
+    plSetCullMode(PL_CULL_NEGATIVE);
 }
 
 /* shared function */
@@ -72,41 +74,14 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
     ResetInputStates();
 }
 
-/* shared function */
-void DrawPork(double delta) {
-    g_state.draw_ticks = g_launcher.GetTicks();
+void DEBUGDrawSkeleton();
 
-    plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
+void DrawDebugOverlay(void) {
+    if(cv_debug_mode->i_value <= 0) {
+        return;
+    }
 
-    g_state.camera->position = PLVector3(0, 0, -200);
-
-    plSetupCamera(g_state.camera);
-
-    DrawMap();
-    DrawActors(delta);
-
-    // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
-    // in the future, do this through "ACTOR %s SHOW SKELETON" command?
-    //DEBUGDrawSkeleton();
-
-    plSetupCamera(g_state.ui_camera);
-
-#if 0 /* debug crap */
-    plDrawBevelledBorder(20, 20, 256, 256);
-
-    plSetBlendMode(PL_BLEND_ADDITIVE);
-    plDrawRectangle((PLRectangle2D){
-            (PLVector2){0, 0},
-            (PLVector2){GetViewportWidth(), GetViewportHeight()},
-            PLColourRGB(0, 0, 128),
-            PLColourRGB(0, 0, 128),
-            PLColour(0, 0, 40, 0),
-            PLColour(0, 0, 40, 0),
-    });
-    plSetBlendMode(PL_BLEND_DISABLE);
-#endif
-
-    if(cv_debug_fps->b_value) {
+    if (cv_debug_fps->b_value) {
         static unsigned int fps = 0;
         static unsigned int ms = 0;
         static unsigned int update_delay = 60;
@@ -121,59 +96,60 @@ void DrawPork(double delta) {
         DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 0, 1.f, ms_count);
     }
 
-    if(cv_debug_input->i_value > 0) {
-        switch(cv_debug_input->i_value) {
+    if (cv_debug_input->i_value > 0) {
+        switch (cv_debug_input->i_value) {
             default: {
                 DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, "KEYBOARD STATE");
                 unsigned int x = 20, y = 50;
-                for(unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
+                for (unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
                     bool status = GetKeyState(i);
                     char key_state[64];
                     snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
                     DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, key_state);
-                    if(y + 15 > GetViewportHeight() - 50) {
+                    if (y + 15 > GetViewportHeight() - 50) {
                         x += 90;
                         y = 50;
                     } else {
                         y += 15;
                     }
                 }
-            } break;
+            }
+                break;
 
             case 2: {
                 DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, "CONTROLLER STATE");
 
                 char button_state[64];
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_CROSS,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_CROSS " (%s)",
                          GetButtonState(0, PORK_BUTTON_CROSS) ? "TRUE" : "FALSE");
                 unsigned int y = 50;
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_TRIANGLE,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_TRIANGLE " (%s)",
                          GetButtonState(0, PORK_BUTTON_TRIANGLE) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_CIRCLE,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_CIRCLE " (%s)",
                          GetButtonState(0, PORK_BUTTON_CIRCLE) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_SQUARE,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_SQUARE " (%s)",
                          GetButtonState(0, PORK_BUTTON_SQUARE) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_L1,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_L1 " (%s)",
                          GetButtonState(0, PORK_BUTTON_L1) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_L2,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_L2 " (%s)",
                          GetButtonState(0, PORK_BUTTON_L2) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_R1,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_R1 " (%s)",
                          GetButtonState(0, PORK_BUTTON_R1) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
-                snprintf(button_state, sizeof(button_state), "%s (%s)", CHAR_PSX_R2,
+                snprintf(button_state, sizeof(button_state), CHAR_PSX_R2 " (%s)",
                          GetButtonState(0, PORK_BUTTON_R2) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
 
@@ -202,8 +178,51 @@ void DrawPork(double delta) {
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
             } break;
         }
+        return;
     }
 
+    char cam_pos[32];
+    snprintf(cam_pos, sizeof(cam_pos), "CAMERA POSITION: %d %d %d",
+             (int)g_state.camera->position.x,
+             (int)g_state.camera->position.y,
+             (int)g_state.camera->position.z
+    );
+    DrawBitmapString(g_fonts[FONT_SMALL], 20, 20, 0, 1.f, cam_pos);
+}
+
+/* shared function */
+void DrawPork(double delta) {
+    g_state.draw_ticks = g_launcher.GetTicks();
+
+    plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
+
+    plSetupCamera(g_state.camera);
+
+    DrawMap();
+    DrawActors(delta);
+
+    // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
+    // in the future, do this through "ACTOR %s SHOW SKELETON" command?
+    DEBUGDrawSkeleton();
+
+    plSetupCamera(g_state.ui_camera);
+
+#if 1 /* debug crap */
+    plDrawBevelledBorder(20, 20, 256, 256);
+
+    plSetBlendMode(PL_BLEND_ADDITIVE);
+    plDrawRectangle((PLRectangle2D){
+            (PLVector2){0, 0},
+            (PLVector2){GetViewportWidth(), GetViewportHeight()},
+            PLColourRGB(0, 0, 128),
+            PLColourRGB(0, 0, 128),
+            PLColour(0, 0, 40, 0),
+            PLColour(0, 0, 40, 0),
+    });
+    plSetBlendMode(PL_BLEND_DISABLE);
+#endif
+
+    DrawDebugOverlay();
     DrawConsole();
 
     // todo, need a better name for this function

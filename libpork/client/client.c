@@ -40,9 +40,9 @@ void ProcessClientInput(void) {
 
 #if 1
     if(GetActionState(0, ACTION_MOVE_FORWARD)) {
-        g_state.camera->position.x += 5.f;
+        g_state.camera->position.x += 4.f;
     } else if(GetActionState(0, ACTION_MOVE_BACKWARD)) {
-        g_state.camera->position.x -= 5.f;
+        g_state.camera->position.x -= 4.f;
     }
 
     if(GetActionState(0, ACTION_MOVE_LEFT)) {
