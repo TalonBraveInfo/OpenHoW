@@ -155,6 +155,9 @@ int TranslateSDLKey(int key) {
         case SDLK_LEFT: return PORK_KEY_LEFT;
         case SDLK_RIGHT: return PORK_KEY_RIGHT;
 
+        case SDLK_LSHIFT: return PORK_KEY_LSHIFT;
+        case SDLK_RSHIFT: return PORK_KEY_RSHIFT;
+
         case SDLK_PAGEUP: return PORK_KEY_PAGEUP;
         case SDLK_PAGEDOWN: return PORK_KEY_PAGEDOWN;
 
@@ -200,14 +203,14 @@ void PollEvents(void) {
             } break;
 
             case SDL_KEYDOWN: {
-                if(event.key.keysym.scancode == SDL_SCANCODE_ESCAPE && event.key.state == SDL_PRESSED) {
-                    ShutdownPork();
-                }
-
                 int key = TranslateSDLKey(event.key.keysym.sym);
                 if(key != -1) {
                     SetPorkKeyState(key, true);
                 }
+            } break;
+
+            case SDL_TEXTINPUT: {
+
             } break;
 
             case SDL_MOUSEBUTTONDOWN: {
@@ -306,6 +309,11 @@ int main(int argc, char **argv) {
     //SDL_SetRelativeMouseMode(SDL_TRUE);
     //SDL_ShowCursor(0);
 
+    /* using this to catch modified keys
+     * without having to do the conversion
+     * ourselves                            */
+    SDL_StartTextInput();
+
 #define TICKS_PER_SECOND    25
 #define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
 #define MAX_FRAMESKIP       5
@@ -328,6 +336,8 @@ int main(int argc, char **argv) {
         delta_time = (double)(SDL_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
         DrawPork(delta_time);
     }
+
+    SDL_StopTextInput();
 
     ShutdownPork();
 

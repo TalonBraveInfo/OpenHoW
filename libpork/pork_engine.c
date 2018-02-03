@@ -291,7 +291,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             "2: controller states"
     );
 
-    plRegisterConsoleCommand("convert_tims", ConvertImageCallback, "Convert TIM textures to PNG");
+    plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "");
 
     InitConfig();

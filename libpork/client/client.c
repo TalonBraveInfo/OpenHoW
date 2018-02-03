@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <PL/platform_graphics_camera.h>
+
 #include "pork_engine.h"
 #include "pork_input.h"
 #include "pork_console.h"
@@ -27,11 +29,25 @@ void ProcessClientInput(void) {
     if(input_delay < g_state.sim_ticks) {
         input_delay = g_state.sim_ticks + 50;
 
-        if (GetKeyState(9)) {
+        if (GetKeyState('`')) {
             ToggleConsole();
             return;
         }
     }
+
+#if 1
+    if(GetActionState(0, ACTION_MOVE_FORWARD)) {
+        g_state.camera->position.x += 5.f;
+    } else if(GetActionState(0, ACTION_MOVE_BACKWARD)) {
+        g_state.camera->position.x -= 5.f;
+    }
+
+    if(GetActionState(0, ACTION_MOVE_LEFT)) {
+
+    } else if(GetActionState(0, ACTION_MOVE_RIGHT)) {
+
+    }
+#endif
 }
 
 /*****************************************************/

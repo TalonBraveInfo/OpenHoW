@@ -19,6 +19,7 @@
 #include "pork_font.h"
 
 #include "server/server_actor.h"
+#include "pork_map.h"
 
 /*****************************************************/
 
@@ -77,6 +78,13 @@ void SetCommand(unsigned int argc, char *argv[]) {
             return;
         } else if(pl_strncasecmp("map", argv[i], 3) == 0) {
             /* todo, set map properties */
+            const char *name = argv[++i];
+            if(name == NULL || name[0] == '\0') {
+                LogWarn("invalid map name, aborting\n");
+                return;
+            }
+
+            LoadMap(name, MAP_MODE_DEATHMATCH);
             return;
         }
     }
@@ -86,8 +94,10 @@ void SetCommand(unsigned int argc, char *argv[]) {
 
 /*****************************************************/
 
+#define MAX_BUFFER_SIZE 512
+
 struct {
-    char buffer[2048];
+    char buffer[MAX_BUFFER_SIZE];
     unsigned int buffer_pos;
 } console_state;
 
@@ -102,16 +112,21 @@ void DrawConsole(void) {
         return;
     }
 
-    char msg_buf[2048];
+    char msg_buf[MAX_BUFFER_SIZE];
     strncpy(msg_buf, console_state.buffer, sizeof(msg_buf));
     pl_strtoupper(msg_buf);
 
     unsigned int x = 20;
-    unsigned int w = g_fonts[FONT_SMALL]->chars[0].w;
-    DrawBitmapCharacter(g_fonts[FONT_SMALL], x += w, 20, 1.f, '>');
+    unsigned int w = g_fonts[FONT_CHARS2]->chars[0].w;
+    DrawBitmapCharacter(g_fonts[FONT_CHARS2], x, 20, 1.f, '>');
     if(console_state.buffer_pos > 0) {
-        DrawBitmapString(g_fonts[FONT_SMALL], x += w, 20, 0, 1.f, msg_buf);
+        DrawBitmapString(g_fonts[FONT_CHARS2], x + w + 5, 20, 1, 1.f, msg_buf);
     }
+}
+
+void ResetConsole(void) {
+    memset(console_state.buffer, 0, sizeof(console_state.buffer));
+    console_state.buffer_pos = 0;
 }
 
 void ConsoleInputCallback(int key, bool is_pressed) {
@@ -121,7 +136,7 @@ void ConsoleInputCallback(int key, bool is_pressed) {
 
     if(key == '\r') {
         plParseConsoleString(console_state.buffer);
-        memset(console_state.buffer, 0, sizeof(console_state.buffer));
+        ResetConsole();
         return;
     }
 
@@ -130,8 +145,8 @@ void ConsoleInputCallback(int key, bool is_pressed) {
         return;
     }
 
-    if(console_state.buffer_pos > sizeof(console_state.buffer)) {
-        /* todo, dynamically size the buffer? */
+    if(console_state.buffer_pos > MAX_BUFFER_SIZE) {
+        LogWarn("hit console buffer limit, aborting!\n");
         return;
     }
 
@@ -142,8 +157,7 @@ void ToggleConsole(void) {
     console_enabled = !console_enabled;
     if(console_enabled) {
         SetKeyboardFocusCallback(ConsoleInputCallback);
-        memset(console_state.buffer, 0, sizeof(console_state.buffer));
-        console_state.buffer_pos = 0;
+        ResetConsole();
     } else {
         SetKeyboardFocusCallback(NULL);
     }
