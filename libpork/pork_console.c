@@ -16,7 +16,7 @@
  */
 #include "pork_engine.h"
 #include "pork_input.h"
-#include "pork_font.h"
+#include "client/client_font.h"
 
 #include "server/server_actor.h"
 #include "pork_map.h"

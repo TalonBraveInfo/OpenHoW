@@ -45,6 +45,7 @@ PorkLauncherInterface g_launcher;
 extern PLConsoleVariable *cv_debug_mode;
 extern PLConsoleVariable *cv_debug_fps;
 extern PLConsoleVariable *cv_debug_skeleton;
+extern PLConsoleVariable *cv_debug_input;
 
 ///////////////////////////////////////////////////
 
@@ -56,6 +57,7 @@ struct {
 
     /* server / client logic */
     bool is_host;
+    bool is_dedicated;
 
     // viewport
     bool display_fullscreen;

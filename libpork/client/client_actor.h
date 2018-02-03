@@ -41,4 +41,10 @@ typedef struct CLActor {
     PLAnimation *cur_animation;
 } CLActor;
 
+void CLInitActors(void);
+void CLClearActors(void);
+
+CLActor *CLSpawnActor(void);
+void CLDestroyActor(CLActor *actor);
+
 void DrawActors(double delta);

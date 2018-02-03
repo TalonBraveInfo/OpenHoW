@@ -369,7 +369,7 @@ void LoadMapTiles(const char *path, bool is_extended) {
     map_state.num_chunks = block_size * block_size;
     map_state.chunks = calloc(sizeof(*map_state.chunks), map_state.num_chunks);
     if(map_state.chunks == NULL) {
-        Error("failed to allocate memory for map chunks, %ul bytes, aborting\n", sizeof(*map_state.chunks) *
+        Error("failed to allocate memory for map chunks, %u bytes, aborting\n", sizeof(*map_state.chunks) *
                 map_state.num_chunks);
     }
 

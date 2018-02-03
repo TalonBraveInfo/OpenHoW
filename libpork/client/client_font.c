@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pork_engine.h"
-#include "pork_font.h"
+#include "client_font.h"
 
 #include <PL/platform_filesystem.h>
 

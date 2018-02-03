@@ -21,6 +21,9 @@
 #include "pork_console.h"
 
 #include "client.h"
+#include "client_display.h"
+#include "client_actor.h"
+#include "client_font.h"
 
 /*****************************************************/
 
@@ -52,6 +55,18 @@ void ProcessClientInput(void) {
 
 /*****************************************************/
 
+void InitClient(void) {
+    InitInput();
+    InitDisplay();
+    InitFonts();
+
+    CLClearActors();
+}
+
 void SimulateClient(void) {
     ProcessClientInput();
+}
+
+void ShutdownClient(void) {
+    CLClearActors();
 }

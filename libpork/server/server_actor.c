@@ -29,7 +29,7 @@ void SVClearActors(void) {
         }
     }
 
-    LogDebug("clearing %d actors\n", num_actors);
+    LogDebug("clearing %u server actors\n", num_actors);
     memset(g_actors, 0, sizeof(Actor) * num_actors);
 }
 
@@ -110,7 +110,7 @@ void InitActors(void) {
     // todo, load in actor_decl.json (or something), containing an outline of how each actor class functions
 }
 
-//////////////////////////////////////////////////////////////
+/*********************************************************************/
 
 Actor *Actor_Spawn(void) {
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
@@ -125,11 +125,10 @@ Actor *Actor_Spawn(void) {
      *
      * todo, in future, let's be more graceful with this, but for now we'll crash and burn!
      */
-
     unsigned int old_num_actors = num_actors;
     num_actors += 512;
     if((g_actors = realloc(g_actors, sizeof(Actor) * num_actors)) == NULL) {
-        Error("failed to resize actors array to %ul, aborting!\n", num_actors);
+        Error("failed to resize actors array to %u, aborting!\n", num_actors);
     }
     memset(g_actors + old_num_actors, 0, sizeof(Actor) * (num_actors - old_num_actors));
 
@@ -151,11 +150,11 @@ void Actor_Possess(Actor *self, Player *player) {
         return;
     }
 
-/* if it's a controllable type and a controller has been
- * set, then once that frame begins, we'll skip any AI sim
- * because it's been occupied by a player - otherwise it
- * will operate on it's own accord.
- */
+    /* if it's a controllable type and a controller has been
+     * set, then once that frame begins, we'll skip any AI sim
+     * because it's been occupied by a player - otherwise it
+     * will operate on it's own accord.
+     */
     LogDebug("%s took control of actor %s\n", self->name);
 
     self->controller = player;
