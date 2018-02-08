@@ -195,20 +195,38 @@ PLMesh *terrain_mesh = NULL;
  *  c) keep all tiles separate, apply simple ray tracing algorithm to check whether tile is visible from camera
  */
 
-void InitMaps(void) {
-    terrain_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
-    if(terrain_mesh == NULL) {
-        Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
-    }
+#define WATER_WIDTH     16
+#define WATER_HEIGHT    16
 
-    water_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 16, 64);
+void InitMaps(void) {
+    /* water mesh is always the same, so we'll generate this here and can
+     * worry about scaling later */
+    unsigned int num_verts = WATER_WIDTH * WATER_HEIGHT * 3;
+    unsigned int num_indices = (WATER_WIDTH * WATER_HEIGHT) + (WATER_WIDTH - 1) * (WATER_HEIGHT - 2);
+    water_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, num_indices, num_verts);
     if(water_mesh == NULL) {
         Error("failed to create water mesh, %s, aborting!\n", plGetError());
     }
 
+    /* todo, CreateMesh should be taking care of this! */
+    water_mesh->num_indices = num_indices;
+    water_mesh->indices = calloc(water_mesh->num_indices, sizeof(uint16_t));
+    if(water_mesh->indices == NULL) {
+        Error("failed to allocate enough indices for water plane, aborting!\n");
+    }
+
     plClearMesh(water_mesh);
 
-    // todo, outline water mesh...
+    plSetMeshUniformColour(water_mesh, PLColourRGB(255, 0, 0));
+
+    unsigned int cur_vertex = 0;
+    for(unsigned int row = 0; row < WATER_HEIGHT; ++row) {
+        for(unsigned int col = 0; col < WATER_WIDTH; ++col) {
+            plSetMeshVertexPosition(water_mesh, cur_vertex++, PLVector3(col, 0, row));
+        }
+    }
+
+    plGenerateMeshNormals(water_mesh);
 
     plUploadMesh(water_mesh);
 }
@@ -443,6 +461,15 @@ void LoadMapTiles(const char *path, bool is_extended) {
     }
 
     pork_fclose(fh);
+
+    if(terrain_mesh != NULL) {
+        plDeleteMesh(terrain_mesh);
+    }
+
+    terrain_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
+    if(terrain_mesh == NULL) {
+        Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
+    }
 }
 
 /* loads a new map into memory - if the config
