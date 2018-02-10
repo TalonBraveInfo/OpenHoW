@@ -55,10 +55,10 @@ void InitDisplay(void) {
     g_state.ui_camera->fov         = 90;
     g_state.ui_camera->viewport.w  = g_state.display_width;
     g_state.ui_camera->viewport.h  = g_state.display_height;
-    //g_state.ui_camera->viewport.r_w = 320;
-    //g_state.ui_camera->viewport.r_h = 240;
+    g_state.ui_camera->viewport.r_w = 320;
+    g_state.ui_camera->viewport.r_h = 240;
 
-    plSetCullMode(PL_CULL_NEGATIVE);
+    //plSetCullMode(PL_CULL_NEGATIVE);
 }
 
 /* shared function */

@@ -95,6 +95,8 @@ PL_EXTERN void ShutdownPork(void);
 PL_EXTERN void DrawPork(double delta);
 PL_EXTERN void SimulatePork(void);
 
+PL_EXTERN bool IsPorkRunning(void);
+
 /* pork_input.c */
 
 enum {

@@ -32,4 +32,4 @@ file(GLOB VIEWER_SOURCE_FILES *.c *.h)
 add_executable(launcher_sdl2 ${VIEWER_SOURCE_FILES})
 
 target_include_directories(launcher_sdl2 PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(launcher_sdl2 platform pork SDL2 IL ILU ILUT)
+target_link_libraries(launcher_sdl2 platform pork SDL2)

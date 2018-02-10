@@ -237,9 +237,6 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
     pork_fclose(file);
 }
 
-#include <IL/il.h>
-#include <IL/ilu.h>
-
 void ConvertImageToPNG(const char *path) {
     LogInfo("converting %s...\n", path);
 
@@ -280,13 +277,10 @@ void ConvertImageToPNG(const char *path) {
         goto ABORT;
     }
 
-    // todo, eventually this should run through the platform lib
-    ILuint image_id = ilGenImage();
-    ilBindImage(image_id);
-    ilTexImage(image.width, image.height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, image.data[0]);
-    ilEnable(IL_FILE_OVERWRITE);
-    ilSaveImage(out_path);
-    ilDeleteImage(image_id);
+    if(!plWriteImage(&image, out_path)) {
+        LogInfo("failed to write png \"%s\", %s, aborting!\n", out_path, plGetError());
+        goto ABORT;
+    }
 
     plFreeImage(&image);
     plDeleteFile(path);
@@ -296,9 +290,7 @@ void ConvertImageToPNG(const char *path) {
 }
 
 void ConvertImageCallback(unsigned int argc, char *argv[]) {
-    ilInit();
     plScanDirectory(g_state.base_path, "tim", ConvertImageToPNG, true);
-    ilShutDown();
 }
 
 void ExtractGameData(const char *path) {

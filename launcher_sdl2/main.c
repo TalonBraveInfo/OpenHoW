@@ -322,7 +322,7 @@ int main(int argc, char **argv) {
     unsigned int loops;
     double delta_time;
 
-    while(true) {
+    while(IsPorkRunning()) {
         PollEvents();
 
         // simulate the game at TICKS_PER_SECOND, might need adjusting

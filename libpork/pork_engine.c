@@ -152,6 +152,10 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitMaps();
 }
 
+bool IsPorkRunning(void) {
+    return true;
+}
+
 void SimulatePork(void) {
     g_state.sim_ticks = g_launcher.GetTicks();
 
