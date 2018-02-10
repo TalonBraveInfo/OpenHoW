@@ -23,6 +23,7 @@
 
 #include "client_font.h"
 #include "client_actor.h"
+#include "client_frontend.h"
 
 void InitDisplay(void) {
     if(g_launcher.DisplayWindow) {
@@ -55,8 +56,8 @@ void InitDisplay(void) {
     g_state.ui_camera->fov         = 90;
     g_state.ui_camera->viewport.w  = g_state.display_width;
     g_state.ui_camera->viewport.h  = g_state.display_height;
-    g_state.ui_camera->viewport.r_w = 320;
-    g_state.ui_camera->viewport.r_h = 240;
+    //g_state.ui_camera->viewport.r_w = 320;
+    //g_state.ui_camera->viewport.r_h = 240;
 
     //plSetCullMode(PL_CULL_NEGATIVE);
 }
@@ -207,22 +208,8 @@ void DrawPork(double delta) {
 
     plSetupCamera(g_state.ui_camera);
 
-#if 1 /* debug crap */
-    plDrawBevelledBorder(20, 20, 256, 256);
-
-    plSetBlendMode(PL_BLEND_ADDITIVE);
-    plDrawRectangle((PLRectangle2D){
-            (PLVector2){0, 0},
-            (PLVector2){GetViewportWidth(), GetViewportHeight()},
-            PLColourRGB(0, 0, 128),
-            PLColourRGB(0, 0, 128),
-            PLColour(0, 0, 40, 0),
-            PLColour(0, 0, 40, 0),
-    });
-    plSetBlendMode(PL_BLEND_DISABLE);
-#endif
-
     DrawDebugOverlay();
+    DrawFrontend();
     DrawConsole();
 
     // todo, need a better name for this function
@@ -232,3 +219,6 @@ void DrawPork(double delta) {
 
     g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
 }
+
+/**************************************************************************************/
+

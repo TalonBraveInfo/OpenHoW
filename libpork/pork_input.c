@@ -34,23 +34,23 @@ struct {
     } controllers[PORK_MAX_CONTROLLERS];
 
     void(*InputFocusCallback)(int key, bool is_pressed);
-} input_state;
+} input_target;
 
 void InitInput(void) {
-    memset(&input_state, 0, sizeof(input_state));
+    memset(&input_target, 0, sizeof(input_target));
 
     /* setup the default keyboard bindings */
-    input_state.keyboard.bindings[ACTION_MOVE_FORWARD]  = PORK_KEY_UP;
-    input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = PORK_KEY_DOWN;
-    input_state.keyboard.bindings[ACTION_MOVE_LEFT]     = PORK_KEY_LEFT;
-    input_state.keyboard.bindings[ACTION_MOVE_RIGHT]    = PORK_KEY_RIGHT;
+    input_target.keyboard.bindings[ACTION_MOVE_FORWARD]  = PORK_KEY_UP;
+    input_target.keyboard.bindings[ACTION_MOVE_BACKWARD] = PORK_KEY_DOWN;
+    input_target.keyboard.bindings[ACTION_MOVE_LEFT]     = PORK_KEY_LEFT;
+    input_target.keyboard.bindings[ACTION_MOVE_RIGHT]    = PORK_KEY_RIGHT;
 
     /* setup the default controller bindings */
     for(unsigned int i = 0; i < PORK_MAX_CONTROLLERS; ++i) {
-        input_state.controllers[i].bindings[ACTION_MOVE_FORWARD]    = PORK_BUTTON_UP;
-        input_state.controllers[i].bindings[ACTION_MOVE_BACKWARD]   = PORK_BUTTON_DOWN;
-        input_state.controllers[i].bindings[ACTION_MOVE_LEFT]       = PORK_BUTTON_LEFT;
-        input_state.controllers[i].bindings[ACTION_MOVE_RIGHT]      = PORK_BUTTON_RIGHT;
+        input_target.controllers[i].bindings[ACTION_MOVE_FORWARD]    = PORK_BUTTON_UP;
+        input_target.controllers[i].bindings[ACTION_MOVE_BACKWARD]   = PORK_BUTTON_DOWN;
+        input_target.controllers[i].bindings[ACTION_MOVE_LEFT]       = PORK_BUTTON_LEFT;
+        input_target.controllers[i].bindings[ACTION_MOVE_RIGHT]      = PORK_BUTTON_RIGHT;
     }
 
     /* todo, cv_input_kb_config, 'KEY_UP;KEY_DOWN;KEY_LEFT;KEY_RIGHT' follows
@@ -60,44 +60,44 @@ void InitInput(void) {
 }
 
 void ResetInputStates(void) {
-    memset(input_state.keyboard.key_states, 0, PORK_MAX_KEYS);
-    memset(input_state.mouse.button_states, 0, PORK_MAX_MOUSE_BUTTONS);
+    memset(input_target.keyboard.key_states, 0, PORK_MAX_KEYS);
+    memset(input_target.mouse.button_states, 0, PORK_MAX_MOUSE_BUTTONS);
 }
 
 void SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed)) {
-    input_state.InputFocusCallback = Callback;
+    input_target.InputFocusCallback = Callback;
 }
 
 bool GetKeyState(int key) {
     assert(key < PORK_MAX_KEYS);
-    return input_state.keyboard.key_states[key];
+    return input_target.keyboard.key_states[key];
 }
 
 bool GetButtonState(unsigned int controller, int button) {
     assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
-    return input_state.controllers[controller].button_states[button];
+    return input_target.controllers[controller].button_states[button];
 }
 
 bool GetActionState(unsigned int controller, int action) {
     assert(controller < PORK_MAX_CONTROLLERS);
-    return (GetButtonState(controller, input_state.controllers[controller].bindings[action]) ||
-            GetKeyState(input_state.keyboard.bindings[action]));
+    return (GetButtonState(controller, input_target.controllers[controller].bindings[action]) ||
+            GetKeyState(input_target.keyboard.bindings[action]));
 }
 
 /* public interface ****************************************************************/
 
 void SetPorkButtonState(unsigned int controller, int button, bool status) {
     assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
-    input_state.controllers[controller].button_states[button] = status;
+    input_target.controllers[controller].button_states[button] = status;
 }
 
 void SetPorkKeyState(int key, bool status) {
     assert(key < PORK_MAX_KEYS);
-    if(input_state.InputFocusCallback) {
-        input_state.InputFocusCallback(key, status);
+    if(input_target.InputFocusCallback) {
+        input_target.InputFocusCallback(key, status);
     }
 
-    input_state.keyboard.key_states[key] = status;
+    input_target.keyboard.key_states[key] = status;
 }
 
 void SetPorkMouseState(int x, int y, int button, bool status) {

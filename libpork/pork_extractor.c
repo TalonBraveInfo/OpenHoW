@@ -314,6 +314,9 @@ void ExtractGameData(const char *path) {
             /* british */
             {"/Chars/british.mad", "/chars/british/"},
             {"/Chars/british.mtd", "/chars/british/"},
+
+            /* frontend */
+            //{"/FEBmps/FEBMP.MAD", "/frontend/bitmaps/"},
     };
 
     for(unsigned int i = 0; i < plArrayElements(mad_paths); ++i) {
@@ -343,6 +346,17 @@ void ExtractGameData(const char *path) {
             {"/FEText/CHARS3.BMP", "/text/"},
             {"/FEText/GameChars.bmp", "/text/"},
             {"/FEText/SMALL.BMP", "/text/"},
+
+            /* frontend */
+            {"/Language/Tims/Pigbkpc1.BMP", "/fe/"},
+            {"/Language/Tims/loadmult.bmp", "/fe/"},
+            {"/Language/Tims/Title/ANY.bmp", "/fe/title/"},
+            {"/Language/Tims/Title/Bruno1.bmp", "/fe/title/"},
+            {"/Language/Tims/Title/KEY.bmp", "/fe/title/"},
+            {"/Language/Tims/Title/PRESS.bmp", "/fe/title/"},
+            {"/Language/Tims/Title/title.bmp", "/fe/title/"},
+            {"/Language/Tims/Title/titlemon.bmp", "/fe/title/"},
+            {"/Language/Tims/Briefing/loadbar.bmp", "/fe/"},
 
             /* maps */
             {"/Maps/ARCHI.PMG", "/maps/archi/"},

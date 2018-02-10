@@ -23,9 +23,15 @@
 #include "client.h"
 #include "client_display.h"
 #include "client_actor.h"
-#include "client_font.h"
+#include "client_frontend.h"
 
 /*****************************************************/
+
+enum {
+    INPUT_TARGET_FRONTEND,
+    INPUT_TARGET_GAME,
+};
+unsigned int input_target = INPUT_TARGET_FRONTEND;
 
 void ProcessClientInput(void) {
     static double input_delay = 0;
@@ -36,6 +42,11 @@ void ProcessClientInput(void) {
             ToggleConsole();
             return;
         }
+    }
+
+    if(input_target == INPUT_TARGET_FRONTEND) {
+        ProcessFrontendInput();
+        return;
     }
 
 #if 1
@@ -58,7 +69,7 @@ void ProcessClientInput(void) {
 void InitClient(void) {
     InitInput();
     InitDisplay();
-    InitFonts();
+    InitFrontend();
 
     CLClearActors();
 }
