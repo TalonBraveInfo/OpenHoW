@@ -87,7 +87,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     InitConfig();
 
-    sprintf(g_state.base_path, "./");
+    snprintf(g_state.base_path, sizeof(g_state.base_path), "./");
     for(int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
@@ -142,6 +142,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             LogWarn("unknown/invalid command line argument, %s!\n", argv[i]);
         }
     }
+    LogInfo("base path: %s\n", g_state.base_path);
+    LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
     if(!g_state.is_dedicated) {
         InitClient();

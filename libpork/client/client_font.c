@@ -94,16 +94,16 @@ void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, floa
 
 BitmapFont *LoadBitmapFont(const char *name) {
     char tab_path[PL_SYSTEM_MAX_PATH];
-    snprintf(tab_path, sizeof(tab_path), "%s/text/%s.tab", g_state.base_path, name);
+    snprintf(tab_path, sizeof(tab_path), "%stext/%s.tab", g_state.base_path, name);
     if(!plFileExists(tab_path)) {
         Error("failed to load tab for \"%s\", aborting!\n", name);
     }
 
     char tex_path[PL_SYSTEM_MAX_PATH];
-    snprintf(tex_path, sizeof(tex_path), "%s/text/%s.bmp", g_state.base_path, name);
+    snprintf(tex_path, sizeof(tex_path), "%stext/%s.bmp", g_state.base_path, name);
     if(!plFileExists(tex_path)) {
         /* try again, just in case it's in the TIM format */
-        snprintf(tex_path, sizeof(tex_path), "%s/text/%s.tim", g_state.base_path, name);
+        snprintf(tex_path, sizeof(tex_path), "%stext/%s.tim", g_state.base_path, name);
         if(!plFileExists(tex_path)) {
             Error("failed to load texture for \"%s\", aborting!\n", name);
         }

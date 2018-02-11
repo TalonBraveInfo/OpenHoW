@@ -31,7 +31,7 @@ enum {
     INPUT_TARGET_FRONTEND,
     INPUT_TARGET_GAME,
 };
-unsigned int input_target = INPUT_TARGET_FRONTEND;
+unsigned int client_input_target = INPUT_TARGET_FRONTEND;
 
 void ProcessClientInput(void) {
     static double input_delay = 0;
@@ -44,7 +44,7 @@ void ProcessClientInput(void) {
         }
     }
 
-    if(input_target == INPUT_TARGET_FRONTEND) {
+    if(client_input_target == INPUT_TARGET_FRONTEND) {
         ProcessFrontendInput();
         return;
     }

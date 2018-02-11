@@ -16,51 +16,54 @@
  */
 #include <PL/platform_graphics.h>
 #include <PL/platform_graphics_camera.h>
+#include <PL/platform_filesystem.h>
+#include <pork_engine.h>
 
 #include "pork_engine.h"
 #include "client_frontend.h"
 #include "client_font.h"
 
 enum {
-    MODE_MENU_START,    /* start screen, e.g. press any key */
-    MODE_MENU_GAME,     /* in-game menu... probably cut this down? */
+    FE_MODE_START,    /* start screen, e.g. press any key */
+    FE_MODE_GAME,     /* in-game menu... probably cut this down? */
 };
-unsigned int menu_state = MODE_MENU_START;
+unsigned int frontend_state = FE_MODE_START;
 
 PLTexture *fe_background    = NULL;
 PLTexture *fe_title         = NULL;
 
 void InitFrontend(void) {
-    /* load in all the assets we'll be using for the frontend */
-    char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%s/fe/pigbkpc1.bmp", g_state.base_path);
-    if((fe_background = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
-        Error("failed to load \"%s\", aborting!\n", path);
-    }
-
-    snprintf(path, sizeof(path), "%s/fe/title/title.bmp", g_state.base_path);
-    if((fe_title = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
-        Error("failed to load \"%s\", aborting!\n", path);
-    }
-
     InitFonts();
+
+    /* load in all the assets we'll be using for the frontend */
+
+    char path[PL_SYSTEM_MAX_PATH];
+    snprintf(path, sizeof(path), "%sfe/pigbkpc1.bmp", g_state.base_path);
+    if((fe_background = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
+        Error("%s, aborting!\n", plGetError());
+    }
+
+    snprintf(path, sizeof(path), "%sfe/title/title.bmp", g_state.base_path);
+    if((fe_title = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
+        Error("%s, aborting!\n", plGetError());
+    }
 }
 
 void ProcessFrontendInput(void) {
-    switch(menu_state) {
+    switch(frontend_state) {
         default:break;
 
-        case MODE_MENU_START: {
+        case FE_MODE_START: {
 
         } break;
     }
 }
 
 void DrawFrontend(void) {
-    switch(menu_state) {
+    switch(frontend_state) {
         default:break;
 
-        case MODE_MENU_START: {
+        case FE_MODE_START: {
             plDrawTexturedRectangle(0, 0, GetViewportWidth(), GetViewportHeight(), fe_title);
         } break;
     }
