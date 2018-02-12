@@ -59,7 +59,7 @@ void InitDisplay(void) {
     //g_state.ui_camera->viewport.r_w = 320;
     //g_state.ui_camera->viewport.r_h = 240;
 
-    plSetCullMode(PL_CULL_POSTIVE);
+    //plSetCullMode(PL_CULL_POSTIVE);
 }
 
 /* shared function */
@@ -195,7 +195,11 @@ void DrawDebugOverlay(void) {
 void DrawPork(double delta) {
     g_state.draw_ticks = g_launcher.GetTicks();
 
-    plClearBuffers(PL_BUFFER_DEPTH | PL_BUFFER_COLOUR);
+    unsigned int clear_flags = PL_BUFFER_DEPTH;
+    if(g_state.is_dedicated) {
+        clear_flags |= PL_BUFFER_COLOUR;
+    }
+    plClearBuffers(clear_flags);
 
     plSetupCamera(g_state.camera);
 
@@ -204,7 +208,7 @@ void DrawPork(double delta) {
 
     // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
     // in the future, do this through "ACTOR %s SHOW SKELETON" command?
-    DEBUGDrawSkeleton();
+    //DEBUGDrawSkeleton();
 
     plSetupCamera(g_state.ui_camera);
 
