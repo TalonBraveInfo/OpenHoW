@@ -75,6 +75,22 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
     ResetInputStates();
 }
 
+/************************************************************/
+
+PLTexture *LoadBasicTexture(const char *path) {
+    char tpath[PL_SYSTEM_MAX_PATH];
+    snprintf(tpath, sizeof(tpath), "%s%s", g_state.base_path, path);
+
+    PLTexture *texture = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR);
+    if(texture == NULL) {
+        Error("%s, aborting!\n", plGetError());
+    }
+
+    return texture;
+}
+
+/************************************************************/
+
 void DEBUGDrawSkeleton();
 
 void DrawDebugOverlay(void) {

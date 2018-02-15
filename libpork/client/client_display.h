@@ -17,3 +17,5 @@
 #pragma once
 
 void InitDisplay(void);
+
+PLTexture *LoadBasicTexture(const char *path);

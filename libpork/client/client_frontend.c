@@ -23,6 +23,7 @@
 
 #include "client_frontend.h"
 #include "client_font.h"
+#include "client_display.h"
 
 unsigned int frontend_state = FE_MODE_INIT;
 
@@ -74,17 +75,11 @@ void FrontendInputCallback(int key, bool is_pressed) {
 
 void InitFrontend(void) {
     /* load in all the assets we'll be using for the frontend */
-
-    char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%sfe/pigbkpc1.bmp", g_state.base_path);
-    if((fe_background = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
-        Error("%s, aborting!\n", plGetError());
-    }
-
-    snprintf(path, sizeof(path), "%sfe/title/titlemon.bmp", g_state.base_path);
-    if((fe_title = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
-        Error("%s, aborting!\n", plGetError());
-    }
+    fe_background = LoadBasicTexture("fe/pigbkpc1.bmp");
+    fe_title = LoadBasicTexture("fe/title/titlemon.bmp");
+    fe_press = LoadBasicTexture("fe/title/press.bmp");
+    fe_any = LoadBasicTexture("fe/title/any.bmp");
+    fe_key = LoadBasicTexture("fe/title/key.bmp");
 
     InitFonts();
 }
@@ -136,6 +131,11 @@ void SetLoadingScreen(const char *name) {
             return;
         }
     }
+
+    fe_load = plLoadTextureImage(screen_path, PL_TEXTURE_FILTER_LINEAR);
+    if(fe_load == NULL) {
+        Error("%s, aborting!\n", plGetError());
+    }
 }
 
 void SetLoadingDescription(const char *description) {
@@ -169,18 +169,7 @@ unsigned int GetLoadingProgress(void) {
 void DrawLoadingScreen(void) {
     int c_x = (GetViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
     int c_y = (GetViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
-    if(fe_load != NULL) {
-        plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_load);
-    } else {
-        plDrawRectangle(plCreateRectangle(
-                PLVector2(c_x, c_y),
-                PLVector2(FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT),
-                PL_COLOUR_WHITE,
-                PL_COLOUR_WHITE,
-                PL_COLOUR_WHITE,
-                PL_COLOUR_WHITE
-        ));
-    }
+    plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_load);
 
     static const int bar_w = 332;
     int bar_x = c_x + (640 / 2) - bar_w / 2;
