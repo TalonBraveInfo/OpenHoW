@@ -196,15 +196,22 @@ void DrawPork(double delta) {
     g_state.draw_ticks = g_launcher.GetTicks();
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
-    if(g_state.is_dedicated) {
+    if(GetFrontendState() == FE_MODE_GAME) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
 
-    plSetupCamera(g_state.camera);
+    if(
+            GetFrontendState() != FE_MODE_INIT &&
+            GetFrontendState() != FE_MODE_LOADING) {
+        plSetupCamera(g_state.camera);
 
-    DrawMap();
-    DrawActors(delta);
+        if(GetFrontendState() == FE_MODE_GAME) {
+            DrawMap();
+        }
+
+        DrawActors(delta);
+    }
 
     // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
     // in the future, do this through "ACTOR %s SHOW SKELETON" command?
@@ -212,9 +219,14 @@ void DrawPork(double delta) {
 
     plSetupCamera(g_state.ui_camera);
 
-    DrawDebugOverlay();
     DrawFrontend();
-    DrawConsole();
+
+    if(
+            GetFrontendState() != FE_MODE_INIT &&
+            GetFrontendState() != FE_MODE_LOADING) {
+        DrawDebugOverlay();
+        DrawConsole();
+    }
 
     // todo, need a better name for this function
     plDrawPerspectivePOST(g_state.ui_camera);

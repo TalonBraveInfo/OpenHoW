@@ -16,6 +16,7 @@
  */
 #include <PL/platform_graphics.h>
 #include <PL/platform_graphics_camera.h>
+#include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
 #include "pork_input.h"
@@ -23,29 +24,52 @@
 #include "client_frontend.h"
 #include "client_font.h"
 
-enum {
-    FE_MODE_INIT,   /* menu shown during initialization */
-    FE_MODE_START,  /* start screen, e.g. press any key */
-
-    FE_MODE_MAIN_MENU,      /* 'One Player' and other options */
-    FE_MODE_SELECT_TEAM,    /* Team selection */
-
-    FE_MODE_GAME,     /* in-game menu... probably cut this down? */
-};
 unsigned int frontend_state = FE_MODE_INIT;
 
-PLTexture *fe_background    = NULL;
-PLTexture *fe_title         = NULL;
+unsigned int GetFrontendState(void) {
+    return frontend_state;
+}
 
-void FrontendInputCallback(int key, bool is_pressed) {
-    if(frontend_state == FE_MODE_START) {
-
+void SetFrontendState(unsigned int state) {
+    if(state == frontend_state) {
+        LogDebug("attempted to set debug state to an already existing state!\n");
         return;
     }
 
-    /* we've hit our key, we can take away this
-     * callback now and carry on to whatever */
-    SetKeyboardFocusCallback(NULL);
+    LogDebug("changing frontend state to %u...\n", state);
+    switch(state) {
+        default: {
+            LogWarn("invalid frontend state, %u, aborting\n", state);
+            return;
+        }
+
+        case FE_MODE_MAIN_MENU: {} break;
+        case FE_MODE_START: {} break;
+        case FE_MODE_LOADING: {} break;
+    }
+    frontend_state = state;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * */
+
+/* texture assets, these are loaded and free'd at runtime */
+PLTexture *fe_background    = NULL;
+PLTexture *fe_title         = NULL;
+PLTexture *fe_load          = NULL;
+PLTexture *fe_press         = NULL;
+PLTexture *fe_any           = NULL;
+PLTexture *fe_key           = NULL;
+
+void FrontendInputCallback(int key, bool is_pressed) {
+    if(frontend_state == FE_MODE_START && is_pressed) {
+        /* todo, play 'ting' sound! */
+
+        /* we've hit our key, we can take away this
+         * callback now and carry on to whatever */
+        SetKeyboardFocusCallback(NULL);
+        SetFrontendState(FE_MODE_MAIN_MENU);
+        return;
+    }
 }
 
 void InitFrontend(void) {
@@ -78,6 +102,61 @@ void ProcessFrontendInput(void) {
     }
 }
 
+void SimulateFrontend(void) {
+    if(frontend_state == FE_MODE_INIT) {
+        /* by this point we'll make an assumption that we're
+         * done initializing, bump up the progress, draw that
+         * frame and then switch over to our 'start' state */
+        if(GetLoadingProgress() < 100) {
+            SetLoadingProgress(100);
+            return;
+        }
+
+        SetFrontendState(FE_MODE_START);
+        return;
+    }
+}
+
+/************************************************************/
+
+char loading_description[256];
+unsigned int loading_progress = 0;
+
+void SetLoadingScreen(const char *name) {
+    if(fe_load != NULL) {
+        plDeleteTexture(fe_load, true);
+    }
+
+    char screen_path[PL_SYSTEM_MAX_PATH];
+    snprintf(screen_path, sizeof(screen_path), "%sfe/briefing/%s.bmp", g_state.base_path, name);
+    if(!plFileExists(screen_path)) {
+        snprintf(screen_path, sizeof(screen_path), "%sfe/loadmult.bmp", g_state.base_path);
+        if(!plFileExists(screen_path)) {
+            LogWarn("failed to load background for loading screen, \"%s\"!", screen_path);
+            return;
+        }
+    }
+}
+
+void SetLoadingDescription(const char *description) {
+    snprintf(loading_description, sizeof(loading_description), "Loading %s ...", description);
+}
+
+void SetLoadingProgress(unsigned int progress) {
+    if(progress > 100) {
+        progress = 100;
+    }
+    loading_progress = progress;
+
+    DrawPork(0);
+}
+
+unsigned int GetLoadingProgress(void) {
+    return loading_progress;
+}
+
+/************************************************************/
+
 /* Hogs of War's menu was designed
  * with a fixed resolution in mind
  * and scales poorly with anything
@@ -86,6 +165,37 @@ void ProcessFrontendInput(void) {
  * later. */
 #define FRONTEND_MENU_WIDTH     640
 #define FRONTEND_MENU_HEIGHT    480
+
+void DrawLoadingScreen(void) {
+    int c_x = (GetViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
+    int c_y = (GetViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
+    if(fe_load != NULL) {
+        plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_load);
+    } else {
+        plDrawRectangle(plCreateRectangle(
+                PLVector2(c_x, c_y),
+                PLVector2(FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT),
+                PL_COLOUR_WHITE,
+                PL_COLOUR_WHITE,
+                PL_COLOUR_WHITE,
+                PL_COLOUR_WHITE
+        ));
+    }
+
+    static const int bar_w = 332;
+    int bar_x = c_x + (640 / 2) - bar_w / 2;
+    int bar_y = c_y + 449;
+    plDrawRectangle(plCreateRectangle(
+            PLVector2(bar_x, bar_y),
+            PLVector2(loading_progress / 100 * bar_w, 20),
+            PL_COLOUR_INDIAN_RED,
+            PL_COLOUR_INDIAN_RED,
+            PL_COLOUR_RED,
+            PL_COLOUR_RED
+    ));
+
+    DrawBitmapString(g_fonts[FONT_CHARS3], bar_x + 10, bar_y + 10, 4, 1.f, loading_description);
+}
 
 void DrawFrontend(void) {
     /* render and handle the main menu */
@@ -113,7 +223,6 @@ void DrawFrontend(void) {
                     is_background_drawn = true;
                 }
 
-                int l_x = c_x + (640 / 2) - 512 / 2;
                 /* first we'll draw in a little rectangle representing
                  * the incomplete portion of the load */
                 static bool is_load_drawn = false;
@@ -143,7 +252,11 @@ void DrawFrontend(void) {
             } break;
 
             case FE_MODE_START: {
-                plDrawTexturedRectangle(0, 0, GetViewportWidth(), GetViewportHeight(), fe_title);
+                plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_title);
+            } break;
+
+            case FE_MODE_LOADING: {
+                DrawLoadingScreen();
             } break;
         }
 
@@ -153,8 +266,3 @@ void DrawFrontend(void) {
 
 }
 
-/*********************************************************/
-
-void SetFrontendState(unsigned int state) {
-    frontend_state = state;
-}

@@ -76,6 +76,8 @@ void InitClient(void) {
 
 void SimulateClient(void) {
     ProcessClientInput();
+
+    SimulateFrontend();
 }
 
 void ShutdownClient(void) {

@@ -16,6 +16,26 @@
  */
 #pragma once
 
+enum {
+    FE_MODE_INIT,       /* menu shown during initialization */
+    FE_MODE_START,      /* start screen, e.g. press any key */
+    FE_MODE_LOADING,
+
+    FE_MODE_MAIN_MENU,      /* 'One Player' and other options */
+    FE_MODE_SELECT_TEAM,    /* Team selection */
+
+    FE_MODE_GAME,     /* in-game menu... probably cut this down? */
+};
+
 void InitFrontend(void);
 void ProcessFrontendInput(void);
+void SimulateFrontend(void);
 void DrawFrontend(void);
+
+void SetLoadingScreen(const char *name);
+void SetLoadingDescription(const char *description);
+void SetLoadingProgress(unsigned int progress);
+unsigned int GetLoadingProgress(void);
+
+unsigned int GetFrontendState(void);
+void SetFrontendState(unsigned int state);
