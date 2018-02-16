@@ -272,10 +272,14 @@ void ConvertImageToPNG(const char *path) {
         }
     }
 
+    plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
+
+#if 0
     if(!plFlipImageVertical(&image)) {
         LogInfo("failed to flip \"%s\", %s, aborting!\n", path, plGetError());
         goto ABORT;
     }
+#endif
 
     if(!plWriteImage(&image, out_path)) {
         LogInfo("failed to write png \"%s\", %s, aborting!\n", out_path, plGetError());
@@ -316,7 +320,15 @@ void ExtractGameData(const char *path) {
             {"/Chars/british.mtd", "/chars/british/"},
 
             /* frontend */
-            //{"/FEBmps/FEBMP.MAD", "/frontend/bitmaps/"},
+            //{"/FEBmps/FEBMP.MAD", "/fe/bitmaps/"}, /* data is already in Language dir!! */
+            {"/Language/Tims/FEFXTIMS.MTD", "/fe/fx/"},
+            {"/Language/Tims/EXPLTIMS.MAD", "/fe/expl/"},
+            {"/Language/Tims/FACETIMS.MAD", "/fe/dash/"},
+            {"/Language/Tims/FLAGTIMS.MAD", "/fe/dash/"},
+            {"/Language/Tims/dashtims.mad", "/fe/dash/"},
+            {"/Language/Tims/MAPICONS.MTD", "/fe/map/"},
+            {"/Language/Tims/MENUTIMS.MAD", "/fe/dash/menu/"},
+            {"/Language/Tims/TBOXTIMS.MAD", "/fe/dash/"},
     };
 
     for(unsigned int i = 0; i < plArrayElements(mad_paths); ++i) {
@@ -356,9 +368,52 @@ void ExtractGameData(const char *path) {
             {"/Language/Tims/Title/PRESS.bmp", "/fe/title/"},
             {"/Language/Tims/Title/title.bmp", "/fe/title/"},
             {"/Language/Tims/Title/titlemon.bmp", "/fe/title/"},
-            {"/Language/Tims/Briefing/loadbar.bmp", "/fe/"},
+            //{"/Language/Tims/Briefing/loadbar.bmp", "/fe/"},
+            //{"/Language/Tims/Debrief/deathm1.bmp", "/fe/debrief/"},
+            //{"/Language/Tims/Debrief/deathm2.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc1.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc2.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc3.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc4.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc5.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc6.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc7.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc8.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/Facepc9.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw1.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw2.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw3.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw4.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw5.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw6.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw7.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw8.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/facepcw9.bmp", "/fe/debrief/"},
+            //{"/Language/Tims/Debrief/Hgren.BMP", "/fe/debrief/"},
+            //{"/Language/Tims/Debrief/Hpara.BMP", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcCmmndo.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcEngine.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcGrenad.BMP", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcHeavy.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcLegend.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcMedic.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcParatr.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcPip1.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcPip2.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/pcSniper.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/r_i_p.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/unifeng.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/uniffren.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/unifgerm.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/unifjap.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/uniflard.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/unifruss.bmp", "/fe/debrief/"},
+            {"/Language/Tims/Debrief/unifusa.bmp", "/fe/debrief/"},
 
             /* maps */
+            {"/Language/Tims/Mine.tim", "/maps/"},
+            {"/Language/Tims/wat01.TIM", "/maps/"},
+            {"/Language/Tims/wat02.tim", "/maps/"},
             {"/Maps/ARCHI.PMG", "/maps/archi/"},
             {"/Maps/ARCHI.POG", "/maps/archi/"},
 
@@ -397,4 +452,6 @@ void ExtractGameData(const char *path) {
     }
 
     LogInfo("complete\n");
+
+    //ConvertImageCallback(NULL, NULL);
 }

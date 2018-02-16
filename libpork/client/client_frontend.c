@@ -27,36 +27,8 @@
 
 unsigned int frontend_state = FE_MODE_INIT;
 
-unsigned int GetFrontendState(void) {
-    return frontend_state;
-}
-
-void SetFrontendState(unsigned int state) {
-    if(state == frontend_state) {
-        LogDebug("attempted to set debug state to an already existing state!\n");
-        return;
-    }
-
-    LogDebug("changing frontend state to %u...\n", state);
-    switch(state) {
-        default: {
-            LogWarn("invalid frontend state, %u, aborting\n", state);
-            return;
-        }
-
-        case FE_MODE_MAIN_MENU: {} break;
-        case FE_MODE_START: {} break;
-        case FE_MODE_LOADING: {} break;
-    }
-    frontend_state = state;
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * */
-
 /* texture assets, these are loaded and free'd at runtime */
 PLTexture *fe_background    = NULL;
-PLTexture *fe_title         = NULL;
-PLTexture *fe_load          = NULL;
 PLTexture *fe_press         = NULL;
 PLTexture *fe_any           = NULL;
 PLTexture *fe_key           = NULL;
@@ -75,11 +47,7 @@ void FrontendInputCallback(int key, bool is_pressed) {
 
 void InitFrontend(void) {
     /* load in all the assets we'll be using for the frontend */
-    fe_background = LoadBasicTexture("fe/pigbkpc1.bmp");
-    fe_title = LoadBasicTexture("fe/title/titlemon.bmp");
-    fe_press = LoadBasicTexture("fe/title/press.bmp");
-    fe_any = LoadBasicTexture("fe/title/any.bmp");
-    fe_key = LoadBasicTexture("fe/title/key.bmp");
+    fe_background = LoadBasicTexture("fe/title/titlemon.bmp");
 
     InitFonts();
 }
@@ -103,7 +71,15 @@ void SimulateFrontend(void) {
          * done initializing, bump up the progress, draw that
          * frame and then switch over to our 'start' state */
         if(GetLoadingProgress() < 100) {
+            SetLoadingDescription("frontend resources");
             SetLoadingProgress(100);
+
+            /* load in some of the assets we'll be using on the
+             * next screen before proceeding... */
+            fe_press = LoadBasicTexture("fe/title/press.bmp");
+            fe_any = LoadBasicTexture("fe/title/any.bmp");
+            fe_key = LoadBasicTexture("fe/title/key.bmp");
+            fe_background = LoadBasicTexture("fe/title/title.bmp");
             return;
         }
 
@@ -112,30 +88,67 @@ void SimulateFrontend(void) {
     }
 }
 
+/* * * * * * * * * * * * * * * * * * * * * * */
+
+unsigned int GetFrontendState(void) {
+    return frontend_state;
+}
+
+void SetFrontendState(unsigned int state) {
+    if(state == frontend_state) {
+        LogDebug("attempted to set debug state to an already existing state!\n");
+        return;
+    }
+
+    LogDebug("changing frontend state to %u...\n", state);
+    switch(state) {
+        default: {
+            LogWarn("invalid frontend state, %u, aborting\n", state);
+            return;
+        }
+
+        case FE_MODE_MAIN_MENU: {
+            /* remove the textures we loaded in
+             * for the start screen - we won't
+             * be needing them again... */
+            plDeleteTexture(fe_press, true);
+            plDeleteTexture(fe_any, true);
+            plDeleteTexture(fe_key, true);
+            plDeleteTexture(fe_background, true);
+
+            fe_background = LoadBasicTexture("fe/pigbkpc1.bmp");
+        } break;
+
+        case FE_MODE_START: {
+
+        } break;
+
+        case FE_MODE_LOADING: {
+            if(fe_background != NULL) {
+                plDeleteTexture(fe_background, true);
+            }
+        } break;
+    }
+    frontend_state = state;
+}
+
 /************************************************************/
 
 char loading_description[256];
 unsigned int loading_progress = 0;
 
 void SetLoadingScreen(const char *name) {
-    if(fe_load != NULL) {
-        plDeleteTexture(fe_load, true);
+    if(fe_background != NULL) {
+        plDeleteTexture(fe_background, true);
     }
 
     char screen_path[PL_SYSTEM_MAX_PATH];
-    snprintf(screen_path, sizeof(screen_path), "%sfe/briefing/%s.bmp", g_state.base_path, name);
+    snprintf(screen_path, sizeof(screen_path), "fe/briefing/%s.bmp", name);
     if(!plFileExists(screen_path)) {
-        snprintf(screen_path, sizeof(screen_path), "%sfe/loadmult.bmp", g_state.base_path);
-        if(!plFileExists(screen_path)) {
-            LogWarn("failed to load background for loading screen, \"%s\"!", screen_path);
-            return;
-        }
+        snprintf(screen_path, sizeof(screen_path), "fe/loadmult.bmp");
     }
 
-    fe_load = plLoadTextureImage(screen_path, PL_TEXTURE_FILTER_LINEAR);
-    if(fe_load == NULL) {
-        Error("%s, aborting!\n", plGetError());
-    }
+    fe_background = LoadBasicTexture(screen_path);
 }
 
 void SetLoadingDescription(const char *description) {
@@ -169,7 +182,7 @@ unsigned int GetLoadingProgress(void) {
 void DrawLoadingScreen(void) {
     int c_x = (GetViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
     int c_y = (GetViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
-    plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_load);
+    plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
 
     static const int bar_w = 332;
     int bar_x = c_x + (640 / 2) - bar_w / 2;
@@ -202,13 +215,8 @@ void DrawFrontend(void) {
                  * final one */
                 static bool is_background_drawn = false;
                 if(!is_background_drawn) {
-                    plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_title);
-                    plDeleteTexture(fe_title, true);
-                    char path[PL_SYSTEM_MAX_PATH];
-                    snprintf(path, sizeof(path), "%sfe/title/title.bmp", g_state.base_path);
-                    if((fe_title = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR)) == NULL) {
-                        Error("%s, aborting!\n", plGetError());
-                    }
+                    plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+                    plDeleteTexture(fe_background, true);
                     is_background_drawn = true;
                 }
 
@@ -232,7 +240,7 @@ void DrawFrontend(void) {
                 /* and now we're going to draw the loading bar. */
                 plDrawRectangle(plCreateRectangle(
                         PLVector2(c_x, c_y + 464),
-                        PLVector2(128, 16),
+                        PLVector2(loading_progress, 16),
                         PL_COLOUR_INDIAN_RED,
                         PL_COLOUR_INDIAN_RED,
                         PL_COLOUR_RED,
@@ -241,7 +249,23 @@ void DrawFrontend(void) {
             } break;
 
             case FE_MODE_START: {
-                plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_title);
+                plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+
+                /* this will probably be rewritten later on, but below we're setting up
+                 * where each of the little blocks of text will be and then moving them
+                 * up and down until the player presses an action (which is handled via
+                 * our crappy callback) */
+
+                int press_x = (FRONTEND_MENU_WIDTH / 2) - (180 / 2) + c_x;
+                int press_y = c_y + 435;
+                /* todo, these should be bouncing... */
+                plDrawTexturedRectangle(press_x, press_y, 62, 16, fe_press);
+                plDrawTexturedRectangle(press_x += 70, press_y, 40, 16, fe_any);
+                plDrawTexturedRectangle(press_x += 48, press_y - 4, 39, 20, fe_key);
+            } break;
+
+            case FE_MODE_MAIN_MENU: {
+                plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
             } break;
 
             case FE_MODE_LOADING: {

@@ -110,7 +110,7 @@ void DrawDebugOverlay(void) {
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        DrawBitmapString(g_fonts[FONT_SMALL], 20, GetViewportHeight() - 32, 0, 1.f, ms_count);
+        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, GetViewportHeight() - 32, 0, 1.f, ms_count);
     }
 
     if (cv_debug_input->i_value > 0) {

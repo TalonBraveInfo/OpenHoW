@@ -249,8 +249,7 @@ void UnloadMap(void) {
 
 /* resets the state of the map to how
  * it was when it was first loaded into
- * memory
- */
+ * memory */
 void ResetMap(void) {
     if(map_state.name[0] == '\0') {
         LogWarn("attempted to reset map, but no map is currently loaded, aborting\n");
@@ -373,6 +372,8 @@ void LoadMapSpawns(const char *path, bool is_extended) {
 }
 
 void LoadMapTiles(const char *path, bool is_extended) {
+    LogDebug("loading map tiles...\n");
+
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         Error("failed to open tile data, \"%s\", aborting\n", path);
@@ -390,6 +391,8 @@ void LoadMapTiles(const char *path, bool is_extended) {
         Error("failed to allocate memory for map chunks, %u bytes, aborting\n", sizeof(*map_state.chunks) *
                 map_state.num_chunks);
     }
+
+    LogDebug("%u chunks for terrain\n", map_state.num_chunks);
 
     memset(map_state.chunks, 0, sizeof(*map_state.chunks) * map_state.num_chunks);
 
@@ -455,6 +458,21 @@ void LoadMapTiles(const char *path, bool is_extended) {
                     CUR_BLOCK.tiles[tile_x * tile_y + block_x].flip   = tile.rotation_flip;
                     CUR_BLOCK.tiles[tile_x * tile_y + block_x].slip   = tile.slip;
                     CUR_BLOCK.tiles[tile_x * tile_y + block_x].tex    = tile.texture_index;
+
+#if 1
+                    LogDebug("\ntile %u\n"
+                             "  type %u\n"
+                             "  flip %u\n"
+                             "  slip %u\n"
+                             "  tex  %u\n",
+
+                             tile_x * tile_y + block_x,
+                             tile.type,
+                             tile.rotation_flip,
+                             tile.slip,
+                             tile.texture_index
+                    );
+#endif
                 }
             }
         }
@@ -477,6 +495,8 @@ void LoadMapTiles(const char *path, bool is_extended) {
  * then it's ignored
  */
 void LoadMap(const char *name, unsigned int mode) {
+    LogDebug("loading map, %s, in mode %u\n", name, mode);
+
     if(map_state.name[0] != '\0') {
         if(strncmp(map_state.name, name, sizeof(map_state.name)) == 0) {
             if(map_state.flags == mode) {
@@ -496,6 +516,8 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
+    LogDebug("found map description!\n %s\n %s", desc->name, desc->description);
+
     if(!(desc->flags & mode)) {
         LogWarn("the mode you're attempting to use is unsupported by this map, \"%s\", aborting\n", name);
         return;
@@ -505,6 +527,7 @@ void LoadMap(const char *name, unsigned int mode) {
 
     char map_path[PL_SYSTEM_MAX_PATH];
     snprintf(map_path, sizeof(map_path), "%s/maps/%s/", g_state.base_path, name);
+    LogDebug("map: %s\n", map_path);
     if(!plPathExists(map_path)) {
         LogWarn("failed to load map, path \"%s\" doesn't exist, aborting\n", map_path);
         return;
@@ -512,6 +535,7 @@ void LoadMap(const char *name, unsigned int mode) {
 
     char pmg_path[PL_SYSTEM_MAX_PATH];
     snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
+    LogDebug("pmg: %s\n", pmg_path);
     if(!plFileExists(pmg_path)) {
         snprintf(pmg_path, sizeof(pmg_path), "%s/%s.epmg", map_path, name);
         if(!plFileExists(pmg_path)) {
@@ -527,6 +551,7 @@ void LoadMap(const char *name, unsigned int mode) {
     if(g_state.is_host) {
         char pog_path[PL_SYSTEM_MAX_PATH];
         snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
+        LogDebug("pog: %s\n", pog_path);
         if (!plFileExists(pog_path)) {
             snprintf(pog_path, sizeof(pog_path), "%s/%s.epog", map_path, name);
             if(!plFileExists(pog_path)) {
