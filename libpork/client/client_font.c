@@ -92,9 +92,9 @@ void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, floa
     plSetBlendMode(PL_BLEND_DISABLE);
 }
 
-BitmapFont *LoadBitmapFont(const char *name) {
+BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
     char tab_path[PL_SYSTEM_MAX_PATH];
-    snprintf(tab_path, sizeof(tab_path), "%stext/%s.tab", g_state.base_path, name);
+    snprintf(tab_path, sizeof(tab_path), "%stext/%s.tab", g_state.base_path, tab_name);
     if(!plFileExists(tab_path)) {
         Error("failed to load tab for \"%s\", aborting!\n", name);
     }
@@ -135,6 +135,8 @@ BitmapFont *LoadBitmapFont(const char *name) {
     if(plLoadImage(tex_path, &image) != PL_RESULT_SUCCESS) {
         Error("failed to load in image, %s, aborting!\n", plGetError());
     }
+
+    plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
 
     BitmapFont *font = calloc(1, sizeof(BitmapFont));
     memset(font, 0, sizeof(BitmapFont));
@@ -185,12 +187,12 @@ void InitFonts(void) {
         Error("failed to create font mesh, %s, aborting!\n", plGetError());
     }
 
-    g_fonts[FONT_BIG]        = LoadBitmapFont("big");
-    g_fonts[FONT_BIG_CHARS]  = LoadBitmapFont("bigchars");
-    g_fonts[FONT_CHARS2]     = LoadBitmapFont("chars2");
-    g_fonts[FONT_CHARS3]     = LoadBitmapFont("chars3");
-    g_fonts[FONT_GAME_CHARS] = LoadBitmapFont("gamechars");
-    g_fonts[FONT_SMALL]      = LoadBitmapFont("small");
+    g_fonts[FONT_BIG]        = LoadBitmapFont("big", "big");
+    g_fonts[FONT_BIG_CHARS]  = LoadBitmapFont("bigchars", "bigchars");
+    g_fonts[FONT_CHARS2]     = LoadBitmapFont("chars2l", "chars2");
+    g_fonts[FONT_CHARS3]     = LoadBitmapFont("chars3", "chars3");
+    g_fonts[FONT_GAME_CHARS] = LoadBitmapFont("gamechars", "gamechars");
+    g_fonts[FONT_SMALL]      = LoadBitmapFont("small", "small");
 }
 
 void ShutdownFonts(void) {
