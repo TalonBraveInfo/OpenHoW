@@ -32,10 +32,10 @@ void ProcessFrontendInput(void);
 void SimulateFrontend(void);
 void DrawFrontend(void);
 
-void SetLoadingScreen(const char *name);
+void SetLoadingBackground(const char *name);
 void SetLoadingDescription(const char *description);
-void SetLoadingProgress(unsigned int progress);
-unsigned int GetLoadingProgress(void);
+void SetLoadingProgress(uint8_t progress);
+uint8_t GetLoadingProgress(void);
 
 unsigned int GetFrontendState(void);
 void SetFrontendState(unsigned int state);

@@ -19,6 +19,8 @@
 #include "pork_engine.h"
 #include "pork_map.h"
 
+#include "client/client_frontend.h"
+
 #include "server/server_actor.h"
 
 typedef struct MapDesc {
@@ -282,6 +284,8 @@ void ResetMap(void) {
 }
 
 void LoadMapSpawns(const char *path, bool is_extended) {
+    SetLoadingDescription("LOADING ACTOR DATA");
+
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         Error("failed to open actor data, \"%s\", aborting\n", path);
@@ -367,6 +371,9 @@ void LoadMapSpawns(const char *path, bool is_extended) {
     }
 
     pork_fclose(fh);
+
+    SetLoadingProgress(50);
+    SetLoadingDescription("CLEARING ACTORS");
 
     SVClearActors();
 }
@@ -492,11 +499,9 @@ void LoadMapTiles(const char *path, bool is_extended) {
 
 /* loads a new map into memory - if the config
  * matches that of the currently loaded map
- * then it's ignored
- */
+ * then it's ignored */
 void LoadMap(const char *name, unsigned int mode) {
     LogDebug("loading map, %s, in mode %u\n", name, mode);
-
     if(map_state.name[0] != '\0') {
         if(strncmp(map_state.name, name, sizeof(map_state.name)) == 0) {
             if(map_state.flags == mode) {
@@ -523,7 +528,21 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
+    if(!g_state.is_dedicated) {
+        SetFrontendState(FE_MODE_LOADING);
+        SetLoadingBackground(name);
+    }
+
+    char map_name[64];
+    snprintf(map_name, sizeof(map_name), "LOADING %s", desc->description);
+    pl_strntoupper(map_name, sizeof(map_name));
+    SetLoadingProgress(0);
+    SetLoadingDescription(map_name);
+
     UnloadMap();
+
+    SetLoadingProgress(5);
+    SetLoadingDescription("CHECKING FOR MAP DIRECTORY");
 
     char map_path[PL_SYSTEM_MAX_PATH];
     snprintf(map_path, sizeof(map_path), "%s/maps/%s/", g_state.base_path, name);
@@ -533,20 +552,24 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
+    SetLoadingProgress(10);
+    SetLoadingDescription("CHECKING FOR PMG");
+
     char pmg_path[PL_SYSTEM_MAX_PATH];
     snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
     LogDebug("pmg: %s\n", pmg_path);
     if(!plFileExists(pmg_path)) {
-        snprintf(pmg_path, sizeof(pmg_path), "%s/%s.epmg", map_path, name);
-        if(!plFileExists(pmg_path)) {
-            LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
-            return;
-        } else {
-            LoadMapTiles(pmg_path, true);
-        }
-    } else {
-        LoadMapTiles(pmg_path, false);
+        LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
+        return;
     }
+
+    SetLoadingProgress(15);
+    SetLoadingDescription("LOADING TILES");
+
+    LoadMapTiles(pmg_path, false);
+
+    SetLoadingProgress(20);
+    SetLoadingDescription("LOADING ACTORS");
 
     if(g_state.is_host) {
         char pog_path[PL_SYSTEM_MAX_PATH];
@@ -564,11 +587,22 @@ void LoadMap(const char *name, unsigned int mode) {
             LoadMapSpawns(pog_path, false);
         }
     }
+
+    SetLoadingProgress(30);
+    SetLoadingDescription("SPAWNING ACTORS");
+
+    /* todo, spawn actors. either client / server side actors, depending on whether we're hosting */
+
+    SetLoadingProgress(100);
+    SetLoadingDescription("FINISHED");
+
+    if(!g_state.is_dedicated) {
+        SetFrontendState(FE_MODE_GAME);
+    }
 }
 
 /* draws the currently loaded
- * map
- */
+ * map */
 void DrawMap(void) {
     if(map_state.name[0] == '\0') {
         return;

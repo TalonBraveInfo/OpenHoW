@@ -16,7 +16,5 @@
  */
 #pragma once
 
-bool IsConsoleEnabled(void);
-
 void ToggleConsole(void);
 void DrawConsole(void);

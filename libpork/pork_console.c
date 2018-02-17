@@ -21,6 +21,8 @@
 #include "server/server_actor.h"
 #include "pork_map.h"
 
+#include <PL/platform_graphics_camera.h>
+
 /*****************************************************/
 
 void GetCommand(unsigned int argc, char *argv[]) {
@@ -103,24 +105,29 @@ struct {
 
 bool console_enabled = false;
 
-bool IsConsoleEnabled(void) {
-    return console_enabled;
-}
-
 void DrawConsole(void) {
     if(!console_enabled) {
         return;
     }
+
+    plDrawRectangle(plCreateRectangle(
+            PLVector2(0, 0),
+            PLVector2(GetViewportWidth(), 32),
+            PLColour(0, 0, 0, 128),
+            PLColour(0, 0, 0, 128),
+            PLColour(0, 0, 0, 128),
+            PLColour(0, 0, 0, 128)
+    ));
 
     char msg_buf[MAX_BUFFER_SIZE];
     strncpy(msg_buf, console_state.buffer, sizeof(msg_buf));
     pl_strtoupper(msg_buf);
 
     unsigned int x = 20;
-    unsigned int w = g_fonts[FONT_CHARS2]->chars[0].w;
-    DrawBitmapCharacter(g_fonts[FONT_CHARS2], x, 20, 1.f, '>');
+    unsigned int w = g_fonts[FONT_GAME_CHARS]->chars[0].w;
+    DrawBitmapCharacter(g_fonts[FONT_GAME_CHARS], x, 10, 1.f, '>');
     if(console_state.buffer_pos > 0) {
-        DrawBitmapString(g_fonts[FONT_CHARS2], x + w + 5, 20, 1, 1.f, msg_buf);
+        DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, msg_buf);
     }
 }
 

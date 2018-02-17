@@ -71,7 +71,7 @@ void SimulateFrontend(void) {
          * done initializing, bump up the progress, draw that
          * frame and then switch over to our 'start' state */
         if(GetLoadingProgress() < 100) {
-            SetLoadingDescription("frontend resources");
+            SetLoadingDescription("LOADING FRONTEND RESOURCES");
             SetLoadingProgress(100);
 
             /* load in some of the assets we'll be using on the
@@ -88,56 +88,12 @@ void SimulateFrontend(void) {
     }
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * */
-
-unsigned int GetFrontendState(void) {
-    return frontend_state;
-}
-
-void SetFrontendState(unsigned int state) {
-    if(state == frontend_state) {
-        LogDebug("attempted to set debug state to an already existing state!\n");
-        return;
-    }
-
-    LogDebug("changing frontend state to %u...\n", state);
-    switch(state) {
-        default: {
-            LogWarn("invalid frontend state, %u, aborting\n", state);
-            return;
-        }
-
-        case FE_MODE_MAIN_MENU: {
-            /* remove the textures we loaded in
-             * for the start screen - we won't
-             * be needing them again... */
-            plDeleteTexture(fe_press, true);
-            plDeleteTexture(fe_any, true);
-            plDeleteTexture(fe_key, true);
-            plDeleteTexture(fe_background, true);
-
-            fe_background = LoadBasicTexture("fe/pigbkpc1.bmp");
-        } break;
-
-        case FE_MODE_START: {
-
-        } break;
-
-        case FE_MODE_LOADING: {
-            if(fe_background != NULL) {
-                plDeleteTexture(fe_background, true);
-            }
-        } break;
-    }
-    frontend_state = state;
-}
-
 /************************************************************/
 
 char loading_description[256];
-unsigned int loading_progress = 0;
+uint8_t loading_progress = 0;
 
-void SetLoadingScreen(const char *name) {
+void SetLoadingBackground(const char *name) {
     if(fe_background != NULL) {
         plDeleteTexture(fe_background, true);
     }
@@ -149,22 +105,32 @@ void SetLoadingScreen(const char *name) {
     }
 
     fe_background = LoadBasicTexture(screen_path);
-}
-
-void SetLoadingDescription(const char *description) {
-    snprintf(loading_description, sizeof(loading_description), "Loading %s ...", description);
-}
-
-void SetLoadingProgress(unsigned int progress) {
-    if(progress > 100) {
-        progress = 100;
-    }
-    loading_progress = progress;
 
     DrawPork(0);
 }
 
-unsigned int GetLoadingProgress(void) {
+void SetLoadingDescription(const char *description) {
+    if(g_state.is_dedicated) {
+        return;
+    }
+
+    snprintf(loading_description, sizeof(loading_description), "%s ...", description);
+}
+
+void SetLoadingProgress(uint8_t progress) {
+    if(g_state.is_dedicated) {
+        return;
+    }
+
+    if(progress > 100) {
+        progress = 100;
+    }
+
+    loading_progress = progress;
+    DrawPork(0);
+}
+
+uint8_t GetLoadingProgress(void) {
     return loading_progress;
 }
 
@@ -184,19 +150,27 @@ void DrawLoadingScreen(void) {
     int c_y = (GetViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
     plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
 
-    static const int bar_w = 332;
-    int bar_x = c_x + (640 / 2) - bar_w / 2;
-    int bar_y = c_y + 449;
-    plDrawRectangle(plCreateRectangle(
-            PLVector2(bar_x, bar_y),
-            PLVector2(loading_progress / 100 * bar_w, 20),
-            PL_COLOUR_INDIAN_RED,
-            PL_COLOUR_INDIAN_RED,
-            PL_COLOUR_RED,
-            PL_COLOUR_RED
-    ));
+    /* originally I wrote some code ensuring the menu bar
+     * was centered... that was until I found out that on
+     * the background, the slot for the bar ISN'T centered
+     * at all. JOY... */
+    static const int bar_w = 330;
+    int bar_x = c_x + 151; //c_x + (FRONTEND_MENU_WIDTH / 2) - bar_w / 2;
+    int bar_y = c_y + 450;
+    if(loading_progress > 0) {
+        plDrawRectangle(plCreateRectangle(
+                PLVector2(bar_x, bar_y),
+                PLVector2(((float)(bar_w) / 100) * loading_progress, 18),
+                PL_COLOUR_INDIAN_RED,
+                PL_COLOUR_INDIAN_RED,
+                PL_COLOUR_RED,
+                PL_COLOUR_RED
+        ));
+    }
 
-    DrawBitmapString(g_fonts[FONT_CHARS3], bar_x + 10, bar_y + 10, 4, 1.f, loading_description);
+    if(loading_description[0] != ' ' && loading_description[0] != '\0') {
+        DrawBitmapString(g_fonts[FONT_CHARS2], bar_x + 2, bar_y + 1, 4, 1.f, loading_description);
+    }
 }
 
 void DrawFrontend(void) {
@@ -275,7 +249,52 @@ void DrawFrontend(void) {
 
         return;
     }
+}
 
+/* * * * * * * * * * * * * * * * * * * * * * */
 
+unsigned int GetFrontendState(void) {
+    return frontend_state;
+}
+
+void SetFrontendState(unsigned int state) {
+    if(state == frontend_state) {
+        LogDebug("attempted to set debug state to an already existing state!\n");
+        return;
+    }
+
+    LogDebug("changing frontend state to %u...\n", state);
+    switch(state) {
+        default: {
+            LogWarn("invalid frontend state, %u, aborting\n", state);
+            return;
+        }
+
+        case FE_MODE_MAIN_MENU: {
+            /* remove the textures we loaded in
+             * for the start screen - we won't
+             * be needing them again... */
+            plDeleteTexture(fe_press, true);
+            plDeleteTexture(fe_any, true);
+            plDeleteTexture(fe_key, true);
+            plDeleteTexture(fe_background, true);
+
+            fe_background = LoadBasicTexture("fe/pigbkpc1.bmp");
+        } break;
+
+        case FE_MODE_START: {
+
+        } break;
+
+        case FE_MODE_GAME: {
+
+        } break;
+
+        case FE_MODE_LOADING: {
+            loading_description[0] = '\0';
+            loading_progress = 0;
+        } break;
+    }
+    frontend_state = state;
 }
 
