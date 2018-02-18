@@ -237,8 +237,7 @@ void ShutdownMaps(void) {
 
 }
 
-/* unloads the current map from memory
- */
+/* unloads the current map from memory */
 void UnloadMap(void) {
     if(map_state.name[0] == '\0') {
         return;
@@ -279,13 +278,10 @@ void ResetMap(void) {
          */
 
         actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
-
     }
 }
 
 void LoadMapSpawns(const char *path, bool is_extended) {
-    SetLoadingDescription("LOADING ACTOR DATA");
-
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         Error("failed to open actor data, \"%s\", aborting\n", path);
@@ -371,9 +367,6 @@ void LoadMapSpawns(const char *path, bool is_extended) {
     }
 
     pork_fclose(fh);
-
-    SetLoadingProgress(50);
-    SetLoadingDescription("CLEARING ACTORS");
 
     SVClearActors();
 }
@@ -599,6 +592,8 @@ void LoadMap(const char *name, unsigned int mode) {
     if(!g_state.is_dedicated) {
         SetFrontendState(FE_MODE_GAME);
     }
+
+    ResetMap();
 }
 
 /* draws the currently loaded

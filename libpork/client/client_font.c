@@ -200,8 +200,7 @@ void ShutdownFonts(void) {
         if(g_fonts[i] == NULL) {
             /* if we hit a null slot, it's possible the fonts
              * failed loading at this point. so we'll just
-             * break here.
-             */
+             * break here. */
             LogDebug("hit null font in shutdown fonts, skipping the rest!\n");
             break;
         }

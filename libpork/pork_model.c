@@ -107,8 +107,8 @@ Animation *LoadAnimations(const char *path) {
 //13: LowerLeg.R
 //14: Foot.R
 
-// cache the pigs data into memory, since we
-// share it between all of them anyway :)
+/* cache the pigs data into memory, since we
+ * share it between all of them anyway :) */
 void CacheModelData(void) {
     memset(&model_cache, 0, sizeof(model_cache));
 
