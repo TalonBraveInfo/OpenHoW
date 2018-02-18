@@ -27,12 +27,6 @@
 
 /*****************************************************/
 
-enum {
-    INPUT_TARGET_FRONTEND,
-    INPUT_TARGET_GAME,
-};
-unsigned int client_input_target = INPUT_TARGET_FRONTEND;
-
 void ProcessClientInput(void) {
     static double input_delay = 0;
     if(input_delay < g_state.sim_ticks) {
@@ -44,10 +38,7 @@ void ProcessClientInput(void) {
         }
     }
 
-    if(client_input_target == INPUT_TARGET_FRONTEND) {
-        ProcessFrontendInput();
-        return;
-    }
+    ProcessFrontendInput();
 
 #if 1
     if(GetActionState(0, ACTION_MOVE_FORWARD)) {
@@ -56,9 +47,13 @@ void ProcessClientInput(void) {
         g_state.camera->position.x -= 4.f;
     }
 
-    if(GetActionState(0, ACTION_MOVE_LEFT)) {
+    if(GetActionState(0, ACTION_JUMP)) {
+        g_state.camera->position.y += 4.f;
+    }
 
-    } else if(GetActionState(0, ACTION_MOVE_RIGHT)) {
+    if(GetActionState(0, ACTION_TURN_LEFT)) {
+
+    } else if(GetActionState(0, ACTION_TURN_RIGHT)) {
 
     }
 #endif

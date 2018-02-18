@@ -67,13 +67,13 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     // todo, disable these by default
     cv_debug_mode = plRegisterConsoleVariable(
-            "debug_mode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
+            "d-mode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
     cv_debug_fps = plRegisterConsoleVariable(
-            "debug_fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
+            "d-fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
     cv_debug_skeleton = plRegisterConsoleVariable(
-            "debug_skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
+            "d-skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
     cv_debug_input = plRegisterConsoleVariable(
-            "debug_input",
+            "d-input",
             "0",
             pl_int_var,
             NULL,

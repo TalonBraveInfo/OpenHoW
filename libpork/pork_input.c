@@ -42,15 +42,24 @@ void InitInput(void) {
     /* setup the default keyboard bindings */
     input_state.keyboard.bindings[ACTION_MOVE_FORWARD]  = PORK_KEY_UP;
     input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = PORK_KEY_DOWN;
-    input_state.keyboard.bindings[ACTION_MOVE_LEFT]     = PORK_KEY_LEFT;
-    input_state.keyboard.bindings[ACTION_MOVE_RIGHT]    = PORK_KEY_RIGHT;
+    input_state.keyboard.bindings[ACTION_TURN_LEFT]     = PORK_KEY_LEFT;
+    input_state.keyboard.bindings[ACTION_TURN_RIGHT]    = PORK_KEY_RIGHT;
 
     /* setup the default controller bindings */
     for(unsigned int i = 0; i < PORK_MAX_CONTROLLERS; ++i) {
         input_state.controllers[i].bindings[ACTION_MOVE_FORWARD]    = PORK_BUTTON_UP;
         input_state.controllers[i].bindings[ACTION_MOVE_BACKWARD]   = PORK_BUTTON_DOWN;
-        input_state.controllers[i].bindings[ACTION_MOVE_LEFT]       = PORK_BUTTON_LEFT;
-        input_state.controllers[i].bindings[ACTION_MOVE_RIGHT]      = PORK_BUTTON_RIGHT;
+        input_state.controllers[i].bindings[ACTION_TURN_LEFT]       = PORK_BUTTON_LEFT;
+        input_state.controllers[i].bindings[ACTION_TURN_RIGHT]      = PORK_BUTTON_RIGHT;
+
+        input_state.controllers[i].bindings[ACTION_AIM]         = PORK_BUTTON_L1;
+        input_state.controllers[i].bindings[ACTION_AIM_UP]      = PORK_BUTTON_R1;
+        input_state.controllers[i].bindings[ACTION_AIM_DOWN]    = PORK_BUTTON_R2;
+
+        input_state.controllers[i].bindings[ACTION_PAUSE]   = PORK_BUTTON_START;
+
+        input_state.controllers[i].bindings[ACTION_FIRE]    = PORK_BUTTON_CROSS;
+        input_state.controllers[i].bindings[ACTION_JUMP]    = PORK_BUTTON_SQUARE;
     }
 
     /* todo, cv_input_kb_config, 'KEY_UP;KEY_DOWN;KEY_LEFT;KEY_RIGHT' follows

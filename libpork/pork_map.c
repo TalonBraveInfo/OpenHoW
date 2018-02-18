@@ -219,7 +219,7 @@ void InitMaps(void) {
 
     plClearMesh(water_mesh);
 
-    plSetMeshUniformColour(water_mesh, PLColourRGB(255, 0, 0));
+    plSetMeshUniformColour(water_mesh, PLColourRGB(0, 0, 128));
 
     unsigned int cur_vertex = 0;
     for(unsigned int row = 0; row < WATER_HEIGHT; ++row) {
