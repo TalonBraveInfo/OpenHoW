@@ -71,7 +71,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     cv_debug_fps = plRegisterConsoleVariable(
             "d-fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
     cv_debug_skeleton = plRegisterConsoleVariable(
-            "d-skeleton", "1", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
+            "d-skeleton", "0", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
     cv_debug_input = plRegisterConsoleVariable(
             "d-input",
             "0",
