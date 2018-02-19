@@ -35,7 +35,7 @@ PLModel *LoadVTXModel(const char *path) {
         Error("failed to load vtx \"%s\", aborting!\n", path);
     }
 
-    // read in the vertices
+    /* load in the vertices */
 
     typedef struct VTXCoord {
         int16_t x;
@@ -48,6 +48,7 @@ PLModel *LoadVTXModel(const char *path) {
     if(fread(vertices, sizeof(VTXCoord), num_vertices, vtx_file) != num_vertices) {
         Error("failed to read in all vertices from \"%s\", aborting!\n", path);
     }
+    fclose(vtx_file);
 
 #if 0
     print_debug("%d vertices\n", num_vertices);
@@ -56,22 +57,56 @@ PLModel *LoadVTXModel(const char *path) {
     }
 #endif
 
-    char ftx_path[PL_SYSTEM_MAX_PATH];
-    strncpy(ftx_path, path, strlen(path) - 3);
-    strcat(ftx_path, "ftx");
-    FILE *ftx_file = fopen(path, "rb");
-    if(ftx_file == NULL) {
-        Error("failed to load ftx \"%s\", aborting!\n", path);
+    /* now we load in all the faces */
+
+    char fac_path[PL_SYSTEM_MAX_PATH];
+    strncpy(fac_path, path, strlen(path) - 3);
+    strcat(fac_path, "fac");
+    FILE *fac_file = fopen(path, "rb");
+    if(fac_file == NULL) {
+        Error("failed to load fac \"%s\", aborting!\n", path);
     }
 
-    fclose(ftx_file);
+    fseek(fac_file, 16, SEEK_CUR);
+
+    unsigned int num_triangles;
+    if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
+        Error("failed to read")
+    }
+
+    fclose(fac_file);
+
+    PLModel *model = malloc(sizeof(PLModel));
+    if(model == NULL) {
+
+    }
+
+    /* and finally the normals...
+     * if we're not able to find the normals,
+     * then whatever, we'll just generate
+     * them instead! */
 
     char no2_path[PL_SYSTEM_MAX_PATH];
     strncpy(no2_path, path, strlen(path) - 3);
     strcat(no2_path, "no2");
     FILE *no2_file = fopen(path, "rb");
     if(no2_file == NULL) {
-        Error("failed to load no2 \"%s\", aborting!\n", path);
+        LogWarn("failed to load no2 \"%s\", generating normals instead\n", path);
+
+        plGenerateModelNormals(model);
+        return model;
+    }
+
+    typedef struct NO2Coord {
+        float x;
+        float y;
+        float z;
+        float bone_index;
+    } NO2Coord;
+    unsigned int num_normals = (unsigned int)(plGetFileSize(no2_path) / sizeof(NO2Coord));
+    NO2Coord normals[num_normals];
+    if(fread(normals, sizeof(NO2Coord), num_normals, no2_file) != num_normals) {
+        Error("failed to read in all normals from \"%s\", aborting!\n", no2_path);
     }
 
     fclose(no2_file);
@@ -127,8 +162,7 @@ void CacheModelData(void) {
     }
 
     /* HIR Format Specification
-     * Used to store our piggy bones.
-     */
+     * Used to store our piggy bones. */
     typedef struct __attribute__((packed)) HIRBone {
         uint32_t parent;
         int16_t coords[3];
