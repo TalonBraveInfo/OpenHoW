@@ -204,14 +204,14 @@ PLMesh *terrain_mesh = NULL;
 #define WATER_HEIGHT    16
 
 void MapCommand(unsigned int argc, char *argv[]) {
-    if(argc < 1) {
+    if(argc < 2) {
         LogWarn("invalid number of arguments, ignoring!\n");
         return;
     }
 
     const char *map_name = argv[1];
     unsigned int mode = MAP_MODE_DEATHMATCH;
-    if(argc > 1) {
+    if(argc > 2) {
         const char *cmd_mode = argv[2];
         if (pl_strncasecmp("dm", cmd_mode, 2) == 0) {
             /* do nothing */
@@ -364,12 +364,10 @@ void LoadMapSpawns(const char *path) {
         Error("failed to get number of indices from pog, \"%s\", aborting\n", path);
     }
 
-    map_state.spawns = calloc(num_indices, sizeof(map_state.spawns));
+    map_state.spawns = calloc(num_indices, sizeof(*map_state.spawns));
     if(map_state.spawns == NULL) {
         Error("failed to allocate enough memory for actor spawns, aborting\n");
     }
-
-    memset(map_state.spawns, 0, sizeof(map_state.spawns) * num_indices);
 
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
@@ -404,7 +402,6 @@ void LoadMapSpawns(const char *path) {
             uint16_t turn_delay;
             uint16_t unknown3;
         } index;
-
         if(fread(&index, sizeof(index), 1, fh) != 1) {
             Error("failed to load index %d from pog, \"%s\"\n", i, path);
         }

@@ -61,7 +61,7 @@ jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path)
 
 void InitConfig(void) {
     jsmn_parser p;
-    unsigned int num_tokens;
+    unsigned int num_tokens = 0;
     jsmntok_t *tokens = ParseJSON(&p, &num_tokens, PORK_CONFIG);
     for(unsigned int i = 0; i < num_tokens; ++i) {
         // todo

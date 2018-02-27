@@ -30,9 +30,11 @@ struct {
 } model_cache;
 
 PLModel *LoadVTXModel(const char *path) {
+#if 1
     FILE *vtx_file = fopen(path, "rb");
     if(vtx_file == NULL) {
-        Error("failed to load vtx \"%s\", aborting!\n", path);
+        LogWarn("failed to load vtx \"%s\", aborting!\n", path);
+        return NULL;
     }
 
     /* load in the vertices */
@@ -50,31 +52,69 @@ PLModel *LoadVTXModel(const char *path) {
     }
     fclose(vtx_file);
 
-#if 0
-    print_debug("%d vertices\n", num_vertices);
-    for(unsigned int i = 0; i < num_vertices; ++i) {
-        print_debug("vtx %d %d %d (%d)\n", vertices[i].x, vertices[i].y, vertices[i].z, vertices[i].bone_index);
-    }
-#endif
-
     /* now we load in all the faces */
 
     char fac_path[PL_SYSTEM_MAX_PATH];
     strncpy(fac_path, path, strlen(path) - 3);
+    fac_path[strlen(path) - 3] = '\0';
     strcat(fac_path, "fac");
-    FILE *fac_file = fopen(path, "rb");
+
+    FILE *fac_file = fopen(fac_path, "rb");
     if(fac_file == NULL) {
-        Error("failed to load fac \"%s\", aborting!\n", path);
+        LogWarn("failed to load fac \"%s\", aborting!\n", fac_path);
+        return NULL;
     }
 
+    /* unused heading block
+     * we'll load it in just so we can check
+     * this is a valid fac file... */
+#if 1
+    char padding[16];
+    if(fread(padding, sizeof(char), 16, fac_file) != 16) {
+        Error("failed to read fac, \"%s\", aborting!\n", fac_path);
+    }
+    for(unsigned int i = 0; i < 16; ++i) {
+        if(padding[i] != '\0') {
+            Error("invalid fac, \"%s\", aborting!\n", fac_path);
+        }
+    }
+#else
     fseek(fac_file, 16, SEEK_CUR);
+#endif
 
-    unsigned int num_triangles;
+    uint32_t num_triangles;
     if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
-        Error("failed to read")
+        Error("failed to read fac, \"%s\", aborting!\n", fac_path);
+    }
+
+    LogDebug("\"%s\" has %u triangles", fac_path, num_triangles);
+
+    struct __attribute__((packed)) {
+        int8_t u_a;
+        int8_t v_a;
+
+        int8_t u_b;
+        int8_t v_b;
+
+        int8_t u_c;
+        int8_t v_c;
+
+        uint16_t vertex_indices[3];
+        uint16_t normal_indices[3];
+
+        uint16_t unknown0;
+
+        uint32_t texture_index;
+
+        uint16_t unknown1[4];
+    } triangles[num_triangles];
+    if(fread(triangles, sizeof(*triangles), num_triangles, fac_file) != num_triangles) {
+        Error("failed to read fac, \"%s\", aborting!\n", fac_path);
     }
 
     fclose(fac_file);
+
+    /* now to shuffle all that data into our model! */
 
     PLModel *model = malloc(sizeof(PLModel));
     if(model == NULL) {
@@ -83,16 +123,16 @@ PLModel *LoadVTXModel(const char *path) {
 
     /* and finally the normals...
      * if we're not able to find the normals,
-     * then whatever, we'll just generate
-     * them instead! */
+     * then we'll just generate them instead */
 
     char no2_path[PL_SYSTEM_MAX_PATH];
     strncpy(no2_path, path, strlen(path) - 3);
+    no2_path[strlen(path) - 3] = '\0';
     strcat(no2_path, "no2");
+
     FILE *no2_file = fopen(path, "rb");
     if(no2_file == NULL) {
         LogWarn("failed to load no2 \"%s\", generating normals instead\n", path);
-
         plGenerateModelNormals(model);
         return model;
     }
@@ -106,12 +146,17 @@ PLModel *LoadVTXModel(const char *path) {
     unsigned int num_normals = (unsigned int)(plGetFileSize(no2_path) / sizeof(NO2Coord));
     NO2Coord normals[num_normals];
     if(fread(normals, sizeof(NO2Coord), num_normals, no2_file) != num_normals) {
-        Error("failed to read in all normals from \"%s\", aborting!\n", no2_path);
+        LogWarn("failed to read in all normals from \"%s\", generating normals instead\n", no2_path);
+        plGenerateModelNormals(model);
+        return model;
     }
 
     fclose(no2_file);
 
+    return model;
+#else
     return NULL;
+#endif
 }
 
 // todo, load hir from anywhere - open the potential to have
