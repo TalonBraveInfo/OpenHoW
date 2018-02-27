@@ -18,9 +18,8 @@
 
 #include "pork_engine.h"
 #include "pork_map.h"
-#include "pork_input.h"
+#include "pork_console.h"
 
-#include "client/client_display.h"
 #include "client/client.h"
 
 #include "server/server.h"
@@ -40,10 +39,6 @@ void DebugModeCallback(const PLConsoleVariable *variable) {
 
 // extractor.c
 void ExtractGameData(const char *path);
-void ConvertImageCallback(unsigned int argc, char *argv[]);
-
-// pork_console.c
-void SetCommand(unsigned int argc, char *argv[]);
 
 void InitConfig(void);
 void InitPlayers(void);
@@ -67,13 +62,13 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     // todo, disable these by default
     cv_debug_mode = plRegisterConsoleVariable(
-            "d-mode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
+            "dmode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
     cv_debug_fps = plRegisterConsoleVariable(
-            "d-fps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
+            "dfps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
     cv_debug_skeleton = plRegisterConsoleVariable(
-            "d-skeleton", "0", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
+            "dskeleton", "0", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
     cv_debug_input = plRegisterConsoleVariable(
-            "d-input",
+            "dinput",
             "0",
             pl_int_var,
             NULL,
@@ -82,9 +77,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             "2: controller states"
     );
 
-    plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
-    plRegisterConsoleCommand("set", SetCommand, "");
-
+    InitConsole();
     InitConfig();
 
     snprintf(g_state.base_path, sizeof(g_state.base_path), "./");

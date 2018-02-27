@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <PL/platform_graphics_camera.h>
+#include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
 #include "pork_input.h"
@@ -77,11 +78,34 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 
 /************************************************************/
 
-PLTexture *LoadBasicTexture(const char *path) {
+PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
     char tpath[PL_SYSTEM_MAX_PATH];
     snprintf(tpath, sizeof(tpath), "%s%s", g_state.base_path, path);
 
-    PLTexture *texture = plLoadTextureImage(path, PL_TEXTURE_FILTER_LINEAR);
+    PLTexture *texture = NULL;
+
+    const char *ext = plGetFileExtension(path);
+    if(ext != NULL && ext[0] != '\0' && ext[0] != ' ') {
+        /* pixel format of TIM will be changed before
+         * uploading */
+        if(pl_strncasecmp(ext, "tim", 3) == 0) {
+            PLImage img;
+            if(plLoadImage(tpath, &img) != PL_RESULT_SUCCESS) {
+                Error("%s, aborting!\n", plGetError());
+            }
+            plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
+            if((texture = plCreateTexture()) != NULL) {
+                texture->filter = filter;
+                if(!plUploadTextureImage(texture, &img)) {
+                    Error("%s, aborting!\n", plGetError());
+                }
+                return texture;
+            }
+            Error("%s, aborting!\n", plGetError());
+        }
+    }
+
+    texture = plLoadTextureImage(tpath, PL_TEXTURE_FILTER_LINEAR);
     if(texture == NULL) {
         Error("%s, aborting!\n", plGetError());
     }
@@ -110,19 +134,19 @@ void DrawDebugOverlay(void) {
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, GetViewportHeight() - 32, 0, 1.f, ms_count);
+        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, GetViewportHeight() - 32, 0, 1.f, PL_COLOUR_WHITE, ms_count);
     }
 
     if (cv_debug_input->i_value > 0) {
         switch (cv_debug_input->i_value) {
             default: {
-                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, "KEYBOARD STATE");
+                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "KEYBOARD STATE");
                 unsigned int x = 20, y = 50;
                 for (unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
                     bool status = GetKeyState(i);
                     char key_state[64];
                     snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
-                    DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, key_state);
+                    DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, PL_COLOUR_WHITE, key_state);
                     if (y + 15 > GetViewportHeight() - 50) {
                         x += 90;
                         y = 50;
@@ -134,65 +158,65 @@ void DrawDebugOverlay(void) {
                 break;
 
             case 2: {
-                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, "CONTROLLER STATE");
+                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CONTROLLER STATE");
 
                 char button_state[64];
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_CROSS " (%s)",
                          GetButtonState(0, PORK_BUTTON_CROSS) ? "TRUE" : "FALSE");
                 unsigned int y = 50;
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_TRIANGLE " (%s)",
                          GetButtonState(0, PORK_BUTTON_TRIANGLE) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_CIRCLE " (%s)",
                          GetButtonState(0, PORK_BUTTON_CIRCLE) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_SQUARE " (%s)",
                          GetButtonState(0, PORK_BUTTON_SQUARE) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_L1 " (%s)",
                          GetButtonState(0, PORK_BUTTON_L1) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_L2 " (%s)",
                          GetButtonState(0, PORK_BUTTON_L2) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_R1 " (%s)",
                          GetButtonState(0, PORK_BUTTON_R1) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_R2 " (%s)",
                          GetButtonState(0, PORK_BUTTON_R2) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "START (%s)",
                          GetButtonState(0, PORK_BUTTON_START) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "SELECT (%s)",
                          GetButtonState(0, PORK_BUTTON_SELECT) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "UP (%s)",
                          GetButtonState(0, PORK_BUTTON_UP) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "DOWN (%s)",
                          GetButtonState(0, PORK_BUTTON_DOWN) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "LEFT (%s)",
                          GetButtonState(0, PORK_BUTTON_LEFT) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "RIGHT (%s)",
                          GetButtonState(0, PORK_BUTTON_RIGHT) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, button_state);
+                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
             } break;
         }
         return;
@@ -204,7 +228,7 @@ void DrawDebugOverlay(void) {
              (int)g_state.camera->position.y,
              (int)g_state.camera->position.z
     );
-    DrawBitmapString(g_fonts[FONT_SMALL], 20, 20, 0, 1.f, cam_pos);
+    DrawBitmapString(g_fonts[FONT_SMALL], 20, 20, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 }
 
 /* shared function */

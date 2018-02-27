@@ -14,8 +14,5 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
-void InitDisplay(void);
-
-PLTexture *LoadTexture(const char *path, PLTextureFilter filter);
+/* todo, code handling demo capture goes here */

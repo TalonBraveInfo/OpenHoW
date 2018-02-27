@@ -33,6 +33,8 @@ typedef struct CLActor {
     PLVector3 angles;
     PLVector3 bounds;
 
+    uint8_t team;
+
     PLModel *model;
     uint8_t eyes_frame;
     uint8_t gob_frame;

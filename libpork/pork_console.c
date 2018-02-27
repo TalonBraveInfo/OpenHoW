@@ -35,6 +35,16 @@ void GetCommand(unsigned int argc, char *argv[]) {
     }
 }
 
+void AddCommand(unsigned int argc, char *argv[]) {
+    if(argc < 1) {
+        return;
+    }
+
+    for(unsigned int i = 1; i < argc; ++i) {
+
+    }
+}
+
 void SetCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
         return;
@@ -94,6 +104,10 @@ void SetCommand(unsigned int argc, char *argv[]) {
     LogWarn("invalid parameters provided for set command\n");
 }
 
+void DisconnectCommand(unsigned int argc, char *argv[]) {
+    UnloadMap();
+}
+
 /*****************************************************/
 
 #define MAX_BUFFER_SIZE 512
@@ -104,6 +118,14 @@ struct {
 } console_state;
 
 bool console_enabled = false;
+
+void ConvertImageCallback(unsigned int argc, char *argv[]);
+
+void InitConsole(void) {
+    plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
+    plRegisterConsoleCommand("set", SetCommand, "");
+    plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
+}
 
 void DrawConsole(void) {
     if(!console_enabled) {
@@ -125,9 +147,9 @@ void DrawConsole(void) {
 
     unsigned int x = 20;
     unsigned int w = g_fonts[FONT_GAME_CHARS]->chars[0].w;
-    DrawBitmapCharacter(g_fonts[FONT_GAME_CHARS], x, 10, 1.f, '>');
+    DrawBitmapCharacter(g_fonts[FONT_GAME_CHARS], x, 10, 1.f, PL_COLOUR_RED, '>');
     if(console_state.buffer_pos > 0) {
-        DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, msg_buf);
+        DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, PL_COLOUR_WHITE, msg_buf);
     }
 }
 

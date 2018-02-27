@@ -16,5 +16,6 @@
  */
 #pragma once
 
+void InitConsole(void);
 void ToggleConsole(void);
 void DrawConsole(void);

@@ -47,7 +47,7 @@ void FrontendInputCallback(int key, bool is_pressed) {
 
 void InitFrontend(void) {
     /* load in all the assets we'll be using for the frontend */
-    fe_background = LoadBasicTexture("fe/title/titlemon.bmp");
+    fe_background = LoadTexture("fe/title/titlemon.bmp", PL_TEXTURE_FILTER_LINEAR);
 
     InitFonts();
 }
@@ -76,10 +76,10 @@ void SimulateFrontend(void) {
 
             /* load in some of the assets we'll be using on the
              * next screen before proceeding... */
-            fe_press = LoadBasicTexture("fe/title/press.bmp");
-            fe_any = LoadBasicTexture("fe/title/any.bmp");
-            fe_key = LoadBasicTexture("fe/title/key.bmp");
-            fe_background = LoadBasicTexture("fe/title/title.bmp");
+            fe_press = LoadTexture("fe/title/press.bmp", PL_TEXTURE_FILTER_LINEAR);
+            fe_any = LoadTexture("fe/title/any.bmp", PL_TEXTURE_FILTER_LINEAR);
+            fe_key = LoadTexture("fe/title/key.bmp", PL_TEXTURE_FILTER_LINEAR);
+            fe_background = LoadTexture("fe/title/title.bmp", PL_TEXTURE_FILTER_LINEAR);
             return;
         }
 
@@ -104,7 +104,7 @@ void SetLoadingBackground(const char *name) {
         snprintf(screen_path, sizeof(screen_path), "fe/loadmult.bmp");
     }
 
-    fe_background = LoadBasicTexture(screen_path);
+    fe_background = LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
 
     DrawPork(0);
 }
@@ -169,7 +169,7 @@ void DrawLoadingScreen(void) {
     }
 
     if(loading_description[0] != ' ' && loading_description[0] != '\0') {
-        DrawBitmapString(g_fonts[FONT_CHARS2], bar_x + 2, bar_y + 1, 4, 1.f, loading_description);
+        DrawBitmapString(g_fonts[FONT_CHARS2], bar_x + 2, bar_y + 1, 4, 1.f, PL_COLOUR_WHITE, loading_description);
     }
 }
 
@@ -240,6 +240,12 @@ void DrawFrontend(void) {
 
             case FE_MODE_MAIN_MENU: {
                 plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+
+                static PLTexture *test = NULL;
+                if(test == NULL) {
+                    test = LoadTexture("chars/british/eyes000.tim", PL_TEXTURE_FILTER_NEAREST);
+                }
+                plDrawTexturedRectangle(c_x, c_y, 128, 128, test);
             } break;
 
             case FE_MODE_LOADING: {
@@ -279,7 +285,7 @@ void SetFrontendState(unsigned int state) {
             plDeleteTexture(fe_key, true);
             plDeleteTexture(fe_background, true);
 
-            fe_background = LoadBasicTexture("fe/pigbkpc1.bmp");
+            fe_background = LoadTexture("fe/pigbkpc1.bmp", PL_TEXTURE_FILTER_LINEAR);
         } break;
 
         case FE_MODE_START: {
