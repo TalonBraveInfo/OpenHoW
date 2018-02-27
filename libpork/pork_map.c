@@ -20,6 +20,7 @@
 #include "pork_map.h"
 
 #include "client/client_frontend.h"
+#include "client/client_actor.h"
 
 #include "server/server_actor.h"
 
@@ -31,8 +32,7 @@ typedef struct MapDesc {
 
 /* for now these are hard-coded, but
  * eventually we'll do this through a
- * script instead
- */
+ * script instead */
 MapDesc map_descriptors[]={
         // Single-player
 
@@ -186,6 +186,9 @@ struct {
         uint16_t spawn_delay;
     } *spawns;
     unsigned int num_spawns;
+
+    PLTexture **textures;
+    unsigned int num_textures;
 } map_state;
 
 PLMesh *water_mesh = NULL;
@@ -200,7 +203,38 @@ PLMesh *terrain_mesh = NULL;
 #define WATER_WIDTH     16
 #define WATER_HEIGHT    16
 
+void MapCommand(unsigned int argc, char *argv[]) {
+    if(argc < 1) {
+        LogWarn("invalid number of arguments, ignoring!\n");
+        return;
+    }
+
+    const char *map_name = argv[1];
+    unsigned int mode = MAP_MODE_DEATHMATCH;
+    if(argc > 1) {
+        const char *cmd_mode = argv[2];
+        if (pl_strncasecmp("dm", cmd_mode, 2) == 0) {
+            /* do nothing */
+        } else if (pl_strncasecmp("sp", cmd_mode, 2) == 0) {
+            mode = MAP_MODE_SINGLEPLAYER;
+        } else if(pl_strncasecmp("svex", cmd_mode, 4) == 0) {
+            mode = MAP_MODE_SURVIVAL_EXPERT;
+        } else if(pl_strncasecmp("svno", cmd_mode, 4) == 0) {
+            mode = MAP_MODE_SURVIVAL_NOVICE;
+        } else if(pl_strncasecmp("svst", cmd_mode, 4) == 0) {
+            mode = MAP_MODE_SURVIVAL_STRATEGY;
+        } else if(pl_strncasecmp("ge", cmd_mode, 2) == 0) {
+            mode = MAP_MODE_GENERATED;
+        } else {
+            LogWarn("unknown mode type %s, ignoring!\n", cmd_mode);
+        }
+    }
+
+    LoadMap(map_name, mode);
+}
+
 void InitMaps(void) {
+#if 0
     /* water mesh is always the same, so we'll generate this here and can
      * worry about scaling later */
     unsigned int num_verts = WATER_WIDTH * WATER_HEIGHT * 3;
@@ -228,13 +262,14 @@ void InitMaps(void) {
         }
     }
 
-    plGenerateMeshNormals(water_mesh);
-
     plUploadMesh(water_mesh);
+#endif
+
+    plRegisterConsoleCommand("map", MapCommand, "Changes the current level to whatever is specified");
 }
 
 void ShutdownMaps(void) {
-
+    UnloadMap();
 }
 
 /* unloads the current map from memory */
@@ -243,8 +278,22 @@ void UnloadMap(void) {
         return;
     }
 
-    pork_free(map_state.spawns);
+    if(map_state.num_textures > 0) {
+        LogDebug("freeing %u textures...\n", map_state.num_textures);
+        for(unsigned int i = 0; i < map_state.num_textures; ++i) {
+            if(map_state.textures[i] == NULL) {
+                break;
+            }
 
+            plDeleteTexture(map_state.textures[i], true);
+            map_state.textures[i] = NULL;
+        }
+
+        pork_free(map_state.textures);
+        map_state.num_textures = 0;
+    }
+
+    pork_free(map_state.spawns);
     memset(&map_state, 0, sizeof(map_state));
 }
 
@@ -257,10 +306,35 @@ void ResetMap(void) {
         return;
     }
 
-    SVClearActors();
+    if(g_state.is_host) {
+        SVClearActors();
+
+        for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
+            Actor *actor = Actor_Spawn();
+            if(actor == NULL) {
+                /* warn, and try to keep going for as long as we can :( */
+                LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
+                break;
+            }
+
+            actor->position = map_state.spawns[i].position;
+            actor->bounds   = map_state.spawns[i].bounds;
+            actor->angles   = map_state.spawns[i].angles;
+            actor->team     = map_state.spawns[i].team;
+
+            strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
+            /* todo, setup the actor here - name represents class - this will then
+             * set the model and other parms here
+             */
+
+            actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
+        }
+    }
+
+    CLClearActors();
 
     for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
-        Actor *actor = Actor_Spawn();
+        CLActor *actor = CLSpawnActor();
         if(actor == NULL) {
             /* warn, and try to keep going for as long as we can :( */
             LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
@@ -272,16 +346,14 @@ void ResetMap(void) {
         actor->angles   = map_state.spawns[i].angles;
         actor->team     = map_state.spawns[i].team;
 
-        strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
+        /* todo, load model... */
+        //strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
         /* todo, setup the actor here - name represents class - this will then
-         * set the model and other parms here
-         */
-
-        actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
+         * set the model and other parms here */
     }
 }
 
-void LoadMapSpawns(const char *path, bool is_extended) {
+void LoadMapSpawns(const char *path) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         Error("failed to open actor data, \"%s\", aborting\n", path);
@@ -340,9 +412,6 @@ void LoadMapSpawns(const char *path, bool is_extended) {
         strncpy(map_state.spawns[i].name, pl_strtolower(index.name), sizeof(map_state.spawns[i].name));
         LogDebug("name %s\n", map_state.spawns[i].name);
 
-        /* attempt to load and cache the model */
-
-
         map_state.spawns[i].position.x = index.offset[0];
         map_state.spawns[i].position.y = index.offset[1];
         map_state.spawns[i].position.z = index.offset[2];
@@ -367,11 +436,9 @@ void LoadMapSpawns(const char *path, bool is_extended) {
     }
 
     pork_fclose(fh);
-
-    SVClearActors();
 }
 
-void LoadMapTiles(const char *path, bool is_extended) {
+void LoadMapTiles(const char *path) {
     LogDebug("loading map tiles...\n");
 
     FILE *fh = fopen(path, "rb");
@@ -379,10 +446,10 @@ void LoadMapTiles(const char *path, bool is_extended) {
         Error("failed to open tile data, \"%s\", aborting\n", path);
     }
 
-    unsigned int block_size = 16;
-    if(is_extended) {
-        /* todo */
-    }
+    /* todo, eventually we might want to change this
+     * depending on the type of map we're loading in,
+     * e.g. extended formats... */
+    static const unsigned int block_size = 16;
 
     /* done here in case the enhanced format supports larger chunk sizes */
     map_state.num_chunks = block_size * block_size;
@@ -490,6 +557,10 @@ void LoadMapTiles(const char *path, bool is_extended) {
     }
 }
 
+void LoadMapTextures(const char *path) {
+
+}
+
 /* loads a new map into memory - if the config
  * matches that of the currently loaded map
  * then it's ignored */
@@ -545,8 +616,8 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
-    SetLoadingProgress(10);
-    SetLoadingDescription("CHECKING FOR PMG");
+    SetLoadingProgress(15);
+    SetLoadingDescription("LOADING TILES");
 
     char pmg_path[PL_SYSTEM_MAX_PATH];
     snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
@@ -556,35 +627,26 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
-    SetLoadingProgress(15);
-    SetLoadingDescription("LOADING TILES");
-
-    LoadMapTiles(pmg_path, false);
+    LoadMapTiles(pmg_path);
 
     SetLoadingProgress(20);
     SetLoadingDescription("LOADING ACTORS");
 
-    if(g_state.is_host) {
-        char pog_path[PL_SYSTEM_MAX_PATH];
-        snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
-        LogDebug("pog: %s\n", pog_path);
-        if (!plFileExists(pog_path)) {
-            snprintf(pog_path, sizeof(pog_path), "%s/%s.epog", map_path, name);
-            if(!plFileExists(pog_path)) {
-                LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
-                return;
-            } else {
-                LoadMapSpawns(pog_path, true);
-            }
-        } else {
-            LoadMapSpawns(pog_path, false);
-        }
+    char pog_path[PL_SYSTEM_MAX_PATH];
+    snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
+    LogDebug("pog: %s\n", pog_path);
+    if (!plFileExists(pog_path)) {
+        LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
+        UnloadMap();
+        return;
     }
+
+    LoadMapSpawns(pog_path);
 
     SetLoadingProgress(30);
     SetLoadingDescription("SPAWNING ACTORS");
 
-    /* todo, spawn actors. either client / server side actors, depending on whether we're hosting */
+    ResetMap();
 
     SetLoadingProgress(100);
     SetLoadingDescription("FINISHED");
@@ -592,8 +654,6 @@ void LoadMap(const char *name, unsigned int mode) {
     if(!g_state.is_dedicated) {
         SetFrontendState(FE_MODE_GAME);
     }
-
-    ResetMap();
 }
 
 /* draws the currently loaded
@@ -608,5 +668,6 @@ void DrawMap(void) {
     plDrawMesh(water_mesh);
 
     // todo, update parts of terrain mesh from deformation etc?
+
     plDrawMesh(terrain_mesh);
 }

@@ -39,3 +39,5 @@ uint8_t GetLoadingProgress(void);
 
 unsigned int GetFrontendState(void);
 void SetFrontendState(unsigned int state);
+
+void SetFEObjectCommand(unsigned int argc, char *argv[]);

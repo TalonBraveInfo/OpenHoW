@@ -109,6 +109,8 @@ void ISwapDisplay(void) {
 }
 
 void IShutdownLauncher(void) {
+    ShutdownPork();
+
     if(context != NULL) {
         SDL_GL_DeleteContext(context);
     }

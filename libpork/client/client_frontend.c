@@ -33,6 +33,48 @@ PLTexture *fe_press         = NULL;
 PLTexture *fe_any           = NULL;
 PLTexture *fe_key           = NULL;
 
+/************************************************************/
+/* FE Object Implementation
+ *  Individual frontend objects that can manipulated
+ *  on the fly at runtime - specifically created for
+ *  implementing Hogs of War's really awesome animated
+ *  menu! */
+
+#define MAX_FE_OBJECTS  1024
+
+typedef struct FEObject {
+    int x, y;
+    unsigned int w, h;
+
+    PLTexture **frames;
+    unsigned int num_frames;
+    unsigned int cur_frame;
+
+    bool is_reserved;
+} FEObject;
+FEObject fe_objects[MAX_FE_OBJECTS];
+
+void SimulateFEObjects(void) {
+    for(unsigned int i = 0; i < MAX_FE_OBJECTS; ++i) {
+        if(!fe_objects[i].is_reserved) {
+            continue;
+        }
+    }
+}
+
+void SetFEObjectCommand(unsigned int argc, char *argv[]) {
+    if(argc < 2) {
+        LogWarn("invalid number of arguments, ignoring!\n");
+        return;
+    }
+
+    for(unsigned int i = 2; i < argc; ++i) {
+
+    }
+}
+
+/************************************************************/
+
 void FrontendInputCallback(int key, bool is_pressed) {
     if(frontend_state == FE_MODE_START && is_pressed) {
         /* todo, play 'ting' sound! */
@@ -46,6 +88,8 @@ void FrontendInputCallback(int key, bool is_pressed) {
 }
 
 void InitFrontend(void) {
+    memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
+
     /* load in all the assets we'll be using for the frontend */
     fe_background = LoadTexture("fe/title/titlemon.bmp", PL_TEXTURE_FILTER_LINEAR);
 
@@ -66,6 +110,8 @@ void ProcessFrontendInput(void) {
 }
 
 void SimulateFrontend(void) {
+    SimulateFEObjects();
+
     if(frontend_state == FE_MODE_INIT) {
         /* by this point we'll make an assumption that we're
          * done initializing, bump up the progress, draw that

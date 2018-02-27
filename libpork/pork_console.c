@@ -16,40 +16,88 @@
  */
 #include "pork_engine.h"
 #include "pork_input.h"
+#include "pork_map.h"
+
 #include "client/client_font.h"
+#include "client/client_frontend.h"
 
 #include "server/server_actor.h"
-#include "pork_map.h"
 
 #include <PL/platform_graphics_camera.h>
 
 /*****************************************************/
 
+typedef struct CallbackConstruct {
+    const char *cmd;
+
+    void(*Get)(unsigned int argc, char *argv[]);
+    void(*Set)(unsigned int argc, char *argv[]);
+    void(*Add)(unsigned int argc, char *argv[]);
+} CallbackConstruct;
+
+CallbackConstruct callbacks[]={
+        {"menu", NULL, SetFEObjectCommand, NULL},
+        {"actor", NULL, NULL, NULL},
+        {"map", NULL, NULL, NULL},
+};
+
 void GetCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
+        LogWarn("invalid number of arguments, ignoring!\n");
         return;
     }
 
-    for(unsigned int i = 1; i < argc; ++i) {
-
+    const char *cmd = argv[1];
+    for(unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
+        if(pl_strcasecmp(callbacks[j].cmd, cmd) == 0) {
+            if(callbacks[j].Get == NULL) {
+                break;
+            }
+            callbacks[j].Get(argc, argv);
+            return;
+        }
     }
+    LogWarn("invalid GET command, %s!\n", cmd);
 }
 
 void AddCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
+        LogWarn("invalid number of arguments, ignoring!\n");
         return;
     }
 
-    for(unsigned int i = 1; i < argc; ++i) {
-
+    const char *cmd = argv[1];
+    for(unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
+        if(pl_strcasecmp(callbacks[j].cmd, cmd) == 0) {
+            if(callbacks[j].Add == NULL) {
+                break;
+            }
+            callbacks[j].Add(argc, argv);
+            return;
+        }
     }
+    LogWarn("invalid ADD command, %s!\n", cmd);
 }
 
 void SetCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
+        LogWarn("invalid number of arguments, ignoring!\n");
         return;
     }
 
+    const char *cmd = argv[1];
+    for(unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
+        if(pl_strcasecmp(callbacks[j].cmd, cmd) == 0) {
+            if(callbacks[j].Add == NULL) {
+                break;
+            }
+            callbacks[j].Add(argc, argv);
+            return;
+        }
+    }
+    LogWarn("invalid ADD command, %s!\n", cmd);
+
+#if 0
     for(unsigned int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("actor", argv[i], 5) == 0) {
             const char *actor_name = argv[++i];
@@ -88,7 +136,7 @@ void SetCommand(unsigned int argc, char *argv[]) {
                 }
             }
             return;
-        } else if(pl_strncasecmp("map", argv[i], 3) == 0) {
+        } else if(pl_strncasecmp(CMD_GROUP_MAP, argv[i], 3) == 0) {
             /* todo, set map properties */
             const char *name = argv[++i];
             if(name == NULL || name[0] == '\0') {
@@ -102,6 +150,11 @@ void SetCommand(unsigned int argc, char *argv[]) {
     }
 
     LogWarn("invalid parameters provided for set command\n");
+#endif
+}
+
+void QuitCommand(unsigned int argc, char *argv[]) {
+    g_launcher.ShutdownLauncher();
 }
 
 void DisconnectCommand(unsigned int argc, char *argv[]) {
@@ -124,6 +177,8 @@ void ConvertImageCallback(unsigned int argc, char *argv[]);
 void InitConsole(void) {
     plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "");
+    plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
+    plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
 }
 
