@@ -15,22 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <PL/platform_filesystem.h>
+#include <PL/platform_mesh.h>
 
 #include "pork_engine.h"
 #include "pork_model.h"
 
+#include "client/client_display.h"
+
+enum { INDEX_BRITISH, INDEX_WEAPONS, INDEX_MAP, MAX_TEXTURE_INDEX };
+
+typedef struct TextureIndex {
+    PLTexture *texture[256];
+    unsigned int num_textures;
+} TextureIndex;
+
 struct {
-    Bone bones[MAX_BONES];
+    PLModelBone bones[MAX_BONES];
     unsigned int num_bones;
 
     Animation animations[ANI_END];
     unsigned int num_animations;
 
     PLModel *pigs[PIG_CLASS_END];
+
+    TextureIndex textures[MAX_TEXTURE_INDEX];
 } model_cache;
 
 PLModel *LoadVTXModel(const char *path) {
-#if 1
     FILE *vtx_file = fopen(path, "rb");
     if(vtx_file == NULL) {
         LogWarn("failed to load vtx \"%s\", aborting!\n", path);
@@ -84,20 +95,14 @@ PLModel *LoadVTXModel(const char *path) {
 
     uint32_t num_triangles;
     if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
-        Error("failed to read fac, \"%s\", aborting!\n", fac_path);
+        Error("failed to get number of triangles, \"%s\", aborting!\n", fac_path);
     }
-
     LogDebug("\"%s\" has %u triangles", fac_path, num_triangles);
 
     struct __attribute__((packed)) {
-        int8_t u_a;
-        int8_t v_a;
-
-        int8_t u_b;
-        int8_t v_b;
-
-        int8_t u_c;
-        int8_t v_c;
+        int8_t uv_a[2];
+        int8_t uv_b[2];
+        int8_t uv_c[2];
 
         uint16_t vertex_indices[3];
         uint16_t normal_indices[3];
@@ -109,17 +114,73 @@ PLModel *LoadVTXModel(const char *path) {
         uint16_t unknown1[4];
     } triangles[num_triangles];
     if(fread(triangles, sizeof(*triangles), num_triangles, fac_file) != num_triangles) {
-        Error("failed to read fac, \"%s\", aborting!\n", fac_path);
+        Error("failed to get %u triangles, \"%s\", aborting!\n", num_triangles, fac_path);
+    }
+
+    uint32_t num_quads;
+    if(fread(&num_quads, sizeof(uint32_t), 1, fac_file) != 1) {
+        Error("failed to get number of quads, \"%s\", aborting!\n", fac_path);
+    }
+    LogDebug("\"%s\" has %u quads", fac_path, num_triangles);
+
+    struct __attribute__((packed)) {
+        int8_t uv_a[2];
+        int8_t uv_b[2];
+        int8_t uv_c[2];
+        int8_t uv_d[2];
+
+        uint16_t vertex_indices[4];
+        uint16_t normal_indices[4];
+
+        uint32_t texture_index;
+
+        uint16_t unknown[4];
+    } quads[num_quads];
+    if(fread(quads, sizeof(*quads), num_quads, fac_file) != num_quads) {
+        Error("failed to get %u quads, \"%s\", aborting!\n", num_quads, fac_path);
     }
 
     fclose(fac_file);
 
-    /* now to shuffle all that data into our model! */
+    /* todo, eventually move all textures into a texture sheet on upload!? */
 
-    PLModel *model = malloc(sizeof(PLModel));
-    if(model == NULL) {
+    unsigned int num_texture_ids = 0;
+    for(unsigned int i = 0; i < num_quads; ++i) {
 
     }
+
+    /* now to shuffle all that data into our model! */
+
+
+
+    PLModel *model = calloc(1, sizeof(PLModel));
+    if(model == NULL) {
+        Error("failed to allocate mesh for %s, aborting!\n", path);
+    }
+
+    model->num_lods = 1;
+
+    /* copy the bones into the model struct */
+    memcpy(model->bones, model_cache.bones, sizeof(PLModelBone) * model_cache.num_bones);
+    model->num_bones = model_cache.num_bones;
+
+#if 0 /* don't bother for now... */
+    /* check if it's a LOD model, these are appended with '_hi' */
+    char file_name[16];
+    snprintf(file_name, sizeof(file_name), plGetFileName(path));
+    if(file_name[0] != '\0' && strstr(file_name, "_hi") != 0) {
+        char lod_path[PL_SYSTEM_MAX_PATH];
+        strncpy(lod_path, path, strlen(path) - 7);  /* _hi.vtx */
+        lod_path[strlen(path) - 7] = '\0';          /* _hi.vtx */
+        strcat(lod_path, "_med.vtx");
+        if(plFileExists(lod_path)) {
+            LogDebug("found lod, \"%s\", adding to model\n", lod_path);
+            model->num_lods += 1;
+        } else {
+            LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
+        }
+    }
+#endif
 
     /* and finally the normals...
      * if we're not able to find the normals,
@@ -154,22 +215,71 @@ PLModel *LoadVTXModel(const char *path) {
     fclose(no2_file);
 
     return model;
-#else
-    return NULL;
-#endif
+}
+
+////////////////////////////////////////////////////////////////
+
+/* like plLoadModel, only prefixes with base path
+ * and can abort on error */
+PLModel *LoadModel(const char *path, bool abort_on_fail) {
+    char model_path[PL_SYSTEM_MAX_PATH];
+    snprintf(model_path, sizeof(model_path), "%s%s.vtx", g_state.base_path, path);
+    PLModel *model = plLoadModel(model_path);
+    if(model == NULL && abort_on_fail) {
+        Error("failed to load model, \"%s\", aborting!\n%s\n", model_path, plGetError());
+    } else {
+        LogWarn("failed to load model, \"%s\"!\n%s\n", model_path, plGetError());
+    }
+    return model;
 }
 
 // todo, load hir from anywhere - open the potential to have
 // multiple hirs for different models :)
-Bone *LoadBones(const char *path) {
+PLModelBone *LoadBones(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
-Animation *LoadAnimations(const char *path) {
+Animation *LoadAnimations(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
 ////////////////////////////////////////////////////////////////
+
+void CacheTextureIndex(const char *path, unsigned int id) {
+    char texture_index_path[PL_SYSTEM_MAX_PATH];
+    snprintf(texture_index_path, sizeof(texture_index_path), "%s%s", g_state.base_path, path);
+    if(!plFileExists(texture_index_path)) {
+        Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
+    }
+
+    FILE *file = fopen(texture_index_path, "r");
+    if(file == NULL) {
+        Error("failed to open texture index at \"%s\", aborting!\n", texture_index_path);
+    }
+
+    LogInfo("parsing \"%s\"\n", texture_index_path);
+
+    TextureIndex *index = &model_cache.textures[id];
+
+    char line[32];
+    while(!feof(file)) {
+        if(fgets(line, sizeof(line), file) != NULL) {
+            line[strcspn(line, "\r\n")] = '\0';
+            LogDebug("  %s\n", line);
+
+            char texture_path[PL_SYSTEM_MAX_PATH];
+            snprintf(texture_path, sizeof(texture_path), "/chars/british/%s.tim", line);
+            PLTexture *texture = LoadTexture(texture_path, PL_TEXTURE_FILTER_NEAREST);
+            if(texture == NULL) {
+                Error("failed to load texture, \"%s\", aborting!\n%s\n", texture_path, plGetError());
+            }
+
+            index->texture[index->num_textures++] = texture;
+        }
+    }
+
+    pork_fclose(file);
+}
 
 //00: Hip
 //01: Spine
@@ -260,7 +370,7 @@ void CacheModelData(void) {
     LogInfo("caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    snprintf(mcap_path, sizeof(mcap_path), "%s/chars/anims/mcap.mad", g_state.base_path);
+    snprintf(mcap_path, sizeof(mcap_path), "%s/chars/mcap.mad", g_state.base_path);
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
@@ -464,25 +574,36 @@ void CacheModelData(void) {
                         g_model_cache.animations[i].name, j,
 
                         // print out the first transform
-                        (int)g_model_cache.animations[i].frames[j].transforms[0].x,
-                        (int)g_model_cache.animations[i].frames[j].transforms[0].y,
-                        (int)g_model_cache.animations[i].frames[j].transforms[0].z,
+                        (int)model_cache.animations[i].frames[j].transforms[0].x,
+                        (int)model_cache.animations[i].frames[j].transforms[0].y,
+                        (int)model_cache.animations[i].frames[j].transforms[0].z,
 
                         // print out first rotation
-                        (int)g_model_cache.animations[i].frames[j].rotations[0].x,
-                        (int)g_model_cache.animations[i].frames[j].rotations[0].y,
-                        (int)g_model_cache.animations[i].frames[j].rotations[0].z,
-                        (int)g_model_cache.animations[i].frames[j].rotations[0].w
+                        (int)model_cache.animations[i].frames[j].rotations[0].x,
+                        (int)model_cache.animations[i].frames[j].rotations[0].y,
+                        (int)model_cache.animations[i].frames[j].rotations[0].z,
+                        (int)model_cache.animations[i].frames[j].rotations[0].w
             );
         }
     }
 #endif
 
-    char pig_model_path[PL_SYSTEM_MAX_PATH];
-    snprintf(pig_model_path, sizeof(pig_model_path), "%s/chars/british/ac_hi.vtx", g_state.base_path);
-    model_cache.pigs[PIG_CLASS_ACE] = plLoadModel(pig_model_path);
-    //g_model_cache.pigs[PIG_CLASS_COMMANDO] = plLoadModel(pig_model_path);
-    //g_model_cache.pigs[PIG_CLASS_GRUNT] = plLoadModel(pig_model_path);
+    /* textures */
+
+    CacheTextureIndex("/chars/british/british.index", INDEX_BRITISH);
+    CacheTextureIndex("/chars/weapons/weapons.index", INDEX_WEAPONS);
+
+    /* models */
+
+    model_cache.pigs[PIG_CLASS_ACE] = LoadModel("/chars/british/ac_hi", true);
+    model_cache.pigs[PIG_CLASS_COMMANDO] = LoadModel("/chars/british/sb_hi", true);
+    model_cache.pigs[PIG_CLASS_GRUNT] = LoadModel("/chars/british/gr_hi", true);
+    model_cache.pigs[PIG_CLASS_HEAVY] = LoadModel("/chars/british/hv_hi", true);
+    model_cache.pigs[PIG_CLASS_LEGEND] = LoadModel("/chars/british/le_hi", true);
+    model_cache.pigs[PIG_CLASS_MEDIC] = LoadModel("/chars/british/me_hi", true);
+    model_cache.pigs[PIG_CLASS_SABOTEUR] = LoadModel("/chars/british/sa_hi", true);
+    model_cache.pigs[PIG_CLASS_SNIPER] = LoadModel("/chars/british/sn_hi", true);
+    model_cache.pigs[PIG_CLASS_SPY] = LoadModel("/chars/british/sp_hi", true);
 }
 
 void InitModels(void) {

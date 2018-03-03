@@ -133,7 +133,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
     // todo, load in the image
 
     PLImage image;
-    if(plLoadImage(tex_path, &image) != PL_RESULT_SUCCESS) {
+    if(!plLoadImage(tex_path, &image)) {
         Error("failed to load in image, %s, aborting!\n", plGetError());
     }
 

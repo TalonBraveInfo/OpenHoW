@@ -16,13 +16,7 @@
  */
 #pragma once
 
-#define MAX_BONES   32
-
-typedef struct Bone {
-    char name[32];
-    unsigned int parent;
-    PLVector3 coords;
-} Bone;
+#define MAX_BONES 32
 
 typedef struct Keyframe {
     PLVector3 transforms[10];

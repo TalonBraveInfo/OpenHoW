@@ -127,8 +127,6 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
         out_index = fopen(index_path, "w");
         if (out_index == NULL) {
             printf("failed to open %s for writing!\n", index_path);
-        } else {
-            fprintf(out_index, "!!GENERATED INDEX FILE, DO NOT MODIFY!!\n");
         }
     }
 
@@ -174,7 +172,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
             // what texture to load :)
             char index_file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
             plStripExtension(index_file_path, index.file);
-            fprintf(out_index, "%d %s\n", cur_index, index_file_path);
+            fprintf(out_index, "%s\n", index_file_path);
         }
 
         CHECK_AGAIN:
@@ -252,8 +250,7 @@ void ConvertImageToPNG(const char *path) {
     }
 
     PLImage image;
-    PLresult result = (PLresult)plLoadImage(path, &image);
-    if(result != PL_RESULT_SUCCESS) {
+    if(!plLoadImage(path, &image)) {
         LogInfo("failed to load \"%s\", %s, aborting!\n", path, plGetError());
         return;
     }
@@ -315,9 +312,17 @@ void ExtractGameData(const char *path) {
     } ExtractorFileIO;
 
     ExtractorFileIO mad_paths[]={
-            /* british */
-            {"/Chars/british.mad", "/chars/british/"},
+            {"/Chars/british2.mad", "/chars/pigs/"}, /* actually contains all the pig models */
+            {"/Chars/BRITHATS.MAD", "/chars/hats/"}, /* actually contains all the hat models */
+
+            /* teams */
             {"/Chars/british.mtd", "/chars/british/"},
+            {"/Chars/AMERICAN.MTD", "/chars/american/"},
+            {"/Chars/FRENCH.MTD", "/chars/french/"},
+            {"/Chars/GERMAN.MTD", "/chars/german/"},
+            {"/Chars/JAPANESE.MTD", "/chars/japanese/"},
+            {"/Chars/RUSSIAN.MTD", "/chars/russian/"},
+            {"/Chars/TEAMLARD.MTD", "/chars/teamlard/"},
 
             /* weapons */
             {"/Chars/WEAPONS.MAD", "/chars/weapons/"},
@@ -480,6 +485,7 @@ void ExtractGameData(const char *path) {
             {"/Maps/GENDESRT.PMG", "/maps/gendesrt/"},
             {"/Maps/HILLBASE.PMG", "/maps/hillbase/"},
             {"/Maps/LIBERATE.PMG", "/maps/liberate/"},
+#if 0 /* eventually we'll just copy and load from each PTG */
             {"/Maps/BAY.PTG", "/maps/bay/"},
             {"/Maps/ICE.PTG", "/maps/ice/"},
             {"/Maps/BOOM.PTG", "/maps/boom/"},
@@ -540,6 +546,7 @@ void ExtractGameData(const char *path) {
             {"/Maps/GENDESRT.PTG", "/maps/gendesrt/"},
             {"/Maps/HILLBASE.PTG", "/maps/hillbase/"},
             {"/Maps/LIBERATE.PTG", "/maps/liberate/"},
+#endif
             {"/Maps/BAY.POG", "/maps/bay/"},
             {"/Maps/ICE.POG", "/maps/ice/"},
             {"/Maps/BOOM.POG", "/maps/boom/"},
@@ -603,7 +610,7 @@ void ExtractGameData(const char *path) {
 
             /* chars */
             {"/Chars/pig.HIR", "/chars/"},
-            {"/Chars/mcap.mad", "/chars/anims/"},
+            {"/Chars/mcap.mad", "/chars/"},
     };
 
     for(unsigned int i = 0; i < plArrayElements(copy_paths); ++i) {
@@ -620,7 +627,7 @@ void ExtractGameData(const char *path) {
         plCopyFile(input_path, output_path);
     }
 
-#if 0
+#if 1
     ExtractorFileIO ptg_paths[]={
             {"/Maps/BAY.PTG", "/maps/bay/tiles/"},
             {"/Maps/ICE.PTG", "/maps/ice/tiles/"},

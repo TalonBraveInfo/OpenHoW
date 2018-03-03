@@ -90,7 +90,7 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
          * uploading */
         if(pl_strncasecmp(ext, "tim", 3) == 0) {
             PLImage img;
-            if(plLoadImage(tpath, &img) != PL_RESULT_SUCCESS) {
+            if(!plLoadImage(tpath, &img)) {
                 Error("%s, aborting!\n", plGetError());
             }
             plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
