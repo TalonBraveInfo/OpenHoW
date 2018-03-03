@@ -245,7 +245,25 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
 
 ////////////////////////////////////////////////////////////////
 
+/* unloads texture set from memory */
+void ClearTextureIndex(unsigned int id) {
+    assert(id < MAX_TEXTURE_INDEX);
+    TextureIndex *index = &model_cache.textures[id];
+    for(unsigned int i = 0; i < index->num_textures; ++i) {
+        plDeleteTexture(index->texture[i], true);
+    }
+    index->num_textures = 0;
+}
+
+/* loads texture set into memory */
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
+    assert(id < MAX_TEXTURE_INDEX);
+    TextureIndex *index = &model_cache.textures[id];
+    if(index->num_textures > 0) {
+        LogWarn("textures already cached for index %s\n", index_name);
+        return;
+    }
+
     char texture_index_path[PL_SYSTEM_MAX_PATH];
     snprintf(texture_index_path, sizeof(texture_index_path), "%s%s%s", g_state.base_path, path, index_name);
     if(!plFileExists(texture_index_path)) {
@@ -258,8 +276,6 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
     }
 
     LogInfo("parsing \"%s\"\n", texture_index_path);
-
-    TextureIndex *index = &model_cache.textures[id];
 
     char line[32];
     while(!feof(file)) {
