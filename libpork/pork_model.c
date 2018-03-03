@@ -22,7 +22,23 @@
 
 #include "client/client_display.h"
 
-enum { INDEX_BRITISH, INDEX_WEAPONS, INDEX_MAP, MAX_TEXTURE_INDEX };
+/* todo, move texture cache into display */
+
+enum {
+    INDEX_BRITISH,
+    INDEX_AMERICAN,
+    INDEX_FRENCH,
+    INDEX_GERMAN,
+    INDEX_RUSSIAN,
+    INDEX_JAPANESE,
+    INDEX_TEAMLARD,
+
+    INDEX_WEAPONS,
+
+    INDEX_MAP,
+
+    MAX_TEXTURE_INDEX
+};
 
 typedef struct TextureIndex {
     PLTexture *texture[256];
