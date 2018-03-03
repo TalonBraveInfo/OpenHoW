@@ -245,6 +245,18 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
 
 ////////////////////////////////////////////////////////////////
 
+size_t GetTextureCacheSize(void) {
+    size_t size = 0;
+    for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
+        TextureIndex *index = &model_cache.textures[i];
+        for(unsigned int j = 0; j < index->num_textures; ++j) {
+            PLTexture *texture = index->texture[j];
+            size += plGetImageSize(texture->format, texture->w, texture->h);
+        }
+    }
+    return size;
+}
+
 /* unloads texture set from memory */
 void ClearTextureIndex(unsigned int id) {
     assert(id < MAX_TEXTURE_INDEX);
@@ -277,11 +289,13 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
 
     LogInfo("parsing \"%s\"\n", texture_index_path);
 
+    size_t num_bytes = 0;
+
     char line[32];
     while(!feof(file)) {
         if(fgets(line, sizeof(line), file) != NULL) {
             line[strcspn(line, "\r\n")] = '\0';
-            LogDebug("  %s\n", line);
+            //LogDebug("  %s\n", line);
 
             char texture_path[PL_SYSTEM_MAX_PATH];
             snprintf(texture_path, sizeof(texture_path), "%s%s.tim", path, line);
@@ -289,10 +303,11 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
             if(texture == NULL) {
                 Error("failed to load texture, \"%s\", aborting!\n%s\n", texture_path, plGetError());
             }
-
+            num_bytes += plGetImageSize(texture->format, texture->w, texture->h);
             index->texture[index->num_textures++] = texture;
         }
     }
+    LogInfo("cached %u bytes!\n", num_bytes);
 
     pork_fclose(file);
 }
@@ -609,17 +624,20 @@ void CacheModelData(void) {
     CacheTextureIndex("/chars/british/", "british.index", INDEX_BRITISH);
     CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
 
+    size_t cache_size = GetTextureCacheSize();
+    LogInfo("total texture cache: %fMB (%u bytes)\n", plBytesToMegabytes(cache_size), cache_size);
+
     /* models */
 
-    model_cache.pigs[PIG_CLASS_ACE] = LoadModel("/chars/british/ac_hi", true);
-    model_cache.pigs[PIG_CLASS_COMMANDO] = LoadModel("/chars/british/sb_hi", true);
-    model_cache.pigs[PIG_CLASS_GRUNT] = LoadModel("/chars/british/gr_hi", true);
-    model_cache.pigs[PIG_CLASS_HEAVY] = LoadModel("/chars/british/hv_hi", true);
-    model_cache.pigs[PIG_CLASS_LEGEND] = LoadModel("/chars/british/le_hi", true);
-    model_cache.pigs[PIG_CLASS_MEDIC] = LoadModel("/chars/british/me_hi", true);
-    model_cache.pigs[PIG_CLASS_SABOTEUR] = LoadModel("/chars/british/sa_hi", true);
-    model_cache.pigs[PIG_CLASS_SNIPER] = LoadModel("/chars/british/sn_hi", true);
-    model_cache.pigs[PIG_CLASS_SPY] = LoadModel("/chars/british/sp_hi", true);
+    model_cache.pigs[PIG_CLASS_ACE] = LoadModel("/chars/pigs/ac_hi", true);
+    model_cache.pigs[PIG_CLASS_COMMANDO] = LoadModel("/chars/pigs/sb_hi", true);
+    model_cache.pigs[PIG_CLASS_GRUNT] = LoadModel("/chars/pigs/gr_hi", true);
+    model_cache.pigs[PIG_CLASS_HEAVY] = LoadModel("/chars/pigs/hv_hi", true);
+    model_cache.pigs[PIG_CLASS_LEGEND] = LoadModel("/chars/pigs/le_hi", true);
+    model_cache.pigs[PIG_CLASS_MEDIC] = LoadModel("/chars/pigs/me_hi", true);
+    model_cache.pigs[PIG_CLASS_SABOTEUR] = LoadModel("/chars/pigs/sa_hi", true);
+    model_cache.pigs[PIG_CLASS_SNIPER] = LoadModel("/chars/pigs/sn_hi", true);
+    model_cache.pigs[PIG_CLASS_SPY] = LoadModel("/chars/pigs/sp_hi", true);
 }
 
 void InitModels(void) {

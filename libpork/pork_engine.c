@@ -28,6 +28,7 @@ PLConsoleVariable *cv_debug_mode        = NULL;
 PLConsoleVariable *cv_debug_fps         = NULL;
 PLConsoleVariable *cv_debug_skeleton    = NULL;
 PLConsoleVariable *cv_debug_input       = NULL;
+PLConsoleVariable *cv_debug_cache      = NULL;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -61,21 +62,19 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_state.display_height = BASE_HEIGHT;
 
     // todo, disable these by default
-    cv_debug_mode = plRegisterConsoleVariable(
-            "dmode", "1", pl_int_var, DebugModeCallback, "Sets the global debug level.");
-    cv_debug_fps = plRegisterConsoleVariable(
-            "dfps", "1", pl_bool_var, NULL, "If enabled, displays FPS counter.");
-    cv_debug_skeleton = plRegisterConsoleVariable(
-            "dskeleton", "0", pl_bool_var, NULL, "If enabled, skeleton for pigs will be drawn.");
+    cv_debug_mode = plRegisterConsoleVariable("dmode", "1", pl_int_var, DebugModeCallback, "global debug level");
+    cv_debug_fps = plRegisterConsoleVariable("dfps", "1", pl_bool_var, NULL, "display framerate");
+    cv_debug_skeleton = plRegisterConsoleVariable("dskeleton", "0", pl_bool_var, NULL, "display pig skeletons");
     cv_debug_input = plRegisterConsoleVariable(
             "dinput",
             "0",
             pl_int_var,
             NULL,
-            "Changing this cycles between different modes of debugging input\n"
+            "changing this cycles between different modes of debugging input\n"
             "1: keyboard states\n"
             "2: controller states"
     );
+    cv_debug_cache = plRegisterConsoleVariable("dcache", "0", pl_bool_var, NULL, "display memory and other info");
 
     InitConsole();
     InitConfig();

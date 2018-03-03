@@ -31,4 +31,7 @@ typedef struct Animation {
     unsigned int num_frames;
 } Animation;
 
+void ClearTextureIndex(unsigned int id);
+
+void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void CacheModelData(void);
