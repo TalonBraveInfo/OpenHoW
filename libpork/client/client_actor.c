@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pork_engine.h"
+#include "pork_model.h"
+
 #include "client_actor.h"
 
 CLActor *client_actors = NULL;
@@ -81,6 +83,7 @@ void DrawActors(double delta) {
         }
 
         if(actor->model != NULL) {
+//            Model_ApplyTeamTextures(actor->model, actor->team);
             plDrawModel(actor->model);
             if(cv_debug_skeleton->b_value) {
                 plDrawModelSkeleton(actor->model);

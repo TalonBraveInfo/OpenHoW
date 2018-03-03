@@ -184,7 +184,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
         if(plFileExists(file_path)) {
             size_t size = plGetFileSize(file_path);
             if(size == index.length) {
-                LogInfo("duplicate file found for %s at %s, skipping!\n", index.file, file_path);
+                //LogInfo("duplicate file found for %s at %s, skipping!\n", index.file, file_path);
                 continue;
             }
 

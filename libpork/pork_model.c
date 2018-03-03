@@ -34,7 +34,6 @@ enum {
     INDEX_TEAMLARD,
 
     INDEX_WEAPONS,
-
     INDEX_MAP,
 
     MAX_TEXTURE_INDEX
@@ -44,6 +43,7 @@ typedef struct TextureIndex {
     PLTexture *texture[256];
     unsigned int num_textures;
 } TextureIndex;
+TextureIndex texture_cache[MAX_TEXTURE_INDEX];
 
 struct {
     PLModelBone bones[MAX_BONES];
@@ -53,11 +53,12 @@ struct {
     unsigned int num_animations;
 
     PLModel *pigs[PIG_CLASS_END];
-
-    TextureIndex textures[MAX_TEXTURE_INDEX];
+    PLModel *hats[PIG_CLASS_END];
 } model_cache;
 
 PLModel *LoadVTXModel(const char *path) {
+    LogInfo("loading %s\n", path);
+
     FILE *vtx_file = fopen(path, "rb");
     if(vtx_file == NULL) {
         LogWarn("failed to load vtx \"%s\", aborting!\n", path);
@@ -264,7 +265,7 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
 size_t GetTextureCacheSize(void) {
     size_t size = 0;
     for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
-        TextureIndex *index = &model_cache.textures[i];
+        TextureIndex *index = &texture_cache[i];
         for(unsigned int j = 0; j < index->num_textures; ++j) {
             PLTexture *texture = index->texture[j];
             size += plGetImageSize(texture->format, texture->w, texture->h);
@@ -273,10 +274,29 @@ size_t GetTextureCacheSize(void) {
     return size;
 }
 
+void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
+    size_t cache_size = GetTextureCacheSize();
+    const char *str = "total texture cache: ";
+    if(argc < 2) {
+        LogInfo("%s %u bytes", str, cache_size);
+        return;
+    }
+
+    if(pl_strncasecmp(argv[1], "KB", 2) == 0) {
+        LogInfo("%s %.2fKB (%u bytes)\n", str, plBytesToKilobytes(cache_size), cache_size);
+    } else if(pl_strncasecmp(argv[1], "MB", 2) == 0) {
+        LogInfo("%s %.2fMB (%u bytes)\n", str, plBytesToMegabytes(cache_size), cache_size);
+    } else if(pl_strncasecmp(argv[1], "GB", 2) == 0) {
+        LogInfo("%s %.2fGB (%u bytes)\n", str, plBytesToGigabytes(cache_size), cache_size);
+    } else {
+        LogInfo("unknown parameter \"%s\", ignoring!\n", argv[1]);
+    }
+}
+
 /* unloads texture set from memory */
 void ClearTextureIndex(unsigned int id) {
     assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &model_cache.textures[id];
+    TextureIndex *index = &texture_cache[id];
     for(unsigned int i = 0; i < index->num_textures; ++i) {
         plDeleteTexture(index->texture[i], true);
     }
@@ -286,7 +306,7 @@ void ClearTextureIndex(unsigned int id) {
 /* loads texture set into memory */
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
     assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &model_cache.textures[id];
+    TextureIndex *index = &texture_cache[id];
     if(index->num_textures > 0) {
         LogWarn("textures already cached for index %s\n", index_name);
         return;
@@ -637,11 +657,17 @@ void CacheModelData(void) {
 
     /* textures */
 
+    CacheTextureIndex("/chars/american/", "american.index", INDEX_AMERICAN);
     CacheTextureIndex("/chars/british/", "british.index", INDEX_BRITISH);
+    CacheTextureIndex("/chars/french/", "french.index", INDEX_FRENCH);
+    CacheTextureIndex("/chars/german/", "german.index", INDEX_GERMAN);
+    CacheTextureIndex("/chars/japanese/", "japanese.index", INDEX_JAPANESE);
+    CacheTextureIndex("/chars/russian/", "russian.index", INDEX_RUSSIAN);
+    CacheTextureIndex("/chars/teamlard/", "teamlard.index", INDEX_TEAMLARD);
+
     CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
 
-    size_t cache_size = GetTextureCacheSize();
-    LogInfo("total texture cache: %fMB (%u bytes)\n", plBytesToMegabytes(cache_size), cache_size);
+    PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 
     /* models */
 
@@ -659,7 +685,13 @@ void CacheModelData(void) {
 void InitModels(void) {
     plRegisterModelLoader("vtx", LoadVTXModel);
 
+    plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
+
     CacheModelData();
+}
+
+void ShutdownModels(void) {
+
 }
 
 ////////////////////////////////////////////////////////////////
