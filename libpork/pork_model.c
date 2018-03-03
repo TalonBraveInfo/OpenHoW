@@ -245,9 +245,9 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
 
 ////////////////////////////////////////////////////////////////
 
-void CacheTextureIndex(const char *path, unsigned int id) {
+void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
     char texture_index_path[PL_SYSTEM_MAX_PATH];
-    snprintf(texture_index_path, sizeof(texture_index_path), "%s%s", g_state.base_path, path);
+    snprintf(texture_index_path, sizeof(texture_index_path), "%s%s%s", g_state.base_path, path, index_name);
     if(!plFileExists(texture_index_path)) {
         Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
     }
@@ -268,7 +268,7 @@ void CacheTextureIndex(const char *path, unsigned int id) {
             LogDebug("  %s\n", line);
 
             char texture_path[PL_SYSTEM_MAX_PATH];
-            snprintf(texture_path, sizeof(texture_path), "/chars/british/%s.tim", line);
+            snprintf(texture_path, sizeof(texture_path), "%s%s.tim", path, line);
             PLTexture *texture = LoadTexture(texture_path, PL_TEXTURE_FILTER_NEAREST);
             if(texture == NULL) {
                 Error("failed to load texture, \"%s\", aborting!\n%s\n", texture_path, plGetError());
@@ -590,8 +590,8 @@ void CacheModelData(void) {
 
     /* textures */
 
-    CacheTextureIndex("/chars/british/british.index", INDEX_BRITISH);
-    CacheTextureIndex("/chars/weapons/weapons.index", INDEX_WEAPONS);
+    CacheTextureIndex("/chars/british/", "british.index", INDEX_BRITISH);
+    CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
 
     /* models */
 
