@@ -66,6 +66,7 @@ enum {
 
 #define pork_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
 #define pork_free(DATA) free((DATA)); (DATA) = NULL
+void *pork_alloc(size_t num, size_t size, bool abort_on_fail);
 
 enum {
     PORK_MBOX_INFORMATION,

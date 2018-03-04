@@ -33,6 +33,7 @@ enum {
     INDEX_JAPANESE,
     INDEX_TEAMLARD,
 
+    INDEX_FRONTEND,
     INDEX_WEAPONS,
     INDEX_MAP,
 
@@ -159,27 +160,20 @@ PLModel *LoadVTXModel(const char *path) {
 
     fclose(fac_file);
 
-    /* todo, eventually move all textures into a texture sheet on upload!? */
-
-    unsigned int num_texture_ids = 0;
-    for(unsigned int i = 0; i < num_quads; ++i) {
-
-    }
-
     /* now to shuffle all that data into our model! */
 
-
-
-    PLModel *model = calloc(1, sizeof(PLModel));
-    if(model == NULL) {
-        Error("failed to allocate mesh for %s, aborting!\n", path);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles + (num_quads * 2), num_vertices);
+    if(mesh == NULL) {
+        Error("failed to allocate mesh for %s, aborting!\n%s\n", path, plGetError());
     }
 
-    model->num_lods = 1;
+    mesh->num_indices = mesh->num_triangles * 3;
+    mesh->indices = calloc(mesh->num_indices, sizeof(uint16_t));
+    if(mesh->indices == NULL) {
+        Error("failed to allocate %u indices for mesh, aborting!\n", mesh->num_indices);
+    }
 
-    /* copy the bones into the model struct */
-    memcpy(model->bones, model_cache.bones, sizeof(PLModelBone) * model_cache.num_bones);
-    model->num_bones = model_cache.num_bones;
+    PLModel *model = pork_alloc(1, sizeof(PLModel), true);
 
 #if 0 /* don't bother for now... */
     /* check if it's a LOD model, these are appended with '_hi' */
@@ -197,7 +191,44 @@ PLModel *LoadVTXModel(const char *path) {
             LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
         }
     }
+#else
+    model->lods[0].meshes = pork_alloc(1, sizeof(PLMesh), true);
+    model->lods[0].num_meshes = 1;
+    model->lods[0].meshes[0] = *mesh;
+    model->num_lods = 1;
+
+    model->lods[0].bone_weights = pork_alloc(num_vertices, sizeof(PLModelBoneWeight), true);
+    model->lods[0].num_bone_weights = num_vertices;
+
+    PLModelLOD *lod = &model->lods[0];
 #endif
+
+    /* copy the bones into the model struct */
+    model->skeleton.bones = pork_alloc(model_cache.num_bones, sizeof(PLModelBone), true);
+    memcpy(model->skeleton.bones, model_cache.bones, sizeof(PLModelBone) * model_cache.num_bones);
+    model->skeleton.num_bones = model_cache.num_bones;
+
+#if 1   /* debug */
+    srand(num_vertices);
+#endif
+    for(unsigned int i = 0; i < num_vertices; ++i) {
+#if 1   /* debug */
+        uint8_t r = (uint8_t)(rand() % 255);
+        uint8_t g = (uint8_t)(rand() % 255);
+        uint8_t b = (uint8_t)(rand() % 255);
+#endif
+        plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].x, vertices[i].y, vertices[i].z));
+        plSetMeshVertexColour(mesh, i, PLColour(r, g, b, 255));
+
+        lod->bone_weights[i].bone_index = vertices[i].bone_index;
+        lod->bone_weights[i].bone_weight = 1.f;
+        lod->bone_weights[i].vertex_index = i;
+    }
+
+    /* convert quads into triangles */
+    for(unsigned int i = 0; i < num_quads; ++i) {
+
+    }
 
     /* and finally the normals...
      * if we're not able to find the normals,
@@ -326,6 +357,8 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
     LogInfo("parsing \"%s\"\n", texture_index_path);
 
     size_t num_bytes = 0;
+
+    /* todo, move all textures into a texture sheet on upload */
 
     char line[32];
     while(!feof(file)) {
@@ -565,8 +598,7 @@ void CacheModelData(void) {
         long position = ftell(file);
 
         /* MCAP Format Specification
-         * Used to store our piggy animations.
-         */
+         * Used to store our piggy animations. */
         typedef struct __attribute__((packed)) MCAPKeyframe {
             int16_t unused;
 
