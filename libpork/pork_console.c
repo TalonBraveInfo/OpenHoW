@@ -187,7 +187,7 @@ void DrawConsole(void) {
         return;
     }
 
-    plDrawRectangle(plCreateRectangle(
+    plDrawFilledRectangle(plCreateRectangle(
             PLVector2(0, 0),
             PLVector2(GetViewportWidth(), 32),
             PLColour(0, 0, 0, 128),

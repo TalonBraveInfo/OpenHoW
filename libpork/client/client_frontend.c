@@ -204,9 +204,9 @@ void DrawLoadingScreen(void) {
     int bar_x = c_x + 151; //c_x + (FRONTEND_MENU_WIDTH / 2) - bar_w / 2;
     int bar_y = c_y + 450;
     if(loading_progress > 0) {
-        plDrawRectangle(plCreateRectangle(
+        plDrawFilledRectangle(plCreateRectangle(
                 PLVector2(bar_x, bar_y),
-                PLVector2(((float)(bar_w) / 100) * loading_progress, 18),
+                PLVector2(((float) (bar_w) / 100) * loading_progress, 18),
                 PL_COLOUR_INDIAN_RED,
                 PL_COLOUR_INDIAN_RED,
                 PL_COLOUR_RED,
@@ -245,7 +245,7 @@ void DrawFrontend(void) {
                 static bool is_load_drawn = false;
                 if(!is_load_drawn) {
                     plSetBlendMode(PL_BLEND_DEFAULT);
-                    plDrawRectangle(plCreateRectangle(
+                    plDrawFilledRectangle(plCreateRectangle(
                             PLVector2(c_x, c_y + 464),
                             PLVector2(FRONTEND_MENU_WIDTH, 16),
                             PLColour(0, 0, 0, 150),
@@ -258,7 +258,7 @@ void DrawFrontend(void) {
                 }
 
                 /* and now we're going to draw the loading bar. */
-                plDrawRectangle(plCreateRectangle(
+                plDrawFilledRectangle(plCreateRectangle(
                         PLVector2(c_x, c_y + 464),
                         PLVector2(loading_progress, 16),
                         PL_COLOUR_INDIAN_RED,
@@ -286,12 +286,6 @@ void DrawFrontend(void) {
 
             case FE_MODE_MAIN_MENU: {
                 plDrawTexturedRectangle(c_x, c_y, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
-
-                static PLTexture *test = NULL;
-                if(test == NULL) {
-                    test = LoadTexture("chars/british/eyes000.tim", PL_TEXTURE_FILTER_NEAREST);
-                }
-                plDrawTexturedRectangle(c_x, c_y, 128, 128, test);
             } break;
 
             case FE_MODE_LOADING: {

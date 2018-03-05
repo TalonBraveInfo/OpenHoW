@@ -22,30 +22,6 @@
 
 #include "client/client_display.h"
 
-/* todo, move texture cache into display */
-
-enum {
-    INDEX_BRITISH,
-    INDEX_AMERICAN,
-    INDEX_FRENCH,
-    INDEX_GERMAN,
-    INDEX_RUSSIAN,
-    INDEX_JAPANESE,
-    INDEX_TEAMLARD,
-
-    INDEX_FRONTEND,
-    INDEX_WEAPONS,
-    INDEX_MAP,
-
-    MAX_TEXTURE_INDEX
-};
-
-typedef struct TextureIndex {
-    PLTexture *texture[256];
-    unsigned int num_textures;
-} TextureIndex;
-TextureIndex texture_cache[MAX_TEXTURE_INDEX];
-
 struct {
     PLModelBone bones[MAX_BONES];
     unsigned int num_bones;
@@ -292,94 +268,6 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
 }
 
 ////////////////////////////////////////////////////////////////
-
-size_t GetTextureCacheSize(void) {
-    size_t size = 0;
-    for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
-        TextureIndex *index = &texture_cache[i];
-        for(unsigned int j = 0; j < index->num_textures; ++j) {
-            PLTexture *texture = index->texture[j];
-            size += plGetImageSize(texture->format, texture->w, texture->h);
-        }
-    }
-    return size;
-}
-
-void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
-    size_t cache_size = GetTextureCacheSize();
-    const char *str = "total texture cache: ";
-    if(argc < 2) {
-        LogInfo("%s %u bytes", str, cache_size);
-        return;
-    }
-
-    if(pl_strncasecmp(argv[1], "KB", 2) == 0) {
-        LogInfo("%s %.2fKB (%u bytes)\n", str, plBytesToKilobytes(cache_size), cache_size);
-    } else if(pl_strncasecmp(argv[1], "MB", 2) == 0) {
-        LogInfo("%s %.2fMB (%u bytes)\n", str, plBytesToMegabytes(cache_size), cache_size);
-    } else if(pl_strncasecmp(argv[1], "GB", 2) == 0) {
-        LogInfo("%s %.2fGB (%u bytes)\n", str, plBytesToGigabytes(cache_size), cache_size);
-    } else {
-        LogInfo("unknown parameter \"%s\", ignoring!\n", argv[1]);
-    }
-}
-
-/* unloads texture set from memory */
-void ClearTextureIndex(unsigned int id) {
-    assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &texture_cache[id];
-    for(unsigned int i = 0; i < index->num_textures; ++i) {
-        plDeleteTexture(index->texture[i], true);
-    }
-    index->num_textures = 0;
-}
-
-/* loads texture set into memory */
-void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
-    assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &texture_cache[id];
-    if(index->num_textures > 0) {
-        LogWarn("textures already cached for index %s\n", index_name);
-        return;
-    }
-
-    char texture_index_path[PL_SYSTEM_MAX_PATH];
-    snprintf(texture_index_path, sizeof(texture_index_path), "%s%s%s", g_state.base_path, path, index_name);
-    if(!plFileExists(texture_index_path)) {
-        Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
-    }
-
-    FILE *file = fopen(texture_index_path, "r");
-    if(file == NULL) {
-        Error("failed to open texture index at \"%s\", aborting!\n", texture_index_path);
-    }
-
-    LogInfo("parsing \"%s\"\n", texture_index_path);
-
-    size_t num_bytes = 0;
-
-    /* todo, move all textures into a texture sheet on upload */
-
-    char line[32];
-    while(!feof(file)) {
-        if(fgets(line, sizeof(line), file) != NULL) {
-            line[strcspn(line, "\r\n")] = '\0';
-            //LogDebug("  %s\n", line);
-
-            char texture_path[PL_SYSTEM_MAX_PATH];
-            snprintf(texture_path, sizeof(texture_path), "%s%s.tim", path, line);
-            PLTexture *texture = LoadTexture(texture_path, PL_TEXTURE_FILTER_NEAREST);
-            if(texture == NULL) {
-                Error("failed to load texture, \"%s\", aborting!\n%s\n", texture_path, plGetError());
-            }
-            num_bytes += plGetImageSize(texture->format, texture->w, texture->h);
-            index->texture[index->num_textures++] = texture;
-        }
-    }
-    LogInfo("cached %u bytes!\n", num_bytes);
-
-    pork_fclose(file);
-}
 
 //00: Hip
 //01: Spine
@@ -687,20 +575,6 @@ void CacheModelData(void) {
     }
 #endif
 
-    /* textures */
-
-    CacheTextureIndex("/chars/american/", "american.index", INDEX_AMERICAN);
-    CacheTextureIndex("/chars/british/", "british.index", INDEX_BRITISH);
-    CacheTextureIndex("/chars/french/", "french.index", INDEX_FRENCH);
-    CacheTextureIndex("/chars/german/", "german.index", INDEX_GERMAN);
-    CacheTextureIndex("/chars/japanese/", "japanese.index", INDEX_JAPANESE);
-    CacheTextureIndex("/chars/russian/", "russian.index", INDEX_RUSSIAN);
-    CacheTextureIndex("/chars/teamlard/", "teamlard.index", INDEX_TEAMLARD);
-
-    CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
-
-    PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
-
     /* models */
 
     model_cache.pigs[PIG_CLASS_ACE] = LoadModel("/chars/pigs/ac_hi", true);
@@ -716,8 +590,6 @@ void CacheModelData(void) {
 
 void InitModels(void) {
     plRegisterModelLoader("vtx", LoadVTXModel);
-
-    plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
 
     CacheModelData();
 }
