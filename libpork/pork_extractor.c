@@ -195,7 +195,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
             goto CHECK_AGAIN;
         }
 
-        data = calloc(index.length, sizeof(uint8_t));
+        data = pork_alloc(index.length, sizeof(uint8_t), false);
         if(data == NULL) {
             LogInfo("failed to allocate %d bytes for export of %s, aborting!\n", index.length, index.file);
             goto ABORT_MAD;
@@ -313,7 +313,10 @@ void ExtractGameData(const char *path) {
 
     ExtractorFileIO mad_paths[]={
             {"/Chars/british2.mad", "/chars/pigs/"}, /* actually contains all the pig models */
-            {"/Chars/BRITHATS.MAD", "/chars/hats/"}, /* actually contains all the hat models */
+            {"/Chars/FACES.MTD", "/chars/faces/"},   /* contains all the face textures       */
+
+            {"/Chars/BRITHATS.MAD", "/chars/british_hats/"},
+            {"/Chars/FHATS.MAD", "/chars/french_hats/"},
 
             /* teams */
             {"/Chars/british.mtd", "/chars/british/"},

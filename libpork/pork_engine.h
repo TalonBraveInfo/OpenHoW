@@ -75,3 +75,6 @@ struct {
 
 #define GetViewportWidth()  g_state.camera->viewport.w
 #define GetViewportHeight() g_state.camera->viewport.h
+
+#define GetUIViewportWidth()    640
+#define GetUIViewportHeight()   480

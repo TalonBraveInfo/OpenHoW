@@ -33,6 +33,9 @@ struct {
     PLModel *hats[PIG_CLASS_END];
 } model_cache;
 
+#define PIG_EYES_INDEX  118
+#define PIG_GOBS_INDEX  119
+
 PLModel *LoadVTXModel(const char *path) {
     LogInfo("loading %s\n", path);
 
@@ -44,10 +47,8 @@ PLModel *LoadVTXModel(const char *path) {
 
     /* load in the vertices */
 
-    typedef struct VTXCoord {
-        int16_t x;
-        int16_t y;
-        int16_t z;
+    typedef struct __attribute__((packed)) VTXCoord {
+        int16_t v[3];
         uint16_t bone_index;
     } VTXCoord;
     unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VTXCoord));
@@ -58,6 +59,20 @@ PLModel *LoadVTXModel(const char *path) {
     fclose(vtx_file);
 
     /* now we load in all the faces */
+
+    /* this is uh, pretty gross, but Hogs of War
+     * uses a very specific id to identify the eyes
+     * and mouth of the pigs - I can't reliably do
+     * this if it's any other model (otherwise we
+     * could end up showing a mouth on a tank - funny
+     * but not really practical)
+     *
+     * if it IS a pig, then the mouth and eyes are
+     * treated as a separate material */
+    bool is_pig = false;
+    if(strstr(path, "/chars/pigs/") != 0) {
+        is_pig = true;
+    }
 
     char fac_path[PL_SYSTEM_MAX_PATH];
     strncpy(fac_path, path, strlen(path) - 3);
@@ -138,16 +153,13 @@ PLModel *LoadVTXModel(const char *path) {
 
     /* now to shuffle all that data into our model! */
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles + (num_quads * 2), num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles + (num_quads * 6), num_vertices);
     if(mesh == NULL) {
         Error("failed to allocate mesh for %s, aborting!\n%s\n", path, plGetError());
     }
 
     mesh->num_indices = mesh->num_triangles * 3;
-    mesh->indices = calloc(mesh->num_indices, sizeof(uint16_t));
-    if(mesh->indices == NULL) {
-        Error("failed to allocate %u indices for mesh, aborting!\n", mesh->num_indices);
-    }
+    mesh->indices = pork_alloc(mesh->num_indices, sizeof(uint16_t), true);
 
     PLModel *model = pork_alloc(1, sizeof(PLModel), true);
 
@@ -168,9 +180,16 @@ PLModel *LoadVTXModel(const char *path) {
         }
     }
 #else
-    model->lods[0].meshes = pork_alloc(1, sizeof(PLMesh), true);
-    model->lods[0].num_meshes = 1;
-    model->lods[0].meshes[0] = *mesh;
+
+    if(is_pig) {
+        model->lods[0].num_meshes = 3;
+        model->lods[0].meshes = pork_alloc(3, sizeof(PLMesh), true);
+        model->lods[0].meshes[0] = *mesh;
+    } else {
+        model->lods[0].num_meshes = 1;
+        model->lods[0].meshes = pork_alloc(1, sizeof(PLMesh), true);
+        model->lods[0].meshes[0] = *mesh;
+    }
     model->num_lods = 1;
 
     model->lods[0].bone_weights = pork_alloc(num_vertices, sizeof(PLModelBoneWeight), true);
@@ -193,7 +212,7 @@ PLModel *LoadVTXModel(const char *path) {
         uint8_t g = (uint8_t)(rand() % 255);
         uint8_t b = (uint8_t)(rand() % 255);
 #endif
-        plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].x, vertices[i].y, vertices[i].z));
+        plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].v[0], vertices[i].v[1], vertices[i].v[2]));
         plSetMeshVertexColour(mesh, i, PLColour(r, g, b, 255));
 
         lod->bone_weights[i].bone_index = vertices[i].bone_index;
@@ -222,10 +241,8 @@ PLModel *LoadVTXModel(const char *path) {
         return model;
     }
 
-    typedef struct NO2Coord {
-        float x;
-        float y;
-        float z;
+    typedef struct __attribute__((packed)) NO2Coord {
+        float v[3];
         float bone_index;
     } NO2Coord;
     unsigned int num_normals = (unsigned int)(plGetFileSize(no2_path) / sizeof(NO2Coord));

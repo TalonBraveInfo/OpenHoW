@@ -230,14 +230,28 @@ void PollEvents(void) {
             case SDL_CONTROLLERBUTTONUP: {
                 int button = TranslateSDLButton(event.cbutton.button);
                 if(button != -1) {
-                    SetPorkButtonState(0, button, false);
+                    SetPorkButtonState((unsigned int) event.cbutton.which, button, false);
                 }
             } break;
 
             case SDL_CONTROLLERBUTTONDOWN: {
                 int button = TranslateSDLButton(event.cbutton.button);
                 if(button != -1) {
-                    SetPorkButtonState(0, button, true);
+                    SetPorkButtonState((unsigned int) event.cbutton.which, button, true);
+                }
+            } break;
+
+            case SDL_CONTROLLERAXISMOTION: {
+                if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000) {
+                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, true);
+                } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000) {
+                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, false);
+                }
+
+                if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value > 1000) {
+                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, true);
+                } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value <= 1000){
+                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, false);
                 }
             } break;
 

@@ -24,9 +24,7 @@ unsigned int num_cl_actors = 256;
 
 void CLClearActors(void) {
     if(client_actors == NULL) {
-        if((client_actors = calloc(num_cl_actors, sizeof(CLActor))) == NULL) {
-            Error("failed to allocate memory for client-side actors, aborting!\n");
-        }
+        client_actors = pork_alloc(num_cl_actors, sizeof(CLActor), true);
     }
 
     LogDebug("clearing %u client actors\n", num_cl_actors);

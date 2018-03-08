@@ -18,4 +18,8 @@
 
 void InitDisplay(void);
 
+void ClearTextureIndex(unsigned int id);
+void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
+void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h);
+
 PLTexture *LoadTexture(const char *path, PLTextureFilter filter);

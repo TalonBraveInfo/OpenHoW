@@ -40,6 +40,8 @@ enum {
     INDEX_JAPANESE,
     INDEX_TEAMLARD,
 
+    INDEX_GOBS,
+
     INDEX_WEAPONS,
     INDEX_MAP,
 
@@ -47,8 +49,6 @@ enum {
 };
 
 #define MAX_TEXTURES_PER_INDEX  1024
-
-#define MAX_TEXTURE_SHEET_WIDTH
 
 typedef struct TextureIndex {
     struct {
@@ -73,7 +73,7 @@ size_t GetTextureCacheSize(void) {
     return size;
 }
 
-void GetCachedTexture(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h) {
+void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h) {
     assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
     TextureIndex *index = &texture_cache[id];
     *x = index->offsets[tex_id].x;
@@ -148,6 +148,18 @@ void ClearTextureIndex(unsigned int id) {
     memset(index, 0, sizeof(TextureIndex));
 }
 
+int CompareImageHeight(const void *a, const void *b) {
+    const PLImage *img_a = (const PLImage*)a;
+    const PLImage *img_b = (const PLImage*)b;
+    if(img_a->height < img_b->height) {
+        return 1;
+    } else if(img_a->height > img_b->height) {
+        return -1;
+    }
+
+    return 0;
+}
+
 /* loads texture set into memory */
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
     assert(id < MAX_TEXTURE_INDEX);
@@ -174,8 +186,8 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
 
     PLImage images[MAX_TEXTURES_PER_INDEX];
 
-    unsigned int w = 512;
-    unsigned int h = 128;
+    unsigned int w = 256;
+    unsigned int h = 8;
     unsigned int max_h = 0;
     int cur_y = 0;
     int cur_x = 0;
@@ -204,34 +216,41 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
 
             plConvertPixelFormat(img, PL_IMAGEFORMAT_RGBA8);
 
-            /* copy the information into our index list, so we can easily
-             * grab it later */
-
-            if(img->height > max_h) {
-                max_h = img->height;
-            }
-
-            if(cur_x == 0 && img->width > w) {
-                w = img->width;
-            } else if(cur_x + img->width > w) {
-                cur_y += max_h;
-                cur_x = 0;
-            }
-
-            /* todo, perhaps, if the texture sheet is too large we should create another sheet?
-             * rather than producing one mega texture */
-            while(cur_y + img->height > h) {
-                h *= 2;
-            }
-
-            index->offsets[index->num_textures].x = cur_x;
-            index->offsets[index->num_textures].y = cur_y;
-            index->offsets[index->num_textures].w = img->width;
-            index->offsets[index->num_textures].h = img->height;
-            cur_x += img->width;
-
             index->num_textures++;
         }
+    }
+
+    qsort(images, index->num_textures, sizeof(PLImage), &CompareImageHeight);
+
+    /* copy the information into our index list, so we can easily
+     * grab it later */
+
+    for(unsigned int i = 0; i < index->num_textures; ++i) {
+        PLImage *img = &images[i];
+
+        if(img->height > max_h) {
+            max_h = img->height;
+        }
+
+        if(cur_x == 0 && img->width > w) {
+            w = img->width;
+        } else if(cur_x + img->width > w) {
+            cur_y += max_h;
+            cur_x = 0;
+            max_h = 0;
+        }
+
+        /* todo, perhaps, if the texture sheet is too large we should create another sheet?
+         * rather than producing one mega texture */
+        while(cur_y + img->height > h) {
+            h *= 2;
+        }
+
+        index->offsets[i].x = cur_x;
+        index->offsets[i].y = cur_y;
+        index->offsets[i].w = img->width;
+        index->offsets[i].h = img->height;
+        cur_x += img->width;
     }
 
     PLImage cache;
@@ -256,6 +275,27 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
 
         plFreeImage(&images[i]);
     }
+
+#if 0 /* experimental palette changer thing... */
+    PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255));
+    plReplaceImageColour(&cache, PLColourRGB(90, 82, 8), main_channel);
+
+    PLColour dark_channel = main_channel;
+    if(dark_channel.r > 16) dark_channel.r -= 16;
+    if(dark_channel.g > 25) dark_channel.g -= 25;
+    if(dark_channel.b > 8)  dark_channel.b -= 8;
+    plReplaceImageColour(&cache, PLColourRGB(74, 57, 0), dark_channel);
+
+    PLColour light_channel = main_channel;
+    if(light_channel.r < 206) light_channel.r += 49;
+    if(light_channel.g < 197) light_channel.g += 58;
+    if(light_channel.b < 214) light_channel.b += 41;
+    plReplaceImageColour(&cache, PLColourRGB(139, 115, 49), light_channel);
+
+    PLColour mid_channel = main_channel;
+    /* this one still needs doing... */
+    plReplaceImageColour(&cache, PLColourRGB(115, 98, 24), mid_channel);
+#endif
 
     if((index->texture = plCreateTexture()) == NULL) {
         Error("%s, aborting!\n", plGetError());
@@ -333,12 +373,12 @@ void InitDisplay(void) {
     if(g_state.ui_camera == NULL) {
         Error("failed to create ui camera, aborting!\n%s\n", plGetError());
     }
-    g_state.ui_camera->mode        = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    g_state.ui_camera->fov         = 90;
-    g_state.ui_camera->viewport.w  = g_state.display_width;
-    g_state.ui_camera->viewport.h  = g_state.display_height;
-    //g_state.ui_camera->viewport.r_w = 320;
-    //g_state.ui_camera->viewport.r_h = 240;
+    g_state.ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    g_state.ui_camera->fov          = 90;
+    g_state.ui_camera->viewport.w   = g_state.display_width;
+    g_state.ui_camera->viewport.h   = g_state.display_height;
+    g_state.ui_camera->viewport.r_w = 640;
+    g_state.ui_camera->viewport.r_h = 480;
 
     //plSetCullMode(PL_CULL_POSTIVE);
 
@@ -353,6 +393,7 @@ void InitDisplay(void) {
     CacheTextureIndex("/chars/japanese/", "japanese.index", INDEX_JAPANESE);
     CacheTextureIndex("/chars/russian/", "russian.index", INDEX_RUSSIAN);
     CacheTextureIndex("/chars/teamlard/", "teamlard.index", INDEX_TEAMLARD);
+
     CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
@@ -487,13 +528,9 @@ void DrawDebugOverlay(void) {
         return;
     }
 
-#if 0
+#if 1
     char cam_pos[32];
-    snprintf(cam_pos, sizeof(cam_pos), "CAMERA POSITION: %d %d %d",
-             (int)g_state.camera->position.x,
-             (int)g_state.camera->position.y,
-             (int)g_state.camera->position.z
-    );
+    snprintf(cam_pos, sizeof(cam_pos), "CAMERA POSITION: %s", plPrintVector3(g_state.camera->position));
     DrawBitmapString(g_fonts[FONT_SMALL], 20, 20, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 #endif
 }
@@ -507,7 +544,7 @@ void DrawPork(double delta) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
-
+#if 0
     if(
             GetFrontendState() != FE_MODE_INIT &&
             GetFrontendState() != FE_MODE_LOADING) {
@@ -519,7 +556,7 @@ void DrawPork(double delta) {
 
         DrawActors(delta);
     }
-
+#endif
     // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
     // in the future, do this through "ACTOR %s SHOW SKELETON" command?
     //DEBUGDrawSkeleton();
@@ -528,15 +565,15 @@ void DrawPork(double delta) {
 
     DrawFrontend();
 
+    // todo, need a better name for this function
+    plDrawPerspectivePOST(g_state.ui_camera);
+
     if(
             GetFrontendState() != FE_MODE_INIT &&
             GetFrontendState() != FE_MODE_LOADING) {
         DrawDebugOverlay();
         DrawConsole();
     }
-
-    // todo, need a better name for this function
-    plDrawPerspectivePOST(g_state.ui_camera);
 
     g_launcher.SwapWindow();
 
