@@ -87,7 +87,6 @@ void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, floa
         } else {
             n_x += 5;
         }
-
     }
 
     plSetBlendMode(PL_BLEND_DISABLE);

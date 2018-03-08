@@ -47,14 +47,22 @@ void ProcessClientInput(void) {
         g_state.camera->position.x -= 4.f;
     }
 
-    if(GetActionState(0, ACTION_JUMP)) {
+    if(GetButtonState(0, PORK_BUTTON_L1)) {
         g_state.camera->position.y += 4.f;
+    } else if(GetButtonState(0, PORK_BUTTON_R1)) {
+        g_state.camera->position.y -= 4.f;
+    }
+
+    if(GetButtonState(0, PORK_BUTTON_L2)) {
+        g_state.camera->position.z += 4.f;
+    } else if(GetButtonState(0, PORK_BUTTON_R2)) {
+        g_state.camera->position.z -= 4.f;
     }
 
     if(GetActionState(0, ACTION_TURN_LEFT)) {
-
+        g_state.camera->angles.z += 4.f;
     } else if(GetActionState(0, ACTION_TURN_RIGHT)) {
-
+        g_state.camera->angles.z -= 4.f;
     }
 #endif
 }

@@ -367,7 +367,6 @@ void InitDisplay(void) {
     g_state.camera->fov         = 90;
     g_state.camera->viewport.w  = g_state.display_width;
     g_state.camera->viewport.h  = g_state.display_height;
-    g_state.camera->position    = PLVector3(0, 0, -200);
 
     g_state.ui_camera = plCreateCamera();
     if(g_state.ui_camera == NULL) {
@@ -529,9 +528,13 @@ void DrawDebugOverlay(void) {
     }
 
 #if 1
+    DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
+    unsigned int y = 50;
     char cam_pos[32];
-    snprintf(cam_pos, sizeof(cam_pos), "CAMERA POSITION: %s", plPrintVector3(g_state.camera->position));
-    DrawBitmapString(g_fonts[FONT_SMALL], 20, 20, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
+    DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
+    DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 #endif
 }
 
@@ -544,7 +547,7 @@ void DrawPork(double delta) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
-#if 0
+
     if(
             GetFrontendState() != FE_MODE_INIT &&
             GetFrontendState() != FE_MODE_LOADING) {
@@ -556,10 +559,6 @@ void DrawPork(double delta) {
 
         DrawActors(delta);
     }
-#endif
-    // todo, throw this out and move into DrawActors, with check for cv_debug_skeleton
-    // in the future, do this through "ACTOR %s SHOW SKELETON" command?
-    //DEBUGDrawSkeleton();
 
     plSetupCamera(g_state.ui_camera);
 
