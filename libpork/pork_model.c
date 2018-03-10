@@ -612,7 +612,11 @@ void InitModels(void) {
 }
 
 void ShutdownModels(void) {
-
+    /* clear the model cache */
+    LogInfo("clearing model cache...\n");
+    for(unsigned int i = 0; i < PIG_CLASS_END; ++i) {
+        plDeleteModel(model_cache.pigs[i]);
+    }
 }
 
 ////////////////////////////////////////////////////////////////

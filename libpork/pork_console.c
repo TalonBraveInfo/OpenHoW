@@ -187,18 +187,21 @@ void DrawConsole(void) {
         return;
     }
 
+    plSetBlendMode(PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA);
     plDrawFilledRectangle(plCreateRectangle(
             PLVector2(0, 0),
             PLVector2(GetViewportWidth(), 32),
-            PLColour(0, 0, 0, 128),
-            PLColour(0, 0, 0, 128),
-            PLColour(0, 0, 0, 128),
-            PLColour(0, 0, 0, 128)
+            PLColour(0, 0, 0, 255),
+            PLColour(0, 0, 0, 0),
+            PLColour(0, 0, 0, 255),
+            PLColour(0, 0, 0, 0)
     ));
 
     char msg_buf[MAX_BUFFER_SIZE];
     strncpy(msg_buf, console_state.buffer, sizeof(msg_buf));
     pl_strtoupper(msg_buf);
+
+    plSetBlendMode(PL_BLEND_ADDITIVE);
 
     unsigned int x = 20;
     unsigned int w = g_fonts[FONT_GAME_CHARS]->chars[0].w;
@@ -206,6 +209,8 @@ void DrawConsole(void) {
     if(console_state.buffer_pos > 0) {
         DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, PL_COLOUR_WHITE, msg_buf);
     }
+
+    /* DrawBitmapString disables blend - no need to call again here */
 }
 
 void ResetConsole(void) {
@@ -213,14 +218,28 @@ void ResetConsole(void) {
     console_state.buffer_pos = 0;
 }
 
+void ConsoleInputCallback(int key, bool is_pressed);
+void ToggleConsole(void) {
+    console_enabled = !console_enabled;
+    if(console_enabled) {
+        SetKeyboardFocusCallback(ConsoleInputCallback);
+        ResetConsole();
+    } else {
+        SetKeyboardFocusCallback(NULL);
+    }
+
+    ResetInputStates();
+}
+
 void ConsoleInputCallback(int key, bool is_pressed) {
-    if(!is_pressed) {
+    if(!is_pressed || !console_enabled) {
         return;
     }
 
     if(key == '\r') {
+        /* todo, allow multiple commands, seperated with ';' */
         plParseConsoleString(console_state.buffer);
-        ResetConsole();
+        ToggleConsole();
         return;
     }
 
@@ -234,17 +253,9 @@ void ConsoleInputCallback(int key, bool is_pressed) {
         return;
     }
 
-    console_state.buffer[console_state.buffer_pos++] = (char) key;
-}
-
-void ToggleConsole(void) {
-    console_enabled = !console_enabled;
-    if(console_enabled) {
-        SetKeyboardFocusCallback(ConsoleInputCallback);
-        ResetConsole();
-    } else {
-        SetKeyboardFocusCallback(NULL);
+    if(isprint(key) == 0) {
+        return;
     }
 
-    ResetInputStates();
+    console_state.buffer[console_state.buffer_pos++] = (char) key;
 }

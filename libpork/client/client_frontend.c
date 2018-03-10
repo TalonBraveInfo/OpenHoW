@@ -253,7 +253,7 @@ void DrawFrontend(void) {
                             PLColour(0, 0, 0, 150),
                             PLColour(0, 0, 0, 150)
                     ));
-                    plSetBlendMode(PL_BLEND_DEFAULT);
+                    plSetBlendMode(PL_BLEND_DISABLE);
                     is_load_drawn = true;
                 }
 
