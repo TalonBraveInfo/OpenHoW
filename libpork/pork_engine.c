@@ -20,6 +20,8 @@
 #include "pork_map.h"
 #include "pork_console.h"
 
+#include "script/script.h"
+
 #include "client/client.h"
 
 #include "server/server.h"
@@ -76,6 +78,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     );
     cv_debug_cache = plRegisterConsoleVariable("dcache", "0", pl_bool_var, NULL, "display memory and other info");
 
+    InitScripting();
     InitConsole();
     InitConfig();
 
@@ -172,6 +175,8 @@ void ShutdownPork(void) {
     }
 
     ShutdownServer();
+
+    ShutdownScripting();
 
     plShutdown();
 }

@@ -32,6 +32,13 @@ file(
         *.cpp *.c
         *.h
 
+        script/duktape-2.2.0/duktape.c
+        script/duktape-2.2.0/duktape.h
+        script/duktape-2.2.0/duk_config.h
+
+        script/*.c
+        script/*.h
+
         server/*.c
         server/*.h
 
@@ -49,5 +56,11 @@ add_library(pork STATIC ${LIBPORK_SOURCE_FILES})
 #set_target_properties(libpork PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
 target_compile_options(pork PUBLIC -fPIC)
-target_include_directories(pork PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_include_directories(pork PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SYSTEM_INCLUDE_PATH}
+
+        script/duktape-2.2.0/
+
+        )
 target_link_libraries(pork platform GLEW)
