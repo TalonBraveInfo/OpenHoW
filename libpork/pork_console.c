@@ -187,7 +187,7 @@ void DrawConsole(void) {
         return;
     }
 
-    plSetBlendMode(PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA);
+    plSetBlendMode(PL_BLEND_DEFAULT);
     plDrawFilledRectangle(plCreateRectangle(
             PLVector2(0, 0),
             PLVector2(GetViewportWidth(), 32),
