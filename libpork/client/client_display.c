@@ -374,6 +374,8 @@ void InitDisplay(void) {
     }
     g_state.ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
     g_state.ui_camera->fov          = 90;
+    g_state.ui_camera->near         = 0;
+    g_state.ui_camera->far          = 1000;
     g_state.ui_camera->viewport.w   = g_state.display_width;
     g_state.ui_camera->viewport.h   = g_state.display_height;
     g_state.ui_camera->viewport.r_w = 640;
