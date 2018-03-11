@@ -14,10 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <PL/platform_filesystem.h>
+
 #include "pork_engine.h"
 #include "script.h"
 
 #include "duktape.h"
+#include "duk_module_duktape.h"
 
 duk_context *scr_context = NULL;
 
@@ -55,6 +58,55 @@ static duk_ret_t SC_Error(duk_context *context) {
 
 /*************************************************************/
 
+#define pork_call(b) \
+    if(duk_pcall(scr_context, (b)) != 0) { \
+        LogWarn("failed to call script function!\n %s\n", duk_safe_to_string((b), -1)); \
+    }
+
+void CS_InitGame(void) {
+    duk_get_prop_string(scr_context, -1, "InitGame");
+#if 0
+    duk_push_int(scr_context, 10);
+    duk_push_int(scr_context, 20);
+#endif
+    pork_call(0);
+    duk_pop(scr_context);
+}
+
+/*************************************************************/
+
+void LoadScript(const char *path) {
+    LogInfo("loading \"%s\"...\n", path);
+
+    size_t length = plGetFileSize(path);
+    if(length == 0) {
+        LogWarn("empty script, \"%s\"!\n", path);
+        return;
+    }
+
+    FILE *fs = fopen(path, "rb");
+    if(fs == NULL) {
+        LogWarn("failed to load script, \"%s\"!\n", path);
+        return;
+    }
+
+    char buf[length];
+    if(fread(buf, sizeof(char), length, fs) != length) {
+        LogWarn("failed to read complete script!\n");
+    }
+    fclose(fs);
+
+    duk_push_lstring(scr_context, buf, length);
+    if(duk_peval(scr_context) != 0) {
+        LogWarn("failed to compile \"%s\"!\n %s\n", duk_safe_to_string(scr_context, -1));
+    } else {
+        LogInfo("script compiled successfully\n");
+    }
+    duk_pop(scr_context);
+
+    duk_push_global_object(scr_context);
+}
+
 void InitScripting(void) {
     scr_context = duk_create_heap_default();
     if(scr_context == NULL) {
@@ -70,8 +122,16 @@ void InitScripting(void) {
     duk_push_c_function(scr_context, SC_Error, DUK_VARARGS);
     duk_put_global_string(scr_context, "Error");
 
-    duk_eval_string(scr_context, "LogInfo('Hello world!');");
+    duk_module_duktape_init(scr_context);
 
+    LoadScript("./scripts/init.js");
+
+    /* now call up the function */
+    CS_InitGame();
+    CS_InitGame();
+    CS_InitGame();
+
+    //duk_eval_string(scr_context, "LogInfo('Hello world!');");
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));
 }
 

@@ -32,10 +32,8 @@ file(
         *.cpp *.c
         *.h
 
-        script/duktape-2.2.0/duktape.c
-        script/duktape-2.2.0/duktape.h
-        script/duktape-2.2.0/duk_config.h
-
+        script/duktape-2.2.0/*.c
+        script/duktape-2.2.0/*.h
         script/*.c
         script/*.h
 
