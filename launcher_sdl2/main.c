@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <pork/pork.h>
-
 #include <SDL2/SDL.h>
+
+#include "pork/pork.h"
 
 SDL_Window *window = NULL;
 SDL_GLContext *context = NULL;
