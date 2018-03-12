@@ -22,7 +22,8 @@
 #include "duktape.h"
 #include "duk_module_duktape.h"
 
-duk_context *scr_context = NULL;
+duk_context *cli_context = NULL;    /* client context */
+duk_context *svr_context = NULL;    /* service context */
 
 static duk_ret_t SC_LogInfo(duk_context *context) {
     duk_push_string(context, " ");
@@ -58,24 +59,38 @@ static duk_ret_t SC_Error(duk_context *context) {
 
 /*************************************************************/
 
-#define pork_call(b) \
-    if(duk_pcall(scr_context, (b)) != 0) { \
+#define pork_call(a, b) \
+    if(duk_pcall((a), (b)) != 0) { \
         LogWarn("failed to call script function!\n %s\n", duk_safe_to_string((b), -1)); \
     }
 
-void CS_InitGame(void) {
-    duk_get_prop_string(scr_context, -1, "InitGame");
+/* Client */
+
+void CS_InitClient(void) {
+    duk_get_prop_string(cli_context, -1, "InitClient");
 #if 0
     duk_push_int(scr_context, 10);
     duk_push_int(scr_context, 20);
 #endif
-    pork_call(0);
-    duk_pop(scr_context);
+    pork_call(cli_context, 0);
+    duk_pop(cli_context);
+}
+
+/* Server */
+
+void CS_InitServer(void) {
+    duk_get_prop_string(cli_context, -1, "InitServer");
+#if 0
+    duk_push_int(scr_context, 10);
+    duk_push_int(scr_context, 20);
+#endif
+    pork_call(cli_context, 0);
+    duk_pop(cli_context);
 }
 
 /*************************************************************/
 
-void LoadScript(const char *path) {
+void LoadScript(duk_context *context, const char *path) {
     LogInfo("loading \"%s\"...\n", path);
 
     size_t length = plGetFileSize(path);
@@ -96,47 +111,82 @@ void LoadScript(const char *path) {
     }
     fclose(fs);
 
-    duk_push_lstring(scr_context, buf, length);
-    if(duk_peval(scr_context) != 0) {
-        LogWarn("failed to compile \"%s\"!\n %s\n", duk_safe_to_string(scr_context, -1));
+    duk_push_lstring(context, buf, length);
+    if(duk_peval(context) != 0) {
+        LogWarn("failed to compile \"%s\"!\n %s\n", duk_safe_to_string(context, -1));
     } else {
         LogInfo("script compiled successfully\n");
     }
-    duk_pop(scr_context);
+    duk_pop(context);
 
-    duk_push_global_object(scr_context);
+    duk_push_global_object(context);
 }
 
+typedef struct ScriptFunction {
+    const char *name;
+    int num_args;
+    duk_ret_t (*Function)(duk_context *context);
+} ScriptFunction;
+
+ScriptFunction svr_builtins[]= {
+        {"LogInfo", DUK_VARARGS, SC_LogInfo},
+        {"LogWarn", DUK_VARARGS, SC_LogWarn},
+        {"LogDebug", DUK_VARARGS, SC_LogDebug},
+        {"Error", DUK_VARARGS, SC_Error},
+};
+
+ScriptFunction cli_builtins[]= {
+        {"LogInfo", DUK_VARARGS, SC_LogInfo},
+        {"LogWarn", DUK_VARARGS, SC_LogWarn},
+        {"LogDebug", DUK_VARARGS, SC_LogDebug},
+        {"Error", DUK_VARARGS, SC_Error},
+};
+
 void InitScripting(void) {
-    scr_context = duk_create_heap_default();
-    if(scr_context == NULL) {
+    /* init the server context */
+
+    svr_context = duk_create_heap_default();
+    if(svr_context == NULL) {
         Error("failed to create heap for default context, aborting!\n");
     }
 
-    duk_push_c_function(scr_context, SC_LogInfo, DUK_VARARGS);
-    duk_put_global_string(scr_context, "LogInfo");
-    duk_push_c_function(scr_context, SC_LogWarn, DUK_VARARGS);
-    duk_put_global_string(scr_context, "LogWarn");
-    duk_push_c_function(scr_context, SC_LogDebug, DUK_VARARGS);
-    duk_put_global_string(scr_context, "LogDebug");
-    duk_push_c_function(scr_context, SC_Error, DUK_VARARGS);
-    duk_put_global_string(scr_context, "Error");
+    for(unsigned int i = 0; i < plArrayElements(svr_builtins); ++i) {
+        duk_push_c_function(svr_context, svr_builtins[i].Function, svr_builtins[i].num_args);
+        duk_put_global_string(svr_context, svr_builtins[i].name);
+    }
 
-    duk_module_duktape_init(scr_context);
+    duk_module_duktape_init(svr_context);
 
-    LoadScript("./scripts/init.js");
+    /* init the client context */
+
+    cli_context = duk_create_heap_default();
+    if(cli_context == NULL) {
+        Error("failed to create heap for default context, aborting!\n");
+    }
+
+    for(unsigned int i = 0; i < plArrayElements(svr_builtins); ++i) {
+        duk_push_c_function(cli_context, cli_builtins[i].Function, cli_builtins[i].num_args);
+        duk_put_global_string(cli_context, cli_builtins[i].name);
+    }
+
+    duk_module_duktape_init(cli_context);
+
+    LoadScript(cli_context, "./scripts/client.js");
 
     /* now call up the function */
-    CS_InitGame();
-    CS_InitGame();
-    CS_InitGame();
+    CS_InitClient();
+    CS_InitClient();
+    CS_InitClient();
 
     //duk_eval_string(scr_context, "LogInfo('Hello world!');");
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));
 }
 
 void ShutdownScripting(void) {
-    if(scr_context != NULL) {
-        duk_destroy_heap(scr_context);
+    if(svr_context != NULL) {
+        duk_destroy_heap(svr_context);
+    }
+    if(cli_context != NULL) {
+        duk_destroy_heap(cli_context);
     }
 }
