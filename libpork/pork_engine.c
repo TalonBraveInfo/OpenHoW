@@ -175,7 +175,6 @@ void ShutdownPork(void) {
     }
 
     ShutdownServer();
-
     ShutdownScripting();
 
     plShutdown();

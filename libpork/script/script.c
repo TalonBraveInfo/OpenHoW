@@ -67,7 +67,7 @@ static duk_ret_t SC_Error(duk_context *context) {
 /* Client */
 
 void CS_InitClient(void) {
-    duk_get_prop_string(cli_context, -1, "InitClient");
+    duk_get_prop_string(cli_context, -1, "InitClientGame");
 #if 0
     duk_push_int(scr_context, 10);
     duk_push_int(scr_context, 20);
@@ -79,13 +79,13 @@ void CS_InitClient(void) {
 /* Server */
 
 void CS_InitServer(void) {
-    duk_get_prop_string(cli_context, -1, "InitServer");
+    duk_get_prop_string(svr_context, -1, "InitServerGame");
 #if 0
     duk_push_int(scr_context, 10);
     duk_push_int(scr_context, 20);
 #endif
-    pork_call(cli_context, 0);
-    duk_pop(cli_context);
+    pork_call(svr_context, 0);
+    duk_pop(svr_context);
 }
 
 /*************************************************************/
@@ -164,18 +164,19 @@ void InitScripting(void) {
         Error("failed to create heap for default context, aborting!\n");
     }
 
-    for(unsigned int i = 0; i < plArrayElements(svr_builtins); ++i) {
+    for(unsigned int i = 0; i < plArrayElements(cli_builtins); ++i) {
         duk_push_c_function(cli_context, cli_builtins[i].Function, cli_builtins[i].num_args);
         duk_put_global_string(cli_context, cli_builtins[i].name);
     }
 
     duk_module_duktape_init(cli_context);
 
+    /* now init our scripts! */
+
+    LoadScript(svr_context, "./scripts/server.js");
     LoadScript(cli_context, "./scripts/client.js");
 
-    /* now call up the function */
-    CS_InitClient();
-    CS_InitClient();
+    CS_InitServer();
     CS_InitClient();
 
     //duk_eval_string(scr_context, "LogInfo('Hello world!');");
