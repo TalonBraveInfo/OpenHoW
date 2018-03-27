@@ -33,6 +33,8 @@
  *     Speech
  */
 
+/* todo: move this out into it's own separate tool */
+
 void ExtractPTGPackage(const char *input_path, const char *output_path) {
     if(input_path == NULL || input_path[0] == '\0') {
         LogInfo("encountered invalid path for PTG, aborting!\n");

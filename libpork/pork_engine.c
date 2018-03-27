@@ -30,7 +30,7 @@ PLConsoleVariable *cv_debug_mode        = NULL;
 PLConsoleVariable *cv_debug_fps         = NULL;
 PLConsoleVariable *cv_debug_skeleton    = NULL;
 PLConsoleVariable *cv_debug_input       = NULL;
-PLConsoleVariable *cv_debug_cache      = NULL;
+PLConsoleVariable *cv_debug_cache       = NULL;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -140,10 +140,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     LogInfo("base path: %s\n", g_state.base_path);
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
-    if(!g_state.is_dedicated) {
-        InitClient();
-    }
-
+    InitClient();
     InitPlayers();
     InitModels();
     InitMaps();
@@ -156,13 +153,8 @@ bool IsPorkRunning(void) {
 void SimulatePork(void) {
     g_state.sim_ticks = g_launcher.GetTicks();
 
-    if(!g_state.is_dedicated) {
-        SimulateClient();
-    }
-
-    if(g_state.is_host) {
-        SimulateServer();
-    }
+    SimulateClient();
+    SimulateServer();
 
     g_state.last_sim_tick = g_launcher.GetTicks();
 }
@@ -170,9 +162,7 @@ void SimulatePork(void) {
 void ShutdownPork(void) {
     ClearPlayers();
 
-    if(!g_state.is_dedicated) {
-        ShutdownClient();
-    }
+    ShutdownClient();
 
     ShutdownServer();
     ShutdownScripting();

@@ -70,6 +70,10 @@ void ProcessClientInput(void) {
 /*****************************************************/
 
 void InitClient(void) {
+    if(g_state.is_dedicated) {
+        return;
+    }
+
     InitInput();
     InitDisplay();
     InitFrontend();
@@ -78,11 +82,19 @@ void InitClient(void) {
 }
 
 void SimulateClient(void) {
+    if(g_state.is_dedicated) {
+        return;
+    }
+
     ProcessClientInput();
 
     SimulateFrontend();
 }
 
 void ShutdownClient(void) {
+    if(g_state.is_dedicated) {
+        return;
+    }
+
     CLClearActors();
 }

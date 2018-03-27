@@ -19,6 +19,10 @@
 #include "server_actor.h"
 
 void SimulateServer(void) {
+    if(!g_state.is_host) {
+        return;
+    }
+
     SVSimulateActors();
 }
 
