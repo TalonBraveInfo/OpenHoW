@@ -16,14 +16,12 @@
  */
 #pragma once
 
-#define MAP_MODE_SINGLEPLAYER   (1 << 1)
-#define MAP_MODE_DEATHMATCH     (1 << 2)
-
-#define MAP_MODE_SURVIVAL_NOVICE    (1 << 3)
-#define MAP_MODE_SURVIVAL_EXPERT    (1 << 4)
-#define MAP_MODE_SURVIVAL_STRATEGY  (1 << 5)
-
-#define MAP_MODE_GENERATED  (1 << 6)
+#define MAP_MODE_SINGLEPLAYER       (unsigned int)(1 << 1)
+#define MAP_MODE_DEATHMATCH         (unsigned int)(1 << 2)
+#define MAP_MODE_SURVIVAL_NOVICE    (unsigned int)(1 << 3)
+#define MAP_MODE_SURVIVAL_EXPERT    (unsigned int)(1 << 4)
+#define MAP_MODE_SURVIVAL_STRATEGY  (unsigned int)(1 << 5)
+#define MAP_MODE_GENERATED          (unsigned int)(1 << 6)
 
 void InitMaps(void);
 void ShutdownMaps(void);

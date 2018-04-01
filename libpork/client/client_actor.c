@@ -22,6 +22,10 @@
 CLActor *client_actors = NULL;
 unsigned int num_cl_actors = 256;
 
+/**
+ * clears all of the current actors and is also used
+ * for initializing the actor slots in memory.
+ */
 void CLClearActors(void) {
     if(client_actors == NULL) {
         client_actors = pork_alloc(num_cl_actors, sizeof(CLActor), true);
@@ -31,12 +35,20 @@ void CLClearActors(void) {
     memset(client_actors, 0, sizeof(CLActor) * num_cl_actors);
 }
 
+/**
+ * initializes client-side actors.
+ */
 void CLInitActors(void) {
     CLClearActors();
 }
 
 /*********************************************************************/
 
+/**
+ * spawn client-side actor.
+ *
+ * @return pointer to client-side actor.
+ */
 CLActor *CLSpawnActor(void) {
     for(CLActor *actor = client_actors; actor < client_actors + num_cl_actors; ++actor) {
         if(!actor->is_reserved) {
@@ -60,6 +72,12 @@ CLActor *CLSpawnActor(void) {
     return CLSpawnActor();
 }
 
+/**
+ * free up the actor slot - allowing it to be used
+ * by a new actor later.
+ *
+ * @param actor the client-side actor to destroy.
+ */
 void CLDestroyActor(CLActor *actor) {
     if(actor == NULL) {
         LogWarn("attempted to free an invalid actor, we'll probably crash!\n");
@@ -72,6 +90,11 @@ void CLDestroyActor(CLActor *actor) {
 
 /*********************************************************************/
 
+/**
+ * draws any client-side actors that are currenty reserved and visible.
+ *
+ * @param delta
+ */
 void DrawActors(double delta) {
     assert(client_actors != NULL);
 

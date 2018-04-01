@@ -23,12 +23,6 @@
 #include "server/server_actor.h"
 #include "script/script.h"
 
-typedef struct MapDesc {
-    const char *name;
-    const char *description;
-    unsigned int flags;
-} MapDesc;
-
 #if 0
 /* for now these are hard-coded, but
  * eventually we'll do this through a
@@ -120,6 +114,12 @@ MapDesc map_descriptors[]={
 };
 #endif
 
+typedef struct MapDesc {
+    char name[16];
+    char description[64];
+    unsigned int flags;
+} MapDesc;
+
 MapDesc *GetMapDescription(const char *name) {
 #if 0
     for(unsigned int i = 0; i < plArrayElements(map_descriptors); ++i) {
@@ -146,6 +146,8 @@ unsigned int num_maps = 0;
 unsigned int max_maps = 1024;
 
 void RegisterMap(const char *path) {
+    LogInfo("registering %s\n", path);
+
     FILE *fp = fopen(path, "r");
     if(fp == NULL) {
         LogWarn("failed to open map description, %s\n", path);
@@ -163,18 +165,41 @@ void RegisterMap(const char *path) {
         return;
     }
 
-    char buf[length];
+    char buf[length + 1];
     if(fread(buf, sizeof(char), length, fp) != length) {
         LogWarn("failed to read entirety of map description for %s!\n", path);
     }
     fclose(fp);
 
-    ParseJSON(buf);
+    buf[length] = '\0';
 
     num_maps++;
     if(num_maps >= max_maps) {
+        LogDebug("reached maximum maps (%u) - allocating more slots...\n", max_maps);
 
+        MapDesc *old_desc = map_descriptors;
+        unsigned int old_max_maps = max_maps;
+
+        max_maps += 128;
+        if((map_descriptors = realloc(map_descriptors, sizeof(MapDesc) * max_maps)) == NULL) {
+            LogWarn("failed to resize map descriptors array to %u bytes!\n", sizeof(MapDesc) * max_maps);
+            map_descriptors = old_desc;
+            max_maps = old_max_maps;
+            num_maps--;
+            return;
+        }
+
+        memset(map_descriptors + old_max_maps, 0, sizeof(MapDesc) * (max_maps - old_max_maps));
     }
+
+    MapDesc *slot = &map_descriptors[num_maps];
+
+    ParseJSON(buf);
+
+    strncpy(slot->name, GetJSONStringProperty("name"), sizeof(slot->name));
+    strncpy(slot->description, GetJSONStringProperty("description"), sizeof(slot->description));
+
+
 
     FlushJSON();
 }
@@ -283,7 +308,7 @@ void InitMaps(void) {
 
     char map_path[PL_SYSTEM_MAX_PATH];
     snprintf(map_path, sizeof(map_path), "%smaps/", g_state.base_path);
-    plScanDirectory(map_path, ".description", RegisterMap, false);
+    plScanDirectory(map_path, "description", RegisterMap, false);
 
     /* generate base meshes */
 
