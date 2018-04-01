@@ -120,30 +120,19 @@ typedef struct MapDesc {
     unsigned int flags;
 } MapDesc;
 
+MapDesc *map_descriptors = NULL;
+unsigned int num_maps = 0;
+unsigned int max_maps = 1024;
+
 MapDesc *GetMapDescription(const char *name) {
-#if 0
-    for(unsigned int i = 0; i < plArrayElements(map_descriptors); ++i) {
+    for(unsigned int i = 0; i < num_maps; ++i) {
         if(strcmp(map_descriptors[i].name, name) == 0) {
             return &map_descriptors[i];
         }
     }
-#endif
-    /* todo, dynamically load these in from an external list of sorts
-     * this is probably best done by scanning through the maps directory
-     * for some sort of extension file that describes each map such as it's
-     * name, supported modes and anything else we might want to do in the
-     * future.
-     *
-     * doing it this way will ensure it's easier to package up custom maps
-     * in the future :)
-     */
 
     return NULL;
 }
-
-MapDesc *map_descriptors = NULL;
-unsigned int num_maps = 0;
-unsigned int max_maps = 1024;
 
 void RegisterMap(const char *path) {
     LogInfo("registering %s\n", path);
@@ -173,8 +162,7 @@ void RegisterMap(const char *path) {
 
     buf[length] = '\0';
 
-    num_maps++;
-    if(num_maps >= max_maps) {
+    if((num_maps + 1) >= max_maps) {
         LogDebug("reached maximum maps (%u) - allocating more slots...\n", max_maps);
 
         MapDesc *old_desc = map_descriptors;
@@ -193,15 +181,20 @@ void RegisterMap(const char *path) {
     }
 
     MapDesc *slot = &map_descriptors[num_maps];
+    memset(slot, 0, sizeof(MapDesc));
 
     ParseJSON(buf);
 
-    strncpy(slot->name, GetJSONStringProperty("name"), sizeof(slot->name));
-    strncpy(slot->description, GetJSONStringProperty("description"), sizeof(slot->description));
+    plStripExtension(slot->name, plGetFileName(path));
+    strncpy(slot->description, GetJSONStringProperty("name"), sizeof(slot->description));
 
-
+    /* todo: iterate over modes */
+    slot->flags = MAP_MODE_DEATHMATCH; /* todo: placeholder!!! */
+    /* todo: support multiple languages */
 
     FlushJSON();
+
+    num_maps++;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -282,11 +275,11 @@ void MapCommand(unsigned int argc, char *argv[]) {
             /* do nothing */
         } else if (pl_strncasecmp("sp", cmd_mode, 2) == 0) {
             mode = MAP_MODE_SINGLEPLAYER;
-        } else if(pl_strncasecmp("svex", cmd_mode, 4) == 0) {
+        } else if(pl_strncasecmp("se", cmd_mode, 2) == 0) {
             mode = MAP_MODE_SURVIVAL_EXPERT;
-        } else if(pl_strncasecmp("svno", cmd_mode, 4) == 0) {
+        } else if(pl_strncasecmp("sn", cmd_mode, 2) == 0) {
             mode = MAP_MODE_SURVIVAL_NOVICE;
-        } else if(pl_strncasecmp("svst", cmd_mode, 4) == 0) {
+        } else if(pl_strncasecmp("ss", cmd_mode, 2) == 0) {
             mode = MAP_MODE_SURVIVAL_STRATEGY;
         } else if(pl_strncasecmp("ge", cmd_mode, 2) == 0) {
             mode = MAP_MODE_GENERATED;
@@ -296,6 +289,23 @@ void MapCommand(unsigned int argc, char *argv[]) {
     }
 
     LoadMap(map_name, mode);
+}
+
+void MapsCommand(unsigned int argc, char *argv[]) {
+    if(map_descriptors == NULL) {
+        Error("attempted to list indexed maps before index generated, aborting!\n");
+    }
+
+    for(unsigned int i = 0; i < num_maps; ++i) {
+        char str[128];
+        snprintf(str, sizeof(str), "%s : %s : %u\n",
+                 map_descriptors[i].name,
+                 map_descriptors[i].description,
+                 map_descriptors[i].flags
+        );
+        LogInfo("%s", str);
+    }
+    LogInfo("%u maps\n", num_maps);
 }
 
 void InitMaps(void) {
@@ -312,7 +322,7 @@ void InitMaps(void) {
 
     /* generate base meshes */
 
-#if 0
+#if 1
     /* water mesh is always the same, so we'll generate this here and can
      * worry about scaling later */
     unsigned int num_verts = WATER_WIDTH * WATER_HEIGHT * 3;
@@ -346,6 +356,7 @@ void InitMaps(void) {
     /* register console commands */
 
     plRegisterConsoleCommand("map", MapCommand, "Changes the current level to whatever is specified");
+    plRegisterConsoleCommand("maps", MapsCommand, "Lists all the indexed maps");
 }
 
 void ShutdownMaps(void) {
@@ -646,7 +657,7 @@ void LoadMap(const char *name, unsigned int mode) {
     if(map_state.name[0] != '\0') {
         if(strncmp(map_state.name, name, sizeof(map_state.name)) == 0) {
             if(map_state.flags == mode) {
-                LogWarn("attempted to load duplicate map, \"%s\", aborting\n", name);
+                LogWarn("attempted to load duplicate map, \"%s\", aborting!\n", name);
                 return;
             }
 
@@ -658,11 +669,11 @@ void LoadMap(const char *name, unsigned int mode) {
 
     MapDesc *desc = GetMapDescription(name);
     if(desc == NULL) {
-        LogWarn("failed to get descriptor for map, \"%s\", aborting\n", name);
+        LogWarn("failed to get descriptor for map, \"%s\", aborting!\n", name);
         return;
     }
 
-    LogDebug("found map description!\n %s\n %s", desc->name, desc->description);
+    //LogDebug("found map description!\n %s\n %s", desc->name, desc->description);
 
     if(!(desc->flags & mode)) {
         LogWarn("the mode you're attempting to use is unsupported by this map, \"%s\", aborting\n", name);
@@ -719,6 +730,8 @@ void LoadMap(const char *name, unsigned int mode) {
     }
 
     LoadMapSpawns(pog_path);
+
+    strncpy(map_state.name, desc->name, sizeof(map_state.name));
 
     SetLoadingProgress(30);
     SetLoadingDescription("SPAWNING ACTORS");
