@@ -16,14 +16,13 @@
  */
 #include <PL/platform_filesystem.h>
 
-#include "jsmn/jsmn.h"
-
 #include "pork_engine.h"
 
 void SaveConfig(void) {
     // todo, take current state and save it to config.json
 }
 
+#if 0 /* todo, replace with duktape */
 // wrapper function thing, simplifying jsmn a little
 jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path) {
     size_t len = plGetFileSize(PORK_CONFIG);
@@ -58,12 +57,15 @@ jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path)
     jsmn_parse(p, buffer, len, tokens, *num_tokens);
     return tokens;
 }
+#endif
 
 void InitConfig(void) {
+#if 0 /* todo, replace with duktape */
     jsmn_parser p;
     unsigned int num_tokens = 0;
     jsmntok_t *tokens = ParseJSON(&p, &num_tokens, PORK_CONFIG);
     for(unsigned int i = 0; i < num_tokens; ++i) {
         // todo
     }
+#endif
 }

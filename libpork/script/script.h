@@ -18,3 +18,9 @@
 
 void InitScripting(void);
 void ShutdownScripting(void);
+
+void ParseJSON(const char *buf);
+void FlushJSON(void);
+
+const char *GetJSONStringProperty(const char *property);
+int GetJSONIntProperty(const char *property);

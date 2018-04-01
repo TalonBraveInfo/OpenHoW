@@ -56,5 +56,5 @@ void InitShaders(void) {
 }
 
 void ShutdownShaders(void) {
-    plDeleteShaderProgram(shader_default);
+    plDeleteShaderProgram(shader_default, true);
 }

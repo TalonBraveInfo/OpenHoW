@@ -18,11 +18,10 @@
 
 #include "pork_engine.h"
 #include "pork_map.h"
-
 #include "client/client_frontend.h"
 #include "client/client_actor.h"
-
 #include "server/server_actor.h"
+#include "script/script.h"
 
 typedef struct MapDesc {
     const char *name;
@@ -30,13 +29,14 @@ typedef struct MapDesc {
     unsigned int flags;
 } MapDesc;
 
+#if 0
 /* for now these are hard-coded, but
  * eventually we'll do this through a
  * script instead */
 MapDesc map_descriptors[]={
         // Single-player
 
-        {"camp", "Boot camp", MAP_MODE_SINGLEPLAYER},
+        //{"camp", "Boot camp", MAP_MODE_SINGLEPLAYER},
         {"estu", "The War Foundation", MAP_MODE_SINGLEPLAYER},
         {"road", "Routine Patrol", MAP_MODE_SINGLEPLAYER},
         {"trench", "Trench Warfare", MAP_MODE_SINGLEPLAYER},
@@ -66,7 +66,7 @@ MapDesc map_descriptors[]={
         // Multi-player
 
         {"iceflow", "Ice-Flow", MAP_MODE_SURVIVAL_EXPERT | MAP_MODE_DEATHMATCH},
-        {"archi", "You Hillock", MAP_MODE_SURVIVAL_EXPERT | MAP_MODE_DEATHMATCH},
+        //{"archi", "You Hillock", MAP_MODE_SURVIVAL_EXPERT | MAP_MODE_DEATHMATCH},
         {"dbowl", "Death Bowl", MAP_MODE_SURVIVAL_EXPERT | MAP_MODE_DEATHMATCH},
         {"mlake", "Frost Fight", MAP_MODE_SURVIVAL_EXPERT | MAP_MODE_DEATHMATCH},
         {"lake", "The Lake", MAP_MODE_SURVIVAL_EXPERT | MAP_MODE_DEATHMATCH},
@@ -118,14 +118,16 @@ MapDesc map_descriptors[]={
         {"quack", NULL, 0},
         {"tdd", NULL, 0},
 };
+#endif
 
 MapDesc *GetMapDescription(const char *name) {
+#if 0
     for(unsigned int i = 0; i < plArrayElements(map_descriptors); ++i) {
         if(strcmp(map_descriptors[i].name, name) == 0) {
             return &map_descriptors[i];
         }
     }
-
+#endif
     /* todo, dynamically load these in from an external list of sorts
      * this is probably best done by scanning through the maps directory
      * for some sort of extension file that describes each map such as it's
@@ -137,6 +139,44 @@ MapDesc *GetMapDescription(const char *name) {
      */
 
     return NULL;
+}
+
+MapDesc *map_descriptors = NULL;
+unsigned int num_maps = 0;
+unsigned int max_maps = 1024;
+
+void RegisterMap(const char *path) {
+    FILE *fp = fopen(path, "r");
+    if(fp == NULL) {
+        LogWarn("failed to open map description, %s\n", path);
+        return;
+    }
+
+    size_t length = plGetFileSize(path);
+    if(length > 1024) {
+        fclose(fp);
+        LogWarn("map description for %s has exceeded hard-limit of 1024 (%d), aborting!\n", path, length);
+        return;
+    } else if(length <= 1) {
+        fclose(fp);
+        LogWarn("map description for %s is of an invalid size, %d, aborting!\n", path, length);
+        return;
+    }
+
+    char buf[length];
+    if(fread(buf, sizeof(char), length, fp) != length) {
+        LogWarn("failed to read entirety of map description for %s!\n", path);
+    }
+    fclose(fp);
+
+    ParseJSON(buf);
+
+    num_maps++;
+    if(num_maps >= max_maps) {
+
+    }
+
+    FlushJSON();
 }
 
 ////////////////////////////////////////////////////////////////
@@ -234,6 +274,19 @@ void MapCommand(unsigned int argc, char *argv[]) {
 }
 
 void InitMaps(void) {
+    /* register all of the existing maps */
+
+    map_descriptors = calloc(max_maps, sizeof(MapDesc));
+    if(map_descriptors == NULL) {
+        Error("failed to allocate enough slots for map descriptions!\n");
+    }
+
+    char map_path[PL_SYSTEM_MAX_PATH];
+    snprintf(map_path, sizeof(map_path), "%smaps/", g_state.base_path);
+    plScanDirectory(map_path, ".description", RegisterMap, false);
+
+    /* generate base meshes */
+
 #if 0
     /* water mesh is always the same, so we'll generate this here and can
      * worry about scaling later */
@@ -264,6 +317,8 @@ void InitMaps(void) {
 
     plUploadMesh(water_mesh);
 #endif
+
+    /* register console commands */
 
     plRegisterConsoleCommand("map", MapCommand, "Changes the current level to whatever is specified");
 }

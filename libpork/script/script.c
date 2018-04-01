@@ -24,6 +24,7 @@
 
 duk_context *cli_context = NULL;    /* client context */
 duk_context *svr_context = NULL;    /* service context */
+duk_context *jsn_context = NULL;    /* json context */
 
 static duk_ret_t SC_LogInfo(duk_context *context) {
     duk_push_string(context, " ");
@@ -143,6 +144,13 @@ ScriptFunction cli_builtins[]= {
 };
 
 void InitScripting(void) {
+    /* init the config context */
+
+    jsn_context = duk_create_heap_default();
+    if(jsn_context == NULL) {
+        Error("failed to create heap for config context, aborting!\n");
+    }
+
     /* init the server context */
 
     svr_context = duk_create_heap_default();
@@ -190,4 +198,26 @@ void ShutdownScripting(void) {
     if(cli_context != NULL) {
         duk_destroy_heap(cli_context);
     }
+}
+
+/*************************************************************/
+/** JSON **/
+
+void ParseJSON(const char *buf) {
+    duk_push_string(jsn_context, buf);
+    duk_json_decode(jsn_context, -1);
+}
+
+void FlushJSON(void) {
+    duk_pop_2(jsn_context);
+}
+
+const char *GetJSONStringProperty(const char *property) {
+    duk_get_prop_string(jsn_context, -1, property);
+    return duk_to_string(jsn_context, -1);
+}
+
+int GetJSONIntProperty(const char *property) {
+    duk_get_prop_string(jsn_context, -1, property);
+    return duk_to_int(jsn_context, -1);
 }
