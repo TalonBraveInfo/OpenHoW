@@ -49,14 +49,18 @@ public:
     void RegisterStage(ShaderStage *stage);
     void RegisterStage(const char *path, unsigned int type);
 
-    virtual void RegisterStages();
-    virtual void RegisterAttributes();
+    virtual void RegisterStages() {}
+    virtual void RegisterAttributes() {}
 
     unsigned int GetInstance() {return gl_id_; }
     const char *GetName() { return &name_[0]; }
 
     void Enable();
     void Disable();
+
+    virtual void PreDraw() {}
+    virtual void Draw() {}
+    virtual void PostDraw() {}
 
 protected:
 private:

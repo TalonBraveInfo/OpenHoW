@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <GL/glew.h>
+#include <PL/platform_filesystem.h>
 #include "pork_engine.h"
 #include "client_shader.h"
 
@@ -81,6 +82,22 @@ ShaderStage::~ShaderStage() {
     }
     glDeleteShader(gl_id_);
     gl_id_ = 0;
+}
+
+bool ShaderStage::Load(const char *path) {
+    FILE *fp = std::fopen(path, "r");
+    if(fp == nullptr) {
+        Error("failed to open shader stage at \"%s\", aborting!\n", path);
+    }
+
+    size_t length = plGetFileSize(path);
+    char buf[length];
+    if(std::fread(buf, sizeof(char), length, fp) != length) {
+        LogWarn("failed to read in entirety of \"%s\"!\n", path);
+    }
+    fclose(fp);
+
+    return Compile(buf, length);
 }
 
 bool ShaderStage::Compile(const char *buf, size_t length) {
@@ -156,6 +173,9 @@ void ShaderProgram::Disable() {
 
 /*************************************************/
 /** Shader API                                  **/
+
+/* default shaders */
+#include "shader_base.h"
 
 std::unordered_map<std::string, ShaderProgram*> programs;
 
