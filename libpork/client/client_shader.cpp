@@ -64,6 +64,51 @@ void ShutdownShaders(void) {
 
 #else /* new implementation */
 
+/*************************************************/
+/** Shader Stage                                **/
+
+ShaderStage::ShaderStage(unsigned int type) {
+    gl_id_ = glCreateShader(type);
+    if(gl_id_ == 0) {
+        Error("failed to generate shader stage!\n");
+    }
+}
+
+ShaderStage::~ShaderStage() {
+    if(parent_ != nullptr) {
+        glDetachShader(parent_->GetInstance(), gl_id_);
+        parent_ = nullptr;
+    }
+    glDeleteShader(gl_id_);
+    gl_id_ = 0;
+}
+
+bool ShaderStage::Compile(const char *buf, size_t length) {
+    glShaderSource(gl_id_, 1, &buf, nullptr);
+
+    LogInfo("COMPILING SHADER STAGE...\n");
+    glCompileShader(gl_id_);
+
+    int status;
+    glGetShaderiv(gl_id_, GL_COMPILE_STATUS, &status);
+    if(status == 0) {
+        int s_length;
+        glGetShaderiv(gl_id_, GL_INFO_LOG_LENGTH, &s_length);
+        if(s_length > 1) {
+            char log[s_length];
+            glGetShaderInfoLog(gl_id_, s_length, nullptr, log);
+            LogWarn(" COMPILE ERROR:\n  %s\n", log);
+        }
+        return false;
+    }
+
+    LogInfo(" COMPLETED SUCCESSFULLY!\n");
+    return true;
+}
+
+/*************************************************/
+/** Shader Program                              **/
+
 ShaderProgram::ShaderProgram(const char *name) {
     pork_assert(name != nullptr && name[0] != '\0');
     snprintf(name_, sizeof(name_), "%s", name);
@@ -132,17 +177,13 @@ void ShutdownShaders() {
  * @param program
  * @param name
  */
-void RegisterShaderProgram(ShaderProgram *program, const char *name) {
-    if(name == NULL || name[0] == '\0') {
-        Error("invalid name for shader program, aborting!\n");
-    }
-
+void RegisterShaderProgram(ShaderProgram *program) {
     /* todo: do we really want to do this here!? */
     program->Enable();
     program->Initialize();
     program->Disable();
 
-    programs.emplace(name, program);
+    programs.emplace(program->GetName(), program);
 }
 
 ShaderProgram *GetShaderProgram(const char *name) {
@@ -153,6 +194,10 @@ ShaderProgram *GetShaderProgram(const char *name) {
 
     LogWarn("failed to find shader program \"%s\"!\n", name);
     return nullptr;
+}
+
+void DisableShaderProgram() {
+    glUseProgram(0);
 }
 
 void DeleteShaderProgram(const char *name) {

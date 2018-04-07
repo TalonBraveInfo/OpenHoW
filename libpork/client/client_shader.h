@@ -18,18 +18,23 @@
 
 #ifdef __cplusplus
 
+class ShaderProgram;
+
 class ShaderStage {
 public:
     ShaderStage(unsigned int type);
     virtual ~ShaderStage();
 
     bool Load(const char *path);
+    bool Compile(const char *buf, size_t length);
 
     unsigned int GetInstance() { return gl_id_; }
     unsigned int GetType() { return gl_type_; }
 
 protected:
 private:
+    ShaderProgram *parent_{nullptr};
+
     unsigned int gl_id_{0};
     unsigned int gl_type_{0};
 };
@@ -47,6 +52,7 @@ public:
     virtual void RegisterStages();
     virtual void RegisterAttributes();
 
+    unsigned int GetInstance() {return gl_id_; }
     const char *GetName() { return &name_[0]; }
 
     void Enable();
@@ -59,7 +65,7 @@ private:
     std::unordered_map<std::string, unsigned int> attributes_;
     std::unordered_map<std::string, unsigned int> uniforms_;
 
-    bool is_linked_;
+    bool is_linked_{false};
 
     unsigned int gl_id_{0};
 
@@ -69,6 +75,13 @@ private:
 void InitShaders();
 void ShutdownShaders();
 
+void RegisterShaderProgram(ShaderProgram *program);
+
+ShaderProgram *GetShaderProgram(const char *name);
+
+void DisableShaderProgram();
+
 void DeleteShaderProgram(const char *name);
+void DeleteShaderProgram(ShaderProgram *program);
 
 #endif
