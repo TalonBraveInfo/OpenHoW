@@ -34,17 +34,17 @@ file(
 
         script/duktape-2.2.0/*.c
         script/duktape-2.2.0/*.h
+        script/*.cpp
         script/*.c
         script/*.h
 
+        server/*.cpp
         server/*.c
         server/*.h
 
+        client/*.cpp
         client/*.c
         client/*.h
-
-        jsmn/jsmn.c
-        jsmn/jsmn.h
 
         include/pork/*.h
         )

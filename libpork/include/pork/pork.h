@@ -68,6 +68,12 @@ enum {
 #define pork_free(DATA) free((DATA)); (DATA) = NULL
 void *pork_alloc(size_t num, size_t size, bool abort_on_fail);
 
+#ifdef _DEBUG
+#   define pork_assert(a) assert((a))
+#else
+#   define pork_assert(a)
+#endif
+
 enum {
     PORK_MBOX_INFORMATION,
     PORK_MBOX_WARNING,

@@ -177,6 +177,8 @@ void ConvertImageCallback(unsigned int argc, char *argv[]);
 void InitConsole(void) {
     plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "");
+    plRegisterConsoleCommand("get", GetCommand, "");
+    plRegisterConsoleCommand("add", AddCommand, "");
     plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
