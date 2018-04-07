@@ -96,7 +96,7 @@ void CLDestroyActor(CLActor *actor) {
  * @param delta
  */
 void DrawActors(double delta) {
-    assert(client_actors != NULL);
+    pork_assert(client_actors != NULL);
 
     for(CLActor *actor = client_actors; actor < client_actors + num_cl_actors; ++actor) {
         if(!actor->is_reserved || !actor->is_visible) {

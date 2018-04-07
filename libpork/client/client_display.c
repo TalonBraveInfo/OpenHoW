@@ -74,7 +74,7 @@ size_t GetTextureCacheSize(void) {
 }
 
 void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h) {
-    assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
+    pork_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
     TextureIndex *index = &texture_cache[id];
     *x = index->offsets[tex_id].x;
     *y = index->offsets[tex_id].y;
@@ -104,7 +104,7 @@ void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
 /* for debugging purposes, displays the textures
  * cached in memory on the screen */
 void DrawTextureCache(unsigned int id) {
-    assert(id < MAX_TEXTURE_INDEX);
+    pork_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     if(index->num_textures > 0) {
         unsigned int w = index->texture->w;
@@ -142,7 +142,7 @@ void DrawTextureCache(unsigned int id) {
 
 /* unloads texture set from memory */
 void ClearTextureIndex(unsigned int id) {
-    assert(id < MAX_TEXTURE_INDEX);
+    pork_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     plDeleteTexture(index->texture, true);
     memset(index, 0, sizeof(TextureIndex));
@@ -162,7 +162,7 @@ int CompareImageHeight(const void *a, const void *b) {
 
 /* loads texture set into memory */
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
-    assert(id < MAX_TEXTURE_INDEX);
+    pork_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     if(index->num_textures > 0) {
         LogWarn("textures already cached for index %s\n", index_name);

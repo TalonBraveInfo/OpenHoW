@@ -32,7 +32,7 @@ void InitPlayers(void) {
 //////////////////////////////////////////////////////////////
 
 Actor *Player_GetPig(Player *self, unsigned int slot) {
-    assert(self != NULL);
+    pork_assert(self != NULL);
 
     if(slot >= MAX_PIGS) {
         LogWarn("failed to grab pig, slot %d exceeds limit %d, ignoring!\n", slot, MAX_PIGS);
@@ -49,7 +49,7 @@ Actor *Player_GetPig(Player *self, unsigned int slot) {
 }
 
 void Player_AssignPig(Player *self, Actor *pig) {
-    assert(self != NULL);
+    pork_assert(self != NULL);
 
     if(pig == NULL) {
         LogWarn("attempted to assign an invalid pig, ignoring!\n");

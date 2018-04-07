@@ -78,17 +78,17 @@ void SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed)) {
 }
 
 bool GetKeyState(int key) {
-    assert(key < PORK_MAX_KEYS);
+    pork_assert(key < PORK_MAX_KEYS);
     return input_state.keyboard.key_states[key];
 }
 
 bool GetButtonState(unsigned int controller, int button) {
-    assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
+    pork_assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
     return input_state.controllers[controller].button_states[button];
 }
 
 bool GetActionState(unsigned int controller, int action) {
-    assert(controller < PORK_MAX_CONTROLLERS);
+    pork_assert(controller < PORK_MAX_CONTROLLERS);
     return (GetButtonState(controller, input_state.controllers[controller].bindings[action]) ||
             GetKeyState(input_state.keyboard.bindings[action]));
 }
@@ -96,12 +96,12 @@ bool GetActionState(unsigned int controller, int action) {
 /* public interface ****************************************************************/
 
 void SetPorkButtonState(unsigned int controller, int button, bool status) {
-    assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
+    pork_assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
     input_state.controllers[controller].button_states[button] = status;
 }
 
 void SetPorkKeyState(int key, bool status) {
-    assert(key < PORK_MAX_KEYS);
+    pork_assert(key < PORK_MAX_KEYS);
     if(input_state.InputFocusCallback) {
         input_state.InputFocusCallback(key, status);
     }

@@ -37,7 +37,7 @@ void SVClearActors(void) {
 }
 
 void SVSimulateActors(void) {
-    assert(g_actors != NULL);
+    pork_assert(g_actors != NULL);
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
         if(!actor->is_reserved) {
