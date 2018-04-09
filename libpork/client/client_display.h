@@ -17,6 +17,7 @@
 #pragma once
 
 void InitDisplay(void);
+void ShutdownDisplay(void);
 
 void ClearTextureIndex(unsigned int id);
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);

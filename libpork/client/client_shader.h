@@ -16,6 +16,7 @@
  */
 #pragma once
 
+#if 0 // eeehhh
 #ifdef __cplusplus
 
 class ShaderProgram;
@@ -87,5 +88,11 @@ void DisableShaderProgram();
 
 void DeleteShaderProgram(const char *name);
 void DeleteShaderProgram(ShaderProgram *program);
+
+#endif
+#else
+
+void InitShaders(void);
+void ShutdownShaders(void);
 
 #endif

@@ -25,6 +25,7 @@
 #include "client_font.h"
 #include "client_actor.h"
 #include "client_frontend.h"
+#include "client_shader.h"
 
 /************************************************************/
 /* PORK TEXTURE CACHE                                       */
@@ -354,6 +355,8 @@ void InitDisplay(void) {
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
+    InitShaders();
+
     //////////////////////////////////////////////////////////
 
     plSetClearColour(PLColour(0, 0, 0, 255));
@@ -401,6 +404,10 @@ void InitDisplay(void) {
 
     plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
     cv_display_texture_cache = plRegisterConsoleVariable("displaytcache", "-1", pl_int_var, NULL, "");
+}
+
+void ShutdownDisplay(void) {
+    ShutdownShaders();
 }
 
 /* shared function */

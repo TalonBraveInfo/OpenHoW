@@ -76,6 +76,7 @@ void InitClient(void) {
 
     InitInput();
     InitDisplay();
+    /* todo: audio */
     InitFrontend();
 
     CLClearActors();
@@ -97,4 +98,7 @@ void ShutdownClient(void) {
     }
 
     CLClearActors();
+
+    ShutdownDisplay();
+    /* todo: input, audio etc */
 }

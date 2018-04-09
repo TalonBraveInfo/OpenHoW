@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <GL/glew.h>
 #include <PL/platform_filesystem.h>
 #include "pork_engine.h"
 #include "client_shader.h"
 
-#if 0 /* legacy implementation using plgraphics foundation */
+#if 1
 PLShaderProgram *shader_default = NULL;
 
 PLShaderProgram *LoadShaderProgram(const char *name) {
@@ -27,26 +26,18 @@ PLShaderProgram *LoadShaderProgram(const char *name) {
         Error("invalid name for shader program, aborting!\n");
     }
 
-    char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%sshaders/%s.vert", g_state.base_path, name);
-    PLShaderStage *vertex = plLoadShaderStage(path, PL_SHADER_TYPE_VERTEX);
-    if(vertex == NULL) {
-        Error("failed to load %s, aborting!\n%s", path, plGetError());
-    }
-
-    snprintf(path, sizeof(path), "%sshaders/%s.frag", g_state.base_path, name);
-    PLShaderStage *fragment = plLoadShaderStage(path, PL_SHADER_TYPE_FRAGMENT);
-    if(fragment == NULL) {
-        Error("failed to load %s, aborting!\n%s", path, plGetError());
-    }
-
     PLShaderProgram *program = plCreateShaderProgram();
     if(program == NULL) {
         Error("failed to create shader program, %s, aborting!\n%s", name, plGetError());
     }
 
-    plAttachShaderStage(program, vertex);
-    plAttachShaderStage(program, fragment);
+    char path[PL_SYSTEM_MAX_PATH];
+    snprintf(path, sizeof(path), "%sshaders/%s.vert", g_state.base_path, name);
+    plRegisterShaderStage(program, path, PL_SHADER_TYPE_VERTEX);
+
+    snprintf(path, sizeof(path), "%sshaders/%s.frag", g_state.base_path, name);
+    plRegisterShaderStage(program, path, PL_SHADER_TYPE_FRAGMENT);
+
     plLinkShaderProgram(program);
 
     return program;
@@ -63,7 +54,7 @@ void ShutdownShaders(void) {
     plDeleteShaderProgram(shader_default, true);
 }
 
-#else /* new implementation */
+#else /* new implementation ??? */
 
 /*************************************************/
 /** Shader Stage                                **/
