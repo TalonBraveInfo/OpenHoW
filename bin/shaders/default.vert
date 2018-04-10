@@ -1,5 +1,10 @@
-#version 330
+#version 120
+
+uniform mat4 gl_ModelViewMatrix;
+uniform mat4 gl_ProjectionMatrix;
+
+attribute vec4 gl_Vertex;
 
 void main() {
-	gl_Position = vec4(vec3(0.0), 1.0);
+	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 }

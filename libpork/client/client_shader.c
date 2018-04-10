@@ -20,23 +20,28 @@
 
 #if 1
 PLShaderProgram *shader_default = NULL;
+PLShaderProgram *shader_video = NULL;
 
-PLShaderProgram *LoadShaderProgram(const char *name) {
-    if(plIsEmptyString(name)) {
+PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
+    if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
         Error("invalid name for shader program, aborting!\n");
     }
 
     PLShaderProgram *program = plCreateShaderProgram();
     if(program == NULL) {
-        Error("failed to create shader program, %s, aborting!\n%s", name, plGetError());
+        Error("failed to create shader program, aborting!\n%s", plGetError());
     }
 
     char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%sshaders/%s.vert", g_state.base_path, name);
-    plRegisterShaderStage(program, path, PL_SHADER_TYPE_VERTEX);
+    snprintf(path, sizeof(path), "%sshaders/%s.vert", g_state.base_path, vertex);
+    if(!plRegisterShaderStage(program, path, PL_SHADER_TYPE_VERTEX)) {
+        Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
+    }
 
-    snprintf(path, sizeof(path), "%sshaders/%s.frag", g_state.base_path, name);
-    plRegisterShaderStage(program, path, PL_SHADER_TYPE_FRAGMENT);
+    snprintf(path, sizeof(path), "%sshaders/%s.frag", g_state.base_path, fragment);
+    if(!plRegisterShaderStage(program, path, PL_SHADER_TYPE_FRAGMENT)) {
+        Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
+    }
 
     plLinkShaderProgram(program);
 
@@ -44,7 +49,8 @@ PLShaderProgram *LoadShaderProgram(const char *name) {
 }
 
 void InitShaders(void) {
-    shader_default = LoadShaderProgram("default");
+    shader_default = LoadShaderProgram("default", "default");
+    shader_video = LoadShaderProgram("video", "video");
 
     /* enable the default shader program */
     plSetShaderProgram(shader_default);
@@ -52,6 +58,7 @@ void InitShaders(void) {
 
 void ShutdownShaders(void) {
     plDeleteShaderProgram(shader_default, true);
+    plDeleteShaderProgram(shader_video, true);
 }
 
 #else /* new implementation ??? */
