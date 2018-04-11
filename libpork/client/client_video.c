@@ -25,19 +25,19 @@
 
 const char *video_paths[]={
         /* intro */
-        {"/streams/sheff.bik"},
-        {"/streams/infologo.bik"},
+        "/streams/sheff.bik",
+        "/streams/infologo.bik",
 
         /* missions - move these into js script */
-        {"/streams/fmv_01.bik"},
-        {"/streams/fmv_02.bik"},
-        {"/streams/fmv_03.bik"},
-        {"/streams/fmv_04.bik"},
-        {"/streams/fmv_05.bik"},
-        {"/streams/fmv_06.bik"},
-        {"/streams/fmv_07.bik"},
-        {"/streams/fmv_08.bik"},
-        {"/streams/fmv_09.bik"},
+        "/streams/fmv_01.bik",
+        "/streams/fmv_02.bik",
+        "/streams/fmv_03.bik",
+        "/streams/fmv_04.bik",
+        "/streams/fmv_05.bik",
+        "/streams/fmv_06.bik",
+        "/streams/fmv_07.bik",
+        "/streams/fmv_08.bik",
+        "/streams/fmv_09.bik",
 };
 
 struct {

@@ -625,7 +625,7 @@ void ExtractGameData(const char *path) {
             continue;
         }
 
-        strncat(output_path, plGetFileName(copy_paths[i].input), sizeof(output_path));
+        strncat(output_path, plGetFileName(copy_paths[i].input), sizeof(output_path) - strlen(output_path) - 1);
         pl_strtolower(output_path);
 
         snprintf(input_path, sizeof(input_path), "%s%s", path, copy_paths[i].input);
