@@ -42,7 +42,12 @@ const char *video_paths[]={
 
 struct {
     bool is_playing;
-    char cur_video[PL_SYSTEM_MAX_PATH];
+
+    struct {
+        char path[PL_SYSTEM_MAX_PATH];
+    } queue[4];
+    unsigned int num_videos_queued;
+    unsigned int cur_video;
 } video;
 
 void InitVideo(void) {
@@ -59,6 +64,10 @@ void ShutdownVideo(void) {
 }
 
 /***************************************************************/
+
+void QueueVideos(...) {
+
+}
 
 void ClearVideo(void) {
     memset(&video, 0, sizeof(video));
