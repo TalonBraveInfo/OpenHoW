@@ -18,54 +18,60 @@
 
 #include "pork_engine.h"
 
+char config_path[PL_SYSTEM_MAX_PATH];
+
 void SaveConfig(void) {
-    // todo, take current state and save it to config.json
-}
-
-#if 0 /* todo, replace with duktape */
-// wrapper function thing, simplifying jsmn a little
-jsmntok_t *ParseJSON(jsmn_parser *p, unsigned int *num_tokens, const char *path) {
-    size_t len = plGetFileSize(PORK_CONFIG);
-    if(len == 0) {
-        LogInfo("blank config, skipping out on bothering read\n");
-        return NULL;
+    FILE *fp = fopen(config_path, "w");
+    if(fp == NULL) {
+        LogWarn("failed to write config to \"%s\"!\n", config_path);
+        return;
     }
 
-    char buffer[len];
-    memset(buffer, 0, sizeof(buffer));
+    fprintf(fp, "{\n");
 
-    jsmn_init(p);
-
-    int ret = jsmn_parse(p, buffer, len, NULL, 256);
-    if(ret < 0) {
-        if(ret == JSMN_ERROR_INVAL) {
-            LogWarn("bad token, JSON string is corrupted!\n");
-        } else if(ret == JSMN_ERROR_NOMEM) {
-            LogWarn("not enough tokens, JSON string is too large!\n");
-        } else if(ret == JSMN_ERROR_PART) {
-            LogWarn("JSON string is too short, expecting more JSON data!\n");
+    size_t num_c;
+    PLConsoleVariable **vars;
+    plGetConsoleVariables(&vars, &num_c);
+    for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
+        if(var == vars + num_c) {
+            fprintf(fp, "\t\t\"%s\":\"%s\"\n", (*var)->var, (*var)->value);
+        } else {
+            fprintf(fp, "\t\t\"%s\":\"%s\",\n", (*var)->var, (*var)->value);
         }
-        return NULL;
     }
 
-    *num_tokens = (unsigned int) ret;
-    jsmntok_t *tokens = malloc(*num_tokens * sizeof(jsmntok_t));
-    if(tokens == NULL) {
-        Error("failed to allocate enough memory for tokens, aborting!\n");
-    }
-
-    jsmn_parse(p, buffer, len, tokens, *num_tokens);
-    return tokens;
+    fprintf(fp, "}\n\n");
 }
-#endif
+
+void ReadConfig(void) {
+    FILE *fp = fopen(config_path, "r");
+    if(fp == NULL) {
+        LogWarn("failed to open map description, %s\n", path);
+        return;
+    }
+
+    size_t length = plGetFileSize(config_path);
+
+    char buf[length + 1];
+    if(fread(buf, sizeof(char), length, fp) != length) {
+        LogWarn("failed to read entirety of map description for %s!\n", path);
+    }
+    fclose(fp);
+
+    buf[length] = '\0';
+}
 
 void InitConfig(void) {
-#if 0 /* todo, replace with duktape */
-    jsmn_parser p;
-    unsigned int num_tokens = 0;
-    jsmntok_t *tokens = ParseJSON(&p, &num_tokens, PORK_CONFIG);
-    for(unsigned int i = 0; i < num_tokens; ++i) {
-        // todo
+    LogInfo("checking for config...\n");
+
+    snprintf(config_path, sizeof(config_path), "%s" PORK_CONFIG, g_state.base_path);
+    if(plFileExists(config_path)) {
+        LogInfo("found \"%s\", parsing...\n", config_path);
+        ReadConfig();
+    } else {
+        LogInfo("no config found at \"%s\", generating default\n", config_path);
+        SaveConfig();
     }
-#endif
+
+
 }
