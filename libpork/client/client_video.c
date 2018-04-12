@@ -46,8 +46,8 @@ struct {
     struct {
         char path[PL_SYSTEM_MAX_PATH];
     } queue[4];
-    unsigned int num_videos_queued;
-    unsigned int cur_video;
+    unsigned int num_videos_queued; /* elements */
+    unsigned int cur_video;         /* index */
 } video;
 
 void InitVideo(void) {
@@ -65,16 +65,38 @@ void ShutdownVideo(void) {
 
 /***************************************************************/
 
-void QueueVideos(...) {
-
-}
-
-void ClearVideo(void) {
+void ClearVideoQueue(void) {
     memset(&video, 0, sizeof(video));
 }
 
-void PlayVideo(const char *path) {
+void QueueVideos(const char **videos, unsigned int num_videos) {
+    if(num_videos == 0) {
+        return;
+    }
 
+    ClearVideoQueue();
+
+    for(unsigned int i = 0; i < num_videos; ++i) {
+        if(plIsEmptyString(videos[i])) {
+            LogWarn("encountered invalid video path at index %u, skipping!\n", i);
+            continue;
+        }
+
+        video.num_videos_queued++;
+    }
+}
+
+void PlayVideo(const char *path) {
+    ClearVideoQueue();
+
+    size_t len = strlen(path);
+    if(len > sizeof(video.queue[0].path)) {
+        LogWarn("unexpected length of path - %u bytes - expect issues!\n", len);
+    }
+
+    video.num_videos_queued = 1;
+    video.cur_video         = 0;
+    strncpy(video.queue[0].path, path, sizeof(video.queue[0].path));
 }
 
 void ProcessVideo(void) {
