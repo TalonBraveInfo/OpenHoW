@@ -92,6 +92,14 @@ void DeleteShaderProgram(ShaderProgram *program);
 #endif
 #else
 
+enum {
+    SHADER_DEFAULT,
+    SHADER_VIDEO,
+
+    END_SHADER
+};
+extern PLShaderProgram *programs[END_SHADER];
+
 void InitShaders(void);
 void ShutdownShaders(void);
 

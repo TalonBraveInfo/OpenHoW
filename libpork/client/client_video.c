@@ -17,6 +17,7 @@
 #include "pork_engine.h"
 
 #include "client_frontend.h"
+#include "client_shader.h"
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -134,7 +135,11 @@ void DrawVideo(void) {
         plUploadMesh(mesh);
     }
 
+    plSetShaderProgram(programs[SHADER_VIDEO]);
+
     mesh->texture = NULL; /* todo pass correct texture */
 
     plDrawMesh(mesh);
+
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
 }

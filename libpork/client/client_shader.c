@@ -19,8 +19,8 @@
 #include "client_shader.h"
 
 #if 1
-PLShaderProgram *shader_default = NULL;
-PLShaderProgram *shader_video = NULL;
+
+PLShaderProgram *programs[END_SHADER];
 
 PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
@@ -49,16 +49,20 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 }
 
 void InitShaders(void) {
-    shader_default = LoadShaderProgram("default", "default");
-    shader_video = LoadShaderProgram("video", "video");
+    programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
+    programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
 
     /* enable the default shader program */
-    plSetShaderProgram(shader_default);
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
 }
 
 void ShutdownShaders(void) {
-    plDeleteShaderProgram(shader_default, true);
-    plDeleteShaderProgram(shader_video, true);
+    for(unsigned int i = 0; i < END_SHADER; ++i) {
+        if(programs[i] == NULL) {
+            continue;
+        }
+        plDeleteShaderProgram(programs[i], true);
+    }
 }
 
 #else /* new implementation ??? */
