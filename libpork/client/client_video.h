@@ -14,14 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+void InitVideo(void);
+void ShutdownVideo(void);
 
-    /* queue the videos used for the launch of the game */
-    var videos = ["sheff.bik", "infologo.bik"];
-    QueueVideos(videos, videos.length);
-
-    /* immediately begin playing the videos as soon as we're ready */
-    PlayVideos();
-}
+void ClearVideoQueue(void);
+void QueueVideos(const char **videos, unsigned int num_videos);
+void PlayVideo(const char *path);
+void DrawVideo(void);

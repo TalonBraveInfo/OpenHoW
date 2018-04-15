@@ -44,6 +44,13 @@ const char *video_paths[]={
 struct {
     bool is_playing;
 
+    AVPacket        *av_packet;
+    AVCodecContext  *av_codec_context;
+    AVCodec         *av_codec;
+    AVStream        *av_stream;
+    AVFormatContext *av_format_context;
+    AVFrame         *av_frame;
+
     struct {
         char path[PL_SYSTEM_MAX_PATH];
     } queue[4];
@@ -104,6 +111,10 @@ void ProcessVideo(void) {
     if(!video.is_playing) {
         return;
     }
+
+    do {
+
+    } while(0);
 }
 
 void DrawVideo(void) {

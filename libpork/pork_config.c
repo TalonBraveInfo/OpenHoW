@@ -46,7 +46,7 @@ void SaveConfig(void) {
 void ReadConfig(void) {
     FILE *fp = fopen(config_path, "r");
     if(fp == NULL) {
-        LogWarn("failed to open map description, %s\n", path);
+        LogWarn("failed to open map description, %s\n", config_path);
         return;
     }
 
@@ -54,7 +54,7 @@ void ReadConfig(void) {
 
     char buf[length + 1];
     if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of map description for %s!\n", path);
+        LogWarn("failed to read entirety of map description for %s!\n", config_path);
     }
     fclose(fp);
 

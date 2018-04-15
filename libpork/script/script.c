@@ -19,12 +19,16 @@
 #include "pork_engine.h"
 #include "script.h"
 
+#include "client/client_video.h"
+
 #include "duktape.h"
 #include "duk_module_duktape.h"
 
 duk_context *cli_context = NULL;    /* client context */
-duk_context *svr_context = NULL;    /* service context */
+duk_context *svr_context = NULL;    /* server context */
 duk_context *jsn_context = NULL;    /* json context */
+
+#define CheckContext(A, B) if((A) != (B)) { LogWarn("invalid context, ignoring script function!\n"); return -1; }
 
 static duk_ret_t SC_LogInfo(duk_context *context) {
     duk_push_string(context, " ");
@@ -55,7 +59,14 @@ static duk_ret_t SC_Error(duk_context *context) {
     duk_insert(context, 0);
     duk_join(context, duk_get_top(context) - 1);
     Error("%s", duk_safe_to_string(context, -1));
-    return 0;
+}
+
+static duk_ret_t SC_QueueVideos(duk_context *context) {
+    CheckContext(context, cli_context);
+
+
+
+    QueueVideos("", 0);
 }
 
 /*************************************************************/
@@ -141,6 +152,8 @@ ScriptFunction cli_builtins[]= {
         {"LogWarn", DUK_VARARGS, SC_LogWarn},
         {"LogDebug", DUK_VARARGS, SC_LogDebug},
         {"Error", DUK_VARARGS, SC_Error},
+
+        {"QueueVideos", 2, SC_QueueVideos},
 };
 
 void InitScripting(void) {
