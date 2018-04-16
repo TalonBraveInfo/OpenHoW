@@ -1,6 +1,7 @@
 {
-  "user_name": "John Smith",
-  "display_width": 640,
-  "display_height": 480,
-  "display_fullscreen": true
+		"dmode":"1",
+		"dfps":"1",
+		"dskeleton":"0",
+		"dinput":"0",
+		"dcache":"0"
 }

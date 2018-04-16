@@ -33,14 +33,17 @@ void SaveConfig(void) {
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
     for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-        if(var == vars + num_c) {
-            fprintf(fp, "\t\t\"%s\":\"%s\"\n", (*var)->var, (*var)->value);
+        fprintf(fp, "\t\t\"%s\":\"%s\"", (*var)->var, (*var)->value);
+        if(var < vars + num_c - 1) {
+            fprintf(fp, ",\n");
         } else {
-            fprintf(fp, "\t\t\"%s\":\"%s\",\n", (*var)->var, (*var)->value);
+            fprintf(fp, "\n");
         }
     }
 
-    fprintf(fp, "}\n\n");
+    fprintf(fp, "}\n");
+
+    fclose(fp);
 }
 
 void ReadConfig(void) {
@@ -51,7 +54,6 @@ void ReadConfig(void) {
     }
 
     size_t length = plGetFileSize(config_path);
-
     char buf[length + 1];
     if(fread(buf, sizeof(char), length, fp) != length) {
         LogWarn("failed to read entirety of map description for %s!\n", config_path);
@@ -72,6 +74,4 @@ void InitConfig(void) {
         LogInfo("no config found at \"%s\", generating default\n", config_path);
         SaveConfig();
     }
-
-
 }

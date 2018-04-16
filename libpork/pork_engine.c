@@ -80,7 +80,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     InitScripting();
     InitConsole();
-    InitConfig();
 
     snprintf(g_state.base_path, sizeof(g_state.base_path), "./");
     for(int i = 1; i < argc; ++i) {
@@ -139,6 +138,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     }
     LogInfo("base path: %s\n", g_state.base_path);
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
+
+    InitConfig();
 
     InitClient();
     InitPlayers();
