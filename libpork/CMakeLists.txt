@@ -61,4 +61,10 @@ target_include_directories(pork PUBLIC
         script/duktape-2.2.0/
 
         )
-target_link_libraries(pork platform GLEW)
+target_link_libraries(pork
+        platform
+
+        avformat
+        avcodec
+
+        GLEW)

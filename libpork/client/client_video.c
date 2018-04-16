@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <PL/platform_filesystem.h>
+
 #include "pork_engine.h"
 
 #include "client_frontend.h"
@@ -50,6 +52,8 @@ struct {
     AVStream        *av_stream;
     AVFormatContext *av_format_context;
     AVFrame         *av_frame;
+
+    unsigned int stream_index;
 
     struct {
         char path[PL_SYSTEM_MAX_PATH];
@@ -90,31 +94,64 @@ void QueueVideos(const char **videos, unsigned int num_videos) {
             continue;
         }
 
+        size_t len = strlen(videos[i]);
+        if(len >= PL_SYSTEM_MAX_PATH) {
+            LogWarn("unexpected length of path - %u bytes - expect issues!\n", len);
+        }
+
+        char n_path[PL_SYSTEM_MAX_PATH];
+        strncpy(n_path, videos[i], PL_SYSTEM_MAX_PATH);
+        if(!plFileExists(n_path)) {
+            LogWarn("failed to find video at \"%s\", skipping!\n", n_path);
+            continue;
+        }
+
+        strncpy(video.queue[video.num_videos_queued].path, n_path, PL_SYSTEM_MAX_PATH);
         video.num_videos_queued++;
     }
 }
 
 void PlayVideo(const char *path) {
     ClearVideoQueue();
-
-    size_t len = strlen(path);
-    if(len > sizeof(video.queue[0].path)) {
-        LogWarn("unexpected length of path - %u bytes - expect issues!\n", len);
+    QueueVideos(&path, 1);
+    if(video.num_videos_queued == 0) {
+        LogWarn("failed to queue video, \"%s\", aborting playback!\n", path);
+        return;
     }
 
-    video.num_videos_queued = 1;
-    video.cur_video         = 0;
-    strncpy(video.queue[0].path, path, sizeof(video.queue[0].path));
+    video.is_playing = true;
 }
 
 void ProcessVideo(void) {
     if(!video.is_playing) {
+        if(video.av_format_context != NULL) {
+            avformat_close_input(&video.av_format_context);
+        }
+
+        if(video.num_videos_queued > 0 && video.cur_video != video.num_videos_queued) {
+            if(avformat_open_input(&video.av_format_context, video.queue[video.cur_video].path, NULL, NULL) < 0) {
+                LogWarn("failed to open video, \"%s\", for playback, skipping!\n");
+                video.cur_video++;
+                return;
+            }
+        }
+
         return;
     }
 
     do {
+        if(av_read_frame(video.av_format_context, video.av_packet) < 0) {
+            video.is_playing = false;
+            av_packet_unref(video.av_packet);
+            return;
+        }
 
-    } while(0);
+        if(video.av_packet->stream_index == video.stream_index) {
+
+        }
+
+        av_packet_unref(video.av_packet);
+    } while(video.av_packet->stream_index != video.stream_index);
 }
 
 void DrawVideo(void) {
