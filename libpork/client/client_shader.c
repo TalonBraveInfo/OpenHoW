@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <PL/platform_filesystem.h>
+
 #include "pork_engine.h"
+
 #include "client_shader.h"
 
 #if 1

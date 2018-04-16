@@ -38,7 +38,7 @@ include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)               # libpor
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare -std=c11")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #GCC
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format_truncation -Wold-style-declaration")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation -Wold-style-declaration")
 endif()
 
 add_definitions("-D_DEBUG")
