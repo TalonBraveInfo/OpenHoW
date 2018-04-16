@@ -40,10 +40,14 @@ void DebugModeCallback(const PLConsoleVariable *variable) {
 
 //////////////////////////////////////////////////////////////////////////
 
-// extractor.c
+/* pork_extractor.c */
 void ExtractGameData(const char *path);
 
+/* pork_config.c */
 void InitConfig(void);
+void SaveConfig(void);
+void ReadConfig(void);
+
 void InitPlayers(void);
 void InitModels(void);
 
@@ -139,12 +143,14 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     LogInfo("base path: %s\n", g_state.base_path);
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
-    InitConfig();
-
     InitClient();
+    InitServer();
+
     InitPlayers();
     InitModels();
     InitMaps();
+
+    InitConfig();
 }
 
 bool IsPorkRunning(void) {
@@ -167,6 +173,8 @@ void ShutdownPork(void) {
 
     ShutdownServer();
     ShutdownScripting();
+
+    SaveConfig();
 
     plShutdown();
 }

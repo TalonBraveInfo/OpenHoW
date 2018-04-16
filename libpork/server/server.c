@@ -18,6 +18,10 @@
 
 #include "server_actor.h"
 
+void InitServer(void) {
+
+}
+
 void SimulateServer(void) {
     if(!g_state.is_host) {
         return;
