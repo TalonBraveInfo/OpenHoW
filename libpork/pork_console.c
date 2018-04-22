@@ -17,6 +17,7 @@
 #include "pork_engine.h"
 #include "pork_input.h"
 #include "pork_map.h"
+#include "pork_language.h"
 
 #include "client/client_font.h"
 #include "client/client_frontend.h"
@@ -182,6 +183,8 @@ void InitConsole(void) {
     plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
+
+    plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 }
 
 void DrawConsole(void) {

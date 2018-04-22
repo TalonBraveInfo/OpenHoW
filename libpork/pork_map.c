@@ -134,6 +134,25 @@ MapDesc *GetMapDescription(const char *name) {
     return NULL;
 }
 
+unsigned int GetMapModeFlag(const char *str) {
+    if (pl_strncasecmp("dm", str, 2) == 0) {
+        return MAP_MODE_DEATHMATCH;
+    } else if (pl_strncasecmp("sp", str, 2) == 0) {
+        return MAP_MODE_SINGLEPLAYER;
+    } else if(pl_strncasecmp("se", str, 2) == 0) {
+        return MAP_MODE_SURVIVAL_EXPERT;
+    } else if(pl_strncasecmp("sn", str, 2) == 0) {
+        return MAP_MODE_SURVIVAL_NOVICE;
+    } else if(pl_strncasecmp("ss", str, 2) == 0) {
+        return MAP_MODE_SURVIVAL_STRATEGY;
+    } else if(pl_strncasecmp("ge", str, 2) == 0) {
+        return MAP_MODE_GENERATED;
+    } else {
+        LogWarn("unknown mode type %s, ignoring!\n", str);
+        return MAP_MODE_DEATHMATCH;
+    }
+}
+
 void RegisterMap(const char *path) {
     LogInfo("registering %s\n", path);
 
@@ -187,6 +206,11 @@ void RegisterMap(const char *path) {
 
     plStripExtension(slot->name, plGetFileName(path));
     strncpy(slot->description, GetJSONStringProperty("name"), sizeof(slot->description));
+
+    unsigned int num_modes = GetJSONArrayLength("modes");
+    for(unsigned int i = 0; i < num_modes; ++i) {
+        duk_get_prop_index(jsn_context, i);
+    }
 
     /* todo: iterate over modes */
     slot->flags = MAP_MODE_DEATHMATCH; /* todo: placeholder!!! */

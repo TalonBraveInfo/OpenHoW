@@ -17,11 +17,10 @@
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
-#include "script.h"
 
 #include "client/client_video.h"
 
-#include "duktape.h"
+#include "script.h"
 #include "duk_module_duktape.h"
 
 duk_context *cli_context = NULL;    /* client context */
@@ -63,8 +62,6 @@ static duk_ret_t SC_Error(duk_context *context) {
 
 static duk_ret_t SC_QueueVideos(duk_context *context) {
     CheckContext(context, cli_context);
-
-
 
     QueueVideos("", 0);
 }
@@ -194,11 +191,11 @@ void InitScripting(void) {
 
     /* now init our scripts! */
 
-    LoadScript(svr_context, "./scripts/server.js");
     LoadScript(cli_context, "./scripts/client.js");
+    LoadScript(svr_context, "./scripts/server.js");
 
-    CS_InitServer();
     CS_InitClient();
+    CS_InitServer();
 
     //duk_eval_string(scr_context, "LogInfo('Hello world!');");
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));
@@ -216,6 +213,9 @@ void ShutdownScripting(void) {
 /*************************************************************/
 /** JSON **/
 
+#define LogMissingProperty(P)   LogWarn("failed to get JSON property \"%s\"!\n", (P))
+#define LogInvalidArray(P)      LogWarn("invalid JSON array for property \"%s\"!\n", (P))
+
 void ParseJSON(const char *buf) {
     duk_push_string(jsn_context, buf);
     duk_json_decode(jsn_context, -1);
@@ -225,12 +225,54 @@ void FlushJSON(void) {
     duk_pop_2(jsn_context);
 }
 
+unsigned int GetJSONIntIndexProperty(const char *property, unsigned int index) {
+#if 0 // todo, revisit
+    unsigned int v = 0;
+    if(duk_get_prop_string(jsn_context, -1, property)) {
+        if (duk_get_prop_index(jsn_context, -1, index)) {
+            v = duk_get_uint(jsn_context, index);
+        } else {
+            LogWarn("failed to get JSON index \"%d\" in property \"%s\"!\n", index, property);
+        }
+    } else {
+        LogWarn("failed to get JSON property \"%s\"!\n", property);
+    }
+    duk_pop(jsn_context);
+    return v;
+#else
+    return 0;
+#endif
+}
+
+unsigned int GetJSONArrayLength(const char *property) {
+    if(!duk_get_prop_string(jsn_context, -1, property)) {
+        LogMissingProperty(property);
+        return 0;
+    }
+
+    if(!duk_is_array(jsn_context, -1)) {
+        LogInvalidArray(property);
+        return 0;
+    }
+
+    unsigned int len = (unsigned int)duk_get_length(jsn_context, -1);
+    duk_pop(jsn_context);
+
+    return len;
+}
+
 const char *GetJSONStringProperty(const char *property) {
-    duk_get_prop_string(jsn_context, -1, property);
+    if(!duk_get_prop_string(jsn_context, -1, property)) {
+        LogMissingProperty(property);
+        return "null";
+    }
     return duk_to_string(jsn_context, -1);
 }
 
 int GetJSONIntProperty(const char *property) {
-    duk_get_prop_string(jsn_context, -1, property);
+    if(!duk_get_prop_string(jsn_context, -1, property)) {
+        LogMissingProperty(property);
+        return 0;
+    }
     return duk_to_int(jsn_context, -1);
 }

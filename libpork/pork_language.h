@@ -16,19 +16,4 @@
  */
 #pragma once
 
-#include "duktape.h"
-
-void InitScripting(void);
-void ShutdownScripting(void);
-
-/**********************************************************/
-
-extern duk_context *jsn_context;
-
-void ParseJSON(const char *buf);
-void FlushJSON(void);
-
-unsigned int GetJSONArrayLength(const char *property);
-
-const char *GetJSONStringProperty(const char *property);
-int GetJSONIntProperty(const char *property);
+void SetLanguageCallback(const PLConsoleVariable *var);

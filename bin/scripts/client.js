@@ -19,9 +19,9 @@ function InitClientGame() {
     LogInfo("initializing client stuff...");
 
     /* queue the videos used for the launch of the game */
-    var videos = ["sheff.bik", "infologo.bik"];
-    QueueVideos(videos, videos.length);
+    //var videos = ["sheff.bik", "infologo.bik"];
+    //QueueVideos(videos, videos.length);
 
     /* immediately begin playing the videos as soon as we're ready */
-    PlayVideos();
+    //PlayVideos();
 }
