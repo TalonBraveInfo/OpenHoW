@@ -65,13 +65,13 @@
   "map_how_lake"         :"THE LAKE",
   "map_how_system"       :"ONE WAY SYSTEM",
 
-  "team_british"  :"TOMMY'S TROTTERS"
-  "team_french"   :"GARLIC GRUNTS"
-  "team_american" :"UNCLE HAMS HOGS"
-  "team_russian"  :"PIGGYSTROIKA"
-  "team_japanese" :"SUSHI-SWINE"
-  "team_german"   :"SOW-A-KRAUTS"
-  "team_lard"     :"TEAM LARD"
+  "team_british"  :"TOMMY'S TROTTERS",
+  "team_french"   :"GARLIC GRUNTS",
+  "team_american" :"UNCLE HAMS HOGS",
+  "team_russian"  :"PIGGYSTROIKA",
+  "team_japanese" :"SUSHI-SWINE",
+  "team_german"   :"SOW-A-KRAUTS",
+  "team_lard"     :"TEAM LARD",
 
   "class_grunt"       :"GRUNT",
   "class_gunner"      :"GUNNER",
