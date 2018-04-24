@@ -53,8 +53,6 @@ struct {
     struct PLCamera *camera;       // camera used for general gameplay
     struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
-    char base_path[PL_SYSTEM_MAX_PATH];
-
     /* server / client logic */
     bool is_host;
     bool is_dedicated;

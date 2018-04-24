@@ -28,7 +28,7 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
     return mem;
 }
 
-FILE *pork_load(const char *path, const char *mode) {
+FILE *pork_open(const char *path, const char *mode) {
     FILE *fp;
 
     char n_path[PL_SYSTEM_MAX_PATH];
