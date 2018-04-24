@@ -23,7 +23,7 @@
 
 /* todo: I know, I know, this needs to support unicode and other fun things... bare with me! */
 
-#define LANGUAGE_PATH   "/language/"
+#define LANGUAGE_PATH   "/languages/"
 
 typedef struct LanguageKey {
     char key[64];
