@@ -1,0 +1,7 @@
+This directory exists for any modifications you might want to add to the game.
+
+It works like this...
+    launcher_sdl2.exe -mod "example"
+
+And then the game will attempt to load resources from the <base>/mods/example/ first before falling back
+to the base directory.

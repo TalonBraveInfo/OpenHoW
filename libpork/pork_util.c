@@ -41,6 +41,7 @@ const char *pork_find(const char *path) {
     return n_path;
 }
 
+/*
 FILE *pork_open(const char *path, const char *mode) {
     FILE *fp;
 
@@ -68,3 +69,4 @@ FILE *pork_open(const char *path, const char *mode) {
     LogWarn("failed to load file at %s!\n", n_path);
     return NULL;
 }
+ */

@@ -163,6 +163,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
         }
     }
     LogInfo("base path: %s\n", GetBasePath());
+    LogInfo("mod path: %s%s\n", GetBasePath(), GetModPath());
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
     InitClient();

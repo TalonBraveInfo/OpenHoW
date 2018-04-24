@@ -72,7 +72,6 @@ PL_EXTERN_C
 
 void *pork_alloc(size_t num, size_t size, bool abort_on_fail);
 const char *pork_find(const char *path);
-FILE *pork_open(const char *path, const char *mode);
 
 PL_EXTERN_C_END
 
