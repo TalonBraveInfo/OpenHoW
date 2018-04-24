@@ -28,6 +28,19 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
     return mem;
 }
 
+const char *pork_find(const char *path) {
+    static char n_path[PL_SYSTEM_MAX_PATH];
+    if(!plIsEmptyString(GetModPath())) {
+        snprintf(n_path, sizeof(n_path), "%s/mods/%s/%s", GetBasePath(), GetModPath(), path);
+        if(plFileExists(n_path)) {
+            return n_path;
+        }
+    }
+
+    snprintf(n_path, sizeof(n_path), "%s%s", GetBasePath(), path);
+    return n_path;
+}
+
 FILE *pork_open(const char *path, const char *mode) {
     FILE *fp;
 

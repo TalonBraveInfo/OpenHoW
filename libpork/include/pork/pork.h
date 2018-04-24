@@ -62,17 +62,27 @@ enum {
 #   define LogDebug(...) ()
 #endif
 
-///////////////////////////////////////////////////
+//////////////////////////////////////////////////
+/* Utilities                                    */
 
 #define pork_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
 #define pork_free(DATA) free((DATA)); (DATA) = NULL
+
+PL_EXTERN_C
+
 void *pork_alloc(size_t num, size_t size, bool abort_on_fail);
+const char *pork_find(const char *path);
+FILE *pork_open(const char *path, const char *mode);
+
+PL_EXTERN_C_END
 
 #ifdef _DEBUG
 #   define pork_assert(a) assert((a))
 #else
 #   define pork_assert(a)
 #endif
+
+/************************************************/
 
 enum {
     PORK_MBOX_INFORMATION,

@@ -35,13 +35,13 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
     }
 
     char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%sshaders/%s.vert", GetBasePath(), vertex);
-    if(!plRegisterShaderStage(program, path, PL_SHADER_TYPE_VERTEX)) {
+    snprintf(path, sizeof(path), "shaders/%s.vert", vertex);
+    if(!plRegisterShaderStage(program, pork_find(path), PL_SHADER_TYPE_VERTEX)) {
         Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
     }
 
-    snprintf(path, sizeof(path), "%sshaders/%s.frag", GetBasePath(), fragment);
-    if(!plRegisterShaderStage(program, path, PL_SHADER_TYPE_FRAGMENT)) {
+    snprintf(path, sizeof(path), "shaders/%s.frag", fragment);
+    if(!plRegisterShaderStage(program, pork_find(path), PL_SHADER_TYPE_FRAGMENT)) {
         Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
     }
 
@@ -52,10 +52,10 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 
 void InitShaders(void) {
     programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
-    programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
+    //programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
 
     /* enable the default shader program */
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    //plSetShaderProgram(programs[SHADER_DEFAULT]);
 }
 
 void ShutdownShaders(void) {
