@@ -39,7 +39,7 @@ void InitLanguage(void) {
     LogDebug("caching language manifest...\n");
 
     char lang_path[PL_SYSTEM_MAX_PATH];
-    snprintf(lang_path, sizeof(lang_path), "%s" LANGUAGE_PATH "language.manifest", g_state.base_path);
+    snprintf(lang_path, sizeof(lang_path), "%s" LANGUAGE_PATH "language.manifest", GetBasePath());
     FILE *fp = fopen(lang_path, "r");
     if(fp == NULL) {
         LogWarn("failed to load \"" LANGUAGE_PATH "language.manifest\"!\n");
@@ -60,7 +60,7 @@ void InitLanguage(void) {
 }
 
 const char *GetTranslationPath(const char *language) {
-    for(unsigned int i = 0; i < )
+    //for(unsigned int i = 0; i < )
 }
 
 void CacheLanguageTranslation(const char *language) {
@@ -83,5 +83,5 @@ const char *GetTranslation(const char *key) {
 }
 
 void SetLanguageCallback(const PLConsoleVariable *var) {
-    CacheLanguageManifest()
+   // CacheLanguageManifest()
 }

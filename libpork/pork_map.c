@@ -209,7 +209,7 @@ void RegisterMap(const char *path) {
 
     unsigned int num_modes = GetJSONArrayLength("modes");
     for(unsigned int i = 0; i < num_modes; ++i) {
-        duk_get_prop_index(jsn_context, i);
+        duk_get_prop_index(jsn_context, -1, i);
     }
 
     /* todo: iterate over modes */
@@ -341,7 +341,7 @@ void InitMaps(void) {
     }
 
     char map_path[PL_SYSTEM_MAX_PATH];
-    snprintf(map_path, sizeof(map_path), "%smaps/", g_state.base_path);
+    snprintf(map_path, sizeof(map_path), "%smaps/", GetBasePath());
     plScanDirectory(map_path, "description", RegisterMap, false);
 
     /* generate base meshes */
@@ -721,7 +721,7 @@ void LoadMap(const char *name, unsigned int mode) {
     SetLoadingDescription("CHECKING FOR MAP DIRECTORY");
 
     char map_path[PL_SYSTEM_MAX_PATH];
-    snprintf(map_path, sizeof(map_path), "%s/maps/%s/", g_state.base_path, name);
+    snprintf(map_path, sizeof(map_path), "%s/maps/%s/", GetBasePath(), name);
     LogDebug("map: %s\n", map_path);
     if(!plPathExists(map_path)) {
         LogWarn("failed to load map, path \"%s\" doesn't exist, aborting\n", map_path);

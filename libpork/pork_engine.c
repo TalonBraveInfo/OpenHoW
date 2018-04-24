@@ -32,6 +32,19 @@ PLConsoleVariable *cv_debug_skeleton    = NULL;
 PLConsoleVariable *cv_debug_input       = NULL;
 PLConsoleVariable *cv_debug_cache       = NULL;
 
+PLConsoleVariable *cv_base_path = NULL;
+PLConsoleVariable *cv_mod_path  = NULL;
+
+const char *GetBasePath(void) {
+    pork_assert(cv_base_path);
+    return cv_base_path->s_value;
+}
+
+const char *GetModPath(void) {
+    pork_assert(cv_mod_path);
+    return cv_mod_path->s_value;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 void DebugModeCallback(const PLConsoleVariable *variable) {
@@ -82,10 +95,12 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     );
     cv_debug_cache = plRegisterConsoleVariable("dcache", "0", pl_bool_var, NULL, "display memory and other info");
 
+    cv_base_path = plRegisterConsoleVariable("base_path", "./", pl_string_var, NULL, "");
+    cv_mod_path = plRegisterConsoleVariable("mod_path", "", pl_string_var, NULL, "");
+
     InitScripting();
     InitConsole();
 
-    snprintf(g_state.base_path, sizeof(g_state.base_path), "./");
     for(int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
@@ -118,7 +133,14 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
                 LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
             }
 
-            strncpy(g_state.base_path, argv[i], sizeof(g_state.base_path));
+            plSetConsoleVariable(cv_base_path, argv[i]);
+        } else if(pl_strncasecmp("-mod", argv[i], 4) == 0) {
+            const char *parm = argv[i + 1];
+            if(plIsEmptyString(parm)) {
+                continue;
+            } ++i;
+
+            plSetConsoleVariable(cv_mod_path, argv[i]);
         } else if(pl_strncasecmp("-height", argv[i], 7) == 0) {
             const char *parm = argv[i + 1];
             if(parm == NULL || parm[0] == '\0') {
@@ -140,7 +162,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             LogWarn("unknown/invalid command line argument, %s!\n", argv[i]);
         }
     }
-    LogInfo("base path: %s\n", g_state.base_path);
+    LogInfo("base path: %s\n", GetBasePath());
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
     InitClient();

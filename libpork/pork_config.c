@@ -66,7 +66,7 @@ void ReadConfig(void) {
 void InitConfig(void) {
     LogInfo("checking for config...\n");
 
-    snprintf(config_path, sizeof(config_path), "%s" PORK_CONFIG, g_state.base_path);
+    snprintf(config_path, sizeof(config_path), "%s" PORK_CONFIG, GetBasePath());
     if(plFileExists(config_path)) {
         LogInfo("found \"%s\", parsing...\n", config_path);
         ReadConfig();

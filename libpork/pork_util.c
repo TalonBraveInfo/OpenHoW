@@ -16,6 +16,8 @@
  */
 #include <stdlib.h>
 
+#include <PL/platform_filesystem.h>
+
 #include "pork_engine.h"
 
 void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
@@ -24,4 +26,32 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
         Error("failed to allocate %u bytes!\n", size * num);
     }
     return mem;
+}
+
+FILE *pork_load(const char *path, const char *mode) {
+    FILE *fp;
+
+    char n_path[PL_SYSTEM_MAX_PATH];
+    if(!plIsEmptyString(GetModPath())) {
+        snprintf(n_path, sizeof(n_path), "%s/mods/%s/%s", GetBasePath(), GetModPath(), path);
+        if(plFileExists(n_path)) {
+            fp = fopen(n_path, mode);
+            if(fp != NULL) {
+                return fp;
+            }
+
+            LogWarn("failed to load file at %s, falling back to base!\n", n_path);
+        }
+    }
+
+    snprintf(n_path, sizeof(n_path), "%s%s", GetBasePath(), path);
+    if(plFileExists(n_path)) {
+        fp = fopen(n_path, mode);
+        if(fp != NULL) {
+            return fp;
+        }
+    }
+
+    LogWarn("failed to load file at %s!\n", n_path);
+    return NULL;
 }

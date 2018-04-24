@@ -293,7 +293,7 @@ void ConvertImageToPNG(const char *path) {
 }
 
 void ConvertImageCallback(unsigned int argc, char *argv[]) {
-    plScanDirectory(g_state.base_path, "tim", ConvertImageToPNG, true);
+    plScanDirectory(GetBasePath(), "tim", ConvertImageToPNG, true);
 }
 
 void ExtractGameData(const char *path) {
@@ -346,7 +346,7 @@ void ExtractGameData(const char *path) {
     };
 
     for(unsigned int i = 0; i < plArrayElements(mad_paths); ++i) {
-        snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, mad_paths[i].output);
+        snprintf(output_path, sizeof(output_path), "%s%s", GetBasePath(), mad_paths[i].output);
         if(!plCreatePath(output_path)) {
             LogWarn("%s\n", plGetError());
             continue;
@@ -619,7 +619,7 @@ void ExtractGameData(const char *path) {
     };
 
     for(unsigned int i = 0; i < plArrayElements(copy_paths); ++i) {
-        snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, copy_paths[i].output);
+        snprintf(output_path, sizeof(output_path), "%s%s", GetBasePath(), copy_paths[i].output);
         if(!plCreatePath(output_path)) {
             LogWarn("%s\n", plGetError());
             continue;
@@ -697,7 +697,7 @@ void ExtractGameData(const char *path) {
     };
 
     for(unsigned int i = 0; i < plArrayElements(ptg_paths); ++i) {
-        snprintf(output_path, sizeof(output_path), "%s%s", g_state.base_path, ptg_paths[i].output);
+        snprintf(output_path, sizeof(output_path), "%s%s", GetBasePath(), ptg_paths[i].output);
         if(!plCreatePath(output_path)) {
             LogWarn("%s\n", plGetError());
             continue;

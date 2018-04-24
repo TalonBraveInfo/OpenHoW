@@ -104,6 +104,9 @@ PL_EXTERN void SimulatePork(void);
 
 PL_EXTERN bool IsPorkRunning(void);
 
+PL_EXTERN const char *GetBasePath(void);
+PL_EXTERN const char *GetModPath(void);
+
 /* pork_input.c */
 
 enum {

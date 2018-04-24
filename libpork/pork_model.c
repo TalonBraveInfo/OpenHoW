@@ -264,7 +264,7 @@ PLModel *LoadVTXModel(const char *path) {
  * and can abort on error */
 PLModel *LoadModel(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
-    snprintf(model_path, sizeof(model_path), "%s%s.vtx", g_state.base_path, path);
+    snprintf(model_path, sizeof(model_path), "%s%s.vtx", GetBasePath(), path);
     PLModel *model = plLoadModel(model_path);
     if(model == NULL && abort_on_fail) {
         Error("failed to load model, \"%s\", aborting!\n%s\n", model_path, plGetError());
@@ -310,7 +310,7 @@ void CacheModelData(void) {
     LogInfo("caching pig.hir\n");
 
     char hir_path[PL_SYSTEM_MAX_PATH];
-    snprintf(hir_path, sizeof(hir_path), "%s/chars/pig.hir", g_state.base_path);
+    snprintf(hir_path, sizeof(hir_path), "%s/chars/pig.hir", GetBasePath());
     size_t hir_bytes = plGetFileSize(hir_path);
     if(hir_bytes == 0) {
         Error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
@@ -375,7 +375,7 @@ void CacheModelData(void) {
     LogInfo("caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    snprintf(mcap_path, sizeof(mcap_path), "%s/chars/mcap.mad", g_state.base_path);
+    snprintf(mcap_path, sizeof(mcap_path), "%s/chars/mcap.mad", GetBasePath());
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later

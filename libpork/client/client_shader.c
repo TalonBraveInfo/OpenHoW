@@ -35,12 +35,12 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
     }
 
     char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%sshaders/%s.vert", g_state.base_path, vertex);
+    snprintf(path, sizeof(path), "%sshaders/%s.vert", GetBasePath(), vertex);
     if(!plRegisterShaderStage(program, path, PL_SHADER_TYPE_VERTEX)) {
         Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
     }
 
-    snprintf(path, sizeof(path), "%sshaders/%s.frag", g_state.base_path, fragment);
+    snprintf(path, sizeof(path), "%sshaders/%s.frag", GetBasePath(), fragment);
     if(!plRegisterShaderStage(program, path, PL_SHADER_TYPE_FRAGMENT)) {
         Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
     }
