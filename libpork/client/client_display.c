@@ -312,7 +312,7 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
 
 PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
     char tpath[PL_SYSTEM_MAX_PATH];
-    snprintf(tpath, sizeof(tpath), "%s", pork_find(path));
+    strncpy(tpath, pork_find(path), sizeof(tpath));
 
     PLTexture *texture = NULL;
 
