@@ -15,13 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <PL/platform_filesystem.h>
+#include <PL/platform_graphics_camera.h>
 
 #include "pork_engine.h"
 #include "pork_map.h"
+
+#include "script/script.h"
+
 #include "client/client_frontend.h"
 #include "client/client_actor.h"
+#include "client/client_display.h"
+
 #include "server/server_actor.h"
-#include "script/script.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -122,7 +127,7 @@ typedef struct MapDesc {
 
 MapDesc *map_descriptors = NULL;
 unsigned int num_maps = 0;
-unsigned int max_maps = 1024;
+unsigned int max_maps = 2048;
 
 MapDesc *GetMapDescription(const char *name) {
     for(unsigned int i = 0; i < num_maps; ++i) {
@@ -202,21 +207,37 @@ void RegisterMap(const char *path) {
     MapDesc *slot = &map_descriptors[num_maps];
     memset(slot, 0, sizeof(MapDesc));
 
+    LogDebug("%s\n", buf);
+
     ParseJSON(buf);
 
     plStripExtension(slot->name, plGetFileName(path));
+
     strncpy(slot->description, GetJSONStringProperty("name"), sizeof(slot->description));
-
-    unsigned int num_modes = GetJSONArrayLength("modes");
-    for(unsigned int i = 0; i < num_modes; ++i) {
-        duk_get_prop_index(jsn_context, -1, i);
+    if(duk_get_prop_string(jsn_context, -1, "modes") && duk_is_array(jsn_context, -1)) {
+        unsigned int num_modes = (unsigned int)duk_get_length(jsn_context, -1);
+        for(unsigned int i = 0; i < num_modes; ++i) {
+            duk_get_prop_index(jsn_context, -1, i);
+            {
+                const char *mode = duk_get_string(jsn_context, i);
+                if(mode != NULL) {
+                    printf("mode = %s\n", mode);
+                    slot->flags |= GetMapModeFlag(mode);
+                }
+            }
+            duk_pop(jsn_context);
+        }
+    } else {
+        LogWarn("invalid modes array!\n");
     }
+    duk_pop(jsn_context);
 
-    /* todo: iterate over modes */
-    slot->flags = MAP_MODE_DEATHMATCH; /* todo: placeholder!!! */
-    /* todo: support multiple languages */
+    /* todo, the above is fucked, fix it you fool! */
+    /* temp */ slot->flags |= MAP_MODE_DEATHMATCH;
 
     FlushJSON();
+
+    printf("flags = %d\n", slot->flags);
 
     num_maps++;
 }
@@ -275,6 +296,8 @@ struct {
 
 PLMesh *water_mesh = NULL;
 PLMesh *terrain_mesh = NULL;
+
+PLTexture *water_textures[2];
 
 /* possible optimisations...
  *  a) tiles that use the same texture are part of the same mesh instance
@@ -341,10 +364,17 @@ void InitMaps(void) {
     }
 
     char map_path[PL_SYSTEM_MAX_PATH];
-    snprintf(map_path, sizeof(map_path), "%smaps/", GetBasePath());
+    if(!plIsEmptyString(GetModPath())) {
+        snprintf(map_path, sizeof(map_path), "%s/mods/%s/maps", GetBasePath(), GetModPath());
+        plScanDirectory(map_path, "description", RegisterMap, false);
+    }
+    snprintf(map_path, sizeof(map_path), "%smaps", GetBasePath());
     plScanDirectory(map_path, "description", RegisterMap, false);
 
     /* generate base meshes */
+
+    water_textures[0] = LoadTexture("maps/wat01.tim", PL_TEXTURE_FILTER_MIPMAP_NEAREST);
+    water_textures[1] = LoadTexture("maps/wat02.tim", PL_TEXTURE_FILTER_MIPMAP_NEAREST);
 
 #if 1
     /* water mesh is always the same, so we'll generate this here and can
@@ -770,6 +800,8 @@ void LoadMap(const char *name, unsigned int mode) {
     }
 }
 
+#include "client/client_font.h"
+
 /* draws the currently loaded
  * map */
 void DrawMap(void) {
@@ -777,9 +809,24 @@ void DrawMap(void) {
         return;
     }
 
-    // todo, draw sky, clouds
+#if 1 /* wonderful debug code! */
+    plSetupCamera(g_state.ui_camera);
 
+    DrawBitmapString(g_fonts[FONT_BIG], 10, 128, 1, 1.f, PL_COLOUR_FIRE_BRICK,
+                     "THIS IS HERE TO ENSURE THAT WE CAN SEE UI STUFF HERE!");
+
+    plSetTexture(water_textures[0], 0);
     plDrawMesh(water_mesh);
+    plSetTexture(NULL, 0);
+
+    plDrawPerspectivePOST(g_state.ui_camera);
+
+    plSetupCamera(g_state.camera);
+#else /* final code... */
+    plDrawMesh(water_mesh);
+#endif
+
+    // todo, draw sky, clouds
 
     // todo, update parts of terrain mesh from deformation etc?
 

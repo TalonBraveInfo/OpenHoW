@@ -185,7 +185,7 @@ void DrawVideo(void) {
 
     plSetShaderProgram(programs[SHADER_VIDEO]);
 
-    mesh->texture = NULL; /* todo pass correct texture */
+    /* todo pass correct texture */
 
     plDrawMesh(mesh);
 

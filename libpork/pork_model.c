@@ -375,7 +375,7 @@ void CacheModelData(void) {
     LogInfo("caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    snprintf(mcap_path, sizeof(mcap_path), "%s/chars/mcap.mad", GetBasePath());
+    strncpy(mcap_path, pork_find("/chars/mcap.mad"), sizeof(mcap_path));
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
@@ -594,15 +594,15 @@ void CacheModelData(void) {
 
     /* models */
 
-    model_cache.pigs[PIG_CLASS_ACE] = LoadModel("/chars/pigs/ac_hi", true);
-    model_cache.pigs[PIG_CLASS_COMMANDO] = LoadModel("/chars/pigs/sb_hi", true);
-    model_cache.pigs[PIG_CLASS_GRUNT] = LoadModel("/chars/pigs/gr_hi", true);
-    model_cache.pigs[PIG_CLASS_HEAVY] = LoadModel("/chars/pigs/hv_hi", true);
-    model_cache.pigs[PIG_CLASS_LEGEND] = LoadModel("/chars/pigs/le_hi", true);
-    model_cache.pigs[PIG_CLASS_MEDIC] = LoadModel("/chars/pigs/me_hi", true);
-    model_cache.pigs[PIG_CLASS_SABOTEUR] = LoadModel("/chars/pigs/sa_hi", true);
-    model_cache.pigs[PIG_CLASS_SNIPER] = LoadModel("/chars/pigs/sn_hi", true);
-    model_cache.pigs[PIG_CLASS_SPY] = LoadModel("/chars/pigs/sp_hi", true);
+    model_cache.pigs[PIG_CLASS_ACE]         = LoadModel("/chars/pigs/ac_hi", true);
+    model_cache.pigs[PIG_CLASS_COMMANDO]    = LoadModel("/chars/pigs/sb_hi", true);
+    model_cache.pigs[PIG_CLASS_GRUNT]       = LoadModel("/chars/pigs/gr_hi", true);
+    model_cache.pigs[PIG_CLASS_HEAVY]       = LoadModel("/chars/pigs/hv_hi", true);
+    model_cache.pigs[PIG_CLASS_LEGEND]      = LoadModel("/chars/pigs/le_hi", true);
+    model_cache.pigs[PIG_CLASS_MEDIC]       = LoadModel("/chars/pigs/me_hi", true);
+    model_cache.pigs[PIG_CLASS_SABOTEUR]    = LoadModel("/chars/pigs/sa_hi", true);
+    model_cache.pigs[PIG_CLASS_SNIPER]      = LoadModel("/chars/pigs/sn_hi", true);
+    model_cache.pigs[PIG_CLASS_SPY]         = LoadModel("/chars/pigs/sp_hi", true);
 }
 
 void InitModels(void) {

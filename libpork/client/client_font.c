@@ -38,8 +38,9 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour c
         Error("attempted to draw font before font init, aborting!\n");
     }
 
+    plSetTexture(font->texture, 0);
+
     plClearMesh(font_mesh);
-    font_mesh->texture = font->texture;
 
     plSetMeshUniformColour(font_mesh, colour);
 
