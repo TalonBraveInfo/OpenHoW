@@ -53,6 +53,9 @@ struct {
     struct PLCamera *camera;       // camera used for general gameplay
     struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
+    char mod_name[256];
+    char mod_version[4];
+
     /* server / client logic */
     bool is_host;
     bool is_dedicated;

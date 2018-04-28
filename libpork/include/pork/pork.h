@@ -95,6 +95,7 @@ typedef struct PorkLauncherInterface {
     void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
     void(*DisplayWindow)(bool fullscreen, unsigned int width, unsigned int height);
     void(*SwapWindow)(void);
+    void(*SetWindowTitle)(const char *title);
 
     void(*ShutdownLauncher)(void);
 } PorkLauncherInterface;

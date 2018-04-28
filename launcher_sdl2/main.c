@@ -104,6 +104,10 @@ void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
     }
 }
 
+void ISetWindowTitle(const char *title) {
+    SDL_SetWindowTitle(window, title);
+}
+
 void ISwapDisplay(void) {
     SDL_GL_SwapWindow(window);
 }
@@ -292,6 +296,7 @@ int main(int argc, char **argv) {
     interface.DisplayWindow     = IDisplayWindow;
     interface.SwapWindow        = ISwapDisplay;
     interface.ShutdownLauncher  = IShutdownLauncher;
+    interface.SetWindowTitle    = ISetWindowTitle;
 
     int num_joysticks = SDL_NumJoysticks();
     if(num_joysticks < 0) {

@@ -199,6 +199,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     /* */
 
+    g_launcher.SetWindowTitle(g_state.mod_name);
+
     InitClient();
     InitServer();
 
