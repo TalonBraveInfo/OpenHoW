@@ -29,6 +29,12 @@ duk_context *jsn_context = NULL;    /* json context */
 
 #define CheckContext(A, B) if((A) != (B)) { LogWarn("invalid context, ignoring script function!\n"); return -1; }
 
+duk_ret_t SC_LoadScript(duk_context *context) {
+    // todo!!!
+
+    return 0;
+}
+
 static duk_ret_t SC_LogInfo(duk_context *context) {
     duk_push_string(context, " ");
     duk_insert(context, 0);
@@ -63,7 +69,8 @@ static duk_ret_t SC_Error(duk_context *context) {
 static duk_ret_t SC_QueueVideos(duk_context *context) {
     CheckContext(context, cli_context);
 
-    QueueVideos("", 0);
+    //QueueVideos("", 0);
+    return 0;
 }
 
 /*************************************************************/
@@ -131,6 +138,28 @@ void LoadScript(duk_context *context, const char *path) {
     duk_push_global_object(context);
 }
 
+void DeclareGlobalString(duk_context *context, const char *name, const char *value) {
+    duk_push_string(context, value);
+    if(!duk_put_global_string(context, name)) {
+        Error("failed to declare global string, \"%s\", aborting!\n", name);
+    }
+}
+
+void DeclareGlobalInteger(duk_context *context, const char *name, int value) {
+    duk_push_int(context, value);
+    if(!duk_put_global_string(context, name)) {
+        Error("failed to declare global integer, \"%s\", aborting!\n", name);
+    }
+}
+
+/* declare on both server and client */
+#define DeclareUniversalGlobalString(value) \
+    DeclareGlobalString(svr_context, #value, (value)); \
+    DeclareGlobalString(cli_context, #value, (value))
+#define DeclareUniversalGlobalInteger(value) \
+    DeclareGlobalInteger(svr_context, #value, (value)); \
+    DeclareGlobalInteger(cli_context, #value, (value))
+
 typedef struct ScriptFunction {
     const char *name;
     int num_args;
@@ -188,6 +217,49 @@ void InitScripting(void) {
     }
 
     duk_module_duktape_init(cli_context);
+
+    /* ... globals ... */
+    {
+        DeclareUniversalGlobalString(PORK_TITLE);
+
+        /* pig classes */
+        DeclareUniversalGlobalInteger(PIG_CLASS_ACE);
+        DeclareUniversalGlobalInteger(PIG_CLASS_LEGEND);
+        DeclareUniversalGlobalInteger(PIG_CLASS_MEDIC);
+        DeclareUniversalGlobalInteger(PIG_CLASS_COMMANDO);
+        DeclareUniversalGlobalInteger(PIG_CLASS_SPY);
+        DeclareUniversalGlobalInteger(PIG_CLASS_SNIPER);
+        DeclareUniversalGlobalInteger(PIG_CLASS_SABOTEUR);
+        DeclareUniversalGlobalInteger(PIG_CLASS_HEAVY);
+        DeclareUniversalGlobalInteger(PIG_CLASS_GRUNT);
+
+        /* controller vars */
+        DeclareUniversalGlobalInteger(PORK_BUTTON_CROSS);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_CIRCLE);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_TRIANGLE);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_SQUARE);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_R1);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_R2);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_R3);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_L1);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_L2);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_L3);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_UP);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_DOWN);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_LEFT);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_RIGHT);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_START);
+        DeclareUniversalGlobalInteger(PORK_BUTTON_SELECT);
+
+        DeclareUniversalGlobalInteger(PORK_MAX_BUTTONS);
+        DeclareUniversalGlobalInteger(PORK_MAX_CONTROLLERS);
+
+        /* mouse vars */
+        DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_LEFT);
+        DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_RIGHT);
+        DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_MIDDLE);
+        DeclareUniversalGlobalInteger(PORK_MAX_MOUSE_BUTTONS);
+    }
 
     /* now init our scripts! */
 
