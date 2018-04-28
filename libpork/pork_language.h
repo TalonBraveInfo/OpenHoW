@@ -16,4 +16,6 @@
  */
 #pragma once
 
+void RegisterLanguages(void);
+
 void SetLanguageCallback(const PLConsoleVariable *var);

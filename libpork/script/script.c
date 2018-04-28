@@ -318,11 +318,15 @@ unsigned int GetJSONIntIndexProperty(const char *property, unsigned int index) {
 
 unsigned int GetJSONArrayLength(const char *property) {
     if(!duk_get_prop_string(jsn_context, -1, property)) {
+        duk_pop(jsn_context);
+
         LogMissingProperty(property);
         return 0;
     }
 
     if(!duk_is_array(jsn_context, -1)) {
+        duk_pop(jsn_context);
+
         LogInvalidArray(property);
         return 0;
     }
@@ -334,6 +338,8 @@ unsigned int GetJSONArrayLength(const char *property) {
 
 const char *GetJSONStringProperty(const char *property) {
     if(!duk_get_prop_string(jsn_context, -1, property)) {
+        duk_pop(jsn_context);
+
         LogMissingProperty(property);
         return "null";
     }
@@ -344,6 +350,8 @@ const char *GetJSONStringProperty(const char *property) {
 
 int GetJSONIntProperty(const char *property) {
     if(!duk_get_prop_string(jsn_context, -1, property)) {
+        duk_pop(jsn_context);
+
         LogMissingProperty(property);
         return 0;
     }

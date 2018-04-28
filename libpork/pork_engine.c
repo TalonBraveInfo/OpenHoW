@@ -193,7 +193,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     LogDebug("Caching language data...\n");
 
-    InitLanguage();
+    RegisterLanguages();
 
     FlushJSON();
 

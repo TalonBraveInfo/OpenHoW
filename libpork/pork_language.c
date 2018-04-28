@@ -30,33 +30,56 @@ typedef struct LanguageKey {
     char translation[512];
 } LanguageKey;
 LanguageKey *l_cache = NULL;
-LanguageKey *l_manifest = NULL;
+
+typedef struct Language {
+    char key[3];            /* "eng" */
+    char name[64];          /* "English" */
+    char path[128];         /* "english.json" */
+    char font_path[256];    /* "fonts/english/" */
+} Language;
+Language *l_manifest = NULL;
 
 unsigned int num_languages = 0;
 unsigned int num_translations = 0;
 
-void InitLanguage(void) {
-    LogDebug("caching language manifest...\n");
-
-    char lang_path[PL_SYSTEM_MAX_PATH];
-    snprintf(lang_path, sizeof(lang_path), "%s" LANGUAGE_PATH "language.manifest", GetBasePath());
-    FILE *fp = fopen(lang_path, "r");
-    if(fp == NULL) {
-        LogWarn("failed to load \"" LANGUAGE_PATH "language.manifest\"!\n");
+void RegisterLanguages(void) {
+    if(!duk_get_prop_string(jsn_context, -1, "languages")) {
+        LogWarn("failed to find languages property in manifest!\n");
         return;
     }
 
-    size_t length = plGetFileSize(lang_path);
-    char buf[length + 1];
-    if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of language manifest!\n");
+    if(!duk_is_array(jsn_context, -1)) {
+        LogWarn("languages property isn't an array!\n");
+        return;
     }
-    fclose(fp);
-    buf[length] = '\0';
 
-    ParseJSON(buf);
+    num_languages = (unsigned int)duk_get_length(jsn_context, -1);
+    l_manifest = pork_alloc(num_languages, sizeof(Language), true);
+    for(unsigned int i = 0; i < num_languages; ++i) {
+        duk_get_prop_index(jsn_context, -1, i);
+        {
+            strncpy(l_manifest[i].key, GetJSONStringProperty("key"), sizeof(l_manifest[i].key));
+            strncpy(l_manifest[i].name, GetJSONStringProperty("name"), sizeof(l_manifest[i].name));
+            strncpy(l_manifest[i].path, GetJSONStringProperty("path"), sizeof(l_manifest[i].path));
+            /* uncomment once we're using this...
+            strncpy(l_manifest[i].font_path, GetJSONStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
+        }
+        duk_pop(jsn_context);
+    }
 
+#if 0 /* debug */
+    for(unsigned int i = 0; i < num_languages; ++i) {
+        printf("key %s\n", l_manifest[i].key);
+        printf("name %s\n", l_manifest[i].name);
+        printf("path %s\n", l_manifest[i].path);
+    }
+    printf("done!\n");
+#endif
+}
 
+void ShutdownLanguage(void) {
+    pork_free(l_manifest);
+    pork_free(l_cache);
 }
 
 const char *GetTranslationPath(const char *language) {
