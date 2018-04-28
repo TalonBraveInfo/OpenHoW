@@ -16,10 +16,12 @@
  */
 #include "pork_engine.h"
 
+#include "script/script.h"
+
 #include "server_actor.h"
 
 void InitServer(void) {
-
+    CS_InitServer();
 }
 
 void SimulateServer(void) {

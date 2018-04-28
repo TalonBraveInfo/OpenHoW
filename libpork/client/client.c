@@ -20,6 +20,8 @@
 #include "pork_input.h"
 #include "pork_console.h"
 
+#include "script/script.h"
+
 #include "client.h"
 #include "client_display.h"
 #include "client_actor.h"
@@ -80,6 +82,8 @@ void InitClient(void) {
     InitFrontend();
 
     CLClearActors();
+
+    CS_InitClient();
 }
 
 void SimulateClient(void) {
