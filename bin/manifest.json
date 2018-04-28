@@ -1,0 +1,29 @@
+{
+    "languages":[
+        {
+            "name"      :"eng",
+            "fullname"  :"$english",
+            "path"      :"languages/english.json"
+        },
+        {
+            "name"      :"ger",
+            "fullname"  :"$german",
+            "path"      :"languages/german.json"
+        },
+        {
+            "name"      :"fre",
+            "fullname"  :"$french",
+            "path"      :"languages/french.json"
+        },
+        {
+            "name"      :"spa",
+            "fullname"  :"$spanish",
+            "path"      :"languages/spanish.json"
+        },
+        {
+            "name"      :"ita",
+            "fullname"  :"$italian",
+            "path"      :"languages/italian.json"
+        }
+    ]
+}

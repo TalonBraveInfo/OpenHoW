@@ -1,4 +1,10 @@
 {
+  "english" :"ENGLISH",
+  "french"  :"FRENCH",
+  "german"  :"GERMAN",
+  "italian" :"ITALIAN",
+  "spanish" :"SPANISH",
+
   "yes" :"YES",
   "no"  :"NO",
   "ok"  :"OK",
