@@ -19,11 +19,11 @@
 #include "pork_engine.h"
 #include "pork_map.h"
 #include "pork_console.h"
+#include "pork_language.h"
 
 #include "script/script.h"
 
 #include "client/client.h"
-
 #include "server/server.h"
 
 PLConsoleVariable *cv_debug_mode        = NULL;
@@ -165,6 +165,39 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     LogInfo("base path: %s\n", GetBasePath());
     LogInfo("mod path: %s%s\n", GetBasePath(), GetModPath());
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
+
+    /* load in the manifest */
+
+    LogDebug("reading manifest...\n");
+
+    char lang_path[PL_SYSTEM_MAX_PATH];
+    strncpy(lang_path, pork_find("manifest.json"), sizeof(lang_path));
+    FILE *fp = fopen(lang_path, "r");
+    if(fp == NULL) {
+        LogWarn("failed to load \"%s\"!\n", lang_path);
+        return;
+    }
+
+    size_t length = plGetFileSize(lang_path);
+    char buf[length + 1];
+    if(fread(buf, sizeof(char), length, fp) != length) {
+        LogWarn("failed to read entirety of language manifest!\n");
+    }
+    fclose(fp);
+    buf[length] = '\0';
+
+    ParseJSON(buf);
+
+    strncpy(g_state.mod_name, GetJSONStringProperty("name"), sizeof(g_state.mod_name));
+    strncpy(g_state.mod_version, GetJSONStringProperty("version"), sizeof(g_state.mod_version));
+
+    LogDebug("Caching language data...\n");
+
+    InitLanguage();
+
+    FlushJSON();
+
+    /* */
 
     InitClient();
     InitServer();

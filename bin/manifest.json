@@ -1,4 +1,7 @@
 {
+    "name":     "OpenHoW",
+    "version":  "v1.0",
+
     "languages":[
         {
             "name"      :"eng",

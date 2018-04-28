@@ -294,7 +294,7 @@ void ParseJSON(const char *buf) {
 }
 
 void FlushJSON(void) {
-    duk_pop_2(jsn_context);
+    duk_pop(jsn_context);
 }
 
 unsigned int GetJSONIntIndexProperty(const char *property, unsigned int index) {
@@ -329,7 +329,6 @@ unsigned int GetJSONArrayLength(const char *property) {
 
     unsigned int len = (unsigned int)duk_get_length(jsn_context, -1);
     duk_pop(jsn_context);
-
     return len;
 }
 
@@ -338,7 +337,9 @@ const char *GetJSONStringProperty(const char *property) {
         LogMissingProperty(property);
         return "null";
     }
-    return duk_to_string(jsn_context, -1);
+    const char *str = duk_to_string(jsn_context, -1);
+    duk_pop(jsn_context);
+    return str;
 }
 
 int GetJSONIntProperty(const char *property) {
@@ -346,5 +347,7 @@ int GetJSONIntProperty(const char *property) {
         LogMissingProperty(property);
         return 0;
     }
-    return duk_to_int(jsn_context, -1);
+    int var = duk_to_int(jsn_context, -1);
+    duk_pop(jsn_context);
+    return var;
 }
