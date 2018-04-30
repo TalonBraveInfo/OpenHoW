@@ -43,29 +43,24 @@ unsigned int num_languages = 0;
 unsigned int num_translations = 0;
 
 void RegisterLanguages(void) {
-    if(!duk_get_prop_string(jsn_context, -1, "languages")) {
-        LogWarn("failed to find languages property in manifest!\n");
-        return;
-    }
-
-    if(!duk_is_array(jsn_context, -1)) {
-        LogWarn("languages property isn't an array!\n");
-        return;
-    }
-
-    num_languages = (unsigned int)duk_get_length(jsn_context, -1);
-    l_manifest = pork_alloc(num_languages, sizeof(Language), true);
-    for(unsigned int i = 0; i < num_languages; ++i) {
-        duk_get_prop_index(jsn_context, -1, i);
-        {
-            strncpy(l_manifest[i].key, GetJSONStringProperty("key"), sizeof(l_manifest[i].key));
-            strncpy(l_manifest[i].name, GetJSONStringProperty("name"), sizeof(l_manifest[i].name));
-            strncpy(l_manifest[i].path, GetJSONStringProperty("path"), sizeof(l_manifest[i].path));
-            /* uncomment once we're using this...
-            strncpy(l_manifest[i].font_path, GetJSONStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
+    if(duk_get_prop_string(jsn_context, -1, "languages") && duk_is_array(jsn_context, -1)) {
+        num_languages = (unsigned int)duk_get_length(jsn_context, -1);
+        l_manifest = pork_alloc(num_languages, sizeof(Language), true);
+        for(unsigned int i = 0; i < num_languages; ++i) {
+            duk_get_prop_index(jsn_context, -1, i);
+            {
+                strncpy(l_manifest[i].key, GetJSONStringProperty("key"), sizeof(l_manifest[i].key));
+                strncpy(l_manifest[i].name, GetJSONStringProperty("name"), sizeof(l_manifest[i].name));
+                strncpy(l_manifest[i].path, GetJSONStringProperty("path"), sizeof(l_manifest[i].path));
+                /* uncomment once we're using this...
+                strncpy(l_manifest[i].font_path, GetJSONStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
+            }
+            duk_pop(jsn_context);
         }
-        duk_pop(jsn_context);
+    } else {
+        LogWarn("invalid languages property!\n");
     }
+    duk_pop(jsn_context);
 
 #if 0 /* debug */
     for(unsigned int i = 0; i < num_languages; ++i) {
