@@ -60,6 +60,7 @@ void InitShaders(void) {
 
     /* enable the default shader program */
     plSetShaderProgram(programs[SHADER_DEFAULT]);
+    plSetNamedShaderUniformInt(programs[SHADER_DEFAULT], "diffuse", 0);
 }
 
 void ShutdownShaders(void) {
