@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <PL/platform_filesystem.h>
+#include <PL/platform_graphics.h>
 
 #include "pork_engine.h"
 
@@ -47,15 +48,18 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 
     plLinkShaderProgram(program);
 
+    plRegisterShaderProgramUniforms(program);
+
     return program;
 }
 
 void InitShaders(void) {
     programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
+   // programs[SHADER_WATER]      = LoadShaderProgram("water", "water");
     //programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
 
     /* enable the default shader program */
-    //plSetShaderProgram(programs[SHADER_DEFAULT]);
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
 }
 
 void ShutdownShaders(void) {

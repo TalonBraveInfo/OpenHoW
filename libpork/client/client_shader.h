@@ -94,6 +94,7 @@ void DeleteShaderProgram(ShaderProgram *program);
 
 enum {
     SHADER_DEFAULT,
+    SHADER_WATER,
     SHADER_VIDEO,
 
     END_SHADER

@@ -191,7 +191,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     strncpy(g_state.mod_name, GetJSONStringProperty("name"), sizeof(g_state.mod_name));
     strncpy(g_state.mod_version, GetJSONStringProperty("version"), sizeof(g_state.mod_version));
 
-    LogDebug("Caching language data...\n");
+    LogDebug("caching language data...\n");
 
     RegisterLanguages();
 
