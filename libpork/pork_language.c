@@ -79,6 +79,8 @@ void ShutdownLanguage(void) {
 
 const char *GetTranslationPath(const char *language) {
     //for(unsigned int i = 0; i < )
+
+    return NULL;
 }
 
 void CacheLanguageTranslation(const char *language) {
@@ -90,14 +92,14 @@ void CacheLanguageTranslation(const char *language) {
 const char *GetTranslation(const char *key) {
     if(plIsEmptyString(key)) {
         LogDebug("invalid key!\n");
-        return "null";
+        return key;
     }
 
     if(l_cache != NULL) {
         pork_free(l_cache);
     }
 
-
+    return key;
 }
 
 void SetLanguageCallback(const PLConsoleVariable *var) {
