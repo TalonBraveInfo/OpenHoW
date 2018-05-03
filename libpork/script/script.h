@@ -32,3 +32,9 @@ unsigned int GetJSONArrayLength(const char *property);
 
 const char *GetJSONStringProperty(const char *property);
 int GetJSONIntProperty(const char *property);
+
+/**********************************************************/
+/* CallScript Functions                                   */
+
+void CS_InitClient(void);
+void CS_InitServer(void);
