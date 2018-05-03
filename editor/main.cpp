@@ -80,6 +80,8 @@ private:
 };
 
 enum {
+    INVALID_ID,
+
     ID_MODEL,
     ID_TEXTURE,
 

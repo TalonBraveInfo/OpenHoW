@@ -51,4 +51,4 @@ add_subdirectory(editor)
 add_subdirectory(launcher_sdl2)
 
 # Tools - todo, add build flag for whether we want these or not
-add_subdirectory(ptg_extract)
+add_subdirectory(utilities/ptg_extract)
