@@ -617,6 +617,35 @@ void ExtractGameData(const char *path) {
             /* chars */
             {"/Chars/pig.HIR", "/chars/"},
             {"/Chars/mcap.mad", "/chars/"},
+
+            /* audio:ambience */
+            {"/Audio/AMB_1D.wav", "/audio/"},
+            {"/Audio/AMB_1N.wav", "/audio/"},
+            {"/Audio/AMB_2D.wav", "/audio/"},
+            {"/Audio/AMB_2N.wav", "/audio/"},
+
+            /* audio:explosions */
+            {"/Audio/E_1.wav", "/audio/"},
+            {"/Audio/E_1000P.wav", "/audio/"},
+
+            /* audio:engines */
+            {"/Audio/EN_BIP.wav", "/audio/"},
+            {"/Audio/EN_TANK.wav", "/audio/"},
+
+            /* audio:footsteps */
+            {"/Audio/FT_GRASS.wav", "/audio/"},
+            {"/Audio/FT_ICE.wav", "/audio/"},
+            {"/Audio/FT_LAVA.wav", "/audio/"},
+            {"/Audio/FT_METAL.wav", "/audio/"},
+            {"/Audio/FT_MUD.wav", "/audio/"},
+            {"/Audio/FT_QUAG.wav", "/audio/"},
+            {"/Audio/FT_ROCK.wav", "/audio/"},
+            {"/Audio/FT_SAND.wav", "/audio/"},
+            {"/Audio/FT_SNOW.wav", "/audio/"},
+            {"/Audio/FT_STONE.wav", "/audio/"},
+            {"/Audio/FT_SWIM.wav", "/audio/"},
+            {"/Audio/FT_WATER.wav", "/audio/"},
+            {"/Audio/FT_WOOD.wav", "/audio/"},
     };
 
     for(unsigned int i = 0; i < plArrayElements(copy_paths); ++i) {
