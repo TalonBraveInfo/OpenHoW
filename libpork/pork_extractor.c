@@ -317,8 +317,9 @@ void ExtractGameData(const char *path) {
             {"/Chars/british2.mad", "/chars/pigs/"}, /* actually contains all the pig models */
             {"/Chars/FACES.MTD", "/chars/faces/"},   /* contains all the face textures       */
 
-            {"/Chars/BRITHATS.MAD", "/chars/british_hats/"},
-            {"/Chars/FHATS.MAD", "/chars/french_hats/"},
+            /* hats */
+            {"/Chars/BRITHATS.MAD", "/chars/hats/"},
+            {"/Chars/FHATS.MAD", "/chars/hats/"},
 
             /* teams */
             {"/Chars/british.mtd", "/chars/british/"},
