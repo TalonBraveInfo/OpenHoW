@@ -14,30 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
-#include "duktape.h"
+var pig_classes = {
+    PIG_CLASS_ACE: 0,
+    PIG_CLASS_LEGEND: 1,
 
-void InitScripting(void);
-void ShutdownScripting(void);
+    MAX_CLASSES: 2
+};
 
-void CS_InitClient(void);
-void CS_InitServer(void);
-
-/**********************************************************/
-
-extern duk_context *jsn_context;
-
-void ParseJSON(const char *buf);
-void FlushJSON(void);
-
-unsigned int GetJSONArrayLength(const char *property);
-
-const char *GetJSONStringProperty(const char *property);
-int GetJSONIntProperty(const char *property);
-
-/**********************************************************/
-/* CallScript Functions                                   */
-
-void CS_InitClient(void);
-void CS_InitServer(void);
+exports.test = function () {
+   // LogInfo("test!!\n");
+};

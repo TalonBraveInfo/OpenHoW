@@ -35,6 +35,11 @@ duk_ret_t SC_LoadScript(duk_context *context) {
     return 0;
 }
 
+duk_ret_t SC_GetModName(duk_context *context) {
+    duk_push_string(context, g_state.mod_name);
+    return 0;
+}
+
 static duk_ret_t SC_LogInfo(duk_context *context) {
     duk_push_string(context, " ");
     duk_insert(context, 0);
@@ -171,6 +176,8 @@ ScriptFunction svr_builtins[]= {
         {"LogWarn", DUK_VARARGS, SC_LogWarn},
         {"LogDebug", DUK_VARARGS, SC_LogDebug},
         {"Error", DUK_VARARGS, SC_Error},
+
+        {"GetModName", 0, SC_GetModName},
 };
 
 ScriptFunction cli_builtins[]= {
@@ -180,6 +187,8 @@ ScriptFunction cli_builtins[]= {
         {"Error", DUK_VARARGS, SC_Error},
 
         {"QueueVideos", 2, SC_QueueVideos},
+
+        {"GetModName", 0, SC_GetModName},
 };
 
 void InitScripting(void) {
@@ -220,8 +229,6 @@ void InitScripting(void) {
 
     /* ... globals ... */
     {
-        DeclareUniversalGlobalString(PORK_TITLE);
-
         /* pig classes */
         DeclareUniversalGlobalInteger(PIG_CLASS_ACE);
         DeclareUniversalGlobalInteger(PIG_CLASS_LEGEND);
@@ -265,9 +272,6 @@ void InitScripting(void) {
 
     LoadScript(cli_context, "./scripts/client.js");
     LoadScript(svr_context, "./scripts/server.js");
-
-    CS_InitClient();
-    CS_InitServer();
 
     //duk_eval_string(scr_context, "LogInfo('Hello world!');");
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));

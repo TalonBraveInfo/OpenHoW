@@ -31,6 +31,10 @@ struct {
 
     PLModel *pigs[PIG_CLASS_END];
     PLModel *hats[PIG_CLASS_END];
+
+    PLModel **decorations;
+    unsigned int num_decorations;
+    unsigned int max_decorations;
 } model_cache;
 
 #define PIG_EYES_INDEX  118
@@ -285,6 +289,39 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
 }
 
 ////////////////////////////////////////////////////////////////
+
+/****************************************************/
+/* DECORATIONS
+ *  Models that are displayed all around the map for
+ *  uh... decoration purposes.                      */
+
+/**
+ * Cache a directory of models provided by a
+ * map we're currently loading into memory.
+ *
+ * @param path
+ */
+void CacheDecorations(const char *path) {
+    /* todo */
+}
+
+void ClearDecorations(void) {
+    for(unsigned int i = 0; i < model_cache.num_decorations; ++i) {
+        plDeleteModel(model_cache.decorations[i]);
+    }
+
+    pork_free(model_cache.decorations);
+
+    model_cache.num_decorations =
+    model_cache.max_decorations = 0;
+}
+
+PLModel *GetDecoration(const char *name) {
+    /* todo */
+    return NULL;
+}
+
+/****************************************************/
 
 //00: Hip
 //01: Spine
