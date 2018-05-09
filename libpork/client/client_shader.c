@@ -55,7 +55,7 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 
 void InitShaders(void) {
     programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
-   // programs[SHADER_WATER]      = LoadShaderProgram("water", "water");
+    programs[SHADER_WATER]      = LoadShaderProgram("water", "water");
     //programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
 
     /* enable the default shader program */

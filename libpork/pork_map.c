@@ -294,19 +294,61 @@ struct {
     unsigned int num_textures;
 } map_state;
 
-PLMesh *water_mesh = NULL;
 PLMesh *terrain_mesh = NULL;
 
+/****************************************************/
+/* WATER                                            */
+
+#define WATER_TILES 32
+
+#define WATER_TILE_WIDTH     16
+#define WATER_TILE_HEIGHT    16
+
 PLTexture *water_textures[2];
+PLMesh *water_mesh = NULL;
+
+typedef struct WaterTile {
+    PLVector3 position;
+} WaterTile;
+WaterTile water_tiles[WATER_TILES];
+
+void GenerateWaterTiles(void) {
+    water_textures[0] = LoadTexture("maps/wat01.tim", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[1] = LoadTexture("maps/wat02.tim", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+
+    water_mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, 2, 4);
+    if (water_mesh == NULL) {
+        Error("failed to create water mesh, %s, aborting!\n", plGetError());
+    }
+
+    plClearMesh(water_mesh);
+
+    plSetMeshUniformColour(water_mesh, PL_COLOUR_WHITE);
+
+    plSetMeshVertexPosition(water_mesh, 0, PLVector3(-1, -1, -1));
+    plSetMeshVertexPosition(water_mesh, 1, PLVector3(1, 1, -1));
+    plSetMeshVertexPosition(water_mesh, 2, PLVector3(1, -1, -1));
+    plSetMeshVertexPosition(water_mesh, 3, PLVector3(1, 1, 1));
+
+    plUploadMesh(water_mesh);
+
+    memset(water_tiles, 0, sizeof(WaterTile) * WATER_TILES);
+    for(unsigned int i = 0; i < WATER_TILES; ++i) {
+        //water_tiles[i].position.
+    }
+}
+
+void DrawWater(void) {
+
+}
+
+/****************************************************/
 
 /* possible optimisations...
  *  a) tiles that use the same texture are part of the same mesh instance
  *  b) convert all tiles into a single texture, upload to GPU - using all tiles as single mesh
  *  c) keep all tiles separate, apply simple ray tracing algorithm to check whether tile is visible from camera
  */
-
-#define WATER_WIDTH     16
-#define WATER_HEIGHT    16
 
 void MapCommand(unsigned int argc, char *argv[]) {
     if(argc < 2) {
@@ -373,39 +415,7 @@ void InitMaps(void) {
 
     /* generate base meshes */
 
-    water_textures[0] = LoadTexture("maps/wat01.tim", PL_TEXTURE_FILTER_MIPMAP_NEAREST);
-    water_textures[1] = LoadTexture("maps/wat02.tim", PL_TEXTURE_FILTER_MIPMAP_NEAREST);
-
-#if 1
-    /* water mesh is always the same, so we'll generate this here and can
-     * worry about scaling later */
-    unsigned int num_verts = WATER_WIDTH * WATER_HEIGHT * 3;
-    unsigned int num_indices = (WATER_WIDTH * WATER_HEIGHT) + (WATER_WIDTH - 1) * (WATER_HEIGHT - 2);
-    water_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, num_indices, num_verts);
-    if(water_mesh == NULL) {
-        Error("failed to create water mesh, %s, aborting!\n", plGetError());
-    }
-
-    /* todo, CreateMesh should be taking care of this! */
-    water_mesh->num_indices = num_indices;
-    water_mesh->indices = calloc(water_mesh->num_indices, sizeof(uint16_t));
-    if(water_mesh->indices == NULL) {
-        Error("failed to allocate enough indices for water plane, aborting!\n");
-    }
-
-    plClearMesh(water_mesh);
-
-    plSetMeshUniformColour(water_mesh, PLColourRGB(0, 0, 128));
-
-    unsigned int cur_vertex = 0;
-    for(unsigned int row = 0; row < WATER_HEIGHT; ++row) {
-        for(unsigned int col = 0; col < WATER_WIDTH; ++col) {
-            plSetMeshVertexPosition(water_mesh, cur_vertex++, PLVector3(col, 0, row));
-        }
-    }
-
-    plUploadMesh(water_mesh);
-#endif
+    GenerateWaterTiles();
 
     /* register console commands */
 
@@ -809,22 +819,7 @@ void DrawMap(void) {
         return;
     }
 
-#if 1 /* wonderful debug code! */
-    plSetupCamera(g_state.ui_camera);
-
-    DrawBitmapString(g_fonts[FONT_BIG], 10, 128, 1, 1.f, PL_COLOUR_FIRE_BRICK,
-                     "THIS IS HERE TO ENSURE THAT WE CAN SEE UI STUFF HERE!");
-
-    plSetTexture(water_textures[0], 0);
-    plDrawMesh(water_mesh);
-    plSetTexture(NULL, 0);
-
-    plDrawPerspectivePOST(g_state.ui_camera);
-
-    plSetupCamera(g_state.camera);
-#else /* final code... */
-    plDrawMesh(water_mesh);
-#endif
+    DrawWater();
 
     // todo, draw sky, clouds
 
