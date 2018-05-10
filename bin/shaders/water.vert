@@ -1,4 +1,3 @@
-#version 120
 
 in vec2 position;
 
