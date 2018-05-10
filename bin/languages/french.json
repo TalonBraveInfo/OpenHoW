@@ -154,6 +154,12 @@
   "pig_lard_18" :"JAMES",
   "pig_lard_19" :"SWEETY",
 
+  "career"            :"PLAN DE CARRIERE",
+  "career_heavy"      :"ARTILLERIE LOURDE",
+  "career_engineer"   :"INGENIEUR",
+  "career_espionage"  :"ESPIONNAGE",
+  "career_medic"      :"TOUBIB",
+
   "class_grunt"       :"TROUFION",
   "class_gunner"      :"ARTILLEUR",
   "class_bombardier"  :"BOMBARDIER",
