@@ -21,9 +21,6 @@
 void InitScripting(void);
 void ShutdownScripting(void);
 
-void CS_InitClient(void);
-void CS_InitServer(void);
-
 /**********************************************************/
 
 extern duk_context *jsn_context;
@@ -39,5 +36,4 @@ int GetJSONIntProperty(const char *property);
 /**********************************************************/
 /* CallScript Functions                                   */
 
-void CS_InitClient(void);
-void CS_InitServer(void);
+void CS_InitGame(void);

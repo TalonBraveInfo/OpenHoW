@@ -82,8 +82,6 @@ void InitClient(void) {
     InitFrontend();
 
     CLClearActors();
-
-    CS_InitClient();
 }
 
 void SimulateClient(void) {

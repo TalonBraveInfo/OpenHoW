@@ -23,8 +23,7 @@
 #include "script.h"
 #include "duk_module_duktape.h"
 
-duk_context *cli_context = NULL;    /* client context */
-duk_context *svr_context = NULL;    /* server context */
+duk_context *scr_context = NULL;    /* server context */
 duk_context *jsn_context = NULL;    /* json context */
 
 #define CheckContext(A, B) if((A) != (B)) { LogWarn("invalid context, ignoring script function!\n"); return -1; }
@@ -72,7 +71,7 @@ static duk_ret_t SC_Error(duk_context *context) {
 }
 
 static duk_ret_t SC_QueueVideos(duk_context *context) {
-    CheckContext(context, cli_context);
+    CheckContext(context, scr_context);
 
     //QueueVideos("", 0);
     return 0;
@@ -85,28 +84,14 @@ static duk_ret_t SC_QueueVideos(duk_context *context) {
         LogWarn("failed to call script function!\n %s\n", duk_safe_to_string((b), -1)); \
     }
 
-/* Client */
-
-void CS_InitClient(void) {
-    duk_get_prop_string(cli_context, -1, "InitClientGame");
+void CS_InitGame(void) {
+    duk_get_prop_string(scr_context, -1, "InitGame");
 #if 0
     duk_push_int(scr_context, 10);
     duk_push_int(scr_context, 20);
 #endif
-    pork_call(cli_context, 0);
-    duk_pop(cli_context);
-}
-
-/* Server */
-
-void CS_InitServer(void) {
-    duk_get_prop_string(svr_context, -1, "InitServerGame");
-#if 0
-    duk_push_int(scr_context, 10);
-    duk_push_int(scr_context, 20);
-#endif
-    pork_call(svr_context, 0);
-    duk_pop(svr_context);
+    pork_call(scr_context, 0);
+    duk_pop(scr_context);
 }
 
 /*************************************************************/
@@ -159,11 +144,9 @@ void DeclareGlobalInteger(duk_context *context, const char *name, int value) {
 
 /* declare on both server and client */
 #define DeclareUniversalGlobalString(value) \
-    DeclareGlobalString(svr_context, #value, (value)); \
-    DeclareGlobalString(cli_context, #value, (value))
+    DeclareGlobalString(scr_context, #value, (value))
 #define DeclareUniversalGlobalInteger(value) \
-    DeclareGlobalInteger(svr_context, #value, (value)); \
-    DeclareGlobalInteger(cli_context, #value, (value))
+    DeclareGlobalInteger(scr_context, #value, (value))
 
 typedef struct ScriptFunction {
     const char *name;
@@ -171,22 +154,11 @@ typedef struct ScriptFunction {
     duk_ret_t (*Function)(duk_context *context);
 } ScriptFunction;
 
-ScriptFunction svr_builtins[]= {
+ScriptFunction scr_builtins[]= {
         {"LogInfo", DUK_VARARGS, SC_LogInfo},
         {"LogWarn", DUK_VARARGS, SC_LogWarn},
         {"LogDebug", DUK_VARARGS, SC_LogDebug},
         {"Error", DUK_VARARGS, SC_Error},
-
-        {"GetModName", 0, SC_GetModName},
-};
-
-ScriptFunction cli_builtins[]= {
-        {"LogInfo", DUK_VARARGS, SC_LogInfo},
-        {"LogWarn", DUK_VARARGS, SC_LogWarn},
-        {"LogDebug", DUK_VARARGS, SC_LogDebug},
-        {"Error", DUK_VARARGS, SC_Error},
-
-        {"QueueVideos", 2, SC_QueueVideos},
 
         {"GetModName", 0, SC_GetModName},
 };
@@ -201,31 +173,17 @@ void InitScripting(void) {
 
     /* init the server context */
 
-    svr_context = duk_create_heap_default();
-    if(svr_context == NULL) {
+    scr_context = duk_create_heap_default();
+    if(scr_context == NULL) {
         Error("failed to create heap for default context, aborting!\n");
     }
 
-    for(unsigned int i = 0; i < plArrayElements(svr_builtins); ++i) {
-        duk_push_c_function(svr_context, svr_builtins[i].Function, svr_builtins[i].num_args);
-        duk_put_global_string(svr_context, svr_builtins[i].name);
+    for(unsigned int i = 0; i < plArrayElements(scr_builtins); ++i) {
+        duk_push_c_function(scr_context, scr_builtins[i].Function, scr_builtins[i].num_args);
+        duk_put_global_string(scr_context, scr_builtins[i].name);
     }
 
-    duk_module_duktape_init(svr_context);
-
-    /* init the client context */
-
-    cli_context = duk_create_heap_default();
-    if(cli_context == NULL) {
-        Error("failed to create heap for default context, aborting!\n");
-    }
-
-    for(unsigned int i = 0; i < plArrayElements(cli_builtins); ++i) {
-        duk_push_c_function(cli_context, cli_builtins[i].Function, cli_builtins[i].num_args);
-        duk_put_global_string(cli_context, cli_builtins[i].name);
-    }
-
-    duk_module_duktape_init(cli_context);
+    duk_module_duktape_init(scr_context);
 
     /* ... globals ... */
     {
@@ -270,19 +228,15 @@ void InitScripting(void) {
 
     /* now init our scripts! */
 
-    LoadScript(cli_context, "./scripts/client.js");
-    LoadScript(svr_context, "./scripts/server.js");
+    //LoadScript(scr_context, "./scripts/client.js");
 
     //duk_eval_string(scr_context, "LogInfo('Hello world!');");
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));
 }
 
 void ShutdownScripting(void) {
-    if(svr_context != NULL) {
-        duk_destroy_heap(svr_context);
-    }
-    if(cli_context != NULL) {
-        duk_destroy_heap(cli_context);
+    if(scr_context != NULL) {
+        duk_destroy_heap(scr_context);
     }
 }
 
