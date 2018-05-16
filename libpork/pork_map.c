@@ -400,10 +400,7 @@ void MapsCommand(unsigned int argc, char *argv[]) {
 void InitMaps(void) {
     /* register all of the existing maps */
 
-    map_descriptors = calloc(max_maps, sizeof(MapDesc));
-    if(map_descriptors == NULL) {
-        Error("failed to allocate enough slots for map descriptions!\n");
-    }
+    map_descriptors = pork_alloc(max_maps, sizeof(MapDesc), true);
 
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetModPath())) {
@@ -519,11 +516,7 @@ void LoadMapSpawns(const char *path) {
         Error("failed to get number of indices from pog, \"%s\", aborting\n", path);
     }
 
-    map_state.spawns = calloc(num_indices, sizeof(*map_state.spawns));
-    if(map_state.spawns == NULL) {
-        Error("failed to allocate enough memory for actor spawns, aborting\n");
-    }
-
+    map_state.spawns = pork_alloc(num_indices, sizeof(*map_state.spawns), true);
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
         struct __attribute__((packed)) { /* this should be 94 bytes */
@@ -605,11 +598,7 @@ void LoadMapTiles(const char *path) {
 
     /* done here in case the enhanced format supports larger chunk sizes */
     map_state.num_chunks = block_size * block_size;
-    map_state.chunks = calloc(sizeof(*map_state.chunks), map_state.num_chunks);
-    if(map_state.chunks == NULL) {
-        Error("failed to allocate memory for map chunks, %u bytes, aborting\n", sizeof(*map_state.chunks) *
-                map_state.num_chunks);
-    }
+    map_state.chunks = pork_alloc(sizeof(*map_state.chunks), map_state.num_chunks, true);
 
     LogDebug("%u chunks for terrain\n", map_state.num_chunks);
 

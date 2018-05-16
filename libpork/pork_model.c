@@ -566,9 +566,6 @@ void CacheModelData(void) {
         // copy everything into our global animations array
 
         model_cache.animations[i].frames = pork_alloc(num_keyframes, sizeof(Keyframe), true);
-        if(model_cache.animations[i].frames == NULL) {
-            Error("failed to allocate for %d keyframes, aborting!\n", num_keyframes);
-        }
 
         // move to where the first keyframe is
         if(fseek(file, index.offset, SEEK_SET) != 0) {

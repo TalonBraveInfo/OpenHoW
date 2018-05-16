@@ -139,7 +139,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
 
     plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
 
-    BitmapFont *font = calloc(1, sizeof(BitmapFont));
+    BitmapFont *font = pork_alloc(1, sizeof(BitmapFont), true);
     memset(font, 0, sizeof(BitmapFont));
 
     font->width = image.width;

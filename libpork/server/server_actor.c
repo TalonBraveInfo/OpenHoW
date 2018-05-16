@@ -25,10 +25,7 @@ Actor *g_actors = NULL;
 void SVClearActors(void) {
     if(g_actors == NULL) {
         LogDebug("allocating %u server actors\n", num_actors);
-        if((g_actors = calloc(num_actors, sizeof(Actor))) == NULL) {
-            Error("failed to allocate memory for actors, aborting!\n");
-        }
-
+        g_actors = pork_alloc(num_actors, sizeof(Actor), true);
         return;
     }
 

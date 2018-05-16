@@ -198,10 +198,6 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
         }
 
         data = pork_alloc(index.length, sizeof(uint8_t), false);
-        if(data == NULL) {
-            LogInfo("failed to allocate %d bytes for export of %s, aborting!\n", index.length, index.file);
-            goto ABORT_MAD;
-        }
 
         // go and grab the data so we can export!
         fseek(file, index.offset, SEEK_SET);
