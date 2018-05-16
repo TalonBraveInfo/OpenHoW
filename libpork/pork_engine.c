@@ -64,7 +64,19 @@ void ReadConfig(void);
 void InitPlayers(void);
 void InitModels(void);
 
+void *pork_malloc(size_t size) {
+    return pork_alloc(1, size, true);
+}
+
+void *pork_calloc(size_t num, size_t size) {
+    return pork_alloc(num, size, true);
+}
+
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
+
+    pl_malloc = pork_malloc;
+    pl_calloc = pork_calloc;
+
     plInitialize(argc, argv);
 
     plSetupLogLevel(PORK_LOG_ENGINE, "engine", PLColour(0, 255, 0, 255), true);
