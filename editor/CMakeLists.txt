@@ -33,6 +33,7 @@ find_package(wxWidgets COMPONENTS gl core base adv aui REQUIRED)
 include(${wxWidgets_USE_FILE})
 
 add_executable(editor ${SOURCE_FILES})
+add_dependencies(editor platform pork)
 
 target_include_directories(editor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(editor platform pork ${wxWidgets_LIBRARIES})
