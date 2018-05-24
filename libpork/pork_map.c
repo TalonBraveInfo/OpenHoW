@@ -32,7 +32,7 @@
 /* for now these are hard-coded, but
  * eventually we'll do this through a
  * script instead */
-MapDesc map_descriptors[]={
+MapManifest map_descriptors[]={
         // Single-player
 
         //{"camp", "Boot camp", MAP_MODE_SINGLEPLAYER},
@@ -123,19 +123,20 @@ typedef struct MapDesc {
     char name[16];
     char description[64];
     unsigned int flags;
-} MapDesc;
+} MapManifest;
 
-MapDesc *map_descriptors = NULL;
+MapManifest *map_descriptors = NULL;
 unsigned int num_maps = 0;
 unsigned int max_maps = 2048;
 
-MapDesc *GetMapDescription(const char *name) {
+MapManifest *GetMapDesc(const char *name) {
     for(unsigned int i = 0; i < num_maps; ++i) {
         if(strcmp(map_descriptors[i].name, name) == 0) {
             return &map_descriptors[i];
         }
     }
 
+    LogWarn("failed to get descriptor for \"%s\"!\n", name);
     return NULL;
 }
 
@@ -189,23 +190,23 @@ void RegisterMap(const char *path) {
     if((num_maps + 1) >= max_maps) {
         LogDebug("reached maximum maps (%u) - allocating more slots...\n", max_maps);
 
-        MapDesc *old_desc = map_descriptors;
+        MapManifest *old_desc = map_descriptors;
         unsigned int old_max_maps = max_maps;
 
         max_maps += 128;
-        if((map_descriptors = realloc(map_descriptors, sizeof(MapDesc) * max_maps)) == NULL) {
-            LogWarn("failed to resize map descriptors array to %u bytes!\n", sizeof(MapDesc) * max_maps);
+        if((map_descriptors = realloc(map_descriptors, sizeof(MapManifest) * max_maps)) == NULL) {
+            LogWarn("failed to resize map descriptors array to %u bytes!\n", sizeof(MapManifest) * max_maps);
             map_descriptors = old_desc;
             max_maps = old_max_maps;
             num_maps--;
             return;
         }
 
-        memset(map_descriptors + old_max_maps, 0, sizeof(MapDesc) * (max_maps - old_max_maps));
+        memset(map_descriptors + old_max_maps, 0, sizeof(MapManifest) * (max_maps - old_max_maps));
     }
 
-    MapDesc *slot = &map_descriptors[num_maps];
-    memset(slot, 0, sizeof(MapDesc));
+    MapManifest *slot = &map_descriptors[num_maps];
+    memset(slot, 0, sizeof(MapManifest));
 
     LogDebug("%s\n", buf);
 
@@ -294,15 +295,35 @@ struct {
     unsigned int num_textures;
 } map_state;
 
+const char *GetCurrentMapName(void) {
+    return &map_state.name[0];
+}
+
+const char *GetCurrentMapDescription(void) {
+    const char *name = GetCurrentMapName();
+    if(name[0] == '\0') {
+        LogWarn("attempted to get a map description without loading a map!\n");
+        return "no map loaded";
+    }
+
+    MapManifest *desc = GetMapDesc(name);
+    if(desc == NULL) {
+        return "";
+    }
+
+    return &desc->description[0];
+}
+
 PLMesh *terrain_mesh = NULL;
 
 /****************************************************/
 /* WATER                                            */
 
-#define WATER_TILES 32
-
-#define WATER_TILE_WIDTH     16
-#define WATER_TILE_HEIGHT    16
+#define WATER_WIDTH         256
+#define WATER_HEIGHT        256
+#define WATER_TILES         WATER_WIDTH * WATER_HEIGHT
+#define WATER_TILE_WIDTH    16
+#define WATER_TILE_HEIGHT   16
 
 PLTexture *water_textures[2];
 PLMesh *water_mesh = NULL;
@@ -333,8 +354,15 @@ void GenerateWaterTiles(void) {
     plUploadMesh(water_mesh);
 
     memset(water_tiles, 0, sizeof(WaterTile) * WATER_TILES);
-    for(unsigned int i = 0; i < WATER_TILES; ++i) {
-        //water_tiles[i].position.
+    unsigned int x_pos = 0, y_pos = 0;
+    for(unsigned int y = 0; y < WATER_WIDTH; ++y) {
+        for(unsigned int x = 0; x < WATER_HEIGHT; ++x) {
+            water_tiles[x + y].position.x = x_pos;
+            water_tiles[x + y].position.y = y_pos;
+            x_pos += WATER_TILE_WIDTH;
+        }
+        y_pos += WATER_TILE_HEIGHT;
+        x_pos = 0;
     }
 }
 
@@ -400,7 +428,7 @@ void MapsCommand(unsigned int argc, char *argv[]) {
 void InitMaps(void) {
     /* register all of the existing maps */
 
-    map_descriptors = pork_alloc(max_maps, sizeof(MapDesc), true);
+    map_descriptors = pork_alloc(max_maps, sizeof(MapManifest), true);
 
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetModPath())) {
@@ -720,7 +748,7 @@ void LoadMap(const char *name, unsigned int mode) {
         }
     }
 
-    MapDesc *desc = GetMapDescription(name);
+    MapManifest *desc = GetMapDesc(name);
     if(desc == NULL) {
         LogWarn("failed to get descriptor for map, \"%s\", aborting!\n", name);
         return;

@@ -17,6 +17,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
+#include "pork_map.h"
 
 #include "client/client_video.h"
 
@@ -36,6 +37,16 @@ duk_ret_t SC_LoadScript(duk_context *context) {
 
 duk_ret_t SC_GetModName(duk_context *context) {
     duk_push_string(context, g_state.mod_name);
+    return 0;
+}
+
+duk_ret_t SC_GetCurrentMapName(duk_context *context) {
+    duk_push_string(context, GetCurrentMapName());
+    return 0;
+}
+
+duk_ret_t SC_GetCurrentMapDescription(duk_context *context) {
+    duk_push_string(context, GetCurrentMapDescription());
     return 0;
 }
 
@@ -68,13 +79,6 @@ static duk_ret_t SC_Error(duk_context *context) {
     duk_insert(context, 0);
     duk_join(context, duk_get_top(context) - 1);
     Error("%s", duk_safe_to_string(context, -1));
-}
-
-static duk_ret_t SC_QueueVideos(duk_context *context) {
-    CheckContext(context, scr_context);
-
-    //QueueVideos("", 0);
-    return 0;
 }
 
 /*************************************************************/
@@ -154,13 +158,18 @@ typedef struct ScriptFunction {
     duk_ret_t (*Function)(duk_context *context);
 } ScriptFunction;
 
-ScriptFunction scr_builtins[]= {
-        {"LogInfo", DUK_VARARGS, SC_LogInfo},
-        {"LogWarn", DUK_VARARGS, SC_LogWarn},
-        {"LogDebug", DUK_VARARGS, SC_LogDebug},
-        {"Error", DUK_VARARGS, SC_Error},
+#define _d(value, args) \
+    {#value, (args), SC_##value},
 
-        {"GetModName", 0, SC_GetModName},
+ScriptFunction scr_builtins[]= {
+        _d(LogInfo, DUK_VARARGS)
+        _d(LogWarn, DUK_VARARGS)
+        _d(LogDebug, DUK_VARARGS)
+        _d(Error, DUK_VARARGS)
+
+        _d(GetModName, 0)
+        _d(GetCurrentMapName, 0)
+        _d(GetCurrentMapDescription, 0)
 };
 
 void InitScripting(void) {
