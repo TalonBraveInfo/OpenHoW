@@ -231,8 +231,6 @@ void EditorFrame::OnExit(wxCommandEvent &event) {
 }
 
 void EditorFrame::OnAbout(wxCommandEvent &event) {
-    wxMessageBox("blah", PORK_EDITOR_TITLE, wxOK | wxICON_INFORMATION);
-
     wxAboutDialogInfo info;
     info.SetName(_(PORK_EDITOR_TITLE));
     info.SetVersion(_(PORK_MAJOR_VERSION + "." + PORK_MINOR_VERSION));
@@ -311,7 +309,7 @@ bool EditorApp::OnInit() {
 
     wxSplashScreen *splash = nullptr;
     wxBitmap splash_bitmap;
-    if(splash_bitmap.LoadFile("./rc/splash.png", wxBITMAP_TYPE_PNG)) {
+    if(splash_bitmap.LoadFile(pork_find("/splash.png"), wxBITMAP_TYPE_PNG)) {
         splash = new wxSplashScreen(
                 splash_bitmap,
                 wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_NO_TIMEOUT,
