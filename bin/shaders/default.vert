@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./shared.vert"
+//#include "./shared.vert"
 
 /* some random comments
  * and some more
@@ -27,7 +27,7 @@
 void main() {
 
     /* fudged up crap here to test how the parser deals with spaces :) */
-    vec2             stuff =         vec2(2.0, 2.0);
+    //vec2             stuff =         vec2(2.0, 2.0);
 
     gl_TexCoord[0] = gl_MultiTexCoord0;
 	gl_Position = ftransform();

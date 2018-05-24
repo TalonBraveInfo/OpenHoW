@@ -319,8 +319,8 @@ PLMesh *terrain_mesh = NULL;
 /****************************************************/
 /* WATER                                            */
 
-#define WATER_WIDTH         256
-#define WATER_HEIGHT        256
+#define WATER_WIDTH         256                         // width of water area
+#define WATER_HEIGHT        256                         // height of water area
 #define WATER_TILES         WATER_WIDTH * WATER_HEIGHT
 #define WATER_TILE_WIDTH    16
 #define WATER_TILE_HEIGHT   16
@@ -353,21 +353,18 @@ void GenerateWaterTiles(void) {
 
     plUploadMesh(water_mesh);
 
+#define water_tile_pos  (y * WATER_TILE_WIDTH) + x
     memset(water_tiles, 0, sizeof(WaterTile) * WATER_TILES);
     unsigned int x_pos = 0, y_pos = 0;
     for(unsigned int y = 0; y < WATER_WIDTH; ++y) {
         for(unsigned int x = 0; x < WATER_HEIGHT; ++x) {
-            water_tiles[x + y].position.x = x_pos;
-            water_tiles[x + y].position.y = y_pos;
+            water_tiles[water_tile_pos].position.x = x_pos;
+            water_tiles[water_tile_pos].position.y = y_pos;
             x_pos += WATER_TILE_WIDTH;
         }
         y_pos += WATER_TILE_HEIGHT;
         x_pos = 0;
     }
-}
-
-void DrawWater(void) {
-
 }
 
 /****************************************************/
@@ -827,7 +824,30 @@ void LoadMap(const char *name, unsigned int mode) {
     }
 }
 
+/****************************************************/
+/* Draw Stuff! */
+
 #include "client/client_font.h"
+#include "client/client_shader.h"
+
+#include <GL/glew.h>
+
+void DrawWater(void) {
+
+    /* todo: translate plane to camera pos - we will have
+     * another water plane outside / below without reflections? */
+
+    plSetShaderProgram(programs[SHADER_WATER]);
+
+    for(unsigned int i = 0; i < WATER_TILES; ++i) {
+        // todo!!!!
+        plTranslateMatrix(water_tiles[i].position);
+
+        plDrawMesh(water_mesh);
+    }
+
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
+}
 
 /* draws the currently loaded
  * map */
