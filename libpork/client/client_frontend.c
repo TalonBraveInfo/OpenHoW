@@ -33,6 +33,16 @@ PLTexture *fe_press         = NULL;
 PLTexture *fe_any           = NULL;
 PLTexture *fe_key           = NULL;
 
+const char *papers_teams[MAX_TEAMS]={
+        "fe/papers/british.bmp",
+        "fe/papers/american.bmp",
+        "fe/papers/french.bmp",
+        "fe/papers/german.bmp",
+        "fe/papers/russian.bmp",
+        "fe/papers/japan.bmp",
+        "fe/papers/teamlard.bmp"
+};
+
 /************************************************************/
 /* FE Object Implementation
  *  Individual frontend objects that can manipulated

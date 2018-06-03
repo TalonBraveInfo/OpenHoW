@@ -555,19 +555,13 @@ void DrawPork(double delta) {
     if(GetFrontendState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
+
     plClearBuffers(clear_flags);
 
-    if(
-            GetFrontendState() != FE_MODE_INIT &&
-            GetFrontendState() != FE_MODE_LOADING) {
-        plSetupCamera(g_state.camera);
+    plSetupCamera(g_state.camera);
 
-        if(GetFrontendState() == FE_MODE_GAME) {
-            DrawMap();
-        }
-
-        DrawActors(delta);
-    }
+    DrawMap();
+    DrawActors(delta);
 
     plSetupCamera(g_state.ui_camera);
 
@@ -584,7 +578,6 @@ void DrawPork(double delta) {
     }
 
     g_launcher.SwapWindow();
-
     g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
 }
 

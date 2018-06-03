@@ -24,7 +24,8 @@ enum {
     FE_MODE_MAIN_MENU,      /* 'One Player' and other options */
     FE_MODE_SELECT_TEAM,    /* Team selection */
 
-    FE_MODE_GAME,     /* in-game menu... probably cut this down? */
+    FE_MODE_EDITOR, /* editor mode - either embedded or standalone */
+    FE_MODE_GAME,   /* in-game menu... probably cut this down? */
 };
 
 void InitFrontend(void);

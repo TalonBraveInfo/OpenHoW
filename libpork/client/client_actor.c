@@ -18,6 +18,7 @@
 #include "pork_model.h"
 
 #include "client_actor.h"
+#include "client_frontend.h"
 
 CLActor *client_actors = NULL;
 unsigned int num_cl_actors = 256;
@@ -97,6 +98,10 @@ void CLDestroyActor(CLActor *actor) {
  */
 void DrawActors(double delta) {
     pork_assert(client_actors != NULL);
+
+    if(GetFrontendState() == FE_MODE_LOADING) {
+        return;
+    }
 
     for(CLActor *actor = client_actors; actor < client_actors + num_cl_actors; ++actor) {
         if(!actor->is_reserved || !actor->is_visible) {

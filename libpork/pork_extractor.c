@@ -326,6 +326,19 @@ void ExtractGameData(const char *path) {
             {"/Chars/RUSSIAN.MTD", "/chars/russian/"},
             {"/Chars/TEAMLARD.MTD", "/chars/teamlard/"},
 
+            /* sky */
+            {"/Chars/SKYDOME.MAD", "/chars/sky/"},
+            //{"/Chars/SKYDOME.MTD", "/chars/sky/"},    /* unused ?? */
+            {"/Chars/TOY.MAD", "/chars/sky/toy/"},
+            {"/Chars/SPACE.MAD", "/chars/sky/space/"},
+            {"/Chars/SUNSET.MAD", "/chars/sky/sunset/"},
+            {"/Chars/SUNRISE.MAD", "/chars/sky/sunrise/"},
+            {"/Chars/SUNNY.MAD", "/chars/sky/sunny/"},
+            {"/Chars/OMINOUS.MAD", "/chars/sky/ominous/"},
+            {"/Chars/DESERT.MAD", "/chars/sky/desert/"},
+            {"/Chars/COLDSKY.MAD", "/chars/sky/coldsky/"},
+            {"/Chars/NIGHT1.MAD", "/chars/sky/night1/"},
+
             /* weapons */
             {"/Chars/WEAPONS.MAD", "/chars/weapons/"},
             {"/Chars/WEAPONS.MTD", "/chars/weapons/"},

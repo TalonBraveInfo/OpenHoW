@@ -237,6 +237,20 @@ enum {
 #define MAX_STATIC_OBJECTS  1024
 
 enum {
+    TEAM_BRITISH,
+    TEAM_AMERICAN,
+    TEAM_FRENCH,
+    TEAM_GERMAN,
+    TEAM_RUSSIAN,
+    TEAM_JAPAN,
+    TEAM_LARD,
+
+    MAX_TEAMS
+
+    /* todo: support custom teams later on... */
+};
+
+enum {
     PIG_CLASS_ACE,
     PIG_CLASS_LEGEND,
     PIG_CLASS_MEDIC,
