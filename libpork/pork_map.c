@@ -122,6 +122,7 @@ MapManifest map_descriptors[]={
 typedef struct MapDesc {
     char name[16];
     char description[64];
+    char sky[32];
     unsigned int flags;
 } MapManifest;
 
@@ -215,6 +216,7 @@ void RegisterMap(const char *path) {
     plStripExtension(slot->name, plGetFileName(path));
 
     strncpy(slot->description, GetJSONStringProperty("name"), sizeof(slot->description));
+    strncpy(slot->sky, GetJSONStringProperty("sky"), sizeof(slot->sky));
     if(duk_get_prop_string(jsn_context, -1, "modes") && duk_is_array(jsn_context, -1)) {
         unsigned int num_modes = (unsigned int)duk_get_length(jsn_context, -1);
         for(unsigned int i = 0; i < num_modes; ++i) {
@@ -293,6 +295,8 @@ struct {
 
     PLTexture **textures;
     unsigned int num_textures;
+
+    PLTexture *sky_textures[4];
 } map_state;
 
 const char *GetCurrentMapName(void) {
@@ -852,6 +856,10 @@ void DrawWater(void) {
 /* draws the currently loaded
  * map */
 void DrawMap(void) {
+    if(GetFrontendState() != FE_MODE_GAME && GetFrontendState() != FE_MODE_EDITOR) {
+        return;
+    }
+
     if(map_state.name[0] == '\0') {
         return;
     }

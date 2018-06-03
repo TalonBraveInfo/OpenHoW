@@ -1,5 +1,6 @@
 {
   "name":"$map_how_hillock",
+  "sky":"sunny",
   "modes":[
     "se", "dm"
   ]
