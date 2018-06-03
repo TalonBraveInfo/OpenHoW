@@ -33,6 +33,8 @@ typedef struct Animation {
 
 /* * * * * * * * * * * * * * * * * */
 
+PLModel *LoadModel(const char *path, bool abort_on_fail);
+
 void ClearTextureIndex(unsigned int id);
 
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);

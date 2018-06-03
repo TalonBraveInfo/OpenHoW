@@ -312,6 +312,7 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
 
 const char *supported_formats[]={
         "png",
+        "tga",
         "bmp",
         "tim",
         NULL

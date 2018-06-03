@@ -27,6 +27,11 @@
 
 unsigned int frontend_state = FE_MODE_INIT;
 
+/* for now we're going to hard-code most of this but eventually
+ * we will start freeing most of this up... either through JS
+ * or some other way, so y'know. Wheeee.
+ */
+
 /* texture assets, these are loaded and free'd at runtime */
 PLTexture *fe_background    = NULL;
 PLTexture *fe_press         = NULL;
