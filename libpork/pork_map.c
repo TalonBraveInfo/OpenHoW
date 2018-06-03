@@ -338,8 +338,8 @@ typedef struct WaterTile {
 WaterTile water_tiles[WATER_TILES];
 
 void GenerateWaterTiles(void) {
-    water_textures[0] = LoadTexture("maps/wat01.tim", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
-    water_textures[1] = LoadTexture("maps/wat02.tim", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[0] = LoadTexture("maps/wat01", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[1] = LoadTexture("maps/wat02", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
 
     water_mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, 2, 4);
     if (water_mesh == NULL) {
@@ -727,8 +727,40 @@ void LoadMapTiles(const char *path) {
     }
 }
 
-void LoadMapTextures(const char *path) {
+void LoadMapTextures(MapManifest *desc, const char *path) {
 
+    /* load in the textures we'll be using for the sky dome */
+
+    if(map_state.sky_textures[0] != NULL) {
+        for(unsigned int i = 0; i < 4; ++i) {
+            plDeleteTexture(map_state.sky_textures[i], true);
+            map_state.sky_textures[0] = NULL;
+        }
+    }
+
+    char sky_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+    /* was this even the default in the origin!? */
+    if(desc->sky[0] != '\0' && desc->sky[0] != ' ') {
+        snprintf(sky_path, sizeof(sky_path), "%s%s1", pork_find("/chars/sky/"), desc->sky);
+        if(!plPathExists(sky_path)) {
+            LogWarn("failed to find texture path for sky at \"%s\", reverting to default!\n", sky_path);
+            sky_path[0] = '\0';
+        }
+    }
+
+    if(sky_path[0] == '\0') {
+        LogInfo("no sky specified, using default\n");
+        snprintf(sky_path, sizeof(sky_path), "%s", pork_find("/chars/sky/sunny/"));
+    }
+
+    /*
+    FILE *fh = fopen(path, "rb");
+    if(fh == NULL) {
+        Error("failed to open texture data, \"%s\", aborting\n", path);
+    }
+
+    fclose(fh);
+     */
 }
 
 /* loads a new map into memory - if the config
@@ -812,6 +844,7 @@ void LoadMap(const char *name, unsigned int mode) {
     }
 
     LoadMapSpawns(pog_path);
+    LoadMapTextures(desc, NULL);
 
     strncpy(map_state.name, desc->name, sizeof(map_state.name));
 

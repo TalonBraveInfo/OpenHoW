@@ -101,7 +101,7 @@ void InitFrontend(void) {
     memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
 
     /* load in all the assets we'll be using for the frontend */
-    fe_background = LoadTexture("fe/title/titlemon.bmp", PL_TEXTURE_FILTER_LINEAR);
+    fe_background = LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
 
     InitFonts();
 }
@@ -132,10 +132,10 @@ void SimulateFrontend(void) {
 
             /* load in some of the assets we'll be using on the
              * next screen before proceeding... */
-            fe_press = LoadTexture("fe/title/press.bmp", PL_TEXTURE_FILTER_LINEAR);
-            fe_any = LoadTexture("fe/title/any.bmp", PL_TEXTURE_FILTER_LINEAR);
-            fe_key = LoadTexture("fe/title/key.bmp", PL_TEXTURE_FILTER_LINEAR);
-            fe_background = LoadTexture("fe/title/title.bmp", PL_TEXTURE_FILTER_LINEAR);
+            fe_press = LoadTexture("fe/title/press", PL_TEXTURE_FILTER_LINEAR);
+            fe_any = LoadTexture("fe/title/any", PL_TEXTURE_FILTER_LINEAR);
+            fe_key = LoadTexture("fe/title/key", PL_TEXTURE_FILTER_LINEAR);
+            fe_background = LoadTexture("fe/title/title", PL_TEXTURE_FILTER_LINEAR);
             return;
         }
 
@@ -155,9 +155,9 @@ void SetLoadingBackground(const char *name) {
     }
 
     char screen_path[PL_SYSTEM_MAX_PATH];
-    snprintf(screen_path, sizeof(screen_path), "fe/briefing/%s.bmp", name);
+    snprintf(screen_path, sizeof(screen_path), "fe/briefing/%s", name);
     if(!plFileExists(screen_path)) {
-        snprintf(screen_path, sizeof(screen_path), "fe/loadmult.bmp");
+        snprintf(screen_path, sizeof(screen_path), "fe/loadmult");
     }
 
     fe_background = LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
@@ -335,7 +335,7 @@ void SetFrontendState(unsigned int state) {
             plDeleteTexture(fe_key, true);
             plDeleteTexture(fe_background, true);
 
-            fe_background = LoadTexture("fe/pigbkpc1.bmp", PL_TEXTURE_FILTER_LINEAR);
+            fe_background = LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;
 
         case FE_MODE_START: {

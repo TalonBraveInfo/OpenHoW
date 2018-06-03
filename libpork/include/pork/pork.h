@@ -71,7 +71,9 @@ enum {
 PL_EXTERN_C
 
 void *pork_alloc(size_t num, size_t size, bool abort_on_fail);
+
 const char *pork_find(const char *path);
+const char *pork_find2(const char *path, const char **preference);
 
 PL_EXTERN_C_END
 

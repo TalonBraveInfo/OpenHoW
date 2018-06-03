@@ -310,22 +310,39 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
     pork_fclose(file);
 }
 
+const char *supported_formats[]={
+        "png",
+        "bmp",
+        "tim",
+        NULL
+};
+
 PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
-    char tpath[PL_SYSTEM_MAX_PATH];
-    strncpy(tpath, pork_find(path), sizeof(tpath));
+    /* todo: make this more friendly */
 
-    PLTexture *texture = NULL;
+    PLTexture *texture;
 
+    char n_path[PL_SYSTEM_MAX_PATH];
     const char *ext = plGetFileExtension(path);
-    if(ext != NULL && ext[0] != '\0' && ext[0] != ' ') {
+    if(plIsEmptyString(ext)) {
+        strncpy(n_path, pork_find2(path, supported_formats), sizeof(n_path));
+        if(plIsEmptyString(n_path)) {
+            Error("failed to find texture, \"%s\"!\n", path);
+        }
+        ext = plGetFileExtension(n_path);
+    } else {
+        strncpy(n_path, pork_find(path), sizeof(n_path));
+
         /* pixel format of TIM will be changed before
          * uploading */
         if(pl_strncasecmp(ext, "tim", 3) == 0) {
             PLImage img;
-            if(!plLoadImage(tpath, &img)) {
+            if(!plLoadImage(n_path, &img)) {
                 Error("%s, aborting!\n", plGetError());
             }
+
             plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
+
             if((texture = plCreateTexture()) != NULL) {
                 texture->filter = filter;
                 if(!plUploadTextureImage(texture, &img)) {
@@ -337,7 +354,7 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
         }
     }
 
-    texture = plLoadTextureImage(tpath, PL_TEXTURE_FILTER_LINEAR);
+    texture = plLoadTextureImage(n_path, PL_TEXTURE_FILTER_LINEAR);
     if(texture == NULL) {
         Error("%s, aborting!\n", plGetError());
     }

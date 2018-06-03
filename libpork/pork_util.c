@@ -20,6 +20,14 @@
 
 #include "pork_engine.h"
 
+/****************************************************/
+/* Memory */
+
+unsigned long pork_unmangle(void *source, void *destination) {
+    /* todo */
+    return 0;
+}
+
 void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
     void *mem = calloc(num, size);
     if(mem == NULL && abort_on_fail) {
@@ -28,10 +36,13 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
     return mem;
 }
 
+/****************************************************/
+/* Filesystem */
+
 const char *pork_find(const char *path) {
     static char n_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetModPath())) {
-        snprintf(n_path, sizeof(n_path), "%s/mods/%s/%s", GetBasePath(), GetModPath(), path);
+        snprintf(n_path, sizeof(n_path), "%smods/%s/%s", GetBasePath(), GetModPath(), path);
         if(plFileExists(n_path)) {
             return n_path;
         }
@@ -39,6 +50,40 @@ const char *pork_find(const char *path) {
 
     snprintf(n_path, sizeof(n_path), "%s%s", GetBasePath(), path);
     return n_path;
+}
+
+const char *pork_scan(const char *path, const char **preference) {
+    static char find[PL_SYSTEM_MAX_PATH];
+    while(*preference != NULL) {
+        snprintf(find, sizeof(find), "%s.%s", path, *preference);
+        if(plFileExists(find)) {
+            return find;
+        } preference++;
+    }
+
+    return "";
+}
+
+const char *pork_find2(const char *path, const char **preference) {
+    static char out[PL_SYSTEM_MAX_PATH];
+    memset(out, 0, sizeof(out));
+
+    char base_path[PL_SYSTEM_MAX_PATH];
+    if(!plIsEmptyString(GetModPath())) {
+        snprintf(base_path, sizeof(base_path), "%smods/%s/%s", GetBasePath(), GetModPath(), path);
+        strncpy(out, pork_scan(base_path, preference), sizeof(out));
+        if(!plIsEmptyString(out)) {
+            return &out[0];
+        }
+    }
+
+    snprintf(base_path, sizeof(base_path), "%s/%s", GetBasePath(), path);
+    strncpy(out, pork_scan(base_path, preference), sizeof(out));
+    if(plIsEmptyString(out)) {
+        Error("failed to find \"%s\"!\n", path);
+    }
+
+    return &out[0];
 }
 
 /*
