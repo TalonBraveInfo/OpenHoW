@@ -873,6 +873,14 @@ void LoadMap(const char *name, unsigned int mode) {
 
 #include <GL/glew.h>
 
+void DrawSky(void) {
+    if(map_state.sky_model == NULL) {
+        return;
+    }
+
+    plDrawModel(map_state.sky_model);
+}
+
 void DrawWater(void) {
 
     /* todo: translate plane to camera pos - we will have
@@ -901,6 +909,7 @@ void DrawMap(void) {
         return;
     }
 
+    DrawSky();
     DrawWater();
 
     // todo, draw sky, clouds

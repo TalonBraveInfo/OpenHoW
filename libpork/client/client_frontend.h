@@ -16,16 +16,49 @@
  */
 #pragma once
 
+/*
+ * Debrief > Continue / Retry
+ *
+ * Main Menu
+ *  One Player
+ *      New Game
+ *          Select Team
+ *              Please Name Your Team
+ *                  Team Setup
+ *                      Play Training Mission?
+ *                          Loading Screen
+ *      Load Game
+ */
+
 enum {
     FE_MODE_INIT,       /* menu shown during initialization */
     FE_MODE_START,      /* start screen, e.g. press any key */
     FE_MODE_LOADING,
 
-    FE_MODE_MAIN_MENU,      /* 'One Player' and other options */
-    FE_MODE_SELECT_TEAM,    /* Team selection */
+    FE_MODE_MAIN_MENU,
+
+    /* Main Menu */
+    FE_MODE_ONE_PLAYER,
+    FE_MODE_MULTI_PLAYER,
+    FE_MODE_OPTIONS,
+    FE_MODE_CONTROLS,
+
+    /* One Player */
+    FE_MODE_NEW_GAME,
+    FE_MODE_LOAD_GAME,
+
+    /* Multi-player */
+    /* todo */
+
+    /* Options */
+    /* todo */
+
+    FE_MODE_SELECT_TEAM,
 
     FE_MODE_EDITOR, /* editor mode - either embedded or standalone */
     FE_MODE_GAME,   /* in-game menu... probably cut this down? */
+
+    MAX_FE_MODES
 };
 
 void InitFrontend(void);

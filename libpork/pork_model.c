@@ -184,22 +184,14 @@ PLModel *LoadVTXModel(const char *path) {
         }
     }
 #else
-
     if(is_pig) {
-        model->lods[0].num_meshes = 3;
-        model->lods[0].meshes = pork_alloc(3, sizeof(PLMesh), true);
-        model->lods[0].meshes[0] = *mesh;
+        model->num_meshes = 3;
     } else {
-        model->lods[0].num_meshes = 1;
-        model->lods[0].meshes = pork_alloc(1, sizeof(PLMesh), true);
-        model->lods[0].meshes[0] = *mesh;
+        model->num_meshes = 1;
     }
-    model->num_lods = 1;
 
-    model->lods[0].bone_weights = pork_alloc(num_vertices, sizeof(PLModelBoneWeight), true);
-    model->lods[0].num_bone_weights = num_vertices;
-
-    PLModelLOD *lod = &model->lods[0];
+    model->meshes = pork_alloc(model->num_meshes, sizeof(PLModelMesh), true);
+    model->meshes[0].mesh = mesh;
 #endif
 
     /* copy the bones into the model struct */
@@ -219,9 +211,9 @@ PLModel *LoadVTXModel(const char *path) {
         plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].v[0], vertices[i].v[1], vertices[i].v[2]));
         plSetMeshVertexColour(mesh, i, PLColour(r, g, b, 255));
 
-        lod->bone_weights[i].bone_index = vertices[i].bone_index;
-        lod->bone_weights[i].bone_weight = 1.f;
-        lod->bone_weights[i].vertex_index = i;
+        model->bone_weights[i].bone_index = vertices[i].bone_index;
+        model->bone_weights[i].bone_weight = 1.f;
+        model->bone_weights[i].vertex_index = i;
     }
 
     /* convert quads into triangles */

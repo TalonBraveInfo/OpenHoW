@@ -733,6 +733,8 @@ void ExtractGameData(const char *path) {
             {"/Maps/GENDESRT.PTG", "/maps/gendesrt/tiles/"},
             {"/Maps/HILLBASE.PTG", "/maps/hillbase/tiles/"},
             {"/Maps/LIBERATE.PTG", "/maps/liberate/tiles/"},
+
+            {"/Skys/COLD/COLD1.PTG", "/skys/cold/"},
     };
 
     for(unsigned int i = 0; i < plArrayElements(ptg_paths); ++i) {

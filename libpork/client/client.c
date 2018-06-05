@@ -29,6 +29,13 @@
 
 /*****************************************************/
 
+enum {
+    CAMERA_MODE_DEFAULT,
+    CAMERA_MODE_FREE,
+
+    MAX_CAMERA_MODES
+};
+
 void ProcessClientInput(void) {
     static double input_delay = 0;
     if(input_delay < g_state.sim_ticks) {
@@ -42,31 +49,40 @@ void ProcessClientInput(void) {
 
     ProcessFrontendInput();
 
-#if 1
-    if(GetActionState(0, ACTION_MOVE_FORWARD)) {
-        g_state.camera->position.x += 4.f;
-    } else if(GetActionState(0, ACTION_MOVE_BACKWARD)) {
-        g_state.camera->position.x -= 4.f;
-    }
+    /* todo: move this server-side or make safe... somehow :( */
+    switch(cv_camera_mode->i_value) {
+        default:break;
 
-    if(GetButtonState(0, PORK_BUTTON_L1)) {
-        g_state.camera->position.y += 4.f;
-    } else if(GetButtonState(0, PORK_BUTTON_R1)) {
-        g_state.camera->position.y -= 4.f;
-    }
+        case CAMERA_MODE_DEFAULT: {
+            /* follow currently selected pig */
+        } break;
 
-    if(GetButtonState(0, PORK_BUTTON_L2)) {
-        g_state.camera->position.z += 4.f;
-    } else if(GetButtonState(0, PORK_BUTTON_R2)) {
-        g_state.camera->position.z -= 4.f;
-    }
+        case CAMERA_MODE_FREE: {
+            if(GetActionState(0, ACTION_MOVE_FORWARD)) {
+                g_state.camera->position.x += 4.f;
+            } else if(GetActionState(0, ACTION_MOVE_BACKWARD)) {
+                g_state.camera->position.x -= 4.f;
+            }
 
-    if(GetActionState(0, ACTION_TURN_LEFT)) {
-        g_state.camera->angles.z += 4.f;
-    } else if(GetActionState(0, ACTION_TURN_RIGHT)) {
-        g_state.camera->angles.z -= 4.f;
+            if(GetButtonState(0, PORK_BUTTON_L1)) {
+                g_state.camera->position.y += 4.f;
+            } else if(GetButtonState(0, PORK_BUTTON_R1)) {
+                g_state.camera->position.y -= 4.f;
+            }
+
+            if(GetButtonState(0, PORK_BUTTON_L2)) {
+                g_state.camera->position.z += 4.f;
+            } else if(GetButtonState(0, PORK_BUTTON_R2)) {
+                g_state.camera->position.z -= 4.f;
+            }
+
+            if(GetActionState(0, ACTION_TURN_LEFT)) {
+                g_state.camera->angles.z += 4.f;
+            } else if(GetActionState(0, ACTION_TURN_RIGHT)) {
+                g_state.camera->angles.z -= 4.f;
+            }
+        } break;
     }
-#endif
 }
 
 /*****************************************************/

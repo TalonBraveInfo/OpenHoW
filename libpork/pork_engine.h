@@ -47,6 +47,8 @@ extern PLConsoleVariable *cv_debug_fps;
 extern PLConsoleVariable *cv_debug_skeleton;
 extern PLConsoleVariable *cv_debug_input;
 
+extern PLConsoleVariable *cv_camera_mode;
+
 ///////////////////////////////////////////////////
 
 struct {

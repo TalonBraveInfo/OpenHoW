@@ -185,6 +185,7 @@ void InitConsole(void) {
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
 
     plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
+    cv_camera_mode = plRegisterConsoleVariable("camera", "0", pl_int_var, NULL, "0 = default, 1 = debug");
 }
 
 void DrawConsole(void) {

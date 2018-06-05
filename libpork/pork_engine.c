@@ -32,6 +32,8 @@ PLConsoleVariable *cv_debug_skeleton    = NULL;
 PLConsoleVariable *cv_debug_input       = NULL;
 PLConsoleVariable *cv_debug_cache       = NULL;
 
+PLConsoleVariable *cv_camera_mode = NULL;
+
 PLConsoleVariable *cv_base_path = NULL;
 PLConsoleVariable *cv_mod_path  = NULL;
 

@@ -93,9 +93,10 @@ void DeleteShaderProgram(ShaderProgram *program);
 #else
 
 enum {
-    SHADER_DEFAULT,
-    SHADER_WATER,
-    SHADER_VIDEO,
+    SHADER_DEFAULT,     /* unlit */
+    SHADER_GOURAUD_LIT, /* lit */
+    SHADER_WATER,       /* */
+    SHADER_VIDEO,       /* */
 
     END_SHADER
 };
