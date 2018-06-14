@@ -17,6 +17,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
+#include "script/script.h"
 
 char config_path[PL_SYSTEM_MAX_PATH];
 
@@ -27,22 +28,29 @@ void SaveConfig(void) {
         return;
     }
 
-    fprintf(fp, "{\n");
+    fprintf(fp, "{");
 
     size_t num_c;
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
     for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
+#if 0 /* readable config */
         fprintf(fp, "\t\t\"%s\":\"%s\"", (*var)->var, (*var)->value);
         if(var < vars + num_c - 1) {
             fprintf(fp, ",\n");
         } else {
             fprintf(fp, "\n");
         }
+#else
+        fprintf(fp, "\"%s\":\"%s\"", (*var)->var, (*var)->value);
+        if(vars < vars + num_c - 1) {
+            fprintf(fp, ",");
+            continue;
+        }
+#endif
     }
 
-    fprintf(fp, "}\n");
-
+    fprintf(fp, "}");
     fclose(fp);
 }
 
@@ -61,6 +69,17 @@ void ReadConfig(void) {
     fclose(fp);
 
     buf[length] = '\0';
+
+    ParseJSON(buf);
+
+    size_t num_c;
+    PLConsoleVariable **vars;
+    plGetConsoleVariables(&vars, &num_c);
+    for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
+        plSetConsoleVariable((*var), GetJSONStringProperty((*var)->var));
+    }
+
+    FlushJSON();
 }
 
 void InitConfig(void) {

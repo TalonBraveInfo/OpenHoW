@@ -23,7 +23,7 @@
 #include "client/client_display.h"
 
 struct {
-    PLModelBone bones[MAX_BONES];
+    PLBone bones[MAX_BONES];
     unsigned int num_bones;
 
     Animation animations[ANI_END];
@@ -64,20 +64,6 @@ PLModel *LoadVTXModel(const char *path) {
 
     /* now we load in all the faces */
 
-    /* this is uh, pretty gross, but Hogs of War
-     * uses a very specific id to identify the eyes
-     * and mouth of the pigs - I can't reliably do
-     * this if it's any other model (otherwise we
-     * could end up showing a mouth on a tank - funny
-     * but not really practical)
-     *
-     * if it IS a pig, then the mouth and eyes are
-     * treated as a separate material */
-    bool is_pig = false;
-    if(strstr(path, "/chars/pigs/") != 0) {
-        is_pig = true;
-    }
-
     char fac_path[PL_SYSTEM_MAX_PATH];
     strncpy(fac_path, path, strlen(path) - 3);
     fac_path[strlen(path) - 3] = '\0';
@@ -92,7 +78,6 @@ PLModel *LoadVTXModel(const char *path) {
     /* unused heading block
      * we'll load it in just so we can check
      * this is a valid fac file... */
-#if 1
     char padding[16];
     if(fread(padding, sizeof(char), 16, fac_file) != 16) {
         Error("failed to read fac, \"%s\", aborting!\n", fac_path);
@@ -102,9 +87,6 @@ PLModel *LoadVTXModel(const char *path) {
             Error("invalid fac, \"%s\", aborting!\n", fac_path);
         }
     }
-#else
-    fseek(fac_file, 16, SEEK_CUR);
-#endif
 
     uint32_t num_triangles;
     if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
@@ -157,15 +139,13 @@ PLModel *LoadVTXModel(const char *path) {
 
     /* now to shuffle all that data into our model! */
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles + (num_quads * 6), num_vertices);
-    if(mesh == NULL) {
-        Error("failed to allocate mesh for %s, aborting!\n%s\n", path, plGetError());
-    }
-
-    mesh->num_indices = mesh->num_triangles * 3;
-    mesh->indices = pork_alloc(mesh->num_indices, sizeof(uint16_t), true);
-
     PLModel *model = pork_alloc(1, sizeof(PLModel), true);
+
+    /* copy the bones into the model struct */
+
+    model->bones = pork_alloc(model_cache.num_bones, sizeof(PLBone), true);
+    memcpy(model->bones, model_cache.bones, sizeof(PLBone) * model_cache.num_bones);
+    model->num_bones = model_cache.num_bones;
 
 #if 0 /* don't bother for now... */
     /* check if it's a LOD model, these are appended with '_hi' */
@@ -183,42 +163,130 @@ PLModel *LoadVTXModel(const char *path) {
             LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
         }
     }
-#else
-    if(is_pig) {
-        model->num_meshes = 3;
-    } else {
-        model->num_meshes = 1;
-    }
-
-    model->meshes = pork_alloc(model->num_meshes, sizeof(PLModelMesh), true);
-    model->meshes[0].mesh = mesh;
 #endif
 
-    /* copy the bones into the model struct */
-    model->skeleton.bones = pork_alloc(model_cache.num_bones, sizeof(PLModelBone), true);
-    memcpy(model->skeleton.bones, model_cache.bones, sizeof(PLModelBone) * model_cache.num_bones);
-    model->skeleton.num_bones = model_cache.num_bones;
+    /* figure out how many textures we have for this model
+     * so that we can generate a mesh for each later */
 
-#if 1   /* debug */
-    srand(num_vertices);
-#endif
-    for(unsigned int i = 0; i < num_vertices; ++i) {
-#if 1   /* debug */
-        uint8_t r = (uint8_t)(rand() % 255);
-        uint8_t g = (uint8_t)(rand() % 255);
-        uint8_t b = (uint8_t)(rand() % 255);
-#endif
-        plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].v[0], vertices[i].v[1], vertices[i].v[2]));
-        plSetMeshVertexColour(mesh, i, PLColour(r, g, b, 255));
+#define MAX_TEXTURE_INDICES 16
+    unsigned int texture_indices[MAX_TEXTURE_INDICES];
+    unsigned int num_texture_indices = 0;
+    memset(texture_indices, -1, sizeof(unsigned int) * MAX_TEXTURE_INDICES);
 
-        model->bone_weights[i].bone_index = vertices[i].bone_index;
-        model->bone_weights[i].bone_weight = 1.f;
-        model->bone_weights[i].vertex_index = i;
-    }
-
-    /* convert quads into triangles */
     for(unsigned int i = 0; i < num_quads; ++i) {
+        for(unsigned int j = 0; j < MAX_TEXTURE_INDICES; ++j) {
+            if(quads[i].texture_index == texture_indices[j]) {
+                continue;
+            }
+        }
 
+        texture_indices[num_texture_indices++] = quads[i].texture_index;
+        pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+    }
+
+    for(unsigned int i = 0; i < num_triangles; ++i) {
+        for(unsigned int j = 0; j < MAX_TEXTURE_INDICES; ++j) {
+            if(triangles[i].texture_index == texture_indices[j]) {
+                continue;
+            }
+        }
+
+        texture_indices[num_texture_indices++] = triangles[i].texture_index;
+        pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+    }
+
+    /* now allocate our mesh container */
+
+    model->num_meshes = num_texture_indices;
+    model->meshes = pork_alloc(model->num_meshes, sizeof(PLModelMesh), true);
+
+    /* now group together all our "meshes" */
+
+    struct {
+        struct {
+            int8_t uv_a[2];
+            int8_t uv_b[2];
+            int8_t uv_c[2];
+
+            uint16_t vertex_indices[3];
+            uint16_t normal_indices[3];
+
+            uint32_t texture_index;
+        } triangles[4096]; /* temporary until I can be assed */
+        unsigned int num_triangles;
+    } meshes[model->num_meshes];
+
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        for(unsigned int j = 0; j < num_quads; ++j) {
+            /* todo */
+        }
+
+        for(unsigned int j = 0; j < num_triangles; ++j) {
+            if(texture_indices[i] != triangles[j].texture_index) {
+                continue;
+            }
+
+            meshes[i].triangles[meshes[i].num_triangles].texture_index = triangles[j].texture_index;
+
+            /* copy vertex coordinates into our group */
+            for(unsigned int k = 0; k < 3; ++k) {
+                meshes[i].triangles[meshes[i].num_triangles].vertex_indices[k] = triangles[j].vertex_indices[k];
+                meshes[i].triangles[meshes[i].num_triangles].normal_indices[k] = triangles[j].normal_indices[k];
+            }
+
+            /* copy uv coordinates into our group */
+            for(unsigned int k = 0; k < 2; ++k) {
+                meshes[i].triangles[meshes[i].num_triangles].uv_a[k] = triangles[j].uv_a[k];
+                meshes[i].triangles[meshes[i].num_triangles].uv_b[k] = triangles[j].uv_b[k];
+                meshes[i].triangles[meshes[i].num_triangles].uv_c[k] = triangles[j].uv_c[k];
+            }
+
+            meshes[i].num_triangles++;
+            pork_assert(meshes[i].num_triangles < 4096);
+        }
+    }
+
+    /* and allocate all of our meshes */
+
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        model->meshes[i].mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, meshes[i].num_triangles, num_vertices);
+        if(model->meshes[i].mesh == NULL) {
+            Error("failed to allocate mesh for %s, aborting!\n%s\n", path, plGetError());
+        }
+
+        PLMesh *cur_mesh = model->meshes[i].mesh;
+
+        model->meshes[i].bone_weights = pork_alloc(num_vertices, sizeof(PLBoneWeight), true);
+        model->meshes[i].num_bone_weights = num_vertices;
+
+#if 1 /* debug */
+        srand(num_vertices * i);
+#endif
+        for(unsigned int j = 0; j < num_vertices; ++j) {
+            plSetMeshVertexPosition(cur_mesh, j, PLVector3(vertices[j].v[0], vertices[j].v[1], vertices[j].v[2]));
+
+#if 1 /* debug */
+            uint8_t r = (uint8_t)(rand() % 255);
+            uint8_t g = (uint8_t)(rand() % 255);
+            uint8_t b = (uint8_t)(rand() % 255);
+            plSetMeshVertexColour(cur_mesh, j, PLColour(r, g, b, 255));
+#else
+            plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
+#endif
+
+            model->meshes[i].bone_weights[i].bone_index = vertices[i].bone_index;
+            model->meshes[i].bone_weights[i].bone_weight = 1.f;
+            model->meshes[i].bone_weights[i].vertex_index = i;
+        }
+
+        unsigned int cur_index = 0;
+        for(unsigned int j = 0; j < meshes[i].num_triangles; ++j) {
+            plSetMeshTrianglePosition(cur_mesh, &cur_index,
+                                      meshes[i].triangles[j].vertex_indices[0],
+                                      meshes[i].triangles[j].vertex_indices[1],
+                                      meshes[i].triangles[j].vertex_indices[2]
+            );
+        }
     }
 
     /* and finally the normals...
@@ -272,7 +340,7 @@ PLModel *LoadModel(const char *path, bool abort_on_fail) {
 
 // todo, load hir from anywhere - open the potential to have
 // multiple hirs for different models :)
-PLModelBone *LoadBones(const char *path, bool abort_on_fail) {
+PLBone *LoadBones(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
@@ -391,9 +459,9 @@ void CacheModelData(void) {
     // copy each bone into our global bones list
     for(unsigned int i = 0; i < model_cache.num_bones; ++i) {
         model_cache.bones[i].parent = bones[i].parent;
-        model_cache.bones[i].coords.x = bones[i].coords[0];
-        model_cache.bones[i].coords.y = bones[i].coords[1];
-        model_cache.bones[i].coords.z = bones[i].coords[2];
+        model_cache.bones[i].position.x = bones[i].coords[0];
+        model_cache.bones[i].position.y = bones[i].coords[1];
+        model_cache.bones[i].position.z = bones[i].coords[2];
         strncpy(model_cache.bones[i].name, bone_names[i], sizeof(model_cache.bones[i].name));
 
         //plScaleVector3f(&g_model_cache.bones[i].coords, 4);
@@ -686,11 +754,11 @@ void DEBUGDrawSkeleton(void) {
 
     for(unsigned int i = 0, vert = 0; i < model_cache.num_bones; ++i, vert += 2) {
         //start
-        plSetMeshVertexPosition(skeleton_mesh, vert, model_cache.bones[i].coords);
+        plSetMeshVertexPosition(skeleton_mesh, vert, model_cache.bones[i].position);
         plSetMeshVertexColour(skeleton_mesh, vert, PLColour(255, 0, 0, 255));
 
         //end
-        plSetMeshVertexPosition(skeleton_mesh, vert + 1, model_cache.bones[model_cache.bones[i].parent].coords);
+        plSetMeshVertexPosition(skeleton_mesh, vert + 1, model_cache.bones[model_cache.bones[i].parent].position);
         plSetMeshVertexColour(skeleton_mesh, vert + 1, PLColour(0, 255, 0, 255));
     }
 
