@@ -91,6 +91,11 @@ enum {
     PORK_MBOX_ERROR,
 };
 
+enum {
+    PORK_MODE_DEFAULT,
+    PORK_MODE_EDITOR,
+};
+
 typedef struct PorkLauncherInterface {
     unsigned int(*GetTicks)(void);
 
@@ -100,6 +105,8 @@ typedef struct PorkLauncherInterface {
     void(*SetWindowTitle)(const char *title);
 
     void(*ShutdownLauncher)(void);
+
+    unsigned int mode;
 } PorkLauncherInterface;
 
 // todo, the below is a basic outline for API

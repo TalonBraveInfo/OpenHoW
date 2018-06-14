@@ -303,6 +303,16 @@ private:
 bool EditorApp::OnInit() {
     plInitialize(argc, argv);
 
+    PorkLauncherInterface interface{};
+    memset(&interface, 0, sizeof(PorkLauncherInterface));
+    interface.GetTicks          = IGetTicks;
+    interface.DisplayMessageBox = IDisplayMessageBox;
+    interface.ShutdownLauncher  = IShutdownLauncher;
+    interface.SwapWindow        = ISwapWindow;
+    interface.mode              = PORK_MODE_EDITOR;
+
+    InitPork(argc, argv, interface);
+
     wxLog::SetLogLevel(wxLOG_Warning);
 
     wxInitAllImageHandlers();
@@ -330,15 +340,6 @@ bool EditorApp::OnInit() {
     main_frame_->Maximize(true);
 
     SetTopWindow(main_frame_);
-
-    PorkLauncherInterface interface{};
-    memset(&interface, 0, sizeof(PorkLauncherInterface));
-    interface.GetTicks          = IGetTicks;
-    interface.DisplayMessageBox = IDisplayMessageBox;
-    interface.ShutdownLauncher  = IShutdownLauncher;
-    interface.SwapWindow        = ISwapWindow;
-
-    InitPork(argc, argv, interface);
 
     delete splash;
     return true;

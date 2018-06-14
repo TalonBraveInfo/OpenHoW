@@ -213,6 +213,11 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     /* */
 
+    if(g_launcher.mode == PORK_MODE_EDITOR) {
+        /* will go through InitPorkEditor instead */
+        return;
+    }
+
     if(g_launcher.SetWindowTitle) {
         g_launcher.SetWindowTitle(g_state.mod_name);
     }
