@@ -43,9 +43,8 @@ void SaveConfig(void) {
         }
 #else
         fprintf(fp, "\"%s\":\"%s\"", (*var)->var, (*var)->value);
-        if(vars < vars + num_c - 1) {
+        if(var < vars + num_c - 1) {
             fprintf(fp, ",");
-            continue;
         }
 #endif
     }

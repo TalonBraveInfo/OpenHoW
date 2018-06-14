@@ -168,31 +168,31 @@ PLModel *LoadVTXModel(const char *path) {
     /* figure out how many textures we have for this model
      * so that we can generate a mesh for each later */
 
-#define MAX_TEXTURE_INDICES 16
+#define MAX_TEXTURE_INDICES 32
     unsigned int texture_indices[MAX_TEXTURE_INDICES];
     unsigned int num_texture_indices = 0;
     memset(texture_indices, -1, sizeof(unsigned int) * MAX_TEXTURE_INDICES);
 
     for(unsigned int i = 0; i < num_quads; ++i) {
-        for(unsigned int j = 0; j < MAX_TEXTURE_INDICES; ++j) {
+        for(unsigned int j = 0; j < num_texture_indices; ++j) {
             if(quads[i].texture_index == texture_indices[j]) {
                 continue;
             }
-        }
 
-        texture_indices[num_texture_indices++] = quads[i].texture_index;
-        pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+            texture_indices[num_texture_indices++] = quads[i].texture_index;
+            pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+        }
     }
 
     for(unsigned int i = 0; i < num_triangles; ++i) {
-        for(unsigned int j = 0; j < MAX_TEXTURE_INDICES; ++j) {
+        for(unsigned int j = 0; j < num_texture_indices; ++j) {
             if(triangles[i].texture_index == texture_indices[j]) {
                 continue;
             }
-        }
 
-        texture_indices[num_texture_indices++] = triangles[i].texture_index;
-        pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+            texture_indices[num_texture_indices++] = triangles[i].texture_index;
+            pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+        }
     }
 
     /* now allocate our mesh container */
