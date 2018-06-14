@@ -221,10 +221,11 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitServer();
 
     InitPlayers();
-    InitModels();
-    InitMaps();
 
     InitConfig();
+
+    InitModels();
+    InitMaps();
 }
 
 bool IsPorkRunning(void) {

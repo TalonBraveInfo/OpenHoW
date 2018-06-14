@@ -76,7 +76,12 @@ void ReadConfig(void) {
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
     for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-        plSetConsoleVariable((*var), GetJSONStringProperty((*var)->var));
+        const char *result = GetJSONStringProperty((*var)->var);
+        if(strcmp(result, "null") == 0) {
+            continue;
+        }
+
+        plSetConsoleVariable((*var), result);
     }
 
     FlushJSON();
