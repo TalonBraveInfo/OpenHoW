@@ -31,6 +31,16 @@ public:
 
     void Draw() override {
         ViewportPanel::Draw();
+
+        /* HACK because trying to set context during init
+         * is failing and everything is burning. */
+        static bool init = false;
+        if(!init) {
+            InitPorkEditor();
+            init = true;
+        }
+
+        DrawPork(0);
     }
 
 protected:
@@ -74,9 +84,17 @@ private:
     void OnAbout(wxCommandEvent &event);
     void OnPreferences(wxCommandEvent &event);
 
+    PerspectiveViewportPanel *viewport_;
+
     wxAuiManager *aui_manager_;
 
     wxDECLARE_EVENT_TABLE();
+
+public:
+    void InitViewports() {
+        viewport_->Initialize();
+        viewport_->StartDrawing();
+    }
 };
 
 enum {
@@ -107,7 +125,6 @@ wxEND_EVENT_TABLE()
 
 EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         wxFrame(nullptr, wxID_ANY, PORK_EDITOR_TITLE, pos, size) {
-
     wxBitmap app_bitmap;
     if(app_bitmap.LoadFile("./rc/icon.png", wxBITMAP_TYPE_PNG)) {
         wxIcon app_icon;
@@ -116,12 +133,6 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     }
 
     aui_manager_ = new wxAuiManager(this);
-
-    /////////////////////////////////////////////
-
-    auto *toolbar = new wxToolBar();
-    toolbar->Realize();
-    SetToolBar(toolbar);
 
     auto *menu_file = new wxMenu;
     {
@@ -193,21 +204,28 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
 
     CreateStatusBar(3);
 
-    ////////////////////////////////////////////
-    // Create the toolbar...
-
-    wxAuiPaneInfo toolbar_info;
-    toolbar_info.Caption("Toolbar");
-    toolbar_info.ToolbarPane();
-    toolbar_info.Top();
-
-    auto *toolbar_file = new wxAuiToolBar(this);
-    {
+    {   /* toolbar */
+        wxAuiPaneInfo toolbar_info;
+        toolbar_info.Caption("Toolbar");
+        toolbar_info.ToolbarPane();
+        toolbar_info.Top();
         toolbar_info.Position(0);
-    }
-    aui_manager_->AddPane(toolbar_file, toolbar_info);
 
-    ////////////////////////////////////////////
+        auto *toolbar_file = new wxAuiToolBar(this);
+        //toolbar_file->AddTool(wxID_NEW, "New Map", );
+        toolbar_file->Realize();
+        aui_manager_->AddPane(toolbar_file, toolbar_info);
+    }
+
+    wxAuiPaneInfo viewport_info;
+    viewport_info.Center();
+    viewport_info.CenterPane();
+    viewport_info.Movable(true);
+    viewport_info.Floatable(true);
+    viewport_info.Dockable(true);
+    viewport_info.CloseButton(false);
+    viewport_ = new PerspectiveViewportPanel(this);
+    aui_manager_->AddPane(viewport_, viewport_info);
 
     g_console_panel = new ConsolePanel(this);
     wxAuiPaneInfo console_info;
@@ -235,6 +253,10 @@ void EditorFrame::OnAbout(wxCommandEvent &event) {
     info.SetName(_(PORK_EDITOR_TITLE));
     info.SetVersion(_(PORK_MAJOR_VERSION + "." + PORK_MINOR_VERSION));
     info.SetWebSite("http://talonbrave.info/", _("TalonBrave.info"));
+    info.SetDescription("Editor for OpenHoW");
+
+    info.AddDeveloper("Mark \"hogsy\" Sowden <markelswo@gmail.com>");
+
     wxAboutBox(info);
 }
 
@@ -332,16 +354,15 @@ bool EditorApp::OnInit() {
         );
     }
 
-    int width, height;
-    wxDisplaySize(&width, &height);
-
     main_frame_ = new EditorFrame(wxDefaultPosition, wxSize(1024, 768));
     main_frame_->Show(true);
     main_frame_->Maximize(true);
-
     SetTopWindow(main_frame_);
 
     delete splash;
+
+    main_frame_->InitViewports();
+
     return true;
 }
 

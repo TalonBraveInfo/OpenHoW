@@ -22,6 +22,7 @@
 #include <wx/notebook.h>
 #include <wx/spinctrl.h>
 #include <wx/combo.h>
+#include <wx/glcanvas.h>
 
 #include <pork/pork.h>
 

@@ -17,7 +17,6 @@
 #pragma once
 
 #include "main.h"
-#include "DrawCanvas.h"
 
 class ViewportPanel : public wxPanel {
 public:
@@ -27,6 +26,8 @@ public:
     virtual void Initialize();
     virtual void Draw() {}
 
+    void SetContext();
+
     void StartDrawing();
     void StopDrawing();
 
@@ -35,7 +36,7 @@ private:
 
     void OnTimer(wxTimerEvent &event);
 
-    DrawCanvas *canvas_;
+    wxGLCanvas *canvas_;
 
     wxTimer *timer_;
 

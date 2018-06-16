@@ -105,10 +105,15 @@ void FrontendInputCallback(int key, bool is_pressed) {
 void InitFrontend(void) {
     memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
 
+    InitFonts();
+
+    if(g_launcher.mode == PORK_MODE_EDITOR) {
+        SetFrontendState(FE_MODE_EDITOR);
+        return;
+    }
+
     /* load in all the assets we'll be using for the frontend */
     fe_background = LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
-
-    InitFonts();
 }
 
 void ProcessFrontendInput(void) {
@@ -354,6 +359,10 @@ void SetFrontendState(unsigned int state) {
         case FE_MODE_LOADING: {
             loading_description[0] = '\0';
             loading_progress = 0;
+        } break;
+
+        case FE_MODE_EDITOR: {
+
         } break;
     }
     frontend_state = state;

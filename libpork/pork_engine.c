@@ -75,7 +75,6 @@ void *pork_calloc(size_t num, size_t size) {
 }
 
 void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
-
     pl_malloc = pork_malloc;
     pl_calloc = pork_calloc;
 
@@ -213,6 +212,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     /* */
 
+    InitConfig();
+
     if(g_launcher.mode == PORK_MODE_EDITOR) {
         /* will go through InitPorkEditor instead */
         return;
@@ -227,8 +228,12 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     InitPlayers();
 
-    InitConfig();
+    InitModels();
+    InitMaps();
+}
 
+void InitPorkEditor(void) {
+    InitClient();
     InitModels();
     InitMaps();
 }

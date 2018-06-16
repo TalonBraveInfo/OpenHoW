@@ -16,6 +16,8 @@
  */
 #include "ViewportPanel.h"
 
+wxGLContext *cur_context = nullptr;
+
 wxBEGIN_EVENT_TABLE(ViewportPanel, wxPanel)
                 EVT_TIMER(-1, ViewportPanel::OnTimer)
 wxEND_EVENT_TABLE()
@@ -42,11 +44,13 @@ void ViewportPanel::Initialize() {
             WX_GL_MIN_ACCUM_GREEN, 8,
             WX_GL_MIN_ACCUM_BLUE, 8,
             WX_GL_MIN_ACCUM_ALPHA, 8,
-#if 0
-            WX_GL_DOUBLEBUFFER, 1,
-#endif
     };
-    canvas_ = new DrawCanvas(this, attributes);
+    canvas_ = new wxGLCanvas(this, wxID_ANY, attributes);
+
+    if(cur_context == nullptr) {
+        cur_context = new wxGLContext(canvas_);
+        //cur_context->SetCurrent(*canvas_);
+    }
 
     wxBoxSizer *vert = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer *hori = new wxBoxSizer(wxHORIZONTAL);
@@ -57,8 +61,12 @@ void ViewportPanel::Initialize() {
     SetSizer(vert);
 }
 
+void ViewportPanel::SetContext() {
+    cur_context->SetCurrent(*canvas_);
+}
+
 void ViewportPanel::StartDrawing() {
-    timer_->Start(25);
+    timer_->Start(1000);
 }
 
 void ViewportPanel::StopDrawing() {
@@ -70,7 +78,16 @@ void ViewportPanel::OnTimer(wxTimerEvent &event) {
         return;
     }
 
-    canvas_->SetCurrent();
+    cur_context->SetCurrent(*canvas_);
+
+    const wxSize client_size = GetClientSize();
+    UpdatePorkViewport(false,
+                       static_cast<unsigned int>(client_size.GetWidth()),
+                       static_cast<unsigned int>(client_size.GetHeight()));
+
+    Draw();
+
+    canvas_->SwapBuffers();
 }
 
 

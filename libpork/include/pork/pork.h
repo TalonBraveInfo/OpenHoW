@@ -116,6 +116,7 @@ PL_EXTERN_C
 /* pork_engine.c */
 
 PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
+PL_EXTERN void InitPorkEditor(void);
 PL_EXTERN void ShutdownPork(void);
 
 PL_EXTERN void DrawPork(double delta);
