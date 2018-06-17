@@ -31,6 +31,8 @@ public:
     void StartDrawing();
     void StopDrawing();
 
+    double GetTimerInterval();
+
 protected:
 private:
 

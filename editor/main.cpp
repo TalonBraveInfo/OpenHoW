@@ -30,6 +30,10 @@ public:
     explicit PerspectiveViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
 
     void Draw() override {
+        if(!IsShown()) {
+            return;
+        }
+
         ViewportPanel::Draw();
 
         /* HACK because trying to set context during init
@@ -91,10 +95,7 @@ private:
     wxDECLARE_EVENT_TABLE();
 
 public:
-    void InitViewports() {
-        viewport_->Initialize();
-        viewport_->StartDrawing();
-    }
+    PerspectiveViewportPanel *GetViewport() { return viewport_; }
 };
 
 enum {
@@ -238,6 +239,9 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
     aui_manager_->AddPane(g_console_panel, console_info);
 
     aui_manager_->Update();
+
+    viewport_->Initialize();
+    viewport_->StartDrawing();
 }
 
 EditorFrame::~EditorFrame() {
@@ -270,14 +274,6 @@ void EditorFrame::OnPreferences(wxCommandEvent &event) {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Pork Interface
-
-unsigned int IGetTicks() {
-    static wxTimer timer;
-    if(!timer.IsRunning()) {
-        timer.Start();
-    }
-    return static_cast<unsigned int>(timer.GetInterval());
-}
 
 void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     switch(level) {
@@ -317,17 +313,27 @@ class EditorApp : public wxApp {
 public:
     bool OnInit() override;
 
+    static unsigned int GetTicks() {
+        if(main_frame_ == nullptr) {
+            return 0;
+        }
+
+        return static_cast<unsigned int>(main_frame_->GetViewport()->GetTimerInterval());;
+    }
+
 protected:
 private:
-    EditorFrame *main_frame_{};
+    static EditorFrame *main_frame_;
 };
+
+EditorFrame *EditorApp::main_frame_ = nullptr;
 
 bool EditorApp::OnInit() {
     plInitialize(argc, argv);
 
     PorkLauncherInterface interface{};
     memset(&interface, 0, sizeof(PorkLauncherInterface));
-    interface.GetTicks          = IGetTicks;
+    interface.GetTicks          = EditorApp::GetTicks;
     interface.DisplayMessageBox = IDisplayMessageBox;
     interface.ShutdownLauncher  = IShutdownLauncher;
     interface.SwapWindow        = ISwapWindow;
@@ -360,8 +366,6 @@ bool EditorApp::OnInit() {
     SetTopWindow(main_frame_);
 
     delete splash;
-
-    main_frame_->InitViewports();
 
     return true;
 }

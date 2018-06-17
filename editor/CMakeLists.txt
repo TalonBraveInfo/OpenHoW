@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 project(editor)
 
-file(GLOB SOURCE_FILES *.c *.h *.cpp)
+file(GLOB SOURCE_FILES *.c *.h *.cpp widgets/*.*)
 
 find_package(wxWidgets COMPONENTS gl core base adv aui REQUIRED)
 include(${wxWidgets_USE_FILE})

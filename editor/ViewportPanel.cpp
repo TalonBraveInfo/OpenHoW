@@ -66,7 +66,7 @@ void ViewportPanel::SetContext() {
 }
 
 void ViewportPanel::StartDrawing() {
-    timer_->Start(1000);
+    timer_->Start(24);
 }
 
 void ViewportPanel::StopDrawing() {
@@ -79,15 +79,20 @@ void ViewportPanel::OnTimer(wxTimerEvent &event) {
     }
 
     cur_context->SetCurrent(*canvas_);
-
+#if 1
     const wxSize client_size = GetClientSize();
     UpdatePorkViewport(false,
                        static_cast<unsigned int>(client_size.GetWidth()),
                        static_cast<unsigned int>(client_size.GetHeight()));
+#endif
 
     Draw();
 
     canvas_->SwapBuffers();
+}
+
+double ViewportPanel::GetTimerInterval() {
+    return timer_->GetInterval();
 }
 
 
