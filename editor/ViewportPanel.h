@@ -33,6 +33,8 @@ public:
 
     double GetTimerInterval();
 
+    void SwapBuffers();
+
 protected:
 private:
 

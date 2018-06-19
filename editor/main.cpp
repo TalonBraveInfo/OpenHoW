@@ -273,41 +273,6 @@ void EditorFrame::OnPreferences(wxCommandEvent &event) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Pork Interface
-
-void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
-    switch(level) {
-        case PORK_MBOX_ERROR: {
-            level = wxICON_ERROR;
-        } break;
-        case PORK_MBOX_WARNING: {
-            level = wxICON_WARNING;
-        } break;
-        case PORK_MBOX_INFORMATION: {
-            level = wxICON_INFORMATION;
-        } break;
-
-        default: return;
-    }
-
-    char buf[2048];
-    va_list args;
-    va_start(args, msg);
-    vsnprintf(buf, sizeof(buf), msg, args);
-    va_end(args);
-
-    wxMessageBox(buf, PORK_TITLE, level);
-}
-
-void IShutdownLauncher() {
-
-}
-
-void ISwapWindow() {
-
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 
 class EditorApp : public wxApp {
 public:
@@ -319,6 +284,38 @@ public:
         }
 
         return static_cast<unsigned int>(main_frame_->GetViewport()->GetTimerInterval());;
+    }
+
+    static void DisplayMessageBox(unsigned int level, const char *msg, ...) {
+        switch(level) {
+            case PORK_MBOX_ERROR: {
+                level = wxICON_ERROR;
+            } break;
+            case PORK_MBOX_WARNING: {
+                level = wxICON_WARNING;
+            } break;
+            case PORK_MBOX_INFORMATION: {
+                level = wxICON_INFORMATION;
+            } break;
+
+            default: return;
+        }
+
+        char buf[2048];
+        va_list args;
+        va_start(args, msg);
+        vsnprintf(buf, sizeof(buf), msg, args);
+        va_end(args);
+
+        wxMessageBox(buf, PORK_TITLE, level);
+    }
+
+    static void ShutdownLauncher() {
+        /* do nothing ? */
+    }
+
+    static void SwapWindow() {
+        main_frame_->GetViewport()->SwapBuffers();
     }
 
 protected:
@@ -334,9 +331,9 @@ bool EditorApp::OnInit() {
     PorkLauncherInterface interface{};
     memset(&interface, 0, sizeof(PorkLauncherInterface));
     interface.GetTicks          = EditorApp::GetTicks;
-    interface.DisplayMessageBox = IDisplayMessageBox;
-    interface.ShutdownLauncher  = IShutdownLauncher;
-    interface.SwapWindow        = ISwapWindow;
+    interface.DisplayMessageBox = EditorApp::DisplayMessageBox;
+    interface.ShutdownLauncher  = EditorApp::ShutdownLauncher;
+    interface.SwapWindow        = EditorApp::SwapWindow;
     interface.mode              = PORK_MODE_EDITOR;
 
     InitPork(argc, argv, interface);

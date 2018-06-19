@@ -15,24 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "./shared.vert"
-
-/* some random comments
- * and some more
- * and some more
- */
-
-// single line comment
-
-varying vec4 v_colour;
+uniform sampler2D diffuse;
 
 void main() {
+    vec4 colour = texture2D(diffuse, gl_TexCoord[0].st);
+    if(colour.a < 0.1) {
+        discard;
+    }
 
-    /* fudged up crap here to test how the parser deals with spaces :) */
-    //vec2             stuff =         vec2(2.0, 2.0);
-
-    v_colour = gl_Color;
-
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_Position = ftransform();
+	gl_FragColor = colour;
 }

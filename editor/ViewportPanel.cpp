@@ -87,12 +87,12 @@ void ViewportPanel::OnTimer(wxTimerEvent &event) {
 #endif
 
     Draw();
-
-    canvas_->SwapBuffers();
 }
 
 double ViewportPanel::GetTimerInterval() {
     return timer_->GetInterval();
 }
 
-
+void ViewportPanel::SwapBuffers() {
+    canvas_->SwapBuffers();
+}

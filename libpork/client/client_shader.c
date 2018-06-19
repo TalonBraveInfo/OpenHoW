@@ -23,7 +23,7 @@
 
 #if 1
 
-PLShaderProgram *programs[END_SHADER];
+PLShaderProgram *programs[MAX_SHADERS];
 
 PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
@@ -54,17 +54,27 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 }
 
 void InitShaders(void) {
+    memset(programs, NULL, sizeof(PLShaderProgram*) * MAX_SHADERS);
     programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
     programs[SHADER_WATER]      = LoadShaderProgram("water", "water");
+    programs[SHADER_ALPHA_TEST] = LoadShaderProgram("default", "alpha_test");
     //programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
+
+    /* set defaults */
+    for(unsigned int i = 0; i < MAX_SHADERS; ++i) {
+        if(programs[i] == NULL) {
+            continue;
+        }
+
+        plSetNamedShaderUniformInt(programs[i], "diffuse", 0);
+    }
 
     /* enable the default shader program */
     plSetShaderProgram(programs[SHADER_DEFAULT]);
-    plSetNamedShaderUniformInt(programs[SHADER_DEFAULT], "diffuse", 0);
 }
 
 void ShutdownShaders(void) {
-    for(unsigned int i = 0; i < END_SHADER; ++i) {
+    for(unsigned int i = 0; i < MAX_SHADERS; ++i) {
         if(programs[i] == NULL) {
             continue;
         }

@@ -95,12 +95,13 @@ void DeleteShaderProgram(ShaderProgram *program);
 enum {
     SHADER_DEFAULT,     /* unlit */
     SHADER_GOURAUD_LIT, /* lit */
+    SHADER_ALPHA_TEST,  /* */
     SHADER_WATER,       /* */
     SHADER_VIDEO,       /* */
 
-    END_SHADER
+    MAX_SHADERS
 };
-extern PLShaderProgram *programs[END_SHADER];
+extern PLShaderProgram *programs[MAX_SHADERS];
 
 void InitShaders(void);
 void ShutdownShaders(void);
