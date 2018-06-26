@@ -30,7 +30,7 @@ PreferencesDialog::PreferencesDialog(wxWindow *parent) :
     notebook_ = new wxNotebook(this, wxID_ANY);
 
     ///////////////////////////////////////////////
-    // autio settings
+    // audio settings
 
     panel_audio_ = new wxPanel(notebook_);
 

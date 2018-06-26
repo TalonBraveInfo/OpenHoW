@@ -67,4 +67,6 @@ target_link_libraries(pork
         avformat
         avcodec
 
+        openal
+
         GLEW)

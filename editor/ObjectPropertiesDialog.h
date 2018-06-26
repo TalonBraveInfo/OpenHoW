@@ -14,16 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
-uniform sampler2D diffuse;
+#include "main.h"
 
-varying vec4 v_colour;
+class ObjectPropertiesDialog : public wxDialog {
+public:
+    ObjectPropertiesDialog(wxWindow *parent);
 
-void main() {
-    vec4 colour = texture2D(diffuse, gl_TexCoord[0].st);
-    if(colour.a < 0.1) {
-        discard;
-    }
-
-	gl_FragColor = v_colour * colour;
-}
+protected:
+private:
+    wxDECLARE_EVENT_TABLE();
+};

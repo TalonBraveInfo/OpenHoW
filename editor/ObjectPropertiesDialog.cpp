@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "ObjectPropertiesDialog.h"
 
-uniform sampler2D diffuse;
+wxBEGIN_EVENT_TABLE(ObjectPropertiesDialog, wxDialog)
+wxEND_EVENT_TABLE()
 
-varying vec4 v_colour;
+ObjectPropertiesDialog::ObjectPropertiesDialog(wxWindow *parent) :
+        wxDialog(parent, wxID_ANY, "Object Properties", wxDefaultPosition, wxSize(256, 512)) {
+    SetSizeHints(wxSize(256, 512), wxSize(256, 512));
 
-void main() {
-    vec4 colour = texture2D(diffuse, gl_TexCoord[0].st);
-    if(colour.a < 0.1) {
-        discard;
-    }
-
-	gl_FragColor = v_colour * colour;
+    Layout();
 }
