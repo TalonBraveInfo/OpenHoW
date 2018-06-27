@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "pork_engine.h"
 #include "pork_input.h"
 #include "pork_map.h"
 #include "pork_language.h"
+#include "pork_audio.h"
 
 #include "client/client_font.h"
 #include "client/client_frontend.h"
@@ -96,7 +98,7 @@ void SetCommand(unsigned int argc, char *argv[]) {
             return;
         }
     }
-    LogWarn("invalid ADD command, %s!\n", cmd);
+    LogWarn("invalid SET command, %s!\n", cmd);
 
 #if 0
     for(unsigned int i = 1; i < argc; ++i) {
@@ -154,6 +156,10 @@ void SetCommand(unsigned int argc, char *argv[]) {
 #endif
 }
 
+void ResetAudioCommand(unsigned int argc, char *argv[]) {
+    InitAudio();
+}
+
 void QuitCommand(unsigned int argc, char *argv[]) {
     g_launcher.ShutdownLauncher();
 }
@@ -177,12 +183,13 @@ void ConvertImageCallback(unsigned int argc, char *argv[]);
 
 void InitConsole(void) {
     plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
-    plRegisterConsoleCommand("set", SetCommand, "");
-    plRegisterConsoleCommand("get", GetCommand, "");
-    plRegisterConsoleCommand("add", AddCommand, "");
+    plRegisterConsoleCommand("set", SetCommand, "Sets state for given target");
+    plRegisterConsoleCommand("get", GetCommand, "Gets state for given target");
+    plRegisterConsoleCommand("add", AddCommand, "Adds the given target");
     plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
+    plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
 
     plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
     cv_camera_mode = plRegisterConsoleVariable("camera", "0", pl_int_var, NULL, "0 = default, 1 = debug");

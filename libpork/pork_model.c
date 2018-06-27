@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 #include <PL/platform_mesh.h>
 
@@ -116,7 +117,7 @@ PLModel *LoadVTXModel(const char *path) {
     if(fread(&num_quads, sizeof(uint32_t), 1, fac_file) != 1) {
         Error("failed to get number of quads, \"%s\", aborting!\n", fac_path);
     }
-    LogDebug("\"%s\" has %u quads", fac_path, num_triangles);
+    LogDebug("\"%s\" has %u quads", fac_path, num_quads);
 
     struct __attribute__((packed)) {
         int8_t uv_a[2];
@@ -330,9 +331,11 @@ PLModel *LoadModel(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
     snprintf(model_path, sizeof(model_path), "%s.vtx", pork_find(path));
     PLModel *model = plLoadModel(model_path);
-    if(model == NULL && abort_on_fail) {
-        Error("failed to load model, \"%s\", aborting!\n%s\n", model_path, plGetError());
-    } else {
+    if(model == NULL) {
+        if(abort_on_fail) {
+            Error("failed to load model, \"%s\", aborting!\n%s\n", model_path, plGetError());
+        }
+
         LogWarn("failed to load model, \"%s\"!\n%s\n", model_path, plGetError());
     }
     return model;

@@ -56,6 +56,11 @@ struct {
 } audio;
 
 void InitAudio(void) {
+    if(audio.enabled) {
+        LogInfo("resetting audio...\n");
+        ShutdownAudio();
+    }
+
     memset(&audio, 0, sizeof(audio));
 
     ALCdevice *device = alcOpenDevice(NULL);
@@ -103,6 +108,8 @@ void InitAudio(void) {
 
     alDopplerFactor(4.f);
     alDopplerVelocity(350.f);
+
+    audio.enabled = true;
 }
 
 bool CacheAudioSample(const char *path, bool preserve) {
@@ -132,6 +139,8 @@ void ShutdownAudio(void) {
     if(!audio.enabled) {
         return;
     }
+    
+    LogInfo("shutting down audio sub-system...\n");
 
     /* todo: clear sounds */
 
