@@ -111,7 +111,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     cv_base_path = plRegisterConsoleVariable("base_path", "./", pl_string_var, NULL, "");
     cv_mod_path = plRegisterConsoleVariable("mod_path", "", pl_string_var, NULL, "");
 
-    InitScripting();
     InitConsole();
 
     for(int i = 1; i < argc; ++i) {
@@ -213,7 +212,9 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     /* */
 
     InitConfig();
+    InitScripting();
 
+    /* todo: restructure this... */
     if(g_launcher.mode == PORK_MODE_EDITOR) {
         /* will go through InitPorkEditor instead */
         return;

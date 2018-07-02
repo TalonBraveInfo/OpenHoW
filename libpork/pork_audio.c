@@ -18,10 +18,13 @@
 #include "pork_engine.h"
 #include "pork_audio.h"
 
+#include "client/client_frontend.h"
+
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
 #include <AL/efx-presets.h>
+#include <PL/platform_graphics_camera.h>
 
 LPALGENEFFECTS alGenEffects;
 LPALDELETEEFFECTS alDeleteEffects;
@@ -133,6 +136,14 @@ void SimulateAudio(void) {
     if(!audio.enabled) {
         return;
     }
+
+    PLVector3 position = {0,0,0}, angles = {0,0,0};
+    if(GetFrontendState() == FE_MODE_GAME) {
+        position = g_state.camera->position;
+        angles = g_state.camera->angles;
+    }
+
+    alListener3f(AL_POSITION, position.x, position.y, position.z);
 }
 
 void ShutdownAudio(void) {

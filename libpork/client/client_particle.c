@@ -15,13 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pork_engine.h"
+#include "pork_formats.h"
 
 #include "client.h"
 
-typedef struct Particle {
-    unsigned int texture_id;
+/* everything else */
 
+typedef struct Particle {
+    PLVector3 position;
     PLVector3 velocity;
+    PLColour colour;
+    float size;
 } Particle;
 Particle *particles = NULL;
 unsigned int num_particles = 0;
