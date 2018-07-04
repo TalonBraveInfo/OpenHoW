@@ -28,6 +28,10 @@ public:
     virtual bool Destroy();
 
 private:
+    void FileEvent(wxCommandEvent &event);
+
     wxAuiManager *aui_manager{nullptr};
     ParticleViewportPanel *viewport_{nullptr};
+
+    wxDECLARE_EVENT_TABLE();
 };

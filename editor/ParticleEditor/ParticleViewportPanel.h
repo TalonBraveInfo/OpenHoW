@@ -20,6 +20,7 @@
 #include "../ViewportPanel.h"
 
 class ParticleViewportPanel : public ViewportPanel {
+public:
     ParticleViewportPanel(wxWindow *parent);
     ~ParticleViewportPanel();
 

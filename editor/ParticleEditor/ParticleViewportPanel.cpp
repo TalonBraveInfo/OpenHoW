@@ -26,8 +26,8 @@ ParticleViewportPanel::ParticleViewportPanel(wxWindow *parent) : ViewportPanel(p
     if(attachment_ == nullptr) {
         /* todo: handle throws ... */
     }
-    
-    
+
+
 }
 
 ParticleViewportPanel::~ParticleViewportPanel() {
