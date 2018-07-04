@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "ViewportPanel.h"
 
 wxGLContext *cur_context = nullptr;
@@ -61,10 +62,6 @@ void ViewportPanel::Initialize() {
     SetSizer(vert);
 }
 
-void ViewportPanel::SetContext() {
-    cur_context->SetCurrent(*canvas_);
-}
-
 void ViewportPanel::StartDrawing() {
     timer_->Start(24);
 }
@@ -79,12 +76,12 @@ void ViewportPanel::OnTimer(wxTimerEvent &event) {
     }
 
     cur_context->SetCurrent(*canvas_);
-#if 1
+
     const wxSize client_size = GetClientSize();
     UpdatePorkViewport(false,
                        static_cast<unsigned int>(client_size.GetWidth()),
                        static_cast<unsigned int>(client_size.GetHeight()));
-#endif
+    SetPorkEditorContext(context_id_);
 
     Draw();
 }

@@ -26,8 +26,6 @@ public:
     virtual void Initialize();
     virtual void Draw() {}
 
-    void SetContext();
-
     void StartDrawing();
     void StopDrawing();
 
@@ -35,13 +33,19 @@ public:
 
     void SwapBuffers();
 
+    void SetContextId(PorkEdCtx context_id) {
+        context_id_ = context_id;
+    }
+
 protected:
+
 private:
+
+    PorkEdCtx context_id_{PORK_ED_CTX_NONE};
 
     void OnTimer(wxTimerEvent &event);
 
-    wxGLCanvas *canvas_;
-
+    wxGLCanvas *canvas_{nullptr};
     wxTimer *timer_;
 
     wxDECLARE_EVENT_TABLE();

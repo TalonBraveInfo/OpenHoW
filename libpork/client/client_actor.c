@@ -14,33 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "pork_engine.h"
 #include "pork_model.h"
 
 #include "client_actor.h"
 #include "client_frontend.h"
 
-CLActor *client_actors = NULL;
-unsigned int num_cl_actors = 256;
+ClientActor *client_actors = NULL;
+unsigned int num_client_actors = 256;
 
 /**
  * clears all of the current actors and is also used
  * for initializing the actor slots in memory.
  */
-void CLClearActors(void) {
+void ClearClientActors(void) {
     if(client_actors == NULL) {
-        client_actors = pork_alloc(num_cl_actors, sizeof(CLActor), true);
+        client_actors = pork_alloc(num_client_actors, sizeof(ClientActor), true);
     }
 
-    LogDebug("clearing %u client actors\n", num_cl_actors);
-    memset(client_actors, 0, sizeof(CLActor) * num_cl_actors);
+    LogDebug("clearing %u client actors\n", num_client_actors);
+    memset(client_actors, 0, sizeof(ClientActor) * num_client_actors);
 }
 
 /**
  * initializes client-side actors.
  */
-void CLInitActors(void) {
-    CLClearActors();
+void InitClientActors(void) {
+    ClearClientActors();
 }
 
 /*********************************************************************/
@@ -50,8 +51,8 @@ void CLInitActors(void) {
  *
  * @return pointer to client-side actor.
  */
-CLActor *CLSpawnActor(void) {
-    for(CLActor *actor = client_actors; actor < client_actors + num_cl_actors; ++actor) {
+ClientActor *SpawnClientActor(void) {
+    for(ClientActor *actor = client_actors; actor < client_actors + num_client_actors; ++actor) {
         if(!actor->is_reserved) {
             actor->is_reserved = true;
             return actor;
@@ -63,14 +64,14 @@ CLActor *CLSpawnActor(void) {
      *
      * todo, in future, let's be more graceful with this, but for now we'll crash and burn!
      */
-    unsigned int old_num_actors = num_cl_actors;
-    num_cl_actors += 512;
-    if((client_actors = realloc(client_actors, sizeof(CLActor) * num_cl_actors)) == NULL) {
-        Error("failed to resize actors array to %u, aborting!\n", num_cl_actors);
+    unsigned int old_num_actors = num_client_actors;
+    num_client_actors += 512;
+    if((client_actors = realloc(client_actors, sizeof(ClientActor) * num_client_actors)) == NULL) {
+        Error("failed to resize client actors array to %u, aborting!\n", num_client_actors);
     }
-    memset(client_actors + old_num_actors, 0, sizeof(CLActor) * (num_cl_actors - old_num_actors));
+    memset(client_actors + old_num_actors, 0, sizeof(ClientActor) * (num_client_actors - old_num_actors));
 
-    return CLSpawnActor();
+    return SpawnClientActor();
 }
 
 /**
@@ -79,14 +80,14 @@ CLActor *CLSpawnActor(void) {
  *
  * @param actor the client-side actor to destroy.
  */
-void CLDestroyActor(CLActor *actor) {
+void DestroyClientActor(ClientActor *actor) {
     if(actor == NULL) {
         LogWarn("attempted to free an invalid actor, we'll probably crash!\n");
         return;
     }
 
     /* will set 'reserved' to false */
-    memset(actor, 0, sizeof(CLActor));
+    memset(actor, 0, sizeof(ClientActor));
 }
 
 /*********************************************************************/
@@ -103,7 +104,7 @@ void DrawActors(double delta) {
         return;
     }
 
-    for(CLActor *actor = client_actors; actor < client_actors + num_cl_actors; ++actor) {
+    for(ClientActor *actor = client_actors; actor < client_actors + num_client_actors; ++actor) {
         if(!actor->is_reserved || !actor->is_visible) {
             continue;
         }

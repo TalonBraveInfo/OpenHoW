@@ -84,6 +84,23 @@ PL_EXTERN_C_END
 #endif
 
 /************************************************/
+/* Editor                                       */
+
+typedef enum PorkEdCtx {
+    PORK_ED_CTX_NONE,
+
+    PORK_ED_CTX_WORLD,
+    PORK_ED_CTX_MODEL,
+    PORK_ED_CTX_PARTICLE,
+} PorkEdCtx;
+
+PL_EXTERN_C
+
+void SetPorkEditorContext(PorkEdCtx context_id);
+
+PL_EXTERN_C_END
+
+/************************************************/
 
 enum {
     PORK_MBOX_INFORMATION,

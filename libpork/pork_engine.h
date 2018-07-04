@@ -74,6 +74,10 @@ struct {
     unsigned int last_draw_ms;
 
     Player players[MAX_PLAYERS];
+
+    struct {
+        PorkEdCtx current_context;
+    } editor;
 } g_state;
 
 #define GetViewportWidth()  g_state.camera->viewport.w

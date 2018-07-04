@@ -98,7 +98,7 @@ void InitClient(void) {
     InitAudio();
     InitFrontend();
 
-    CLClearActors();
+    ClearClientActors();
 }
 
 void SimulateClient(void) {
@@ -116,7 +116,7 @@ void ShutdownClient(void) {
         return;
     }
 
-    CLClearActors();
+    ClearClientActors();
 
     plParseConsoleString("audio_shutdown");
     ShutdownDisplay();

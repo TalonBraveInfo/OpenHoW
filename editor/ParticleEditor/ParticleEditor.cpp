@@ -14,35 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
-#include <iostream>
-
-#include <wx/wx.h>
-#include <wx/notebook.h>
-#include <wx/spinctrl.h>
-#include <wx/combo.h>
-#include <wx/glcanvas.h>
-#include <wx/aui/aui.h>
-
-#include <pork/pork.h>
-
-/////////////////////////////////////////////
-
-#define APP_VERSION_MAJOR   0
-#define APP_VERSION_MINOR   0
+#include "ParticleEditor.h"
 
 enum {
-    ID_FRAME_MAIN,
-        ID_MAIN_CONSOLE,
+    INVALID_ID,
 
-        ID_MAIN_TRANSFORM,
-        ID_MAIN_ROTATE,
-        ID_MAIN_SCALE,
 
-        ID_MAIN_TOOL_MODEL,
-        ID_MAIN_TOOL_TEXTURE,
-        ID_MAIN_TOOL_PARTICLE,
-
-    ID_FRAME_PARTICLE,
 };
+
+ParticleEditorFrame::ParticleEditorFrame(wxWindow *parent) :
+    wxFrame(parent, ID_FRAME_PARTICLE, "Particle Editor", wxDefaultPosition, wxSize(1024, 640))
+{
+
+}
+
+ParticleEditorFrame::~ParticleEditorFrame() {
+
+}
+
+bool ParticleEditorFrame::Destroy() {
+
+
+    return wxTopLevelWindowBase::Destroy();
+}

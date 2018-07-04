@@ -14,35 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
-#include <iostream>
+#include "pork_engine.h"
 
-#include <wx/wx.h>
-#include <wx/notebook.h>
-#include <wx/spinctrl.h>
-#include <wx/combo.h>
-#include <wx/glcanvas.h>
-#include <wx/aui/aui.h>
+#include "client/client_frontend.h"
 
-#include <pork/pork.h>
+void SetPorkEditorContext(PorkEdCtx context_id) {
+    if(GetFrontendState() != FE_MODE_EDITOR) {
+        LogWarn("attempted to change editor context outside of editor mode!\n");
+        return;
+    }
 
-/////////////////////////////////////////////
-
-#define APP_VERSION_MAJOR   0
-#define APP_VERSION_MINOR   0
-
-enum {
-    ID_FRAME_MAIN,
-        ID_MAIN_CONSOLE,
-
-        ID_MAIN_TRANSFORM,
-        ID_MAIN_ROTATE,
-        ID_MAIN_SCALE,
-
-        ID_MAIN_TOOL_MODEL,
-        ID_MAIN_TOOL_TEXTURE,
-        ID_MAIN_TOOL_PARTICLE,
-
-    ID_FRAME_PARTICLE,
-};
+    g_state.editor.current_context = context_id;
+}

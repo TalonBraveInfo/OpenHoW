@@ -14,9 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
-typedef struct CLActor {
+typedef struct ClientActor {
     bool is_reserved;
     bool is_visible;
 
@@ -41,12 +42,16 @@ typedef struct CLActor {
 
     /* animation */
     PLAnimation *cur_animation;
-} CLActor;
+} ClientActor;
 
-void CLInitActors(void);
-void CLClearActors(void);
+PL_EXTERN_C
 
-CLActor *CLSpawnActor(void);
-void CLDestroyActor(CLActor *actor);
+void InitClientActors(void);
+void ClearClientActors(void);
+
+ClientActor *SpawnClientActor(void);
+void DestroyClientActor(ClientActor *actor);
 
 void DrawActors(double delta);
+
+PL_EXTERN_C_END

@@ -19,7 +19,6 @@
 #include "ConsolePanel.h"
 #include "ViewportPanel.h"
 
-#include <wx/aui/aui.h>
 #include <wx/splash.h>
 #include <wx/aboutdlg.h>
 
@@ -27,7 +26,9 @@
 
 class PerspectiveViewportPanel : public ViewportPanel {
 public:
-    explicit PerspectiveViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+    explicit PerspectiveViewportPanel(wxWindow *parent) : ViewportPanel(parent) {
+        SetContextId(PORK_ED_CTX_WORLD);
+    }
 
     void Draw() override {
         if(!IsShown()) {
@@ -44,7 +45,7 @@ public:
             init = true;
         }
 
-        DrawPork(0);
+        DrawPork(GetTimerInterval());
     }
 
 protected:
@@ -53,7 +54,9 @@ private:
 
 class TopViewportPanel : public ViewportPanel {
 public:
-    explicit TopViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+    explicit TopViewportPanel(wxWindow *parent) : ViewportPanel(parent) {
+        SetContextId(PORK_ED_CTX_WORLD);
+    }
 
     void Draw() override {
         ViewportPanel::Draw();
@@ -65,7 +68,9 @@ private:
 
 class SideViewportPanel : public ViewportPanel {
 public:
-    explicit SideViewportPanel(wxWindow *parent) : ViewportPanel(parent) {}
+    explicit SideViewportPanel(wxWindow *parent) : ViewportPanel(parent) {
+        SetContextId(PORK_ED_CTX_WORLD);
+    }
 
     void Draw() override {
         ViewportPanel::Draw();
@@ -98,26 +103,6 @@ public:
     PerspectiveViewportPanel *GetViewport() { return viewport_; }
 };
 
-enum {
-    INVALID_ID,
-
-    ID_MODEL,
-    ID_TEXTURE,
-
-    ID_WIREFRAME,
-    ID_FLAT,
-    ID_TEXTURED,
-    ID_LIT,
-
-    ID_RELOAD,
-
-    ID_CONSOLE,
-
-    ID_TRANSFORM,
-    ID_ROTATE,
-    ID_SCALE,
-};
-
 wxBEGIN_EVENT_TABLE(EditorFrame, wxFrame)
 EVT_MENU(wxID_EXIT, EditorFrame::OnExit)
 EVT_MENU(wxID_ABOUT, EditorFrame::OnAbout)
@@ -125,7 +110,7 @@ EVT_MENU(wxID_PREFERENCES, EditorFrame::OnPreferences)
 wxEND_EVENT_TABLE()
 
 EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
-        wxFrame(nullptr, wxID_ANY, PORK_EDITOR_TITLE, pos, size) {
+        wxFrame(nullptr, ID_FRAME_MAIN, PORK_EDITOR_TITLE, pos, size) {
     wxBitmap app_bitmap;
     if(app_bitmap.LoadFile("./rc/icon.png", wxBITMAP_TYPE_PNG)) {
         wxIcon app_icon;
@@ -153,23 +138,23 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
         menu_edit->Append(wxID_UNDO);
         menu_edit->Append(wxID_REDO);
         menu_edit->AppendSeparator();
-        menu_edit->AppendCheckItem(ID_TRANSFORM, "&Transform");
-        menu_edit->AppendCheckItem(ID_ROTATE, "&Rotate");
-        menu_edit->AppendCheckItem(ID_SCALE, "&Scale");
+        menu_edit->AppendCheckItem(ID_MAIN_TRANSFORM, "&Transform");
+        menu_edit->AppendCheckItem(ID_MAIN_ROTATE, "&Rotate");
+        menu_edit->AppendCheckItem(ID_MAIN_SCALE, "&Scale");
         menu_edit->AppendSeparator();
         menu_edit->Append(wxID_PREFERENCES);
 
-        menu_edit->Check(ID_TRANSFORM, true);
+        menu_edit->Check(ID_MAIN_TRANSFORM, true);
     }
 
     auto *menu_view = new wxMenu;
     {
-        menu_view->Append(ID_RELOAD, "&Reload Resources...");
-        menu_view->AppendSeparator();
+        //menu_view->Append(ID_RELOAD, "&Reload Resources...");
+        //menu_view->AppendSeparator();
 
         auto *menu_view_panels = new wxMenu;
         {
-            menu_view_panels->Append(ID_CONSOLE, "&Console");
+            menu_view_panels->Append(ID_MAIN_CONSOLE, "&Console");
         }
 
         menu_view->AppendSubMenu(menu_view_panels, "&Panels");
@@ -177,11 +162,14 @@ EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
 
     auto *menu_tools = new wxMenu;
     {
-        wxMenuItem *tools_model = new wxMenuItem(menu_tools, ID_MODEL, "&Model Tool...");
+        wxMenuItem *tools_model = new wxMenuItem(menu_tools, ID_MAIN_TOOL_MODEL, "&Model Tool...");
         menu_tools->Append(tools_model);
 
-        wxMenuItem *tools_texture = new wxMenuItem(menu_tools, ID_TEXTURE, "&Texture Tool...");
+        wxMenuItem *tools_texture = new wxMenuItem(menu_tools, ID_MAIN_TOOL_TEXTURE, "&Texture Tool...");
         menu_tools->Append(tools_texture);
+
+        wxMenuItem *tools_particle = new wxMenuItem(menu_tools, ID_MAIN_TOOL_PARTICLE, "&Particle Editor...");
+        menu_tools->Append(tools_particle);
     }
 
     auto *menu_help = new wxMenu;

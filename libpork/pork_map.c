@@ -516,10 +516,10 @@ void ResetMap(void) {
         }
     }
 
-    CLClearActors();
+    ClearClientActors();
 
     for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
-        CLActor *actor = CLSpawnActor();
+        ClientActor *actor = SpawnClientActor();
         if(actor == NULL) {
             /* warn, and try to keep going for as long as we can :( */
             LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
@@ -836,7 +836,7 @@ void LoadMap(const char *name, unsigned int mode) {
     LoadMapTiles(pmg_path);
 
     SetLoadingProgress(20);
-    SetLoadingDescription("LOADING ACTORS");
+    SetLoadingDescription("LOADING OBJECTS");
 
     char pog_path[PL_SYSTEM_MAX_PATH];
     snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
@@ -853,7 +853,7 @@ void LoadMap(const char *name, unsigned int mode) {
     strncpy(map_state.name, desc->name, sizeof(map_state.name));
 
     SetLoadingProgress(30);
-    SetLoadingDescription("SPAWNING ACTORS");
+    SetLoadingDescription("SPAWNING OBJECTS");
 
     ResetMap();
 
@@ -871,17 +871,22 @@ void LoadMap(const char *name, unsigned int mode) {
 #include "client/client_font.h"
 #include "client/client_shader.h"
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
 
-void DrawSky(void) {
-    if(map_state.sky_model == NULL) {
+/* draws the currently loaded map */
+void DrawMap(void) {
+    if(map_state.name[0] == '\0') {
         return;
     }
 
-    plDrawModel(map_state.sky_model);
-}
+    if(GetFrontendState() != FE_MODE_GAME && !(GetFrontendState() == FE_MODE_EDITOR &&
+                                               g_state.editor.current_context == PORK_ED_CTX_WORLD)) {
+        return;
+    }
 
-void DrawWater(void) {
+    if(map_state.sky_model != NULL) {
+        plDrawModel(map_state.sky_model);
+    }
 
     /* todo: translate plane to camera pos - we will have
      * another water plane outside / below without reflections? */
@@ -896,23 +901,8 @@ void DrawWater(void) {
     }
 
     plSetShaderProgram(programs[SHADER_DEFAULT]);
-}
 
-/* draws the currently loaded
- * map */
-void DrawMap(void) {
-    if(GetFrontendState() != FE_MODE_GAME && GetFrontendState() != FE_MODE_EDITOR) {
-        return;
-    }
-
-    if(map_state.name[0] == '\0') {
-        return;
-    }
-
-    DrawSky();
-    DrawWater();
-
-    // todo, draw sky, clouds
+    // todo, clouds
 
     // todo, update parts of terrain mesh from deformation etc?
 
