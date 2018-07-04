@@ -1,5 +1,9 @@
 # OpenHoW
 
+[![Project Stats](https://www.openhub.net/p/openhow/widgets/project_thin_badge.gif)](https://www.openhub.net/p/openhow) 
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW?ref=badge_shield)
+
 ### What's this? :astonished:
 OpenHoW aims to be an open-source implementation of Hogs of War,
 a game produced by Gremlin Interactive.
