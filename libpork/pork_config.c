@@ -14,17 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
 #include "script/script.h"
 
-char config_path[PL_SYSTEM_MAX_PATH];
-
-void SaveConfig(void) {
-    FILE *fp = fopen(config_path, "w");
+void SaveConfig(const char *path) {
+    FILE *fp = fopen(path, "w");
     if(fp == NULL) {
-        LogWarn("failed to write config to \"%s\"!\n", config_path);
+        LogWarn("failed to write config to \"%s\"!\n", path);
         return;
     }
 
@@ -53,17 +52,17 @@ void SaveConfig(void) {
     fclose(fp);
 }
 
-void ReadConfig(void) {
-    FILE *fp = fopen(config_path, "r");
+void ReadConfig(const char *path) {
+    FILE *fp = fopen(path, "r");
     if(fp == NULL) {
-        LogWarn("failed to open map description, %s\n", config_path);
+        LogWarn("failed to open map description, %s\n", path);
         return;
     }
 
-    size_t length = plGetFileSize(config_path);
+    size_t length = plGetFileSize(path);
     char buf[length + 1];
     if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of map description for %s!\n", config_path);
+        LogWarn("failed to read entirety of map description for %s!\n", path);
     }
     fclose(fp);
 
@@ -89,12 +88,19 @@ void ReadConfig(void) {
 void InitConfig(void) {
     LogInfo("checking for config...\n");
 
-    snprintf(config_path, sizeof(config_path), "%s" PORK_CONFIG, GetBasePath());
-    if(plFileExists(config_path)) {
-        LogInfo("found \"%s\", parsing...\n", config_path);
-        ReadConfig();
+    char out[PL_SYSTEM_MAX_PATH];
+    plGetApplicationDataDirectory(PORK_APP_NAME, out, PL_SYSTEM_MAX_PATH);
+    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config.pcf", out);
+
+    char default_path[PL_SYSTEM_MAX_PATH];  /* default config path */
+    snprintf(default_path, sizeof(default_path), "%s", pork_find("default.pcf"));
+
+    if(plFileExists(g_state.config_path)) {
+        LogInfo("found \"%s\", parsing...\n", g_state.config_path);
+        ReadConfig(g_state.config_path);
     } else {
-        LogInfo("no config found at \"%s\", generating default\n", config_path);
-        SaveConfig();
+        LogInfo("no config found at \"%s\", generating default\n", g_state.config_path);
+        ReadConfig(default_path);
+        SaveConfig(g_state.config_path);
     }
 }

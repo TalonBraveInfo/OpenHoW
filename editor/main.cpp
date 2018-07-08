@@ -92,6 +92,7 @@ private:
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnPreferences(wxCommandEvent &event);
+    void OnFile(wxCommandEvent &event);
 
     PerspectiveViewportPanel *viewport_;
 
@@ -107,6 +108,9 @@ wxBEGIN_EVENT_TABLE(EditorFrame, wxFrame)
 EVT_MENU(wxID_EXIT, EditorFrame::OnExit)
 EVT_MENU(wxID_ABOUT, EditorFrame::OnAbout)
 EVT_MENU(wxID_PREFERENCES, EditorFrame::OnPreferences)
+EVT_MENU(wxID_OPEN, EditorFrame::OnFile)
+EVT_MENU(wxID_SAVE, EditorFrame::OnFile)
+EVT_MENU(wxID_SAVEAS, EditorFrame::OnFile)
 wxEND_EVENT_TABLE()
 
 EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
@@ -258,6 +262,44 @@ void EditorFrame::OnPreferences(wxCommandEvent &event) {
         preferences = new PreferencesDialog(this);
     }
     preferences->Show();
+}
+
+void EditorFrame::OnFile(wxCommandEvent &event) {
+    char default_path[PL_SYSTEM_MAX_PATH];
+    if(plIsEmptyString(GetModPath())) {
+        snprintf(default_path, sizeof(default_path), "%s/maps", GetBasePath());
+    } else {
+        snprintf(default_path, sizeof(default_path), "%s%s/maps", GetBasePath(), GetModPath());
+    }
+
+    switch(event.GetId()) {
+        default:break;
+
+        case wxID_OPEN: {
+            wxFileDialog *file = new wxFileDialog(
+                    this,
+                    "Open Map",
+                    default_path,
+                    "",
+                    "Supported files (*.pmd)|*.pmd",
+                    wxFD_OPEN|wxFD_FILE_MUST_EXIST
+            );
+            if(file->ShowModal() == wxID_OK) {
+                /* todo: load it in */
+
+                wxString path = file->GetPath();
+
+            }
+        } break;
+
+        case wxID_CLOSE: {
+            /* todo: unload it */
+        } break;
+
+        case wxID_SAVE: {
+            /* todo: save it */
+        } break;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

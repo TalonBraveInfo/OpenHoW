@@ -436,10 +436,10 @@ void InitMaps(void) {
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetModPath())) {
         snprintf(map_path, sizeof(map_path), "%s/mods/%s/maps", GetBasePath(), GetModPath());
-        plScanDirectory(map_path, "description", RegisterMap, false);
+        plScanDirectory(map_path, "pmd", RegisterMap, false);
     }
     snprintf(map_path, sizeof(map_path), "%smaps", GetBasePath());
-    plScanDirectory(map_path, "description", RegisterMap, false);
+    plScanDirectory(map_path, "pmd", RegisterMap, false);
 
     map_state.sky_model = LoadModel("chars/sky/skydome", true);
 

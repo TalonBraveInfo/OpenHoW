@@ -54,7 +54,7 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 }
 
 void InitShaders(void) {
-    memset(programs, NULL, sizeof(PLShaderProgram*) * MAX_SHADERS);
+    memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
     programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
     programs[SHADER_WATER]      = LoadShaderProgram("water", "water");
     programs[SHADER_ALPHA_TEST] = LoadShaderProgram("default", "alpha_test");

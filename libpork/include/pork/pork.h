@@ -24,13 +24,12 @@
 
 #define PORK_TITLE              "OpenHoW"
 #define PORK_EDITOR_TITLE       "OpenHoW Editor"
+#define PORK_APP_NAME           "OpenHoW"
 #define PORK_LOG                "debug"
 #define PORK_EDITOR_LOG         "editor"
 
 #define PORK_MAJOR_VERSION  0
 #define PORK_MINOR_VERSION  1
-
-#define PORK_CONFIG "/config.json"
 
 enum { // supported languages
     LANG_ENGLISH,

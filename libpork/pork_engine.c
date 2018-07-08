@@ -60,8 +60,8 @@ void ExtractGameData(const char *path);
 
 /* pork_config.c */
 void InitConfig(void);
-void SaveConfig(void);
-void ReadConfig(void);
+void SaveConfig(const char *path);
+void ReadConfig(const char *path);
 
 void InitPlayers(void);
 void InitModels(void);
@@ -178,6 +178,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     LogInfo("mod path: %s%s\n", GetBasePath(), GetModPath());
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
+    InitScripting();
+
     /* load in the manifest */
 
     LogDebug("reading manifest...\n");
@@ -212,7 +214,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     /* */
 
     InitConfig();
-    InitScripting();
 
     /* todo: restructure this... */
     if(g_launcher.mode == PORK_MODE_EDITOR) {
@@ -260,7 +261,7 @@ void ShutdownPork(void) {
     ShutdownServer();
     ShutdownScripting();
 
-    SaveConfig();
+    SaveConfig(g_state.config_path);
 
     plShutdown();
 }
