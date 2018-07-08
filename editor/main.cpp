@@ -23,6 +23,7 @@
 #include <wx/aboutdlg.h>
 
 #include <PL/platform.h>
+#include <ParticleEditor/ParticleEditor.h>
 
 class PerspectiveViewportPanel : public ViewportPanel {
 public:
@@ -93,6 +94,7 @@ private:
     void OnAbout(wxCommandEvent &event);
     void OnPreferences(wxCommandEvent &event);
     void OnFile(wxCommandEvent &event);
+    void OnTool(wxCommandEvent &event);
 
     PerspectiveViewportPanel *viewport_;
 
@@ -111,6 +113,8 @@ EVT_MENU(wxID_PREFERENCES, EditorFrame::OnPreferences)
 EVT_MENU(wxID_OPEN, EditorFrame::OnFile)
 EVT_MENU(wxID_SAVE, EditorFrame::OnFile)
 EVT_MENU(wxID_SAVEAS, EditorFrame::OnFile)
+
+EVT_MENU(ID_MAIN_TOOL_PARTICLE, EditorFrame::OnTool)
 wxEND_EVENT_TABLE()
 
 EditorFrame::EditorFrame(const wxPoint &pos, const wxSize &size) :
@@ -298,6 +302,17 @@ void EditorFrame::OnFile(wxCommandEvent &event) {
 
         case wxID_SAVE: {
             /* todo: save it */
+        } break;
+    }
+}
+
+void EditorFrame::OnTool(wxCommandEvent &event) {
+    switch(event.GetId()) {
+        default:break;
+
+        case ID_MAIN_TOOL_PARTICLE: {
+            ParticleEditorFrame *particle_editor = new ParticleEditorFrame(this);
+            particle_editor->Show();
         } break;
     }
 }

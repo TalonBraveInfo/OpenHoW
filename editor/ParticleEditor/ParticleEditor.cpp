@@ -42,9 +42,9 @@ ParticleEditorFrame::ParticleEditorFrame(wxWindow *parent) :
 
     wxMenuBar *menu_bar = new wxMenuBar;
     menu_bar->Append(file_menu, "&File");
-    menu_bar->Append(file_menu, "&Edit");
-    menu_bar->Append(file_menu, "&View");
-    menu_bar->Append(file_menu, "&Help");
+    //menu_bar->Append(file_menu, "&Edit");
+    //menu_bar->Append(file_menu, "&View");
+    //menu_bar->Append(file_menu, "&Help");
 
     SetMenuBar(menu_bar);
 
@@ -69,6 +69,9 @@ ParticleEditorFrame::ParticleEditorFrame(wxWindow *parent) :
     Layout();
 
     aui_manager->Update();
+
+    viewport_->Initialize();
+    viewport_->StartDrawing();
 }
 
 ParticleEditorFrame::~ParticleEditorFrame() {
