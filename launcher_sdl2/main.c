@@ -355,7 +355,9 @@ int main(int argc, char **argv) {
         }
 
         delta_time = (double)(SDL_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        DrawPork(delta_time);
+        PreDrawPork(delta_time);
+        DrawPork();
+        PostDrawPork();
     }
 
     SDL_StopTextInput();

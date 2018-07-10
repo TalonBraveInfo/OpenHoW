@@ -31,6 +31,8 @@
 #define PORK_MAJOR_VERSION  0
 #define PORK_MINOR_VERSION  1
 
+#include "pork_classes.h"
+
 enum { // supported languages
     LANG_ENGLISH,
     LANG_FRENCH,
@@ -135,7 +137,10 @@ PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
 PL_EXTERN void InitPorkEditor(void);
 PL_EXTERN void ShutdownPork(void);
 
-PL_EXTERN void DrawPork(double delta);
+PL_EXTERN void PreDrawPork(double delta);
+PL_EXTERN void DrawPork(void);
+PL_EXTERN void PostDrawPork(void);
+
 PL_EXTERN void SimulatePork(void);
 
 PL_EXTERN bool IsPorkRunning(void);

@@ -46,7 +46,9 @@ public:
             init = true;
         }
 
-        DrawPork(GetTimerInterval());
+        PreDrawPork(GetTimerInterval());
+        DrawPork();
+        PostDrawPork();
     }
 
 protected:

@@ -35,8 +35,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platform lib headers get used for everything.
 include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)               # libpork headers
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare -std=c11")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_C_STANDARD 11)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #GCC
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation -Wold-style-declaration")
 endif()

@@ -172,7 +172,9 @@ void SetLoadingBackground(const char *name) {
 
     fe_background = LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
 
-    DrawPork(0);
+    PreDrawPork(0);
+    DrawPork();
+    PostDrawPork();
 }
 
 void SetLoadingDescription(const char *description) {
@@ -193,7 +195,9 @@ void SetLoadingProgress(uint8_t progress) {
     }
 
     loading_progress = progress;
-    DrawPork(0);
+    PreDrawPork(0);
+    DrawPork();
+    PostDrawPork();
 }
 
 uint8_t GetLoadingProgress(void) {

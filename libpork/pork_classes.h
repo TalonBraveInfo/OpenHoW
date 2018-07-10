@@ -15,35 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ParticleViewportPanel.h"
+#pragma once
 
-#include <client/client_actor.h>
+#ifdef __cplusplus
 
-ParticleViewportPanel::ParticleViewportPanel(wxWindow *parent) : ViewportPanel(parent) {
-    SetContextId(PORK_ED_CTX_PARTICLE);
+class BaseSimulatedObject {
+public:
 
-    attachment_ = SpawnClientActor();
-    if(attachment_ == nullptr) {
-        /* todo: handle throws ... */
-    }
+    virtual void Draw() = 0;
+    virtual void Simulate() = 0;
+    virtual void Destroy() = 0;
 
+protected:
+private:
+};
 
-}
-
-ParticleViewportPanel::~ParticleViewportPanel() {
-    DestroyClientActor(attachment_);
-}
-
-void ParticleViewportPanel::Draw() {
-    if(!IsShown()) {
-        return;
-    }
-
-    ViewportPanel::Draw();
-
-    PreDrawPork(GetTimerInterval());
-
-    //DrawPork();
-
-    PostDrawPork();
-}
+#endif

@@ -565,22 +565,27 @@ void DrawDebugOverlay(void) {
 #endif
 }
 
-/* shared function */
-void DrawPork(double delta) {
+double cur_delta = 0;
+
+void PreDrawPork(double delta) {
+    cur_delta = delta;
     g_state.draw_ticks = g_launcher.GetTicks();
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
     if(GetFrontendState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
-
     plClearBuffers(clear_flags);
 
     plSetupCamera(g_state.camera);
+}
 
+void DrawPork(void) {
     DrawMap();
-    DrawActors(delta);
+    DrawActors(cur_delta);
+}
 
+void PostDrawPork(void) {
     plSetupCamera(g_state.ui_camera);
 
     DrawFrontend();
