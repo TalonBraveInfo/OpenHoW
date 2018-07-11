@@ -17,7 +17,9 @@
 
 #include "ParticleViewportPanel.h"
 
-#include <client/client_actor.h>
+#include "pork_particle.h"
+
+#include "client/client_actor.h"
 
 ParticleViewportPanel::ParticleViewportPanel(wxWindow *parent) : ViewportPanel(parent) {
     SetContextId(PORK_ED_CTX_PARTICLE);
@@ -27,7 +29,7 @@ ParticleViewportPanel::ParticleViewportPanel(wxWindow *parent) : ViewportPanel(p
         /* todo: handle throws ... */
     }
 
-
+    //system_ = CreateParticleSystem();
 }
 
 ParticleViewportPanel::~ParticleViewportPanel() {
@@ -41,9 +43,14 @@ void ParticleViewportPanel::Draw() {
 
     ViewportPanel::Draw();
 
-    PreDrawPork(GetTimerInterval());
+    double delta = GetTimerInterval();
 
-    //DrawPork();
+    PreDrawPork(delta);
+
+    /* todo: draw sky for backdrop? */
+
+//    DrawParticleSystem(system_, delta);
+    DrawActor(attachment_, delta);
 
     PostDrawPork();
 }

@@ -92,6 +92,22 @@ void DestroyClientActor(ClientActor *actor) {
 
 /*********************************************************************/
 
+void DrawActor(ClientActor *actor, double delta) {
+    pork_assert(client_actors != NULL);
+
+    if(!actor->is_reserved || !actor->is_visible) {
+        return;
+    }
+
+    if(actor->model != NULL) {
+//            Model_ApplyTeamTextures(actor->model, actor->team);
+        plDrawModel(actor->model);
+        if(cv_debug_skeleton->b_value) {
+            plDrawModelSkeleton(actor->model);
+        }
+    }
+}
+
 /**
  * draws any client-side actors that are currenty reserved and visible.
  *
@@ -105,16 +121,6 @@ void DrawActors(double delta) {
     }
 
     for(ClientActor *actor = client_actors; actor < client_actors + num_client_actors; ++actor) {
-        if(!actor->is_reserved || !actor->is_visible) {
-            continue;
-        }
-
-        if(actor->model != NULL) {
-//            Model_ApplyTeamTextures(actor->model, actor->team);
-            plDrawModel(actor->model);
-            if(cv_debug_skeleton->b_value) {
-                plDrawModelSkeleton(actor->model);
-            }
-        }
+        DrawActor(actor, delta);
     }
 }

@@ -21,6 +21,7 @@
 #include "pork_input.h"
 #include "pork_console.h"
 #include "pork_map.h"
+#include "pork_particle.h"
 
 #include "client_font.h"
 #include "client_actor.h"
@@ -565,6 +566,14 @@ void DrawDebugOverlay(void) {
 #endif
 }
 
+void SetupDefaultCamera(void) {
+    plSetupCamera(g_state.camera);
+}
+
+void SetupFrontendCamera(void) {
+    plSetupCamera(g_state.ui_camera);
+}
+
 double cur_delta = 0;
 
 void PreDrawPork(double delta) {
@@ -577,16 +586,17 @@ void PreDrawPork(double delta) {
     }
     plClearBuffers(clear_flags);
 
-    plSetupCamera(g_state.camera);
+    SetupDefaultCamera();
 }
 
 void DrawPork(void) {
     DrawMap();
     DrawActors(cur_delta);
+    DrawParticles(cur_delta);
 }
 
 void PostDrawPork(void) {
-    plSetupCamera(g_state.ui_camera);
+    SetupFrontendCamera();
 
     DrawFrontend();
 

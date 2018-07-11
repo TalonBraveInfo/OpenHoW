@@ -26,8 +26,13 @@ public:
 
     void Draw();
 
+    struct ParticleSystem *GetParticleSystem(void) {
+        return system_;
+    }
+
 protected:
 private:
 
     struct ClientActor *attachment_{nullptr};
+    struct ParticleSystem *system_{nullptr};
 };

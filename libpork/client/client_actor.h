@@ -52,6 +52,7 @@ void ClearClientActors(void);
 ClientActor *SpawnClientActor(void);
 void DestroyClientActor(ClientActor *actor);
 
+void DrawActor(ClientActor *actor, double delta);
 void DrawActors(double delta);
 
 PL_EXTERN_C_END

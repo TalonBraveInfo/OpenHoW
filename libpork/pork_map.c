@@ -871,8 +871,6 @@ void LoadMap(const char *name, unsigned int mode) {
 #include "client/client_font.h"
 #include "client/client_shader.h"
 
-//#include <GL/glew.h>
-
 /* draws the currently loaded map */
 void DrawMap(void) {
     if(map_state.name[0] == '\0') {

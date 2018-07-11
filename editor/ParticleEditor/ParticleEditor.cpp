@@ -17,6 +17,8 @@
 
 #include "ParticleEditor.h"
 
+#include <wx/treectrl.h>
+
 wxBEGIN_EVENT_TABLE(ParticleEditorFrame, wxFrame)
 EVT_MENU(wxID_OPEN, ParticleEditorFrame::FileEvent)
 EVT_MENU(wxID_SAVE, ParticleEditorFrame::FileEvent)
@@ -25,7 +27,7 @@ EVT_MENU(wxID_CLOSE, ParticleEditorFrame::FileEvent)
 wxEND_EVENT_TABLE()
 
 ParticleEditorFrame::ParticleEditorFrame(wxWindow *parent) :
-    wxFrame(parent, ID_FRAME_PARTICLE, "Particle Editor", wxDefaultPosition, wxSize(1024, 640))
+    wxFrame(parent, ID_FRAME_PARTICLE, "Particle Editor", wxDefaultPosition, wxSize(512, 480))
 {
     aui_manager = new wxAuiManager(this);
 
@@ -50,18 +52,32 @@ ParticleEditorFrame::ParticleEditorFrame(wxWindow *parent) :
 
     Show();
 
-    wxAuiPaneInfo viewport_info;
-    viewport_info.CloseButton(false);
-    viewport_info.PinButton(false);
-    viewport_info.MaximizeButton(true);
+    {
+        wxAuiPaneInfo viewport_info;
+        viewport_info.CloseButton(false);
+        viewport_info.PinButton(false);
+        viewport_info.MaximizeButton(true);
+        viewport_info.Caption("Viewport");
+        viewport_info.MinSize(320, 240);
+        viewport_info.Center();
+        //viewport_info.Right();
 
-    viewport_info.Caption("Viewport");
+        viewport_ = new ParticleViewportPanel(this);
+        aui_manager->AddPane(viewport_, viewport_info);
+    }
 
-    viewport_info.Top();
-    viewport_info.Right();
+    {
+        wxAuiPaneInfo tree_info;
+        tree_info.CloseButton(false);
+        tree_info.MaximizeButton(false);
+        tree_info.Caption("Layout");
+        tree_info.BestSize(200, 480);
+        //tree_info.Top();
+        tree_info.Left();
 
-    viewport_ = new ParticleViewportPanel(this);
-    aui_manager->AddPane(viewport_, viewport_info);
+        wxTreeCtrl *tree = new wxTreeCtrl(this);
+        aui_manager->AddPane(tree, tree_info);
+    }
 
     CreateStatusBar(3);
     SetStatusText("Initialized", 0);
@@ -79,18 +95,12 @@ ParticleEditorFrame::~ParticleEditorFrame() {
 }
 
 bool ParticleEditorFrame::Destroy() {
-
-
     return wxTopLevelWindowBase::Destroy();
 }
 
 void ParticleEditorFrame::FileEvent(wxCommandEvent &event) {
     char default_path[PL_SYSTEM_MAX_PATH];
-    if(plIsEmptyString(GetModPath())) {
-        snprintf(default_path, sizeof(default_path), "%s/effects", GetBasePath());
-    } else {
-        snprintf(default_path, sizeof(default_path), "%s%s/effects", GetBasePath(), GetModPath());
-    }
+    snprintf(default_path, sizeof(default_path), "%s/effects", GetBasePath());
 
     switch(event.GetId()) {
         default:break;
