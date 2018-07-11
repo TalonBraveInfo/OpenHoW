@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <SDL2/SDL.h>
+#include <PL/platform_filesystem.h>
 
 #include "pork/pork.h"
 
@@ -276,7 +277,12 @@ void PollEvents(void) {
 }
 
 int main(int argc, char **argv) {
-    plSetupLogOutput(PORK_LOG);
+    char app_dir[PL_SYSTEM_MAX_PATH];
+    plGetApplicationDataDirectory(PORK_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
+
+    char log_path[PL_SYSTEM_MAX_PATH];
+    snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/" PORK_LOG, app_dir);
+    plSetupLogOutput(log_path);
 
     plSetupLogLevel(PORK_LOG_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_LAUNCHER_WARNING, "launcher-warning", PLColour(255, 255, 0, 255), true);
