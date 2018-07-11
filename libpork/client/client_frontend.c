@@ -244,6 +244,8 @@ void DrawLoadingScreen(void) {
 }
 
 void DrawFrontend(void) {
+    SetupFrontendCamera();
+
     /* render and handle the main menu */
     if(frontend_state != FE_MODE_GAME) {
         //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
@@ -316,9 +318,9 @@ void DrawFrontend(void) {
                 DrawLoadingScreen();
             } break;
         }
-
-        return;
     }
+
+    plDrawPerspectivePOST(g_state.ui_camera);
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */

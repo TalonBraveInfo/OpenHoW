@@ -111,7 +111,7 @@ void ParticleEditorFrame::FileEvent(wxCommandEvent &event) {
                     "Open Particle System",
                     default_path,
                     "",
-                    "Supported files (*.pps)|*.pps",
+                    "Particle system (*.pps)|*.pps",
                     wxFD_OPEN|wxFD_FILE_MUST_EXIST
             );
             if(file->ShowModal() == wxID_OK) {

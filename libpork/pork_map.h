@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 #define MAP_MODE_DEATHMATCH         (unsigned int)(1 << 0)
@@ -22,6 +23,7 @@
 #define MAP_MODE_SURVIVAL_EXPERT    (unsigned int)(1 << 3)
 #define MAP_MODE_SURVIVAL_STRATEGY  (unsigned int)(1 << 4)
 #define MAP_MODE_GENERATED          (unsigned int)(1 << 5)
+#define MAP_MODE_EDITOR             (unsigned int)(1 << 6)
 
 void InitMaps(void);
 void ShutdownMaps(void);

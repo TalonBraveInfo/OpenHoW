@@ -137,6 +137,9 @@ PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
 PL_EXTERN void InitPorkEditor(void);
 PL_EXTERN void ShutdownPork(void);
 
+PL_EXTERN void SetupDefaultCamera(void);
+PL_EXTERN void SetupFrontendCamera(void);
+
 PL_EXTERN void PreDrawPork(double delta);
 PL_EXTERN void DrawPork(void);
 PL_EXTERN void PostDrawPork(void);

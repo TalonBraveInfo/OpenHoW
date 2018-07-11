@@ -281,20 +281,27 @@ void EditorFrame::OnFile(wxCommandEvent &event) {
     switch(event.GetId()) {
         default:break;
 
+        case wxID_NEW: {
+            /* todo...
+             * display box allowing the user to enter the name and
+             * some basic properties for their new map (such as the
+             * sky, name, weather and some other fun stuff)
+             */
+        } break;
+
         case wxID_OPEN: {
             wxFileDialog *file = new wxFileDialog(
                     this,
                     "Open Map",
                     default_path,
                     "",
-                    "Supported files (*.pmd)|*.pmd",
+                    "Map definition (*.pmd)|*.pmd|"
+                    "Particle system (*.pps)|*.pps|"
+                    "Model (*.fac;*.no2;*.vtx)|*.fac;*.no2;*.vtx",
                     wxFD_OPEN|wxFD_FILE_MUST_EXIST
             );
             if(file->ShowModal() == wxID_OK) {
-                /* todo: load it in */
-
-                wxString path = file->GetPath();
-
+                plParseConsoleString("map " + file->GetPath() + " edit");
             }
         } break;
 

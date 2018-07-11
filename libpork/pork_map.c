@@ -122,6 +122,7 @@ MapManifest map_descriptors[]={
 
 typedef struct MapDesc {
     char name[16];
+    char path[PL_SYSTEM_MAX_PATH];
     char description[64];
     char sky[32];
     unsigned int flags;
@@ -132,9 +133,18 @@ unsigned int num_maps = 0;
 unsigned int max_maps = 2048;
 
 MapManifest *GetMapDesc(const char *name) {
-    for(unsigned int i = 0; i < num_maps; ++i) {
-        if(strcmp(map_descriptors[i].name, name) == 0) {
-            return &map_descriptors[i];
+    const char *ext = plGetFileExtension(name);
+    if(!plIsEmptyString(ext)) {
+        for(unsigned int i = 0; i < num_maps; ++i) {
+            if(strncmp(map_descriptors[i].path, name, sizeof(map_descriptors[i].path)) == 0) {
+                return &map_descriptors[i];
+            }
+        }
+    } else {
+        for (unsigned int i = 0; i < num_maps; ++i) {
+            if (strncmp(map_descriptors[i].name, name, sizeof(map_descriptors[i].name)) == 0) {
+                return &map_descriptors[i];
+            }
         }
     }
 
@@ -155,6 +165,8 @@ unsigned int GetMapModeFlag(const char *str) {
         return MAP_MODE_SURVIVAL_STRATEGY;
     } else if(pl_strncasecmp("ge", str, 2) == 0) {
         return MAP_MODE_GENERATED;
+    } else if(pl_strncasecmp("edit", str, 4) == 0) {
+        return MAP_MODE_EDITOR;
     } else {
         LogWarn("unknown mode type %s, ignoring!\n", str);
         return MAP_MODE_DEATHMATCH;
@@ -211,6 +223,9 @@ void RegisterMap(const char *path) {
     memset(slot, 0, sizeof(MapManifest));
 
     LogDebug("%s\n", buf);
+
+    strncpy(slot->path, path, sizeof(slot->path));
+    LogDebug("%s\n", slot->path);
 
     ParseJSON(buf);
 
@@ -391,21 +406,7 @@ void MapCommand(unsigned int argc, char *argv[]) {
     unsigned int mode = MAP_MODE_DEATHMATCH;
     if(argc > 2) {
         const char *cmd_mode = argv[2];
-        if (pl_strncasecmp("dm", cmd_mode, 2) == 0) {
-            /* do nothing */
-        } else if (pl_strncasecmp("sp", cmd_mode, 2) == 0) {
-            mode = MAP_MODE_SINGLEPLAYER;
-        } else if(pl_strncasecmp("se", cmd_mode, 2) == 0) {
-            mode = MAP_MODE_SURVIVAL_EXPERT;
-        } else if(pl_strncasecmp("sn", cmd_mode, 2) == 0) {
-            mode = MAP_MODE_SURVIVAL_NOVICE;
-        } else if(pl_strncasecmp("ss", cmd_mode, 2) == 0) {
-            mode = MAP_MODE_SURVIVAL_STRATEGY;
-        } else if(pl_strncasecmp("ge", cmd_mode, 2) == 0) {
-            mode = MAP_MODE_GENERATED;
-        } else {
-            LogWarn("unknown mode type %s, ignoring!\n", cmd_mode);
-        }
+        mode = GetMapModeFlag(cmd_mode);
     }
 
     LoadMap(map_name, mode);
@@ -793,7 +794,7 @@ void LoadMap(const char *name, unsigned int mode) {
 
     //LogDebug("found map description!\n %s\n %s", desc->name, desc->description);
 
-    if(!(desc->flags & mode)) {
+    if(mode != MAP_MODE_EDITOR && !(desc->flags & mode)) {
         LogWarn("the mode you're attempting to use is unsupported by this map, \"%s\", aborting\n", name);
         return;
     }

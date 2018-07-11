@@ -593,15 +593,7 @@ void DrawPork(void) {
     DrawMap();
     DrawActors(cur_delta);
     DrawParticles(cur_delta);
-}
-
-void PostDrawPork(void) {
-    SetupFrontendCamera();
-
     DrawFrontend();
-
-    // todo, need a better name for this function
-    plDrawPerspectivePOST(g_state.ui_camera);
 
     if(
             GetFrontendState() != FE_MODE_INIT &&
@@ -609,7 +601,9 @@ void PostDrawPork(void) {
         DrawDebugOverlay();
         DrawConsole();
     }
+}
 
+void PostDrawPork(void) {
     g_launcher.SwapWindow();
     g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
 }
