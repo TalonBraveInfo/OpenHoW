@@ -32,13 +32,7 @@ unsigned int frontend_state = FE_MODE_INIT;
  * or some other way, so y'know. Wheeee.
  */
 
-/* texture assets, these are loaded and free'd at runtime */
-PLTexture *fe_background    = NULL;
-PLTexture *fe_press         = NULL;
-PLTexture *fe_any           = NULL;
-PLTexture *fe_key           = NULL;
-
-const char *papers_teams[MAX_TEAMS]={
+const char *papers_teams_paths[MAX_TEAMS]={
         "fe/papers/british.bmp",
         "fe/papers/american.bmp",
         "fe/papers/french.bmp",
@@ -46,6 +40,15 @@ const char *papers_teams[MAX_TEAMS]={
         "fe/papers/russian.bmp",
         "fe/papers/japan.bmp",
         "fe/papers/teamlard.bmp"
+};
+
+/* texture assets, these are loaded and free'd at runtime */
+PLTexture *fe_background    = NULL;
+PLTexture *fe_press         = NULL;
+PLTexture *fe_any           = NULL;
+PLTexture *fe_key           = NULL;
+PLTexture *fe_papers_teams[MAX_TEAMS] = {
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
 /************************************************************/
@@ -114,6 +117,9 @@ void InitFrontend(void) {
 
     /* load in all the assets we'll be using for the frontend */
     fe_background = LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+    for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
+        fe_papers_teams[i] = LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
+    }
 }
 
 void ProcessFrontendInput(void) {
@@ -132,25 +138,28 @@ void ProcessFrontendInput(void) {
 void SimulateFrontend(void) {
     SimulateFEObjects();
 
-    if(frontend_state == FE_MODE_INIT) {
-        /* by this point we'll make an assumption that we're
-         * done initializing, bump up the progress, draw that
-         * frame and then switch over to our 'start' state */
-        if(GetLoadingProgress() < 100) {
-            SetLoadingDescription("LOADING FRONTEND RESOURCES");
-            SetLoadingProgress(100);
+    switch(frontend_state) {
+        default:break;
 
-            /* load in some of the assets we'll be using on the
-             * next screen before proceeding... */
-            fe_press = LoadTexture("fe/title/press", PL_TEXTURE_FILTER_LINEAR);
-            fe_any = LoadTexture("fe/title/any", PL_TEXTURE_FILTER_LINEAR);
-            fe_key = LoadTexture("fe/title/key", PL_TEXTURE_FILTER_LINEAR);
-            fe_background = LoadTexture("fe/title/title", PL_TEXTURE_FILTER_LINEAR);
-            return;
-        }
+        case FE_MODE_INIT: {
+            /* by this point we'll make an assumption that we're
+             * done initializing, bump up the progress, draw that
+             * frame and then switch over to our 'start' state */
+            if(GetLoadingProgress() < 100) {
+                SetLoadingDescription("LOADING FRONTEND RESOURCES");
+                SetLoadingProgress(100);
 
-        SetFrontendState(FE_MODE_START);
-        return;
+                /* load in some of the assets we'll be using on the
+                 * next screen before proceeding... */
+                fe_press = LoadTexture("fe/title/press", PL_TEXTURE_FILTER_LINEAR);
+                fe_any = LoadTexture("fe/title/any", PL_TEXTURE_FILTER_LINEAR);
+                fe_key = LoadTexture("fe/title/key", PL_TEXTURE_FILTER_LINEAR);
+                fe_background = LoadTexture("fe/title/title", PL_TEXTURE_FILTER_LINEAR);
+                break;
+            }
+
+            SetFrontendState(FE_MODE_START);
+        } break;
     }
 }
 
@@ -244,8 +253,6 @@ void DrawLoadingScreen(void) {
 }
 
 void DrawFrontend(void) {
-    SetupFrontendCamera();
-
     /* render and handle the main menu */
     if(frontend_state != FE_MODE_GAME) {
         //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;

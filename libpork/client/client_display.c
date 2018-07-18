@@ -447,7 +447,7 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 void DEBUGDrawSkeleton();
 
 void DrawDebugOverlay(void) {
-    if(cv_debug_mode->i_value <= 0) {
+    if(GetFrontendState() == FE_MODE_INIT || GetFrontendState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
         return;
     }
 
@@ -593,14 +593,12 @@ void DrawPork(void) {
     DrawMap();
     DrawActors(cur_delta);
     DrawParticles(cur_delta);
-    DrawFrontend();
 
-    if(
-            GetFrontendState() != FE_MODE_INIT &&
-            GetFrontendState() != FE_MODE_LOADING) {
-        DrawDebugOverlay();
-        DrawConsole();
-    }
+    SetupFrontendCamera();
+
+    DrawFrontend();
+    DrawDebugOverlay();
+    DrawConsole();
 }
 
 void PostDrawPork(void) {

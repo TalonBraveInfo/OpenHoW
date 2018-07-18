@@ -196,7 +196,7 @@ void InitConsole(void) {
 }
 
 void DrawConsole(void) {
-    if(!console_enabled) {
+    if(GetFrontendState() == FE_MODE_INIT || GetFrontendState() == FE_MODE_LOADING || !console_enabled) {
         return;
     }
 
