@@ -79,9 +79,9 @@ const char *pork_find2(const char *path, const char **preference);
 PL_EXTERN_C_END
 
 #ifdef _DEBUG
-#   define pork_assert(a) assert((a))
+#   define pork_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); LogInfo("assertion hit in \"%s\" on line %d\n", PL_FUNCTION, __LINE__); } assert((a))
 #else
-#   define pork_assert(a)
+#   define pork_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); }
 #endif
 
 /************************************************/
@@ -209,6 +209,8 @@ enum {
     PORK_KEY_LEFT,
     PORK_KEY_RIGHT,
 
+    PORK_KEY_SPACE,
+
     PORK_KEY_PAGEUP,
     PORK_KEY_PAGEDOWN,
 
@@ -218,6 +220,8 @@ enum {
     PORK_KEY_RCTRL,
     PORK_KEY_RSHIFT,
     PORK_KEY_RALT,
+
+    PORK_KEY_ESCAPE,
 
     PORK_MAX_KEYS
 };

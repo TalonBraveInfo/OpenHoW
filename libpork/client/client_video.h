@@ -23,3 +23,4 @@ void ClearVideoQueue(void);
 void QueueVideos(const char **videos, unsigned int num_videos);
 void PlayVideo(const char *path);
 void DrawVideo(void);
+void SkipVideo(void);

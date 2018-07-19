@@ -62,13 +62,29 @@ struct {
     unsigned int cur_video;         /* index */
 } video;
 
+void PlayVideoCommand(unsigned int argc, char *argv[]) {
+    if(argc < 1) {
+        LogWarn("invalid number of arguments, ignoring!\n"
+                "use \"play_video /streams/sheff.bik /streams/infologo.bik\", for example.\n");
+        return;
+    }
+
+    const char *cmd = argv[1];
+    void QueueVideos(const char **videos, unsigned int num_videos);
+    QueueVideos(&cmd, argc - 1);
+
+    /* immediately begin playing the videos */
+    SetFrontendState(FE_MODE_VIDEO);
+}
+
 void InitVideo(void) {
     memset(&video, 0, sizeof(video));
 
     av_register_all();
     avformat_network_init();
 
-
+    plRegisterConsoleCommand("play_video", PlayVideoCommand, "Play the given videos.");
+    plParseConsoleString("play_video \"streams/fmv 01.bik\"");
 }
 
 void ShutdownVideo(void) {
@@ -119,30 +135,33 @@ void PlayVideo(const char *path) {
         return;
     }
 
-    video.is_playing = true;
+    /* immediately begin playing the videos */
+    SetFrontendState(FE_MODE_VIDEO);
 }
 
-void ProcessVideo(void) {
-    if(!video.is_playing) {
-        if(video.av_format_context != NULL) {
-            avformat_close_input(&video.av_format_context);
-        }
+void SkipVideo(void) {
+    if(video.av_format_context != NULL) {
+        avformat_close_input(&video.av_format_context);
+    }
 
-        if(video.num_videos_queued > 0 && video.cur_video != video.num_videos_queued) {
-            if(avformat_open_input(&video.av_format_context, video.queue[video.cur_video].path, NULL, NULL) < 0) {
-                LogWarn("failed to open video, \"%s\", for playback, skipping!\n");
-                video.cur_video++;
-                return;
-            }
+    if(video.num_videos_queued > 0 && video.cur_video != video.num_videos_queued) {
+        if(avformat_open_input(&video.av_format_context, video.queue[video.cur_video].path, NULL, NULL) < 0) {
+            LogWarn("failed to open video, \"%s\", for playback, skipping!\n");
+            SkipVideo();
+            return;
         }
-
         return;
     }
 
+    /* nothing left to play */
+    FE_RestoreLastState();
+}
+
+void ProcessVideo(void) {
     do {
         if(av_read_frame(video.av_format_context, video.av_packet) < 0) {
-            video.is_playing = false;
             av_packet_unref(video.av_packet);
+            SkipVideo();
             return;
         }
 

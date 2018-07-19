@@ -56,6 +56,7 @@ enum {
     FE_MODE_SELECT_TEAM,
 
     FE_MODE_EDITOR, /* editor mode - either embedded or standalone */
+    FE_MODE_VIDEO,  /* playing a video - pressing escape will skip */
     FE_MODE_GAME,   /* in-game menu... probably cut this down? */
 
     MAX_FE_MODES
@@ -73,5 +74,6 @@ uint8_t GetLoadingProgress(void);
 
 unsigned int GetFrontendState(void);
 void SetFrontendState(unsigned int state);
+void FE_RestoreLastState(void);
 
 void SetFEObjectCommand(unsigned int argc, char *argv[]);

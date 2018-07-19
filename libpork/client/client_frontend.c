@@ -24,8 +24,10 @@
 #include "client_frontend.h"
 #include "client_font.h"
 #include "client_display.h"
+#include "client_video.h"
 
 unsigned int frontend_state = FE_MODE_INIT;
+unsigned int old_frontend_state = (unsigned int) -1;
 
 /* for now we're going to hard-code most of this but eventually
  * we will start freeing most of this up... either through JS
@@ -131,6 +133,12 @@ void ProcessFrontendInput(void) {
              * nothing will take away our check for a key during
              * the 'start' screen, e.g. bringing the console up */
             SetKeyboardFocusCallback(FrontendInputCallback);
+        } break;
+
+        case FE_MODE_VIDEO: {
+            if(GetKeyState(PORK_KEY_SPACE) || GetKeyState(PORK_KEY_ESCAPE)) {
+                SkipVideo();
+            }
         } break;
     }
 }
@@ -254,7 +262,7 @@ void DrawLoadingScreen(void) {
 
 void DrawFrontend(void) {
     /* render and handle the main menu */
-    if(frontend_state != FE_MODE_GAME) {
+    if(frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
         //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
         //int c_y = (GetUIViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
         switch(frontend_state) {
@@ -324,6 +332,10 @@ void DrawFrontend(void) {
             case FE_MODE_LOADING: {
                 DrawLoadingScreen();
             } break;
+
+            case FE_MODE_VIDEO: {
+                DrawVideo();
+            } break;
         }
     }
 
@@ -331,6 +343,10 @@ void DrawFrontend(void) {
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */
+
+void FE_RestoreLastState(void) {
+    SetFrontendState(old_frontend_state);
+}
 
 unsigned int GetFrontendState(void) {
     return frontend_state;
@@ -378,6 +394,7 @@ void SetFrontendState(unsigned int state) {
 
         } break;
     }
+    old_frontend_state = frontend_state;
     frontend_state = state;
 }
 

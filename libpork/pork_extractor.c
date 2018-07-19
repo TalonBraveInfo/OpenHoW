@@ -384,14 +384,17 @@ void ExtractGameData(const char *path) {
             {"/FEText/SMALL.BMP", "/fe/text/"},
 
             /* frontend */
+
             {"/Language/Tims/Pigbkpc1.BMP", "/fe/"},
             {"/Language/Tims/loadmult.bmp", "/fe/"},
+
             {"/Language/Tims/Title/ANY.bmp", "/fe/title/"},
             {"/Language/Tims/Title/Bruno1.bmp", "/fe/title/"},
             {"/Language/Tims/Title/KEY.bmp", "/fe/title/"},
             {"/Language/Tims/Title/PRESS.bmp", "/fe/title/"},
             {"/Language/Tims/Title/title.bmp", "/fe/title/"},
             {"/Language/Tims/Title/titlemon.bmp", "/fe/title/"},
+
             //{"/Language/Tims/Briefing/loadbar.bmp", "/fe/"},
             //{"/Language/Tims/Debrief/deathm1.bmp", "/fe/debrief/"},
             //{"/Language/Tims/Debrief/deathm2.bmp", "/fe/debrief/"},
@@ -433,6 +436,26 @@ void ExtractGameData(const char *path) {
             {"/Language/Tims/Debrief/uniflard.bmp", "/fe/debrief/"},
             {"/Language/Tims/Debrief/unifruss.bmp", "/fe/debrief/"},
             {"/Language/Tims/Debrief/unifusa.bmp", "/fe/debrief/"},
+
+            {"/Language/Tims/Papers/American.bmp", "/fe/papers/"},
+            {"/Language/Tims/Papers/British.bmp", "/fe/papers/"},
+            {"/Language/Tims/Papers/French.bmp", "/fe/papers/"},
+            {"/Language/Tims/Papers/German.bmp", "/fe/papers/"},
+            {"/Language/Tims/Papers/Japan.bmp", "/fe/papers/"},
+            {"/Language/Tims/Papers/Russian.bmp", "/fe/papers/"},
+            {"/Language/Tims/Papers/teamlard.bmp", "/fe/papers/"},
+
+            {"/Language/Streams/FMV 01.bik", "/streams/"},
+            {"/Language/Streams/FMV 02.bik", "/streams/"},
+            {"/Language/Streams/FMV 03.bik", "/streams/"},
+            {"/Language/Streams/FMV 04.bik", "/streams/"},
+            {"/Language/Streams/FMV 05.bik", "/streams/"},
+            {"/Language/Streams/FMV 06.bik", "/streams/"},
+            {"/Language/Streams/FMV 07.bik", "/streams/"},
+            {"/Language/Streams/FMV 08.bik", "/streams/"},
+            {"/Language/Streams/FMV 09.bik", "/streams/"},
+            {"/Language/Streams/InfoLogo.bik", "/streams/"},
+            {"/Language/Streams/Sheff.bik", "/streams/"},
 
             /* misc */
             {"/Language/Tims/Mine.tim", "/maps/"},
