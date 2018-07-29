@@ -168,6 +168,10 @@ void DisconnectCommand(unsigned int argc, char *argv[]) {
     UnloadMap();
 }
 
+void DebugModeCallback(const PLConsoleVariable *variable) {
+    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
+}
+
 /*****************************************************/
 
 #define MAX_BUFFER_SIZE 512
@@ -179,9 +183,40 @@ struct {
 
 bool console_enabled = false;
 
-void ConvertImageCallback(unsigned int argc, char *argv[]);
+PLConsoleVariable *cv_debug_mode = NULL;
+PLConsoleVariable *cv_debug_fps = NULL;
+PLConsoleVariable *cv_debug_skeleton = NULL;
+PLConsoleVariable *cv_debug_input = NULL;
+PLConsoleVariable *cv_debug_cache = NULL;
+
+PLConsoleVariable *cv_camera_mode = NULL;
+
+PLConsoleVariable *cv_base_path = NULL;
+PLConsoleVariable *cv_mod_path = NULL;
+
+PLConsoleVariable *cv_display_texture_cache = NULL;
 
 void InitConsole(void) {
+#define rvar(var, ...) (var) = plRegisterConsoleVariable(plStringify((var)), __VA_ARGS__)
+    rvar(cv_debug_mode, "1", pl_int_var, DebugModeCallback, "global debug level");
+    rvar(cv_debug_fps, "1", pl_bool_var, NULL, "display framerate");
+    rvar(cv_debug_skeleton, "0", pl_bool_var, NULL, "display pig skeletons");
+    rvar(cv_debug_input, "0", pl_int_var, NULL,
+                          "changing this cycles between different modes of debugging input\n"
+                          "1: keyboard states\n2: controller states"
+    );
+    rvar(cv_debug_cache, "0", pl_bool_var, NULL, "display memory and other info");
+    rvar(cv_base_path, "./", pl_string_var, NULL, "");
+    rvar(cv_mod_path, "", pl_string_var, NULL, "");
+    rvar(cv_camera_mode, "0", pl_int_var, NULL, "0 = default, 1 = debug");
+    rvar(cv_display_texture_cache, "-1", pl_int_var, NULL, "");
+
+    plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
+
+    void ConvertImageCallback(unsigned int argc, char *argv[]);
+    void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]);
+
+    plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
     plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "Sets state for given target");
     plRegisterConsoleCommand("get", GetCommand, "Gets state for given target");
@@ -190,9 +225,6 @@ void InitConsole(void) {
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
     plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
-
-    plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
-    cv_camera_mode = plRegisterConsoleVariable("camera", "0", pl_int_var, NULL, "0 = default, 1 = debug");
 }
 
 void DrawConsole(void) {

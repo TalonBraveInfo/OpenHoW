@@ -21,6 +21,7 @@
 #include <PL/platform_graphics.h>
 
 #include "pork_math.h"
+#include "pork_console.h"
 #include "pork_player.h"
 
 #define LogInfo(...)    _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
@@ -41,13 +42,6 @@
 
 // Functions provided by the host application
 PorkLauncherInterface g_launcher;
-
-extern PLConsoleVariable *cv_debug_mode;
-extern PLConsoleVariable *cv_debug_fps;
-extern PLConsoleVariable *cv_debug_skeleton;
-extern PLConsoleVariable *cv_debug_input;
-
-extern PLConsoleVariable *cv_camera_mode;
 
 ///////////////////////////////////////////////////
 

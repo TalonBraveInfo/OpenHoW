@@ -19,9 +19,9 @@
 
 #include "pork_engine.h"
 #include "pork_input.h"
-#include "pork_console.h"
 #include "pork_map.h"
 #include "pork_particle.h"
+#include "pork_formats.h"
 
 #include "client_font.h"
 #include "client_actor.h"
@@ -30,8 +30,6 @@
 
 /************************************************************/
 /* PORK TEXTURE CACHE                                       */
-
-PLConsoleVariable *cv_display_texture_cache = NULL;
 
 enum {
     INDEX_BRITISH,
@@ -311,14 +309,6 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
     pork_fclose(file);
 }
 
-const char *supported_formats[]={
-        "png",
-        "tga",
-        "bmp",
-        "tim",
-        NULL
-};
-
 PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
     /* todo: make this more friendly */
 
@@ -327,7 +317,7 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
     char n_path[PL_SYSTEM_MAX_PATH];
     const char *ext = plGetFileExtension(path);
     if(plIsEmptyString(ext)) {
-        strncpy(n_path, pork_find2(path, supported_formats), sizeof(n_path));
+        strncpy(n_path, pork_find2(path, supported_image_formats), sizeof(n_path));
         if(plIsEmptyString(n_path)) {
             Error("failed to find texture, \"%s\"!\n", path);
         }
@@ -420,9 +410,6 @@ void InitDisplay(void) {
     CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
-
-    plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
-    cv_display_texture_cache = plRegisterConsoleVariable("displaytcache", "-1", pl_int_var, NULL, "");
 }
 
 void ShutdownDisplay(void) {

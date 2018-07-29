@@ -21,6 +21,8 @@
 #include "client_actor.h"
 #include "client_frontend.h"
 
+/* todo: all of this is going to be torn out, so don't get too deep into it */
+
 ClientActor *client_actors = NULL;
 unsigned int num_client_actors = 256;
 

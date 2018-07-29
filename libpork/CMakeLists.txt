@@ -66,6 +66,7 @@ target_link_libraries(pork
 
         avformat
         avcodec
+        avutil
 
         openal
 

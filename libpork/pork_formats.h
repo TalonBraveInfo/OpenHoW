@@ -17,6 +17,8 @@
 
 #pragma once
 
+extern const char *supported_image_formats[];
+
 /******************************************************************/
 /* Pork Particle System */
 

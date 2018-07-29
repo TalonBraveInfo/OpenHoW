@@ -18,7 +18,6 @@
 
 #include "pork_engine.h"
 #include "pork_input.h"
-#include "pork_console.h"
 #include "pork_audio.h"
 
 #include "script/script.h"

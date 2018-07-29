@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
 
+#include "client_video.h"
 #include "client_frontend.h"
 #include "client_shader.h"
 
@@ -31,17 +33,19 @@ const char *video_paths[]={
         "/streams/sheff.bik",
         "/streams/infologo.bik",
 
-        /* missions - move these into js script */
-        "/streams/fmv_01.bik",
-        "/streams/fmv_02.bik",
-        "/streams/fmv_03.bik",
-        "/streams/fmv_04.bik",
-        "/streams/fmv_05.bik",
-        "/streams/fmv_06.bik",
-        "/streams/fmv_07.bik",
-        "/streams/fmv_08.bik",
-        "/streams/fmv_09.bik",
+        /* missions - move these into script */
+        "/streams/fmv 01.bik",
+        "/streams/fmv 02.bik",
+        "/streams/fmv 03.bik",
+        "/streams/fmv 04.bik",
+        "/streams/fmv 05.bik",
+        "/streams/fmv 06.bik",
+        "/streams/fmv 07.bik",
+        "/streams/fmv 08.bik",
+        "/streams/fmv 09.bik",
 };
+
+#define MAX_QUEUED_VIDEOS   4
 
 struct {
     bool is_playing;
@@ -57,7 +61,7 @@ struct {
 
     struct {
         char path[PL_SYSTEM_MAX_PATH];
-    } queue[4];
+    } queue[MAX_QUEUED_VIDEOS];
     unsigned int num_videos_queued; /* elements */
     unsigned int cur_video;         /* index */
 } video;
@@ -88,13 +92,15 @@ void InitVideo(void) {
 }
 
 void ShutdownVideo(void) {
-
+    ClearVideoQueue();
 }
 
 /***************************************************************/
 
 void ClearVideoQueue(void) {
-    memset(&video, 0, sizeof(video));
+    memset(video.queue, 0, sizeof(video.queue) * MAX_QUEUED_VIDEOS);
+    video.cur_video = 0;
+    video.num_videos_queued = 0;
 }
 
 void QueueVideos(const char **videos, unsigned int num_videos) {
@@ -140,7 +146,13 @@ void PlayVideo(const char *path) {
 }
 
 void SkipVideo(void) {
+    if(video.av_packet != NULL) {
+        av_packet_unref(video.av_packet);
+        video.av_packet = NULL;
+    }
+
     if(video.av_format_context != NULL) {
+        /* automatically sets av_format_context to null */
         avformat_close_input(&video.av_format_context);
     }
 
@@ -159,17 +171,38 @@ void SkipVideo(void) {
 
 void ProcessVideo(void) {
     do {
+        /* decode the video */
+
         if(av_read_frame(video.av_format_context, video.av_packet) < 0) {
-            av_packet_unref(video.av_packet);
+            LogWarn("failed to read video frame!\n");
             SkipVideo();
             return;
         }
 
         if(video.av_packet->stream_index == video.stream_index) {
+            if(avcodec_send_packet(video.av_codec_context, video.av_packet) < 0) {
+                LogWarn("failed to send video packet!\n");
+                SkipVideo();
+                return;
+            }
 
+            int val = avcodec_receive_frame(video.av_codec_context, video.av_frame);
+            if(val < 0 && val != AVERROR(EAGAIN) && val != AVERROR_EOF) {
+                LogWarn("failed to receive video frame!\n");
+                SkipVideo();
+                return;
+            }
+
+            /* todo: stuff... */
+
+            av_frame_unref(video.av_frame);
         }
 
         av_packet_unref(video.av_packet);
+
+        /* and now the audio ... */
+
+
     } while(video.av_packet->stream_index != video.stream_index);
 }
 

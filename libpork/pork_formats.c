@@ -15,23 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "pork_engine.h"
+#include "pork_formats.h"
 
-extern PLConsoleVariable *cv_debug_mode;
-extern PLConsoleVariable *cv_debug_fps;
-extern PLConsoleVariable *cv_debug_skeleton;
-extern PLConsoleVariable *cv_debug_input;
-extern PLConsoleVariable *cv_debug_cache;
-
-extern PLConsoleVariable *cv_camera_mode;
-
-extern PLConsoleVariable *cv_base_path;
-extern PLConsoleVariable *cv_mod_path;
-
-extern PLConsoleVariable *cv_display_texture_cache;
-
-/*****************************************************/
-
-void InitConsole(void);
-void ToggleConsole(void);
-void DrawConsole(void);
+const char *supported_image_formats[]={
+        "png", "tga", "bmp", "tim", NULL
+};

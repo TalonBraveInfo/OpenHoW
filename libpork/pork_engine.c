@@ -18,24 +18,12 @@
 
 #include "pork_engine.h"
 #include "pork_map.h"
-#include "pork_console.h"
 #include "pork_language.h"
 
 #include "script/script.h"
 
 #include "client/client.h"
 #include "server/server.h"
-
-PLConsoleVariable *cv_debug_mode        = NULL;
-PLConsoleVariable *cv_debug_fps         = NULL;
-PLConsoleVariable *cv_debug_skeleton    = NULL;
-PLConsoleVariable *cv_debug_input       = NULL;
-PLConsoleVariable *cv_debug_cache       = NULL;
-
-PLConsoleVariable *cv_camera_mode = NULL;
-
-PLConsoleVariable *cv_base_path = NULL;
-PLConsoleVariable *cv_mod_path  = NULL;
 
 const char *GetBasePath(void) {
     pork_assert(cv_base_path);
@@ -49,9 +37,7 @@ const char *GetModPath(void) {
 
 //////////////////////////////////////////////////////////////////////////
 
-void DebugModeCallback(const PLConsoleVariable *variable) {
-    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
-}
+
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -94,22 +80,6 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_state.display_height = BASE_HEIGHT;
 
     // todo, disable these by default
-    cv_debug_mode = plRegisterConsoleVariable("dmode", "1", pl_int_var, DebugModeCallback, "global debug level");
-    cv_debug_fps = plRegisterConsoleVariable("dfps", "1", pl_bool_var, NULL, "display framerate");
-    cv_debug_skeleton = plRegisterConsoleVariable("dskeleton", "0", pl_bool_var, NULL, "display pig skeletons");
-    cv_debug_input = plRegisterConsoleVariable(
-            "dinput",
-            "0",
-            pl_int_var,
-            NULL,
-            "changing this cycles between different modes of debugging input\n"
-            "1: keyboard states\n"
-            "2: controller states"
-    );
-    cv_debug_cache = plRegisterConsoleVariable("dcache", "0", pl_bool_var, NULL, "display memory and other info");
-
-    cv_base_path = plRegisterConsoleVariable("base_path", "./", pl_string_var, NULL, "");
-    cv_mod_path = plRegisterConsoleVariable("mod_path", "", pl_string_var, NULL, "");
 
     InitConsole();
 
