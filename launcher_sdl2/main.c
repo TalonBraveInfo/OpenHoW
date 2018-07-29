@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <errno.h>
 #include <SDL2/SDL.h>
 #include <PL/platform_filesystem.h>
 
@@ -285,12 +284,8 @@ int main(int argc, char **argv) {
     char app_dir[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(PORK_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
 
-#ifdef _WIN32
-    if(_mkdir(app_dir) == -1 && errno != EEXIST) {
-#else
-    if(mkdir(app_dir, 0755) == -1 && errno != EEXIST) {
-#endif
-        LogWarn("Unable to create %s: %s", app_dir, strerror(errno));
+    if(!plCreatePath(app_dir)) {
+        LogWarn("Unable to create %s: %s", app_dir, plGetError());
     }
 
     char log_path[PL_SYSTEM_MAX_PATH];
