@@ -23,6 +23,8 @@
 #include <wx/aboutdlg.h>
 
 #include <PL/platform.h>
+#include <PL/platform_filesystem.h>
+
 #include <ParticleEditor/ParticleEditor.h>
 
 class PerspectiveViewportPanel : public ViewportPanel {
@@ -372,8 +374,12 @@ public:
         main_frame_->GetViewport()->SwapBuffers();
     }
 
+    const char *GetAppDataPath() { return &app_path_[0]; }
+
 protected:
 private:
+    char app_path_[PL_SYSTEM_MAX_PATH];
+
     static EditorFrame *main_frame_;
 };
 
@@ -389,6 +395,13 @@ bool EditorApp::OnInit() {
     interface.ShutdownLauncher  = EditorApp::ShutdownLauncher;
     interface.SwapWindow        = EditorApp::SwapWindow;
     interface.mode              = PORK_MODE_EDITOR;
+
+    plGetApplicationDataDirectory(PORK_APP_NAME, app_path_, PL_SYSTEM_MAX_PATH);
+
+    if(!plCreatePath(app_path_)) {
+        DisplayMessageBox(PORK_MBOX_WARNING, "Unable to create %s: %s\n"
+                                             "Settings will not be saved.", app_path_, plGetError());
+    }
 
     InitPork(argc, argv, interface);
 
