@@ -30,6 +30,10 @@ public:
         return system_;
     }
 
+    struct ClientActor *GetActor(void) {
+        return attachment_;
+    }
+
 protected:
 private:
 

@@ -18,6 +18,7 @@
 #include "ParticleEditor.h"
 
 #include <wx/treectrl.h>
+#include <pork_particle.h>
 
 wxBEGIN_EVENT_TABLE(ParticleEditorFrame, wxFrame)
 EVT_MENU(wxID_OPEN, ParticleEditorFrame::FileEvent)
@@ -119,6 +120,8 @@ void ParticleEditorFrame::FileEvent(wxCommandEvent &event) {
 
                 wxString path = file->GetPath();
 
+                ParticleSystem *system = viewport_->GetParticleSystem();
+                //ClearParticleSystem();
             }
         } break;
 

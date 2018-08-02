@@ -299,17 +299,16 @@ enum {
     PIG_CLASS_HEAVY,
     PIG_CLASS_GRUNT,
 
-    PIG_CLASS_END
+    MAX_PIG_CLASSES
 };
 
-enum { // Object flags
-    OBJECT_FLAG_PLAYABLE    = 1,
-    OBJECT_FLAG_SCRIPTED    = 16,
-    OBJECT_FLAG_INSIDE      = 32,
-    OBJECT_FLAG_DELAYED     = 64,
-};
+// Actor flags
+#define ACTOR_FLAG_PLAYABLE    1
+#define ACTOR_FLAG_SCRIPTED    16
+#define ACTOR_FLAG_INSIDE      32
+#define ACTOR_FLAG_DELAYED     64
 
-enum { // event types
+enum { // Event types
     OBJECT_EVENT_NONE,                 // does nothing!
     OBJECT_EVENT_ITEM,                 // spawns an item on destruction
     OBJECT_EVENT_PROMOTION,            // spawns a promotion point on destruction

@@ -14,11 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
 #include "pork_map.h"
 #include "pork_language.h"
+#include "pork_formats.h"
 
 #include "script/script.h"
 
@@ -72,6 +74,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
 
     LogInfo("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
+
+    RegisterFormatInterfaces();
 
     g_launcher = interface;
 

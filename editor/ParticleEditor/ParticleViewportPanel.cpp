@@ -44,13 +44,14 @@ void ParticleViewportPanel::Draw() {
     ViewportPanel::Draw();
 
     double delta = GetTimerInterval();
-
     PreDrawPork(delta);
 
     /* todo: draw sky for backdrop? */
 
-//    DrawParticleSystem(system_, delta);
-    DrawActor(attachment_, delta);
+    if(system_ != NULL) {
+        DrawParticleSystem(system_, delta);
+    }
+    //DrawActor(attachment_, delta);
 
     PostDrawPork();
 }
