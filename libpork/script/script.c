@@ -16,13 +16,13 @@
  */
 #include <PL/platform_filesystem.h>
 
-#include "pork_engine.h"
-#include "pork_map.h"
+#include "../pork_engine.h"
+#include "../pork_map.h"
 
-#include "client/client_video.h"
+#include "../client/client_video.h"
 
 #include "script.h"
-#include "duk_module_duktape.h"
+#include "duktape-2.2.0/duk_module_duktape.h"
 
 duk_context *scr_context = NULL;    /* server context */
 duk_context *jsn_context = NULL;    /* json context */

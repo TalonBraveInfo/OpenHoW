@@ -31,7 +31,7 @@
 #define PORK_MAJOR_VERSION  0
 #define PORK_MINOR_VERSION  1
 
-#include "pork_classes.h"
+//#include "pork_classes.h"
 
 enum { // supported languages
     LANG_ENGLISH,

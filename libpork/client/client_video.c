@@ -170,6 +170,7 @@ void SkipVideo(void) {
 }
 
 void ProcessVideo(void) {
+#if 0
     do {
         /* decode the video */
 
@@ -204,6 +205,7 @@ void ProcessVideo(void) {
 
 
     } while(video.av_packet->stream_index != video.stream_index);
+#endif
 }
 
 void DrawVideo(void) {
