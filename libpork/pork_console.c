@@ -156,6 +156,21 @@ void SetCommand(unsigned int argc, char *argv[]) {
 #endif
 }
 
+void FrontendModeCommand(unsigned int argc, char *argv[]) {
+    if(argc < 2) {
+        LogWarn("invalid number of arguments, ignoring!\n");
+        return;
+    }
+
+    int mode = atoi(argv[1]);
+    if(mode < 0) {
+        LogWarn("invalid frontend mode, \"%d\", specified!\n", mode);
+        return;
+    }
+
+    SetFrontendState((unsigned int) mode);
+}
+
 void ResetAudioCommand(unsigned int argc, char *argv[]) {
     InitAudio();
 }
@@ -225,6 +240,7 @@ void InitConsole(void) {
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
     plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
+    plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
 }
 
 void DrawConsole(void) {
