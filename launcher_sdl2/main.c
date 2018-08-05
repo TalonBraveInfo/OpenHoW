@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
     plGetApplicationDataDirectory(PORK_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
 
     if(!plCreatePath(app_dir)) {
-        IDisplayMessageBox(PORK_MBOX_WARNING, "Unable to create %s: %s"
+        IDisplayMessageBox(PORK_MBOX_WARNING, "Unable to create %s: %s\n"
                                               "Settings will not be saved.", app_dir, plGetError());
     }
 

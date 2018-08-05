@@ -19,43 +19,4 @@
 
 extern const char *supported_image_formats[];
 
-/******************************************************************/
-/* Pork Particle System */
-
-typedef struct PPSHeader {
-    int8_t identifier[4];   /* "PPS " */
-    int8_t version[4];      /* "1   " */
-    uint32_t num_chunks;    /* number of chunks following the header (excluding children) */
-} PPSHeader;
-
-typedef struct PPSChunkHeader {
-    int8_t name[16];
-    uint32_t length;
-    uint32_t num_children;
-} PPSChunkHeader;
-
-/* Emitter properties
- *  IsLooping       uint8_t
- *  MaxParticles    uint16_t
- *  Material        int8_t[...] (length before?)
- *  StartColour     uint8_t[4]
- *  EndColour       uint8_t[4]
- *  StartPosition   float
- *  EndPosition     float
- *  StartSize       float
- *  EndSize         float
- *  BlendMode       uint8_t
- */
-
-/* Emitter nodes
- *  Light
- *      Colour
- *  Particle
- */
-
-typedef struct PPSPositionChunk {   /* "Position" */
-    PPSChunkHeader header;
-    int32_t position[3];
-} PPSPositionChunk;
-
-/******************************************************************/
+void RegisterFormatInterfaces(void);

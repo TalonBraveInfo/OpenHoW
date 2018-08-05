@@ -17,11 +17,12 @@
 
 #pragma once
 
-#define MAX_PARTICLE_SYSTEMS    2048
+#define BASE_MAX_PARTICLE_SYSTEMS   2048
 
 typedef enum PSEmitterType {
     PS_EMITTER_TYPE_SPRITE,
     PS_EMITTER_TYPE_MODEL,
+    PS_EMITTER_TYPE_LINE,
 
     MAX_PS_EMITTER_TYPES
 } PSEmitterType;
@@ -73,3 +74,79 @@ void SimulateParticles(void);
 void DrawParticles(double delta);
 
 void DrawParticleSystem(ParticleSystem *ps, double delta);
+
+/******************************************************************/
+/* PPS format */
+
+typedef struct PPSHeader {
+    int8_t identifier[4];   /* "PPS " */
+    int8_t version[4];      /* "1   " */
+    uint32_t num_chunks;    /* number of chunks following the header (excluding children) */
+} PPSHeader;
+
+typedef struct PPSChunkHeader {
+#if 1
+    int8_t name[16];
+#else
+    uint16_t identity;
+#endif
+    uint32_t length;
+    uint32_t num_children;
+} PPSChunkHeader;
+
+/* Emitter properties
+ *  IsLooping       uint8_t
+ *  MaxParticles    uint16_t
+ *  Material        int8_t[...] (length before?)
+ *  StartColour     uint8_t[4]
+ *  EndColour       uint8_t[4]
+ *  StartPosition   float
+ *  EndPosition     float
+ *  StartSize       float
+ *  EndSize         float
+ *  BlendMode       uint8_t
+ */
+
+/* Emitter nodes
+ *  Light
+ *      Colour
+ *  Particle
+ */
+
+typedef struct PPSPositionChunk {   /* "position" */
+    PPSChunkHeader header;
+    int32_t start_position[3];
+    int32_t end_position[3];
+} PPSPositionChunk;
+
+typedef struct PPSColourChunk { /* "colour" */
+    PPSChunkHeader header;
+    uint8_t start_colour[4];
+    uint8_t end_colour[4];
+} PPSColourChunk;
+
+typedef struct PPSSizeChunk { /* "size" */
+    PPSChunkHeader header;
+    int32_t start_size;
+    int32_t end_size;
+} PPSSizeChunk;
+
+typedef struct PPSEmitterChunk {    /* "emitter" */
+    PPSChunkHeader header;
+
+    uint32_t            max_particles;
+    PPSPositionChunk    position;
+    PPSColourChunk      colour;
+    PPSSizeChunk        size;
+} PPSEmitterChunk;
+
+typedef struct PPSFormat {
+    PPSHeader header;
+    PPSChunkHeader *chunks;
+    unsigned int num_chunks;
+} PPSFormat;
+
+PPSFormat SerializeParticleSystem(ParticleSystem *system);
+void UnserializeParticleSystem(PPSFormat pps);
+
+/******************************************************************/
