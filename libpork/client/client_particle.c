@@ -57,10 +57,15 @@ void ClearParticleSystemCache(bool force) {
 PPSFormat SerializeParticleSystem(ParticleSystem *system) {
     static PPSFormat format;
     memset(&format, 0, sizeof(PPSFormat));
+
+    strcpy((char*)format.header.identifier, PPS_IDENTIFIER);
+    strcpy((char*)format.header.version, PPS_VERSION);
+
+    return format;
 }
 
-void UnserializeParticleSystem(PPSFormat pps) {
-
+ParticleSystem *DeserializeParticleSystem(PPSFormat pps) {
+    return NULL;
 }
 
 /******************************************************************/

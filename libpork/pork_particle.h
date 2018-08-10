@@ -78,9 +78,12 @@ void DrawParticleSystem(ParticleSystem *ps, double delta);
 /******************************************************************/
 /* PPS format */
 
+#define PPS_IDENTIFIER  "PPS\0"
+#define PPS_VERSION     "050818"
+
 typedef struct PPSHeader {
-    int8_t identifier[4];   /* "PPS " */
-    int8_t version[4];      /* "1   " */
+    int8_t identifier[4];
+    int8_t version[6];
     uint32_t num_chunks;    /* number of chunks following the header (excluding children) */
 } PPSHeader;
 
@@ -147,6 +150,6 @@ typedef struct PPSFormat {
 } PPSFormat;
 
 PPSFormat SerializeParticleSystem(ParticleSystem *system);
-void UnserializeParticleSystem(PPSFormat pps);
+ParticleSystem *DeserializeParticleSystem(PPSFormat pps);
 
 /******************************************************************/

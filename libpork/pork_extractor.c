@@ -292,6 +292,78 @@ void ConvertImageCallback(unsigned int argc, char *argv[]) {
     plScanDirectory(GetBasePath(), "tim", ConvertImageToPNG, true);
 }
 
+/****************************************************/
+/* Texture Merger                                   */
+
+typedef struct TMergeTarget {
+    const char *path;
+    unsigned int x, y;
+} TMergeTarget;
+
+typedef struct TMerge {
+    const char *output;
+    unsigned int num_textures;
+    unsigned int width, height;
+    TMergeTarget targets[10];
+} TMerge;
+
+TMerge texture_targets[]={
+        {
+            "fe/dash/ang.png", 5, 152, 121,
+            {
+                { "fe/dash/ang1.tim", 0, 0 },
+                { "fe/dash/ang2.tim", 10, 0 },
+                { "fe/dash/ang3.tim", 20, 0 },
+                { "fe/dash/ang4.tim", 30, 0 }, 
+                { "fe/dash/ang5.tim", 40, 0 },
+            }
+        }
+};
+
+void MergeTextureTargets(void) {
+    unsigned int num_texture_targets = plArrayElements(texture_targets);
+    LogInfo("merging %d texture targets...\n", num_texture_targets);
+    for(unsigned int i = 0; i < num_texture_targets; ++i) {
+        TMerge *merge = &texture_targets[i];
+
+        PLImage output;
+        memset(&output, 0, sizeof(PLImage));
+        output.width            = merge->width;
+        output.height           = merge->height;
+        output.format           = PL_IMAGEFORMAT_RGBA8;
+        output.colour_format    = PL_COLOURFORMAT_RGBA;
+        output.levels           = 1;
+        output.size             = plGetImageSize(output.format, output.width, output.height);
+        output.data             = pork_alloc(output.levels, sizeof(uint8_t*), true);
+        output.data[0]          = pork_alloc(output.size, sizeof(uint8_t), true);
+
+        for(unsigned int j = 0; j < merge->num_textures; ++j) {
+            PLImage image;
+            const char *path = pork_find(merge->targets[j].path);
+            if(!plLoadImage(path, &image)) {
+                LogWarn("failed to find image, \"%s\", for merge!\n", merge->targets[j].path);
+                continue;
+            }
+
+            uint8_t *pos = output.data[0] + ((merge->targets[j].x * output.width) + merge->targets[j].x) * 4;
+            uint8_t *src = image.data[0];
+            for(unsigned int y = 0; y < image.height; ++y) {
+                memcpy(pos, src, (image.width * 4));
+                src += image.width * 4;
+                pos += output.width * 4;
+            }
+
+            plFreeImage(&image);
+            plDeleteFile(path);
+        }
+
+        plWriteImage(&output, pork_find(merge->output));
+        plFreeImage(&output);
+    }
+}
+
+/****************************************************/
+
 void ExtractGameData(const char *path) {
     LogInfo("extracting game contents from %s...\n", path);
 
