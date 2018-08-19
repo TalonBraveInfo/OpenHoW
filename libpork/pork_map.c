@@ -591,7 +591,7 @@ void LoadMapSpawns(const char *path) {
         LogDebug("name %s\n", map_state.spawns[i].name);
         LogDebug("position %d %d %d\n", v(position));
         LogDebug("bounds %d %d %d\n", v(bounds));
-        LogDebug("angles %%d %d %d\n", v(angles));
+        LogDebug("angles %d %d %d\n", v(angles));
         LogDebug("fallback %d %d %d\n", v(fallback_position));
     }
 

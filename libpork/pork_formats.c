@@ -21,6 +21,25 @@
 #include "pork_formats.h"
 #include "pork_particle.h"
 
+/* Hogs of War file formats
+ * -----------------------------------
+ * MAM : Mangled texture / model package
+ * MAD : Texture / model package
+ * MTM : Mangled model texture package
+ * MTD : Texture / model package
+ * MMM : Mangled model package
+ * MGL : Mangled texture data
+ * FAC : Model faces
+ * VTX : Model vertices
+ * NO2 : Model normals
+ * HIR : Model skeleton
+ * POM : Mangled map object data
+ * POG : Map object data
+ * PTM : Mangled map textures package
+ * PTG : Map Textures package
+ * OFF : File offset sizes
+ */
+
 //const char *supported_model_formats[]={"vtx", NULL};
 const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
 //const char *supported_audio_formats[]={"wav", NULL};
