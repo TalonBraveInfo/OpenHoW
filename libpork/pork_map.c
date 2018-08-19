@@ -268,6 +268,35 @@ void RegisterMap(const char *path) {
 #define FLIP_FLAG_ROTATE_180    4
 #define FLIP_FLAG_ROTATE_270    6
 
+typedef struct ActorSpawn { /* this should be 94 bytes */
+    char        name[16];               // class name
+    char        unused0[16];
+
+    int16_t     position[3];            // position in the world
+    uint16_t    index;                  // todo
+    int16_t     angles[3];              // angles in the world
+    uint16_t    type;                   // todo
+
+    int16_t     bounds[3];              // collision bounds
+    uint16_t    bounds_type;            // box, prism, sphere and none
+
+    int16_t     energy;
+    uint8_t     appearance;
+    uint8_t     team;                   // uk, usa, german, french, japanese, soviet
+
+    uint16_t    objective;
+    uint8_t     objective_actor_id;
+    uint8_t     objective_extra[2];
+
+    uint8_t     unused1;
+    uint16_t    unused2[8];
+
+    int16_t     fallback_position[3];
+    int16_t     extra;
+    int16_t     attached_actor_num;
+    int16_t     unused3;
+} ActorSpawn;
+
 struct {
     char name[24];
     char desc[256];
@@ -293,20 +322,7 @@ struct {
 
     unsigned int flags;
 
-    struct {
-        char name[16];
-
-        unsigned int type;
-
-        PLVector3 position;
-        PLVector3 angles;
-        PLVector3 bounds;
-
-        uint16_t health;
-        uint8_t team;
-
-        uint16_t spawn_delay;
-    } *spawns;
+    ActorSpawn *spawns;
     unsigned int num_spawns;
 
     PLTexture **textures;
@@ -503,17 +519,26 @@ void ResetMap(void) {
                 break;
             }
 
-            actor->position = map_state.spawns[i].position;
-            actor->bounds   = map_state.spawns[i].bounds;
-            actor->angles   = map_state.spawns[i].angles;
-            actor->team     = map_state.spawns[i].team;
+            actor->position.x = map_state.spawns[i].position[0];
+            actor->position.y = map_state.spawns[i].position[1];
+            actor->position.z = map_state.spawns[i].position[2];
+
+            actor->angles.x   = map_state.spawns[i].angles[0];
+            actor->angles.y   = map_state.spawns[i].angles[1];
+            actor->angles.z   = map_state.spawns[i].angles[2];
+
+            //actor->bounds   = map_state.spawns[i].bounds;
+            //actor->bounds   = map_state.spawns[i].bounds;
+            //actor->bounds   = map_state.spawns[i].bounds;
+
+            actor->team = map_state.spawns[i].team;
 
             strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
             /* todo, setup the actor here - name represents class - this will then
              * set the model and other parms here
              */
 
-            actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
+            //actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
         }
     }
 
@@ -527,9 +552,14 @@ void ResetMap(void) {
             break;
         }
 
-        actor->position = map_state.spawns[i].position;
-        actor->bounds   = map_state.spawns[i].bounds;
-        actor->angles   = map_state.spawns[i].angles;
+        actor->position.x = map_state.spawns[i].position[0];
+        actor->position.y = map_state.spawns[i].position[1];
+        actor->position.z = map_state.spawns[i].position[2];
+
+        actor->angles.x   = map_state.spawns[i].angles[0];
+        actor->angles.y   = map_state.spawns[i].angles[1];
+        actor->angles.z   = map_state.spawns[i].angles[2];
+
         actor->team     = map_state.spawns[i].team;
 
         /* todo, load model... */
@@ -553,65 +583,16 @@ void LoadMapSpawns(const char *path) {
     map_state.spawns = pork_alloc(num_indices, sizeof(*map_state.spawns), true);
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
-        struct __attribute__((packed)) { /* this should be 94 bytes */
-            char name[16];
-            char unused[16];
-
-            uint16_t offset[3];
-
-            uint16_t id;
-            uint16_t unknown0;
-            uint16_t angle;
-            uint16_t unknown1;
-
-            uint16_t type;
-
-            uint16_t bounds[3];
-
-            uint16_t bridge_flag;
-
-            uint16_t spawn_delay;
-
-            uint8_t unknown2;
-            uint8_t team;
-
-            uint16_t event_type;
-            uint8_t event_group;
-            uint8_t event_parms[19];
-            uint16_t event_offset[3];
-
-            uint16_t flag;
-            uint16_t turn_delay;
-            uint16_t unknown3;
-        } index;
-        if(fread(&index, sizeof(index), 1, fh) != 1) {
-            Error("failed to load index %d from pog, \"%s\"\n", i, path);
+        if(fread(&map_state.spawns[i], sizeof(ActorSpawn), 1, fh) != 1) {
+            Error("failed to load index %d from POG, \"%s\"!\n", i, path);
         }
 
-        strncpy(map_state.spawns[i].name, pl_strtolower(index.name), sizeof(map_state.spawns[i].name));
+#define v(a) map_state.spawns[i].a[0], map_state.spawns[i].a[1], map_state.spawns[i].a[2]
         LogDebug("name %s\n", map_state.spawns[i].name);
-
-        map_state.spawns[i].position.x = index.offset[0];
-        map_state.spawns[i].position.y = index.offset[1];
-        map_state.spawns[i].position.z = index.offset[2];
-        LogDebug("position %s\n", plPrintVector3(map_state.spawns[i].position));
-
-        map_state.spawns[i].bounds.x = index.bounds[0];
-        map_state.spawns[i].bounds.y = index.bounds[1];
-        map_state.spawns[i].bounds.z = index.bounds[2];
-        LogDebug("bounds %s\n", plPrintVector3(map_state.spawns[i].bounds));
-
-        map_state.spawns[i].type = index.type;
-        map_state.spawns[i].team = index.team;
-
-        if(strncmp("crate", map_state.spawns[i].name, 5) != 0) {
-            map_state.spawns[i].health = map_state.spawns[i].spawn_delay;
-        } else {
-            map_state.spawns[i].spawn_delay = map_state.spawns[i].spawn_delay;
-        }
-
-        map_state.spawns[i].angles.y = index.angle;
-        LogDebug("angles %s\n", plPrintVector3(map_state.spawns[i].angles));
+        LogDebug("position %d %d %d\n", v(position));
+        LogDebug("bounds %d %d %d\n", v(bounds));
+        LogDebug("angles %%d %d %d\n", v(angles));
+        LogDebug("fallback %d %d %d\n", v(fallback_position));
     }
 
     pork_fclose(fh);

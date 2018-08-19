@@ -314,7 +314,7 @@ TMerge texture_targets[]={
                 { "fe/dash/ang1.tim", 0, 0 },
                 { "fe/dash/ang2.tim", 10, 0 },
                 { "fe/dash/ang3.tim", 20, 0 },
-                { "fe/dash/ang4.tim", 30, 0 }, 
+                { "fe/dash/ang4.tim", 30, 0 },
                 { "fe/dash/ang5.tim", 40, 0 },
             }
         }
@@ -325,6 +325,8 @@ void MergeTextureTargets(void) {
     LogInfo("merging %d texture targets...\n", num_texture_targets);
     for(unsigned int i = 0; i < num_texture_targets; ++i) {
         TMerge *merge = &texture_targets[i];
+
+        LogInfo("generating %s\n", merge->output);
 
         PLImage output;
         memset(&output, 0, sizeof(PLImage));
@@ -345,7 +347,11 @@ void MergeTextureTargets(void) {
                 continue;
             }
 
-            uint8_t *pos = output.data[0] + ((merge->targets[j].x * output.width) + merge->targets[j].x) * 4;
+            plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8);
+
+            LogInfo("writing %s into %s\n", merge->targets[j].path, merge->output);
+
+            uint8_t *pos = output.data[0] + ((merge->targets[j].y * output.width) + merge->targets[j].x) * 4;
             uint8_t *src = image.data[0];
             for(unsigned int y = 0; y < image.height; ++y) {
                 memcpy(pos, src, (image.width * 4));
@@ -357,6 +363,7 @@ void MergeTextureTargets(void) {
             plDeleteFile(path);
         }
 
+        LogInfo("writing %s\n", merge->output);
         plWriteImage(&output, pork_find(merge->output));
         plFreeImage(&output);
     }
@@ -843,6 +850,8 @@ void ExtractGameData(const char *path) {
         ExtractPTGPackage(input_path, output_path);
     }
 #endif
+
+    MergeTextureTargets();
 
     LogInfo("complete\n");
 

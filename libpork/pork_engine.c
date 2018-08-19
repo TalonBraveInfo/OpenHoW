@@ -80,8 +80,8 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     g_launcher = interface;
 
     memset(&g_state, 0, sizeof(g_state));
-    g_state.display_width = BASE_WIDTH;
-    g_state.display_height = BASE_HEIGHT;
+    g_state.display_width = STARTUP_WIDTH;
+    g_state.display_height = STARTUP_HEIGHT;
 
     // todo, disable these by default
 

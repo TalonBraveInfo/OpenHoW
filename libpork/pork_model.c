@@ -30,8 +30,8 @@ struct {
     Animation animations[ANI_END];
     unsigned int num_animations;
 
-    PLModel *pigs[MAX_PIG_CLASSES];
-    PLModel *hats[MAX_PIG_CLASSES];
+    PLModel *pigs[MAX_CLASSES];
+    PLModel *hats[MAX_CLASSES];
 
     PLModel **decorations;
     unsigned int num_decorations;
@@ -711,7 +711,7 @@ void InitModels(void) {
 void ShutdownModels(void) {
     /* clear the model cache */
     LogInfo("clearing model cache...\n");
-    for(unsigned int i = 0; i < MAX_PIG_CLASSES; ++i) {
+    for(unsigned int i = 0; i < MAX_CLASSES; ++i) {
         plDeleteModel(model_cache.pigs[i]);
     }
 }

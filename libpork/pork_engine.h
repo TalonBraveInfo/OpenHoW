@@ -32,11 +32,8 @@
     exit(EXIT_FAILURE);                                         \
 }
 
-///////////////////////////////////////////////////
-// LIMITS
-
-#define BASE_WIDTH  640
-#define BASE_HEIGHT 480
+#define STARTUP_WIDTH  1024
+#define STARTUP_HEIGHT 768
 
 ///////////////////////////////////////////////////
 

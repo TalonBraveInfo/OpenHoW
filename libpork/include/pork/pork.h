@@ -272,9 +272,8 @@ enum {
 
 ///////////////////////////////////////////////////
 
-#define MAX_STATIC_OBJECTS  1024
-
-enum {
+enum PigTeam {
+    /* ...original... */
     TEAM_BRITISH,
     TEAM_AMERICAN,
     TEAM_FRENCH,
@@ -282,13 +281,13 @@ enum {
     TEAM_RUSSIAN,
     TEAM_JAPAN,
     TEAM_LARD,
+    /* ...any new types below... */
 
     MAX_TEAMS
-
-    /* todo: support custom teams later on... */
 };
 
-enum {
+enum PigClass {
+    /* ...original... */
     PIG_CLASS_ACE,
     PIG_CLASS_LEGEND,
     PIG_CLASS_MEDIC,
@@ -298,33 +297,45 @@ enum {
     PIG_CLASS_SABOTEUR,
     PIG_CLASS_HEAVY,
     PIG_CLASS_GRUNT,
+    /* ...any new types below... */
 
-    MAX_PIG_CLASSES
+    MAX_CLASSES
 };
 
-// Actor flags
-#define ACTOR_FLAG_PLAYABLE    1
-#define ACTOR_FLAG_SCRIPTED    16
-#define ACTOR_FLAG_INSIDE      32
-#define ACTOR_FLAG_DELAYED     64
+// todo: move into actor.h
+enum ActorFlag {
+    /* ...original... */
+    ACTOR_FLAG_PLAYABLE = 1,
+    ACTOR_FLAG_SCRIPTED = 16,
+    ACTOR_FLAG_INSIDE   = 32,
+    ACTOR_FLAG_DELAYED  = 64,
+    /* ...any new types below... */
 
-enum { // Event types
-    OBJECT_EVENT_NONE,                 // does nothing!
-    OBJECT_EVENT_ITEM,                 // spawns an item on destruction
-    OBJECT_EVENT_PROMOTION,            // spawns a promotion point on destruction
-    OBJECT_EVENT_PROTECT = 4,          // spawns a promotion point if the object is not destroyed
-    OBJECT_EVENT_AIRDROP_ITEM = 7,     // spawns item airdrop on destruction
-    OBJECT_EVENT_AIRDROP_PROMOTION,    // spawns promotion point on destruction
-    OBJECT_EVENT_GROUP_ITEM = 13,      // spawns item when group is destroyed
-    OBJECT_EVENT_GROUP_PROMOTION,      // spawns promotion point when group is destroyed
-    OBJECT_EVENT_REWARD = 19,          // returns specified item on destruction to destructor
-    OBJECT_EVENT_GROUP_SPAWN,          // spawns group on destruction
-    OBJECT_EVENT_VICTORY,              // triggers victory on destruction
-    OBJECT_EVENT_BURST,                // spawns group upon destruction by TNT
-    OBJECT_EVENT_GROUP_OBJECT,         // spawns group when object's group is destroyed
+
 };
 
-// Weapons
+// todo: move into actor.h
+enum ActorEvent {
+    /* ...original... */
+    ACTOR_EVENT_NONE,                 // does nothing!
+    ACTOR_EVENT_ITEM,                 // spawns an item on destruction
+    ACTOR_EVENT_PROMOTION,            // spawns a promotion point on destruction
+    ACTOR_EVENT_PROTECT = 4,          // spawns a promotion point if the object is not destroyed
+    ACTOR_EVENT_AIRDROP_ITEM = 7,     // spawns item airdrop on destruction
+    ACTOR_EVENT_AIRDROP_PROMOTION,    // spawns promotion point on destruction
+    ACTOR_EVENT_GROUP_ITEM = 13,      // spawns item when group is destroyed
+    ACTOR_EVENT_GROUP_PROMOTION,      // spawns promotion point when group is destroyed
+    ACTOR_EVENT_REWARD = 19,          // returns specified item on destruction to destructor
+    ACTOR_EVENT_GROUP_SPAWN,          // spawns group on destruction
+    ACTOR_EVENT_VICTORY,              // triggers victory on destruction
+    ACTOR_EVENT_BURST,                // spawns group upon destruction by TNT
+    ACTOR_EVENT_GROUP_OBJECT,         // spawns group when object's group is destroyed
+    /* ...any new types below... */
+
+
+};
+
+// todo: move into items.h
 #define ITEM_WEAPON_TROTTER             1
 #define ITEM_WEAPON_KNIFE               2
 #define ITEM_WEAPON_BAYONET             3
@@ -341,7 +352,7 @@ enum { // Event types
 #define ITEM_WEAPON_ROCKET_LAUNCHER     14
 #define ITEM_WEAPON_GUIDED_MISSILE      15
 
-enum { // todo, switch over to using macros here
+enum ItemIdent {
 
     ITEM_MEDICINE_DART = 0x10,
     ITEM_TRANQ = 0x11,
@@ -418,6 +429,7 @@ enum { // todo, switch over to using macros here
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Animations
 
+// todo: move into animation.h
 enum { // todo, switch over to using macros here
     //MCAP (in-game)
     ANI_RUN_NORMAL = 0,         // Run cycle (normal)
