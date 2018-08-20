@@ -53,6 +53,25 @@ PLTexture *fe_papers_teams[MAX_TEAMS] = {
         NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
+enum {
+    FE_TEXTURE_ANG,
+    FE_TEXTURE_ANGPOINT,
+
+    FE_TEXTURE_CLOCK,
+    FE_TEXTURE_TIMER,
+
+    FE_TEXTURE_CROSSHAIR,
+    FE_TEXTURE_TARGET,
+
+    FE_TEXTURE_ARROW,
+    FE_TEXTURE_CROSS,
+
+    FE_TEXTURE_PAUSE,
+
+    MAX_FE_GAME_TEXTURES
+};
+PLTexture *fe_game_textures[MAX_FE_GAME_TEXTURES];
+
 /************************************************************/
 /* FE Object Implementation
  *  Individual frontend objects that can manipulated

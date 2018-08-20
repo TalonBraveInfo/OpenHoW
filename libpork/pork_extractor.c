@@ -309,14 +309,73 @@ typedef struct TMerge {
 
 TMerge texture_targets[]={
         {
-            "fe/dash/ang.png", 5, 152, 121,
-            {
-                { "fe/dash/ang1.tim", 0, 0 },
-                { "fe/dash/ang2.tim", 10, 0 },
-                { "fe/dash/ang3.tim", 20, 0 },
-                { "fe/dash/ang4.tim", 30, 0 },
-                { "fe/dash/ang5.tim", 40, 0 },
-            }
+            "fe/dash/ang.png", 5, 152, 121, {{
+                "fe/dash/ang1.tim", 0, 0
+            }, {
+                "fe/dash/ang2.tim", 64, 22
+            }, {
+                "fe/dash/ang3.tim", 0, 64
+            }, {
+                "fe/dash/ang4.tim", 64, 64
+            }, {
+                "fe/dash/ang5.tim", 128, 31
+            }}
+        },
+
+        {
+            "fe/dash/clock.png", 4, 128, 96, {{
+                "fe/dash/clock01.tim", 0, 0
+            }, {
+                "fe/dash/clock02.tim", 64, 0
+            }, {
+                "fe/dash/clock03.tim", 0, 28
+            }, {
+                "fe/dash/clock04.tim", 64, 28
+            }}
+        },
+
+        {
+            "fe/dash/timer.png", 10, 256, 32, {{
+                "fe/dash/timer0.tim", 0, 0
+            }, {
+                "fe/dash/timer1.tim", 24, 0
+            }, {
+                "fe/dash/timer2.tim", 48, 0
+            }, {
+                "fe/dash/timer3.tim", 72, 0
+            }, {
+                "fe/dash/timer4.tim", 96, 0
+            }, {
+                "fe/dash/timer5.tim", 120, 0
+            }, {
+                "fe/dash/timer6.tim", 144, 0
+            }, {
+                "fe/dash/timer7.tim", 168, 0
+            }, {
+                "fe/dash/timer8.tim", 192, 0
+            }, {
+                "fe/dash/timer9.tim", 216, 0
+            }}
+        },
+
+        {
+            "fe/dash/pause.png", 8, 64, 64, {{
+                "fe/dash/pause1.tim", 0, 0
+            }, {
+                "fe/dash/pause2.tim", 16, 0
+            }, {
+                "fe/dash/pause3.tim", 32, 0
+            }, {
+                "fe/dash/pause4.tim", 0, 16
+            }, {
+                "fe/dash/pause5.tim", 32, 16
+            }, {
+                "fe/dash/pause6.tim", 0, 32
+            }, {
+                "fe/dash/pause7.tim", 16, 32
+            }, {
+                "fe/dash/pause8.tim", 32, 32
+            }}
         }
 };
 

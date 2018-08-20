@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
 
@@ -327,6 +328,8 @@ struct {
 
     PLTexture **textures;
     unsigned int num_textures;
+
+    PLTexture *overview;
 
     PLTexture *sky_textures[4];
     PLModel *sky_model;
@@ -814,6 +817,11 @@ void LoadMap(const char *name, unsigned int mode) {
         LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
         return;
     }
+
+    if(map_state.overview != NULL) {
+        plDeleteTexture(map_state.overview, true);
+    }
+    map_state.overview = GenerateMinimapTexture();
 
     LoadMapTiles(pmg_path);
 

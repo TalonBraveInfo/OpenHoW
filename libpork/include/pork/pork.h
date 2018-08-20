@@ -240,29 +240,6 @@ PL_EXTERN void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned 
 PL_EXTERN_C_END
 
 ///////////////////////////////////////////////////
-
-#define MAP_WIDTH   2048
-
-enum {
-    FT_MUD,
-    FT_GRASS,
-    FT_METAL,
-    FT_WOOD,
-    FT_WATER,
-    FT_STONE,
-    FT_ROCK,
-    FT_SAND,
-    FT_ICE,
-    FT_SNOW,
-    FT_QUAG,
-    FT_LAVA,
-};
-
-#define TILE_FLAG_WATERY    32
-#define TILE_FLAG_MINE      64
-#define TILE_FLAG_WALL      128
-
-///////////////////////////////////////////////////
 // Player
 
 #define MAX_PLAYERS 4

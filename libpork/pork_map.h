@@ -25,6 +25,29 @@
 #define MAP_MODE_GENERATED          (unsigned int)(1 << 5)
 #define MAP_MODE_EDITOR             (unsigned int)(1 << 6)
 
+#define MAP_WIDTH   2048
+
+enum {
+    TILE_TYPE_MUD       = 0,
+    TILE_TYPE_GRASS     = 1,
+    TILE_TYPE_METAL     = 2,
+    TILE_TYPE_WOOD      = 3,
+    TILE_TYPE_WATER     = 4,
+    TILE_TYPE_STONE     = 5,
+    TILE_TYPE_ROCK      = 6,
+    TILE_TYPE_SAND      = 7,
+    TILE_TYPE_ICE       = 8,
+    TILE_TYPE_SNOW      = 9,
+    TILE_TYPE_QUAGMIRE  = 10,
+    TILE_TYPE_LAVA      = 11,
+
+    MAX_TILE_TYPES,
+};
+
+#define TILE_FLAG_WATERY    32
+#define TILE_FLAG_MINE      64
+#define TILE_FLAG_WALL      128
+
 void InitMaps(void);
 void ShutdownMaps(void);
 

@@ -323,6 +323,11 @@ PLModel *LoadVTXModel(const char *path) {
     return model;
 }
 
+PLModel *LoadMINModel(const char *path) {
+    pork_assert(0, "TODO");
+    return NULL;
+}
+
 ////////////////////////////////////////////////////////////////
 
 /* like plLoadModel, only prefixes with base path
@@ -704,6 +709,7 @@ void CacheModelData(void) {
 
 void InitModels(void) {
     plRegisterModelLoader("vtx", LoadVTXModel);
+    plRegisterModelLoader("min", LoadMINModel);
 
     CacheModelData();
 }
