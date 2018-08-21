@@ -88,6 +88,7 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     InitConsole();
 
     for(int i = 1; i < argc; ++i) {
+#if 0 /* moved out into seperate application */
         if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
             const char *parm = argv[i + 1];
             if(parm == NULL || parm[0] == '\0') {
@@ -95,7 +96,9 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
             } ++i;
 
             ExtractGameData(parm);
-        } else if(pl_strncasecmp("-window", argv[i], 7) == 0) {
+        } else
+#endif
+        if(pl_strncasecmp("-window", argv[i], 7) == 0) {
             g_state.display_fullscreen = false;
         } else if(pl_strncasecmp("-width", argv[i], 6) == 0) {
             const char *parm = argv[i + 1];
