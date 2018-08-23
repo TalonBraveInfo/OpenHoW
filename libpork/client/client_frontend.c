@@ -59,6 +59,7 @@ enum {
 
     FE_TEXTURE_CLOCK,
     FE_TEXTURE_TIMER,
+    FE_TEXTURE_CLIGHT,
 
     FE_TEXTURE_CROSSHAIR,
     FE_TEXTURE_TARGET,
@@ -70,7 +71,8 @@ enum {
 
     MAX_FE_GAME_TEXTURES
 };
-PLTexture *fe_game_textures[MAX_FE_GAME_TEXTURES];
+PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
+PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
 /************************************************************/
 /* FE Object Implementation
@@ -126,21 +128,54 @@ void FrontendInputCallback(int key, bool is_pressed) {
     }
 }
 
+
+void CacheFEGameData(void) {
+#if 1
+    fe_tx_game_textures[FE_TEXTURE_ANG] = LoadTexture("fe/dash/ang", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = LoadTexture("fe/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
+
+    fe_tx_game_textures[FE_TEXTURE_CLOCK] = LoadTexture("fe/dash/clock", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_CLIGHT] = LoadTexture("fe/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_TIMER] = LoadTexture("fe/dash/timer", PL_TEXTURE_FILTER_LINEAR);
+#endif
+}
+
+void CacheFEMenuData(void) {
+    fe_background = LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+    for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
+        fe_papers_teams[i] = LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
+    }
+}
+
+void ClearFEGameData(void) {
+    for(unsigned int i = 0; i < MAX_FE_GAME_TEXTURES; ++i) {
+        if(fe_tx_game_textures[i] == NULL) {
+            continue;
+        }
+        plDeleteTexture(fe_tx_game_textures[i], true);
+    }
+}
+
+void ClearFEMenuData(void) {
+    plDeleteTexture(fe_background, true);
+    for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
+        plDeleteTexture(fe_papers_teams[i], true);
+    }
+}
+
 void InitFrontend(void) {
     memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
 
     InitFonts();
 
-    if(g_launcher.mode == PORK_MODE_EDITOR) {
+    if(g_launcher.mode == PORK_MODE_LIMITED) {
         SetFrontendState(FE_MODE_EDITOR);
         return;
     }
 
-    /* load in all the assets we'll be using for the frontend */
-    fe_background = LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
-    for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
-        fe_papers_teams[i] = LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
-    }
+    /* load in all the assets we'll be using for the
+     * frontend */
+    CacheFEMenuData();
 }
 
 void ProcessFrontendInput(void) {
@@ -375,6 +410,14 @@ void SetFrontendState(unsigned int state) {
     if(state == frontend_state) {
         LogDebug("attempted to set debug state to an already existing state!\n");
         return;
+    }
+
+    if(frontend_state == FE_MODE_GAME && state != FE_MODE_GAME) {
+        ClearFEGameData();
+        CacheFEMenuData();
+    } else if(frontend_state != FE_MODE_GAME && state == FE_MODE_GAME) {
+        ClearFEMenuData();
+        CacheFEGameData();
     }
 
     LogDebug("changing frontend state to %u...\n", state);
