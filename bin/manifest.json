@@ -27,6 +27,11 @@
             "key"   :"ita",
             "name"  :"$italian",
             "path"  :"languages/italian.json"
+        },
+        {
+            "key"   :"rus",
+            "name"  :"$russian",
+            "path"  :"languages/russian.json"
         }
     ]
 }
