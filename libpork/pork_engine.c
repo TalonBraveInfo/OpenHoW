@@ -62,7 +62,9 @@ void *pork_calloc(size_t num, size_t size) {
     return pork_alloc(num, size, true);
 }
 
-void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
+void InitPork(int argc, char **argv, EngineLauncherInterface interface) {
+    g_launcher = interface;
+
     pl_malloc = pork_malloc;
     pl_calloc = pork_calloc;
 
@@ -73,15 +75,11 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
     plSetupLogLevel(PORK_LOG_ENGINE_ERROR, "engine-error", PLColour(255, 0, 0, 255), true);
     plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
 
-    LogInfo("initializing pork %d.%d...\n", PORK_MAJOR_VERSION, PORK_MINOR_VERSION);
-
-    RegisterFormatInterfaces();
-
-    g_launcher = interface;
+    LogInfo("initializing engine (PORK %d.%d)...\n", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
 
     memset(&g_state, 0, sizeof(g_state));
-    g_state.display_width = STARTUP_WIDTH;
-    g_state.display_height = STARTUP_HEIGHT;
+
+    RegisterFormatInterfaces();
 
     // todo, disable these by default
 
@@ -192,23 +190,14 @@ void InitPork(int argc, char **argv, PorkLauncherInterface interface) {
 
     InitConfig();
 
-    /* todo: restructure this... */
-    if(g_launcher.mode == PORK_MODE_EDITOR) {
-        /* will go through InitPorkEditor instead */
-        return;
+    /* todo: use bit flag for desired sub-systems */
+    if(g_launcher.mode != PORK_MODE_LIMITED) {
+        InitClient();
+        InitServer();
+        InitPlayers();
+        InitModels();
+        InitMaps();
     }
-
-    if(g_launcher.SetWindowTitle) {
-        g_launcher.SetWindowTitle(g_state.mod_name);
-    }
-
-    InitClient();
-    InitServer();
-
-    InitPlayers();
-
-    InitModels();
-    InitMaps();
 }
 
 void InitPorkEditor(void) {

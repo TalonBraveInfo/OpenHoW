@@ -28,8 +28,8 @@
 #define PORK_LOG                "debug"
 #define PORK_EDITOR_LOG         "editor"
 
-#define PORK_MAJOR_VERSION  0
-#define PORK_MINOR_VERSION  1
+#define ENGINE_MAJOR_VERSION  0
+#define ENGINE_MINOR_VERSION  1
 
 //#include "pork_classes.h"
 
@@ -53,6 +53,8 @@ enum {
     PORK_LOG_LAUNCHER_ERROR,
 
     PORK_LOG_DEBUG,
+
+    MAX_PORK_LOGS
 };
 
 #define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
@@ -103,18 +105,18 @@ PL_EXTERN_C_END
 
 /************************************************/
 
-enum {
+enum MBoxWarningLevel {
     PORK_MBOX_INFORMATION,
     PORK_MBOX_WARNING,
     PORK_MBOX_ERROR,
 };
 
-enum {
+enum LaunchMode {
     PORK_MODE_DEFAULT,
-    PORK_MODE_EDITOR,
+    PORK_MODE_LIMITED,
 };
 
-typedef struct PorkLauncherInterface {
+typedef struct EngineLauncherInterface {
     unsigned int(*GetTicks)(void);
 
     void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
@@ -125,7 +127,28 @@ typedef struct PorkLauncherInterface {
     void(*ShutdownLauncher)(void);
 
     unsigned int mode;
-} PorkLauncherInterface;
+} EngineLauncherInterface;
+
+inline static unsigned int NULLGetTicks(void) { return 0; }
+
+inline static void NULLDisplayMessageBox(unsigned int level, const char *msg, ...) {}
+inline static void NULLDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {}
+inline static void NULLSetWindowTitle(const char *title) {}
+inline static void NULLSwapWindow(void) {}
+inline static void NULLShutdownLauncher(void) {}
+
+/* use this first before passing EngineLauncherInterface to engine */
+inline static void InitNULLEngineInterface(EngineLauncherInterface *interface) {
+    interface->DisplayMessageBox    = NULLDisplayMessageBox;
+    interface->ShutdownLauncher     = NULLShutdownLauncher;
+    interface->SetWindowTitle       = NULLSetWindowTitle;
+    interface->DisplayWindow        = NULLDisplayWindow;
+    interface->SwapWindow           = NULLSwapWindow;
+    interface->GetTicks             = NULLGetTicks;
+    interface->mode                 = 0;
+}
+
+/************************************************/
 
 // todo, the below is a basic outline for API
 
@@ -133,7 +156,7 @@ PL_EXTERN_C
 
 /* pork_engine.c */
 
-PL_EXTERN void InitPork(int argc, char **argv, PorkLauncherInterface interface);
+PL_EXTERN void InitPork(int argc, char **argv, EngineLauncherInterface interface);
 PL_EXTERN void InitPorkEditor(void);
 PL_EXTERN void ShutdownPork(void);
 

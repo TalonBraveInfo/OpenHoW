@@ -357,14 +357,17 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
 /************************************************************/
 
 void InitDisplay(void) {
-    if(g_launcher.DisplayWindow) {
-        g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
-    }
+    g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
+    g_launcher.SetWindowTitle(g_state.mod_name);
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
     InitShaders();
+
+    // todo, grab cvars
+    g_state.display_width = STARTUP_WIDTH;
+    g_state.display_height = STARTUP_HEIGHT;
 
     //////////////////////////////////////////////////////////
 

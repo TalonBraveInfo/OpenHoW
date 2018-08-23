@@ -255,7 +255,7 @@ void EditorFrame::OnExit(wxCommandEvent &event) {
 void EditorFrame::OnAbout(wxCommandEvent &event) {
     wxAboutDialogInfo info;
     info.SetName(_(PORK_EDITOR_TITLE));
-    info.SetVersion(_(PORK_MAJOR_VERSION + "." + PORK_MINOR_VERSION));
+    info.SetVersion(_(ENGINE_MAJOR_VERSION + "." + ENGINE_MINOR_VERSION));
     info.SetWebSite("http://talonbrave.info/", _("TalonBrave.info"));
     info.SetDescription("Editor for OpenHoW");
 
@@ -388,13 +388,13 @@ EditorFrame *EditorApp::main_frame_ = nullptr;
 bool EditorApp::OnInit() {
     plInitialize(argc, argv);
 
-    PorkLauncherInterface interface{};
-    memset(&interface, 0, sizeof(PorkLauncherInterface));
+    EngineLauncherInterface interface{};
+    memset(&interface, 0, sizeof(EngineLauncherInterface));
     interface.GetTicks          = EditorApp::GetTicks;
     interface.DisplayMessageBox = EditorApp::DisplayMessageBox;
     interface.ShutdownLauncher  = EditorApp::ShutdownLauncher;
     interface.SwapWindow        = EditorApp::SwapWindow;
-    interface.mode              = PORK_MODE_EDITOR;
+    interface.mode              = PORK_MODE_LIMITED;
 
     plGetApplicationDataDirectory(PORK_APP_NAME, app_path_, PL_SYSTEM_MAX_PATH);
 

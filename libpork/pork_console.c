@@ -232,7 +232,6 @@ void InitConsole(void) {
     void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]);
 
     plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
-    plRegisterConsoleCommand("convert", ConvertImageCallback, "Convert TIM textures to PNG");
     plRegisterConsoleCommand("set", SetCommand, "Sets state for given target");
     plRegisterConsoleCommand("get", GetCommand, "Gets state for given target");
     plRegisterConsoleCommand("add", AddCommand, "Adds the given target");

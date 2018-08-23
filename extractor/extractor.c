@@ -22,16 +22,46 @@
 
 #include <pork/pork.h>
 
-#define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
-#define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
-#define Error(...)    plLogMessage(2, __VA_ARGS__)
+#define LogInfo(...)  plLogMessage(MAX_PORK_LOGS, __VA_ARGS__)
+#define LogWarn(...)  plLogMessage(MAX_PORK_LOGS + 1, __VA_ARGS__)
+#define Error(...)    plLogMessage(MAX_PORK_LOGS + 2, __VA_ARGS__)
 
 typedef struct CopyPath {
     const char *input, *output;
 } CopyPath;
 
 CopyPath pc_music_paths[]={
-        {},
+        {"/MUSIC/Track02.ogg", "/music/"},
+        {"/MUSIC/Track03.ogg", "/music/"},
+        {"/MUSIC/Track04.ogg", "/music/"},
+        {"/MUSIC/Track05.ogg", "/music/"},
+        {"/MUSIC/Track06.ogg", "/music/"},
+        {"/MUSIC/Track07.ogg", "/music/"},
+        {"/MUSIC/Track08.ogg", "/music/"},
+        {"/MUSIC/Track09.ogg", "/music/"},
+        {"/MUSIC/Track10.ogg", "/music/"},
+        {"/MUSIC/Track11.ogg", "/music/"},
+        {"/MUSIC/Track12.ogg", "/music/"},
+        {"/MUSIC/Track13.ogg", "/music/"},
+        {"/MUSIC/Track14.ogg", "/music/"},
+        {"/MUSIC/Track15.ogg", "/music/"},
+        {"/MUSIC/Track16.ogg", "/music/"},
+        {"/MUSIC/Track17.ogg", "/music/"},
+        {"/MUSIC/Track18.ogg", "/music/"},
+        {"/MUSIC/Track19.ogg", "/music/"},
+        {"/MUSIC/Track20.ogg", "/music/"},
+        {"/MUSIC/Track21.ogg", "/music/"},
+        {"/MUSIC/Track22.ogg", "/music/"},
+        {"/MUSIC/Track23.ogg", "/music/"},
+        {"/MUSIC/Track24.ogg", "/music/"},
+        {"/MUSIC/Track25.ogg", "/music/"},
+        {"/MUSIC/Track26.ogg", "/music/"},
+        {"/MUSIC/Track27.ogg", "/music/"},
+        {"/MUSIC/Track28.ogg", "/music/"},
+        {"/MUSIC/Track29.ogg", "/music/"},
+        {"/MUSIC/Track30.ogg", "/music/"},
+        {"/MUSIC/Track31.ogg", "/music/"},
+        {"/MUSIC/Track32.ogg", "/music/"},
 };
 
 CopyPath pc_copy_paths[] = {
@@ -862,7 +892,6 @@ enum {
 
 unsigned int CheckGameVersion(const char *path) {
     char fcheck[PL_SYSTEM_MAX_PATH];
-
     snprintf(fcheck, sizeof(fcheck), "%s/system.cnf", path);
     if(plFileExists(fcheck)) {
         LogInfo("detected system.cnf, assuming PSX version\n");
@@ -895,6 +924,7 @@ void ProcessPackagePaths(const char *in, const char *out, const CopyPath *paths,
 
         char input_path[PL_SYSTEM_MAX_PATH];
         snprintf(input_path, sizeof(input_path), "%s%s", in, paths[i].input);
+        LogInfo("copying %s to %s\n", input_path, output_path);
         const char *ext = plGetFileExtension(input_path);
         if(pl_strncasecmp(ext, "PTG", 3) == 0) {
             ExtractPTGPackage(input_path, output_path);
@@ -918,6 +948,7 @@ void ProcessCopyPaths(const char *in, const char *out, const CopyPath *paths, un
 
         char input_path[PL_SYSTEM_MAX_PATH];
         snprintf(input_path, sizeof(input_path), "%s%s", in, paths[i].input);
+        LogInfo("copying %s to %s\n", input_path, output_path);
         plCopyFile(input_path, output_path);
     }
 }
@@ -925,7 +956,7 @@ void ProcessCopyPaths(const char *in, const char *out, const CopyPath *paths, un
 int main(int argc, char **argv) {
     if(argc < 1) {
         printf("invalid number of arguments ...\n"
-               "  extractor <game_path> [out_path]\n");
+               "  extractor <game_path> ~<out_path>\n");
         return EXIT_SUCCESS;
     }
 
@@ -940,28 +971,40 @@ int main(int argc, char **argv) {
     snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/extraction", app_dir);
     plSetupLogOutput(log_path);
 
-    plSetupLogLevel(0, "info", PLColour(0, 255, 0, 255), true);
-    plSetupLogLevel(1, "warning", PLColour(255, 255, 0, 255), true);
-    plSetupLogLevel(2, "error", PLColour(255, 0, 0, 255), true);
+    /* initialize our interface with the engine */
 
-    if(argv[2] == NULL || argv[2][0] == '\0') {
+    EngineLauncherInterface interface;
+    InitNULLEngineInterface(&interface);
+
+    interface.mode = PORK_MODE_LIMITED;
+
+    InitPork(argc, argv, interface);
+
+    /* set our logs up */
+
+    plSetupLogLevel(MAX_PORK_LOGS, "info", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(MAX_PORK_LOGS + 1, "warning", PLColour(255, 255, 0, 255), true);
+    plSetupLogLevel(MAX_PORK_LOGS + 2, "error", PLColour(255, 0, 0, 255), true);
+
+    /* now deal with any arguments */
+
+    char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    for(int i = 1; i < argc; ++i) {
+        if(argv[i][0] != '-') {
+            strncpy(input_path, argv[i], sizeof(input_path));
+            break;
+        }
+    }
+
+    if(input_path[0] == '\0') {
         Error("invalid game path, aborting!\n");
         return EXIT_FAILURE;
     }
 
-    char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    strncpy(input_path, argv[2], sizeof(input_path));
-
-    char output_path[PL_SYSTEM_MAX_PATH];
-    if(argc > 2 && argv[3] != NULL && argv[3][0] != '\0') {
-        strncpy(output_path, argv[3], sizeof(output_path));
-    } else {
-        snprintf(output_path, sizeof(output_path), "./");
-    }
-
-    LogInfo("output path: %s\n"
+    LogInfo("\n"
+            "output path: %s\n"
             "input path:  %s\n",
-            output_path, input_path);
+            GetBasePath(), input_path);
 
     /* ensure it's a valid version - original CD version requires
      * us to extract audio from the CD while GOG and Steam versions
@@ -985,22 +1028,22 @@ int main(int argc, char **argv) {
         }
 
         case VERSION_ENG_PC: {
-            ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
-            ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
+            ProcessPackagePaths(input_path, GetBasePath(), pc_package_paths, plArrayElements(pc_package_paths));
+            ProcessCopyPaths(input_path, GetBasePath(), pc_copy_paths, plArrayElements(pc_copy_paths));
             // todo: rip music from CD
         } break;
 
         case VERSION_ENG_PC_DIGITAL: {
-            ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
-            ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
-            ProcessCopyPaths(input_path, output_path, pc_music_paths, plArrayElements(pc_music_paths));
+            ProcessPackagePaths(input_path, GetBasePath(), pc_package_paths, plArrayElements(pc_package_paths));
+            ProcessCopyPaths(input_path, GetBasePath(), pc_copy_paths, plArrayElements(pc_copy_paths));
+            ProcessCopyPaths(input_path, GetBasePath(), pc_music_paths, plArrayElements(pc_music_paths));
         } break;
     }
 
     MergeTextureTargets();
 
     /* convert the remaining TIM textures to PNG */
-    plScanDirectory(output_path, "tim", ConvertImageToPNG, true);
+    plScanDirectory(GetBasePath(), "tim", ConvertImageToPNG, true);
 
     LogInfo("complete\n");
     return EXIT_SUCCESS;

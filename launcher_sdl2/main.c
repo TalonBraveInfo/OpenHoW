@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <SDL2/SDL.h>
 #include <PL/platform_filesystem.h>
 
@@ -304,8 +305,8 @@ int main(int argc, char **argv) {
 
     SDL_DisableScreenSaver();
 
-    PorkLauncherInterface interface;
-    memset(&interface, 0, sizeof(PorkLauncherInterface));
+    EngineLauncherInterface interface;
+    InitNULLEngineInterface(&interface);
     interface.GetTicks          = IGetTicks;
     interface.DisplayMessageBox = IDisplayMessageBox;
     interface.DisplayWindow     = IDisplayWindow;

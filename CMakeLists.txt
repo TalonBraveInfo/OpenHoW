@@ -51,6 +51,7 @@ add_subdirectory(platform/platform)
 add_subdirectory(libpork)
 # add_subdirectory(setup)
 add_subdirectory(editor)
+add_subdirectory(extractor)
 add_subdirectory(launcher_sdl2)
 
 # Tools - todo, add build flag for whether we want these or not
