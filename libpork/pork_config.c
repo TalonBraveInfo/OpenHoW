@@ -90,10 +90,10 @@ void InitConfig(void) {
 
     char out[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(PORK_APP_NAME, out, PL_SYSTEM_MAX_PATH);
-    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config.pcf", out);
+    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config.cfg", out);
 
     char default_path[PL_SYSTEM_MAX_PATH];  /* default config path */
-    snprintf(default_path, sizeof(default_path), "%s", pork_find("default.pcf"));
+    snprintf(default_path, sizeof(default_path), "%s", pork_find("default.cfg"));
 
     if(plFileExists(g_state.config_path)) {
         LogInfo("found \"%s\", parsing...\n", g_state.config_path);
