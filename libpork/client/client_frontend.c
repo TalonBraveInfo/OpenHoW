@@ -230,6 +230,8 @@ void SimulateFrontend(void) {
 char loading_description[256];
 uint8_t loading_progress = 0;
 
+#define Redraw()   PreDrawPork(0);DrawPork();PostDrawPork()
+
 void SetLoadingBackground(const char *name) {
     if(fe_background != NULL) {
         plDeleteTexture(fe_background, true);
@@ -242,10 +244,7 @@ void SetLoadingBackground(const char *name) {
     }
 
     fe_background = LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
-
-    PreDrawPork(0);
-    DrawPork();
-    PostDrawPork();
+    Redraw();
 }
 
 void SetLoadingDescription(const char *description) {
@@ -254,6 +253,7 @@ void SetLoadingDescription(const char *description) {
     }
 
     snprintf(loading_description, sizeof(loading_description), "%s ...", description);
+    Redraw();
 }
 
 void SetLoadingProgress(uint8_t progress) {
@@ -261,14 +261,10 @@ void SetLoadingProgress(uint8_t progress) {
         return;
     }
 
-    if(progress > 100) {
-        progress = 100;
-    }
-
+    if(progress > 100) progress = 100;
     loading_progress = progress;
-    PreDrawPork(0);
-    DrawPork();
-    PostDrawPork();
+
+    Redraw();
 }
 
 uint8_t GetLoadingProgress(void) {
