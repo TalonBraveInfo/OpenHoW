@@ -73,7 +73,13 @@ void InitPork(int argc, char **argv, EngineLauncherInterface interface) {
     plSetupLogLevel(PORK_LOG_ENGINE, "engine", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_ENGINE_WARNING, "engine-warning", PLColour(255, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_ENGINE_ERROR, "engine-error", PLColour(255, 0, 0, 255), true);
-    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), true); // todo, disable by default
+    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255),
+#ifdef _DEBUG
+        true
+#else
+        false
+#endif
+    );
 
     LogInfo("initializing engine (PORK %d.%d)...\n", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
 
@@ -81,74 +87,43 @@ void InitPork(int argc, char **argv, EngineLauncherInterface interface) {
 
     RegisterFormatInterfaces();
 
-    // todo, disable these by default
-
     InitConsole();
 
-    for(int i = 1; i < argc; ++i) {
-#if 0 /* moved out into seperate application */
-        if(pl_strncasecmp("-extract", argv[i], 8) == 0) {
-            const char *parm = argv[i + 1];
-            if(parm == NULL || parm[0] == '\0') {
-                continue;
-            } ++i;
+    // check for any command line arguments
 
-            ExtractGameData(parm);
-        } else
-#endif
-        if(pl_strncasecmp("-window", argv[i], 7) == 0) {
-            g_state.display_fullscreen = false;
-        } else if(pl_strncasecmp("-width", argv[i], 6) == 0) {
-            const char *parm = argv[i + 1];
-            if(parm == NULL || parm[0] == '\0') {
-                continue;
-            } ++i;
+    const char *var;
+    if((var = plGetCommandLineArgumentValue("-path")) != NULL) {
+        if(!plPathExists(var)) {
+            LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
+        }
 
-            unsigned int width = (unsigned int)strtoul(parm, NULL, 0);
-            if(width == 0) {
-                LogWarn("invalid width passed, ignoring!\n");
-                continue;
-            }
-            g_state.display_width = width;
-        } else if(pl_strncasecmp("-path", argv[i], 5) == 0) {
-            const char *parm = argv[i + 1];
-            if(parm == NULL || parm[0] == '\0') {
-                continue;
-            } ++i;
-
-            if(!plPathExists(argv[i])) {
-                LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
-            }
-
-            plSetConsoleVariable(cv_base_path, argv[i]);
-        } else if(pl_strncasecmp("-mod", argv[i], 4) == 0) {
-            const char *parm = argv[i + 1];
-            if(plIsEmptyString(parm)) {
-                continue;
-            } ++i;
-
-            plSetConsoleVariable(cv_mod_path, argv[i]);
-        } else if(pl_strncasecmp("-height", argv[i], 7) == 0) {
-            const char *parm = argv[i + 1];
-            if(parm == NULL || parm[0] == '\0') {
-                continue;
-            } ++i;
-
-            unsigned int height = (unsigned int)strtoul(parm, NULL, 0);
-            if(height == 0) {
-                LogWarn("invalid height passed, ignoring!\n");
-                continue;
-            }
-            g_state.display_height = height;
-        } else if(pl_strncasecmp("-dedicated", argv[i], 10) == 0) {
-            g_state.is_dedicated = true;
-        } else if(pl_strncasecmp("+", argv[i], 1) == 0) {
-            plParseConsoleString(argv[i] + 1);
-            ++i;
+        plSetConsoleVariable(cv_base_path, var);
+    }
+    if((var = plGetCommandLineArgumentValue("-mod")) != NULL) {
+        // ensure the mod actually exists before we proceed
+        char mod_path[PL_SYSTEM_MAX_PATH];
+        snprintf(mod_path, sizeof(mod_path), "%s/mods/%s/", cv_base_path->s_value, var);
+        if(plPathExists(mod_path)) {
+            plSetConsoleVariable(cv_mod_path, var);
         } else {
-            LogWarn("unknown/invalid command line argument, %s!\n", argv[i]);
+            LogWarn("invalid mod path, \"%s\", ignoring!\n", mod_path);
         }
     }
+
+    if(plHasCommandLineArgument("-dedicated")) {
+        g_state.is_dedicated = true;
+        g_state.is_host = true;
+    }
+
+    // deal with any console vars provided (todo: pl should deal with this?)
+    for(int i = 1; i < argc; ++i) {
+        if(pl_strncasecmp("+", argv[i], 1) == 0) {
+            plParseConsoleString(argv[i] + 1);
+            ++i;
+            // todo: deal with other var arguments ... :(
+        }
+    }
+
     LogInfo("base path: %s\n", GetBasePath());
     LogInfo("mod path: %s%s\n", GetBasePath(), GetModPath());
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
@@ -156,8 +131,6 @@ void InitPork(int argc, char **argv, EngineLauncherInterface interface) {
     InitScripting();
 
     /* load in the manifest */
-
-    LogDebug("reading manifest...\n");
 
     char lang_path[PL_SYSTEM_MAX_PATH];
     strncpy(lang_path, pork_find("manifest.json"), sizeof(lang_path));

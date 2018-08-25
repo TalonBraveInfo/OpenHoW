@@ -58,7 +58,7 @@ void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
 }
 
-void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
+void IDisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -108,6 +108,25 @@ void IDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {
 
 void ISetWindowTitle(const char *title) {
     SDL_SetWindowTitle(window, title);
+}
+
+bool ISetWindowSize(int *width, int *height, bool fs) {
+    SDL_SetWindowSize(window, *width, *height);
+    SDL_SetWindowFullscreen(window, (fs ? SDL_WINDOW_FULLSCREEN : 0));
+
+    // ensure that the window updated successfully
+    SDL_DisplayMode mode;
+    if(SDL_GetWindowDisplayMode(window, &mode) == 0) {
+        if(mode.w != *width || mode.h != *height) {
+            if(mode.w < 0) mode.w = 0;
+            if(mode.h < 0) mode.h = 0;
+            *width = mode.w;
+            *height = mode.h;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void ISwapDisplay(void) {
@@ -271,12 +290,9 @@ void PollEvents(void) {
 
             case SDL_WINDOWEVENT: {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    unsigned int flags = SDL_GetWindowFlags(window);
-                    UpdatePorkViewport((bool) (flags & SDL_WINDOW_FULLSCREEN),
-                                       (unsigned int) event.window.data1,
-                                       (unsigned int) event.window.data2);
+                    UpdatePorkViewport((unsigned int) event.window.data1, (unsigned int) event.window.data2);
                 }
-            }
+            } break;
         }
     }
 }
@@ -313,6 +329,7 @@ int main(int argc, char **argv) {
     interface.SwapWindow        = ISwapDisplay;
     interface.ShutdownLauncher  = IShutdownLauncher;
     interface.SetWindowTitle    = ISetWindowTitle;
+    interface.SetWindowSize     = ISetWindowSize;
 
     int num_joysticks = SDL_NumJoysticks();
     if(num_joysticks < 0) {

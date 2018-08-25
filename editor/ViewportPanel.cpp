@@ -78,8 +78,7 @@ void ViewportPanel::OnTimer(wxTimerEvent &event) {
     cur_context->SetCurrent(*canvas_);
 
     const wxSize client_size = GetClientSize();
-    UpdatePorkViewport(false,
-                       static_cast<unsigned int>(client_size.GetWidth()),
+    UpdatePorkViewport(static_cast<unsigned int>(client_size.GetWidth()),
                        static_cast<unsigned int>(client_size.GetHeight()));
     SetPorkEditorContext(context_id_);
 

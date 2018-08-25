@@ -45,11 +45,13 @@ const char *pork_find(const char *path) {
     if(!plIsEmptyString(GetModPath())) {
         snprintf(n_path, sizeof(n_path), "%smods/%s/%s", GetBasePath(), GetModPath(), path);
         if(plFileExists(n_path)) {
+            LogDebug("found \"%s\"\n", n_path);
             return n_path;
         }
     }
 
     snprintf(n_path, sizeof(n_path), "%s%s", GetBasePath(), path);
+    LogDebug("found \"%s\"\n", n_path);
     return n_path;
 }
 
@@ -58,10 +60,12 @@ const char *pork_scan(const char *path, const char **preference) {
     while(*preference != NULL) {
         snprintf(find, sizeof(find), "%s.%s", path, *preference);
         if(plFileExists(find)) {
+            LogDebug("found \"%s\"\n", find);
             return find;
         } preference++;
     }
 
+    LogDebug("failed to find \"%s\"\n", path);
     return "";
 }
 
@@ -74,7 +78,8 @@ const char *pork_find2(const char *path, const char **preference) {
         snprintf(base_path, sizeof(base_path), "%smods/%s/%s", GetBasePath(), GetModPath(), path);
         strncpy(out, pork_scan(base_path, preference), sizeof(out));
         if(!plIsEmptyString(out)) {
-            return &out[0];
+            LogDebug("found \"%s\"\n", out);
+            return out;
         }
     }
 
@@ -84,7 +89,8 @@ const char *pork_find2(const char *path, const char **preference) {
         Error("failed to find \"%s\"!\n", path);
     }
 
-    return &out[0];
+    LogDebug("found \"%s\"\n", out);
+    return out;
 }
 
 /*

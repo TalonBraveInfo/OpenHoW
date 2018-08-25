@@ -18,6 +18,7 @@
 
 void InitDisplay(void);
 void ShutdownDisplay(void);
+void UpdateDisplay(void);
 
 void ClearTextureIndex(unsigned int id);
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);

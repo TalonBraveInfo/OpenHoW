@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
 
@@ -107,13 +108,13 @@ void DrawTextureCache(unsigned int id) {
     pork_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     if(index->num_textures > 0) {
-        unsigned int w = index->texture->w;
-        unsigned int h = index->texture->h;
-        if (w > g_state.display_width) {
-            w = g_state.display_width;
+        int w = index->texture->w;
+        int h = index->texture->h;
+        if (w > cv_display_width->i_value) {
+            w = (unsigned int) cv_display_width->i_value;
         }
-        if (h > g_state.display_height) {
-            h = g_state.display_height;
+        if (h > cv_display_height->i_value) {
+            h = (unsigned int) cv_display_height->i_value;
         }
 
         plDrawTexturedRectangle(0, 0, w, h, index->texture);
@@ -356,18 +357,72 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
 
 /************************************************************/
 
+#define MIN_DISPLAY_WIDTH   320
+#define MIN_DISPLAY_HEIGHT  200
+
+/**
+ * Update display to match the current settings.
+ */
+void UpdateDisplay(void) {
+    char buf[4];
+
+    // bound check both the width and height to lowest supported width and height
+    if(cv_display_width->i_value < MIN_DISPLAY_WIDTH) {
+        plSetConsoleVariable(cv_display_width, pl_itoa(MIN_DISPLAY_WIDTH, buf, 4, 10));
+    }
+    if(cv_display_height->i_value < MIN_DISPLAY_HEIGHT) {
+        plSetConsoleVariable(cv_display_height, pl_itoa(MIN_DISPLAY_HEIGHT, buf, 4, 10));
+    }
+
+    // attempt to set the new display size, otherwise update cvars to match
+    int w = cv_display_width->i_value;
+    int h = cv_display_height->i_value;
+    if(!g_launcher.SetWindowSize(&w, &h, false)) {
+        LogWarn("failed to set display size to %dx%d!\n", cv_display_width->i_value, cv_display_height->i_value);
+        LogInfo("display set to %dx%d\n", w, h);
+
+        // ... not sure if we'll force the engine to only render a specific display size ...
+        if(w < MIN_DISPLAY_WIDTH) w = MIN_DISPLAY_WIDTH;
+        if(h < MIN_DISPLAY_HEIGHT) h = MIN_DISPLAY_HEIGHT;
+
+        plSetConsoleVariable(cv_display_width, pl_itoa(w, buf, 4, 10));
+        plSetConsoleVariable(cv_display_height, pl_itoa(w, buf, 4, 10));
+    } else {
+        LogInfo("display set to %dx%d\n", w, h);
+    }
+
+    UpdatePorkViewport(cv_display_width->i_value, cv_display_height->i_value);
+}
+
 void InitDisplay(void) {
-    g_launcher.DisplayWindow(g_state.display_fullscreen, g_state.display_width, g_state.display_height);
+    // check the command line for any arguments
+
+    const char *var;
+    if((var = plGetCommandLineArgumentValue("-width")) != NULL) {
+        plSetConsoleVariable(cv_display_width, var);
+    }
+    if((var = plGetCommandLineArgumentValue("-height")) != NULL) {
+        plSetConsoleVariable(cv_display_height, var);
+    }
+
+    if(plHasCommandLineArgument("-window")) {
+        plSetConsoleVariable(cv_display_fullscreen, "false");
+    } else if(plHasCommandLineArgument("-fullscreen")) {
+        plSetConsoleVariable(cv_display_fullscreen, "true");
+    }
+
+    // now create the window and update the display
+
+    g_launcher.DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
     g_launcher.SetWindowTitle(g_state.mod_name);
 
+    UpdateDisplay();
+
+    // platform library graphics subsystem can init now...
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
     InitShaders();
-
-    // todo, grab cvars
-    g_state.display_width = STARTUP_WIDTH;
-    g_state.display_height = STARTUP_HEIGHT;
 
     //////////////////////////////////////////////////////////
 
@@ -378,10 +433,10 @@ void InitDisplay(void) {
         Error("failed to create camera, aborting!\n%s\n", plGetError());
     }
     g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.camera->bounds      = (PLAABB){{-20, -20},{20, 20}};
+    g_state.camera->bounds      = (PLAABB){{-20, -20},{20, 20}}; // applying so we can handle clipping later
     g_state.camera->fov         = 90;
-    g_state.camera->viewport.w  = g_state.display_width;
-    g_state.camera->viewport.h  = g_state.display_height;
+    g_state.camera->viewport.w  = cv_display_width->i_value;
+    g_state.camera->viewport.h  = cv_display_height->i_value;
 
     g_state.ui_camera = plCreateCamera();
     if(g_state.ui_camera == NULL) {
@@ -391,8 +446,8 @@ void InitDisplay(void) {
     g_state.ui_camera->fov          = 90;
     g_state.ui_camera->near         = 0;
     g_state.ui_camera->far          = 1000;
-    g_state.ui_camera->viewport.w   = g_state.display_width;
-    g_state.ui_camera->viewport.h   = g_state.display_height;
+    g_state.ui_camera->viewport.w   = cv_display_width->i_value;
+    g_state.ui_camera->viewport.h   = cv_display_height->i_value;
     g_state.ui_camera->viewport.r_w = 640;
     g_state.ui_camera->viewport.r_h = 480;
 
@@ -420,7 +475,9 @@ void ShutdownDisplay(void) {
 }
 
 /* shared function */
-void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height) {
+void UpdatePorkViewport(int width, int height) {
+    ResetInputStates();
+
     if(g_state.camera == NULL || g_state.ui_camera == NULL) {
         // display probably hasn't been initialised
         return;
@@ -428,8 +485,6 @@ void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height
 
     g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
-
-    ResetInputStates();
 }
 
 /************************************************************/
@@ -464,7 +519,7 @@ void DrawDebugOverlay(void) {
         switch (cv_debug_input->i_value) {
             default: {
                 DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "KEYBOARD STATE");
-                unsigned int x = 20, y = 50;
+                int x = 20, y = 50;
                 for (unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
                     bool status = GetKeyState(i);
                     char key_state[64];

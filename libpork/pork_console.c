@@ -21,6 +21,7 @@
 #include "pork_language.h"
 #include "pork_audio.h"
 
+#include "client/client_display.h"
 #include "client/client_font.h"
 #include "client/client_frontend.h"
 
@@ -175,6 +176,10 @@ void ResetAudioCommand(unsigned int argc, char *argv[]) {
     InitAudio();
 }
 
+void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
+    UpdateDisplay();
+}
+
 void QuitCommand(unsigned int argc, char *argv[]) {
     g_launcher.ShutdownLauncher();
 }
@@ -210,6 +215,9 @@ PLConsoleVariable *cv_base_path = NULL;
 PLConsoleVariable *cv_mod_path = NULL;
 
 PLConsoleVariable *cv_display_texture_cache = NULL;
+PLConsoleVariable *cv_display_width = NULL;
+PLConsoleVariable *cv_display_height = NULL;
+PLConsoleVariable *cv_display_fullscreen = NULL;
 
 void InitConsole(void) {
 #define rvar(var, ...) (var) = plRegisterConsoleVariable(plStringify((var)), __VA_ARGS__)
@@ -225,6 +233,9 @@ void InitConsole(void) {
     rvar(cv_mod_path, "", pl_string_var, NULL, "");
     rvar(cv_camera_mode, "0", pl_int_var, NULL, "0 = default, 1 = debug");
     rvar(cv_display_texture_cache, "-1", pl_int_var, NULL, "");
+    rvar(cv_display_width, "1024", pl_int_var, NULL, "");
+    rvar(cv_display_height, "768", pl_int_var, NULL, "");
+    rvar(cv_display_fullscreen, "true", pl_bool_var, NULL, "");
 
     plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 
@@ -239,6 +250,7 @@ void InitConsole(void) {
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
     plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
+    plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");
     plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
 }
 

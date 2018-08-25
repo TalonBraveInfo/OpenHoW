@@ -32,9 +32,6 @@
     exit(EXIT_FAILURE);                                         \
 }
 
-#define STARTUP_WIDTH  1024
-#define STARTUP_HEIGHT 768
-
 ///////////////////////////////////////////////////
 
 // Functions provided by the host application
@@ -54,11 +51,6 @@ struct {
     /* server / client logic */
     bool is_host;
     bool is_dedicated;
-
-    // viewport
-    bool display_fullscreen;
-    unsigned int display_width;
-    unsigned int display_height;
 
     unsigned int sim_ticks;
     unsigned int last_sim_tick;

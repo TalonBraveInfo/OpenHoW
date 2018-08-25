@@ -120,9 +120,11 @@ typedef struct EngineLauncherInterface {
     unsigned int(*GetTicks)(void);
 
     void(*DisplayMessageBox)(unsigned int level, const char *msg, ...);
-    void(*DisplayWindow)(bool fullscreen, unsigned int width, unsigned int height);
+
+    void(*DisplayWindow)(bool fullscreen, int width, int height);
     void(*SwapWindow)(void);
     void(*SetWindowTitle)(const char *title);
+    bool(*SetWindowSize)(int *width, int *height, bool fs);
 
     void(*ShutdownLauncher)(void);
 
@@ -132,8 +134,9 @@ typedef struct EngineLauncherInterface {
 inline static unsigned int NULLGetTicks(void) { return 0; }
 
 inline static void NULLDisplayMessageBox(unsigned int level, const char *msg, ...) {}
-inline static void NULLDisplayWindow(bool fullscreen, unsigned int width, unsigned int height) {}
+inline static void NULLDisplayWindow(bool fullscreen, int width, int height) {}
 inline static void NULLSetWindowTitle(const char *title) {}
+inline static bool NULLSetWindowSize(int *width, int *height, bool fs) { return false; }
 inline static void NULLSwapWindow(void) {}
 inline static void NULLShutdownLauncher(void) {}
 
@@ -142,6 +145,7 @@ inline static void InitNULLEngineInterface(EngineLauncherInterface *interface) {
     interface->DisplayMessageBox    = NULLDisplayMessageBox;
     interface->ShutdownLauncher     = NULLShutdownLauncher;
     interface->SetWindowTitle       = NULLSetWindowTitle;
+    interface->SetWindowSize        = NULLSetWindowSize;
     interface->DisplayWindow        = NULLDisplayWindow;
     interface->SwapWindow           = NULLSwapWindow;
     interface->GetTicks             = NULLGetTicks;
@@ -258,7 +262,7 @@ PL_EXTERN void SetPorkMouseState(int x, int y, int button, bool status);
 
 /* DISPLAY  */
 
-PL_EXTERN void UpdatePorkViewport(bool fullscreen, unsigned int width, unsigned int height);
+PL_EXTERN void UpdatePorkViewport(int width, int height);
 
 PL_EXTERN_C_END
 
@@ -336,24 +340,26 @@ enum ActorEvent {
 };
 
 // todo: move into items.h
-#define ITEM_WEAPON_TROTTER             1
-#define ITEM_WEAPON_KNIFE               2
-#define ITEM_WEAPON_BAYONET             3
-#define ITEM_WEAPON_SWORD               4
-#define ITEM_WEAPON_CATTLEPROD          5
-#define ITEM_WEAPON_PISTOL              6
-#define ITEM_WEAPON_RIFLE               7
-#define ITEM_WEAPON_RIFLE_BURST         8
-#define ITEM_WEAPON_MACHINE_GUN         9
-#define ITEM_WEAPON_HMG                 10
-#define ITEM_WEAPON_SNIPER_RIFLE        11
-#define ITEM_WEAPON_SHOTGUN             12
-#define ITEM_WEAPON_FLAMETHROWER        13
-#define ITEM_WEAPON_ROCKET_LAUNCHER     14
-#define ITEM_WEAPON_GUIDED_MISSILE      15
 
 enum ItemIdent {
+    /* ...original... */
+    ITEM_NONE,
 
+    ITEM_WEAPON_TROTTER,
+    ITEM_WEAPON_KNIFE,
+    ITEM_WEAPON_BAYONET,
+    ITEM_WEAPON_SWORD,
+    ITEM_WEAPON_CATTLEPROD,
+    ITEM_WEAPON_PISTOL,
+    ITEM_WEAPON_RIFLE,
+    ITEM_WEAPON_RIFLE_BURST,
+    ITEM_WEAPON_MACHINE_GUN,
+    ITEM_WEAPON_HMG,
+    ITEM_WEAPON_SNIPER_RIFLE,
+    ITEM_WEAPON_SHOTGUN,
+    ITEM_WEAPON_FLAMETHROWER,
+    ITEM_WEAPON_ROCKET_LAUNCHER,
+    ITEM_WEAPON_GUIDED_MISSILE,
     ITEM_MEDICINE_DART = 0x10,
     ITEM_TRANQ = 0x11,
     ITEM_GRENADE = 0x12,
@@ -420,10 +426,12 @@ enum ItemIdent {
 
     //Missing 0x48
 
-    ITEM_RANDOM = 73,
-    ITEM_HEALTH = 255,
+    ITEM_RANDOM = 0x49,
+    ITEM_HEALTH = 0xFF,
 
-    // Any custom types go here!!!
+    /* ...any new types below... */
+
+    MAX_ITEM_TYPES
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

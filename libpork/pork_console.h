@@ -29,6 +29,9 @@ extern PLConsoleVariable *cv_base_path;
 extern PLConsoleVariable *cv_mod_path;
 
 extern PLConsoleVariable *cv_display_texture_cache;
+extern PLConsoleVariable *cv_display_width;
+extern PLConsoleVariable *cv_display_height;
+extern PLConsoleVariable *cv_display_fullscreen;
 
 /*****************************************************/
 

@@ -730,7 +730,7 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
     char sky_path[PL_SYSTEM_MAX_PATH] = { '\0' };
     /* was this even the default in the original!? */
     if(desc->sky[0] != '\0' && desc->sky[0] != ' ') {
-        snprintf(sky_path, sizeof(sky_path), "%s%s1", pork_find("chars/sky/"), desc->sky);
+        snprintf(sky_path, sizeof(sky_path), "%s%s1", pork_find("skys/"), desc->sky);
         if(!plPathExists(sky_path)) {
             LogWarn("failed to find texture path for sky at \"%s\", reverting to default!\n", sky_path);
             sky_path[0] = '\0';
@@ -739,7 +739,7 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
 
     if(sky_path[0] == '\0') {
         LogInfo("no sky specified, using default\n");
-        snprintf(sky_path, sizeof(sky_path), "%s", pork_find("chars/sky/sunny/"));
+        snprintf(sky_path, sizeof(sky_path), "%s", pork_find("skys/sunny/"));
     }
 
     /*
