@@ -84,7 +84,42 @@ CopyPath pc_copy_paths[] = {
         /* frontend */
 
         {"/Language/Tims/Pigbkpc1.BMP", "/fe/"},
-        {"/Language/Tims/loadmult.bmp", "/fe/"},
+
+        /* briefing */
+
+        {"/Language/Tims/Briefing/loadmult.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level0.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1n0.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1n1.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1n2.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1n3.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1n4.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level1n5.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level2.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level3.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level4.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/Level5.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level6.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level7.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level8.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level9.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level10.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level11.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level12.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level13.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level14.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level15.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level16.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level17.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level18.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level19.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level20.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level21.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level22.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level23.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level24.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/level25.bmp", "/fe/briefing/"},
 
         {"/Language/Tims/Title/ANY.bmp", "/fe/title/"},
         {"/Language/Tims/Title/Bruno1.bmp", "/fe/title/"},
@@ -93,7 +128,7 @@ CopyPath pc_copy_paths[] = {
         {"/Language/Tims/Title/title.bmp", "/fe/title/"},
         {"/Language/Tims/Title/titlemon.bmp", "/fe/title/"},
 
-        //{"/Language/Tims/Briefing/loadbar.bmp", "/fe/"},
+        //{"/Language/Tims/Briefing/loadbar.bmp", "/fe/"},  // we're not using this
         //{"/Language/Tims/Debrief/deathm1.bmp", "/fe/debrief/"},
         //{"/Language/Tims/Debrief/deathm2.bmp", "/fe/debrief/"},
         {"/Language/Tims/Debrief/Facepc1.bmp", "/fe/debrief/"},
@@ -396,17 +431,17 @@ CopyPath pc_package_paths[] = {
         {"/Chars/TEAMLARD.MTD",         "/chars/teamlard/"},
 
         /* sky */
-        {"/Chars/SKYDOME.MAD",          "/chars/sky/"},
+        {"/Chars/SKYDOME.MAD",          "/sky/"},
         //{"/Chars/SKYDOME.MTD", "/chars/sky/"},    /* unused ?? */
-        {"/Chars/TOY.MAD",              "/chars/sky/toy/"},
-        {"/Chars/SPACE.MAD",            "/chars/sky/space/"},
-        {"/Chars/SUNSET.MAD",           "/chars/sky/sunset/"},
-        {"/Chars/SUNRISE.MAD",          "/chars/sky/sunrise/"},
-        {"/Chars/SUNNY.MAD",            "/chars/sky/sunny/"},
-        {"/Chars/OMINOUS.MAD",          "/chars/sky/ominous/"},
-        {"/Chars/DESERT.MAD",           "/chars/sky/desert/"},
-        {"/Chars/COLDSKY.MAD",          "/chars/sky/coldsky/"},
-        {"/Chars/NIGHT1.MAD",           "/chars/sky/night1/"},
+        {"/Chars/TOY.MAD",              "/skys/toy/"},
+        {"/Chars/SPACE.MAD",            "/skys/space/"},
+        {"/Chars/SUNSET.MAD",           "/skys/sunset/"},
+        {"/Chars/SUNRISE.MAD",          "/skys/sunrise/"},
+        {"/Chars/SUNNY.MAD",            "/skys/sunny/"},
+        {"/Chars/OMINOUS.MAD",          "/skys/ominous/"},
+        {"/Chars/DESERT.MAD",           "/skys/desert/"},
+        {"/Chars/COLDSKY.MAD",          "/skys/coldsky/"},
+        {"/Chars/NIGHT1.MAD",           "/skys/night1/"},
 
         /* weapons */
         {"/Chars/WEAPONS.MAD",          "/chars/weapons/"},

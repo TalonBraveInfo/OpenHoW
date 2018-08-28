@@ -1,5 +1,7 @@
 {
   "name":"$map_how_camp",
+  "sky":"",
+  "background":"",
   "modes":[
     "sp"
   ]
