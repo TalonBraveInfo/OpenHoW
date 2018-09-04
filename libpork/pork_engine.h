@@ -50,7 +50,6 @@ struct {
 
     /* server / client logic */
     bool is_host;
-    bool is_dedicated;
 
     unsigned int sim_ticks;
     unsigned int last_sim_tick;

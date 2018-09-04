@@ -411,6 +411,13 @@ CopyPath pc_copy_paths[] = {
         {"/Audio/FT_SWIM.wav", "/audio/"},
         {"/Audio/FT_WATER.wav", "/audio/"},
         {"/Audio/FT_WOOD.wav", "/audio/"},
+
+        /* audio:frontend */
+        {"/FESounds/click1.wav", "/audio/fe/"},
+        {"/FESounds/click2.wav", "/audio/fe/"},
+        {"/FESounds/click3.wav", "/audio/fe/"},
+        {"/FESounds/click4.wav", "/audio/fe/"},
+        {"/FESounds/click5.wav", "/audio/fe/"},
 };
 
 CopyPath pc_package_paths[] = {
@@ -431,7 +438,7 @@ CopyPath pc_package_paths[] = {
         {"/Chars/TEAMLARD.MTD",         "/chars/teamlard/"},
 
         /* sky */
-        {"/Chars/SKYDOME.MAD",          "/sky/"},
+        {"/Chars/SKYDOME.MAD",          "/skys/"},
         //{"/Chars/SKYDOME.MTD", "/chars/sky/"},    /* unused ?? */
         {"/Chars/TOY.MAD",              "/skys/toy/"},
         {"/Chars/SPACE.MAD",            "/skys/space/"},

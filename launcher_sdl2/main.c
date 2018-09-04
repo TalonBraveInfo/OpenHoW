@@ -379,7 +379,6 @@ int main(int argc, char **argv) {
     while(IsPorkRunning()) {
         PollEvents();
 
-        // simulate the game at TICKS_PER_SECOND, might need adjusting
         loops = 0;
         while(SDL_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
             SimulatePork();
@@ -395,11 +394,11 @@ int main(int argc, char **argv) {
 
     SDL_StopTextInput();
 
-    ShutdownPork();
-
     if(controller != NULL) {
         SDL_GameControllerClose(controller);
     }
+
+    ShutdownPork();
 
     return EXIT_SUCCESS;
 }

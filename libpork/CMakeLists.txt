@@ -38,6 +38,8 @@ file(
         script/*.c
         script/*.h
 
+        game/*.cpp game/*.c game/*.h
+
         server/*.cpp
         server/*.c
         server/*.h

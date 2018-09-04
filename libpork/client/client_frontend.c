@@ -248,19 +248,11 @@ void SetLoadingBackground(const char *name) {
 }
 
 void SetLoadingDescription(const char *description) {
-    if(g_state.is_dedicated) {
-        return;
-    }
-
     snprintf(loading_description, sizeof(loading_description), "%s ...", description);
     Redraw();
 }
 
 void SetLoadingProgress(uint8_t progress) {
-    if(g_state.is_dedicated) {
-        return;
-    }
-
     if(progress > 100) progress = 100;
     loading_progress = progress;
 

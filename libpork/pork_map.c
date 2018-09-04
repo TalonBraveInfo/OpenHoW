@@ -166,6 +166,10 @@ unsigned int GetMapModeFlag(const char *str) {
         return MAP_MODE_SURVIVAL_STRATEGY;
     } else if(pl_strncasecmp("ge", str, 2) == 0) {
         return MAP_MODE_GENERATED;
+    } else if(pl_strncasecmp("tm", str, 2)) {
+        /* special case, used for CAMP in original
+         * campaign */
+        return MAP_MODE_TRAINING;
     } else if(pl_strncasecmp("edit", str, 4) == 0) {
         return MAP_MODE_EDITOR;
     } else {
@@ -461,7 +465,7 @@ void InitMaps(void) {
     snprintf(map_path, sizeof(map_path), "%smaps", GetBasePath());
     plScanDirectory(map_path, "pmd", RegisterMap, false);
 
-    map_state.sky_model = LoadModel("chars/sky/skydome", true);
+    map_state.sky_model = LoadModel("skys/skydome", true);
 
     /* generate base meshes */
 
@@ -752,6 +756,30 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
      */
 }
 
+PLTexture *GenerateMinimapTexture(void) {
+    static PLColour colours[MAX_TILE_TYPES]={
+        { 60, 50, 40 },     // Mud
+        { 40, 70, 40 },     // Grass
+        { 128, 128, 128 },  // Metal
+        { 153, 94, 34 },    // Wood
+        { 90, 90, 150 },    // Water
+        { 50, 50, 50 },     // Stone
+        { 50, 50, 50 },     // Rock
+        { 100, 80, 30 },    // Sand
+        { 180, 240, 240 },  // Ice
+        { 100, 100, 100 },  // Snow
+        { 60, 50, 40 },     // Quagmire
+        { 100, 240, 53 }    // Lava/Poison
+    };
+
+    PLImage image;
+    memset(&image, 0, sizeof(PLImage));
+    image.width         = 64;
+    image.height        = 64;
+
+    return NULL;
+}
+
 /* loads a new map into memory - if the config
  * matches that of the currently loaded map
  * then it's ignored */
@@ -783,10 +811,8 @@ void LoadMap(const char *name, unsigned int mode) {
         return;
     }
 
-    if(!g_state.is_dedicated) {
-        SetFrontendState(FE_MODE_LOADING);
-        SetLoadingBackground(name);
-    }
+    SetFrontendState(FE_MODE_LOADING);
+    SetLoadingBackground(name);
 
     char map_name[64];
     snprintf(map_name, sizeof(map_name), "LOADING %s", desc->description);
@@ -821,6 +847,7 @@ void LoadMap(const char *name, unsigned int mode) {
     if(map_state.overview != NULL) {
         plDeleteTexture(map_state.overview, true);
     }
+
     map_state.overview = GenerateMinimapTexture();
 
     LoadMapTiles(pmg_path);
@@ -850,9 +877,7 @@ void LoadMap(const char *name, unsigned int mode) {
     SetLoadingProgress(100);
     SetLoadingDescription("FINISHED");
 
-    if(!g_state.is_dedicated) {
-        SetFrontendState(FE_MODE_GAME);
-    }
+    SetFrontendState(FE_MODE_GAME);
 }
 
 /****************************************************/

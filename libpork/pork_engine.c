@@ -110,11 +110,6 @@ void InitPork(int argc, char **argv, EngineLauncherInterface interface) {
         }
     }
 
-    if(plHasCommandLineArgument("-dedicated")) {
-        g_state.is_dedicated = true;
-        g_state.is_host = true;
-    }
-
     // deal with any console vars provided (todo: pl should deal with this?)
     for(int i = 1; i < argc; ++i) {
         if(pl_strncasecmp("+", argv[i], 1) == 0) {

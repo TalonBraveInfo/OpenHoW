@@ -23,7 +23,8 @@
 #define MAP_MODE_SURVIVAL_EXPERT    (unsigned int)(1 << 3)
 #define MAP_MODE_SURVIVAL_STRATEGY  (unsigned int)(1 << 4)
 #define MAP_MODE_GENERATED          (unsigned int)(1 << 5)
-#define MAP_MODE_EDITOR             (unsigned int)(1 << 6)
+#define MAP_MODE_TRAINING           (unsigned int)(1 << 6)
+#define MAP_MODE_EDITOR             (unsigned int)(1 << 7)
 
 #define MAP_WIDTH   2048
 
