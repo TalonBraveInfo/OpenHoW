@@ -16,35 +16,18 @@
  */
 #pragma once
 
-#include <pork/pork.h>
-
 #include <PL/platform_graphics.h>
 
+#include "pork.h"
 #include "pork_math.h"
 #include "pork_console.h"
 #include "pork_player.h"
-
-#define LogInfo(...)    _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
-#define LogWarn(...)    _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
-#define Error(...) {                                            \
-    _print_w_function(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);      \
-    g_launcher.DisplayMessageBox(PORK_MBOX_ERROR, __VA_ARGS__); \
-    exit(EXIT_FAILURE);                                         \
-}
-
-///////////////////////////////////////////////////
-
-// Functions provided by the host application
-EngineLauncherInterface g_launcher;
 
 ///////////////////////////////////////////////////
 
 struct {
     struct PLCamera *camera;       // camera used for general gameplay
     struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
-
-    char mod_name[256];
-    char mod_version[4];
 
     char config_path[PL_SYSTEM_MAX_PATH];   /* user config path */
 
@@ -57,7 +40,8 @@ struct {
     unsigned int draw_ticks;
     unsigned int last_draw_ms;
 
-    Player players[MAX_PLAYERS];
+    uint8_t max_players;            /* maximum players allowed in current game */
+    Player players[MAX_PLAYERS];    /* tracks all current players */
 
     struct {
         PorkEdCtx current_context;
@@ -69,3 +53,47 @@ struct {
 
 #define GetUIViewportWidth()    640
 #define GetUIViewportHeight()   480
+
+PL_EXTERN_C
+
+void InitEngine(void);
+void InitEditor(void);
+void ShutdownEngine(void);
+
+void SetupDefaultCamera(void);
+void SetupFrontendCamera(void);
+
+void PreDrawPork(double delta);
+void DrawPork(void);
+void PostDrawPork(void);
+
+void SimulatePork(void);
+
+bool IsPorkRunning(void);
+
+const char *GetBasePath(void);
+const char *GetCampaignPath(void);
+
+///////////////////////////////////////////////////
+
+unsigned int System_GetTicks(void);
+
+void System_DisplayMessageBox(unsigned int level, const char *msg, ...);
+void System_DisplayWindow(bool fullscreen, int width, int height);
+
+void System_SwapDisplay(void);
+
+void System_SetWindowTitle(const char *title);
+bool System_SetWindowSize(int *width, int *height, bool fs);
+
+void System_Shutdown(void);
+
+PL_EXTERN_C_END
+
+#define LogInfo(...)    _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
+#define LogWarn(...)    _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
+#define Error(...) {                                            \
+    _print_w_function(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);      \
+    System_DisplayMessageBox(PORK_MBOX_ERROR, __VA_ARGS__); \
+    exit(EXIT_FAILURE);                                         \
+}

@@ -16,6 +16,8 @@
  */
 #include <PL/platform_filesystem.h>
 
+#include "../pork_input.h"
+#include "../pork_game.h"
 #include "../pork_engine.h"
 #include "../pork_map.h"
 
@@ -23,6 +25,7 @@
 
 #include "script.h"
 #include "duktape-2.2.0/duk_module_duktape.h"
+
 
 duk_context *scr_context = NULL;    /* server context */
 duk_context *jsn_context = NULL;    /* json context */
@@ -35,8 +38,14 @@ duk_ret_t SC_LoadScript(duk_context *context) {
     return 0;
 }
 
-duk_ret_t SC_GetModName(duk_context *context) {
-    duk_push_string(context, g_state.mod_name);
+duk_ret_t SC_GetCampaignName(duk_context *context) {
+    CampaignManifest *cur = GetCurrentCampaign();
+    if(cur == NULL) {
+        duk_push_string(context, "null");
+        return 0;
+    }
+
+    duk_push_string(context, cur->name);
     return 0;
 }
 
@@ -167,7 +176,7 @@ ScriptFunction scr_builtins[]= {
         _d(LogDebug, DUK_VARARGS)
         _d(Error, DUK_VARARGS)
 
-        _d(GetModName, 0)
+        _d(GetCampaignName, 0)
         _d(GetCurrentMapName, 0)
         _d(GetCurrentMapDescription, 0)
 };

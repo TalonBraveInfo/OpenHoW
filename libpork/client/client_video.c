@@ -17,7 +17,7 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "pork_engine.h"
+#include "../pork_engine.h"
 
 #include "client_video.h"
 #include "client_frontend.h"

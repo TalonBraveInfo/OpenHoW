@@ -80,6 +80,7 @@ void DrawParticleSystem(ParticleSystem *ps, double delta);
 
 #define PPS_IDENTIFIER  "PPS\0"
 #define PPS_VERSION     "050818"
+#define PPS_EXTENSION   "pps"
 
 typedef struct PPSHeader {
     int8_t identifier[4];
@@ -117,26 +118,25 @@ typedef struct PPSChunkHeader {
  */
 
 typedef struct PPSPositionChunk {   /* "position" */
-    PPSChunkHeader header;
-    int32_t start_position[3];
-    int32_t end_position[3];
+    PPSChunkHeader  header;
+    int32_t         start_position[3];
+    int32_t         end_position[3];
 } PPSPositionChunk;
 
 typedef struct PPSColourChunk { /* "colour" */
-    PPSChunkHeader header;
-    uint8_t start_colour[4];
-    uint8_t end_colour[4];
+    PPSChunkHeader  header;
+    uint8_t         start_colour[4];
+    uint8_t         end_colour[4];
 } PPSColourChunk;
 
 typedef struct PPSSizeChunk { /* "size" */
-    PPSChunkHeader header;
-    int32_t start_size;
-    int32_t end_size;
+    PPSChunkHeader  header;
+    int32_t         start_size;
+    int32_t         end_size;
 } PPSSizeChunk;
 
 typedef struct PPSEmitterChunk {    /* "emitter" */
-    PPSChunkHeader header;
-
+    PPSChunkHeader      header;
     uint32_t            max_particles;
     PPSPositionChunk    position;
     PPSColourChunk      colour;
@@ -144,9 +144,9 @@ typedef struct PPSEmitterChunk {    /* "emitter" */
 } PPSEmitterChunk;
 
 typedef struct PPSFormat {
-    PPSHeader header;
-    PPSChunkHeader *chunks;
-    unsigned int num_chunks;
+    PPSHeader       header;
+    PPSChunkHeader* chunks;
+    uint32_t        num_chunks;
 } PPSFormat;
 
 PPSFormat SerializeParticleSystem(ParticleSystem *system);

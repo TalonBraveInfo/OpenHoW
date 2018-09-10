@@ -15,11 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PL/platform_graphics_camera.h>
+#include <PL/platform_filesystem.h>
+
 #include "pork_engine.h"
 #include "pork_input.h"
 #include "pork_map.h"
 #include "pork_language.h"
 #include "pork_audio.h"
+#include "pork_particle.h"
 
 #include "client/client_display.h"
 #include "client/client_font.h"
@@ -27,9 +31,9 @@
 
 #include "server/server_actor.h"
 
-#include <PL/platform_graphics_camera.h>
-
 /*****************************************************/
+
+#define check_args(num) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
 
 typedef struct CallbackConstruct {
     const char *cmd;
@@ -46,10 +50,7 @@ CallbackConstruct callbacks[]={
 };
 
 void GetCommand(unsigned int argc, char *argv[]) {
-    if(argc < 1) {
-        LogWarn("invalid number of arguments, ignoring!\n");
-        return;
-    }
+    check_args(2);
 
     const char *cmd = argv[1];
     for(unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
@@ -65,10 +66,7 @@ void GetCommand(unsigned int argc, char *argv[]) {
 }
 
 void AddCommand(unsigned int argc, char *argv[]) {
-    if(argc < 1) {
-        LogWarn("invalid number of arguments, ignoring!\n");
-        return;
-    }
+    check_args(2);
 
     const char *cmd = argv[1];
     for(unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
@@ -84,10 +82,7 @@ void AddCommand(unsigned int argc, char *argv[]) {
 }
 
 void SetCommand(unsigned int argc, char *argv[]) {
-    if(argc < 1) {
-        LogWarn("invalid number of arguments, ignoring!\n");
-        return;
-    }
+    check_args(2);
 
     const char *cmd = argv[1];
     for(unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
@@ -158,10 +153,7 @@ void SetCommand(unsigned int argc, char *argv[]) {
 }
 
 void FrontendModeCommand(unsigned int argc, char *argv[]) {
-    if(argc < 2) {
-        LogWarn("invalid number of arguments, ignoring!\n");
-        return;
-    }
+    check_args(2);
 
     int mode = atoi(argv[1]);
     if(mode < 0) {
@@ -181,11 +173,72 @@ void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
 }
 
 void QuitCommand(unsigned int argc, char *argv[]) {
-    g_launcher.ShutdownLauncher();
+    System_Shutdown();
 }
 
 void DisconnectCommand(unsigned int argc, char *argv[]) {
     UnloadMap();
+}
+
+void ConfigCommand(unsigned int argc, char *argv[]) {
+    check_args(2);
+
+    void ReadConfig(const char *path);
+    ReadConfig(argv[1]);
+}
+
+void OpenCommand(unsigned int argc, char *argv[]) {
+    check_args(2);
+
+    const char *fpath = argv[1];
+    if(plIsEmptyString(fpath)) {
+        LogWarn("invalid argument provided, ignoring!\n");
+        return;
+    }
+
+    enum {
+        TYPE_UNKNOWN,
+        TYPE_MODEL,
+        TYPE_PARTICLE,
+        TYPE_MAP,
+        TYPE_SOUND,
+
+        MAX_TYPES
+    };
+    unsigned int type = TYPE_UNKNOWN;
+
+    /* now we just need to figure out what kind of file it is */
+    const char *ext = plGetFileExtension(fpath);
+    if(!plIsEmptyString(ext)) {
+        if(pl_strncasecmp(ext, "vtx", 3) == 0 ||
+           pl_strncasecmp(ext, "fac", 3) == 0 ||
+           pl_strncasecmp(ext, "no2", 3) == 0) {
+            type = TYPE_MODEL;
+        } else if(pl_strncasecmp(ext, "pmg", 3) == 0 ||
+                  pl_strncasecmp(ext, "pog", 3) == 0 ||
+                  pl_strncasecmp(ext, "map", 3) == 0) {
+            type = TYPE_MAP;
+        } else if(pl_strncasecmp(ext, PPS_EXTENSION, 3) == 0) {
+            type = TYPE_PARTICLE;
+        }
+    }
+
+    switch(type) {
+        default: {
+            LogWarn("unknown filetype, ignoring!\n");
+        } break;
+
+        case TYPE_MAP: {
+            char map_name[32];
+            snprintf(map_name, sizeof(map_name), "%s", plGetFileName(fpath) - 4);
+            if(plIsEmptyString(map_name)) {
+                LogWarn("invalid map name, ignoring!\n");
+                return;
+            }
+
+            LoadMap(map_name, MAP_MODE_EDITOR);
+        } break;
+    }
 }
 
 void DebugModeCallback(const PLConsoleVariable *variable) {
@@ -212,7 +265,7 @@ PLConsoleVariable *cv_debug_cache = NULL;
 PLConsoleVariable *cv_camera_mode = NULL;
 
 PLConsoleVariable *cv_base_path = NULL;
-PLConsoleVariable *cv_mod_path = NULL;
+PLConsoleVariable *cv_campaign_path = NULL;
 
 PLConsoleVariable *cv_display_texture_cache = NULL;
 PLConsoleVariable *cv_display_width = NULL;
@@ -230,7 +283,7 @@ void InitConsole(void) {
     );
     rvar(cv_debug_cache, "0", pl_bool_var, NULL, "display memory and other info");
     rvar(cv_base_path, "./", pl_string_var, NULL, "");
-    rvar(cv_mod_path, "", pl_string_var, NULL, "");
+    rvar(cv_campaign_path, "", pl_string_var, NULL, "");
     rvar(cv_camera_mode, "0", pl_int_var, NULL, "0 = default, 1 = debug");
     rvar(cv_display_texture_cache, "-1", pl_int_var, NULL, "");
     rvar(cv_display_width, "1024", pl_int_var, NULL, "");
@@ -246,8 +299,10 @@ void InitConsole(void) {
     plRegisterConsoleCommand("set", SetCommand, "Sets state for given target");
     plRegisterConsoleCommand("get", GetCommand, "Gets state for given target");
     plRegisterConsoleCommand("add", AddCommand, "Adds the given target");
+    plRegisterConsoleCommand("open", OpenCommand, "Opens the specified file");
     plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
+    plRegisterConsoleCommand("config", ConfigCommand, "Loads the specified config");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
     plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
     plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");

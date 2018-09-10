@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pork_engine.h"
-#include "pork_formats.h"
-#include "pork_particle.h"
+#include "../pork_engine.h"
+#include "../pork_formats.h"
+#include "../pork_particle.h"
 
 #include "client.h"
 #include "client_display.h"

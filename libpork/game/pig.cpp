@@ -14,26 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
-#include "main.h"
+#include <PL/platform_math.h>
 
-class ConsolePanel : public wxPanel {
+#include "pig.h"
+#include "actor.h"
+
+class Pig : public Actor {
 public:
-    explicit ConsolePanel(wxWindow *parent);
-
-    void PrintMessage(std::string msg);
-    void PrintWarning(std::string war);
-    void PrintError(std::string err);
-
+    Pig();
+    ~Pig();
+    
+protected:
 private:
-    void OnCommand(wxCommandEvent &event);
-    void OnKey(wxKeyEvent &event);
-
-    wxComboBox *c_in_;
-    wxTextCtrl *c_out_;
-
-    wxDECLARE_EVENT_TABLE();
 };
 
-extern ConsolePanel *g_console_panel;
+Pig::Pig() : Actor() {
+
+}
+
+Pig::~Pig() {
+
+}
+
+//register_actor("JOHN", Pig);

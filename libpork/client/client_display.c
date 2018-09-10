@@ -18,14 +18,13 @@
 #include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
 
-#include "pork_engine.h"
-#include "pork_input.h"
-#include "pork_map.h"
-#include "pork_particle.h"
-#include "pork_formats.h"
+#include "../pork_engine.h"
+#include "../pork_input.h"
+#include "../pork_map.h"
+#include "../pork_particle.h"
+#include "../pork_formats.h"
 
 #include "client_font.h"
-#include "client_actor.h"
 #include "client_frontend.h"
 #include "client_shader.h"
 
@@ -360,6 +359,19 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
 #define MIN_DISPLAY_WIDTH   320
 #define MIN_DISPLAY_HEIGHT  200
 
+/* shared function */
+void UpdateViewport(int width, int height) {
+    ResetInputStates();
+
+    if(g_state.camera == NULL || g_state.ui_camera == NULL) {
+        // display probably hasn't been initialised
+        return;
+    }
+
+    g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
+    g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
+}
+
 /**
  * Update display to match the current settings.
  */
@@ -377,7 +389,7 @@ void UpdateDisplay(void) {
     // attempt to set the new display size, otherwise update cvars to match
     int w = cv_display_width->i_value;
     int h = cv_display_height->i_value;
-    if(!g_launcher.SetWindowSize(&w, &h, false)) {
+    if(!System_SetWindowSize(&w, &h, false)) {
         LogWarn("failed to set display size to %dx%d!\n", cv_display_width->i_value, cv_display_height->i_value);
         LogInfo("display set to %dx%d\n", w, h);
 
@@ -391,7 +403,7 @@ void UpdateDisplay(void) {
         LogInfo("display set to %dx%d\n", w, h);
     }
 
-    UpdatePorkViewport(cv_display_width->i_value, cv_display_height->i_value);
+    UpdateViewport(cv_display_width->i_value, cv_display_height->i_value);
 }
 
 void InitDisplay(void) {
@@ -413,8 +425,11 @@ void InitDisplay(void) {
 
     // now create the window and update the display
 
-    g_launcher.DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
-    g_launcher.SetWindowTitle(g_state.mod_name);
+    System_DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
+
+    char win_title[32];
+    snprintf(win_title, sizeof(win_title), PORK_TITLE " (%d.%d)", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
+    System_SetWindowTitle(win_title);
 
     UpdateDisplay();
 
@@ -472,19 +487,6 @@ void InitDisplay(void) {
 
 void ShutdownDisplay(void) {
     ShutdownShaders();
-}
-
-/* shared function */
-void UpdatePorkViewport(int width, int height) {
-    ResetInputStates();
-
-    if(g_state.camera == NULL || g_state.ui_camera == NULL) {
-        // display probably hasn't been initialised
-        return;
-    }
-
-    g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
-    g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 }
 
 /************************************************************/
@@ -623,7 +625,7 @@ double cur_delta = 0;
 
 void PreDrawPork(double delta) {
     cur_delta = delta;
-    g_state.draw_ticks = g_launcher.GetTicks();
+    g_state.draw_ticks = System_GetTicks();
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
     if(GetFrontendState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
@@ -636,7 +638,7 @@ void PreDrawPork(double delta) {
 
 void DrawPork(void) {
     DrawMap();
-    DrawActors(cur_delta);
+    //DrawActors(cur_delta);
     DrawParticles(cur_delta);
 
     SetupFrontendCamera();
@@ -647,8 +649,8 @@ void DrawPork(void) {
 }
 
 void PostDrawPork(void) {
-    g_launcher.SwapWindow();
-    g_state.last_draw_ms = g_launcher.GetTicks() - g_state.draw_ticks;
+    System_SwapDisplay();
+    g_state.last_draw_ms = System_GetTicks() - g_state.draw_ticks;
 }
 
 /**************************************************************************************/

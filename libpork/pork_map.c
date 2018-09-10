@@ -25,7 +25,6 @@
 #include "script/script.h"
 
 #include "client/client_frontend.h"
-#include "client/client_actor.h"
 #include "client/client_display.h"
 
 #include "server/server_actor.h"
@@ -378,8 +377,8 @@ typedef struct WaterTile {
 WaterTile water_tiles[WATER_TILES];
 
 void GenerateWaterTiles(void) {
-    water_textures[0] = LoadTexture("maps/wat01", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
-    water_textures[1] = LoadTexture("maps/wat02", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[0] = LoadTexture("textures/wat01", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[1] = LoadTexture("textures/wat02", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
 
     water_mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, 2, 4);
     if (water_mesh == NULL) {
@@ -458,12 +457,12 @@ void InitMaps(void) {
     map_descriptors = pork_alloc(max_maps, sizeof(MapManifest), true);
 
     char map_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetModPath())) {
-        snprintf(map_path, sizeof(map_path), "%s/mods/%s/maps", GetBasePath(), GetModPath());
-        plScanDirectory(map_path, "pmd", RegisterMap, false);
+    if(!plIsEmptyString(GetCampaignPath())) {
+        snprintf(map_path, sizeof(map_path), "%s/mods/%s/maps", GetBasePath(), GetCampaignPath());
+        plScanDirectory(map_path, "map", RegisterMap, false);
     }
     snprintf(map_path, sizeof(map_path), "%smaps", GetBasePath());
-    plScanDirectory(map_path, "pmd", RegisterMap, false);
+    plScanDirectory(map_path, "map", RegisterMap, false);
 
     map_state.sky_model = LoadModel("skys/skydome", true);
 
@@ -515,44 +514,10 @@ void ResetMap(void) {
         return;
     }
 
-    if(g_state.is_host) {
-        SVClearActors();
-
-        for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
-            Actor *actor = Actor_Spawn();
-            if(actor == NULL) {
-                /* warn, and try to keep going for as long as we can :( */
-                LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
-                break;
-            }
-
-            actor->position.x = map_state.spawns[i].position[0];
-            actor->position.y = map_state.spawns[i].position[1];
-            actor->position.z = map_state.spawns[i].position[2];
-
-            actor->angles.x   = map_state.spawns[i].angles[0];
-            actor->angles.y   = map_state.spawns[i].angles[1];
-            actor->angles.z   = map_state.spawns[i].angles[2];
-
-            //actor->bounds   = map_state.spawns[i].bounds;
-            //actor->bounds   = map_state.spawns[i].bounds;
-            //actor->bounds   = map_state.spawns[i].bounds;
-
-            actor->team = map_state.spawns[i].team;
-
-            strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
-            /* todo, setup the actor here - name represents class - this will then
-             * set the model and other parms here
-             */
-
-            //actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
-        }
-    }
-
-    ClearClientActors();
+    SVClearActors();
 
     for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
-        ClientActor *actor = SpawnClientActor();
+        Actor *actor = Actor_Spawn();
         if(actor == NULL) {
             /* warn, and try to keep going for as long as we can :( */
             LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
@@ -567,12 +532,18 @@ void ResetMap(void) {
         actor->angles.y   = map_state.spawns[i].angles[1];
         actor->angles.z   = map_state.spawns[i].angles[2];
 
-        actor->team     = map_state.spawns[i].team;
+        //actor->bounds   = map_state.spawns[i].bounds;
+        //actor->bounds   = map_state.spawns[i].bounds;
+        //actor->bounds   = map_state.spawns[i].bounds;
 
-        /* todo, load model... */
-        //strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
+        actor->team = map_state.spawns[i].team;
+
+        strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
         /* todo, setup the actor here - name represents class - this will then
-         * set the model and other parms here */
+         * set the model and other parms here
+         */
+
+        //actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
     }
 }
 
@@ -757,6 +728,7 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
 }
 
 PLTexture *GenerateMinimapTexture(void) {
+#if 0 // todo: finish...
     static PLColour colours[MAX_TILE_TYPES]={
         { 60, 50, 40 },     // Mud
         { 40, 70, 40 },     // Grass
@@ -776,6 +748,7 @@ PLTexture *GenerateMinimapTexture(void) {
     memset(&image, 0, sizeof(PLImage));
     image.width         = 64;
     image.height        = 64;
+#endif
 
     return NULL;
 }
@@ -783,35 +756,35 @@ PLTexture *GenerateMinimapTexture(void) {
 /* loads a new map into memory - if the config
  * matches that of the currently loaded map
  * then it's ignored */
-void LoadMap(const char *name, unsigned int mode) {
+bool LoadMap(const char *name, unsigned int mode) {
     LogDebug("loading map, %s, in mode %u\n", name, mode);
     if(map_state.name[0] != '\0') {
         if(strncmp(map_state.name, name, sizeof(map_state.name)) == 0) {
             if(map_state.flags == mode) {
                 LogWarn("attempted to load duplicate map, \"%s\", aborting!\n", name);
-                return;
+                return true;
             }
 
             LogInfo("attempted to load duplicate map, \"%s\", but with alternate state, resetting\n", name);
             ResetMap();
-            return;
+            return true;
         }
     }
 
     MapManifest *desc = GetMapDesc(name);
     if(desc == NULL) {
+        /* todo: support maps without .map manifest? */
         LogWarn("failed to get descriptor for map, \"%s\", aborting!\n", name);
-        return;
+        return false;
     }
 
     //LogDebug("found map description!\n %s\n %s", desc->name, desc->description);
 
     if(mode != MAP_MODE_EDITOR && !(desc->flags & mode)) {
         LogWarn("the mode you're attempting to use is unsupported by this map, \"%s\", aborting\n", name);
-        return;
+        return false;
     }
 
-    SetFrontendState(FE_MODE_LOADING);
     SetLoadingBackground(name);
 
     char map_name[64];
@@ -830,7 +803,7 @@ void LoadMap(const char *name, unsigned int mode) {
     LogDebug("map: %s\n", map_path);
     if(!plPathExists(map_path)) {
         LogWarn("failed to load map, path \"%s\" doesn't exist, aborting\n", map_path);
-        return;
+        return false;
     }
 
     SetLoadingProgress(15);
@@ -841,7 +814,7 @@ void LoadMap(const char *name, unsigned int mode) {
     LogDebug("pmg: %s\n", pmg_path);
     if(!plFileExists(pmg_path)) {
         LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
-        return;
+        return false;
     }
 
     if(map_state.overview != NULL) {
@@ -861,7 +834,7 @@ void LoadMap(const char *name, unsigned int mode) {
     if (!plFileExists(pog_path)) {
         LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
         UnloadMap();
-        return;
+        return false;
     }
 
     LoadMapSpawns(pog_path);
@@ -877,7 +850,7 @@ void LoadMap(const char *name, unsigned int mode) {
     SetLoadingProgress(100);
     SetLoadingDescription("FINISHED");
 
-    SetFrontendState(FE_MODE_GAME);
+    return true;
 }
 
 /****************************************************/

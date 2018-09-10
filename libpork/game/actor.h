@@ -17,19 +17,35 @@
 
 #pragma once
 
+#include "../pork.h"
+#include "../pork_game.h"
+#include "../pork_player.h"
+
 class Actor {
 public:
+    Actor();
     Actor(PLVector3 position);
-    ~Actor();
+    virtual ~Actor();
 
-    virtual void Update() {}
+    virtual void Simulate() {}
+    virtual void Draw() {}
 
     virtual bool Possess(Player *player);
     virtual bool Depossess(Player *player);
 
+    virtual bool IsVisible() { return is_visible_; }
+
+    virtual PLVector3 GetPosition() { return position_; }
+    virtual void SetPosition(PLVector3 position) { position_ = position; }
+
+    Actor *parent_{nullptr};
+    Actor *child_{nullptr};
+
 protected:
 private:
     uint16_t flags_{0};
+
+    bool is_visible_{false};
 
     PLVector3 position_{0, 0, 0};
     PLVector3 angles_{0, 0, 0};
@@ -40,13 +56,17 @@ private:
     /* todo: collision sys */
 };
 
-class ActorFactory {
+class ActorManager {
 protected:
     typedef Actor *(*actor_ctor_func)();
     static std::map<std::string, actor_ctor_func> actor_classes_;
 
 public:
-    static Actor *CreateActor(const std::string &name);
+    static Actor *SpawnActor(const std::string &name);
+    static void DestroyActor(Actor *actor);
+
+    static void SimulateActors();
+    static void DrawActors();
 
     class ActorClassRegistration {
     public:
@@ -55,8 +75,11 @@ public:
         ActorClassRegistration(const std::string &name, actor_ctor_func ctor_func);
         ~ActorClassRegistration();
     };
+
+private:
+    static std::vector<Actor*> actors_;
 };
 
-#define register_actor(CLASS) \
+#define register_actor(NAME, CLASS) \
     static Actor * CLASS ## _make() { return new CLASS (); } \
-    static ActorFactory::ActorClassRegistration _reg_actor_name(#CLASS & CLASS ## _make) __attribute__ ((init_priority(2000)))
+    static ActorManager::ActorClassRegistration _reg_actor_name((NAME), CLASS ## _make) __attribute__ ((init_priority(2000)))

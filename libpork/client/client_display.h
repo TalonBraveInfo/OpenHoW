@@ -14,14 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
+
+PL_EXTERN_C
 
 void InitDisplay(void);
 void ShutdownDisplay(void);
 void UpdateDisplay(void);
+
+void UpdateViewport(int width, int height);
 
 void ClearTextureIndex(unsigned int id);
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h);
 
 PLTexture *LoadTexture(const char *path, PLTextureFilter filter);
+
+PL_EXTERN_C_END

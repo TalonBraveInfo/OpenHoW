@@ -25,7 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(pork)
+project(OpenHoW)
+
+option(PORK_USE_IMGUI "ImGui" ON)
 
 file(
         GLOB LIBPORK_SOURCE_FILES
@@ -51,20 +53,24 @@ file(
         include/pork/*.h
         )
 
-add_library(pork STATIC ${LIBPORK_SOURCE_FILES})
+if(PORK_USE_IMGUI)
+        file(GLOB LIBPORK_IMGUI_SOURCE
+                ../imgui/imgui.cpp
+                ../imgui/imgui_draw.cpp
+                ../imgui/imgui_widgets.cpp)
+        add_definitions("-DPORK_USE_IMGUI")
+endif()
+
+add_executable(OpenHoW ${LIBPORK_SOURCE_FILES} ${LIBPORK_IMGUI_SOURCE})
 
 #set_target_properties(libpork PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
-target_compile_options(pork PUBLIC -fPIC)
-target_include_directories(pork PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SYSTEM_INCLUDE_PATH}
-
-        script/duktape-2.2.0/
-
-        )
-target_link_libraries(pork
+target_compile_options(OpenHoW PUBLIC -fPIC)
+target_include_directories(OpenHoW PUBLIC script/duktape-2.2.0/)
+target_link_libraries(OpenHoW
         platform
+
+        SDL2
 
         avformat
         avcodec

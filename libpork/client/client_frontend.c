@@ -14,12 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_graphics.h>
 #include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
 
-#include "pork_engine.h"
-#include "pork_input.h"
+#include "../pork_engine.h"
+#include "../pork_input.h"
+#include "../pork_game.h"
 
 #include "client_frontend.h"
 #include "client_font.h"
@@ -167,11 +169,6 @@ void InitFrontend(void) {
     memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
 
     InitFonts();
-
-    if(g_launcher.mode == PORK_MODE_LIMITED) {
-        SetFrontendState(FE_MODE_EDITOR);
-        return;
-    }
 
     /* load in all the assets we'll be using for the
      * frontend */

@@ -1,0 +1,7 @@
+This directory exists for any modifications you might want to add to the game.
+
+It works like this...
+    OpenHoW.exe -campaign "example"
+
+And then the game will attempt to load resources from the <base>/campaigns/example/ first before falling back
+to the base directory.

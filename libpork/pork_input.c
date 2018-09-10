@@ -95,12 +95,12 @@ bool GetActionState(unsigned int controller, int action) {
 
 /* public interface ****************************************************************/
 
-void SetPorkButtonState(unsigned int controller, int button, bool status) {
+void SetButtonState(unsigned int controller, int button, bool status) {
     pork_assert(controller < PORK_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
     input_state.controllers[controller].button_states[button] = status;
 }
 
-void SetPorkKeyState(int key, bool status) {
+void SetKeyState(int key, bool status) {
     pork_assert(key < PORK_MAX_KEYS);
     if(input_state.InputFocusCallback) {
         input_state.InputFocusCallback(key, status);
@@ -109,6 +109,6 @@ void SetPorkKeyState(int key, bool status) {
     input_state.keyboard.key_states[key] = status;
 }
 
-void SetPorkMouseState(int x, int y, int button, bool status) {
+void SetMouseState(int x, int y, int button, bool status) {
 
 }

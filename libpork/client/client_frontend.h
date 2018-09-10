@@ -62,6 +62,8 @@ enum {
     MAX_FE_MODES
 };
 
+PL_EXTERN_C
+
 void InitFrontend(void);
 void ProcessFrontendInput(void);
 void SimulateFrontend(void);
@@ -77,3 +79,5 @@ void SetFrontendState(unsigned int state);
 void FE_RestoreLastState(void);
 
 void SetFEObjectCommand(unsigned int argc, char *argv[]);
+
+PL_EXTERN_C_END

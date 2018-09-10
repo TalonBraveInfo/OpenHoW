@@ -15,26 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PL/platform_filesystem.h>
+
 #include "pork_engine.h"
 #include "pork_language.h"
 
 #include "script/script.h"
 
-#include <PL/platform_filesystem.h>
-
-/* todo: I know, I know, this needs to support unicode and other fun things... bare with me! */
-
 typedef struct LanguageKey {
     char key[64];
-    char translation[512];
+    char translation[512]; // todo: UTF-8 pls
 } LanguageKey;
 LanguageKey *l_cache = NULL;
+unsigned int l_cache_keys = 0;
 
 typedef struct Language {
-    char key[3];            /* "eng" */
-    char name[64];          /* "English" */
-    char path[128];         /* "english.json" */
-    char font_path[256];    /* "fonts/english/" */
+    char key[3];    /* "eng" */
+    char name[64];  /* "English" */ // todo: UTF-8 pls
+    char font[32];  /* "whatever" */
 } Language;
 Language *l_manifest = NULL;
 
@@ -42,6 +40,29 @@ unsigned int num_languages = 0;
 unsigned int num_translations = 0;
 
 void RegisterLanguages(void) {
+    char man_path[PL_SYSTEM_MAX_PATH];
+    strncpy(man_path, pork_find("languages.manifest"), sizeof(man_path));
+
+    const char *var;
+    if((var = plGetCommandLineArgumentValue("-manifest")) != NULL) {
+        strncpy(man_path, var, sizeof(man_path));
+    }
+
+    LogDebug("caching language data...\n");
+
+    /* load in the language manifest and store it in a buffer */
+    FILE *fp = fopen(man_path, "r");
+    if(fp == NULL) Error("failed to load \"%s\"!\n", man_path);
+    size_t length = plGetFileSize(man_path);
+    char buf[length + 1];
+    if(fread(buf, sizeof(char), length, fp) != length) Error("failed to read entirety of language manifest!\n");
+    fclose(fp);
+    buf[length] = '\0';
+
+    /* now read it in */
+
+    ParseJSON(buf);
+
     if(duk_get_prop_string(jsn_context, -1, "languages") && duk_is_array(jsn_context, -1)) {
         num_languages = (unsigned int)duk_get_length(jsn_context, -1);
         l_manifest = pork_alloc(num_languages, sizeof(Language), true);
@@ -49,8 +70,7 @@ void RegisterLanguages(void) {
             duk_get_prop_index(jsn_context, -1, i);
             {
                 strncpy(l_manifest[i].key, GetJSONStringProperty("key"), sizeof(l_manifest[i].key));
-                strncpy(l_manifest[i].name, GetJSONStringProperty("name"), sizeof(l_manifest[i].name));
-                strncpy(l_manifest[i].path, GetJSONStringProperty("path"), sizeof(l_manifest[i].path));
+                strncpy(l_manifest[i].name, GetJSONStringProperty("name"), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
                 /* uncomment once we're using this...
                 strncpy(l_manifest[i].font_path, GetJSONStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
             }
@@ -69,38 +89,42 @@ void RegisterLanguages(void) {
     }
     printf("done!\n");
 #endif
+
+    FlushJSON();
 }
 
-void ShutdownLanguage(void) {
+void ClearLanguages(void) {
     pork_free(l_manifest);
     pork_free(l_cache);
 }
 
-const char *GetTranslationPath(const char *language) {
-    //for(unsigned int i = 0; i < )
+const char *GetTranslation(const char *key) { // todo: UTF-8 pls
+    pork_assert(plIsEmptyString(key), "invalid translation key!\n");
 
-    return NULL;
-}
-
-void CacheLanguageTranslation(const char *language) {
-    if(plIsEmptyString(language)) {
-        Error("invalid language selection, aborting!\n");
-    }
-}
-
-const char *GetTranslation(const char *key) {
-    if(plIsEmptyString(key)) {
-        LogDebug("invalid key!\n");
+    if(l_cache == NULL) {
         return key;
     }
 
-    if(l_cache != NULL) {
-        pork_free(l_cache);
+    for(uint i = 0; i < l_cache_keys; ++i) {
+        if(strcmp(key, l_cache[i].key) == 0) {
+            return l_cache[i].translation;
+        }
     }
 
     return key;
 }
 
 void SetLanguageCallback(const PLConsoleVariable *var) {
-   // CacheLanguageManifest()
+#if 0 // todo
+    pork_assert(var->s_value != NULL, "invalid language key provided!\n");
+
+    pork_free(l_cache);
+
+    // todo: load in the .language data ...
+
+    l_cache = malloc(sizeof(l_cache));
+    memset(l_cache, 0, sizeof(LanguageKey) * 2048); // todo: get the number of keys (done during load?) ...
+
+    // todo: how about the rest? ...
+#endif
 }

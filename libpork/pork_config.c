@@ -59,6 +59,8 @@ void ReadConfig(const char *path) {
         return;
     }
 
+    LogInfo("found \"%s\", parsing...\n", path);
+
     size_t length = plGetFileSize(path);
     char buf[length + 1];
     if(fread(buf, sizeof(char), length, fp) != length) {
@@ -90,13 +92,12 @@ void InitConfig(void) {
 
     char out[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(PORK_APP_NAME, out, PL_SYSTEM_MAX_PATH);
-    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config.cfg", out);
+    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/user.config", out);
 
     char default_path[PL_SYSTEM_MAX_PATH];  /* default config path */
-    snprintf(default_path, sizeof(default_path), "%s", pork_find("default.cfg"));
+    snprintf(default_path, sizeof(default_path), "%s", pork_find("default.config"));
 
     if(plFileExists(g_state.config_path)) {
-        LogInfo("found \"%s\", parsing...\n", g_state.config_path);
         ReadConfig(g_state.config_path);
     } else {
         LogInfo("no config found at \"%s\", generating default\n", g_state.config_path);

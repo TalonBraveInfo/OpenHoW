@@ -143,7 +143,16 @@ void SimulateAudio(void) {
         angles = g_state.camera->angles;
     }
 
+    PLVector3 forward, right, up;
+    plAnglesAxes(angles, &forward, &right, &up);
+
+    float ori[6];
+    ori[0] = forward.x; ori[3] = up.x;
+    ori[1] = forward.y; ori[4] = up.y;
+    ori[2] = forward.z; ori[5] = up.z;
+
     alListener3f(AL_POSITION, position.x, position.y, position.z);
+    alListenerfv(AL_ORIENTATION, ori);
 }
 
 void ShutdownAudio(void) {

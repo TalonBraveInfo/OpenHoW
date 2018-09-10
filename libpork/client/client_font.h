@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 typedef struct BitmapChar {
@@ -61,6 +62,8 @@ enum {
 #define CHAR_PSX_R1         "i"
 #define CHAR_PSX_R2         "j"
 
+PL_EXTERN_C
+
 extern BitmapFont *g_fonts[NUM_FONTS];
 
 void InitFonts(void);
@@ -68,3 +71,5 @@ void InitFonts(void);
 void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character);
 void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
                       const char *msg);
+
+PL_EXTERN_C_END

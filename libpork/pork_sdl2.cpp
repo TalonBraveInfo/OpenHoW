@@ -16,25 +16,25 @@
  */
 
 #include <SDL2/SDL.h>
+
 #include <PL/platform_filesystem.h>
 
-#include "pork/pork.h"
+#include "pork_engine.h"
+#include "pork_input.h" // todo, move and rename "client_input"
+
+#include "client/client_display.h"
 
 SDL_Window *window = NULL;
-SDL_GLContext *context = NULL;
+SDL_GLContext gl_context = NULL;
 
 /* controller support */
 SDL_GameController *controller = NULL;
 
-#define LogInfo(...)  plLogMessage(PORK_LOG_LAUNCHER, __VA_ARGS__)
-#define LogWarn(...)  plLogMessage(PORK_LOG_LAUNCHER_WARNING, __VA_ARGS__)
-#define Error(...)    plLogMessage(PORK_LOG_LAUNCHER_ERROR, __VA_ARGS__)
-
-unsigned int IGetTicks(void) {
+unsigned int System_GetTicks(void) {
     return SDL_GetTicks();
 }
 
-void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
+void System_DisplayMessageBox(unsigned int level, const char *msg, ...) {
     switch(level) {
         case PORK_MBOX_ERROR: {
             level = SDL_MESSAGEBOX_ERROR;
@@ -58,9 +58,9 @@ void IDisplayMessageBox(unsigned int level, const char *msg, ...) {
     SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
 }
 
-void IDisplayWindow(bool fullscreen, int width, int height) {
+void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_GL_SetAttribute(SDL_GL_ACCUM_RED_SIZE, 8);
@@ -96,21 +96,21 @@ void IDisplayWindow(bool fullscreen, int width, int height) {
             flags
     );
     if(window == NULL) {
-        IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to create window!\n%s", SDL_GetError());
-        ShutdownPork();
+        System_DisplayMessageBox(PORK_MBOX_ERROR, "Failed to create window!\n%s", SDL_GetError());
+        ShutdownEngine();
     }
 
-    if((context = SDL_GL_CreateContext(window)) == NULL) {
-        IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to create context!\n%s", SDL_GetError());
-        ShutdownPork();
+    if((gl_context = SDL_GL_CreateContext(window)) == NULL) {
+        System_DisplayMessageBox(PORK_MBOX_ERROR, "Failed to create context!\n%s", SDL_GetError());
+        ShutdownEngine();
     }
 }
 
-void ISetWindowTitle(const char *title) {
+void System_SetWindowTitle(const char *title) {
     SDL_SetWindowTitle(window, title);
 }
 
-bool ISetWindowSize(int *width, int *height, bool fs) {
+bool System_SetWindowSize(int *width, int *height, bool fs) {
     SDL_SetWindowSize(window, *width, *height);
     SDL_SetWindowFullscreen(window, (fs ? SDL_WINDOW_FULLSCREEN : 0));
 
@@ -129,15 +129,21 @@ bool ISetWindowSize(int *width, int *height, bool fs) {
     return true;
 }
 
-void ISwapDisplay(void) {
+void System_SwapDisplay(void) {
     SDL_GL_SwapWindow(window);
 }
 
-void IShutdownLauncher(void) {
-    ShutdownPork();
+void System_Shutdown(void) {
+    ShutdownEngine();
 
-    if(context != NULL) {
-        SDL_GL_DeleteContext(context);
+    SDL_StopTextInput();
+
+    if(controller != NULL) {
+        SDL_GameControllerClose(controller);
+    }
+
+    if(gl_context != NULL) {
+        SDL_GL_DeleteContext(gl_context);
     }
 
     if(window != NULL) {
@@ -153,6 +159,7 @@ void IShutdownLauncher(void) {
 }
 
 ///////////////////////////////////////////////////
+
 
 int TranslateSDLKey(int key) {
     if(key < 128) {
@@ -229,14 +236,14 @@ void PollEvents(void) {
             case SDL_KEYUP: {
                 int key = TranslateSDLKey(event.key.keysym.sym);
                 if(key != -1) {
-                    SetPorkKeyState(key, false);
+                    SetKeyState(key, false);
                 }
             } break;
 
             case SDL_KEYDOWN: {
                 int key = TranslateSDLKey(event.key.keysym.sym);
                 if(key != -1) {
-                    SetPorkKeyState(key, true);
+                    SetKeyState(key, true);
                 }
             } break;
 
@@ -259,51 +266,65 @@ void PollEvents(void) {
             case SDL_CONTROLLERBUTTONUP: {
                 int button = TranslateSDLButton(event.cbutton.button);
                 if(button != -1) {
-                    SetPorkButtonState((unsigned int) event.cbutton.which, button, false);
+                    SetButtonState((unsigned int) event.cbutton.which, button, false);
                 }
             } break;
 
             case SDL_CONTROLLERBUTTONDOWN: {
                 int button = TranslateSDLButton(event.cbutton.button);
                 if(button != -1) {
-                    SetPorkButtonState((unsigned int) event.cbutton.which, button, true);
+                    SetButtonState((unsigned int) event.cbutton.which, button, true);
                 }
             } break;
 
             case SDL_CONTROLLERAXISMOTION: {
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000) {
-                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, true);
+                    SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000) {
-                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, false);
+                    SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, false);
                 }
 
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value > 1000) {
-                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, true);
+                    SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value <= 1000){
-                    SetPorkButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, false);
+                    SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, false);
                 }
             } break;
 
             case SDL_QUIT: {
-                ShutdownPork();
+                ShutdownEngine();
             } break;
 
             case SDL_WINDOWEVENT: {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    UpdatePorkViewport((unsigned int) event.window.data1, (unsigned int) event.window.data2);
+                    UpdateViewport((unsigned int) event.window.data1, (unsigned int) event.window.data2);
                 }
             } break;
         }
     }
 }
 
+void *pork_malloc(size_t size) {
+    return pork_alloc(1, size, true);
+}
+
+void *pork_calloc(size_t num, size_t size) {
+    return pork_alloc(num, size, true);
+}
+
 int main(int argc, char **argv) {
+    pl_malloc = pork_malloc;
+    pl_calloc = pork_calloc;
+
+    plInitialize(argc, argv);
+
     char app_dir[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(PORK_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
 
     if(!plCreatePath(app_dir)) {
-        IDisplayMessageBox(PORK_MBOX_WARNING, "Unable to create %s: %s\n"
-                                              "Settings will not be saved.", app_dir, plGetError());
+        System_DisplayMessageBox(PORK_MBOX_WARNING,
+                                "Unable to create %s: %s\n"
+                                "Settings will not be saved.", app_dir, plGetError());
     }
 
     char log_path[PL_SYSTEM_MAX_PATH];
@@ -313,23 +334,23 @@ int main(int argc, char **argv) {
     plSetupLogLevel(PORK_LOG_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_LAUNCHER_WARNING, "launcher-warning", PLColour(255, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_LAUNCHER_ERROR, "launcher-error", PLColour(255, 0, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_ENGINE, "engine", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_ENGINE_WARNING, "engine-warning", PLColour(255, 255, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_ENGINE_ERROR, "engine-error", PLColour(255, 0, 0, 255), true);
+    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255),
+#ifdef _DEBUG
+        true
+#else
+        false
+#endif
+    );
 
     if(SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        IDisplayMessageBox(PORK_MBOX_ERROR, "Failed to initialize SDL2!\n%s", SDL_GetError());
+        System_DisplayMessageBox(PORK_MBOX_ERROR, "Failed to initialize SDL2!\n%s", SDL_GetError());
         return EXIT_FAILURE;
     }
 
     SDL_DisableScreenSaver();
-
-    EngineLauncherInterface interface;
-    InitNULLEngineInterface(&interface);
-    interface.GetTicks          = IGetTicks;
-    interface.DisplayMessageBox = IDisplayMessageBox;
-    interface.DisplayWindow     = IDisplayWindow;
-    interface.SwapWindow        = ISwapDisplay;
-    interface.ShutdownLauncher  = IShutdownLauncher;
-    interface.SetWindowTitle    = ISetWindowTitle;
-    interface.SetWindowSize     = ISetWindowSize;
 
     int num_joysticks = SDL_NumJoysticks();
     if(num_joysticks < 0) {
@@ -358,7 +379,16 @@ int main(int argc, char **argv) {
         }
     }
 
-    InitPork(argc, argv, interface);
+    InitEngine();
+
+    // deal with any console vars provided (todo: pl should deal with this?)
+    for(int i = 1; i < argc; ++i) {
+        if(pl_strncasecmp("+", argv[i], 1) == 0) {
+            plParseConsoleString(argv[i] + 1);
+            ++i;
+            // todo: deal with other var arguments ... :(
+        }
+    }
 
     //SDL_SetRelativeMouseMode(SDL_TRUE);
     //SDL_ShowCursor(0);
@@ -372,7 +402,7 @@ int main(int argc, char **argv) {
 #define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
 #define MAX_FRAMESKIP       5
 
-    unsigned int next_tick = SDL_GetTicks();
+    unsigned int next_tick = System_GetTicks();
     unsigned int loops;
     double delta_time;
 
@@ -380,25 +410,19 @@ int main(int argc, char **argv) {
         PollEvents();
 
         loops = 0;
-        while(SDL_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
+        while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
             SimulatePork();
             next_tick += SKIP_TICKS;
             loops++;
         }
 
-        delta_time = (double)(SDL_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
+        delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
         PreDrawPork(delta_time);
         DrawPork();
         PostDrawPork();
     }
 
-    SDL_StopTextInput();
-
-    if(controller != NULL) {
-        SDL_GameControllerClose(controller);
-    }
-
-    ShutdownPork();
+    System_Shutdown();
 
     return EXIT_SUCCESS;
 }

@@ -1,12 +1,6 @@
 [submodule "platform"]
 	path = platform
 	url = https://github.com/TalonBraveInfo/platform
-[submodule "bx"]
-    path = 3rdparty/bx
-    url = https://github.com/bkaradzic/bx
-[submodule "bimg"]
-    path = 3rdparty/bx
-    url = https://github.com/bkaradzic/bimg
-[submodule "bgfx"]
-    path = 3rdparty/bx
-    url = https://github.com/bkaradzic/bgfx
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui.git

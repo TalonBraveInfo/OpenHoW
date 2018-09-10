@@ -17,6 +17,10 @@
 
 #pragma once
 
+PL_EXTERN_C
+
 extern const char *supported_image_formats[];
 
 void RegisterFormatInterfaces(void);
+
+PL_EXTERN_C_END

@@ -15,36 +15,73 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <pork_engine.h>
 #include "../pork_engine.h"
+
+#include "../client/client_frontend.h"
 
 #include "actor.h"
 
-/* Actor Factory */
+/************************************************************/
 
-std::map<std::string, ActorFactory::actor_ctor_func> ActorFactory::actor_classes_
+std::vector<Actor*> ActorManager::actors_;
+
+std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
-Actor *ActorFactory::CreateActor(const std::string &name) {
+Actor *ActorManager::SpawnActor(const std::string &name) {
     auto i = actor_classes_.find(name);
     if(i == actor_classes_.end()) {
-        abort();
+        LogWarn("attempted to spawn an invalid actor of class \"%s\", ignoring!\n", name.c_str());
+        return nullptr;
     }
+
+    actors_.push_back(i->second());
     return i->second();
 }
 
-ActorFactory::ActorClassRegistration::ActorClassRegistration(const std::string &name, actor_ctor_func ctor_func)
+void ActorManager::DestroyActor(Actor *actor) {
+    pork_assert(actor != nullptr, "attempted to delete a null actor!\n");
+    actors_.erase(std::remove(actors_.begin(), actors_.end(), actor), actors_.end());
+
+    delete actor;
+}
+
+void ActorManager::SimulateActors() {
+    for(auto const &actor: actors_) {
+        actor->Simulate();
+    }
+}
+
+void ActorManager::DrawActors() {
+    if(GetFrontendState() == FE_MODE_LOADING) {
+        return;
+    }
+
+    for(auto const &actor: actors_) {
+        if(!actor->IsVisible()) {
+            continue;
+        }
+
+        actor->Draw();
+    }
+}
+
+ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string &name, actor_ctor_func ctor_func)
     : name_(name) {
-    ActorFactory::actor_classes_[name] = ctor_func;
+    ActorManager::actor_classes_[name] = ctor_func;
 }
 
-ActorFactory::ActorClassRegistration::~ActorClassRegistration() {
-    ActorFactory::actor_classes_.erase(name_);
+ActorManager::ActorClassRegistration::~ActorClassRegistration() {
+    ActorManager::actor_classes_.erase(name_);
 }
 
-/* Actor */
+/************************************************************/
 
 Actor::Actor(PLVector3 position) {
+
+}
+
+Actor::Actor() {
 
 }
 

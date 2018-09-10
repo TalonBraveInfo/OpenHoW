@@ -33,7 +33,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
 include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platform lib headers get used for everything.
-include_directories(${CMAKE_SOURCE_DIR}/libpork/include/)               # libpork headers
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
@@ -50,9 +49,7 @@ add_subdirectory(platform/platform)
 
 add_subdirectory(libpork)
 # add_subdirectory(setup)
-add_subdirectory(editor)
 add_subdirectory(extractor)
-add_subdirectory(launcher_sdl2)
 
 # Tools - todo, add build flag for whether we want these or not
 add_subdirectory(utilities/ptg_extract)

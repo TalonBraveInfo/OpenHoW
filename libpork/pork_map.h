@@ -54,7 +54,7 @@ void ShutdownMaps(void);
 
 void UnloadMap(void);
 void ResetMap(void);
-void LoadMap(const char *name, unsigned int mode);
+bool LoadMap(const char *name, unsigned int mode);
 void DrawMap(void);
 
 const char *GetCurrentMapName(void);           // returns the name of the current map.

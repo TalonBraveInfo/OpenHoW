@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <stdlib.h>
 
 #include <PL/platform_filesystem.h>
@@ -42,8 +43,8 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
 
 const char *pork_find(const char *path) {
     static char n_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetModPath())) {
-        snprintf(n_path, sizeof(n_path), "%smods/%s/%s", GetBasePath(), GetModPath(), path);
+    if(!plIsEmptyString(GetCampaignPath())) {
+        snprintf(n_path, sizeof(n_path), "%smods/%s/%s", GetBasePath(), GetCampaignPath(), path);
         if(plFileExists(n_path)) {
             LogDebug("found \"%s\"\n", n_path);
             return n_path;
@@ -74,8 +75,8 @@ const char *pork_find2(const char *path, const char **preference) {
     memset(out, 0, sizeof(out));
 
     char base_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetModPath())) {
-        snprintf(base_path, sizeof(base_path), "%smods/%s/%s", GetBasePath(), GetModPath(), path);
+    if(!plIsEmptyString(GetCampaignPath())) {
+        snprintf(base_path, sizeof(base_path), "%smods/%s/%s", GetBasePath(), GetCampaignPath(), path);
         strncpy(out, pork_scan(base_path, preference), sizeof(out));
         if(!plIsEmptyString(out)) {
             LogDebug("found \"%s\"\n", out);

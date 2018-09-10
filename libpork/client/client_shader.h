@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 #if 0 // eeehhh
@@ -101,9 +102,14 @@ enum {
 
     MAX_SHADERS
 };
+
+PL_EXTERN_C
+
 extern PLShaderProgram *programs[MAX_SHADERS];
 
 void InitShaders(void);
 void ShutdownShaders(void);
+
+PL_EXTERN_C_END
 
 #endif

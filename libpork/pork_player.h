@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 typedef struct Player {
@@ -30,4 +31,8 @@ typedef struct Player {
     unsigned int current_pig;
 } Player;
 
+PL_EXTERN_C
+
 void ClearPlayers(void);
+
+PL_EXTERN_C_END

@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 #define MAX_BONES 32
@@ -33,9 +34,13 @@ typedef struct Animation {
 
 /* * * * * * * * * * * * * * * * * */
 
+PL_EXTERN_C
+
 PLModel *LoadModel(const char *path, bool abort_on_fail);
 
 void ClearTextureIndex(unsigned int id);
 
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void CacheModelData(void);
+
+PL_EXTERN_C_END

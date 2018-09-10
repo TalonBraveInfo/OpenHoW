@@ -23,6 +23,8 @@
 
 /* Hogs of War file formats
  * -----------------------------------
+ * BIN : Audio/Model/Texture data
+ * DAT : Audio data
  * MAM : Mangled texture / model package
  * MAD : Texture / model package
  * MTM : Mangled model texture package

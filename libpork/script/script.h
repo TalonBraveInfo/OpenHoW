@@ -14,9 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 #include "duktape.h"
+
+PL_EXTERN_C
 
 void InitScripting(void);
 void ShutdownScripting(void);
@@ -37,3 +40,5 @@ int GetJSONIntProperty(const char *property);
 /* CallScript Functions                                   */
 
 void CS_InitGame(void);
+
+PL_EXTERN_C_END

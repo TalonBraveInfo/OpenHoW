@@ -20,6 +20,8 @@
 ///////////////////////////////////////////////////
 // Actor
 
+/* todo: obsolete! SEE game/actor.cpp !!! */
+
 typedef struct Actor {
     char name[32]; //aka, class... used as simple ident
 
@@ -73,6 +75,8 @@ typedef struct Actor {
     struct Actor *parent;
 } Actor;
 
+PL_EXTERN_C
+
 void SVClearActors(void);
 void SVSimulateActors(void);
 
@@ -82,3 +86,5 @@ Actor *Actor_Spawn(void);
 void Actor_Destroy(Actor *self);
 void Actor_Possess(Actor *self, Player *player);
 void Actor_Depossess(Actor *self, Player *player);
+
+PL_EXTERN_C_END

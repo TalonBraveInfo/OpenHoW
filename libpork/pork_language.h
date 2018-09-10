@@ -14,8 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
+enum { // supported languages
+    LANG_ENGLISH,
+    LANG_FRENCH,
+    LANG_GERMAN,
+    LANG_ITALIAN,
+    LANG_SPANISH,
+};
+
+PL_EXTERN_C
+
 void RegisterLanguages(void);
+void ClearLanguages(void);
 
 void SetLanguageCallback(const PLConsoleVariable *var);
+
+PL_EXTERN_C_END

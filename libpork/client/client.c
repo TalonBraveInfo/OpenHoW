@@ -14,17 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_graphics_camera.h>
 
-#include "pork_engine.h"
-#include "pork_input.h"
-#include "pork_audio.h"
+#include "../pork_engine.h"
+#include "../pork_input.h"
+#include "../pork_audio.h"
 
-#include "script/script.h"
+#include "../script/script.h"
 
 #include "client.h"
 #include "client_display.h"
-#include "client_actor.h"
 #include "client_frontend.h"
 
 /*****************************************************/
@@ -92,8 +92,6 @@ void InitClient(void) {
     InitDisplay();
     InitAudio();
     InitFrontend();
-
-    ClearClientActors();
 }
 
 void SimulateClient(void) {
@@ -103,8 +101,6 @@ void SimulateClient(void) {
 }
 
 void ShutdownClient(void) {
-    ClearClientActors();
-
     plParseConsoleString("audio_shutdown");
     ShutdownDisplay();
     /* todo: input, etc */

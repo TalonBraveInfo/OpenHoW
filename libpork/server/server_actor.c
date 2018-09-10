@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <pork/pork.h>
+#include "../pork_engine.h"
 
-#include "pork_engine.h"
 #include "server_actor.h"
 
 /* todo: all of this is going to be torn out, so don't get too deep into it */
@@ -81,36 +80,6 @@ Actor *SVGetActor(const char *name) {
     }
 
     return NULL;
-}
-
-/* Actor declarations are passed from
- * json and used for determining the
- * properties of each actor upon spawn
- * and within the editor itself.
- */
-typedef struct ActorDeclaration {
-    char class[32];         // class name of the actor, so we know what we're spawning
-    char description[256];  // short description of the actor - used for editor
-
-    unsigned int type;  // item, pig, vehicle, etc
-
-    char model_path[PL_SYSTEM_MAX_PATH];
-
-    struct {
-        struct ActorDeclaration *component;
-
-        PLVector3 position; // position relative to parent
-        float angle;        // angle relative to parent
-    } components[512];
-} ActorDeclaration;
-
-ActorDeclaration actor_declarations[4096];
-
-void InitActors(void) {
-
-    SVClearActors();
-
-    // todo, load in actor_decl.json (or something), containing an outline of how each actor class functions
 }
 
 /*********************************************************************/
