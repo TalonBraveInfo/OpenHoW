@@ -17,13 +17,30 @@
 
 #pragma once
 
+enum {
+    TEXTURE_INDEX_BRITISH,
+    TEXTURE_INDEX_AMERICAN,
+    TEXTURE_INDEX_FRENCH,
+    TEXTURE_INDEX_GERMAN,
+    TEXTURE_INDEX_RUSSIAN,
+    TEXTURE_INDEX_JAPANESE,
+    TEXTURE_INDEX_TEAMLARD,
+
+    TEXTURE_INDEX_GOBS,
+
+    TEXTURE_INDEX_WEAPONS,
+    TEXTURE_INDEX_MAP,
+
+    MAX_TEXTURE_INDEX
+};
+
 PL_EXTERN_C
 
 void InitDisplay(void);
 void ShutdownDisplay(void);
 void UpdateDisplay(void);
 
-void UpdateViewport(int width, int height);
+void UpdateViewport(int x, int y, int width, int height);
 
 void ClearTextureIndex(unsigned int id);
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);

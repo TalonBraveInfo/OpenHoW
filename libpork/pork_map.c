@@ -458,10 +458,10 @@ void InitMaps(void) {
 
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
-        snprintf(map_path, sizeof(map_path), "%s/campaigns/%s/maps", GetBasePath(), GetCampaignPath());
+        snprintf(map_path, sizeof(map_path), "%s/maps", GetCampaignPath());
         plScanDirectory(map_path, "map", RegisterMap, false);
     }
-    snprintf(map_path, sizeof(map_path), "%smaps", GetBasePath());
+    snprintf(map_path, sizeof(map_path), "%s/maps", GetBasePath());
     plScanDirectory(map_path, "map", RegisterMap, false);
 
     map_state.sky_model = LoadModel("skys/skydome", true);

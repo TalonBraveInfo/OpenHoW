@@ -58,6 +58,7 @@ if(PORK_USE_IMGUI)
                 ../imgui/imgui.cpp
                 ../imgui/imgui_draw.cpp
                 ../imgui/imgui_widgets.cpp
+                #../imgui/imgui_demo.cpp
 
                 # todo: replace with internal implementation?
                 ../imgui/examples/imgui_impl_opengl2.cpp

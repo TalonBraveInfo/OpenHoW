@@ -355,18 +355,22 @@ void PollEvents(void) {
 
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEBUTTONDOWN: {
-                switch(event.button.button) {
-                    case SDL_BUTTON_LEFT:
-                        io.MouseDown[0] = event.button.state;
-                        break;
-                    case SDL_BUTTON_RIGHT:
-                        io.MouseDown[1] = event.button.state;
-                        break;
-                    case SDL_BUTTON_MIDDLE:
-                        io.MouseDown[2] = event.button.state;
-                        break;
+                if(io.WantCaptureMouse) {
+                    switch (event.button.button) {
+                        case SDL_BUTTON_LEFT:
+                            io.MouseDown[0] = event.button.state;
+                            break;
+                        case SDL_BUTTON_RIGHT:
+                            io.MouseDown[1] = event.button.state;
+                            break;
+                        case SDL_BUTTON_MIDDLE:
+                            io.MouseDown[2] = event.button.state;
+                            break;
 
-                    default:break;
+                        default:break;
+                    }
+
+                    break;
                 }
 
                 int button = TranslateSDLMouseButton(event.button.button);
@@ -428,7 +432,7 @@ void PollEvents(void) {
 
             case SDL_WINDOWEVENT: {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    UpdateViewport((unsigned int) event.window.data1, (unsigned int) event.window.data2);
+                    UpdateViewport(0, 0, (unsigned int) event.window.data1, (unsigned int) event.window.data2);
 
                     imgui_camera->viewport.w = event.window.data1;
                     imgui_camera->viewport.h = event.window.data2;
@@ -565,12 +569,7 @@ int main(int argc, char **argv) {
         }
 
         ImGui_ImplOpenGL2_NewFrame();
-
         ImGui::NewFrame();
-
-        ImGui::Begin("Another Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
-        ImGui::End();
 
         delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
         PreDrawPork(delta_time);

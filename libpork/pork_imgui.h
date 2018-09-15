@@ -17,13 +17,13 @@
 
 #pragma once
 
-#ifdef PORK_USE_IMGUI
-
 #ifdef __cplusplus
 
 #include "../imgui/imgui.h"
 
 #else /* C wrapper */
+
+PL_EXTERN_C
 
 void ImGui_NewFrame(void);
 
@@ -45,6 +45,14 @@ void ImGui_EndMenu(void);
 bool ImGui_MenuItem(const char *label, const char *shortcut, bool selected, bool enabled);
 bool ImGui_MenuItemToggle(const char *label, const char *shortcut, bool *p_selected, bool enabled);
 
-#endif
+PL_EXTERN_C_END
 
 #endif
+
+/***********************************************/
+
+PL_EXTERN_C
+
+void UI_DisplayDebugMenu(void);
+
+PL_EXTERN_C_END

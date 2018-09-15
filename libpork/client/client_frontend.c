@@ -227,7 +227,7 @@ void SimulateFrontend(void) {
 char loading_description[256];
 uint8_t loading_progress = 0;
 
-#define Redraw()   PreDrawPork(0);DrawPork();PostDrawPork()
+#define Redraw()   DrawFrontend();
 
 void SetLoadingBackground(const char *name) {
     if(fe_background != NULL) {

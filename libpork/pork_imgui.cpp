@@ -18,6 +18,111 @@
 #include "pork_engine.h"
 #include "pork_imgui.h"
 
+#include "client/client_display.h"
+
+static bool show_quit = false;
+static bool show_file = false;
+static bool show_about = false;
+static bool show_console = false;
+static bool show_fps = false;
+
+void UI_DisplayFileBox(void) {
+    if(show_file) {
+        ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+        ImGui::Begin("About", &show_file, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
+                                          ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::End();
+    }
+}
+
+void UI_DisplayQuitBox(void) {
+    if(show_quit) {
+        ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+        ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
+                                                  ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
+        ImGui::Dummy(ImVec2(0, 5));
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0, 5));
+
+        if (ImGui::Button("Yes", ImVec2(64, 0))) {
+            System_Shutdown();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No", ImVec2(64, 0))) {
+            show_quit = false;
+        }
+
+        ImGui::End();
+    }
+}
+
+void UI_DisplayConsole(void) {
+
+}
+
+void UI_DisplayDebugMenu(void) {
+    /* keep vars in sync with console vars, in case they
+     * are changed during startup or whenever... */
+
+    show_fps = cv_debug_fps->b_value;
+
+    /* */
+
+#if 0
+    ImGui::Begin("Game", NULL);
+    ImVec2 pos = ImGui::GetWindowPos();
+    ImVec2 size = ImGui::GetWindowSize();
+    UpdateViewport(pos.x, pos.y, size.x, size.y);
+    ImGui::End();
+#endif
+
+    if(ImGui::BeginMainMenuBar()) {
+
+        if(ImGui::BeginMenu("File")) {
+            if(ImGui::MenuItem("Open...", "CTRL+O")) {
+
+            }
+
+            ImGui::Separator();
+            ImGui::MenuItem("Quit", "CTRL+Q", &show_quit);
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Debug")) {
+            ImGui::MenuItem("Show Console", "`", &show_console);
+            if(ImGui::MenuItem("Show FPS", NULL, &show_fps)) {
+                plSetConsoleVariable(cv_debug_fps, show_fps ? "true" : "false");
+            }
+
+            static int tc = 0;
+            if(ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
+                char buf[4];
+                plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
+            }
+
+            static int im = 0;
+            if(ImGui::SliderInt("Show Input States", &im, 0, 2)) {
+                char buf[4];
+                plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Help")) {
+            ImGui::MenuItem("About", NULL, &show_about);
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
+    UI_DisplayQuitBox();
+}
+
 /****************************************************/
 /* C Wrapper */
 

@@ -23,30 +23,15 @@
 #include "../pork_map.h"
 #include "../pork_particle.h"
 #include "../pork_formats.h"
+#include "../pork_imgui.h"
 
 #include "client_font.h"
 #include "client_frontend.h"
 #include "client_shader.h"
+#include "client_display.h"
 
 /************************************************************/
 /* PORK TEXTURE CACHE                                       */
-
-enum {
-    INDEX_BRITISH,
-    INDEX_AMERICAN,
-    INDEX_FRENCH,
-    INDEX_GERMAN,
-    INDEX_RUSSIAN,
-    INDEX_JAPANESE,
-    INDEX_TEAMLARD,
-
-    INDEX_GOBS,
-
-    INDEX_WEAPONS,
-    INDEX_MAP,
-
-    MAX_TEXTURE_INDEX
-};
 
 #define MAX_TEXTURES_PER_INDEX  1024
 
@@ -360,7 +345,7 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
 #define MIN_DISPLAY_HEIGHT  200
 
 /* shared function */
-void UpdateViewport(int width, int height) {
+void UpdateViewport(int x, int y, int width, int height) {
     ResetInputStates();
 
     if(g_state.camera == NULL || g_state.ui_camera == NULL) {
@@ -368,6 +353,8 @@ void UpdateViewport(int width, int height) {
         return;
     }
 
+    g_state.ui_camera->viewport.x = g_state.camera->viewport.x = x;
+    g_state.ui_camera->viewport.y = g_state.camera->viewport.y = y;
     g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 }
@@ -403,7 +390,7 @@ void UpdateDisplay(void) {
         LogInfo("display set to %dx%d\n", w, h);
     }
 
-    UpdateViewport(cv_display_width->i_value, cv_display_height->i_value);
+    UpdateViewport(0, 0, cv_display_width->i_value, cv_display_height->i_value);
 }
 
 void InitDisplay(void) {
@@ -472,15 +459,15 @@ void InitDisplay(void) {
 
     LogInfo("caching texture groups...\n");
 
-    CacheTextureIndex("/chars/american/", "american.index", INDEX_AMERICAN);
-    CacheTextureIndex("/chars/british/", "british.index", INDEX_BRITISH);
-    CacheTextureIndex("/chars/french/", "french.index", INDEX_FRENCH);
-    CacheTextureIndex("/chars/german/", "german.index", INDEX_GERMAN);
-    CacheTextureIndex("/chars/japanese/", "japanese.index", INDEX_JAPANESE);
-    CacheTextureIndex("/chars/russian/", "russian.index", INDEX_RUSSIAN);
-    CacheTextureIndex("/chars/teamlard/", "teamlard.index", INDEX_TEAMLARD);
+    CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
+    CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
+    CacheTextureIndex("/chars/french/", "french.index", TEXTURE_INDEX_FRENCH);
+    CacheTextureIndex("/chars/german/", "german.index", TEXTURE_INDEX_GERMAN);
+    CacheTextureIndex("/chars/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
+    CacheTextureIndex("/chars/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
+    CacheTextureIndex("/chars/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
 
-    CacheTextureIndex("/chars/weapons/", "weapons.index", INDEX_WEAPONS);
+    CacheTextureIndex("/chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 }
@@ -494,6 +481,12 @@ void ShutdownDisplay(void) {
 void DEBUGDrawSkeleton();
 
 void DrawDebugOverlay(void) {
+    if(GetFrontendState() == FE_MODE_EDITOR) {
+        return;
+    }
+
+    UI_DisplayDebugMenu();
+
     if(GetFrontendState() == FE_MODE_INIT || GetFrontendState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
         return;
     }
