@@ -57,7 +57,13 @@ if(PORK_USE_IMGUI)
         file(GLOB LIBPORK_IMGUI_SOURCE
                 ../imgui/imgui.cpp
                 ../imgui/imgui_draw.cpp
-                ../imgui/imgui_widgets.cpp)
+                ../imgui/imgui_widgets.cpp
+
+                # todo: replace with internal implementation?
+                ../imgui/examples/imgui_impl_opengl2.cpp
+                ../imgui/examples/imgui_impl_opengl2.h
+                )
+
         add_definitions("-DPORK_USE_IMGUI")
 endif()
 
@@ -66,7 +72,7 @@ add_executable(OpenHoW ${LIBPORK_SOURCE_FILES} ${LIBPORK_IMGUI_SOURCE})
 #set_target_properties(libpork PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
 target_compile_options(OpenHoW PUBLIC -fPIC)
-target_include_directories(OpenHoW PUBLIC script/duktape-2.2.0/)
+target_include_directories(OpenHoW PUBLIC ../imgui/ script/duktape-2.2.0/)
 target_link_libraries(OpenHoW
         platform
 

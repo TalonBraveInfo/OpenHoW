@@ -18,10 +18,14 @@
 #include "pork_engine.h"
 #include "pork_imgui.h"
 
-#ifdef PORK_USE_IMGUI
-
 /****************************************************/
 /* C Wrapper */
+
+/* main ... */
+
+void ImGui_NewFrame(void) {
+    ImGui::NewFrame();
+}
 
 /* windows ... */
 
@@ -94,5 +98,3 @@ bool ImGui_MenuItem(const char *label, const char *shortcut, bool selected, bool
 bool ImGui_MenuItemToggle(const char *label, const char *shortcut, bool *p_selected, bool enabled) {
     return ImGui::MenuItem(label, shortcut, p_selected, enabled);
 }
-
-#endif

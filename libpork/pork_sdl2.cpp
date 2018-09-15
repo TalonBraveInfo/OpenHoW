@@ -18,9 +18,14 @@
 #include <SDL2/SDL.h>
 
 #include <PL/platform_filesystem.h>
+#include <PL/platform_graphics_camera.h>
 
 #include "pork_engine.h"
-#include "pork_input.h" // todo, move and rename "client_input"
+#include "pork_input.h"
+#include "pork_imgui.h"
+
+#include "../imgui/examples/imgui_impl_sdl.h"
+#include "../imgui/examples/imgui_impl_opengl2.h"
 
 #include "client/client_display.h"
 
@@ -29,6 +34,8 @@ SDL_GLContext gl_context = NULL;
 
 /* controller support */
 SDL_GameController *controller = NULL;
+
+PLCamera *imgui_camera = NULL;
 
 unsigned int System_GetTicks(void) {
     return SDL_GetTicks();
@@ -56,6 +63,20 @@ void System_DisplayMessageBox(unsigned int level, const char *msg, ...) {
     va_end(args);
 
     SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
+}
+
+const char *System_GetClipboardText(void*) {
+    static char *clipboard = NULL;
+    if(clipboard != NULL) {
+        SDL_free(clipboard);
+    }
+
+    clipboard = SDL_GetClipboardText();
+    return clipboard;
+}
+
+void System_SetClipboardText(void*, const char *text) {
+    SDL_SetClipboardText(text);
 }
 
 void System_DisplayWindow(bool fullscreen, int width, int height) {
@@ -104,6 +125,55 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
         System_DisplayMessageBox(PORK_MBOX_ERROR, "Failed to create context!\n%s", SDL_GetError());
         ShutdownEngine();
     }
+
+    /* setup imgui integration */
+
+    IMGUI_CHECKVERSION();
+
+    ImGui::CreateContext();
+
+    ImGuiIO &io = ImGui::GetIO();
+
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+    //io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
+    io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
+    io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
+    io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+    io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
+    io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
+    io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
+    io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
+    io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
+    io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
+    io.KeyMap[ImGuiKey_Insert] = SDL_SCANCODE_INSERT;
+    io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
+    io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
+    io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
+    io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
+    io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
+    io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
+    io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
+    io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
+    io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
+    io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
+    io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
+
+    io.SetClipboardTextFn = System_SetClipboardText;
+    io.GetClipboardTextFn = System_GetClipboardText;
+    io.ClipboardUserData = NULL;
+
+#ifdef _WIN32
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(window, &wmInfo);
+    io.ImeWindowHandle = wmInfo.info.win.window;
+#endif
+
+    ImGui_ImplOpenGL2_Init();
+
+    ImGui::StyleColorsDark();
 }
 
 void System_SetWindowTitle(const char *title) {
@@ -126,6 +196,17 @@ bool System_SetWindowSize(int *width, int *height, bool fs) {
         }
     }
 
+    /* ensure that imgui is kept up to date */
+
+    ImGuiIO &io = ImGui::GetIO();
+
+    int w, h;
+    int display_w, display_h;
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+    io.DisplaySize = ImVec2((float)w, (float)h);
+    io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+
     return true;
 }
 
@@ -135,6 +216,9 @@ void System_SwapDisplay(void) {
 
 void System_Shutdown(void) {
     ShutdownEngine();
+
+    ImGui_ImplOpenGL2_DestroyDeviceObjects();
+    ImGui::DestroyContext();
 
     SDL_StopTextInput();
 
@@ -150,7 +234,7 @@ void System_Shutdown(void) {
         SDL_DestroyWindow(window);
     }
 
-    SDL_ShowCursor(1);
+    SDL_ShowCursor(SDL_TRUE);
 
     SDL_EnableScreenSaver();
     SDL_Quit();
@@ -159,7 +243,6 @@ void System_Shutdown(void) {
 }
 
 ///////////////////////////////////////////////////
-
 
 int TranslateSDLKey(int key) {
     if(key < 128) {
@@ -203,6 +286,15 @@ int TranslateSDLKey(int key) {
     }
 }
 
+int TranslateSDLMouseButton(int button) {
+    switch(button) {
+        case SDL_BUTTON_LEFT: return PORK_MOUSE_BUTTON_LEFT;
+        case SDL_BUTTON_RIGHT: return PORK_MOUSE_BUTTON_RIGHT;
+        case SDL_BUTTON_MIDDLE: return PORK_MOUSE_BUTTON_MIDDLE;
+        default: return -1;
+    }
+}
+
 int TranslateSDLButton(int button) {
     switch(button) {
         case SDL_CONTROLLER_BUTTON_A: return PORK_BUTTON_CROSS;
@@ -228,39 +320,78 @@ int TranslateSDLButton(int button) {
 }
 
 void PollEvents(void) {
+    ImGuiIO &io = ImGui::GetIO();
+
     SDL_Event event;
     while(SDL_PollEvent(&event)) {
         switch(event.type) {
             default:break;
 
-            case SDL_KEYUP: {
-                int key = TranslateSDLKey(event.key.keysym.sym);
-                if(key != -1) {
-                    SetKeyState(key, false);
-                }
-            } break;
-
+            case SDL_KEYUP:
             case SDL_KEYDOWN: {
+                if(io.WantCaptureKeyboard) {
+                    int key = event.key.keysym.scancode;
+                    IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+                    io.KeysDown[key] = (event.type == SDL_KEYDOWN);
+                    io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+                    io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+                    io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+                    io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+                    break;
+                }
+
                 int key = TranslateSDLKey(event.key.keysym.sym);
                 if(key != -1) {
-                    SetKeyState(key, true);
+                    SetKeyState(key, (event.type == SDL_KEYDOWN));
                 }
             } break;
 
             case SDL_TEXTINPUT: {
-
+                if(io.WantCaptureKeyboard) {
+                    io.AddInputCharactersUTF8(event.text.text);
+                    break;
+                }
             } break;
 
+            case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEBUTTONDOWN: {
+                switch(event.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        io.MouseDown[0] = event.button.state;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        io.MouseDown[1] = event.button.state;
+                        break;
+                    case SDL_BUTTON_MIDDLE:
+                        io.MouseDown[2] = event.button.state;
+                        break;
 
+                    default:break;
+                }
+
+                int button = TranslateSDLMouseButton(event.button.button);
+                SetMouseState(event.motion.x, event.motion.y, button, event.button.state);
             } break;
 
             case SDL_MOUSEWHEEL: {
+                if(event.wheel.x > 0) {
+                    io.MouseWheelH += 1;
+                } else if(event.wheel.x < 0) {
+                    io.MouseWheelH -= 1;
+                }
 
+                if(event.wheel.y > 0) {
+                    io.MouseWheel += 1;
+                } else if(event.wheel.y < 0) {
+                    io.MouseWheel -= 1;
+                }
             } break;
 
             case SDL_MOUSEMOTION: {
+                io.MousePos.x = event.motion.x;
+                io.MousePos.y = event.motion.y;
 
+                SetMouseState(event.motion.x, event.motion.y, -1, false);
             } break;
 
             case SDL_CONTROLLERBUTTONUP: {
@@ -298,6 +429,9 @@ void PollEvents(void) {
             case SDL_WINDOWEVENT: {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
                     UpdateViewport((unsigned int) event.window.data1, (unsigned int) event.window.data2);
+
+                    imgui_camera->viewport.w = event.window.data1;
+                    imgui_camera->viewport.h = event.window.data2;
                 }
             } break;
         }
@@ -390,8 +524,22 @@ int main(int argc, char **argv) {
         }
     }
 
+    /* setup the camera we'll use for drawing the imgui overlay */
+
+    if((imgui_camera = plCreateCamera()) == NULL) {
+        Error("failed to create ui camera, aborting!\n%s\n", plGetError());
+    }
+
+    imgui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    imgui_camera->fov          = 90;
+    imgui_camera->near         = 0;
+    imgui_camera->far          = 1000;
+    imgui_camera->viewport.w   = cv_display_width->i_value;
+    imgui_camera->viewport.h   = cv_display_height->i_value;
+
     //SDL_SetRelativeMouseMode(SDL_TRUE);
-    //SDL_ShowCursor(0);
+    SDL_CaptureMouse(SDL_TRUE);
+    SDL_ShowCursor(SDL_TRUE);
 
     /* using this to catch modified keys
      * without having to do the conversion
@@ -416,9 +564,30 @@ int main(int argc, char **argv) {
             loops++;
         }
 
+        ImGui_ImplOpenGL2_NewFrame();
+
+        ImGui::NewFrame();
+
+        ImGui::Begin("Another Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Text("Hello from another window!");
+        ImGui::End();
+
         delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
         PreDrawPork(delta_time);
+
         DrawPork();
+
+        /* now render imgui */
+
+        ImGui::Render();
+
+        plSetupCamera(imgui_camera);
+        plSetShaderProgram(NULL);
+
+        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+
+        /* and finally, swap */
+
         PostDrawPork();
     }
 

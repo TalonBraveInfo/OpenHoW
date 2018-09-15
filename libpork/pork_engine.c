@@ -86,7 +86,7 @@ void InitEngine(void) {
     }
 
     LogInfo("base path: %s\n", GetBasePath());
-    LogInfo("campaign path: %s%s\n", GetBasePath(), GetCampaignPath());
+    LogInfo("campaign path: %s/campaigns/%s\n", GetBasePath(), GetCampaignPath());
     LogInfo("working directory: %s\n", plGetWorkingDirectory());
 
     InitScripting();

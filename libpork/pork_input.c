@@ -110,5 +110,10 @@ void SetKeyState(int key, bool status) {
 }
 
 void SetMouseState(int x, int y, int button, bool status) {
-
+    pork_assert(button < PORK_MAX_MOUSE_BUTTONS);
+    input_state.mouse.x = x;
+    input_state.mouse.y = y;
+    if(button >= 0) {
+        input_state.mouse.button_states[button] = status;
+    }
 }

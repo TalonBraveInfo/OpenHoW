@@ -25,6 +25,8 @@
 
 #else /* C wrapper */
 
+void ImGui_NewFrame(void);
+
 bool ImGui_Begin(const char *name, bool *p_open, uint flags);
 void ImGui_End(void);
 bool ImGui_BeginChild(const char *str_id, PLVector2 size, bool border, uint flags);
