@@ -21,10 +21,11 @@
 #include <PL/platform_console.h>
 
 #include "../libpork/pork.h"
+//#include "../libpork/pork_engine.h"
 
-#define LogInfo(...)  plLogMessage(MAX_PORK_LOGS, __VA_ARGS__)
-#define LogWarn(...)  plLogMessage(MAX_PORK_LOGS + 1, __VA_ARGS__)
-#define Error(...)    plLogMessage(MAX_PORK_LOGS + 2, __VA_ARGS__)
+#define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
+#define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
+#define Error(...)    plLogMessage(2, __VA_ARGS__)
 
 typedef struct CopyPath {
     const char *input, *output;
@@ -696,7 +697,9 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
             goto CHECK_AGAIN;
         }
 
-        data = pork_alloc(index.length, sizeof(uint8_t), false);
+        if((data = calloc(index.length, sizeof(uint8_t))) == NULL) {
+            Error("failed to allocate data handle!\n");
+        }
 
         // go and grab the data so we can export!
         fseek(file, index.offset, SEEK_SET);
@@ -890,12 +893,18 @@ void MergeTextureTargets(void) {
         output.colour_format    = PL_COLOURFORMAT_RGBA;
         output.levels           = 1;
         output.size             = plGetImageSize(output.format, output.width, output.height);
-        output.data             = pork_alloc(output.levels, sizeof(uint8_t*), true);
-        output.data[0]          = pork_alloc(output.size, sizeof(uint8_t), true);
+
+        if((output.data = calloc(output.levels, sizeof(uint8_t*))) == NULL) {
+            Error("failed to allocate data handle!\n");
+        }
+
+        if((output.data[0] = calloc(output.size, sizeof(uint8_t))) == NULL) {
+            Error("failed to allocate data handle!\n");
+        }
 
         for(unsigned int j = 0; j < merge->num_textures; ++j) {
             PLImage image;
-            const char *path = pork_find(merge->targets[j].path);
+            const char *path = merge->targets[j].path;
             if(!plLoadImage(path, &image)) {
                 LogWarn("failed to find image, \"%s\", for merge!\n", merge->targets[j].path);
                 continue;
@@ -918,7 +927,7 @@ void MergeTextureTargets(void) {
         }
 
         LogInfo("writing %s\n", merge->output);
-        plWriteImage(&output, pork_find(merge->output));
+        plWriteImage(&output, merge->output);
         plFreeImage(&output);
     }
 }
@@ -999,7 +1008,7 @@ void ProcessCopyPaths(const char *in, const char *out, const CopyPath *paths, un
 int main(int argc, char **argv) {
     if(argc < 1) {
         printf("invalid number of arguments ...\n"
-               "  extractor <game_path> ~<out_path>\n");
+               "  extractor <game_path> -<out_path>\n");
         return EXIT_SUCCESS;
     }
 
@@ -1014,32 +1023,25 @@ int main(int argc, char **argv) {
     snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/extraction", app_dir);
     plSetupLogOutput(log_path);
 
-    /* initialize our interface with the engine */
-
-    EngineLauncherInterface interface;
-    InitNULLEngineInterface(&interface);
-
-    interface.mode = PORK_MODE_LIMITED;
-
-  InitEngine(argc, argv, interface);
-
     /* set our logs up */
 
-    plSetupLogLevel(MAX_PORK_LOGS, "info", PLColour(0, 255, 0, 255), true);
-    plSetupLogLevel(MAX_PORK_LOGS + 1, "warning", PLColour(255, 255, 0, 255), true);
-    plSetupLogLevel(MAX_PORK_LOGS + 2, "error", PLColour(255, 0, 0, 255), true);
+    plSetupLogLevel(0, "info", PLColour(0, 255, 0, 255), true);
+    plSetupLogLevel(1, "warning", PLColour(255, 255, 0, 255), true);
+    plSetupLogLevel(2, "error", PLColour(255, 0, 0, 255), true);
 
     /* now deal with any arguments */
 
     char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    char output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     for(int i = 1; i < argc; ++i) {
-        if(argv[i][0] != '-') {
+        if(argv[i][0] == '-') {
+            strncpy(output_path, argv[i], sizeof(output_path));
+        } else {
             strncpy(input_path, argv[i], sizeof(input_path));
-            break;
         }
     }
 
-    if(input_path[0] == '\0') {
+    if(plIsEmptyString(input_path)) {
         Error("invalid game path, aborting!\n");
         return EXIT_FAILURE;
     }
@@ -1047,7 +1049,7 @@ int main(int argc, char **argv) {
     LogInfo("\n"
             "output path: %s\n"
             "input path:  %s\n",
-            GetBasePath(), input_path);
+            output_path, input_path);
 
     /* ensure it's a valid version - original CD version requires
      * us to extract audio from the CD while GOG and Steam versions
@@ -1071,22 +1073,22 @@ int main(int argc, char **argv) {
         }
 
         case VERSION_ENG_PC: {
-            ProcessPackagePaths(input_path, GetBasePath(), pc_package_paths, plArrayElements(pc_package_paths));
-            ProcessCopyPaths(input_path, GetBasePath(), pc_copy_paths, plArrayElements(pc_copy_paths));
+            ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
+            ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
             // todo: rip music from CD
         } break;
 
         case VERSION_ENG_PC_DIGITAL: {
-            ProcessPackagePaths(input_path, GetBasePath(), pc_package_paths, plArrayElements(pc_package_paths));
-            ProcessCopyPaths(input_path, GetBasePath(), pc_copy_paths, plArrayElements(pc_copy_paths));
-            ProcessCopyPaths(input_path, GetBasePath(), pc_music_paths, plArrayElements(pc_music_paths));
+            ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
+            ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
+            ProcessCopyPaths(input_path, output_path, pc_music_paths, plArrayElements(pc_music_paths));
         } break;
     }
 
     MergeTextureTargets();
 
     /* convert the remaining TIM textures to PNG */
-    plScanDirectory(GetBasePath(), "tim", ConvertImageToPNG, true);
+    plScanDirectory(output_path, "tim", ConvertImageToPNG, true);
 
     LogInfo("complete\n");
     return EXIT_SUCCESS;

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "duktape.h"
+#include "duktape-2.2.0/duktape.h"
 
 PL_EXTERN_C
 
