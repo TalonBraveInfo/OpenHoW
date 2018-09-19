@@ -57,7 +57,6 @@ struct {
 PL_EXTERN_C
 
 void InitEngine(void);
-void InitEditor(void);
 void ShutdownEngine(void);
 
 void SetupDefaultCamera(void);

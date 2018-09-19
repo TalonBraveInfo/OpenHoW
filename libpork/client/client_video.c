@@ -47,7 +47,7 @@ const char *video_paths[]={
 
 #define MAX_QUEUED_VIDEOS   4
 
-struct {
+typedef struct VideoState {
     bool is_playing;
 
     AVPacket        *av_packet;
@@ -64,7 +64,8 @@ struct {
     } queue[MAX_QUEUED_VIDEOS];
     unsigned int num_videos_queued; /* elements */
     unsigned int cur_video;         /* index */
-} video;
+} VideoState;
+static VideoState video;
 
 void PlayVideoCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
@@ -74,7 +75,6 @@ void PlayVideoCommand(unsigned int argc, char *argv[]) {
     }
 
     const char *cmd = argv[1];
-    void QueueVideos(const char **videos, unsigned int num_videos);
     QueueVideos(&cmd, argc - 1);
 
     /* immediately begin playing the videos */
@@ -82,7 +82,7 @@ void PlayVideoCommand(unsigned int argc, char *argv[]) {
 }
 
 void InitVideo(void) {
-    memset(&video, 0, sizeof(video));
+    memset(&video, 0, sizeof(VideoState));
 
     av_register_all();
     avformat_network_init();
@@ -98,7 +98,7 @@ void ShutdownVideo(void) {
 /***************************************************************/
 
 void ClearVideoQueue(void) {
-    memset(video.queue, 0, sizeof(video.queue) * MAX_QUEUED_VIDEOS);
+    memset(video.queue, 0, sizeof(video.queue));
     video.cur_video = 0;
     video.num_videos_queued = 0;
 }

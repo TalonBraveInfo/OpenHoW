@@ -83,6 +83,11 @@ target_link_libraries(OpenHoW
         avcodec
         avutil
 
-        openal
-
         GLEW)
+
+# temporary, hopefully, just to get this compiling on mac os!
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(OpenHoW "-framework OpenAL")
+else()
+    target_link_libraries(OpenHoW openal)
+endif()

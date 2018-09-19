@@ -1,5 +1,5 @@
 
-in vec2 position;
+attribute vec2 position;
 
 void main() {
     gl_TexCoord[0] = gl_MultiTexCoord0;

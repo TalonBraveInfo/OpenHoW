@@ -108,12 +108,6 @@ void InitEngine(void) {
     InitMaps();
 }
 
-void InitEditor(void) {
-    InitClient();
-    InitModels();
-    InitMaps();
-}
-
 bool IsPorkRunning(void) {
     return true;
 }

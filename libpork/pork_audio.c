@@ -20,10 +20,24 @@
 
 #include "client/client_frontend.h"
 
+#ifndef __APPLE__ // todo!!!
+
+#ifdef __APPLE__
+
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+//#include <OpenAL/alext.h>
+//#include <OpenAL/efx-presets.h>
+
+#else
+
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
 #include <AL/efx-presets.h>
+
+#endif
+
 #include <PL/platform_graphics_camera.h>
 
 LPALGENEFFECTS alGenEffects;
@@ -177,3 +191,12 @@ void ShutdownAudio(void) {
 
     audio.enabled = false;
 }
+
+#else
+
+void InitAudio(void) {}
+void StopAudio(void) {}
+void SimulateAudio(void) {}
+void ShutdownAudio(void) {}
+
+#endif
