@@ -655,13 +655,18 @@ void DrawPork(void) {
     //DrawActors(cur_delta);
     DrawParticles(cur_delta);
 
+    g_state.ui_camera->viewport.r_w = 640;
+    g_state.ui_camera->viewport.r_h = 480;
     SetupFrontendCamera();
 
     DrawFrontend();
+
+    g_state.ui_camera->viewport.r_w = 0;
+    g_state.ui_camera->viewport.r_h = 0;
+    SetupFrontendCamera();
+
     DrawDebugOverlay();
     DrawConsole();
-
-    plDrawPerspectivePOST(g_state.ui_camera);
 }
 
 void PostDrawPork(void) {

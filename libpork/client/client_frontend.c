@@ -377,6 +377,8 @@ void DrawFrontend(void) {
             } break;
         }
     }
+
+    plDrawPerspectivePOST(g_state.ui_camera);
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */
