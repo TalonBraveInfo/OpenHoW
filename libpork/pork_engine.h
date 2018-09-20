@@ -25,7 +25,7 @@
 
 ///////////////////////////////////////////////////
 
-struct {
+typedef struct EngineState {
     struct PLCamera *camera;       // camera used for general gameplay
     struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
@@ -46,7 +46,8 @@ struct {
     struct {
         PorkEdCtx current_context;
     } editor;
-} g_state;
+} EngineState;
+extern EngineState g_state;
 
 #define GetUIViewportWidth()    640
 #define GetUIViewportHeight()   480

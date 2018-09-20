@@ -28,6 +28,8 @@
 #include "client/client.h"
 #include "server/server.h"
 
+EngineState g_state;
+
 const char *GetBasePath(void) {
     pork_assert(cv_base_path);
     return cv_base_path->s_value;
@@ -58,7 +60,7 @@ void InitModels(void);
 void InitEngine(void) {
     LogInfo("initializing engine (PORK %d.%d)...\n", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
 
-    memset(&g_state, 0, sizeof(g_state));
+    memset(&g_state, 0, sizeof(EngineState));
 
     InitConsole();
 

@@ -68,8 +68,8 @@ void UI_DisplayConsole(void) {
 
     static char buf[256];
 
-    ImGui::SetNextWindowSize(ImVec2(g_state.camera->viewport.w - 20, 128), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(10, g_state.camera->viewport.h - 138));
+    ImGui::SetNextWindowSize(ImVec2(GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10, GetViewportHeight(&g_state.camera->viewport) - 138));
     ImGui::Begin("Console", &show_console);
     if(ImGui::InputText("Input", buf, 256)) {
 
