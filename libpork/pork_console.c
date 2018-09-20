@@ -315,9 +315,10 @@ void DrawConsole(void) {
     }
 
     plSetBlendMode(PL_BLEND_DEFAULT);
+
     plDrawFilledRectangle(plCreateRectangle(
             PLVector2(0, 0),
-            PLVector2(GetViewportWidth(), 32),
+            PLVector2(GetViewportWidth(&g_state.ui_camera->viewport), 32),
             PLColour(0, 0, 0, 255),
             PLColour(0, 0, 0, 0),
             PLColour(0, 0, 0, 255),
@@ -338,6 +339,8 @@ void DrawConsole(void) {
     }
 
     /* DrawBitmapString disables blend - no need to call again here */
+
+    plSetBlendMode(PL_BLEND_DEFAULT);
 }
 
 void ResetConsole(void) {

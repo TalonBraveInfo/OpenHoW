@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PL/platform_graphics_camera.h>
+
 #include "pork_engine.h"
 #include "pork_imgui.h"
 
@@ -60,7 +62,19 @@ void UI_DisplayQuitBox(void) {
 }
 
 void UI_DisplayConsole(void) {
+    if(!show_console) {
+        return;
+    }
 
+    static char buf[256];
+
+    ImGui::SetNextWindowSize(ImVec2(g_state.camera->viewport.w - 20, 128), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10, g_state.camera->viewport.h - 138));
+    ImGui::Begin("Console", &show_console);
+    if(ImGui::InputText("Input", buf, 256)) {
+
+    }
+    ImGui::End();
 }
 
 void UI_DisplayDebugMenu(void) {
@@ -103,6 +117,16 @@ void UI_DisplayDebugMenu(void) {
                 plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
             }
 
+            if(ImGui::IsItemHovered() && tc > 0) {
+                const PLTexture *texture = GetCachedTexture((unsigned int)cv_display_texture_cache->i_value);
+                if(texture != NULL) {
+                    ImGui::BeginTooltip();
+                    ImGui::Image((ImTextureID)texture->internal.id, ImVec2(texture->w, texture->h));
+                    ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
+                    ImGui::EndTooltip();
+                }
+            }
+
             static int im = 0;
             if(ImGui::SliderInt("Show Input States", &im, 0, 2)) {
                 char buf[4];
@@ -120,6 +144,7 @@ void UI_DisplayDebugMenu(void) {
         ImGui::EndMainMenuBar();
     }
 
+    UI_DisplayConsole();
     UI_DisplayQuitBox();
 }
 

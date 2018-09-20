@@ -67,6 +67,11 @@ void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y
     *h = index->offsets[tex_id].h;
 }
 
+const PLTexture *GetCachedTexture(unsigned int id) {
+    pork_assert(id < MAX_TEXTURE_INDEX);
+    return texture_cache[id].texture;
+}
+
 void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
     size_t cache_size = GetTextureCacheSize();
     const char *str = "total texture cache: ";
@@ -359,6 +364,22 @@ void UpdateViewport(int x, int y, int width, int height) {
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 }
 
+int GetViewportWidth(const PLViewport *viewport) {
+    if(viewport->r_w != 0 && viewport->r_w != viewport->w) {
+        return viewport->r_w;
+    }
+
+    return viewport->w;
+}
+
+int GetViewportHeight(const PLViewport *viewport) {
+    if(viewport->r_h != 0 && viewport->r_h != viewport->h) {
+        return viewport->r_h;
+    }
+
+    return viewport->h;
+}
+
 /**
  * Update display to match the current settings.
  */
@@ -507,7 +528,7 @@ void DrawDebugOverlay(void) {
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, GetViewportHeight() - 32, 0, 1.f, PL_COLOUR_WHITE, ms_count);
+        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE, ms_count);
     }
 
     if (cv_debug_input->i_value > 0) {
@@ -520,7 +541,7 @@ void DrawDebugOverlay(void) {
                     char key_state[64];
                     snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
                     DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, PL_COLOUR_WHITE, key_state);
-                    if (y + 15 > GetViewportHeight() - 50) {
+                    if (y + 15 > GetViewportHeight(&g_state.ui_camera->viewport) - 50) {
                         x += 90;
                         y = 50;
                     } else {
@@ -639,6 +660,8 @@ void DrawPork(void) {
     DrawFrontend();
     DrawDebugOverlay();
     DrawConsole();
+
+    plDrawPerspectivePOST(g_state.ui_camera);
 }
 
 void PostDrawPork(void) {

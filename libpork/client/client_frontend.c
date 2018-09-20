@@ -28,15 +28,15 @@
 #include "client_display.h"
 #include "client_video.h"
 
-unsigned int frontend_state = FE_MODE_INIT;
-unsigned int old_frontend_state = (unsigned int) -1;
+static unsigned int frontend_state = FE_MODE_INIT;
+static unsigned int old_frontend_state = (unsigned int) -1;
 
 /* for now we're going to hard-code most of this but eventually
  * we will start freeing most of this up... either through JS
  * or some other way, so y'know. Wheeee.
  */
 
-const char *papers_teams_paths[MAX_TEAMS]={
+static const char *papers_teams_paths[MAX_TEAMS]={
         "fe/papers/british.bmp",
         "fe/papers/american.bmp",
         "fe/papers/french.bmp",
@@ -73,8 +73,8 @@ enum {
 
     MAX_FE_GAME_TEXTURES
 };
-PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
-PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
+static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
+static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
 /************************************************************/
 /* FE Object Implementation
@@ -95,7 +95,7 @@ typedef struct FEObject {
 
     bool is_reserved;
 } FEObject;
-FEObject fe_objects[MAX_FE_OBJECTS];
+static FEObject fe_objects[MAX_FE_OBJECTS];
 
 void SimulateFEObjects(void) {
     for(unsigned int i = 0; i < MAX_FE_OBJECTS; ++i) {
@@ -377,8 +377,6 @@ void DrawFrontend(void) {
             } break;
         }
     }
-
-    plDrawPerspectivePOST(g_state.ui_camera);
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */

@@ -92,7 +92,7 @@ void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, floa
         }
     }
 
-    plSetBlendMode(PL_BLEND_DISABLE);
+    plSetBlendMode(PL_BLEND_DEFAULT);
 }
 
 BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {

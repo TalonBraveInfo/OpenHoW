@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <PL/platform_graphics_camera.h>
+
 enum {
     TEXTURE_INDEX_BRITISH,
     TEXTURE_INDEX_AMERICAN,
@@ -42,9 +44,13 @@ void UpdateDisplay(void);
 
 void UpdateViewport(int x, int y, int width, int height);
 
+int GetViewportWidth(const PLViewport *viewport);
+int GetViewportHeight(const PLViewport *viewport);
+
 void ClearTextureIndex(unsigned int id);
 void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h);
+const PLTexture *GetCachedTexture(unsigned int id);
 
 PLTexture *LoadTexture(const char *path, PLTextureFilter filter);
 
