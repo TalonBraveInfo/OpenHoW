@@ -16,6 +16,7 @@
  */
 
 #include <PL/platform_graphics_camera.h>
+#include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
 #include "pork_imgui.h"
@@ -27,41 +28,99 @@ static bool show_file = false;
 static bool show_about = false;
 static bool show_console = false;
 static bool show_fps = false;
+static bool show_particle_editor = false;
 
-void UI_DisplayFileBox(void) {
-    if(show_file) {
-        ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-        ImGui::Begin("About", &show_file, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
-                                          ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::End();
+/****************************************************/
+/* Particle Editor */
+
+void UI_DisplayParticleEditor() {
+    if(!show_particle_editor) {
+        return;
     }
+
+
 }
 
-void UI_DisplayQuitBox(void) {
-    if(show_quit) {
-        ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-        ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
-                                                  ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
-        ImGui::Dummy(ImVec2(0, 5));
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2(0, 5));
+/****************************************************/
 
-        if (ImGui::Button("Yes", ImVec2(64, 0))) {
-            System_Shutdown();
-        }
+static std::vector<std::string> file_list;
 
-        ImGui::SameLine();
-
-        if (ImGui::Button("No", ImVec2(64, 0))) {
-            show_quit = false;
-        }
-
-        ImGui::End();
-    }
+void AddFilePaths(const char *path) {
+    file_list.push_back(path);
 }
 
-void UI_DisplayConsole(void) {
+void ScanDirectories() {
+    file_list.empty();
+    plScanDirectory(GetBasePath(), "map", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "pog", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "pps", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "tim", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "bmp", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "png", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "wav", AddFilePaths, true);
+}
+
+void UI_DisplayFileBox() {
+    if(!show_file) {
+        return;
+    }
+
+    static bool has_scanned = false;
+    if(!has_scanned) {
+        ScanDirectories();
+        has_scanned = true;
+    }
+
+    ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_Once);
+    ImGui::Begin("Open File", &show_file);
+
+    static ImGuiTextFilter filter;
+    filter.Draw();
+
+    ImGui::Separator();
+
+    for (unsigned int i = 0; i < file_list.size(); ++i) {
+        if (filter.PassFilter(file_list[i].c_str())) {
+            if(ImGui::Button("Open")) {
+
+            }
+            ImGui::SameLine(0, 10);
+            ImGui::TextColored(ImColor(0, 255, 0), "%s", file_list[i].c_str());
+            ImGui::Separator();
+        }
+    }
+
+    ImGui::End();
+}
+
+void UI_DisplayQuitBox() {
+    if(!show_quit) {
+        return;
+    }
+
+    ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+    ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
+                                              ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
+    ImGui::Dummy(ImVec2(0, 5));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, 5));
+
+    if (ImGui::Button("Yes", ImVec2(64, 0))) {
+        System_Shutdown();
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("No", ImVec2(64, 0))) {
+        show_quit = false;
+    }
+
+    ImGui::End();
+}
+
+void UI_DisplayConsole() {
     if(!show_console) {
         return;
     }
@@ -94,12 +153,8 @@ void UI_DisplayDebugMenu(void) {
 #endif
 
     if(ImGui::BeginMainMenuBar()) {
-
         if(ImGui::BeginMenu("File")) {
-            if(ImGui::MenuItem("Open...", "CTRL+O")) {
-
-            }
-
+            ImGui::MenuItem("Open...", "CTRL+O", &show_file);
             ImGui::Separator();
             ImGui::MenuItem("Quit", "CTRL+Q", &show_quit);
             ImGui::EndMenu();
@@ -144,8 +199,13 @@ void UI_DisplayDebugMenu(void) {
         ImGui::EndMainMenuBar();
     }
 
-    UI_DisplayConsole();
+    UI_DisplayFileBox();
     UI_DisplayQuitBox();
+
+    /* Editors */
+    UI_DisplayParticleEditor();
+
+    UI_DisplayConsole();
 }
 
 /****************************************************/

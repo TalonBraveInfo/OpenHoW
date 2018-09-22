@@ -631,7 +631,9 @@ void SetupDefaultCamera(void) {
     plSetupCamera(g_state.camera);
 }
 
-void SetupFrontendCamera(void) {
+void SetupFrontendCamera(int w, int h) {
+    g_state.ui_camera->viewport.r_w = w;
+    g_state.ui_camera->viewport.r_h = h;
     plSetupCamera(g_state.ui_camera);
 }
 
@@ -655,16 +657,10 @@ void DrawPork(void) {
     //DrawActors(cur_delta);
     DrawParticles(cur_delta);
 
-    g_state.ui_camera->viewport.r_w = 640;
-    g_state.ui_camera->viewport.r_h = 480;
-    SetupFrontendCamera();
-
+    SetupFrontendCamera(640, 480);
     DrawFrontend();
 
-    g_state.ui_camera->viewport.r_w = 0;
-    g_state.ui_camera->viewport.r_h = 0;
-    SetupFrontendCamera();
-
+    SetupFrontendCamera(0, 0);
     DrawDebugOverlay();
     DrawConsole();
 }
