@@ -4,3 +4,6 @@
 [submodule "imgui"]
 	path = imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "imgui_tabs"]
+	path = imgui_tabs
+	url = https://github.com/ebachard/imgui_tabs.git

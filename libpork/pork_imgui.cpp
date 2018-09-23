@@ -23,12 +23,13 @@
 
 #include "client/client_display.h"
 
-static bool show_quit = false;
-static bool show_file = false;
-static bool show_about = false;
-static bool show_console = false;
-static bool show_fps = false;
-static bool show_particle_editor = false;
+static bool show_quit               = false;
+static bool show_file               = false;
+static bool show_about              = false;
+static bool show_console            = false;
+static bool show_texture            = false;
+static bool show_fps                = false;
+static bool show_particle_editor    = false;
 
 /****************************************************/
 /* Particle Editor */
@@ -42,22 +43,100 @@ void UI_DisplayParticleEditor() {
 }
 
 /****************************************************/
+/* Texture Viewer */
 
-static std::vector<std::string> file_list;
+static PLTexture *cur_texture = nullptr;
 
-void AddFilePaths(const char *path) {
-    file_list.push_back(path);
+std::vector<PLTexture*> texture_list;
+
+void UI_LoadDisplayTexture(const char *path) {
+
+}
+
+void UI_DisplayTextureViewer() {
+    if(!show_texture) {
+        return;
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(cur_texture->w, cur_texture->h), ImGuiCond_Once);
+    ImGui::Begin("Texture Viewer", &show_texture, ImGuiWindowFlags_MenuBar);
+
+    if(ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if(ImGui::MenuItem("Open...")) {
+                show_file = true;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::Image(reinterpret_cast<ImTextureID>(cur_texture->internal.id), ImVec2(cur_texture->w, cur_texture->h));
+    ImGui::Separator();
+    ImGui::Text("Name: %s", cur_texture->name);
+    ImGui::Text("W:%d H:%d", cur_texture->w, cur_texture->h);
+    ImGui::Text("Size: %d", cur_texture->size);
+
+    ImGui::End();
+}
+
+/****************************************************/
+
+enum {
+    FILE_TYPE_UNKNOWN,
+    FILE_TYPE_MAP,
+    FILE_TYPE_MAP_POG,
+    FILE_TYPE_IMAGE,
+    FILE_TYPE_AUDIO,
+    FILE_TYPE_PARTICLE,
+
+    MAX_FILE_TYPES
+};
+
+typedef struct FileDescriptor {
+    char path[PL_SYSTEM_MAX_PATH];
+    unsigned int type;
+} FileDescriptor;
+
+static std::vector<FileDescriptor> file_list;
+
+void AddFilePath(const char *path) {
+    FileDescriptor descriptor;
+    strncpy(descriptor.path, path, sizeof(descriptor.path));
+    descriptor.type = FILE_TYPE_UNKNOWN;
+
+    const char *ext = plGetFileExtension(path);
+    pork_assert(!plIsEmptyString(ext), "failed to identify file, extension was empty!\n");
+    if(pl_strncasecmp(ext, "map", 3) == 0) {
+        descriptor.type = FILE_TYPE_MAP;
+    } else if(
+            pl_strncasecmp(ext, "tim", 3) == 0 ||
+            pl_strncasecmp(ext, "bmp", 3) == 0 ||
+            pl_strncasecmp(ext, "png", 3) == 0
+            ) {
+        descriptor.type = FILE_TYPE_IMAGE;
+    } else if(
+            pl_strncasecmp(ext, "pps", 3) == 0
+            ) {
+        descriptor.type = FILE_TYPE_PARTICLE;
+    } else if(
+            pl_strncasecmp(ext, "wav", 3) == 0
+            ) {
+        descriptor.type = FILE_TYPE_AUDIO;
+    }
+
+    file_list.push_back(descriptor);
 }
 
 void ScanDirectories() {
     file_list.empty();
-    plScanDirectory(GetBasePath(), "map", AddFilePaths, true);
-    plScanDirectory(GetBasePath(), "pog", AddFilePaths, true);
-    plScanDirectory(GetBasePath(), "pps", AddFilePaths, true);
-    plScanDirectory(GetBasePath(), "tim", AddFilePaths, true);
-    plScanDirectory(GetBasePath(), "bmp", AddFilePaths, true);
-    plScanDirectory(GetBasePath(), "png", AddFilePaths, true);
-    plScanDirectory(GetBasePath(), "wav", AddFilePaths, true);
+    plScanDirectory(GetBasePath(), "map", AddFilePath, true);
+    plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
+    plScanDirectory(GetBasePath(), "pps", AddFilePath, true);
+    plScanDirectory(GetBasePath(), "tim", AddFilePath, true);
+    plScanDirectory(GetBasePath(), "bmp", AddFilePath, true);
+    plScanDirectory(GetBasePath(), "png", AddFilePath, true);
+    plScanDirectory(GetBasePath(), "wav", AddFilePath, true);
 }
 
 void UI_DisplayFileBox() {
@@ -78,18 +157,52 @@ void UI_DisplayFileBox() {
     static ImGuiTextFilter filter;
     filter.Draw();
 
-    ImGui::Separator();
+    if(ImGui::Button("Rescan", ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
+        ScanDirectories();
+    }
 
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(-1.f, 0));
+    ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() - 64), true);
+    ImGui::Columns(2);
     for (unsigned int i = 0; i < file_list.size(); ++i) {
-        if (filter.PassFilter(file_list[i].c_str())) {
-            if(ImGui::Button("Open")) {
+        if (filter.PassFilter(file_list[i].path)) {
+            if(ImGui::Button(file_list[i].path)) {
+                switch(file_list[i].type) {
+                    case FILE_TYPE_IMAGE: {
+                        if(cur_texture != nullptr) {
+                            plDeleteTexture(cur_texture, true);
+                        }
 
+                        cur_texture = LoadTexture(file_list[i].path, PL_TEXTURE_FILTER_LINEAR);
+                        show_texture = true;
+                    } break;
+
+                    default:break;
+                }
             }
-            ImGui::SameLine(0, 10);
-            ImGui::TextColored(ImColor(0, 255, 0), "%s", file_list[i].c_str());
-            ImGui::Separator();
+
+            ImGui::NextColumn();
+
+            const char *type = "Unknown";
+            switch(file_list[i].type) {
+                case FILE_TYPE_AUDIO:       type = "Audio"; break;
+                case FILE_TYPE_PARTICLE:    type = "Particle System"; break;
+                case FILE_TYPE_IMAGE:       type = "Image"; break;
+                case FILE_TYPE_MAP:         type = "Map"; break;
+                case FILE_TYPE_MAP_POG:     type = "Map Objects"; break;
+
+                default:break;
+            }
+
+            ImGui::Text(type);
+
+            ImGui::NextColumn();
         }
     }
+    ImGui::EndChild();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
 
     ImGui::End();
 }
@@ -154,9 +267,9 @@ void UI_DisplayDebugMenu(void) {
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
-            ImGui::MenuItem("Open...", "CTRL+O", &show_file);
+            if(ImGui::MenuItem("Open...")) { show_file = true; }
             ImGui::Separator();
-            ImGui::MenuItem("Quit", "CTRL+Q", &show_quit);
+            if(ImGui::MenuItem("Quit")) { show_quit = true; }
             ImGui::EndMenu();
         }
 
@@ -204,6 +317,7 @@ void UI_DisplayDebugMenu(void) {
 
     /* Editors */
     UI_DisplayParticleEditor();
+    UI_DisplayTextureViewer();
 
     UI_DisplayConsole();
 }
