@@ -22,13 +22,72 @@
 
 #include "client_shader.h"
 
-#if 1
+#define GLSL(...) #__VA_ARGS__
+#define GLSL_DEFAULT_UNIFORMS \
+        "uniform sampler2D diffuse;"
+
+static const char *fragment_water =
+        GLSL_DEFAULT_UNIFORMS
+        GLSL(
+                void main() {
+                    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+                }
+        );
+
+static const char *vertex_water =
+        GLSL_DEFAULT_UNIFORMS
+        GLSL(
+                attribute vec2 position;
+
+                void main() {
+                    gl_TexCoord[0] = gl_MultiTexCoord0;
+                    gl_Position = ftransform();
+                }
+        );
+
+static const char *fragment_default =
+        GLSL_DEFAULT_UNIFORMS
+        GLSL(
+                varying vec4 v_colour;
+
+                void main() {
+                    gl_FragColor = v_colour * texture2D(diffuse, gl_TexCoord[0].st);
+                }
+        );
+
+static const char *fragment_alpha_test =
+        GLSL_DEFAULT_UNIFORMS
+        GLSL(
+                varying vec4 v_colour;
+
+                void main() {
+                    vec4 colour = texture2D(diffuse, gl_TexCoord[0].st);
+                    if(colour.a < 0.1) {
+                        discard;
+                    }
+
+                    gl_FragColor = v_colour * colour;
+                }
+        );
+
+static const char *vertex_default =
+        GLSL_DEFAULT_UNIFORMS
+        GLSL(
+                varying vec4 v_colour;
+
+                void main() {
+                    v_colour = gl_Color;
+
+                    gl_TexCoord[0] = gl_MultiTexCoord0;
+                    gl_Position = ftransform();
+                }
+        );
 
 PLShaderProgram *programs[MAX_SHADERS];
 
-PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
+PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *fragment, size_t fl) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
-        Error("invalid name for shader program, aborting!\n");
+        Error("invalid stage for shader program, aborting!\n");
     }
 
     PLShaderProgram *program = plCreateShaderProgram();
@@ -36,16 +95,26 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
         Error("failed to create shader program, aborting!\n%s", plGetError());
     }
 
+#if 0
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "shaders/%s.vert", vertex);
-    if(!plRegisterShaderStage(program, pork_find(path), PL_SHADER_TYPE_VERTEX)) {
+    if(!plRegisterShaderStageFromDisk(program, pork_find(path), PL_SHADER_TYPE_VERTEX)) {
         Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
     }
 
     snprintf(path, sizeof(path), "shaders/%s.frag", fragment);
-    if(!plRegisterShaderStage(program, pork_find(path), PL_SHADER_TYPE_FRAGMENT)) {
+    if(!plRegisterShaderStageFromDisk(program, pork_find(path), PL_SHADER_TYPE_FRAGMENT)) {
         Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
     }
+#else
+    if(!plRegisterShaderStageFromMemory(program, vertex, vl, PL_SHADER_TYPE_VERTEX)) {
+        Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
+    }
+
+    if(!plRegisterShaderStageFromMemory(program, fragment, fl, PL_SHADER_TYPE_FRAGMENT)) {
+        Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
+    }
+#endif
 
     plLinkShaderProgram(program);
 
@@ -56,10 +125,13 @@ PLShaderProgram *LoadShaderProgram(const char *vertex, const char *fragment) {
 
 void InitShaders(void) {
     memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
-    programs[SHADER_DEFAULT]    = LoadShaderProgram("default", "default");
-    programs[SHADER_WATER]      = LoadShaderProgram("water", "water");
-    programs[SHADER_ALPHA_TEST] = LoadShaderProgram("default", "alpha_test");
-    //programs[SHADER_VIDEO]      = LoadShaderProgram("video", "video");
+    programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default),
+                                                      fragment_default, strlen(fragment_default));
+    programs[SHADER_WATER]      = CreateShaderProgram(vertex_water, strlen(vertex_water),
+                                                      fragment_water, strlen(fragment_water));
+    programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default),
+                                                      fragment_alpha_test, strlen(fragment_alpha_test));
+    //programs[SHADER_VIDEO]      = CreateShaderProgram("video", "video");
 
     /* set defaults */
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {
@@ -82,182 +154,3 @@ void ShutdownShaders(void) {
         plDeleteShaderProgram(programs[i], true);
     }
 }
-
-#else /* new implementation ??? */
-
-/*************************************************/
-/** Shader Stage                                **/
-
-ShaderStage::ShaderStage(unsigned int type) {
-    gl_id_ = glCreateShader(type);
-    if(gl_id_ == 0) {
-        Error("failed to generate shader stage!\n");
-    }
-}
-
-ShaderStage::~ShaderStage() {
-    if(parent_ != nullptr) {
-        glDetachShader(parent_->GetInstance(), gl_id_);
-        parent_ = nullptr;
-    }
-    glDeleteShader(gl_id_);
-    gl_id_ = 0;
-}
-
-bool ShaderStage::Load(const char *path) {
-    FILE *fp = std::fopen(path, "r");
-    if(fp == nullptr) {
-        Error("failed to open shader stage at \"%s\", aborting!\n", path);
-    }
-
-    size_t length = plGetFileSize(path);
-    char buf[length];
-    if(std::fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read in entirety of \"%s\"!\n", path);
-    }
-    fclose(fp);
-
-    return Compile(buf, length);
-}
-
-bool ShaderStage::Compile(const char *buf, size_t length) {
-    glShaderSource(gl_id_, 1, &buf, nullptr);
-
-    LogInfo("COMPILING SHADER STAGE...\n");
-    glCompileShader(gl_id_);
-
-    int status;
-    glGetShaderiv(gl_id_, GL_COMPILE_STATUS, &status);
-    if(status == 0) {
-        int s_length;
-        glGetShaderiv(gl_id_, GL_INFO_LOG_LENGTH, &s_length);
-        if(s_length > 1) {
-            char log[s_length];
-            glGetShaderInfoLog(gl_id_, s_length, nullptr, log);
-            LogWarn(" COMPILE ERROR:\n  %s\n", log);
-        }
-        return false;
-    }
-
-    LogInfo(" COMPLETED SUCCESSFULLY!\n");
-    return true;
-}
-
-/*************************************************/
-/** Shader Program                              **/
-
-ShaderProgram::ShaderProgram(const char *name) {
-    pork_assert(name != nullptr && name[0] != '\0');
-    snprintf(name_, sizeof(name_), "%s", name);
-
-    gl_id_ = glCreateProgram();
-    if(gl_id_ == 0) {
-        Error("failed to generate shader program for \"%s\"!\n", name);
-    }
-}
-
-ShaderProgram::~ShaderProgram() {
-    glDeleteProgram(gl_id_);
-}
-
-void ShaderProgram::RegisterStage(ShaderStage *stage) {
-    if(stage == nullptr) {
-        Error("attempted to register an invalid shader stage with \"%s\", aborting!\n", name_);
-    }
-
-    glAttachShader(gl_id_, stage->GetInstance());
-    stages_.push_back(stage);
-}
-
-void ShaderProgram::RegisterStage(const char *path, unsigned int type) {
-    ShaderStage *stage = new ShaderStage(type);
-    if(!stage->Load(path)) {
-        Error("failed to load shader stage for \"%s\", aborting!\n", name_);
-    }
-
-    RegisterStage(stage);
-}
-
-void ShaderProgram::Enable() {
-    if(!is_linked_) {
-        LogWarn("attempted to enable shader program \"%s\" before linking it!\n", name_);
-        return;
-    }
-
-    glUseProgram(gl_id_);
-}
-
-void ShaderProgram::Disable() {
-    glUseProgram(0);
-}
-
-/*************************************************/
-/** Shader API                                  **/
-
-/* default shaders */
-#include "shader_base.h"
-
-std::unordered_map<std::string, ShaderProgram*> programs;
-
-void InitShaders() {
-    LogInfo("initializing shader sub-system...\n");
-}
-
-void ShutdownShaders() {
-    for(auto program = programs.begin(); program != programs.end(); ++program) {
-        delete program->second;
-    }
-
-    programs.clear();
-}
-
-/**
- * register the shader program into our list.
- *
- * @param program
- * @param name
- */
-void RegisterShaderProgram(ShaderProgram *program) {
-    /* todo: do we really want to do this here!? */
-    program->Enable();
-    program->Initialize();
-    program->Disable();
-
-    programs.emplace(program->GetName(), program);
-}
-
-ShaderProgram *GetShaderProgram(const char *name) {
-    auto program = programs.find(name);
-    if(program != programs.end()) {
-        return program->second;
-    }
-
-    LogWarn("failed to find shader program \"%s\"!\n", name);
-    return nullptr;
-}
-
-void DisableShaderProgram() {
-    glUseProgram(0);
-}
-
-void DeleteShaderProgram(const char *name) {
-    auto program = programs.find(name);
-    if(program != programs.end()) {
-        delete program->second;
-        programs.erase(program);
-        return;
-    }
-
-    LogWarn("failed to find shader program \"%s\" for deletion!\n", name);
-}
-
-void DeleteShaderProgram(ShaderProgram *program) {
-    if(program == nullptr) {
-        LogDebug("attempted to delete an already null shader program...\n");
-        return;
-    }
-
-    DeleteShaderProgram(program->GetName());
-}
-
-#endif
