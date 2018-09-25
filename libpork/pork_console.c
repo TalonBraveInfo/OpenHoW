@@ -273,7 +273,7 @@ PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
 
 void InitConsole(void) {
-#define rvar(var, arc, ...) (var) = plRegisterConsoleVariable(plStringify((var)), __VA_ARGS__); (var)->archive = (arc)
+#define rvar(var, arc, ...) (var) = plRegisterConsoleVariable(plStringify(var), __VA_ARGS__); (var)->archive = (arc)
     rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
     rvar(cv_debug_fps, false, "1", pl_bool_var, NULL, "display framerate");
     rvar(cv_debug_skeleton, false, "0", pl_bool_var, NULL, "display pig skeletons");
