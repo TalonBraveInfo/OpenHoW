@@ -43,7 +43,7 @@ uint max_campaigns = 8;
 
 uint cur_campaign_idx = (uint) -1;
 
-CampaignManifest *GetCampaignSlot(uint num) {
+CampaignManifest *GetCampaignBySlot(uint num) {
     if(num >= max_campaigns) {
         uint old_max_campaigns = max_campaigns;
         max_campaigns += 8;
@@ -57,8 +57,57 @@ CampaignManifest *GetCampaignSlot(uint num) {
     return &campaigns[num];
 }
 
+CampaignManifest *GetCampaignByName(const char *name) {
+    for(unsigned int i = 0; i < num_campaigns; ++i) {
+        if(strncmp(campaigns[i].name, name, sizeof(campaigns[i].name)) == 0) {
+            return &campaigns[i];
+        }
+    }
+
+    LogWarn("failed to find campaign \"%s\"!\n");
+    return NULL;
+}
+
+CampaignManifest *GetCampaignByDirectory(const char *dir) {
+    for(unsigned int i = 0; i < num_campaigns; ++i) {
+        if(strncmp(campaigns[i].path_name, dir, sizeof(campaigns[i].path_name)) == 0) {
+            return &campaigns[i];
+        }
+    }
+
+    LogWarn("failed to find campaign \"%s\"!\n");
+    return NULL;
+}
+
+/**
+ * Load in the campaign manifest and store it into a buffer.
+ *
+ * @param path Path to the manifest file.
+ */
 void RegisterCampaign(const char *path) {
-    /* load in the campaign manifest and store it into a buffer */
+    char ext[24];
+    snprintf(ext, sizeof(ext), "%s", plGetFileExtension(path));
+    if(pl_strncasecmp(ext, "campaign", 8) == 0) {
+
+    }
+
+    char filename[32];
+    snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
+    if(plIsEmptyString(filename)) {
+        LogWarn("failed to get filename, aborting!\n");
+        return;
+    }
+
+
+
+
+    /* ensure the campaign actually exists before we proceed */
+    char directory[PL_SYSTEM_MAX_PATH];
+    snprintf(directory, sizeof(directory), "%s/campaigns/%s/", GetBasePath(), filename);
+    if(!plPathExists(directory)) {
+        LogWarn("invalid campaign path, \"%s\", ignoring!\n", directory);
+        return;
+    }
 
     FILE *fp = fopen(path, "r");
     if(fp == NULL) {
@@ -78,7 +127,7 @@ void RegisterCampaign(const char *path) {
 
     ParseJSON(buf);
 
-    CampaignManifest *slot = GetCampaignSlot(num_campaigns++);
+    CampaignManifest *slot = GetCampaignBySlot(num_campaigns++);
     if(slot == NULL) {
         LogWarn("failed to fetch campaign slot, hit memory limit!?\n");
         FlushJSON();
@@ -90,6 +139,9 @@ void RegisterCampaign(const char *path) {
     strncpy(slot->author, GetJSONStringProperty("author"), sizeof(slot->author));
 
     FlushJSON();
+
+    strncpy(slot->path, path, sizeof(slot->path));
+    strncpy(slot->path_name, filename, sizeof(slot->path_name));
 }
 
 /**
@@ -110,6 +162,34 @@ void RegisterCampaigns(void) {
  */
 CampaignManifest *GetCurrentCampaign(void) {
     return &campaigns[cur_campaign_idx];
+}
+
+void SetCampaign(const char *dir) {
+
+
+    CampaignManifest *campaign = GetCampaignByDirectory(dir);
+    if(campaign == NULL) {
+        LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
+
+        char path[PL_SYSTEM_MAX_PATH];
+        snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", GetBasePath(), dir);
+        if(plFileExists(path)) {
+            RegisterCampaign(path);
+            campaign = GetCampaignByDirectory(dir);
+            if(campaign == NULL) {
+                /* register campaign should've spewed errors, though
+                 * yeah, this could be tidier */
+                return;
+            }
+        } else {
+            LogWarn("campaign \"%s\" doesn't exist!\n", dir);
+            return;
+        }
+    }
+
+
+
+    LogInfo("campaign has been set to \"%s\" successfully!\n", campaign->name);
 }
 
 /******************************************************/

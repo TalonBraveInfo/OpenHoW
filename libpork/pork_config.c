@@ -33,7 +33,11 @@ void SaveConfig(const char *path) {
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
     for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-#if 0 /* readable config */
+        if(!(*var)->archive) {
+            continue;
+        }
+
+#if 1 /* readable config */
         fprintf(fp, "\t\t\"%s\":\"%s\"", (*var)->var, (*var)->value);
         if(var < vars + num_c - 1) {
             fprintf(fp, ",\n");
@@ -55,7 +59,7 @@ void SaveConfig(const char *path) {
 void ReadConfig(const char *path) {
     FILE *fp = fopen(path, "r");
     if(fp == NULL) {
-        LogWarn("failed to open map description, %s\n", path);
+        LogWarn("failed to open config, \"%s\"!\n", path);
         return;
     }
 
@@ -64,7 +68,7 @@ void ReadConfig(const char *path) {
     size_t length = plGetFileSize(path);
     char buf[length + 1];
     if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of map description for %s!\n", path);
+        LogWarn("failed to read entirety of config for \"%s\"!\n", path);
     }
     fclose(fp);
 
@@ -92,16 +96,12 @@ void InitConfig(void) {
 
     char out[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(PORK_APP_NAME, out, PL_SYSTEM_MAX_PATH);
-    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/user.config", out);
-
-    char default_path[PL_SYSTEM_MAX_PATH];  /* default config path */
-    snprintf(default_path, sizeof(default_path), "%s", pork_find("default.config"));
+    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config", out);
 
     if(plFileExists(g_state.config_path)) {
         ReadConfig(g_state.config_path);
     } else {
         LogInfo("no config found at \"%s\", generating default\n", g_state.config_path);
-        ReadConfig(default_path);
         SaveConfig(g_state.config_path);
     }
 }

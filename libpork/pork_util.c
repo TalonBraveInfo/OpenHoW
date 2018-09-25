@@ -44,14 +44,14 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
 const char *pork_find(const char *path) {
     static char n_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
-        snprintf(n_path, sizeof(n_path), "%s/%s", GetCampaignPath(), path);
+        snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
         if(plFileExists(n_path)) {
             LogDebug("found \"%s\"\n", n_path);
             return n_path;
         }
     }
 
-    snprintf(n_path, sizeof(n_path), "%s%s", GetBasePath(), path);
+    snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
     LogDebug("found \"%s\"\n", n_path);
     return n_path;
 }
@@ -76,7 +76,7 @@ const char *pork_find2(const char *path, const char **preference) {
 
     char base_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
-        snprintf(base_path, sizeof(base_path), "%s/%s", GetCampaignPath(), path);
+        snprintf(base_path, sizeof(base_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
         strncpy(out, pork_scan(base_path, preference), sizeof(out));
         if(!plIsEmptyString(out)) {
             LogDebug("found \"%s\"\n", out);
@@ -111,7 +111,7 @@ FILE *pork_open(const char *path, const char *mode) {
         }
     }
 
-    snprintf(n_path, sizeof(n_path), "%s%s", GetBasePath(), path);
+    snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
     if(plFileExists(n_path)) {
         fp = fopen(n_path, mode);
         if(fp != NULL) {

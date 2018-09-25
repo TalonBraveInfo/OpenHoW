@@ -273,22 +273,22 @@ PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
 
 void InitConsole(void) {
-#define rvar(var, ...) (var) = plRegisterConsoleVariable(plStringify((var)), __VA_ARGS__)
-    rvar(cv_debug_mode, "1", pl_int_var, DebugModeCallback, "global debug level");
-    rvar(cv_debug_fps, "1", pl_bool_var, NULL, "display framerate");
-    rvar(cv_debug_skeleton, "0", pl_bool_var, NULL, "display pig skeletons");
-    rvar(cv_debug_input, "0", pl_int_var, NULL,
+#define rvar(var, arc, ...) (var) = plRegisterConsoleVariable(plStringify((var)), __VA_ARGS__); (var)->archive = (arc)
+    rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
+    rvar(cv_debug_fps, false, "1", pl_bool_var, NULL, "display framerate");
+    rvar(cv_debug_skeleton, false, "0", pl_bool_var, NULL, "display pig skeletons");
+    rvar(cv_debug_input, false, "0", pl_int_var, NULL,
                           "changing this cycles between different modes of debugging input\n"
                           "1: keyboard states\n2: controller states"
     );
-    rvar(cv_debug_cache, "0", pl_bool_var, NULL, "display memory and other info");
-    rvar(cv_base_path, "./", pl_string_var, NULL, "");
-    rvar(cv_campaign_path, "", pl_string_var, NULL, "");
-    rvar(cv_camera_mode, "0", pl_int_var, NULL, "0 = default, 1 = debug");
-    rvar(cv_display_texture_cache, "-1", pl_int_var, NULL, "");
-    rvar(cv_display_width, "1024", pl_int_var, NULL, "");
-    rvar(cv_display_height, "768", pl_int_var, NULL, "");
-    rvar(cv_display_fullscreen, "true", pl_bool_var, NULL, "");
+    rvar(cv_debug_cache, false, "0", pl_bool_var, NULL, "display memory and other info");
+    rvar(cv_base_path, true, ".", pl_string_var, NULL, "");
+    rvar(cv_campaign_path, false, "", pl_string_var, NULL, "");
+    rvar(cv_camera_mode, false, "0", pl_int_var, NULL, "0 = default, 1 = debug");
+    rvar(cv_display_texture_cache, false, "-1", pl_int_var, NULL, "");
+    rvar(cv_display_width, true, "1024", pl_int_var, NULL, "");
+    rvar(cv_display_height, true, "768", pl_int_var, NULL, "");
+    rvar(cv_display_fullscreen, true, "true", pl_bool_var, NULL, "");
 
     plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 

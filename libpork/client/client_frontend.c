@@ -74,7 +74,7 @@ enum {
     MAX_FE_GAME_TEXTURES
 };
 static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
-static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
+//static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
 /************************************************************/
 /* FE Object Implementation

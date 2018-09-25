@@ -75,23 +75,8 @@ void InitEngine(void) {
         plSetConsoleVariable(cv_base_path, var);
     }
 
-    if((var = plGetCommandLineArgumentValue("-mod")) != NULL ||
-       (var = plGetCommandLineArgumentValue("-campaign")) != NULL) {
-        /* ensure the campaign actually exists before we proceed */
-        char campaign_path[PL_SYSTEM_MAX_PATH];
-        snprintf(campaign_path, sizeof(campaign_path), "%s/campaigns/%s/", cv_base_path->s_value, var);
-        if(plPathExists(campaign_path)) {
-            plSetConsoleVariable(cv_campaign_path, var);
-        } else {
-            LogWarn("invalid campaign path, \"%s\", ignoring!\n", campaign_path);
-        }
-    }
-
-    LogInfo("base path: %s\n", GetBasePath());
-    LogInfo("campaign path: %s/campaigns/%s\n", GetBasePath(), GetCampaignPath());
-    LogInfo("working directory: %s\n", plGetWorkingDirectory());
-
     InitScripting();
+    InitConfig();
 
     RegisterFormatInterfaces();
 
@@ -100,14 +85,22 @@ void InitEngine(void) {
     RegisterLanguages();
     RegisterCampaigns();
 
+    if((var = plGetCommandLineArgumentValue("-mod")) != NULL ||
+       (var = plGetCommandLineArgumentValue("-campaign")) != NULL) {
+        SetCampaign(var);
+    }
+
     /* now initialize all other sub-systems */
 
-    InitConfig();
     InitClient();
     InitServer();
     InitPlayers();
     InitModels();
     InitMaps();
+
+    LogInfo("base path: \"%s\"\n", GetBasePath());
+    LogInfo("campaign path: \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
+    LogInfo("working directory: \"%s\"\n", plGetWorkingDirectory());
 }
 
 bool IsPorkRunning(void) {

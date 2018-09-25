@@ -727,7 +727,11 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
      */
 }
 
-PLTexture *GenerateMinimapTexture(void) {
+void GenerateMinimapTexture(void) {
+    if(map_state.overview != NULL) {
+        plDeleteTexture(map_state.overview, true);
+    }
+
 #if 0 // todo: finish...
     static PLColour colours[MAX_TILE_TYPES]={
         { 60, 50, 40 },     // Mud
@@ -749,8 +753,6 @@ PLTexture *GenerateMinimapTexture(void) {
     image.width         = 64;
     image.height        = 64;
 #endif
-
-    return NULL;
 }
 
 /* loads a new map into memory - if the config
@@ -795,6 +797,7 @@ bool LoadMap(const char *name, unsigned int mode) {
 
     UnloadMap();
 
+#if 0
     SetLoadingProgress(5);
     SetLoadingDescription("CHECKING FOR MAP DIRECTORY");
 
@@ -805,39 +808,38 @@ bool LoadMap(const char *name, unsigned int mode) {
         LogWarn("failed to load map, path \"%s\" doesn't exist, aborting\n", map_path);
         return false;
     }
+#endif
 
     SetLoadingProgress(15);
     SetLoadingDescription("LOADING TILES");
 
-    char pmg_path[PL_SYSTEM_MAX_PATH];
-    snprintf(pmg_path, sizeof(pmg_path), "%s/%s.pmg", map_path, name);
-    LogDebug("pmg: %s\n", pmg_path);
-    if(!plFileExists(pmg_path)) {
-        LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", pmg_path);
+    char path[PL_SYSTEM_MAX_PATH];
+
+    snprintf(path, sizeof(path), "maps/%s/%s.pmg", name, name);
+    LogDebug("pmg: %s\n", path);
+    const char *p = pork_find(path);
+    if(!plFileExists(p)) {
+        LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", p);
         return false;
     }
 
-    if(map_state.overview != NULL) {
-        plDeleteTexture(map_state.overview, true);
-    }
+    LoadMapTiles(p);
 
-    map_state.overview = GenerateMinimapTexture();
-
-    LoadMapTiles(pmg_path);
+    GenerateMinimapTexture();
 
     SetLoadingProgress(20);
     SetLoadingDescription("LOADING OBJECTS");
 
-    char pog_path[PL_SYSTEM_MAX_PATH];
-    snprintf(pog_path, sizeof(pog_path), "%s/%s.pog", map_path, name);
-    LogDebug("pog: %s\n", pog_path);
-    if (!plFileExists(pog_path)) {
-        LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", pog_path);
+    snprintf(path, sizeof(path), "maps/%s/%s.pog", name, name);
+    LogDebug("pog: %s\n", path);
+    p = pork_find(path);
+    if (!plFileExists(p)) {
+        LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", p);
         UnloadMap();
         return false;
     }
 
-    LoadMapSpawns(pog_path);
+    LoadMapSpawns(p);
     LoadMapTextures(desc, NULL);
 
     strncpy(map_state.name, desc->name, sizeof(map_state.name));

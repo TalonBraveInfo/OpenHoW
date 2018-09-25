@@ -160,7 +160,7 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
     }
 
     char texture_index_path[PL_SYSTEM_MAX_PATH];
-    snprintf(texture_index_path, sizeof(texture_index_path), "%s%s%s", GetBasePath(), path, index_name);
+    snprintf(texture_index_path, sizeof(texture_index_path), "%s/%s%s", GetBasePath(), path, index_name);
     if(!plFileExists(texture_index_path)) {
         Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
     }
@@ -189,10 +189,10 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
             //LogDebug("  %s\n", line);
 
             char texture_path[PL_SYSTEM_MAX_PATH];
-            snprintf(texture_path, sizeof(texture_path), "%s%s%s.tim", GetBasePath(), path, line);
+            snprintf(texture_path, sizeof(texture_path), "%s/%s%s.tim", GetBasePath(), path, line);
             if(!plFileExists(texture_path)) {
                 /* check for PNG variant */
-                snprintf(texture_path, sizeof(texture_path), "%s%s%s.png", GetBasePath(), path, line);
+                snprintf(texture_path, sizeof(texture_path), "%s/%s%s.png", GetBasePath(), path, line);
             }
 
             if(index->num_textures >= MAX_TEXTURES_PER_INDEX) {
