@@ -27,32 +27,29 @@ void SaveConfig(const char *path) {
         return;
     }
 
-    fprintf(fp, "{");
+    fprintf(fp, "{\n");
 
+    /* get access to the console variables from the platform library */
     size_t num_c;
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
-    for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
+
+    /* and NOW save them! */
+    bool first = true;
+    for(PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
         if(!(*var)->archive) {
             continue;
         }
 
-#if 1 /* readable config */
-        fprintf(fp, "\t\t\"%s\":\"%s\"", (*var)->var, (*var)->value);
-        if(var < vars + num_c - 1) {
+        if(!first) {
             fprintf(fp, ",\n");
-        } else {
-            fprintf(fp, "\n");
         }
-#else
-        fprintf(fp, "\"%s\":\"%s\"", (*var)->var, (*var)->value);
-        if(var < vars + num_c - 1) {
-            fprintf(fp, ",");
-        }
-#endif
+
+        fprintf(fp, "\t\t\"%s\":\"%s\"", (*var)->var, (*var)->value);
+        first = false;
     }
 
-    fprintf(fp, "}");
+    fprintf(fp, "\n}\n");
     fclose(fp);
 }
 
@@ -101,7 +98,7 @@ void InitConfig(void) {
     if(plFileExists(g_state.config_path)) {
         ReadConfig(g_state.config_path);
     } else {
-        LogInfo("no config found at \"%s\", generating default\n", g_state.config_path);
+        LogInfo("no config found at \"%s\", generating default...\n", g_state.config_path);
         SaveConfig(g_state.config_path);
     }
 }
