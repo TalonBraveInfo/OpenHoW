@@ -233,7 +233,7 @@ void RegisterMap(const char *path) {
 
     ParseJSON(buf);
 
-    plStripExtension(slot->name, plGetFileName(path));
+    plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
 
     strncpy(slot->description, GetJSONStringProperty("name"), sizeof(slot->description));
     strncpy(slot->sky, GetJSONStringProperty("sky"), sizeof(slot->sky));

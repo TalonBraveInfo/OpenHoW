@@ -542,7 +542,7 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
     }
 
     char ptg_name[PL_SYSTEM_MAX_PATH] = {'\0'};
-    plStripExtension(ptg_name, plGetFileName(input_path));
+    plStripExtension(ptg_name, sizeof(ptg_name), plGetFileName(input_path));
     pl_strtolower(ptg_name);
 
     if(!plCreatePath(output_path)) {
@@ -601,7 +601,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
     }
 
     char package_name[PL_SYSTEM_MAX_PATH] = {'\0'};
-    plStripExtension(package_name, plGetFileName(input_path));
+    plStripExtension(package_name, sizeof(package_name), plGetFileName(input_path));
     pl_strtolower(package_name);
 
     if(!plCreatePath(output_path)) {
@@ -673,7 +673,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
             // unnecessary to read it in later when we're determining
             // what texture to load :)
             char index_file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-            plStripExtension(index_file_path, index.file);
+            plStripExtension(index_file_path, sizeof(index_file_path), index.file);
             fprintf(out_index, "%s\n", index_file_path);
         }
 
@@ -740,8 +740,8 @@ void ConvertImageToPNG(const char *path) {
 
     // figure out if the file already exists before
     // we even start trying to convert this thing
-    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    plStripExtension(out_path, path);
+    char out_path[PL_SYSTEM_MAX_PATH];
+    plStripExtension(out_path, sizeof(out_path), path);
     strcat(out_path, ".png");
     if(plFileExists(out_path)) {
         LogInfo("tim already converted, deleting original\n");

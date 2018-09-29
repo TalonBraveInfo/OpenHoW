@@ -85,22 +85,7 @@ CampaignManifest *GetCampaignByDirectory(const char *dir) {
  * @param path Path to the manifest file.
  */
 void RegisterCampaign(const char *path) {
-    char ext[24];
-    snprintf(ext, sizeof(ext), "%s", plGetFileExtension(path));
-    if(pl_strncasecmp(ext, "campaign", 8) == 0) {
-
-    }
-
-    char filename[32];
-    snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
-    if(plIsEmptyString(filename)) {
-        LogWarn("failed to get filename, aborting!\n");
-        return;
-    }
-
-
-
-
+#if 0
     /* ensure the campaign actually exists before we proceed */
     char directory[PL_SYSTEM_MAX_PATH];
     snprintf(directory, sizeof(directory), "%s/campaigns/%s/", GetBasePath(), filename);
@@ -108,6 +93,7 @@ void RegisterCampaign(const char *path) {
         LogWarn("invalid campaign path, \"%s\", ignoring!\n", directory);
         return;
     }
+#endif
 
     FILE *fp = fopen(path, "r");
     if(fp == NULL) {
@@ -140,8 +126,27 @@ void RegisterCampaign(const char *path) {
 
     FlushJSON();
 
+    char filename[64];
+    snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
+
     strncpy(slot->path, path, sizeof(slot->path));
     strncpy(slot->path_name, filename, sizeof(slot->path_name));
+    plStripExtension(slot->path_name, sizeof(slot->name), plGetFileName(path));
+
+#if 1
+    LogDebug("name:    %s\n"
+             "version: %s\n"
+             "author:  %s\n"
+             "path:    %s\n"
+             "path_n:  %s\n",
+
+             slot->name,
+             slot->version,
+             slot->author,
+             slot->path,
+             slot->path_name
+    );
+#endif
 }
 
 /**
