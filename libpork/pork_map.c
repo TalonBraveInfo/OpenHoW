@@ -28,6 +28,7 @@
 #include "client/client_display.h"
 
 #include "server/server_actor.h"
+#include "pork_game.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -128,9 +129,9 @@ typedef struct MapDesc {
     unsigned int flags;
 } MapManifest;
 
-MapManifest *map_descriptors = NULL;
-unsigned int num_maps = 0;
-unsigned int max_maps = 2048;
+static MapManifest *map_descriptors = NULL;
+static unsigned int num_maps = 0;
+static unsigned int max_maps = 2048;
 
 MapManifest *GetMapDesc(const char *name) {
     const char *ext = plGetFileExtension(name);
@@ -301,27 +302,31 @@ typedef struct ActorSpawn { /* this should be 94 bytes */
     int16_t     unused3;
 } ActorSpawn;
 
+typedef struct MapTile {
+    /* surface properties */
+    unsigned int type;  /* e.g. wood? */
+    unsigned int slip;  /* e.g. full, bottom or left? */
+
+    /* texture */
+    unsigned int tex;
+    unsigned int flip;
+} MapTile;
+
+typedef struct MapChunk {
+    MapTile tiles[16];
+
+    struct {
+        int16_t height;
+    } vertices[25];
+
+    PLVector3 offset;
+} MapChunk;
+
 struct {
     char name[24];
     char desc[256];
 
-    struct {
-        struct {
-            /* surface properties */
-            unsigned int type;  /* e.g. wood? */
-            unsigned int slip;  /* e.g. full, bottom or left? */
-
-            /* texture */
-            unsigned int tex;
-            unsigned int flip;
-        } tiles[16];
-
-        struct {
-            unsigned int height;
-        } vertices[10];
-
-        PLVector3 offset;
-    } *chunks;
+    MapChunk *chunks;
     unsigned int num_chunks;
 
     unsigned int flags;
@@ -336,6 +341,8 @@ struct {
 
     PLTexture *sky_textures[4];
     PLModel *sky_model;
+
+    uint height_bounds[2];
 } map_state;
 
 const char *GetCurrentMapName(void) {
@@ -431,7 +438,7 @@ void MapCommand(unsigned int argc, char *argv[]) {
         mode = GetMapModeFlag(cmd_mode);
     }
 
-    LoadMap(map_name, mode);
+    StartGame(map_name, mode, 1, true);
 }
 
 void MapsCommand(unsigned int argc, char *argv[]) {
@@ -547,6 +554,38 @@ void ResetMap(void) {
     }
 }
 
+MapChunk *GetChunkAtPosition(PLVector2 pos) {
+    uint idx = ((uint)(pos.x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos.y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
+    if(idx >= map_state.num_chunks) {
+        LogWarn("attempted to get an out of bounds chunk index!\n");
+        return NULL;
+    }
+
+    //LogDebug("chunk idx = %d\n", idx);
+
+    return &map_state.chunks[idx];
+}
+
+MapTile *GetTileAtPosition(PLVector2 pos) {
+    MapChunk *chunk = GetChunkAtPosition(pos);
+    if(chunk == NULL) {
+        return NULL;
+    }
+
+    uint idx = (((uint)(pos.x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
+               ((((uint)(pos.y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
+    if(idx >= MAP_CHUNK_TILES) {
+        LogWarn("attempted to get an out of bounds tile index!\n");
+        return NULL;
+    }
+
+    LogDebug("tile idx = %d\n", idx);
+    LogDebug("tile x = %d ",(((uint)(pos.x) / MAP_TILE_PIXEL_WIDTH)) );
+    LogDebug("tile y = %d\n", (((uint)(pos.y) / MAP_TILE_PIXEL_WIDTH) ));
+
+    return &chunk->tiles[idx];
+}
+
 void LoadMapSpawns(const char *path) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
@@ -584,22 +623,17 @@ void LoadMapTiles(const char *path) {
         Error("failed to open tile data, \"%s\", aborting\n", path);
     }
 
-    /* todo, eventually we might want to change this
-     * depending on the type of map we're loading in,
-     * e.g. extended formats... */
-    static const unsigned int block_size = 16;
-
     /* done here in case the enhanced format supports larger chunk sizes */
-    map_state.num_chunks = block_size * block_size;
-    map_state.chunks = pork_alloc(sizeof(*map_state.chunks), map_state.num_chunks, true);
+    map_state.num_chunks = MAP_CHUNKS;
+    map_state.chunks = pork_alloc(sizeof(MapChunk), map_state.num_chunks, true);
 
     LogDebug("%u chunks for terrain\n", map_state.num_chunks);
 
-    memset(map_state.chunks, 0, sizeof(*map_state.chunks) * map_state.num_chunks);
+    memset(map_state.chunks, 0, sizeof(MapChunk) * map_state.num_chunks);
 
-    for(unsigned int block_y = 0; block_y < block_size; ++block_y) {
-        for(unsigned int block_x = 0; block_x < block_size; ++block_x) {
-#define CUR_BLOCK map_state.chunks[block_x * block_y + block_x]
+    for(unsigned int chunk_y = 0; chunk_y < MAP_CHUNK_ROW; ++chunk_y) {
+        for(unsigned int chunk_x = 0; chunk_x < MAP_CHUNK_ROW; ++chunk_x) {
+#define CUR_CHUNK map_state.chunks[chunk_x + chunk_y * MAP_CHUNK_ROW]
 
             struct __attribute__((packed)) {
                 /* offsets */
@@ -608,46 +642,48 @@ void LoadMapTiles(const char *path) {
                 uint16_t z;
 
                 uint16_t unknown0;
-            } block;
-            if(fread(&block, sizeof(block), 1, fh) != 1) {
-
+            } chunk;
+            if(fread(&chunk, sizeof(chunk), 1, fh) != 1) {
+                Error("unexpected end of file, aborting!\n");
             }
-            CUR_BLOCK.offset = PLVector3(block.x, block.y, block.z);
+            CUR_CHUNK.offset = PLVector3(chunk.x, chunk.y, chunk.z);
 
             for(unsigned int vertex_y = 0; vertex_y < 5; ++vertex_y) {
                 for(unsigned int vertex_x = 0; vertex_x < 5; ++vertex_x) {
                     struct __attribute__((packed)) {
-                        uint16_t height;
-                        uint16_t unknown;
+                        int16_t     height;
+                        uint16_t    lighting;
                     } vertex;
                     if(fread(&vertex, sizeof(vertex), 1, fh) != 1) {
-
+                        Error("unexpected end of file, aborting!\n");
                     }
-                    CUR_BLOCK.vertices[vertex_x * vertex_y + vertex_x].height = vertex.height;
+                    CUR_CHUNK.vertices[vertex_x + vertex_y * 5].height = vertex.height;
                 }
             }
 
             fseek(fh, 4, SEEK_CUR);
 
-            for(unsigned int tile_y = 0; tile_y < 4; ++tile_y) {
-                for(unsigned int tile_x = 0; tile_x < 4; ++tile_x) {
+            for(unsigned int tile_y = 0; tile_y < MAP_CHUNK_ROW_TILES; ++tile_y) {
+                for(unsigned int tile_x = 0; tile_x < MAP_CHUNK_ROW_TILES; ++tile_x) {
                     struct __attribute__((packed)) {
-                        uint8_t unknown0[6];
-
-                        /* surface properties */
-                        uint8_t type;
-                        uint16_t slip;
-
-                        uint8_t unknown1;
-
-                        /* texture */
-                        uint8_t     rotation_flip;
-                        uint32_t    texture_index;
-
-                        uint8_t unknown2;
+#if 0
+                        int8_t      unused0[10];
+                        uint16_t    info;
+                        int8_t      unused1[2];
+                        uint8_t     rotation;
+                        uint8_t     texture;
+#else
+                        int8_t      unused0[6];
+                        uint8_t     type;
+                        uint8_t     slip;
+                        int16_t     unused1;
+                        uint8_t     rotation;
+                        uint32_t    texture;
+                        uint8_t     unused2;
+#endif
                     } tile;
                     if(fread(&tile, sizeof(tile), 1, fh) != 1) {
-
+                        Error("unexpected end of file, aborting!\n");
                     }
 
                     /* todo, load texture and apply it to texture atlas
@@ -655,23 +691,19 @@ void LoadMapTiles(const char *path) {
                      * trying to add massive textures for each tile... :(
                      */
 
-                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].type   = tile.type;
-                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].flip   = tile.rotation_flip;
-                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].slip   = tile.slip;
-                    CUR_BLOCK.tiles[tile_x * tile_y + block_x].tex    = tile.texture_index;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type   = (unsigned int) (tile.type & 31);
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip   = tile.rotation;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip   = 0;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex    = tile.texture;
+
+                    pork_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
+                                "invalid tile type!\n");
 
 #if 1
                     LogDebug("\ntile %u\n"
-                             "  type %u\n"
-                             "  flip %u\n"
-                             "  slip %u\n"
-                             "  tex  %u\n",
-
-                             tile_x * tile_y + block_x,
-                             tile.type,
-                             tile.rotation_flip,
-                             tile.slip,
-                             tile.texture_index
+                             "  type %u\n",
+                             tile_x + tile_y * MAP_CHUNK_ROW_TILES,
+                             CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type
                     );
 #endif
                 }
@@ -732,8 +764,7 @@ void GenerateMinimapTexture(void) {
         plDeleteTexture(map_state.overview, true);
     }
 
-#if 0 // todo: finish...
-    static PLColour colours[MAX_TILE_TYPES]={
+    static const PLColour colours[MAX_TILE_TYPES]={
         { 60, 50, 40 },     // Mud
         { 40, 70, 40 },     // Grass
         { 128, 128, 128 },  // Metal
@@ -748,11 +779,47 @@ void GenerateMinimapTexture(void) {
         { 100, 240, 53 }    // Lava/Poison
     };
 
+    /* create our storage */
+
     PLImage image;
     memset(&image, 0, sizeof(PLImage));
     image.width         = 64;
     image.height        = 64;
+    image.format        = PL_IMAGEFORMAT_RGB8;
+    image.colour_format = PL_COLOURFORMAT_RGB;
+    image.size          = plGetImageSize(image.format, image.width, image.height);
+    image.levels        = 1;
+
+    image.data = pork_alloc(image.levels, sizeof(uint8_t*), true);
+    image.data[0] = pork_alloc(1, image.size, true);
+
+    /* now write into the image buffer */
+
+    uint8_t *buf = image.data[0];
+    for(uint8_t y = 0; y < 64; ++y) {
+        for(uint8_t x = 0; x < 64; ++x) {
+            MapTile *tile = GetTileAtPosition(PLVector2(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64)));
+            if(tile == NULL) {
+                Error("hit an invalid tile during minimap generation!\n");
+            }
+
+            *(buf++) = colours[tile->type].r;
+            *(buf++) = colours[tile->type].g;
+            *(buf++) = colours[tile->type].b;
+
+#if 0
+            LogDebug("%d(%d): %d %d %d\n", x * y,
+                     tile->type,
+                     colours[tile->type].r,
+                     colours[tile->type].g,
+                     colours[tile->type].b);
 #endif
+        }
+    }
+
+    plWriteImage(&image, "./test.png");
+
+    plFreeImage(&image);
 }
 
 /* loads a new map into memory - if the config

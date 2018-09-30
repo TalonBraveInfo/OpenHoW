@@ -29,29 +29,51 @@ static bool show_about              = false;
 static bool show_console            = false;
 static bool show_texture            = false;
 static bool show_fps                = false;
-static bool show_particle_editor    = false;
+
+class BaseWindow {
+public:
+    virtual void ShowWindow(bool show = true) { show_ = show; }
+    bool IsWindowShowing() { return show_; }
+
+protected:
+private:
+    bool show_{false};
+};
 
 /****************************************************/
 /* Particle Editor */
 
-void UI_DisplayParticleEditor() {
-    if(!show_particle_editor) {
-        return;
+#include "pork_particle.h"
+
+class ParticleEditor {
+public:
+    static ParticleEditor *GetInstance() {
+        static ParticleEditor *instance = nullptr;
+        if(instance == nullptr) {
+            instance = new ParticleEditor();
+        }
+
+        return instance;
     }
 
+    void ShowWindow(bool show = true) { show_ = show; }
+    void DisplayWindow() {
+        if(!show_) {
+            return;
+        }
+    }
 
-}
+protected:
+private:
+    ParticleSystem *current_system_{nullptr};
+
+    bool show_{false};
+};
 
 /****************************************************/
 /* Texture Viewer */
 
 static PLTexture *cur_texture = nullptr;
-
-std::vector<PLTexture*> texture_list;
-
-void UI_LoadDisplayTexture(const char *path) {
-
-}
 
 void UI_DisplayTextureViewer() {
     if(!show_texture) {
@@ -75,7 +97,7 @@ void UI_DisplayTextureViewer() {
     ImGui::Separator();
     ImGui::Text("Name: %s", cur_texture->name);
     ImGui::Text("W:%d H:%d", cur_texture->w, cur_texture->h);
-    ImGui::Text("Size: %d", cur_texture->size);
+    ImGui::Text("Size: %lu", cur_texture->size);
 
     ImGui::End();
 }
@@ -195,7 +217,7 @@ void UI_DisplayFileBox() {
                 default:break;
             }
 
-            ImGui::Text(type);
+            ImGui::Text("%s", type);
 
             ImGui::NextColumn();
         }
@@ -289,7 +311,7 @@ void UI_DisplayDebugMenu(void) {
                 const PLTexture *texture = GetCachedTexture((unsigned int)cv_display_texture_cache->i_value);
                 if(texture != NULL) {
                     ImGui::BeginTooltip();
-                    ImGui::Image((ImTextureID)texture->internal.id, ImVec2(texture->w, texture->h));
+                    ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id), ImVec2(texture->w, texture->h));
                     ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
                     ImGui::EndTooltip();
                 }
@@ -301,6 +323,13 @@ void UI_DisplayDebugMenu(void) {
                 plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
             }
 
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Tools")) {
+            if(ImGui::MenuItem("Particle Editor...")) {
+                ParticleEditor::GetInstance()->ShowWindow(true);
+            }
             ImGui::EndMenu();
         }
 
@@ -316,7 +345,7 @@ void UI_DisplayDebugMenu(void) {
     UI_DisplayQuitBox();
 
     /* Editors */
-    UI_DisplayParticleEditor();
+    ParticleEditor::GetInstance()->DisplayWindow();
     UI_DisplayTextureViewer();
 
     UI_DisplayConsole();

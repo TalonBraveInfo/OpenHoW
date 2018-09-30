@@ -32,16 +32,17 @@
  * of the game as a whole is dealt with here.
  *
  * todo:
- *  > LoadCampaign should index the loaded campaign, so we can access it later
- *  > Should scan through campaigns directory for any included campaigns
- *  >
+ *  > LoadCampaign should index the loaded campaign, so we can access it later [DONE]
+ *  > Should scan through campaigns directory for any included campaigns [DONE]
+ *  > Add loaded campaign path to a paths list, so we can check against multiple paths
+ *    when loading in files
  */
 
-CampaignManifest *campaigns = NULL;
-uint num_campaigns = 0;
-uint max_campaigns = 8;
+static CampaignManifest *campaigns = NULL;
+static uint num_campaigns = 0;
+static uint max_campaigns = 8;
 
-uint cur_campaign_idx = (uint) -1;
+static uint cur_campaign_idx = (uint) -1;
 
 CampaignManifest *GetCampaignBySlot(uint num) {
     if(num >= max_campaigns) {
@@ -70,7 +71,7 @@ CampaignManifest *GetCampaignByName(const char *name) {
 
 CampaignManifest *GetCampaignByDirectory(const char *dir) {
     for(unsigned int i = 0; i < num_campaigns; ++i) {
-        if(strncmp(campaigns[i].path_name, dir, sizeof(campaigns[i].path_name)) == 0) {
+        if(strncmp(campaigns[i].dir, dir, sizeof(campaigns[i].dir)) == 0) {
             return &campaigns[i];
         }
     }
@@ -79,8 +80,7 @@ CampaignManifest *GetCampaignByDirectory(const char *dir) {
     return NULL;
 }
 
-/**
- * Load in the campaign manifest and store it into a buffer.
+/** Load in the campaign manifest and store it into a buffer.
  *
  * @param path Path to the manifest file.
  */
@@ -120,9 +120,9 @@ void RegisterCampaign(const char *path) {
         return;
     }
 
-    strncpy(slot->name, GetJSONStringProperty("name"), sizeof(slot->name));
-    strncpy(slot->version, GetJSONStringProperty("version"), sizeof(slot->version));
-    strncpy(slot->author, GetJSONStringProperty("author"), sizeof(slot->author));
+    snprintf(slot->name, sizeof(slot->name), "%s", GetJSONStringProperty("name"));
+    snprintf(slot->version, sizeof(slot->version), "%s", GetJSONStringProperty("version"));
+    snprintf(slot->author, sizeof(slot->author), "%s", GetJSONStringProperty("author"));
 
     FlushJSON();
 
@@ -130,27 +130,26 @@ void RegisterCampaign(const char *path) {
     snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
 
     strncpy(slot->path, path, sizeof(slot->path));
-    strncpy(slot->path_name, filename, sizeof(slot->path_name));
-    plStripExtension(slot->path_name, sizeof(slot->name), plGetFileName(path));
+    strncpy(slot->dir, filename, sizeof(slot->dir));
+    plStripExtension(slot->dir, sizeof(slot->name), plGetFileName(path));
 
-#if 1
+#if 0
     LogDebug("name:    %s\n"
              "version: %s\n"
              "author:  %s\n"
              "path:    %s\n"
-             "path_n:  %s\n",
+             "dir:     %s\n",
 
              slot->name,
              slot->version,
              slot->author,
              slot->path,
-             slot->path_name
+             slot->dir
     );
 #endif
 }
 
-/**
- * Registers all of the campaigns provided under the campaigns
+/** Registers all of the campaigns provided under the campaigns
  * directory.
  */
 void RegisterCampaigns(void) {
@@ -161,8 +160,8 @@ void RegisterCampaigns(void) {
     plScanDirectory(path, "campaign", RegisterCampaign, false);
 }
 
-/**
- * Returns a pointer to the campaign that's currently active.
+/** Returns a pointer to the campaign that's currently active.
+ *
  * @return Pointer to the current campaign.
  */
 CampaignManifest *GetCurrentCampaign(void) {
@@ -170,8 +169,6 @@ CampaignManifest *GetCurrentCampaign(void) {
 }
 
 void SetCampaign(const char *dir) {
-
-
     CampaignManifest *campaign = GetCampaignByDirectory(dir);
     if(campaign == NULL) {
         LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
@@ -181,18 +178,15 @@ void SetCampaign(const char *dir) {
         if(plFileExists(path)) {
             RegisterCampaign(path);
             campaign = GetCampaignByDirectory(dir);
-            if(campaign == NULL) {
-                /* register campaign should've spewed errors, though
-                 * yeah, this could be tidier */
-                return;
-            }
-        } else {
+        }
+
+        if(campaign == NULL) {
             LogWarn("campaign \"%s\" doesn't exist!\n", dir);
             return;
         }
     }
 
-
+    plSetConsoleVariable(cv_campaign_path, campaign->dir);
 
     LogInfo("campaign has been set to \"%s\" successfully!\n", campaign->name);
 }

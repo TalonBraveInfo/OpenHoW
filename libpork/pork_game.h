@@ -48,12 +48,12 @@ enum PigClass {
 };
 
 typedef struct CampaignManifest {
-    char path_name[64];
-    char path[PL_SYSTEM_MAX_PATH];
+    char path[PL_SYSTEM_MAX_PATH];  /* path to the campaign manifest */
+    char dir[64];                   /* directory under campaigns */
 
     char name[256];
     char version[4];
-    char author[256];
+    char author[128];
 
     unsigned int num_supported_langueges;
 } CampaignManifest;
@@ -72,6 +72,10 @@ CampaignManifest *GetCurrentCampaign(void);
 
 void RegisterCampaigns(void);
 void SetCampaign(const char *dir);
+
+/****************************************************/
+
+void StartGame(const char *map, uint mode, uint8_t num_players, bool force_start);
 void EndGame(void);
 
 PL_EXTERN_C_END

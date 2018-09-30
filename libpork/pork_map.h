@@ -26,7 +26,17 @@
 #define MAP_MODE_TRAINING           (unsigned int)(1 << 6)
 #define MAP_MODE_EDITOR             (unsigned int)(1 << 7)
 
-#define MAP_WIDTH   2048
+#define MAP_CHUNK_ROW           16
+#define MAP_CHUNKS              (MAP_CHUNK_ROW * MAP_CHUNK_ROW)
+#define MAP_CHUNK_ROW_TILES     4
+#define MAP_CHUNK_TILES         (MAP_CHUNK_ROW_TILES * MAP_CHUNK_ROW_TILES)
+
+#define MAP_TILE_PIXEL_WIDTH    512
+#define MAP_CHUNK_PIXEL_WIDTH   2048
+
+#define MAP_ROW_TILES           (MAP_CHUNK_ROW * MAP_CHUNK_ROW_TILES)
+
+#define MAP_PIXEL_WIDTH         (MAP_TILE_PIXEL_WIDTH * MAP_ROW_TILES)
 
 enum {
     TILE_TYPE_MUD       = 0,
