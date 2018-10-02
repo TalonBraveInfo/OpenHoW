@@ -47,7 +47,7 @@ add_definitions("-D_DEBUG")
 
 add_subdirectory(platform/platform)
 
-add_subdirectory(libpork)
+add_subdirectory(src)
 add_subdirectory(extractor)
 
 # Tools - todo, add build flag for whether we want these or not

@@ -72,7 +72,7 @@ endif()
 
 add_executable(OpenHoW ${LIBPORK_SOURCE_FILES} ${LIBPORK_IMGUI_SOURCE})
 
-#set_target_properties(libpork PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
+#set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
 target_compile_options(OpenHoW PUBLIC -fPIC)
 target_include_directories(OpenHoW PUBLIC ../imgui/ script/duktape-2.2.0/)
