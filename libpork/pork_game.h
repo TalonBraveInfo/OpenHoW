@@ -52,7 +52,7 @@ typedef struct CampaignManifest {
     char dir[64];                   /* directory under campaigns */
 
     char name[256];
-    char version[4];
+    char version[16];
     char author[128];
 
     unsigned int num_supported_langueges;
