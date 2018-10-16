@@ -49,6 +49,3 @@ add_subdirectory(platform/platform)
 
 add_subdirectory(src)
 add_subdirectory(extractor)
-
-# Tools - todo, add build flag for whether we want these or not
-add_subdirectory(utilities/ptg_extract)
