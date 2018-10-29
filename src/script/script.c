@@ -24,21 +24,21 @@
 #include "../client/client_video.h"
 
 #include "script.h"
+
+#include "duktape-2.2.0/duktape.h"
 #include "duktape-2.2.0/duk_module_duktape.h"
 
-
 duk_context *scr_context = NULL;    /* server context */
-duk_context *jsn_context = NULL;    /* json context */
 
 #define CheckContext(A, B) if((A) != (B)) { LogWarn("invalid context, ignoring script function!\n"); return -1; }
 
-duk_ret_t SC_LoadScript(duk_context *context) {
+static duk_ret_t SC_LoadScript(duk_context *context) {
     // todo!!!
 
     return 0;
 }
 
-duk_ret_t SC_GetCampaignName(duk_context *context) {
+static duk_ret_t SC_GetCampaignName(duk_context *context) {
     CampaignManifest *cur = GetCurrentCampaign();
     if(cur == NULL) {
         duk_push_string(context, "null");
@@ -49,12 +49,12 @@ duk_ret_t SC_GetCampaignName(duk_context *context) {
     return 0;
 }
 
-duk_ret_t SC_GetCurrentMapName(duk_context *context) {
+static duk_ret_t SC_GetCurrentMapName(duk_context *context) {
     duk_push_string(context, GetCurrentMapName());
     return 0;
 }
 
-duk_ret_t SC_GetCurrentMapDescription(duk_context *context) {
+static duk_ret_t SC_GetCurrentMapDescription(duk_context *context) {
     duk_push_string(context, GetCurrentMapDescription());
     return 0;
 }
@@ -141,14 +141,14 @@ void LoadScript(duk_context *context, const char *path) {
     duk_push_global_object(context);
 }
 
-void DeclareGlobalString(duk_context *context, const char *name, const char *value) {
+static void DeclareGlobalString(duk_context *context, const char *name, const char *value) {
     duk_push_string(context, value);
     if(!duk_put_global_string(context, name)) {
         Error("failed to declare global string, \"%s\", aborting!\n", name);
     }
 }
 
-void DeclareGlobalInteger(duk_context *context, const char *name, int value) {
+static void DeclareGlobalInteger(duk_context *context, const char *name, int value) {
     duk_push_int(context, value);
     if(!duk_put_global_string(context, name)) {
         Error("failed to declare global integer, \"%s\", aborting!\n", name);
@@ -182,13 +182,6 @@ ScriptFunction scr_builtins[]= {
 };
 
 void InitScripting(void) {
-    /* init the config context */
-
-    jsn_context = duk_create_heap_default();
-    if(jsn_context == NULL) {
-        Error("failed to create heap for config context, aborting!\n");
-    }
-
     /* init the server context */
 
     scr_context = duk_create_heap_default();
@@ -203,46 +196,43 @@ void InitScripting(void) {
 
     duk_module_duktape_init(scr_context);
 
-    /* ... globals ... */
-    {
-        /* pig classes */
-        DeclareUniversalGlobalInteger(PIG_CLASS_ACE);
-        DeclareUniversalGlobalInteger(PIG_CLASS_LEGEND);
-        DeclareUniversalGlobalInteger(PIG_CLASS_MEDIC);
-        DeclareUniversalGlobalInteger(PIG_CLASS_COMMANDO);
-        DeclareUniversalGlobalInteger(PIG_CLASS_SPY);
-        DeclareUniversalGlobalInteger(PIG_CLASS_SNIPER);
-        DeclareUniversalGlobalInteger(PIG_CLASS_SABOTEUR);
-        DeclareUniversalGlobalInteger(PIG_CLASS_HEAVY);
-        DeclareUniversalGlobalInteger(PIG_CLASS_GRUNT);
+    /* pig classes */
+    DeclareUniversalGlobalInteger(PIG_CLASS_ACE);
+    DeclareUniversalGlobalInteger(PIG_CLASS_LEGEND);
+    DeclareUniversalGlobalInteger(PIG_CLASS_MEDIC);
+    DeclareUniversalGlobalInteger(PIG_CLASS_COMMANDO);
+    DeclareUniversalGlobalInteger(PIG_CLASS_SPY);
+    DeclareUniversalGlobalInteger(PIG_CLASS_SNIPER);
+    DeclareUniversalGlobalInteger(PIG_CLASS_SABOTEUR);
+    DeclareUniversalGlobalInteger(PIG_CLASS_HEAVY);
+    DeclareUniversalGlobalInteger(PIG_CLASS_GRUNT);
 
-        /* controller vars */
-        DeclareUniversalGlobalInteger(PORK_BUTTON_CROSS);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_CIRCLE);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_TRIANGLE);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_SQUARE);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_R1);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_R2);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_R3);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_L1);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_L2);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_L3);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_UP);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_DOWN);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_LEFT);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_RIGHT);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_START);
-        DeclareUniversalGlobalInteger(PORK_BUTTON_SELECT);
+    /* controller vars */
+    DeclareUniversalGlobalInteger(PORK_BUTTON_CROSS);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_CIRCLE);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_TRIANGLE);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_SQUARE);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_R1);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_R2);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_R3);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_L1);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_L2);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_L3);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_UP);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_DOWN);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_LEFT);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_RIGHT);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_START);
+    DeclareUniversalGlobalInteger(PORK_BUTTON_SELECT);
 
-        DeclareUniversalGlobalInteger(PORK_MAX_BUTTONS);
-        DeclareUniversalGlobalInteger(PORK_MAX_CONTROLLERS);
+    DeclareUniversalGlobalInteger(PORK_MAX_BUTTONS);
+    DeclareUniversalGlobalInteger(PORK_MAX_CONTROLLERS);
 
-        /* mouse vars */
-        DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_LEFT);
-        DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_RIGHT);
-        DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_MIDDLE);
-        DeclareUniversalGlobalInteger(PORK_MAX_MOUSE_BUTTONS);
-    }
+    /* mouse vars */
+    DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_LEFT);
+    DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_RIGHT);
+    DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_MIDDLE);
+    DeclareUniversalGlobalInteger(PORK_MAX_MOUSE_BUTTONS);
 
     /* now init our scripts! */
 
@@ -261,77 +251,145 @@ void ShutdownScripting(void) {
 /*************************************************************/
 /** JSON **/
 
+static bool Script_DTGetPropertyString(ScriptContext *ctx, const char *property) {
+    if(!duk_get_prop_string(ctx, -1, property)) {
+        duk_pop(ctx);
+        return false;
+    }
+
+    return true;
+}
+
+/* PUBLIC */
+
 #define LogMissingProperty(P)   LogWarn("failed to get JSON property \"%s\"!\n", (P))
 #define LogInvalidArray(P)      LogWarn("invalid JSON array for property \"%s\"!\n", (P))
 
-void ParseJSON(const char *buf) {
-    duk_push_string(jsn_context, buf);
-    duk_json_decode(jsn_context, -1);
-}
-
-void FlushJSON(void) {
-    duk_pop(jsn_context);
-}
-
-unsigned int GetJSONIntIndexProperty(const char *property, unsigned int index) {
-#if 0 // todo, revisit
-    unsigned int v = 0;
-    if(duk_get_prop_string(jsn_context, -1, property)) {
-        if (duk_get_prop_index(jsn_context, -1, index)) {
-            v = duk_get_uint(jsn_context, index);
-        } else {
-            LogWarn("failed to get JSON index \"%d\" in property \"%s\"!\n", index, property);
-        }
-    } else {
-        LogWarn("failed to get JSON property \"%s\"!\n", property);
+ScriptContext *Script_CreateContext(void) {
+    ScriptContext *ctx = duk_create_heap_default();
+    if(ctx == NULL) {
+        Error("failed to create heap for config context, aborting!\n");
     }
-    duk_pop(jsn_context);
-    return v;
-#else
-    return 0;
-#endif
+
+    return ctx;
 }
 
-unsigned int GetJSONArrayLength(const char *property) {
-    if(!duk_get_prop_string(jsn_context, -1, property)) {
-        duk_pop(jsn_context);
+void Script_DestroyContext(ScriptContext *ctx) {
+    duk_destroy_heap(ctx);
+}
 
+void Script_ParseBuffer(ScriptContext *ctx, const char *buf) {
+    if(buf == NULL) {
+        Error("Invalid script buffer passed, aborting!\n");
+    }
+
+    duk_push_string(ctx, buf);
+    duk_json_decode(ctx, -1);
+}
+
+unsigned int Script_GetArrayLength(ScriptContext *ctx, const char *property) {
+    if(!Script_DTGetPropertyString(ctx, property)) {
         LogMissingProperty(property);
         return 0;
     }
 
-    if(!duk_is_array(jsn_context, -1)) {
-        duk_pop(jsn_context);
-
+    if(!duk_is_array(ctx, -1)) {
+        duk_pop(ctx);
         LogInvalidArray(property);
         return 0;
     }
 
-    unsigned int len = (unsigned int)duk_get_length(jsn_context, -1);
-    duk_pop(jsn_context);
+    unsigned int len = (unsigned int)duk_get_length(ctx, -1);
+    duk_pop(ctx);
     return len;
 }
 
-const char *GetJSONStringProperty(const char *property) {
-    if(!duk_get_prop_string(jsn_context, -1, property)) {
-        duk_pop(jsn_context);
-
+const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key) {
+    if(!Script_DTGetPropertyString(ctx, property)) {
         LogMissingProperty(property);
-        return "null";
+        return "";
     }
-    const char *str = duk_to_string(jsn_context, -1);
-    duk_pop(jsn_context);
+
+    if(!duk_is_array(ctx, -1)) {
+        duk_pop(ctx);
+        LogInvalidArray(property);
+        return "";
+    }
+
+    duk_size_t length = duk_get_length(ctx, -1);
+    if(length == 0) {
+        LogInfo("Empty JSON array for %s\n", property);
+        return "";
+    }
+
+    if(id >= length) {
+        LogWarn("Invalid object index for %s\n", property);
+        return "";
+    }
+
+    duk_get_prop_index(ctx, -1, id);
+    const char *ret = duk_get_string(ctx, id);
+    duk_pop(ctx);
+
+    duk_pop(ctx);
+
+    return ret;
+}
+
+ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property) {
+    if(!Script_DTGetPropertyString(ctx, property)) {
+        LogMissingProperty(property);
+        return NULL;
+    }
+
+    if(!duk_is_array(ctx, -1)) {
+        duk_pop(ctx);
+        LogInvalidArray(property);
+        return NULL;
+    }
+
+    duk_size_t length = duk_get_length(ctx, -1);
+    if(length == 0) {
+        LogInfo("Empty JSON array for %s\n", property);
+        return NULL;
+    }
+
+    ScriptArray *array = pork_alloc(1, sizeof(ScriptArray), true);
+    array->strings = pork_alloc(length, sizeof(*array->strings), true);
+    for(unsigned int i = 0; i < length; ++i) {
+        duk_get_prop_index(ctx, -1, i);
+        strncpy(array->strings[i].data, duk_get_string(ctx, i), sizeof(array->strings[i].data));
+        duk_pop(ctx);
+    }
+
+    duk_pop(ctx);
+
+    return array;
+}
+
+void Script_DestroyArrayStrings(ScriptArray *array) {
+    pork_free(array->strings);
+    pork_free(array);
+}
+
+const char *Script_GetStringProperty(ScriptContext *ctx, const char *property) {
+    if(!Script_DTGetPropertyString(ctx, property)) {
+        LogMissingProperty(property);
+        return "";
+    }
+
+    const char *str = duk_to_string(ctx, -1);
+    duk_pop(ctx);
     return str;
 }
 
-int GetJSONIntProperty(const char *property) {
-    if(!duk_get_prop_string(jsn_context, -1, property)) {
-        duk_pop(jsn_context);
-
+int Script_GetIntegerProperty(ScriptContext *ctx, const char *property) {
+    if(!Script_DTGetPropertyString(ctx, property)) {
         LogMissingProperty(property);
         return 0;
     }
-    int var = duk_to_int(jsn_context, -1);
-    duk_pop(jsn_context);
+
+    int var = duk_to_int(ctx, -1);
+    duk_pop(ctx);
     return var;
 }

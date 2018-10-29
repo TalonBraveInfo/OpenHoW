@@ -111,20 +111,21 @@ void RegisterCampaign(const char *path) {
 
     /* pass it into our JSON parser */
 
-    ParseJSON(buf);
+    ScriptContext *ctx = Script_CreateContext();
+    Script_ParseBuffer(ctx, buf);
 
     CampaignManifest *slot = GetCampaignBySlot(num_campaigns++);
     if(slot == NULL) {
         LogWarn("failed to fetch campaign slot, hit memory limit!?\n");
-        FlushJSON();
+        Script_DestroyContext(ctx);
         return;
     }
 
-    snprintf(slot->name, sizeof(slot->name), "%s", GetJSONStringProperty("name"));
-    snprintf(slot->version, sizeof(slot->version), "%s", GetJSONStringProperty("version"));
-    snprintf(slot->author, sizeof(slot->author), "%s", GetJSONStringProperty("author"));
+    snprintf(slot->name, sizeof(slot->name), "%s", Script_GetStringProperty(ctx, "name"));
+    snprintf(slot->version, sizeof(slot->version), "%s", Script_GetStringProperty(ctx, "version"));
+    snprintf(slot->author, sizeof(slot->author), "%s", Script_GetStringProperty(ctx, "author"));
 
-    FlushJSON();
+    Script_DestroyContext(ctx);
 
     char filename[64];
     snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
@@ -150,7 +151,7 @@ void RegisterCampaign(const char *path) {
 }
 
 /** Registers all of the campaigns provided under the campaigns
- * directory.
+ *  directory.
  */
 void RegisterCampaigns(void) {
     campaigns = pork_alloc(max_campaigns, sizeof(CampaignManifest), true);

@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include "duktape-2.2.0/duktape.h"
-
 PL_EXTERN_C
 
 void InitScripting(void);
@@ -26,15 +24,28 @@ void ShutdownScripting(void);
 
 /**********************************************************/
 
-extern duk_context *jsn_context;
+typedef void ScriptContext;
 
-void ParseJSON(const char *buf);
-void FlushJSON(void);
+typedef struct ScriptArray {
+    struct {
+        char data[64];
+    } *strings;
+    unsigned int num_strings;
+} ScriptArray;
 
-unsigned int GetJSONArrayLength(const char *property);
+ScriptContext *Script_CreateContext(void);
+void Script_DestroyContext(ScriptContext *ctx);
 
-const char *GetJSONStringProperty(const char *property);
-int GetJSONIntProperty(const char *property);
+void Script_ParseBuffer(ScriptContext *ctx, const char *buf);
+void Script_FlushJSON(ScriptContext *ctx);
+
+unsigned int Script_GetArrayLength(ScriptContext *ctx, const char *property);
+ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property);
+void Script_DestroyArrayStrings(ScriptArray *array);
+const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key);
+
+const char *Script_GetStringProperty(ScriptContext *ctx, const char *property);
+int Script_GetIntegerProperty(ScriptContext *ctx, const char *property);
 
 /**********************************************************/
 /* CallScript Functions                                   */

@@ -61,25 +61,17 @@ void RegisterLanguages(void) {
 
     /* now read it in */
 
-    ParseJSON(buf);
+    ScriptContext *ctx = Script_CreateContext();
+    Script_ParseBuffer(ctx, buf);
 
-    if(duk_get_prop_string(jsn_context, -1, "languages") && duk_is_array(jsn_context, -1)) {
-        num_languages = (unsigned int)duk_get_length(jsn_context, -1);
-        l_manifest = pork_alloc(num_languages, sizeof(Language), true);
-        for(unsigned int i = 0; i < num_languages; ++i) {
-            duk_get_prop_index(jsn_context, -1, i);
-            {
-                strncpy(l_manifest[i].key, GetJSONStringProperty("key"), sizeof(l_manifest[i].key));
-                strncpy(l_manifest[i].name, GetJSONStringProperty("name"), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
-                /* uncomment once we're using this...
-                strncpy(l_manifest[i].font_path, GetJSONStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
-            }
-            duk_pop(jsn_context);
-        }
-    } else {
-        LogWarn("invalid languages property!\n");
+    num_languages = Script_GetArrayLength(ctx, "languages");
+    l_manifest = pork_alloc(num_languages, sizeof(Language), true);
+    for(unsigned int i = 0; i < num_languages; ++i) {
+        strncpy(l_manifest[i].key, Script_GetArrayObjectString(ctx, "languages", i, "key"), sizeof(l_manifest[i].key));
+        strncpy(l_manifest[i].name, Script_GetArrayObjectString(ctx, "languages", i, "name"), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
+        /* uncomment once we're using this...
+        strncpy(l_manifest[i].font_path, Script_GetStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
     }
-    duk_pop(jsn_context);
 
 #if 0 /* debug */
     for(unsigned int i = 0; i < num_languages; ++i) {
@@ -90,7 +82,7 @@ void RegisterLanguages(void) {
     printf("done!\n");
 #endif
 
-    FlushJSON();
+    Script_DestroyContext(ctx);
 }
 
 void ClearLanguages(void) {

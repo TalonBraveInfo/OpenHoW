@@ -18,6 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
+
 #include "script/script.h"
 
 void SaveConfig(const char *path) {
@@ -71,13 +72,14 @@ void ReadConfig(const char *path) {
 
     buf[length] = '\0';
 
-    ParseJSON(buf);
+    ScriptContext *ctx = Script_CreateContext();
+    Script_ParseBuffer(ctx, buf);
 
     size_t num_c;
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
     for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-        const char *result = GetJSONStringProperty((*var)->var);
+        const char *result = Script_GetStringProperty(ctx, (*var)->var);
         if(strcmp(result, "null") == 0) {
             continue;
         }
@@ -85,7 +87,7 @@ void ReadConfig(const char *path) {
         plSetConsoleVariable((*var), result);
     }
 
-    FlushJSON();
+    Script_DestroyContext(ctx);
 }
 
 void InitConfig(void) {

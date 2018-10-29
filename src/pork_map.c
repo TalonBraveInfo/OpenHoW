@@ -21,6 +21,7 @@
 #include "pork_engine.h"
 #include "pork_map.h"
 #include "pork_model.h"
+#include "pork_game.h"
 
 #include "script/script.h"
 
@@ -28,7 +29,6 @@
 #include "client/client_display.h"
 
 #include "server/server_actor.h"
-#include "pork_game.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -133,7 +133,7 @@ static MapManifest *map_descriptors = NULL;
 static unsigned int num_maps = 0;
 static unsigned int max_maps = 2048;
 
-MapManifest *GetMapDesc(const char *name) {
+MapManifest *Map_GetMapManifest(const char *name) {
     const char *ext = plGetFileExtension(name);
     if(!plIsEmptyString(ext)) {
         for(unsigned int i = 0; i < num_maps; ++i) {
@@ -153,7 +153,7 @@ MapManifest *GetMapDesc(const char *name) {
     return NULL;
 }
 
-unsigned int GetMapModeFlag(const char *str) {
+unsigned int Map_GetModeFlag(const char *str) {
     if (pl_strncasecmp("dm", str, 2) == 0) {
         return MAP_MODE_DEATHMATCH;
     } else if (pl_strncasecmp("sp", str, 2) == 0) {
@@ -178,7 +178,7 @@ unsigned int GetMapModeFlag(const char *str) {
     }
 }
 
-void RegisterMap(const char *path) {
+void Map_Register(const char *path) {
     LogInfo("registering %s\n", path);
 
     FILE *fp = fopen(path, "r");
@@ -232,34 +232,26 @@ void RegisterMap(const char *path) {
     strncpy(slot->path, path, sizeof(slot->path));
     LogDebug("%s\n", slot->path);
 
-    ParseJSON(buf);
+    ScriptContext *ctx = Script_CreateContext();
+    Script_ParseBuffer(ctx, buf);
 
     plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
 
-    strncpy(slot->description, GetJSONStringProperty("name"), sizeof(slot->description));
-    strncpy(slot->sky, GetJSONStringProperty("sky"), sizeof(slot->sky));
-    if(duk_get_prop_string(jsn_context, -1, "modes") && duk_is_array(jsn_context, -1)) {
-        unsigned int num_modes = (unsigned int)duk_get_length(jsn_context, -1);
-        for(unsigned int i = 0; i < num_modes; ++i) {
-            duk_get_prop_index(jsn_context, -1, i);
-            {
-                const char *mode = duk_get_string(jsn_context, i);
-                if(mode != NULL) {
-                    printf("mode = %s\n", mode);
-                    slot->flags |= GetMapModeFlag(mode);
-                }
-            }
-            duk_pop(jsn_context);
+    strncpy(slot->description, Script_GetStringProperty(ctx, "name"), sizeof(slot->description));
+    strncpy(slot->sky, Script_GetStringProperty(ctx, "sky"), sizeof(slot->sky));
+
+    ScriptArray *array = Script_GetArrayStrings(ctx, "modes");
+    if(array != NULL) {
+        for(unsigned int i = 0; i < array->num_strings; ++i) {
+            slot->flags |= Map_GetModeFlag(array->strings[i].data);
         }
-    } else {
-        LogWarn("invalid modes array!\n");
     }
-    duk_pop(jsn_context);
+
+    Script_DestroyArrayStrings(array);
+    Script_DestroyContext(ctx);
 
     /* todo, the above is fucked, fix it you fool! */
     /* temp */ slot->flags |= MAP_MODE_DEATHMATCH;
-
-    FlushJSON();
 
     printf("flags = %d\n", slot->flags);
 
@@ -356,7 +348,7 @@ const char *GetCurrentMapDescription(void) {
         return "no map loaded";
     }
 
-    MapManifest *desc = GetMapDesc(name);
+    MapManifest *desc = Map_GetMapManifest(name);
     if(desc == NULL) {
         return "";
     }
@@ -435,7 +427,7 @@ void MapCommand(unsigned int argc, char *argv[]) {
     unsigned int mode = MAP_MODE_DEATHMATCH;
     if(argc > 2) {
         const char *cmd_mode = argv[2];
-        mode = GetMapModeFlag(cmd_mode);
+        mode = Map_GetModeFlag(cmd_mode);
     }
 
     StartGame(map_name, mode, 1, true);
@@ -466,10 +458,10 @@ void InitMaps(void) {
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
         snprintf(map_path, sizeof(map_path), "%s/campaigns/%s/maps", GetBasePath(), GetCampaignPath());
-        plScanDirectory(map_path, "map", RegisterMap, false);
+        plScanDirectory(map_path, "map", Map_Register, false);
     }
     snprintf(map_path, sizeof(map_path), "%s/maps", GetBasePath());
-    plScanDirectory(map_path, "map", RegisterMap, false);
+    plScanDirectory(map_path, "map", Map_Register, false);
 
     map_state.sky_model = LoadModel("skys/skydome", true);
 
@@ -554,8 +546,8 @@ void ResetMap(void) {
     }
 }
 
-MapChunk *GetChunkAtPosition(PLVector2 pos) {
-    uint idx = ((uint)(pos.x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos.y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
+MapChunk *GetChunkAtPosition(const PLVector2 *pos) {
+    uint idx = ((uint)(pos->x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos->y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
     if(idx >= map_state.num_chunks) {
         LogWarn("attempted to get an out of bounds chunk index!\n");
         return NULL;
@@ -566,22 +558,22 @@ MapChunk *GetChunkAtPosition(PLVector2 pos) {
     return &map_state.chunks[idx];
 }
 
-MapTile *GetTileAtPosition(PLVector2 pos) {
+MapTile *GetTileAtPosition(const PLVector2 *pos) {
     MapChunk *chunk = GetChunkAtPosition(pos);
     if(chunk == NULL) {
         return NULL;
     }
 
-    uint idx = (((uint)(pos.x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
-               ((((uint)(pos.y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
+    uint idx = (((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
+               ((((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
     if(idx >= MAP_CHUNK_TILES) {
         LogWarn("attempted to get an out of bounds tile index!\n");
         return NULL;
     }
 
     LogDebug("tile idx = %d\n", idx);
-    LogDebug("tile x = %d ",(((uint)(pos.x) / MAP_TILE_PIXEL_WIDTH)) );
-    LogDebug("tile y = %d\n", (((uint)(pos.y) / MAP_TILE_PIXEL_WIDTH) ));
+    LogDebug("tile x = %d ",(((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH)) );
+    LogDebug("tile y = %d\n", (((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) ));
 
     return &chunk->tiles[idx];
 }
@@ -798,7 +790,7 @@ void GenerateMinimapTexture(void) {
     uint8_t *buf = image.data[0];
     for(uint8_t y = 0; y < 64; ++y) {
         for(uint8_t x = 0; x < 64; ++x) {
-            MapTile *tile = GetTileAtPosition(PLVector2(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64)));
+            MapTile *tile = GetTileAtPosition(&PLVector2(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64)));
             if(tile == NULL) {
                 Error("hit an invalid tile during minimap generation!\n");
             }
@@ -840,7 +832,7 @@ bool LoadMap(const char *name, unsigned int mode) {
         }
     }
 
-    MapManifest *desc = GetMapDesc(name);
+    MapManifest *desc = Map_GetMapManifest(name);
     if(desc == NULL) {
         /* todo: support maps without .map manifest? */
         LogWarn("failed to get descriptor for map, \"%s\", aborting!\n", name);
