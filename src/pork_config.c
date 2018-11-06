@@ -79,8 +79,8 @@ void ReadConfig(const char *path) {
     PLConsoleVariable **vars;
     plGetConsoleVariables(&vars, &num_c);
     for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-        const char *result = Script_GetStringProperty(ctx, (*var)->var);
-        if(strcmp(result, "null") == 0) {
+        const char *result = Script_GetStringProperty(ctx, (*var)->var, NULL);
+        if(result == NULL) {
             continue;
         }
 
@@ -94,7 +94,7 @@ void InitConfig(void) {
     LogInfo("checking for config...\n");
 
     char out[PL_SYSTEM_MAX_PATH];
-    plGetApplicationDataDirectory(PORK_APP_NAME, out, PL_SYSTEM_MAX_PATH);
+    plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH);
     snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config", out);
 
     if(plFileExists(g_state.config_path)) {

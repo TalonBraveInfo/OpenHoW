@@ -121,9 +121,9 @@ void RegisterCampaign(const char *path) {
         return;
     }
 
-    snprintf(slot->name, sizeof(slot->name), "%s", Script_GetStringProperty(ctx, "name"));
-    snprintf(slot->version, sizeof(slot->version), "%s", Script_GetStringProperty(ctx, "version"));
-    snprintf(slot->author, sizeof(slot->author), "%s", Script_GetStringProperty(ctx, "author"));
+    snprintf(slot->name, sizeof(slot->name), "%s", Script_GetStringProperty(ctx, "name", ""));
+    snprintf(slot->version, sizeof(slot->version), "%s", Script_GetStringProperty(ctx, "version", ""));
+    snprintf(slot->author, sizeof(slot->author), "%s", Script_GetStringProperty(ctx, "author", ""));
 
     Script_DestroyContext(ctx);
 

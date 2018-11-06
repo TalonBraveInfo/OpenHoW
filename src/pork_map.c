@@ -237,8 +237,8 @@ void Map_Register(const char *path) {
 
     plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
 
-    strncpy(slot->description, Script_GetStringProperty(ctx, "name"), sizeof(slot->description));
-    strncpy(slot->sky, Script_GetStringProperty(ctx, "sky"), sizeof(slot->sky));
+    strncpy(slot->description, Script_GetStringProperty(ctx, "name", ""), sizeof(slot->description));
+    strncpy(slot->sky, Script_GetStringProperty(ctx, "sky", ""), sizeof(slot->sky));
 
     ScriptArray *array = Script_GetArrayStrings(ctx, "modes");
     if(array != NULL) {

@@ -304,27 +304,27 @@ unsigned int Script_GetArrayLength(ScriptContext *ctx, const char *property) {
     return len;
 }
 
-const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key) {
+const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key, const char *def) {
     if(!Script_DTGetPropertyString(ctx, property)) {
         LogMissingProperty(property);
-        return "";
+        return def;
     }
 
     if(!duk_is_array(ctx, -1)) {
         duk_pop(ctx);
         LogInvalidArray(property);
-        return "";
+        return def;
     }
 
     duk_size_t length = duk_get_length(ctx, -1);
     if(length == 0) {
         LogInfo("Empty JSON array for %s\n", property);
-        return "";
+        return def;
     }
 
     if(id >= length) {
         LogWarn("Invalid object index for %s\n", property);
-        return "";
+        return def;
     }
 
     duk_get_prop_index(ctx, -1, id);
@@ -372,10 +372,10 @@ void Script_DestroyArrayStrings(ScriptArray *array) {
     pork_free(array);
 }
 
-const char *Script_GetStringProperty(ScriptContext *ctx, const char *property) {
+const char *Script_GetStringProperty(ScriptContext *ctx, const char *property, const char *def) {
     if(!Script_DTGetPropertyString(ctx, property)) {
         LogMissingProperty(property);
-        return "";
+        return def;
     }
 
     const char *str = duk_to_string(ctx, -1);
@@ -383,10 +383,10 @@ const char *Script_GetStringProperty(ScriptContext *ctx, const char *property) {
     return str;
 }
 
-int Script_GetIntegerProperty(ScriptContext *ctx, const char *property) {
+int Script_GetIntegerProperty(ScriptContext *ctx, const char *property, int def) {
     if(!Script_DTGetPropertyString(ctx, property)) {
         LogMissingProperty(property);
-        return 0;
+        return def;
     }
 
     int var = duk_to_int(ctx, -1);

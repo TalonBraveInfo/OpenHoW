@@ -436,7 +436,7 @@ void InitDisplay(void) {
     System_DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
     char win_title[32];
-    snprintf(win_title, sizeof(win_title), PORK_TITLE " (%d.%d)", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
+    snprintf(win_title, sizeof(win_title), ENGINE_TITLE " (%d.%d)", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
     System_SetWindowTitle(win_title);
 
     UpdateDisplay();

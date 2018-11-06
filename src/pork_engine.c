@@ -58,7 +58,10 @@ void InitPlayers(void);
 void InitModels(void);
 
 void InitEngine(void) {
-    LogInfo("initializing engine (PORK %d.%d)...\n", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
+    LogInfo("initializing engine (%d.%d.%d)...\n",
+            ENGINE_MAJOR_VERSION,
+            ENGINE_MINOR_VERSION,
+            ENGINE_PATCH_VERSION);
 
     memset(&g_state, 0, sizeof(EngineState));
 

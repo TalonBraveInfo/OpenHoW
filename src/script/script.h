@@ -42,10 +42,10 @@ void Script_FlushJSON(ScriptContext *ctx);
 unsigned int Script_GetArrayLength(ScriptContext *ctx, const char *property);
 ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property);
 void Script_DestroyArrayStrings(ScriptArray *array);
-const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key);
+const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key, const char *def);
 
-const char *Script_GetStringProperty(ScriptContext *ctx, const char *property);
-int Script_GetIntegerProperty(ScriptContext *ctx, const char *property);
+const char *Script_GetStringProperty(ScriptContext *ctx, const char *property, const char *def);
+int Script_GetIntegerProperty(ScriptContext *ctx, const char *property, int def);
 
 /**********************************************************/
 /* CallScript Functions                                   */

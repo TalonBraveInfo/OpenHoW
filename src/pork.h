@@ -17,18 +17,19 @@
 
 #pragma once
 
-/* libpork - engine and game implementation */
+/* engine and game implementation */
 
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 
-#define PORK_TITLE              "OpenHoW"
-#define PORK_APP_NAME           "OpenHoW"
-#define PORK_LOG                "debug"
+#define ENGINE_TITLE        "OpenHoW"
+#define ENGINE_APP_NAME     "OpenHoW"
+#define ENGINE_LOG          "debug"
 
-#define ENGINE_MAJOR_VERSION  0
-#define ENGINE_MINOR_VERSION  1
+#define ENGINE_MAJOR_VERSION    0
+#define ENGINE_MINOR_VERSION    1
+#define ENGINE_PATCH_VERSION    0
 
 #include "pork_classes.h"
 

@@ -67,8 +67,8 @@ void RegisterLanguages(void) {
     num_languages = Script_GetArrayLength(ctx, "languages");
     l_manifest = pork_alloc(num_languages, sizeof(Language), true);
     for(unsigned int i = 0; i < num_languages; ++i) {
-        strncpy(l_manifest[i].key, Script_GetArrayObjectString(ctx, "languages", i, "key"), sizeof(l_manifest[i].key));
-        strncpy(l_manifest[i].name, Script_GetArrayObjectString(ctx, "languages", i, "name"), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
+        strncpy(l_manifest[i].key, Script_GetArrayObjectString(ctx, "languages", i, "key", ""), sizeof(l_manifest[i].key));
+        strncpy(l_manifest[i].name, Script_GetArrayObjectString(ctx, "languages", i, "name", ""), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
         /* uncomment once we're using this...
         strncpy(l_manifest[i].font_path, Script_GetStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
     }
