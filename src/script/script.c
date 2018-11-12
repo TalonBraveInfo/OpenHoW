@@ -362,7 +362,14 @@ ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property) {
     array->strings = pork_alloc(length, sizeof(*array->strings), true);
     for(unsigned int i = 0; i < length; ++i) {
         duk_get_prop_index(ctx, -1, i);
-        strncpy(array->strings[i].data, duk_get_string(ctx, i), sizeof(array->strings[i].data));
+
+        const char *str = duk_get_string(ctx, i);
+        if(str == NULL) {
+            LogWarn("Invalid index or string for %s (%d)\n", property, i);
+            str = "";
+        }
+
+        strncpy(array->strings[i].data, str, sizeof(array->strings[i].data));
         duk_pop(ctx);
     }
 
