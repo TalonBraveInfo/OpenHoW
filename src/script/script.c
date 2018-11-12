@@ -329,8 +329,12 @@ const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property
 
     duk_get_prop_index(ctx, -1, id);
     const char *ret = duk_get_string(ctx, id);
-    duk_pop(ctx);
+    if(ret == NULL) {
+        LogWarn("Invalid index or string for %s\n", property);
+        ret = def;
+    }
 
+    duk_pop(ctx);
     duk_pop(ctx);
 
     return ret;

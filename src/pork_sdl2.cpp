@@ -62,7 +62,7 @@ void System_DisplayMessageBox(unsigned int level, const char *msg, ...) {
     vsnprintf(buf, sizeof(buf), msg, args);
     va_end(args);
 
-    SDL_ShowSimpleMessageBox(level, PORK_TITLE, msg, window);
+    SDL_ShowSimpleMessageBox(level, ENGINE_TITLE, msg, window);
 }
 
 const char *System_GetClipboardText(void*) {
@@ -110,7 +110,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     }
 
     window = SDL_CreateWindow(
-            PORK_TITLE,
+            ENGINE_TITLE,
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
             width, height,
@@ -457,7 +457,7 @@ int main(int argc, char **argv) {
     plInitialize(argc, argv);
 
     char app_dir[PL_SYSTEM_MAX_PATH];
-    plGetApplicationDataDirectory(PORK_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
+    plGetApplicationDataDirectory(ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
 
     if(!plCreatePath(app_dir)) {
         System_DisplayMessageBox(PORK_MBOX_WARNING,
@@ -466,7 +466,7 @@ int main(int argc, char **argv) {
     }
 
     char log_path[PL_SYSTEM_MAX_PATH];
-    snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/" PORK_LOG, app_dir);
+    snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/" ENGINE_LOG, app_dir);
     plSetupLogOutput(log_path);
 
     plSetupLogLevel(PORK_LOG_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
