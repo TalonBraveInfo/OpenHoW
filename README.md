@@ -22,6 +22,10 @@ is currently going towards producing an engine for the game to be
 built upon; right now the primary part of this is creatively called 
 the [platform library](https://github.com/TalonBraveInfo/platform).
 
+If you want to see what tasks are currently being worked on and what
+tasks still need doing, it might be worth taking a look at our [public
+Trello](https://trello.com/b/qdZ7LswA/openhow).
+
 Another task that is currently being looked into are tools that will
 allow for easy modification of OpenHoW -
 though compatibility with the original isn't a huge concern right 
