@@ -623,7 +623,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
     // position within the MTD package - yay...
     if(strcmp(package_extension, "mtd") == 0) {
         char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-        sprintf(index_path, "%s/%s.index", output_path, package_name);
+        snprintf(index_path, sizeof(index_path), "%s/%s.index", output_path, package_name);
         out_index = fopen(index_path, "w");
         if (out_index == NULL) {
             printf("failed to open %s for writing!\n", index_path);
@@ -1011,7 +1011,7 @@ int main(int argc, char **argv) {
     }
 
     char app_dir[PL_SYSTEM_MAX_PATH];
-    plGetApplicationDataDirectory(PORK_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
+    plGetApplicationDataDirectory(ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
 
     if(!plCreatePath(app_dir)) {
         LogWarn("Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError());
