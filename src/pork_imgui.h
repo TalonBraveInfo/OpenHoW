@@ -20,7 +20,6 @@
 #ifdef __cplusplus
 
 #include "../imgui/imgui.h"
-#include "../imgui_tabs/imgui_tabs.h"
 
 #else /* C wrapper */
 
