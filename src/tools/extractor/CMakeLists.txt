@@ -29,7 +29,5 @@ project(extractor)
 
 add_executable(extractor extractor.c)
 
-#SET(PL_SUPPORT_OPENGL OFF CACHE BOOL "Graphics OpenGL API support")
-
 target_include_directories(extractor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(extractor platform)
