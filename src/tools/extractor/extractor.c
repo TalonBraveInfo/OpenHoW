@@ -20,7 +20,7 @@
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
-#include "../src/pork.h"
+#include "../../pork.h"
 //#include "../src/pork_engine.h"
 
 #define LogInfo(...)  plLogMessage(0, __VA_ARGS__)

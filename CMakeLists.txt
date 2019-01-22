@@ -48,4 +48,4 @@ add_definitions("-D_DEBUG")
 add_subdirectory(platform/platform)
 
 add_subdirectory(src)
-add_subdirectory(extractor)
+add_subdirectory(src/tools/extractor)
