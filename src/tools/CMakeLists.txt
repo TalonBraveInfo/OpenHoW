@@ -28,11 +28,9 @@ For more information, please refer to <http://unlicense.org>
 cmake_minimum_required(VERSION 3.5.1)
 
 # Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
-
-include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platform lib headers get used for everything.
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}../../lib/")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}../../lib/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}../../../bin/")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
@@ -43,7 +41,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #GCC
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation -Wold-style-declaration")
 endif()
 
-add_definitions("-D_DEBUG")
+set(PL_USE_GRAPHICS OFF CACHE BOOL "Graphics")
+add_subdirectory(../../platform/platform ${CMAKE_SOURCE_DIR}../../lib/ EXCLUDE_FROM_ALL)
 
-add_subdirectory(platform/platform)
-add_subdirectory(src)
+add_subdirectory(extractor)
+add_subdirectory(ptgtool)

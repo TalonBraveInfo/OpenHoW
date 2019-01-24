@@ -25,25 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-cmake_minimum_required(VERSION 3.5.1)
+project(extractor)
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+add_executable(extractor extractor.c)
 
-include_directories(${CMAKE_SOURCE_DIR}/platform/platform/include/)     # Platform lib headers get used for everything.
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_C_STANDARD 11)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #GCC
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation -Wold-style-declaration")
-endif()
-
-add_definitions("-D_DEBUG")
-
-add_subdirectory(platform/platform)
-add_subdirectory(src)
+target_include_directories(extractor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(extractor platform)

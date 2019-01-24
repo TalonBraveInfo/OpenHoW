@@ -25,11 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(extractor)
+project(ptgtool)
 
-add_executable(extractor extractor.c)
+add_executable(ptgtool ptgtool.c)
 
-#SET(PL_SUPPORT_OPENGL OFF CACHE BOOL "Graphics OpenGL API support")
-
-target_include_directories(extractor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(extractor platform)
+target_include_directories(ptgtool PRIVATE . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(ptgtool platform)
