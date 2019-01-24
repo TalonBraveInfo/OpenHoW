@@ -37,13 +37,14 @@ static void PTG_CountDirectoryTextures(const char *path) {
 static int PTG_SortTextures(const void *a, const void *b) {
     const char *filename = plGetFileName(a);
     char str_num[4];
+    memset(str_num, 0, sizeof(str_num));
     strncpy(str_num, filename, strlen(filename) - 4);
     int a_num = atoi(str_num);
-    memset(str_num, 0, sizeof(str_num));
     filename = plGetFileName(b);
+    memset(str_num, 0, sizeof(str_num));
     strncpy(str_num, filename, strlen(filename) - 4);
     int b_num = atoi(str_num);
-    LogInfo("%s\n%d\n%s\n%d\n", a, a_num, b, b_num);
+    //LogInfo("%s\n%d\n%s\n%d\n", a, a_num, b, b_num);
     return a_num - b_num;
 }
 
