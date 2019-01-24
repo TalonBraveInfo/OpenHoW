@@ -30,6 +30,24 @@ static FILE *ptg_fp = NULL;
 static unsigned int num_textures = 0;
 static char dir_textures[256][PL_SYSTEM_MAX_PATH];
 static void PTG_CountDirectoryTextures(const char *path) {
+    /* ensure consistency */
+
+    size_t size = plGetFileSize(path);
+    if(size == 0) {
+        Error("Invalid file size for \"%s\", aborting!\n", path);
+    }
+
+    static size_t use_size = 0;
+    if(use_size == 0) {
+        use_size = size;
+    }
+
+    if(size != use_size) {
+        Error("Invalid file size for \"%s\", expected %lu (%lu), aborting!\n", path, use_size, size);
+    }
+
+    /* now index it */
+
     LogInfo("(%d) %s\n", num_textures, path);
     strncpy(dir_textures[num_textures++], path, PL_SYSTEM_MAX_PATH);
 }
