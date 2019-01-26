@@ -222,15 +222,15 @@ void System_Shutdown(void) {
 
     SDL_StopTextInput();
 
-    if(controller != NULL) {
+    if(controller != nullptr) {
         SDL_GameControllerClose(controller);
     }
 
-    if(gl_context != NULL) {
+    if(gl_context != nullptr) {
         SDL_GL_DeleteContext(gl_context);
     }
 
-    if(window != NULL) {
+    if(window != nullptr) {
         SDL_DestroyWindow(window);
     }
 
@@ -244,7 +244,7 @@ void System_Shutdown(void) {
 
 ///////////////////////////////////////////////////
 
-int TranslateSDLKey(int key) {
+static int TranslateSDLKey(int key) {
     if(key < 128) {
         return key;
     }
@@ -286,7 +286,7 @@ int TranslateSDLKey(int key) {
     }
 }
 
-int TranslateSDLMouseButton(int button) {
+static int TranslateSDLMouseButton(int button) {
     switch(button) {
         case SDL_BUTTON_LEFT: return PORK_MOUSE_BUTTON_LEFT;
         case SDL_BUTTON_RIGHT: return PORK_MOUSE_BUTTON_RIGHT;
@@ -295,7 +295,7 @@ int TranslateSDLMouseButton(int button) {
     }
 }
 
-int TranslateSDLButton(int button) {
+static int TranslateSDLButton(int button) {
     switch(button) {
         case SDL_CONTROLLER_BUTTON_A: return PORK_BUTTON_CROSS;
         case SDL_CONTROLLER_BUTTON_B: return PORK_BUTTON_CIRCLE;
@@ -319,7 +319,7 @@ int TranslateSDLButton(int button) {
     }
 }
 
-void PollEvents(void) {
+static void PollEvents() {
     ImGuiIO &io = ImGui::GetIO();
 
     SDL_Event event;
@@ -465,9 +465,8 @@ int main(int argc, char **argv) {
                                 "Settings will not be saved.", app_dir, plGetError());
     }
 
-    char log_path[PL_SYSTEM_MAX_PATH];
-    snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/" ENGINE_LOG, app_dir);
-    plSetupLogOutput(log_path);
+    std::string log_path = std::string(app_dir) + "/" + ENGINE_LOG;
+    plSetupLogOutput(log_path.c_str());
 
     plSetupLogLevel(PORK_LOG_LAUNCHER, "launcher", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(PORK_LOG_LAUNCHER_WARNING, "launcher-warning", PLColour(255, 255, 0, 255), true);
