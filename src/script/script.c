@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  */
 #include <PL/platform_filesystem.h>
 
-#include "../pork_input.h"
+#include "../engine_input.h"
 #include "../pork_game.h"
 #include "../pork_engine.h"
 #include "../pork_map.h"
@@ -181,7 +181,7 @@ ScriptFunction scr_builtins[]= {
         _d(GetCurrentMapDescription, 0)
 };
 
-void InitScripting(void) {
+void Script_Initialize(void) {
     /* init the server context */
 
     scr_context = duk_create_heap_default();
@@ -226,13 +226,13 @@ void InitScripting(void) {
     DeclareUniversalGlobalInteger(PORK_BUTTON_SELECT);
 
     DeclareUniversalGlobalInteger(PORK_MAX_BUTTONS);
-    DeclareUniversalGlobalInteger(PORK_MAX_CONTROLLERS);
+    DeclareUniversalGlobalInteger(INPUT_MAX_CONTROLLERS);
 
     /* mouse vars */
     DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_LEFT);
     DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_RIGHT);
     DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_MIDDLE);
-    DeclareUniversalGlobalInteger(PORK_MAX_MOUSE_BUTTONS);
+    DeclareUniversalGlobalInteger(INPUT_MAX_MOUSE_BUTTONS);
 
     /* now init our scripts! */
 
@@ -358,8 +358,8 @@ ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property) {
         return NULL;
     }
 
-    ScriptArray *array = pork_alloc(1, sizeof(ScriptArray), true);
-    array->strings = pork_alloc(length, sizeof(*array->strings), true);
+    ScriptArray *array = u_alloc(1, sizeof(ScriptArray), true);
+    array->strings = u_alloc(length, sizeof(*array->strings), true);
     for(unsigned int i = 0; i < length; ++i) {
         duk_get_prop_index(ctx, -1, i);
 
@@ -379,8 +379,8 @@ ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property) {
 }
 
 void Script_DestroyArrayStrings(ScriptArray *array) {
-    pork_free(array->strings);
-    pork_free(array);
+    u_free(array->strings);
+    u_free(array);
 }
 
 const char *Script_GetStringProperty(ScriptContext *ctx, const char *property, const char *def) {

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,9 +38,9 @@ PL_EXTERN_C
 
 PLModel *LoadModel(const char *path, bool abort_on_fail);
 
-void ClearTextureIndex(unsigned int id);
+void Display_ClearTextureIndex(unsigned int id);
 
-void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
+void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void CacheModelData(void);
 
 PL_EXTERN_C_END

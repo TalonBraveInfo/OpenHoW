@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,33 @@
 #include "../pork.h"
 #include "../pork_game.h"
 #include "../pork_player.h"
+
+enum ActorFlag {
+    /* ...original... */
+    ACTOR_FLAG_PLAYABLE = 1,
+    ACTOR_FLAG_SCRIPTED = 16,
+    ACTOR_FLAG_INSIDE   = 32,
+    ACTOR_FLAG_DELAYED  = 64,
+    /* ...any new types below... */
+};
+
+enum ActorEvent {
+    /* ...original... */
+    ACTOR_EVENT_NONE,                       // does nothing!
+    ACTOR_EVENT_ITEM,                       // spawns an item on destruction
+    ACTOR_EVENT_PROMOTION,                  // spawns a promotion point on destruction
+    ACTOR_EVENT_PROTECT             = 4,    // spawns a promotion point if the object is not destroyed
+    ACTOR_EVENT_AIRDROP_ITEM        = 7,    // spawns item airdrop on destruction
+    ACTOR_EVENT_AIRDROP_PROMOTION,          // spawns promotion point on destruction
+    ACTOR_EVENT_GROUP_ITEM          = 13,   // spawns item when group is destroyed
+    ACTOR_EVENT_GROUP_PROMOTION,            // spawns promotion point when group is destroyed
+    ACTOR_EVENT_REWARD              = 19,   // returns specified item on destruction to destructor
+    ACTOR_EVENT_GROUP_SPAWN,                // spawns group on destruction
+    ACTOR_EVENT_VICTORY,                    // triggers victory on destruction
+    ACTOR_EVENT_BURST,                      // spawns group upon destruction by TNT
+    ACTOR_EVENT_GROUP_OBJECT,               // spawns group when object's group is destroyed
+    /* ...any new types below... */
+};
 
 class Actor {
 public:

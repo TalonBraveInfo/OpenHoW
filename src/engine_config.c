@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #include "script/script.h"
 
-void SaveConfig(const char *path) {
+void Config_Save(const char *path) {
     FILE *fp = fopen(path, "w");
     if(fp == NULL) {
         LogWarn("failed to write config to \"%s\"!\n", path);
@@ -54,7 +54,7 @@ void SaveConfig(const char *path) {
     fclose(fp);
 }
 
-void ReadConfig(const char *path) {
+void Config_Load(const char *path) {
     FILE *fp = fopen(path, "r");
     if(fp == NULL) {
         LogWarn("failed to open config, \"%s\"!\n", path);
@@ -90,17 +90,13 @@ void ReadConfig(const char *path) {
     Script_DestroyContext(ctx);
 }
 
-void InitConfig(void) {
+void Config_Initialize(void) {
     LogInfo("checking for config...\n");
 
     char out[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH);
     snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config", out);
 
-    if(plFileExists(g_state.config_path)) {
-        ReadConfig(g_state.config_path);
-    } else {
-        LogInfo("no config found at \"%s\", generating default...\n", g_state.config_path);
-        SaveConfig(g_state.config_path);
-    }
+    Config_Load(g_state.config_path);
+    Config_Save(g_state.config_path);
 }

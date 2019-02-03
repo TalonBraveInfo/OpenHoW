@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,16 +55,10 @@ extern EngineState g_state;
 
 PL_EXTERN_C
 
-void InitEngine(void);
-void ShutdownEngine(void);
+void Engine_Initialize(void);
+void Engine_Shutdown(void);
 
-void SetupDefaultCamera(void);
-
-void PreDrawPork(double delta);
-void DrawPork(void);
-void PostDrawPork(void);
-
-void SimulatePork(void);
+void Engine_Simulate(void);
 
 bool IsPorkRunning(void);
 
@@ -87,10 +81,10 @@ void System_Shutdown(void);
 
 PL_EXTERN_C_END
 
-#define LogInfo(...)    _print_w_function(PORK_LOG_ENGINE, __VA_ARGS__)
-#define LogWarn(...)    _print_w_function(PORK_LOG_ENGINE_WARNING, __VA_ARGS__)
+#define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
+#define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
 #define Error(...) {                                            \
-    _print_w_function(PORK_LOG_ENGINE_ERROR, __VA_ARGS__);      \
-    System_DisplayMessageBox(PORK_MBOX_ERROR, __VA_ARGS__); \
+    _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);      \
+    System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__); \
     exit(EXIT_FAILURE);                                         \
 }

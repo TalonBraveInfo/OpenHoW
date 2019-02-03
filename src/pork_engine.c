@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,33 +31,27 @@
 EngineState g_state;
 
 const char *GetBasePath(void) {
-    pork_assert(cv_base_path);
+    u_assert(cv_base_path);
     return cv_base_path->s_value;
 }
 
 const char *GetCampaignPath(void) {
-    pork_assert(cv_campaign_path);
+    u_assert(cv_campaign_path);
     return cv_campaign_path->s_value;
 }
-
-//////////////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////////////
 
 /* pork_extractor.c */
 void ExtractGameData(const char *path);
 
 /* pork_config.c */
-void InitConfig(void);
-void SaveConfig(const char *path);
-void ReadConfig(const char *path);
+void Config_Initialize(void);
+void Config_Save(const char *path);
+void Config_Load(const char *path);
 
 void InitPlayers(void);
 void InitModels(void);
 
-void InitEngine(void) {
+void Engine_Initialize(void) {
     LogInfo("initializing engine (%d.%d.%d)...\n",
             ENGINE_MAJOR_VERSION,
             ENGINE_MINOR_VERSION,
@@ -65,7 +59,7 @@ void InitEngine(void) {
 
     memset(&g_state, 0, sizeof(EngineState));
 
-    InitConsole();
+    Console_Initialize();
 
     // check for any command line arguments
 
@@ -78,8 +72,8 @@ void InitEngine(void) {
         plSetConsoleVariable(cv_base_path, var);
     }
 
-    InitScripting();
-    InitConfig();
+    Script_Initialize();
+    Config_Initialize();
 
     RegisterFormatInterfaces();
 
@@ -110,7 +104,7 @@ bool IsPorkRunning(void) {
     return true;
 }
 
-void SimulatePork(void) {
+void Engine_Simulate(void) {
     g_state.sim_ticks = System_GetTicks();
 
     SimulateClient();
@@ -119,7 +113,7 @@ void SimulatePork(void) {
     g_state.last_sim_tick = System_GetTicks();
 }
 
-void ShutdownEngine(void) {
+void Engine_Shutdown(void) {
     ClearPlayers();
 
     ShutdownClient();
@@ -127,7 +121,7 @@ void ShutdownEngine(void) {
     ShutdownServer();
     ShutdownScripting();
 
-    SaveConfig(g_state.config_path);
+    Config_Save(g_state.config_path);
 
     plShutdown();
 }

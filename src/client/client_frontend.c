@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "../pork_engine.h"
-#include "../pork_input.h"
+#include "../engine_input.h"
 #include "../pork_game.h"
 
 #include "client_frontend.h"
@@ -124,7 +124,7 @@ void FrontendInputCallback(int key, bool is_pressed) {
 
         /* we've hit our key, we can take away this
          * callback now and carry on to whatever */
-        SetKeyboardFocusCallback(NULL);
+        Input_SetKeyboardFocusCallback(NULL);
         SetFrontendState(FE_MODE_MAIN_MENU);
         return;
     }
@@ -133,19 +133,19 @@ void FrontendInputCallback(int key, bool is_pressed) {
 
 void CacheFEGameData(void) {
 #if 1
-    fe_tx_game_textures[FE_TEXTURE_ANG] = LoadTexture("fe/dash/ang", PL_TEXTURE_FILTER_LINEAR);
-    fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = LoadTexture("fe/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_ANG] = Display_LoadTexture("fe/dash/ang", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = Display_LoadTexture("fe/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
 
-    fe_tx_game_textures[FE_TEXTURE_CLOCK] = LoadTexture("fe/dash/clock", PL_TEXTURE_FILTER_LINEAR);
-    fe_tx_game_textures[FE_TEXTURE_CLIGHT] = LoadTexture("fe/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR);
-    fe_tx_game_textures[FE_TEXTURE_TIMER] = LoadTexture("fe/dash/timer", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_CLOCK] = Display_LoadTexture("fe/dash/clock", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_CLIGHT] = Display_LoadTexture("fe/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_TIMER] = Display_LoadTexture("fe/dash/timer", PL_TEXTURE_FILTER_LINEAR);
 #endif
 }
 
 void CacheFEMenuData(void) {
-    fe_background = LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+    fe_background = Display_LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
     for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
-        fe_papers_teams[i] = LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
+        fe_papers_teams[i] = Display_LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
     }
 }
 
@@ -183,11 +183,11 @@ void ProcessFrontendInput(void) {
             /* this is... kind of a hack... but ensures that
              * nothing will take away our check for a key during
              * the 'start' screen, e.g. bringing the console up */
-            SetKeyboardFocusCallback(FrontendInputCallback);
+            Input_SetKeyboardFocusCallback(FrontendInputCallback);
         } break;
 
         case FE_MODE_VIDEO: {
-            if(GetKeyState(PORK_KEY_SPACE) || GetKeyState(PORK_KEY_ESCAPE)) {
+            if(Input_GetKeyState(PORK_KEY_SPACE) || Input_GetKeyState(PORK_KEY_ESCAPE)) {
                 SkipVideo();
             }
         } break;
@@ -210,10 +210,10 @@ void SimulateFrontend(void) {
 
                 /* load in some of the assets we'll be using on the
                  * next screen before proceeding... */
-                fe_press = LoadTexture("fe/title/press", PL_TEXTURE_FILTER_LINEAR);
-                fe_any = LoadTexture("fe/title/any", PL_TEXTURE_FILTER_LINEAR);
-                fe_key = LoadTexture("fe/title/key", PL_TEXTURE_FILTER_LINEAR);
-                fe_background = LoadTexture("fe/title/title", PL_TEXTURE_FILTER_LINEAR);
+                fe_press = Display_LoadTexture("fe/title/press", PL_TEXTURE_FILTER_LINEAR);
+                fe_any = Display_LoadTexture("fe/title/any", PL_TEXTURE_FILTER_LINEAR);
+                fe_key = Display_LoadTexture("fe/title/key", PL_TEXTURE_FILTER_LINEAR);
+                fe_background = Display_LoadTexture("fe/title/title", PL_TEXTURE_FILTER_LINEAR);
                 break;
             }
 
@@ -240,7 +240,7 @@ void SetLoadingBackground(const char *name) {
         snprintf(screen_path, sizeof(screen_path), "fe/loadmult");
     }
 
-    fe_background = LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
+    fe_background = Display_LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
     Redraw();
 }
 
@@ -421,7 +421,7 @@ void SetFrontendState(unsigned int state) {
             plDeleteTexture(fe_key, true);
             plDeleteTexture(fe_background, true);
 
-            fe_background = LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
+            fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;
 
         case FE_MODE_START: {

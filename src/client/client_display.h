@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,20 +38,26 @@ enum {
 
 PL_EXTERN_C
 
-void InitDisplay(void);
-void ShutdownDisplay(void);
-void UpdateDisplay(void);
+void Display_Initialize(void);
+void Display_Shutdown(void);
+void Display_UpdateState(void);
 
-void UpdateViewport(int x, int y, int width, int height);
+void Display_UpdateViewport(int x, int y, int width, int height);
 
-int GetViewportWidth(const PLViewport *viewport);
-int GetViewportHeight(const PLViewport *viewport);
+int Display_GetViewportWidth(const PLViewport *viewport);
+int Display_GetViewportHeight(const PLViewport *viewport);
 
-void ClearTextureIndex(unsigned int id);
-void CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
-void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h);
-const PLTexture *GetCachedTexture(unsigned int id);
+void Display_SetupDraw(double delta);
+void Display_DrawScene(void);
+void Display_DrawInterface(void);
+void Display_Flush(void);
 
-PLTexture *LoadTexture(const char *path, PLTextureFilter filter);
+void Display_ClearTextureIndex(unsigned int id);
+void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
+void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w,
+                                    unsigned int *h);
+const PLTexture *Display_GetCachedTexture(unsigned int id);
+
+PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter);
 
 PL_EXTERN_C_END

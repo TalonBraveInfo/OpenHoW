@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  * Copyright (C) 2017 Daniel Collins <solemnwarning@solemnwarning.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -584,12 +584,12 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
             goto ABORT_PTG;
         }
 
-        pork_fclose(out);
+        u_fclose(out);
     }
 
     ABORT_PTG:
-    pork_fclose(out);
-    pork_fclose(file);
+    u_fclose(out);
+    u_fclose(file);
 }
 
 void ExtractMADPackage(const char *input_path, const char *output_path) {
@@ -718,19 +718,19 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
             goto ABORT_MAD;
         }
 
-        pork_fclose(out);
-        pork_free(data);
+        u_fclose(out);
+        u_free(data);
 
         // return us to where we were in the file
         fseek(file, position, SEEK_SET);
     } while(position < lowest_offset);
 
     ABORT_MAD:
-    pork_free(data);
+    u_free(data);
 
-    pork_fclose(out_index);
-    pork_fclose(out);
-    pork_fclose(file);
+    u_fclose(out_index);
+    u_fclose(out);
+    u_fclose(file);
 }
 
 void ConvertImageToPNG(const char *path) {
@@ -1066,7 +1066,7 @@ int main(int argc, char **argv) {
         case VERSION_ENG_PSX: {
             /* todo, psx still needs a lot of thought here...
              * I don't know if we even want to bother? */
-            pork_assert(0, "TODO");
+            u_assert(0, "TODO");
             return EXIT_FAILURE;
         }
 

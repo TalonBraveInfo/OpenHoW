@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,11 +141,11 @@ PLModel *LoadVTXModel(const char *path) {
 
     /* now to shuffle all that data into our model! */
 
-    PLModel *model = pork_alloc(1, sizeof(PLModel), true);
+    PLModel *model = u_alloc(1, sizeof(PLModel), true);
 
     /* copy the bones into the model struct */
 
-    model->bones = pork_alloc(model_cache.num_bones, sizeof(PLBone), true);
+    model->bones = u_alloc(model_cache.num_bones, sizeof(PLBone), true);
     memcpy(model->bones, model_cache.bones, sizeof(PLBone) * model_cache.num_bones);
     model->num_bones = model_cache.num_bones;
 
@@ -182,7 +182,7 @@ PLModel *LoadVTXModel(const char *path) {
             }
 
             texture_indices[num_texture_indices++] = quads[i].texture_index;
-            pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+            u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
         }
     }
 
@@ -193,14 +193,14 @@ PLModel *LoadVTXModel(const char *path) {
             }
 
             texture_indices[num_texture_indices++] = triangles[i].texture_index;
-            pork_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+            u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
         }
     }
 
     /* now allocate our mesh container */
 
     model->num_meshes = num_texture_indices;
-    model->meshes = pork_alloc(model->num_meshes, sizeof(PLModelMesh), true);
+    model->meshes = u_alloc(model->num_meshes, sizeof(PLModelMesh), true);
 
     /* now group together all our "meshes" */
 
@@ -244,7 +244,7 @@ PLModel *LoadVTXModel(const char *path) {
             }
 
             meshes[i].num_triangles++;
-            pork_assert(meshes[i].num_triangles < 4096);
+            u_assert(meshes[i].num_triangles < 4096);
         }
     }
 
@@ -258,7 +258,7 @@ PLModel *LoadVTXModel(const char *path) {
 
         PLMesh *cur_mesh = model->meshes[i].mesh;
 
-        model->meshes[i].bone_weights = pork_alloc(num_vertices, sizeof(PLBoneWeight), true);
+        model->meshes[i].bone_weights = u_alloc(num_vertices, sizeof(PLBoneWeight), true);
         model->meshes[i].num_bone_weights = num_vertices;
 
 #if 1 /* debug */
@@ -325,7 +325,7 @@ PLModel *LoadVTXModel(const char *path) {
 }
 
 PLModel *LoadMINModel(const char *path) {
-    pork_assert(0, "TODO");
+    u_assert(0, "TODO");
     return NULL;
 }
 
@@ -335,7 +335,7 @@ PLModel *LoadMINModel(const char *path) {
  * and can abort on error */
 PLModel *LoadModel(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
-    snprintf(model_path, sizeof(model_path), "%s.vtx", pork_find(path));
+    snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
     PLModel *model = plLoadModel(model_path);
     if(model == NULL) {
         if(abort_on_fail) {
@@ -385,7 +385,7 @@ void CacheModelData(void) {
     LogInfo("caching pig.hir\n");
 
     char hir_path[PL_SYSTEM_MAX_PATH];
-    strncpy(hir_path, pork_find("/chars/pig.hir"), sizeof(hir_path));
+    strncpy(hir_path, u_find("/chars/pig.hir"), sizeof(hir_path));
     size_t hir_bytes = plGetFileSize(hir_path);
     if(hir_bytes == 0) {
         Error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
@@ -450,7 +450,7 @@ void CacheModelData(void) {
     LogInfo("caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    strncpy(mcap_path, pork_find("/chars/mcap.mad"), sizeof(mcap_path));
+    strncpy(mcap_path, u_find("/chars/mcap.mad"), sizeof(mcap_path));
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
@@ -603,7 +603,7 @@ void CacheModelData(void) {
 
         // copy everything into our global animations array
 
-        model_cache.animations[i].frames = pork_alloc(num_keyframes, sizeof(Keyframe), true);
+        model_cache.animations[i].frames = u_alloc(num_keyframes, sizeof(Keyframe), true);
 
         // move to where the first keyframe is
         if(fseek(file, index.offset, SEEK_SET) != 0) {

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ Actor *g_actors = NULL;
 void SVClearActors(void) {
     if(g_actors == NULL) {
         LogDebug("allocating %u server actors\n", num_actors);
-        g_actors = pork_alloc(num_actors, sizeof(Actor), true);
+        g_actors = u_alloc(num_actors, sizeof(Actor), true);
         return;
     }
 
@@ -36,7 +36,7 @@ void SVClearActors(void) {
 }
 
 void SVSimulateActors(void) {
-    pork_assert(g_actors != NULL, "invalid actor!\n");
+    u_assert(g_actors != NULL, "invalid actor!\n");
 
     for(Actor *actor = g_actors; actor < g_actors + num_actors; ++actor) {
         if(!actor->is_reserved) {

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,10 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
-/* todo, bother with support for multiple pads? */
-#define PORK_MAX_CONTROLLERS    1
+#define INPUT_MAX_CONTROLLERS   4
 
 enum {
     ACTION_MOVE_FORWARD,
@@ -38,7 +38,7 @@ enum {
     ACTION_SELECT,
     ACTION_DESELECT,
 
-    MAX_ACTIONS
+    INPUT_MAX_ACTIONS
 };
 
 enum {
@@ -71,7 +71,7 @@ enum {
     PORK_MOUSE_BUTTON_RIGHT,
     PORK_MOUSE_BUTTON_MIDDLE,
 
-    PORK_MAX_MOUSE_BUTTONS
+    INPUT_MAX_MOUSE_BUTTONS
 };
 
 enum {
@@ -111,22 +111,22 @@ enum {
 
     PORK_KEY_ESCAPE,
 
-    PORK_MAX_KEYS
+    INPUT_MAX_KEYS
 };
 
 PL_EXTERN_C
 
-void InitInput(void);
-void ResetInputStates(void);
+void Input_Initialize(void);
+void Input_ResetStates(void);
 
-void SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed));
+void Input_SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed));
 
-bool GetKeyState(int key);
-bool GetButtonState(unsigned int controller, int button);
-bool GetActionState(unsigned int controller, int action);
+bool Input_GetKeyState(int key);
+bool Input_GetButtonState(unsigned int controller, int button);
+bool Input_GetActionState(unsigned int controller, int action);
 
-void SetButtonState(unsigned int controller, int button, bool status);
-void SetKeyState(int key, bool status);
-void SetMouseState(int x, int y, int button, bool status);
+void Input_SetButtonState(unsigned int controller, int button, bool status);
+void Input_SetKeyState(int key, bool status);
+void Input_SetMouseState(int x, int y, int button, bool status);
 
 PL_EXTERN_C_END

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,18 +35,17 @@
 
 ///////////////////////////////////////////////////
 
-enum {
-    PORK_LOG_ENGINE,
-    PORK_LOG_ENGINE_WARNING,
-    PORK_LOG_ENGINE_ERROR,
+enum LogLevel {
+    LOG_LEVEL_DEFAULT,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_DEBUG,
+};
 
-    PORK_LOG_LAUNCHER,
-    PORK_LOG_LAUNCHER_WARNING,
-    PORK_LOG_LAUNCHER_ERROR,
-
-    PORK_LOG_DEBUG,
-
-    MAX_PORK_LOGS
+enum PromptLevel {
+    PROMPT_LEVEL_DEFAULT,
+    PROMPT_LEVEL_WARNING,
+    PROMPT_LEVEL_ERROR,
 };
 
 typedef unsigned int uint;
@@ -55,30 +54,30 @@ typedef unsigned char uchar, byte;
 #define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
 
 #ifdef _DEBUG
-#   define LogDebug(...) _print_w_function(PORK_LOG_DEBUG, __VA_ARGS__)
+#   define LogDebug(...) _print_w_function(LOG_LEVEL_DEBUG, __VA_ARGS__)
 #else
 #   define LogDebug(...) ()
 #endif
 
-//////////////////////////////////////////////////
+/************************************************/
 /* Utilities                                    */
 
-#define pork_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
-#define pork_free(DATA) free((DATA)); (DATA) = NULL
+#define u_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
+#define u_free(DATA) free((DATA)); (DATA) = NULL
 
 PL_EXTERN_C
 
-void *pork_alloc(size_t num, size_t size, bool abort_on_fail);
+void *u_alloc(size_t num, size_t size, bool abort_on_fail);
 
-const char *pork_find(const char *path);
-const char *pork_find2(const char *path, const char **preference);
+const char *u_find(const char *path);
+const char *u_find2(const char *path, const char **preference);
 
 PL_EXTERN_C_END
 
 #ifdef _DEBUG
-#   define pork_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); LogInfo("assertion hit in \"%s\" on line %d\n", PL_FUNCTION, __LINE__); } assert((a))
+#   define u_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); LogInfo("assertion hit in \"%s\" on line %d\n", PL_FUNCTION, __LINE__); } assert((a))
 #else
-#   define pork_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); }
+#   define u_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); }
 #endif
 
 /************************************************/
@@ -98,16 +97,6 @@ void SetPorkEditorContext(PorkEdCtx context_id);
 
 PL_EXTERN_C_END
 
-/************************************************/
-
-enum MBoxWarningLevel {
-    PORK_MBOX_INFORMATION,
-    PORK_MBOX_WARNING,
-    PORK_MBOX_ERROR,
-};
-
-/************************************************/
-
 ///////////////////////////////////////////////////
 // Player
 
@@ -117,41 +106,6 @@ enum MBoxWarningLevel {
 #define MAX_INVENTORY   32
 
 ///////////////////////////////////////////////////
-
-
-
-// todo: move into actor.h
-enum ActorFlag {
-    /* ...original... */
-    ACTOR_FLAG_PLAYABLE = 1,
-    ACTOR_FLAG_SCRIPTED = 16,
-    ACTOR_FLAG_INSIDE   = 32,
-    ACTOR_FLAG_DELAYED  = 64,
-    /* ...any new types below... */
-
-
-};
-
-// todo: move into actor.h
-enum ActorEvent {
-    /* ...original... */
-    ACTOR_EVENT_NONE,                 // does nothing!
-    ACTOR_EVENT_ITEM,                 // spawns an item on destruction
-    ACTOR_EVENT_PROMOTION,            // spawns a promotion point on destruction
-    ACTOR_EVENT_PROTECT = 4,          // spawns a promotion point if the object is not destroyed
-    ACTOR_EVENT_AIRDROP_ITEM = 7,     // spawns item airdrop on destruction
-    ACTOR_EVENT_AIRDROP_PROMOTION,    // spawns promotion point on destruction
-    ACTOR_EVENT_GROUP_ITEM = 13,      // spawns item when group is destroyed
-    ACTOR_EVENT_GROUP_PROMOTION,      // spawns promotion point when group is destroyed
-    ACTOR_EVENT_REWARD = 19,          // returns specified item on destruction to destructor
-    ACTOR_EVENT_GROUP_SPAWN,          // spawns group on destruction
-    ACTOR_EVENT_VICTORY,              // triggers victory on destruction
-    ACTOR_EVENT_BURST,                // spawns group upon destruction by TNT
-    ACTOR_EVENT_GROUP_OBJECT,         // spawns group when object's group is destroyed
-    /* ...any new types below... */
-
-
-};
 
 // todo: move into items.h
 

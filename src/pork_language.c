@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ unsigned int num_translations = 0;
 
 void RegisterLanguages(void) {
     char man_path[PL_SYSTEM_MAX_PATH];
-    strncpy(man_path, pork_find("languages.manifest"), sizeof(man_path));
+    strncpy(man_path, u_find("languages.manifest"), sizeof(man_path));
 
     const char *var;
     if((var = plGetCommandLineArgumentValue("-manifest")) != NULL) {
@@ -65,7 +65,7 @@ void RegisterLanguages(void) {
     Script_ParseBuffer(ctx, buf);
 
     num_languages = Script_GetArrayLength(ctx, "languages");
-    l_manifest = pork_alloc(num_languages, sizeof(Language), true);
+    l_manifest = u_alloc(num_languages, sizeof(Language), true);
     for(unsigned int i = 0; i < num_languages; ++i) {
         strncpy(l_manifest[i].key, Script_GetArrayObjectString(ctx, "languages", i, "key", ""), sizeof(l_manifest[i].key));
         strncpy(l_manifest[i].name, Script_GetArrayObjectString(ctx, "languages", i, "name", ""), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
@@ -86,12 +86,12 @@ void RegisterLanguages(void) {
 }
 
 void ClearLanguages(void) {
-    pork_free(l_manifest);
-    pork_free(l_cache);
+    u_free(l_manifest);
+    u_free(l_cache);
 }
 
 const char *GetTranslation(const char *key) { // todo: UTF-8 pls
-    pork_assert(plIsEmptyString(key), "invalid translation key!\n");
+    u_assert(plIsEmptyString(key), "invalid translation key!\n");
 
     if(l_cache == NULL) {
         return key;

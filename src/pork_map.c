@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -376,8 +376,8 @@ typedef struct WaterTile {
 WaterTile water_tiles[WATER_TILES];
 
 void GenerateWaterTiles(void) {
-    water_textures[0] = LoadTexture("textures/wat01", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
-    water_textures[1] = LoadTexture("textures/wat02", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[0] = Display_LoadTexture("textures/wat01", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+    water_textures[1] = Display_LoadTexture("textures/wat02", PL_TEXTURE_FILTER_MIPMAP_LINEAR);
 
     water_mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, 2, 4);
     if (water_mesh == NULL) {
@@ -453,7 +453,7 @@ void MapsCommand(unsigned int argc, char *argv[]) {
 void InitMaps(void) {
     /* register all of the existing maps */
 
-    map_descriptors = pork_alloc(max_maps, sizeof(MapManifest), true);
+    map_descriptors = u_alloc(max_maps, sizeof(MapManifest), true);
 
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
@@ -496,11 +496,11 @@ void UnloadMap(void) {
             map_state.textures[i] = NULL;
         }
 
-        pork_free(map_state.textures);
+        u_free(map_state.textures);
         map_state.num_textures = 0;
     }
 
-    pork_free(map_state.spawns);
+    u_free(map_state.spawns);
     memset(&map_state, 0, sizeof(map_state));
 }
 
@@ -589,7 +589,7 @@ void LoadMapSpawns(const char *path) {
         Error("failed to get number of indices from pog, \"%s\", aborting\n", path);
     }
 
-    map_state.spawns = pork_alloc(num_indices, sizeof(*map_state.spawns), true);
+    map_state.spawns = u_alloc(num_indices, sizeof(*map_state.spawns), true);
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
         if(fread(&map_state.spawns[i], sizeof(ActorSpawn), 1, fh) != 1) {
@@ -604,7 +604,7 @@ void LoadMapSpawns(const char *path) {
         LogDebug("fallback %d %d %d\n", v(fallback_position));
     }
 
-    pork_fclose(fh);
+    u_fclose(fh);
 }
 
 void LoadMapTiles(const char *path) {
@@ -617,7 +617,7 @@ void LoadMapTiles(const char *path) {
 
     /* done here in case the enhanced format supports larger chunk sizes */
     map_state.num_chunks = MAP_CHUNKS;
-    map_state.chunks = pork_alloc(sizeof(MapChunk), map_state.num_chunks, true);
+    map_state.chunks = u_alloc(sizeof(MapChunk), map_state.num_chunks, true);
 
     LogDebug("%u chunks for terrain\n", map_state.num_chunks);
 
@@ -688,7 +688,7 @@ void LoadMapTiles(const char *path) {
                     CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip   = 0;
                     CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex    = tile.texture;
 
-                    pork_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
+                    u_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                                 "invalid tile type!\n");
 
 #if 1
@@ -703,7 +703,7 @@ void LoadMapTiles(const char *path) {
         }
     }
 
-    pork_fclose(fh);
+    u_fclose(fh);
 
     if(terrain_mesh != NULL) {
         plDeleteMesh(terrain_mesh);
@@ -729,7 +729,7 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
     char sky_path[PL_SYSTEM_MAX_PATH] = { '\0' };
     /* was this even the default in the original!? */
     if(desc->sky[0] != '\0' && desc->sky[0] != ' ') {
-        snprintf(sky_path, sizeof(sky_path), "%s%s1", pork_find("skys/"), desc->sky);
+        snprintf(sky_path, sizeof(sky_path), "%s%s1", u_find("skys/"), desc->sky);
         if(!plPathExists(sky_path)) {
             LogWarn("failed to find texture path for sky at \"%s\", reverting to default!\n", sky_path);
             sky_path[0] = '\0';
@@ -738,7 +738,7 @@ void LoadMapTextures(MapManifest *desc, const char *path) {
 
     if(sky_path[0] == '\0') {
         LogInfo("no sky specified, using default\n");
-        snprintf(sky_path, sizeof(sky_path), "%s", pork_find("skys/sunny/"));
+        snprintf(sky_path, sizeof(sky_path), "%s", u_find("skys/sunny/"));
     }
 
     /*
@@ -782,8 +782,8 @@ void GenerateMinimapTexture(void) {
     image.size          = plGetImageSize(image.format, image.width, image.height);
     image.levels        = 1;
 
-    image.data = pork_alloc(image.levels, sizeof(uint8_t*), true);
-    image.data[0] = pork_alloc(1, image.size, true);
+    image.data = u_alloc(image.levels, sizeof(uint8_t *), true);
+    image.data[0] = u_alloc(1, image.size, true);
 
     /* now write into the image buffer */
 
@@ -876,7 +876,7 @@ bool LoadMap(const char *name, unsigned int mode) {
 
     snprintf(path, sizeof(path), "maps/%s/%s.pmg", name, name);
     LogDebug("pmg: %s\n", path);
-    const char *p = pork_find(path);
+    const char *p = u_find(path);
     if(!plFileExists(p)) {
         LogWarn("failed to load pmg, file \"%s\" doesn't exist, aborting\n", p);
         return false;
@@ -891,7 +891,7 @@ bool LoadMap(const char *name, unsigned int mode) {
 
     snprintf(path, sizeof(path), "maps/%s/%s.pog", name, name);
     LogDebug("pog: %s\n", path);
-    p = pork_find(path);
+    p = u_find(path);
     if (!plFileExists(p)) {
         LogWarn("failed to load pog, file \"%s\" doesn't exist, aborting\n", p);
         UnloadMap();

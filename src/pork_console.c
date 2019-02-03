@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "pork_engine.h"
-#include "pork_input.h"
+#include "engine_input.h"
 #include "pork_map.h"
 #include "pork_language.h"
 #include "pork_audio.h"
@@ -49,7 +49,7 @@ CallbackConstruct callbacks[]={
         {"map", NULL, NULL, NULL},
 };
 
-void GetCommand(unsigned int argc, char *argv[]) {
+static void GetCommand(unsigned int argc, char *argv[]) {
     check_args(2);
 
     const char *cmd = argv[1];
@@ -65,7 +65,7 @@ void GetCommand(unsigned int argc, char *argv[]) {
     LogWarn("invalid GET command, %s!\n", cmd);
 }
 
-void AddCommand(unsigned int argc, char *argv[]) {
+static void AddCommand(unsigned int argc, char *argv[]) {
     check_args(2);
 
     const char *cmd = argv[1];
@@ -81,7 +81,7 @@ void AddCommand(unsigned int argc, char *argv[]) {
     LogWarn("invalid ADD command, %s!\n", cmd);
 }
 
-void SetCommand(unsigned int argc, char *argv[]) {
+static void SetCommand(unsigned int argc, char *argv[]) {
     check_args(2);
 
     const char *cmd = argv[1];
@@ -152,7 +152,7 @@ void SetCommand(unsigned int argc, char *argv[]) {
 #endif
 }
 
-void FrontendModeCommand(unsigned int argc, char *argv[]) {
+static void FrontendModeCommand(unsigned int argc, char *argv[]) {
     check_args(2);
 
     int mode = atoi(argv[1]);
@@ -164,30 +164,30 @@ void FrontendModeCommand(unsigned int argc, char *argv[]) {
     SetFrontendState((unsigned int) mode);
 }
 
-void ResetAudioCommand(unsigned int argc, char *argv[]) {
+static void ResetAudioCommand(unsigned int argc, char *argv[]) {
     InitAudio();
 }
 
-void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
-    UpdateDisplay();
+static void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
+    Display_UpdateState();
 }
 
-void QuitCommand(unsigned int argc, char *argv[]) {
+static void QuitCommand(unsigned int argc, char *argv[]) {
     System_Shutdown();
 }
 
-void DisconnectCommand(unsigned int argc, char *argv[]) {
+static void DisconnectCommand(unsigned int argc, char *argv[]) {
     UnloadMap();
 }
 
-void ConfigCommand(unsigned int argc, char *argv[]) {
+static void ConfigCommand(unsigned int argc, char *argv[]) {
     check_args(2);
 
     void ReadConfig(const char *path);
     ReadConfig(argv[1]);
 }
 
-void OpenCommand(unsigned int argc, char *argv[]) {
+static void OpenCommand(unsigned int argc, char *argv[]) {
     check_args(2);
 
     const char *fpath = argv[1];
@@ -241,8 +241,8 @@ void OpenCommand(unsigned int argc, char *argv[]) {
     }
 }
 
-void DebugModeCallback(const PLConsoleVariable *variable) {
-    plSetupLogLevel(PORK_LOG_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
+static void DebugModeCallback(const PLConsoleVariable *variable) {
+    plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
 }
 
 /*****************************************************/
@@ -254,7 +254,7 @@ struct {
     unsigned int buffer_pos;
 } console_state;
 
-bool console_enabled = false;
+static bool console_enabled = false;
 
 PLConsoleVariable *cv_debug_mode = NULL;
 PLConsoleVariable *cv_debug_fps = NULL;
@@ -272,7 +272,7 @@ PLConsoleVariable *cv_display_width = NULL;
 PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
 
-void InitConsole(void) {
+void Console_Initialize(void) {
 #define rvar(var, arc, ...) (var) = plRegisterConsoleVariable(plStringify(var), __VA_ARGS__); (var)->archive = (arc)
     rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
     rvar(cv_debug_fps, false, "1", pl_bool_var, NULL, "display framerate");
@@ -309,7 +309,7 @@ void InitConsole(void) {
     plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
 }
 
-void DrawConsole(void) {
+void Console_Draw(void) {
     if(GetFrontendState() == FE_MODE_INIT || GetFrontendState() == FE_MODE_LOADING || !console_enabled) {
         return;
     }
@@ -318,7 +318,7 @@ void DrawConsole(void) {
 
     plDrawFilledRectangle(plCreateRectangle(
             PLVector2(0, 0),
-            PLVector2(GetViewportWidth(&g_state.ui_camera->viewport), 32),
+            PLVector2(Display_GetViewportWidth(&g_state.ui_camera->viewport), 32),
             PLColour(0, 0, 0, 255),
             PLColour(0, 0, 0, 0),
             PLColour(0, 0, 0, 255),
@@ -343,25 +343,12 @@ void DrawConsole(void) {
     plSetBlendMode(PL_BLEND_DEFAULT);
 }
 
-void ResetConsole(void) {
+static void ResetConsole(void) {
     memset(console_state.buffer, 0, sizeof(console_state.buffer));
     console_state.buffer_pos = 0;
 }
 
-void ConsoleInputCallback(int key, bool is_pressed);
-void ToggleConsole(void) {
-    console_enabled = !console_enabled;
-    if(console_enabled) {
-        SetKeyboardFocusCallback(ConsoleInputCallback);
-        ResetConsole();
-    } else {
-        SetKeyboardFocusCallback(NULL);
-    }
-
-    ResetInputStates();
-}
-
-void ConsoleInputCallback(int key, bool is_pressed) {
+static void ConsoleInputCallback(int key, bool is_pressed) {
     if(!is_pressed || !console_enabled) {
         return;
     }
@@ -369,7 +356,7 @@ void ConsoleInputCallback(int key, bool is_pressed) {
     if(key == '\r') {
         /* todo, allow multiple commands, seperated with ';' */
         plParseConsoleString(console_state.buffer);
-        ToggleConsole();
+        Console_Toggle();
         return;
     }
 
@@ -388,4 +375,16 @@ void ConsoleInputCallback(int key, bool is_pressed) {
     }
 
     console_state.buffer[console_state.buffer_pos++] = (char) key;
+}
+
+void Console_Toggle(void) {
+    console_enabled = !console_enabled;
+    if(console_enabled) {
+        Input_SetKeyboardFocusCallback(ConsoleInputCallback);
+        ResetConsole();
+    } else {
+        Input_SetKeyboardFocusCallback(NULL);
+    }
+
+    Input_ResetStates();
 }

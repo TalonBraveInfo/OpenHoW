@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ unsigned long pork_unmangle(void *source, void *destination) {
     return 0;
 }
 
-void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
+void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
     void *mem = calloc(num, size);
     if(mem == NULL && abort_on_fail) {
         Error("failed to allocate %u bytes!\n", size * num);
@@ -41,7 +41,7 @@ void *pork_alloc(size_t num, size_t size, bool abort_on_fail) {
 /****************************************************/
 /* Filesystem */
 
-const char *pork_find(const char *path) {
+const char *u_find(const char *path) {
     static char n_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
         snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
@@ -70,7 +70,7 @@ const char *pork_scan(const char *path, const char **preference) {
     return "";
 }
 
-const char *pork_find2(const char *path, const char **preference) {
+const char *u_find2(const char *path, const char **preference) {
     static char out[PL_SYSTEM_MAX_PATH];
     memset(out, 0, sizeof(out));
 

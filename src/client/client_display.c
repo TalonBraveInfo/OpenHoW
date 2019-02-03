@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "../pork_engine.h"
-#include "../pork_input.h"
+#include "../engine_input.h"
 #include "../pork_map.h"
 #include "../pork_particle.h"
 #include "../pork_formats.h"
@@ -58,8 +58,9 @@ size_t GetTextureCacheSize(void) {
     return size;
 }
 
-void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w, unsigned int *h) {
-    pork_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
+void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w,
+                                    unsigned int *h) {
+    u_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
     TextureIndex *index = &texture_cache[id];
     *x = index->offsets[tex_id].x;
     *y = index->offsets[tex_id].y;
@@ -67,8 +68,8 @@ void GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y
     *h = index->offsets[tex_id].h;
 }
 
-const PLTexture *GetCachedTexture(unsigned int id) {
-    pork_assert(id < MAX_TEXTURE_INDEX);
+const PLTexture *Display_GetCachedTexture(unsigned int id) {
+    u_assert(id < MAX_TEXTURE_INDEX);
     return texture_cache[id].texture;
 }
 
@@ -94,7 +95,7 @@ void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
 /* for debugging purposes, displays the textures
  * cached in memory on the screen */
 void DrawTextureCache(unsigned int id) {
-    pork_assert(id < MAX_TEXTURE_INDEX);
+    u_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     if(index->num_textures > 0) {
         int w = index->texture->w;
@@ -131,14 +132,14 @@ void DrawTextureCache(unsigned int id) {
 }
 
 /* unloads texture set from memory */
-void ClearTextureIndex(unsigned int id) {
-    pork_assert(id < MAX_TEXTURE_INDEX);
+void Display_ClearTextureIndex(unsigned int id) {
+    u_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     plDeleteTexture(index->texture, true);
     memset(index, 0, sizeof(TextureIndex));
 }
 
-int CompareImageHeight(const void *a, const void *b) {
+static int CompareImageHeight(const void *a, const void *b) {
     const PLImage *img_a = (const PLImage*)a;
     const PLImage *img_b = (const PLImage*)b;
     if(img_a->height < img_b->height) {
@@ -151,8 +152,8 @@ int CompareImageHeight(const void *a, const void *b) {
 }
 
 /* loads texture set into memory */
-void CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
-    pork_assert(id < MAX_TEXTURE_INDEX);
+void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
+    u_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
     if(index->num_textures > 0) {
         LogWarn("textures already cached for index %s\n", index_name);
@@ -252,8 +253,8 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
     cache.levels          = 1;
     cache.size            = plGetImageSize(cache.format, cache.width, cache.height);
 
-    cache.data = pork_alloc(cache.levels, sizeof(uint8_t*), true);
-    cache.data[0] = pork_alloc(cache.size, sizeof(uint8_t), true);
+    cache.data = u_alloc(cache.levels, sizeof(uint8_t *), true);
+    cache.data[0] = u_alloc(cache.size, sizeof(uint8_t), true);
     for(unsigned int i = 0; i < index->num_textures; ++i) {
         uint8_t *pos = cache.data[0] + ((index->offsets[i].y * cache.width) + index->offsets[i].x) * 4;
         uint8_t *src = images[i].data[0];
@@ -296,10 +297,10 @@ void CacheTextureIndex(const char *path, const char *index_name, unsigned int id
         Error("%s, aborting!\n", plGetError());
     }
 
-    pork_fclose(file);
+    u_fclose(file);
 }
 
-PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
+PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter) {
     /* todo: make this more friendly */
 
     PLTexture *texture;
@@ -307,13 +308,13 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
     char n_path[PL_SYSTEM_MAX_PATH];
     const char *ext = plGetFileExtension(path);
     if(plIsEmptyString(ext)) {
-        strncpy(n_path, pork_find2(path, supported_image_formats), sizeof(n_path));
+        strncpy(n_path, u_find2(path, supported_image_formats), sizeof(n_path));
         if(plIsEmptyString(n_path)) {
             Error("failed to find texture, \"%s\"!\n", path);
         }
         ext = plGetFileExtension(n_path);
     } else {
-        strncpy(n_path, pork_find(path), sizeof(n_path));
+        strncpy(n_path, u_find(path), sizeof(n_path));
 
         /* pixel format of TIM will be changed before
          * uploading */
@@ -350,8 +351,8 @@ PLTexture *LoadTexture(const char *path, PLTextureFilter filter) {
 #define MIN_DISPLAY_HEIGHT  200
 
 /* shared function */
-void UpdateViewport(int x, int y, int width, int height) {
-    ResetInputStates();
+void Display_UpdateViewport(int x, int y, int width, int height) {
+    Input_ResetStates();
 
     if(g_state.camera == NULL || g_state.ui_camera == NULL) {
         // display probably hasn't been initialised
@@ -364,7 +365,7 @@ void UpdateViewport(int x, int y, int width, int height) {
     g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
 }
 
-int GetViewportWidth(const PLViewport *viewport) {
+int Display_GetViewportWidth(const PLViewport *viewport) {
     if(viewport->r_w != 0 && viewport->r_w != viewport->w) {
         return viewport->r_w;
     }
@@ -372,7 +373,7 @@ int GetViewportWidth(const PLViewport *viewport) {
     return viewport->w;
 }
 
-int GetViewportHeight(const PLViewport *viewport) {
+int Display_GetViewportHeight(const PLViewport *viewport) {
     if(viewport->r_h != 0 && viewport->r_h != viewport->h) {
         return viewport->r_h;
     }
@@ -383,7 +384,7 @@ int GetViewportHeight(const PLViewport *viewport) {
 /**
  * Update display to match the current settings.
  */
-void UpdateDisplay(void) {
+void Display_UpdateState(void) {
     char buf[4];
 
     // bound check both the width and height to lowest supported width and height
@@ -411,10 +412,10 @@ void UpdateDisplay(void) {
         LogInfo("display set to %dx%d\n", w, h);
     }
 
-    UpdateViewport(0, 0, cv_display_width->i_value, cv_display_height->i_value);
+    Display_UpdateViewport(0, 0, cv_display_width->i_value, cv_display_height->i_value);
 }
 
-void InitDisplay(void) {
+void Display_Initialize(void) {
     // check the command line for any arguments
 
     const char *var;
@@ -439,7 +440,7 @@ void InitDisplay(void) {
     snprintf(win_title, sizeof(win_title), ENGINE_TITLE " (%d.%d)", ENGINE_MAJOR_VERSION, ENGINE_MINOR_VERSION);
     System_SetWindowTitle(win_title);
 
-    UpdateDisplay();
+    Display_UpdateState();
 
     // platform library graphics subsystem can init now...
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
@@ -480,20 +481,20 @@ void InitDisplay(void) {
 
     LogInfo("caching texture groups...\n");
 
-    CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
-    CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
-    CacheTextureIndex("/chars/french/", "french.index", TEXTURE_INDEX_FRENCH);
-    CacheTextureIndex("/chars/german/", "german.index", TEXTURE_INDEX_GERMAN);
-    CacheTextureIndex("/chars/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
-    CacheTextureIndex("/chars/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
-    CacheTextureIndex("/chars/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
+    Display_CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
+    Display_CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
+    Display_CacheTextureIndex("/chars/french/", "french.index", TEXTURE_INDEX_FRENCH);
+    Display_CacheTextureIndex("/chars/german/", "german.index", TEXTURE_INDEX_GERMAN);
+    Display_CacheTextureIndex("/chars/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
+    Display_CacheTextureIndex("/chars/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
+    Display_CacheTextureIndex("/chars/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
 
-    CacheTextureIndex("/chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
+    Display_CacheTextureIndex("/chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 }
 
-void ShutdownDisplay(void) {
+void Display_Shutdown(void) {
     ShutdownShaders();
 }
 
@@ -501,7 +502,7 @@ void ShutdownDisplay(void) {
 
 void DEBUGDrawSkeleton();
 
-void DrawDebugOverlay(void) {
+static void DrawDebugOverlay(void) {
     if(GetFrontendState() == FE_MODE_EDITOR) {
         return;
     }
@@ -528,7 +529,7 @@ void DrawDebugOverlay(void) {
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE, ms_count);
+        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE, ms_count);
     }
 
     if (cv_debug_input->i_value > 0) {
@@ -536,12 +537,12 @@ void DrawDebugOverlay(void) {
             default: {
                 DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "KEYBOARD STATE");
                 int x = 20, y = 50;
-                for (unsigned int i = 0; i < PORK_MAX_KEYS; ++i) {
-                    bool status = GetKeyState(i);
+                for (unsigned int i = 0; i < INPUT_MAX_KEYS; ++i) {
+                    bool status = Input_GetKeyState(i);
                     char key_state[64];
                     snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
                     DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, PL_COLOUR_WHITE, key_state);
-                    if (y + 15 > GetViewportHeight(&g_state.ui_camera->viewport) - 50) {
+                    if (y + 15 > Display_GetViewportHeight(&g_state.ui_camera->viewport) - 50) {
                         x += 90;
                         y = 50;
                     } else {
@@ -556,60 +557,60 @@ void DrawDebugOverlay(void) {
 
                 char button_state[64];
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_CROSS " (%s)",
-                         GetButtonState(0, PORK_BUTTON_CROSS) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_CROSS) ? "TRUE" : "FALSE");
                 unsigned int y = 50;
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_TRIANGLE " (%s)",
-                         GetButtonState(0, PORK_BUTTON_TRIANGLE) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_TRIANGLE) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_CIRCLE " (%s)",
-                         GetButtonState(0, PORK_BUTTON_CIRCLE) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_CIRCLE) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_SQUARE " (%s)",
-                         GetButtonState(0, PORK_BUTTON_SQUARE) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_SQUARE) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_L1 " (%s)",
-                         GetButtonState(0, PORK_BUTTON_L1) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_L1) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_L2 " (%s)",
-                         GetButtonState(0, PORK_BUTTON_L2) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_L2) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_R1 " (%s)",
-                         GetButtonState(0, PORK_BUTTON_R1) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_R1) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_R2 " (%s)",
-                         GetButtonState(0, PORK_BUTTON_R2) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_R2) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "START (%s)",
-                         GetButtonState(0, PORK_BUTTON_START) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_START) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "SELECT (%s)",
-                         GetButtonState(0, PORK_BUTTON_SELECT) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_SELECT) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "UP (%s)",
-                         GetButtonState(0, PORK_BUTTON_UP) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_UP) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "DOWN (%s)",
-                         GetButtonState(0, PORK_BUTTON_DOWN) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_DOWN) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "LEFT (%s)",
-                         GetButtonState(0, PORK_BUTTON_LEFT) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_LEFT) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "RIGHT (%s)",
-                         GetButtonState(0, PORK_BUTTON_RIGHT) ? "TRUE" : "FALSE");
+                         Input_GetButtonState(0, PORK_BUTTON_RIGHT) ? "TRUE" : "FALSE");
                 DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
             } break;
         }
@@ -627,11 +628,7 @@ void DrawDebugOverlay(void) {
 #endif
 }
 
-void SetupDefaultCamera(void) {
-    plSetupCamera(g_state.camera);
-}
-
-void SetupFrontendCamera(int w, int h) {
+static void SetupFrontendCamera(int w, int h) {
     g_state.ui_camera->viewport.r_w = w;
     g_state.ui_camera->viewport.r_h = h;
     plSetupCamera(g_state.ui_camera);
@@ -639,7 +636,7 @@ void SetupFrontendCamera(int w, int h) {
 
 double cur_delta = 0;
 
-void PreDrawPork(double delta) {
+void Display_SetupDraw(double delta) {
     cur_delta = delta;
     g_state.draw_ticks = System_GetTicks();
 
@@ -649,23 +646,25 @@ void PreDrawPork(double delta) {
     }
     plClearBuffers(clear_flags);
 
-    SetupDefaultCamera();
+    plSetupCamera(g_state.camera);
 }
 
-void DrawPork(void) {
+void Display_DrawScene(void) {
     DrawMap();
     //DrawActors(cur_delta);
     DrawParticles(cur_delta);
+}
 
+void Display_DrawInterface(void) {
     SetupFrontendCamera(640, 480);
     DrawFrontend();
 
     SetupFrontendCamera(0, 0);
     DrawDebugOverlay();
-    DrawConsole();
+    Console_Draw();
 }
 
-void PostDrawPork(void) {
+void Display_Flush(void) {
     System_SwapDisplay();
     g_state.last_draw_ms = System_GetTicks() - g_state.draw_ticks;
 }

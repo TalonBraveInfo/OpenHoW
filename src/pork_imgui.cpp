@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ void AddFilePath(const char *path) {
     descriptor.type = FILE_TYPE_UNKNOWN;
 
     const char *ext = plGetFileExtension(path);
-    pork_assert(!plIsEmptyString(ext), "failed to identify file, extension was empty!\n");
+    u_assert(!plIsEmptyString(ext), "failed to identify file, extension was empty!\n");
     if(pl_strncasecmp(ext, "map", 3) == 0) {
         descriptor.type = FILE_TYPE_MAP;
     } else if(
@@ -196,7 +196,7 @@ void UI_DisplayFileBox() {
                             plDeleteTexture(cur_texture, true);
                         }
 
-                        cur_texture = LoadTexture(file_list[i].path, PL_TEXTURE_FILTER_LINEAR);
+                        cur_texture = Display_LoadTexture(file_list[i].path, PL_TEXTURE_FILTER_LINEAR);
                         show_texture = true;
                     } break;
 
@@ -262,8 +262,8 @@ void UI_DisplayConsole() {
 
     static char buf[256];
 
-    ImGui::SetNextWindowSize(ImVec2(GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(10, GetViewportHeight(&g_state.camera->viewport) - 138));
+    ImGui::SetNextWindowSize(ImVec2(Display_GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
     ImGui::Begin("Console", &show_console);
     if(ImGui::InputText("Input", buf, 256)) {
 
@@ -308,7 +308,7 @@ void UI_DisplayDebugMenu(void) {
             }
 
             if(ImGui::IsItemHovered() && tc > 0) {
-                const PLTexture *texture = GetCachedTexture((unsigned int)cv_display_texture_cache->i_value);
+                const PLTexture *texture = Display_GetCachedTexture((unsigned int) cv_display_texture_cache->i_value);
                 if(texture != NULL) {
                     ImGui::BeginTooltip();
                     ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id), ImVec2(texture->w, texture->h));

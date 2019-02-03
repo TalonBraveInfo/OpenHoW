@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
 
     plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
 
-    BitmapFont *font = pork_alloc(1, sizeof(BitmapFont), true);
+    BitmapFont *font = u_alloc(1, sizeof(BitmapFont), true);
     memset(font, 0, sizeof(BitmapFont));
 
     font->width = image.width;

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ static uint max_campaigns = 8;
 
 static uint cur_campaign_idx = (uint) -1;
 
-CampaignManifest *GetCampaignBySlot(uint num) {
+CampaignManifest *Game_GetCampaignBySlot(uint num) {
     if(num >= max_campaigns) {
         uint old_max_campaigns = max_campaigns;
         max_campaigns += 8;
@@ -58,7 +58,7 @@ CampaignManifest *GetCampaignBySlot(uint num) {
     return &campaigns[num];
 }
 
-CampaignManifest *GetCampaignByName(const char *name) {
+CampaignManifest *Game_GetCampaignByName(const char *name) {
     for(unsigned int i = 0; i < num_campaigns; ++i) {
         if(strncmp(campaigns[i].name, name, sizeof(campaigns[i].name)) == 0) {
             return &campaigns[i];
@@ -114,7 +114,7 @@ void RegisterCampaign(const char *path) {
     ScriptContext *ctx = Script_CreateContext();
     Script_ParseBuffer(ctx, buf);
 
-    CampaignManifest *slot = GetCampaignBySlot(num_campaigns++);
+    CampaignManifest *slot = Game_GetCampaignBySlot(num_campaigns++);
     if(slot == NULL) {
         LogWarn("failed to fetch campaign slot, hit memory limit!?\n");
         Script_DestroyContext(ctx);
@@ -154,7 +154,7 @@ void RegisterCampaign(const char *path) {
  *  directory.
  */
 void RegisterCampaigns(void) {
-    campaigns = pork_alloc(max_campaigns, sizeof(CampaignManifest), true);
+    campaigns = u_alloc(max_campaigns, sizeof(CampaignManifest), true);
 
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "%s/campaigns/", GetBasePath());

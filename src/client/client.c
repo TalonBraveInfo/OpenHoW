@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #include <PL/platform_graphics_camera.h>
 
 #include "../pork_engine.h"
-#include "../pork_input.h"
+#include "../engine_input.h"
 #include "../pork_audio.h"
 
 #include "../script/script.h"
@@ -41,8 +41,8 @@ void ProcessClientInput(void) {
     if(input_delay < g_state.sim_ticks) {
         input_delay = g_state.sim_ticks + 50;
 
-        if (GetKeyState('`')) {
-            ToggleConsole();
+        if (Input_GetKeyState('`')) {
+            Console_Toggle();
             return;
         }
     }
@@ -58,27 +58,27 @@ void ProcessClientInput(void) {
         } break;
 
         case CAMERA_MODE_FREE: {
-            if(GetActionState(0, ACTION_MOVE_FORWARD)) {
+            if(Input_GetActionState(0, ACTION_MOVE_FORWARD)) {
                 g_state.camera->position.x += 4.f;
-            } else if(GetActionState(0, ACTION_MOVE_BACKWARD)) {
+            } else if(Input_GetActionState(0, ACTION_MOVE_BACKWARD)) {
                 g_state.camera->position.x -= 4.f;
             }
 
-            if(GetButtonState(0, PORK_BUTTON_L1)) {
+            if(Input_GetButtonState(0, PORK_BUTTON_L1)) {
                 g_state.camera->position.y += 4.f;
-            } else if(GetButtonState(0, PORK_BUTTON_R1)) {
+            } else if(Input_GetButtonState(0, PORK_BUTTON_R1)) {
                 g_state.camera->position.y -= 4.f;
             }
 
-            if(GetButtonState(0, PORK_BUTTON_L2)) {
+            if(Input_GetButtonState(0, PORK_BUTTON_L2)) {
                 g_state.camera->position.z += 4.f;
-            } else if(GetButtonState(0, PORK_BUTTON_R2)) {
+            } else if(Input_GetButtonState(0, PORK_BUTTON_R2)) {
                 g_state.camera->position.z -= 4.f;
             }
 
-            if(GetActionState(0, ACTION_TURN_LEFT)) {
+            if(Input_GetActionState(0, ACTION_TURN_LEFT)) {
                 g_state.camera->angles.z += 4.f;
-            } else if(GetActionState(0, ACTION_TURN_RIGHT)) {
+            } else if(Input_GetActionState(0, ACTION_TURN_RIGHT)) {
                 g_state.camera->angles.z -= 4.f;
             }
         } break;
@@ -88,8 +88,8 @@ void ProcessClientInput(void) {
 /*****************************************************/
 
 void InitClient(void) {
-    InitInput();
-    InitDisplay();
+    Input_Initialize();
+    Display_Initialize();
     InitAudio();
     InitFrontend();
 }
@@ -102,6 +102,6 @@ void SimulateClient(void) {
 
 void ShutdownClient(void) {
     plParseConsoleString("audio_shutdown");
-    ShutdownDisplay();
+    Display_Shutdown();
     /* todo: input, etc */
 }

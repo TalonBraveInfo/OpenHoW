@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ Actor *ActorManager::SpawnActor(const std::string &name) {
 }
 
 void ActorManager::DestroyActor(Actor *actor) {
-    pork_assert(actor != nullptr, "attempted to delete a null actor!\n");
+    u_assert(actor != nullptr, "attempted to delete a null actor!\n");
     actors_.erase(std::remove(actors_.begin(), actors_.end(), actor), actors_.end());
 
     delete actor;

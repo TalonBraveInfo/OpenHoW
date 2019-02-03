@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ void InitPlayers(void) {
 //////////////////////////////////////////////////////////////
 
 Actor *Player_GetPig(Player *self, unsigned int slot) {
-    pork_assert(self != NULL);
+    u_assert(self != NULL);
 
     if(slot >= MAX_PIGS) {
         LogWarn("failed to grab pig, slot %d exceeds limit %d, ignoring!\n", slot, MAX_PIGS);
@@ -49,7 +49,7 @@ Actor *Player_GetPig(Player *self, unsigned int slot) {
 }
 
 void Player_AssignPig(Player *self, Actor *pig) {
-    pork_assert(self != NULL);
+    u_assert(self != NULL);
 
     if(pig == NULL) {
         LogWarn("attempted to assign an invalid pig, ignoring!\n");

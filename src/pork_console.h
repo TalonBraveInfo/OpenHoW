@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,6 @@ extern PLConsoleVariable *cv_display_fullscreen;
 
 /*****************************************************/
 
-void InitConsole(void);
-void ToggleConsole(void);
-void DrawConsole(void);
+void Console_Initialize(void);
+void Console_Toggle(void);
+void Console_Draw(void);

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2018 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ ParticleSystem *LoadParticleSystem(const char *path) {
 
 
     /* load in the particle system so we can cache it */
-    FILE *fp = fopen(pork_find(path), "rb");
+    FILE *fp = fopen(u_find(path), "rb");
     if(fp == NULL) {
         LogWarn("failed to load PPS \"%s\", ignoring!\n", path);
         return NULL;
@@ -42,7 +42,7 @@ ParticleSystem *LoadParticleSystem(const char *path) {
     }
 
     ABORT:
-    pork_fclose(fp);
+    u_fclose(fp);
     return NULL;
 }
 
@@ -84,7 +84,7 @@ unsigned int max_systems = BASE_MAX_PARTICLE_SYSTEMS;
 
 void InitParticles(void) {
     LogInfo("initializing particle sub-system...\n");
-    systems = pork_alloc(max_systems, sizeof(ParticleSystem), true);
+    systems = u_alloc(max_systems, sizeof(ParticleSystem), true);
     memset(systems, 0, sizeof(ParticleSystem) * max_systems);
 }
 
@@ -135,7 +135,7 @@ void DrawParticles(double delta) {
 }
 
 void DrawParticleSystem(ParticleSystem *ps, double delta) {
-    pork_assert(ps != NULL);
+    u_assert(ps != NULL);
 
     if(!ps->is_visible || !ps->is_reserved) {
         return;
