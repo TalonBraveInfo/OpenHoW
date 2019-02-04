@@ -1033,7 +1033,7 @@ int main(int argc, char **argv) {
     char output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     for(int i = 1; i < argc; ++i) {
         if(argv[i][0] == '-') {
-            strncpy(output_path, argv[i], sizeof(output_path));
+            strncpy(output_path, argv[i] + 1, sizeof(output_path));
         } else {
             strncpy(input_path, argv[i], sizeof(input_path));
         }
