@@ -33,7 +33,6 @@ void Server_Simulate(void) {
     }
 
     ActorManager::GetInstance()->SimulateActors();
-
 }
 
 void Server_Shutdown(void) {

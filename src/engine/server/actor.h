@@ -70,8 +70,8 @@ public:
     Actor *parent_{nullptr};
     Actor *child_{nullptr};
 
-protected:
 private:
+
     uint16_t flags_{0};
 
     bool is_visible_{false};
@@ -115,6 +115,7 @@ public:
     };
 
 private:
+
     static std::vector<Actor*> actors_;
 };
 

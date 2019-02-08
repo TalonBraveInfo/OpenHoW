@@ -266,7 +266,7 @@ void UI_DisplayConsole() {
     ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
     ImGui::Begin("Console", &show_console);
     if(ImGui::InputText("Input", buf, 256)) {
-
+        u_assert(0, "todo\n");
     }
     ImGui::End();
 }

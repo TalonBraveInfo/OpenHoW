@@ -35,6 +35,7 @@ public:
 
 protected:
 private:
+
     ShaderProgram *parent_{nullptr};
 
     unsigned int gl_id_{0};
@@ -66,6 +67,7 @@ public:
 
 protected:
 private:
+
     std::vector<ShaderStage*> stages_;
 
     std::unordered_map<std::string, unsigned int> attributes_;

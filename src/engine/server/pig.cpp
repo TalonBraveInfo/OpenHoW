@@ -17,24 +17,20 @@
 
 #include <PL/platform_math.h>
 
+#include "../engine.h"
 #include "pig.h"
 #include "actor.h"
 
 class Pig : public Actor {
 public:
     Pig();
-    ~Pig();
-    
-protected:
-private:
+    ~Pig() override;
 };
 
 Pig::Pig() : Actor() {
-
+    u_assert(0, "todo");
 }
 
-Pig::~Pig() {
-
-}
+Pig::~Pig() = default;
 
 //register_actor("JOHN", Pig);

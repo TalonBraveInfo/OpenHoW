@@ -86,7 +86,7 @@ ActorManager::ActorClassRegistration::~ActorClassRegistration() {
 /************************************************************/
 
 Actor::Actor(PLVector3 position) {
-
+    u_assert(0, "todo");
 }
 
 Actor::Actor() = default;
