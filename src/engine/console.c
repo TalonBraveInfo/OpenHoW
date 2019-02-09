@@ -31,7 +31,7 @@
 
 #include "server/actor.h"
 
-/*****************************************************/
+/************************************************************/
 
 #define check_args(num) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
 
@@ -161,7 +161,7 @@ static void FrontendModeCommand(unsigned int argc, char *argv[]) {
         return;
     }
 
-    SetFrontendState((unsigned int) mode);
+    FE_SetState((unsigned int) mode);
 }
 
 static void ResetAudioCommand(unsigned int argc, char *argv[]) {
@@ -245,7 +245,7 @@ static void DebugModeCallback(const PLConsoleVariable *variable) {
     plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
 }
 
-/*****************************************************/
+/************************************************************/
 
 #define MAX_BUFFER_SIZE 512
 
@@ -310,7 +310,7 @@ void Console_Initialize(void) {
 }
 
 void Console_Draw(void) {
-    if(GetFrontendState() == FE_MODE_INIT || GetFrontendState() == FE_MODE_LOADING || !console_enabled) {
+    if(FE_GetState() == FE_MODE_INIT || FE_GetState() == FE_MODE_LOADING || !console_enabled) {
         return;
     }
 
@@ -333,9 +333,9 @@ void Console_Draw(void) {
 
     unsigned int x = 20;
     unsigned int w = g_fonts[FONT_GAME_CHARS]->chars[0].w;
-    DrawBitmapCharacter(g_fonts[FONT_GAME_CHARS], x, 10, 1.f, PL_COLOUR_RED, '>');
+    Font_DrawBitmapCharacter(g_fonts[FONT_GAME_CHARS], x, 10, 1.f, PL_COLOUR_RED, '>');
     if(console_state.buffer_pos > 0) {
-        DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, PL_COLOUR_WHITE, msg_buf);
+        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, PL_COLOUR_WHITE, msg_buf);
     }
 
     /* DrawBitmapString disables blend - no need to call again here */

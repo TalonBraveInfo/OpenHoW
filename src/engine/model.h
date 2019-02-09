@@ -32,7 +32,6 @@ typedef struct Animation {
     unsigned int num_frames;
 } Animation;
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Animations
 
@@ -140,6 +139,8 @@ enum { // todo, switch over to using macros here
 /* * * * * * * * * * * * * * * * * */
 
 PL_EXTERN_C
+
+void RegisterModelInterfaces(void);
 
 PLModel *LoadModel(const char *path, bool abort_on_fail);
 

@@ -18,8 +18,23 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
+#include "config.h"
 
 #include "script/script.h"
+
+const char *Config_GetUserConfigPath(void) {
+    static char config_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    if(config_path[0] == '\0') {
+        char out[PL_SYSTEM_MAX_PATH];
+        if(plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH) == NULL) {
+            LogWarn("failed to get app data directory!\n%s\n", plGetError());
+            snprintf(config_path, sizeof(config_path), "./user.config");
+        } else {
+            snprintf(config_path, sizeof(config_path), "%s/user.config", out);
+        }
+    }
+    return config_path;
+}
 
 void Config_Save(const char *path) {
     FILE *fp = fopen(path, "w");
@@ -88,15 +103,4 @@ void Config_Load(const char *path) {
     }
 
     Script_DestroyContext(ctx);
-}
-
-void Config_Initialize(void) {
-    LogInfo("checking for config...\n");
-
-    char out[PL_SYSTEM_MAX_PATH];
-    plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH);
-    snprintf(g_state.config_path, sizeof(g_state.config_path), "%s/config", out);
-
-    Config_Load(g_state.config_path);
-    Config_Save(g_state.config_path);
 }

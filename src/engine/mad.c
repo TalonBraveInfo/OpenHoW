@@ -18,7 +18,7 @@
 #include <PL/platform_package.h>
 
 #include "engine.h"
-#include "formats.h"
+#include "mad.h"
 
 /* Hogs of War file formats
  * -----------------------------------
@@ -41,12 +41,7 @@
  * OFF : File offset sizes
  */
 
-//const char *supported_model_formats[]={"vtx", NULL};
-const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
-//const char *supported_audio_formats[]={"wav", NULL};
-//const char *supported_video_formats[]={"bik", NULL};
-
-/******************************************************************/
+/************************************************************/
 /* MAD/MTD Format Specification */
 
 typedef struct __attribute__((packed)) MADIndex {
@@ -184,9 +179,9 @@ static PLPackage *LoadMADPackage(const char *path, bool cache) {
     return NULL;
 }
 
-/******************************************************************/
+/************************************************************/
 
-void RegisterFormatInterfaces(void) {
+void RegisterPackageInterfaces(void) {
     plRegisterPackageInterface("mad", LoadMADPackage);
     plRegisterPackageInterface("mtd", LoadMADPackage);
 }

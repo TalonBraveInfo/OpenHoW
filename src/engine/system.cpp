@@ -520,7 +520,7 @@ int main(int argc, char **argv) {
     unsigned int loops;
     double delta_time;
 
-    while(IsPorkRunning()) {
+    while(Engine_IsRunning()) {
         PollEvents();
 
         loops = 0;

@@ -17,24 +17,8 @@
 
 #pragma once
 
-extern PLConsoleVariable *cv_debug_mode;
-extern PLConsoleVariable *cv_debug_fps;
-extern PLConsoleVariable *cv_debug_skeleton;
-extern PLConsoleVariable *cv_debug_input;
-extern PLConsoleVariable *cv_debug_cache;
+PL_EXTERN_C
 
-extern PLConsoleVariable *cv_camera_mode;
+void RegisterPackageInterfaces(void);
 
-extern PLConsoleVariable *cv_base_path;
-extern PLConsoleVariable *cv_campaign_path;
-
-extern PLConsoleVariable *cv_display_texture_cache;
-extern PLConsoleVariable *cv_display_width;
-extern PLConsoleVariable *cv_display_height;
-extern PLConsoleVariable *cv_display_fullscreen;
-
-/************************************************************/
-
-void Console_Initialize(void);
-void Console_Toggle(void);
-void Console_Draw(void);
+PL_EXTERN_C_END

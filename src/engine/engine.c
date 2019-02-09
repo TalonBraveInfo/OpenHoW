@@ -20,13 +20,15 @@
 #include "engine.h"
 #include "map.h"
 #include "language.h"
-#include "formats.h"
+#include "mad.h"
+#include "model.h"
 #include "game.h"
 
 #include "script/script.h"
 
 #include "client/client.h"
 #include "server/server.h"
+#include "config.h"
 
 EngineState g_state;
 
@@ -39,17 +41,6 @@ const char *GetCampaignPath(void) {
     u_assert(cv_campaign_path);
     return cv_campaign_path->s_value;
 }
-
-/* pork_extractor.c */
-void ExtractGameData(const char *path);
-
-/* pork_config.c */
-void Config_Initialize(void);
-void Config_Save(const char *path);
-void Config_Load(const char *path);
-
-void InitPlayers(void);
-void InitModels(void);
 
 void Engine_Initialize(void) {
     LogInfo("initializing engine (%d.%d.%d)...\n",
@@ -73,9 +64,15 @@ void Engine_Initialize(void) {
     }
 
     Script_Initialize();
-    Config_Initialize();
 
-    RegisterFormatInterfaces();
+    /* this MUST be done after all vars have been
+     * initialized, otherwise, right now, certain
+     * vars will not be loaded/saved! */
+    Config_Load(u_find("default.config"));
+    Config_Load(Config_GetUserConfigPath());
+
+    RegisterPackageInterfaces();
+    RegisterModelInterfaces();
 
     /* load in the manifests */
 
@@ -91,16 +88,16 @@ void Engine_Initialize(void) {
 
     Client_Initialize();
     Server_Initialize();
-    InitPlayers();
-    InitModels();
-    InitMaps();
+
+    CacheModelData();
+    CacheMapData();
 
     LogInfo("base path: \"%s\"\n", GetBasePath());
     LogInfo("campaign path: \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
     LogInfo("working directory: \"%s\"\n", plGetWorkingDirectory());
 }
 
-bool IsPorkRunning(void) {
+bool Engine_IsRunning(void) {
     return true;
 }
 
@@ -114,12 +111,9 @@ void Engine_Simulate(void) {
 }
 
 void Engine_Shutdown(void) {
-    ClearPlayers();
-
     Client_Shutdown();
-
     Server_Shutdown();
-    ShutdownScripting();
+    Script_Shutdown();
 
     Config_Save(g_state.config_path);
 

@@ -21,7 +21,7 @@
 #include "../engine.h"
 #include "../input.h"
 #include "../map.h"
-#include "../formats.h"
+#include "../mad.h"
 #include "../imgui_layer.h"
 
 #include "particle.h"
@@ -31,7 +31,7 @@
 #include "display.h"
 
 /************************************************************/
-/* PORK TEXTURE CACHE                                       */
+/* Texture Cache */
 
 #define MAX_TEXTURES_PER_INDEX  1024
 
@@ -125,9 +125,9 @@ void DrawTextureCache(unsigned int id) {
                  index->texture->w,
                  index->texture->h,
                  plBytesToMegabytes(index->texture->size));
-        DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, msg);
+        Font_DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, msg);
     } else {
-        DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, "NO DATA CACHED!");
+        Font_DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, "NO DATA CACHED!");
     }
 }
 
@@ -300,6 +300,11 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
     u_fclose(file);
 }
 
+//const char *supported_model_formats[]={"vtx", NULL};
+const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
+//const char *supported_audio_formats[]={"wav", NULL};
+//const char *supported_video_formats[]={"bik", NULL};
+
 PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter) {
     /* todo: make this more friendly */
 
@@ -446,7 +451,7 @@ void Display_Initialize(void) {
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
-    InitShaders();
+    Shaders_Initialize();
 
     //////////////////////////////////////////////////////////
 
@@ -495,7 +500,7 @@ void Display_Initialize(void) {
 }
 
 void Display_Shutdown(void) {
-    ShutdownShaders();
+    Shaders_Shutdown();
 }
 
 /************************************************************/
@@ -503,13 +508,13 @@ void Display_Shutdown(void) {
 void DEBUGDrawSkeleton();
 
 static void DrawDebugOverlay(void) {
-    if(GetFrontendState() == FE_MODE_EDITOR) {
+    if(FE_GetState() == FE_MODE_EDITOR) {
         return;
     }
 
     UI_DisplayDebugMenu();
 
-    if(GetFrontendState() == FE_MODE_INIT || GetFrontendState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
+    if(FE_GetState() == FE_MODE_INIT || FE_GetState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
         return;
     }
 
@@ -529,19 +534,21 @@ static void DrawDebugOverlay(void) {
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20, Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE, ms_count);
+        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
+                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
+                              ms_count);
     }
 
     if (cv_debug_input->i_value > 0) {
         switch (cv_debug_input->i_value) {
             default: {
-                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "KEYBOARD STATE");
+                Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "KEYBOARD STATE");
                 int x = 20, y = 50;
                 for (unsigned int i = 0; i < INPUT_MAX_KEYS; ++i) {
                     bool status = Input_GetKeyState(i);
                     char key_state[64];
                     snprintf(key_state, sizeof(key_state), "%d (%s)", i, status ? "TRUE" : "FALSE");
-                    DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, PL_COLOUR_WHITE, key_state);
+                    Font_DrawBitmapString(g_fonts[FONT_SMALL], x, y, 0, 1.f, PL_COLOUR_WHITE, key_state);
                     if (y + 15 > Display_GetViewportHeight(&g_state.ui_camera->viewport) - 50) {
                         x += 90;
                         y = 50;
@@ -553,78 +560,78 @@ static void DrawDebugOverlay(void) {
                 break;
 
             case 2: {
-                DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CONTROLLER STATE");
+                Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CONTROLLER STATE");
 
                 char button_state[64];
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_CROSS " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_CROSS) ? "TRUE" : "FALSE");
                 unsigned int y = 50;
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_TRIANGLE " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_TRIANGLE) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_CIRCLE " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_CIRCLE) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_SQUARE " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_SQUARE) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_L1 " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_L1) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_L2 " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_L2) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_R1 " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_R1) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), CHAR_PSX_R2 " (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_R2) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "START (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_START) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "SELECT (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_SELECT) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "UP (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_UP) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "DOWN (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_DOWN) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "LEFT (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_LEFT) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
 
                 snprintf(button_state, sizeof(button_state), "RIGHT (%s)",
                          Input_GetButtonState(0, PORK_BUTTON_RIGHT) ? "TRUE" : "FALSE");
-                DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
+                Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state);
             } break;
         }
         return;
     }
 
 #if 1
-    DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
+    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
     unsigned int y = 50;
     char cam_pos[32];
     snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
-    DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
     snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
-    DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 #endif
 }
 
@@ -641,7 +648,7 @@ void Display_SetupDraw(double delta) {
     g_state.draw_ticks = System_GetTicks();
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
-    if(GetFrontendState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
+    if(FE_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
@@ -657,7 +664,7 @@ void Display_DrawScene(void) {
 
 void Display_DrawInterface(void) {
     SetupFrontendCamera(640, 480);
-    DrawFrontend();
+    FE_Draw();
 
     SetupFrontendCamera(0, 0);
     DrawDebugOverlay();
@@ -668,6 +675,3 @@ void Display_Flush(void) {
     System_SwapDisplay();
     g_state.last_draw_ms = System_GetTicks() - g_state.draw_ticks;
 }
-
-/**************************************************************************************/
-

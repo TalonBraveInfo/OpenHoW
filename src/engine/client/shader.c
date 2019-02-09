@@ -19,7 +19,6 @@
 #include <PL/platform_graphics.h>
 
 #include "../engine.h"
-
 #include "shader.h"
 
 #define GLSL(...) #__VA_ARGS__
@@ -85,7 +84,7 @@ static const char *vertex_default =
 
 PLShaderProgram *programs[MAX_SHADERS];
 
-PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *fragment, size_t fl) {
+static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *fragment, size_t fl) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
         Error("invalid stage for shader program, aborting!\n");
     }
@@ -123,7 +122,7 @@ PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *
     return program;
 }
 
-void InitShaders(void) {
+void Shaders_Initialize(void) {
     memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
     programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default),
                                                       fragment_default, strlen(fragment_default));
@@ -146,7 +145,7 @@ void InitShaders(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
 }
 
-void ShutdownShaders(void) {
+void Shaders_Shutdown(void) {
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {
         if(programs[i] == NULL) {
             continue;

@@ -75,7 +75,7 @@ void SetCampaign(const char *dir);
 
 /****************************************************/
 
-void StartGame(const char *map, uint mode, uint8_t num_players, bool force_start);
-void EndGame(void);
+void Game_StartNewGame(const char *map, uint mode, uint8_t num_players, bool force_start);
+void Game_End(void);
 
 PL_EXTERN_C_END

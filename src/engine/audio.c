@@ -75,7 +75,7 @@ struct {
 void Audio_Initialize(void) {
     if(audio.enabled) {
         LogInfo("resetting audio...\n");
-        ShutdownAudio();
+        Audio_Shutdown();
     }
 
     memset(&audio, 0, sizeof(audio));
@@ -83,7 +83,7 @@ void Audio_Initialize(void) {
     ALCdevice *device = alcOpenDevice(NULL);
     if(device == NULL) {
         LogWarn("failed to open audio device, aborting audio initialisation!\n");
-        ShutdownAudio();
+        Audio_Shutdown();
         return;
     }
 
@@ -114,7 +114,7 @@ void Audio_Initialize(void) {
     ALCcontext *context = alcCreateContext(device, attr);
     if(context == NULL || !alcMakeContextCurrent(context)) {
         LogWarn("failed to create audio context, aborting audio initialisation!\n");
-        ShutdownAudio();
+        Audio_Shutdown();
         return;
     }
 
@@ -129,7 +129,7 @@ void Audio_Initialize(void) {
     audio.enabled = true;
 }
 
-bool CacheAudioSample(const char *path, bool preserve) {
+bool Audio_CacheSample(const char *path, bool preserve) {
     if(plIsEmptyString(path)) {
         LogWarn("invalid path, aborting!\n");
         return false;
@@ -146,19 +146,19 @@ void StopAudio(void) {
     /* todo: stop all currently playing audio samples */
 }
 
-void SimulateAudio(void) {
+void Audio_Simulate(void) {
     if(!audio.enabled) {
         return;
     }
 
     PLVector3 position = {0,0,0}, angles = {0,0,0};
-    if(GetFrontendState() == FE_MODE_GAME) {
+    if(FE_GetState() == FE_MODE_GAME) {
         position = g_state.camera->position;
         angles = g_state.camera->angles;
     }
 
-    PLVector3 forward, right, up;
-    plAnglesAxes(angles, &forward, &right, &up);
+    PLVector3 forward, left, up;
+    plAnglesAxes(angles, &left, &up, &forward);
 
     float ori[6];
     ori[0] = forward.x; ori[3] = up.x;
@@ -169,7 +169,7 @@ void SimulateAudio(void) {
     alListenerfv(AL_ORIENTATION, ori);
 }
 
-void ShutdownAudio(void) {
+void Audio_Shutdown(void) {
     if(!audio.enabled) {
         return;
     }

@@ -24,7 +24,7 @@
 /****************************************************/
 /* Memory */
 
-unsigned long pork_unmangle(void *source, void *destination) {
+unsigned long u_unmangle(void *source, void *destination) {
     /* todo */
 
     return 0;

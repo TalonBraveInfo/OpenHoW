@@ -20,9 +20,9 @@
 PL_EXTERN_C
 
 void Script_Initialize(void);
-void ShutdownScripting(void);
+void Script_Shutdown(void);
 
-/**********************************************************/
+/************************************************************/
 
 typedef void ScriptContext;
 
@@ -47,8 +47,8 @@ const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property
 const char *Script_GetStringProperty(ScriptContext *ctx, const char *property, const char *def);
 int Script_GetIntegerProperty(ScriptContext *ctx, const char *property, int def);
 
-/**********************************************************/
-/* CallScript Functions                                   */
+/************************************************************/
+/* CallScript Functions */
 
 void CS_InitGame(void);
 

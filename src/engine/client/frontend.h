@@ -65,17 +65,18 @@ enum {
 PL_EXTERN_C
 
 void FE_Initialize(void);
-void ProcessFrontendInput(void);
+void FE_Shutdown(void);
+void FE_ProcessInput(void);
 void FE_Simulate(void);
-void DrawFrontend(void);
+void FE_Draw(void);
 
 void FE_SetLoadingBackground(const char *name);
 void FE_SetLoadingDescription(const char *description);
 void FE_SetLoadingProgress(uint8_t progress);
-uint8_t GetLoadingProgress(void);
+uint8_t FE_GetLoadingProgress(void);
 
-unsigned int GetFrontendState(void);
-void SetFrontendState(unsigned int state);
+unsigned int FE_GetState(void);
+void FE_SetState(unsigned int state);
 void FE_RestoreLastState(void);
 
 void SetFEObjectCommand(unsigned int argc, char *argv[]);

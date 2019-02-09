@@ -16,7 +16,7 @@
  */
 
 #include "../engine.h"
-#include "../formats.h"
+#include "../mad.h"
 #include "particle.h"
 #include "client.h"
 #include "display.h"
@@ -67,7 +67,7 @@ ParticleSystem *DeserializeParticleSystem(PPSFormat pps) {
     return NULL;
 }
 
-/******************************************************************/
+/************************************************************/
 
 /* todo...
  *  instancing

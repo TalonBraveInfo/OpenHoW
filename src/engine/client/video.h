@@ -19,13 +19,13 @@
 
 PL_EXTERN_C
 
-void InitVideo(void);
-void ShutdownVideo(void);
+void Video_Initialize(void);
+void Video_Shutdown(void);
 
-void ClearVideoQueue(void);
-void QueueVideos(const char **videos, unsigned int num_videos);
-void PlayVideo(const char *path);
-void DrawVideo(void);
-void SkipVideo(void);
+void Video_ClearQueue(void);
+void Video_QueuePlayback(const char **videos, unsigned int num_videos);
+void Video_Play(const char *path);
+void Video_Draw(void);
+void Video_SkipCurrent(void);
 
 PL_EXTERN_C_END

@@ -19,8 +19,9 @@
 
 PL_EXTERN_C
 
-extern const char *supported_image_formats[];
+const char *Config_GetUserConfigPath(void);
 
-void RegisterFormatInterfaces(void);
+void Config_Save(const char *path);
+void Config_Load(const char *path);
 
 PL_EXTERN_C_END

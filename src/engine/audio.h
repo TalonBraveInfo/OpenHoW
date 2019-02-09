@@ -53,6 +53,6 @@ typedef enum {
 PL_EXTERN_C
 
 void Audio_Initialize(void);
-void ShutdownAudio(void);
+void Audio_Shutdown(void);
 
 PL_EXTERN_C_END

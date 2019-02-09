@@ -66,10 +66,11 @@ PL_EXTERN_C
 
 extern BitmapFont *g_fonts[NUM_FONTS];
 
-void InitFonts(void);
+void CacheFontData(void);
+void ClearFontData(void);
 
-void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character);
-void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
-                      const char *msg);
+void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character);
+void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
+                           const char *msg);
 
 PL_EXTERN_C_END

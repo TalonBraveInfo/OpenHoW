@@ -27,7 +27,7 @@
 #include "display.h"
 #include "frontend.h"
 
-/*****************************************************/
+/************************************************************/
 
 enum {
     CAMERA_MODE_DEFAULT,
@@ -47,7 +47,7 @@ void Client_ProcessInput(void) {
         }
     }
 
-    ProcessFrontendInput();
+    FE_ProcessInput();
 
     /* todo: move this server-side or make safe... somehow :( */
     switch(cv_camera_mode->i_value) {
@@ -85,7 +85,7 @@ void Client_ProcessInput(void) {
     }
 }
 
-/*****************************************************/
+/************************************************************/
 
 void Client_Initialize(void) {
     Input_Initialize();

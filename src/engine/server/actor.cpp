@@ -53,7 +53,7 @@ void ActorManager::SimulateActors() {
 }
 
 void ActorManager::DrawActors() {
-    if(GetFrontendState() == FE_MODE_LOADING) {
+    if(FE_GetState() == FE_MODE_LOADING) {
         return;
     }
 

@@ -25,7 +25,7 @@ BitmapFont *g_fonts[NUM_FONTS];
 
 PLMesh *font_mesh = NULL;
 
-void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character) {
+void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character) {
     // ensure that the character we're being passed fits within HoW's bitmap set
     if(character < 33 || character > 138) {
         return;
@@ -65,8 +65,8 @@ void DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour c
     plDrawMesh(font_mesh);
 }
 
-void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
-                      const char *msg) {
+void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
+                           const char *msg) {
     unsigned int num_chars = (unsigned int)strlen(msg);
     if(num_chars == 0) {
         return;
@@ -81,7 +81,7 @@ void DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, floa
     int n_x = x;
     int n_y = y;
     for(unsigned int i = 0; i < num_chars; ++i) {
-        DrawBitmapCharacter(font, n_x, n_y, scale, colour, (uint8_t) msg[i]);
+        Font_DrawBitmapCharacter(font, n_x, n_y, scale, colour, (uint8_t) msg[i]);
         if(msg[i] >= 33 && msg[i] <= 122) {
             n_x += font->chars[msg[i] - 33].w + spacing;
         } else if(msg[i] == '\n') {
@@ -184,7 +184,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
 
 //////////////////////////////////////////////////////////////////////////
 
-void InitFonts(void) {
+void CacheFontData(void) {
     font_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_IMMEDIATE, 2, 4);
     if(font_mesh == NULL) {
         Error("failed to create font mesh, %s, aborting!\n", plGetError());
@@ -198,7 +198,7 @@ void InitFonts(void) {
     g_fonts[FONT_SMALL]      = LoadBitmapFont("small", "small");
 }
 
-void ShutdownFonts(void) {
+void ClearFontData(void) {
     for(unsigned int i = 0; i < NUM_FONTS; ++i) {
         if(g_fonts[i] == NULL) {
             /* if we hit a null slot, it's possible the fonts

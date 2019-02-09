@@ -358,8 +358,8 @@ const char *Map_GetCurrentDescription(void) {
 
 PLMesh *terrain_mesh = NULL;
 
-/****************************************************/
-/* WATER                                            */
+/************************************************************/
+/* Water */
 
 #define WATER_WIDTH         256                         // width of water area
 #define WATER_HEIGHT        256                         // height of water area
@@ -409,7 +409,7 @@ static void GenerateWaterTiles(void) {
     }
 }
 
-/****************************************************/
+/************************************************************/
 
 /* possible optimisations...
  *  a) tiles that use the same texture are part of the same mesh instance
@@ -430,7 +430,7 @@ void MapCommand(unsigned int argc, char *argv[]) {
         mode = Map_GetModeFlag(cmd_mode);
     }
 
-    StartGame(map_name, mode, 1, true);
+    Game_StartNewGame(map_name, mode, 1, true);
 }
 
 void MapsCommand(unsigned int argc, char *argv[]) {
@@ -450,7 +450,7 @@ void MapsCommand(unsigned int argc, char *argv[]) {
     LogInfo("%u maps\n", num_maps);
 }
 
-void InitMaps(void) {
+void CacheMapData(void) {
     /* register all of the existing maps */
 
     map_descriptors = u_alloc(max_maps, sizeof(MapManifest), true);
@@ -912,7 +912,7 @@ bool Map_Load(const char *name, unsigned int mode) {
     return true;
 }
 
-/****************************************************/
+/************************************************************/
 /* Draw Stuff! */
 
 #include "client/font.h"
@@ -920,7 +920,7 @@ bool Map_Load(const char *name, unsigned int mode) {
 
 /* draws the currently loaded map */
 void Map_Draw(void) {
-    if(map_state.name[0] == '\0' || GetFrontendState() != FE_MODE_GAME) {
+    if(map_state.name[0] == '\0' || FE_GetState() != FE_MODE_GAME) {
         return;
     }
 

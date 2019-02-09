@@ -69,7 +69,7 @@ CampaignManifest *Game_GetCampaignByName(const char *name) {
     return NULL;
 }
 
-CampaignManifest *GetCampaignByDirectory(const char *dir) {
+CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
     for(unsigned int i = 0; i < num_campaigns; ++i) {
         if(strncmp(campaigns[i].dir, dir, sizeof(campaigns[i].dir)) == 0) {
             return &campaigns[i];
@@ -170,7 +170,7 @@ CampaignManifest *GetCurrentCampaign(void) {
 }
 
 void SetCampaign(const char *dir) {
-    CampaignManifest *campaign = GetCampaignByDirectory(dir);
+    CampaignManifest *campaign = Game_GetCampaignByDirectory(dir);
     if(campaign == NULL) {
         LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
 
@@ -178,7 +178,7 @@ void SetCampaign(const char *dir) {
         snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", GetBasePath(), dir);
         if(plFileExists(path)) {
             RegisterCampaign(path);
-            campaign = GetCampaignByDirectory(dir);
+            campaign = Game_GetCampaignByDirectory(dir);
         }
 
         if(campaign == NULL) {
@@ -196,14 +196,14 @@ void SetCampaign(const char *dir) {
 
 bool game_started = false;
 
-void StartGame(const char *map, uint mode, uint8_t num_players, bool force_start) {
+void Game_StartNewGame(const char *map, uint mode, uint8_t num_players, bool force_start) {
     LogDebug("starting new game...\n");
 
     if(force_start && game_started) {
-        EndGame();
+        Game_End();
     }
 
-    SetFrontendState(FE_MODE_LOADING);
+    FE_SetState(FE_MODE_LOADING);
 
     if(Map_Load(map, mode) == false) {
         LogWarn("failed to load map, aborting game!\n");
@@ -224,13 +224,13 @@ void StartGame(const char *map, uint mode, uint8_t num_players, bool force_start
     /* we'll assume we're hosting */
     g_state.is_host = true;
 
-    SetFrontendState(FE_MODE_GAME);
+    FE_SetState(FE_MODE_GAME);
 }
 
-void EndGame(void) {
+void Game_End(void) {
     LogDebug("ending current game...\n");
 
     Map_Unload();
 
-    SetFrontendState(FE_MODE_MAIN_MENU); // todo: should take to results screen???
+    FE_SetState(FE_MODE_MAIN_MENU); // todo: should take to results screen???
 }

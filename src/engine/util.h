@@ -17,64 +17,8 @@
 
 #pragma once
 
-/* engine and game implementation */
-
-#include <PL/platform_math.h>
-#include <PL/platform_console.h>
-#include <PL/platform_model.h>
-
-#define ENGINE_TITLE        "OpenHoW"
-#define ENGINE_APP_NAME     "OpenHoW"
-#define ENGINE_LOG          "debug"
-
-#define ENGINE_MAJOR_VERSION    0
-#define ENGINE_MINOR_VERSION    1
-#define ENGINE_PATCH_VERSION    0
-
-static inline const char *GetVersionString(void) {
-    /* this is here for when we start generating additional
-     * versioning information (such as git version) */
-    static char version[12] = { '\0' };
-    if(version[0] == '\0') {
-        snprintf(version, sizeof(version), "%d.%d.%d",
-            ENGINE_MAJOR_VERSION,
-            ENGINE_MINOR_VERSION,
-            ENGINE_PATCH_VERSION);
-    }
-    return &version[0];
-}
-
-///////////////////////////////////////////////////
-
-enum LogLevel {
-    LOG_LEVEL_DEFAULT,
-    LOG_LEVEL_WARNING,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_DEBUG,
-};
-
-enum PromptLevel {
-    PROMPT_LEVEL_DEFAULT,
-    PROMPT_LEVEL_WARNING,
-    PROMPT_LEVEL_ERROR,
-};
-
-typedef unsigned int uint;
-typedef unsigned char uchar, byte;
-
-#define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
-
-#ifdef _DEBUG
-#   define LogDebug(...) _print_w_function(LOG_LEVEL_DEBUG, __VA_ARGS__)
-#else
-#   define LogDebug(...) ()
-#endif
-
-/************************************************/
-/* Utilities                                    */
-
-#define u_fclose(FILE) if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
-#define u_free(DATA) free((DATA)); (DATA) = NULL
+#define u_fclose(FILE)  if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
+#define u_free(DATA)    free((DATA)); (DATA) = NULL
 
 PL_EXTERN_C
 
@@ -91,14 +35,14 @@ PL_EXTERN_C_END
 #   define u_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); }
 #endif
 
-///////////////////////////////////////////////////
-// Player
+/************************************************************/
+/* Player */
 
 #define MAX_PLAYERS     4
 #define MAX_PIGS        24
 #define MAX_INVENTORY   32
 
-///////////////////////////////////////////////////
+/************************************************************/
 
 // todo: move into items.h
 

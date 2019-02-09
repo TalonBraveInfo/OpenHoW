@@ -19,7 +19,6 @@
 
 #include "engine.h"
 #include "language.h"
-
 #include "script/script.h"
 
 typedef struct LanguageKey {

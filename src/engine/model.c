@@ -42,7 +42,7 @@ struct {
 //#define PIG_EYES_INDEX  118
 //#define PIG_GOBS_INDEX  119
 
-PLModel *LoadVTXModel(const char *path) {
+static PLModel *LoadVTXModel(const char *path) {
     LogInfo("loading %s\n", path);
 
     FILE *vtx_file = fopen(path, "rb");
@@ -357,9 +357,7 @@ Animation *LoadAnimations(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
-/****************************************************/
-
-/****************************************************/
+/************************************************************/
 
 //00: Hip
 //01: Spine
@@ -677,11 +675,9 @@ void CacheModelData(void) {
     model_cache.pigs[PIG_CLASS_SPY]         = LoadModel("chars/pigs/sp_hi", true);
 }
 
-void InitModels(void) {
+void RegisterModelInterfaces(void) {
     plRegisterModelLoader("vtx", LoadVTXModel);
     plRegisterModelLoader("min", LoadMINModel);
-
-    CacheModelData();
 }
 
 void ShutdownModels(void) {

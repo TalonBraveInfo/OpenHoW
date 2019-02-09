@@ -75,13 +75,13 @@ void PlayVideoCommand(unsigned int argc, char *argv[]) {
     }
 
     const char *cmd = argv[1];
-    QueueVideos(&cmd, argc - 1);
+    Video_QueuePlayback(&cmd, argc - 1);
 
     /* immediately begin playing the videos */
-    SetFrontendState(FE_MODE_VIDEO);
+    FE_SetState(FE_MODE_VIDEO);
 }
 
-void InitVideo(void) {
+void Video_Initialize(void) {
     memset(&video, 0, sizeof(VideoState));
 
     av_register_all();
@@ -91,24 +91,24 @@ void InitVideo(void) {
     plParseConsoleString("play_video \"streams/fmv 01.bik\"");
 }
 
-void ShutdownVideo(void) {
-    ClearVideoQueue();
+void Video_Shutdown(void) {
+    Video_ClearQueue();
 }
 
-/***************************************************************/
+/************************************************************/
 
-void ClearVideoQueue(void) {
+void Video_ClearQueue(void) {
     memset(video.queue, 0, sizeof(video.queue));
     video.cur_video = 0;
     video.num_videos_queued = 0;
 }
 
-void QueueVideos(const char **videos, unsigned int num_videos) {
+void Video_QueuePlayback(const char **videos, unsigned int num_videos) {
     if(num_videos == 0) {
         return;
     }
 
-    ClearVideoQueue();
+    Video_ClearQueue();
 
     for(unsigned int i = 0; i < num_videos; ++i) {
         if(plIsEmptyString(videos[i])) {
@@ -133,19 +133,19 @@ void QueueVideos(const char **videos, unsigned int num_videos) {
     }
 }
 
-void PlayVideo(const char *path) {
-    ClearVideoQueue();
-    QueueVideos(&path, 1);
+void Video_Play(const char *path) {
+    Video_ClearQueue();
+    Video_QueuePlayback(&path, 1);
     if(video.num_videos_queued == 0) {
         LogWarn("failed to queue video, \"%s\", aborting playback!\n", path);
         return;
     }
 
     /* immediately begin playing the videos */
-    SetFrontendState(FE_MODE_VIDEO);
+    FE_SetState(FE_MODE_VIDEO);
 }
 
-void SkipVideo(void) {
+void Video_SkipCurrent(void) {
     if(video.av_packet != NULL) {
         av_packet_unref(video.av_packet);
         video.av_packet = NULL;
@@ -159,7 +159,7 @@ void SkipVideo(void) {
     if(video.num_videos_queued > 0 && video.cur_video != video.num_videos_queued) {
         if(avformat_open_input(&video.av_format_context, video.queue[video.cur_video].path, NULL, NULL) < 0) {
             LogWarn("failed to open video, \"%s\", for playback, skipping!\n");
-            SkipVideo();
+            Video_SkipCurrent();
             return;
         }
         return;
@@ -169,7 +169,7 @@ void SkipVideo(void) {
     FE_RestoreLastState();
 }
 
-void ProcessVideo(void) {
+static void ProcessVideo(void) {
 #if 0
     do {
         /* decode the video */
@@ -208,7 +208,7 @@ void ProcessVideo(void) {
 #endif
 }
 
-void DrawVideo(void) {
+void Video_Draw(void) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
         if((mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 2, 4)) == NULL) {

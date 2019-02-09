@@ -109,8 +109,8 @@ PL_EXTERN_C
 
 extern PLShaderProgram *programs[MAX_SHADERS];
 
-void InitShaders(void);
-void ShutdownShaders(void);
+void Shaders_Initialize(void);
+void Shaders_Shutdown(void);
 
 PL_EXTERN_C_END
 

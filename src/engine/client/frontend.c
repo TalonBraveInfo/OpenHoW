@@ -47,11 +47,11 @@ static const char *papers_teams_paths[MAX_TEAMS]={
 };
 
 /* texture assets, these are loaded and free'd at runtime */
-PLTexture *fe_background    = NULL;
-PLTexture *fe_press         = NULL;
-PLTexture *fe_any           = NULL;
-PLTexture *fe_key           = NULL;
-PLTexture *fe_papers_teams[MAX_TEAMS] = {
+static PLTexture *fe_background    = NULL;
+static PLTexture *fe_press         = NULL;
+static PLTexture *fe_any           = NULL;
+static PLTexture *fe_key           = NULL;
+static PLTexture *fe_papers_teams[MAX_TEAMS] = {
         NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
@@ -125,13 +125,12 @@ void FrontendInputCallback(int key, bool is_pressed) {
         /* we've hit our key, we can take away this
          * callback now and carry on to whatever */
         Input_SetKeyboardFocusCallback(NULL);
-        SetFrontendState(FE_MODE_MAIN_MENU);
+        FE_SetState(FE_MODE_MAIN_MENU);
         return;
     }
 }
 
-
-void CacheFEGameData(void) {
+static void CacheFEGameData(void) {
 #if 1
     fe_tx_game_textures[FE_TEXTURE_ANG] = Display_LoadTexture("fe/dash/ang", PL_TEXTURE_FILTER_LINEAR);
     fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = Display_LoadTexture("fe/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
@@ -142,14 +141,14 @@ void CacheFEGameData(void) {
 #endif
 }
 
-void CacheFEMenuData(void) {
+static void CacheFEMenuData(void) {
     fe_background = Display_LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
     for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
         fe_papers_teams[i] = Display_LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
     }
 }
 
-void ClearFEGameData(void) {
+static void ClearFEGameData(void) {
     for(unsigned int i = 0; i < MAX_FE_GAME_TEXTURES; ++i) {
         if(fe_tx_game_textures[i] == NULL) {
             continue;
@@ -158,24 +157,27 @@ void ClearFEGameData(void) {
     }
 }
 
-void ClearFEMenuData(void) {
+static void ClearFEMenuData(void) {
     plDeleteTexture(fe_background, true);
     for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
         plDeleteTexture(fe_papers_teams[i], true);
     }
 }
 
+/************************************************************/
+
 void FE_Initialize(void) {
     memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
 
-    InitFonts();
-
-    /* load in all the assets we'll be using for the
-     * frontend */
+    CacheFontData();
     CacheFEMenuData();
 }
 
-void ProcessFrontendInput(void) {
+void FE_Shutdown(void) {
+    ClearFontData();
+}
+
+void FE_ProcessInput(void) {
     switch(frontend_state) {
         default:break;
 
@@ -188,7 +190,7 @@ void ProcessFrontendInput(void) {
 
         case FE_MODE_VIDEO: {
             if(Input_GetKeyState(PORK_KEY_SPACE) || Input_GetKeyState(PORK_KEY_ESCAPE)) {
-                SkipVideo();
+                Video_SkipCurrent();
             }
         } break;
     }
@@ -204,7 +206,7 @@ void FE_Simulate(void) {
             /* by this point we'll make an assumption that we're
              * done initializing, bump up the progress, draw that
              * frame and then switch over to our 'start' state */
-            if(GetLoadingProgress() < 100) {
+            if(FE_GetLoadingProgress() < 100) {
                 FE_SetLoadingDescription("LOADING FRONTEND RESOURCES");
                 FE_SetLoadingProgress(100);
 
@@ -217,7 +219,7 @@ void FE_Simulate(void) {
                 break;
             }
 
-            SetFrontendState(FE_MODE_START);
+            FE_SetState(FE_MODE_START);
         } break;
     }
 }
@@ -252,11 +254,10 @@ void FE_SetLoadingDescription(const char *description) {
 void FE_SetLoadingProgress(uint8_t progress) {
     if(progress > 100) progress = 100;
     loading_progress = progress;
-
     Redraw();
 }
 
-uint8_t GetLoadingProgress(void) {
+uint8_t FE_GetLoadingProgress(void) {
     return loading_progress;
 }
 
@@ -271,10 +272,10 @@ uint8_t GetLoadingProgress(void) {
 #define FRONTEND_MENU_WIDTH     640
 #define FRONTEND_MENU_HEIGHT    480
 
-void DrawLoadingScreen(void) {
+static void DrawLoadingScreen(void) {
     //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
     //int c_y = (GetUIViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
-    plDrawTexturedRectangle(0, 0, GetUIViewportWidth(), GetUIViewportHeight(), fe_background);
+    plDrawTexturedRectangle(0, 0, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
 
     /* originally I wrote some code ensuring the menu bar
      * was centered... that was until I found out that on
@@ -295,11 +296,11 @@ void DrawLoadingScreen(void) {
     }
 
     if(loading_description[0] != ' ' && loading_description[0] != '\0') {
-        DrawBitmapString(g_fonts[FONT_CHARS2], bar_x + 2, bar_y + 1, 4, 1.f, PL_COLOUR_WHITE, loading_description);
+        Font_DrawBitmapString(g_fonts[FONT_CHARS2], bar_x + 2, bar_y + 1, 4, 1.f, PL_COLOUR_WHITE, loading_description);
     }
 }
 
-void DrawFrontend(void) {
+void FE_Draw(void) {
     /* render and handle the main menu */
     if(frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
         //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
@@ -373,7 +374,7 @@ void DrawFrontend(void) {
             } break;
 
             case FE_MODE_VIDEO: {
-                DrawVideo();
+                Video_Draw();
             } break;
         }
     }
@@ -384,14 +385,14 @@ void DrawFrontend(void) {
 /* * * * * * * * * * * * * * * * * * * * * * */
 
 void FE_RestoreLastState(void) {
-    SetFrontendState(old_frontend_state);
+    FE_SetState(old_frontend_state);
 }
 
-unsigned int GetFrontendState(void) {
+unsigned int FE_GetState(void) {
     return frontend_state;
 }
 
-void SetFrontendState(unsigned int state) {
+void FE_SetState(unsigned int state) {
     if(state == frontend_state) {
         LogDebug("attempted to set debug state to an already existing state!\n");
         return;

@@ -90,7 +90,7 @@ static duk_ret_t SC_Error(duk_context *context) {
     Error("%s", duk_safe_to_string(context, -1));
 }
 
-/*************************************************************/
+/************************************************************/
 
 #define pork_call(a, b) \
     if(duk_pcall((a), (b)) != 0) { \
@@ -107,7 +107,7 @@ void CS_InitGame(void) {
     duk_pop(scr_context);
 }
 
-/*************************************************************/
+/************************************************************/
 
 void LoadScript(duk_context *context, const char *path) {
     LogInfo("loading \"%s\"...\n", path);
@@ -242,13 +242,13 @@ void Script_Initialize(void) {
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));
 }
 
-void ShutdownScripting(void) {
+void Script_Shutdown(void) {
     if(scr_context != NULL) {
         duk_destroy_heap(scr_context);
     }
 }
 
-/*************************************************************/
+/************************************************************/
 /** JSON **/
 
 static bool Script_DTGetPropertyString(ScriptContext *ctx, const char *property) {

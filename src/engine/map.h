@@ -61,7 +61,7 @@ enum {
 
 PL_EXTERN_C
 
-void InitMaps(void);
+void CacheMapData(void);
 
 void Map_Unload(void);
 void Map_ResetState(void);

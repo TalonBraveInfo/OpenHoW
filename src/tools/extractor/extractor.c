@@ -20,9 +20,12 @@
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
-#include "../../pork.h"
-//#include "../src/pork_engine.h"
+#include "../../engine/engine.h"
+#include "../../engine/util.h"
 
+#undef LogInfo
+#undef LogWarn
+#undef Error
 #define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
 #define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
 #define Error(...)    plLogMessage(2, __VA_ARGS__)
@@ -31,7 +34,7 @@ typedef struct CopyPath {
     const char *input, *output;
 } CopyPath;
 
-CopyPath pc_music_paths[]={
+static CopyPath pc_music_paths[]={
         {"/MUSIC/Track02.ogg", "/music/"},
         {"/MUSIC/Track03.ogg", "/music/"},
         {"/MUSIC/Track04.ogg", "/music/"},
@@ -65,7 +68,7 @@ CopyPath pc_music_paths[]={
         {"/MUSIC/Track32.ogg", "/music/"},
 };
 
-CopyPath pc_copy_paths[] = {
+static CopyPath pc_copy_paths[] = {
         /* text */
         {"/FEText/BIG.tab", "/fe/text/"},
         {"/FEText/BigChars.tab", "/fe/text/"},
@@ -420,7 +423,7 @@ CopyPath pc_copy_paths[] = {
         {"/FESounds/click5.wav", "/audio/fe/"},
 };
 
-CopyPath pc_package_paths[] = {
+static CopyPath pc_package_paths[] = {
         {"/Chars/british2.mad",         "/chars/pigs/"},    /* actually contains all the pig models */
         {"/Chars/FACES.MTD",            "/chars/faces/"},   /* contains all the face textures       */
 
@@ -533,7 +536,7 @@ CopyPath pc_package_paths[] = {
 
 /* Extraction process for initial setup */
 
-void ExtractPTGPackage(const char *input_path, const char *output_path) {
+static void ExtractPTGPackage(const char *input_path, const char *output_path) {
     if(input_path == NULL || input_path[0] == '\0') {
         LogInfo("encountered invalid path for PTG, aborting!\n");
         return;
@@ -592,7 +595,7 @@ void ExtractPTGPackage(const char *input_path, const char *output_path) {
     u_fclose(file);
 }
 
-void ExtractMADPackage(const char *input_path, const char *output_path) {
+static void ExtractMADPackage(const char *input_path, const char *output_path) {
     if(input_path == NULL || input_path[0] == '\0') { // technically, this should never, ever, ever, ever happen...
         LogInfo("encountered invalid path for MAD, aborting!\n");
         return;
@@ -733,7 +736,7 @@ void ExtractMADPackage(const char *input_path, const char *output_path) {
     u_fclose(file);
 }
 
-void ConvertImageToPNG(const char *path) {
+static void ConvertImageToPNG(const char *path) {
     LogInfo("converting %s...\n", path);
 
     // figure out if the file already exists before
@@ -788,8 +791,8 @@ void ConvertImageToPNG(const char *path) {
     plFreeImage(&image);
 }
 
-/****************************************************/
-/* Texture Merger                                   */
+/************************************************************/
+/* Texture Merger */
 
 typedef struct TMergeTarget {
     const char *path;
@@ -803,7 +806,7 @@ typedef struct TMerge {
     TMergeTarget targets[10];
 } TMerge;
 
-TMerge texture_targets[]={
+static TMerge texture_targets[]={
         {
             "fe/dash/ang.png", 5, 152, 121, {{
                 "fe/dash/ang1.tim", 0, 0
@@ -875,7 +878,7 @@ TMerge texture_targets[]={
         }
 };
 
-void MergeTextureTargets(void) {
+static void MergeTextureTargets(void) {
     unsigned int num_texture_targets = plArrayElements(texture_targets);
     LogInfo("merging %d texture targets...\n", num_texture_targets);
     for(unsigned int i = 0; i < num_texture_targets; ++i) {
@@ -930,7 +933,7 @@ void MergeTextureTargets(void) {
     }
 }
 
-/*************************************************/
+/************************************************************/
 
 enum {
     VERSION_UNKNOWN,
@@ -940,7 +943,7 @@ enum {
     VERSION_ENG_PC_DIGITAL, /* English PC/Digital version */
 };
 
-unsigned int CheckGameVersion(const char *path) {
+static unsigned int CheckGameVersion(const char *path) {
     char fcheck[PL_SYSTEM_MAX_PATH];
     snprintf(fcheck, sizeof(fcheck), "%s/system.cnf", path);
     if(plFileExists(fcheck)) {
@@ -963,7 +966,7 @@ unsigned int CheckGameVersion(const char *path) {
     return VERSION_UNKNOWN;
 }
 
-void ProcessPackagePaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
+static void ProcessPackagePaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
     for (unsigned int i = 0; i < length; ++i) {
         char output_path[PL_SYSTEM_MAX_PATH];
         snprintf(output_path, sizeof(output_path), "%s%s", out, paths[i].output);
@@ -984,7 +987,7 @@ void ProcessPackagePaths(const char *in, const char *out, const CopyPath *paths,
     }
 }
 
-void ProcessCopyPaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
+static void ProcessCopyPaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
     for (unsigned int i = 0; i < length; ++i) {
         char output_path[PL_SYSTEM_MAX_PATH];
         snprintf(output_path, sizeof(output_path), "%s%s", out, paths[i].output);
