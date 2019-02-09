@@ -15,13 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+#include <PL/platform_math.h>
 
-    /* queue the videos used for the launch of the game */
-    //var videos = ["sheff.bik", "infologo.bik"];
-    //QueueVideos(videos, videos.length);
+#include "../engine.h"
+#include "pig.h"
+#include "actor.h"
 
-    /* immediately begin playing the videos as soon as we're ready */
-    //PlayVideos();
+class Pig : public Actor {
+public:
+    Pig();
+    ~Pig() override;
+};
+
+Pig::Pig() : Actor() {
+    u_assert(0, "todo");
 }
+
+Pig::~Pig() = default;
+
+//register_actor("JOHN", Pig);

@@ -19,8 +19,12 @@
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
-#include "../../pork.h"
+#include "../../engine/engine.h"
+#include "../../engine/util.h"
 
+#undef LogInfo
+#undef LogWarn
+#undef Error
 #define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
 #define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
 #define Error(...)    plLogMessage(2, __VA_ARGS__); exit(EXIT_FAILURE)
@@ -114,12 +118,12 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
             goto ABORT_PTG;
         }
 
-        pork_fclose(out);
+        u_fclose(out);
     }
 
     ABORT_PTG:
-    pork_fclose(out);
-    pork_fclose(file);
+    u_fclose(out);
+    u_fclose(file);
 }
 
 static const char *instructions =

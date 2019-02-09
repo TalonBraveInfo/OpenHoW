@@ -15,13 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+#pragma once
 
-    /* queue the videos used for the launch of the game */
-    //var videos = ["sheff.bik", "infologo.bik"];
-    //QueueVideos(videos, videos.length);
+extern PLConsoleVariable *cv_debug_mode;
+extern PLConsoleVariable *cv_debug_fps;
+extern PLConsoleVariable *cv_debug_skeleton;
+extern PLConsoleVariable *cv_debug_input;
+extern PLConsoleVariable *cv_debug_cache;
 
-    /* immediately begin playing the videos as soon as we're ready */
-    //PlayVideos();
-}
+extern PLConsoleVariable *cv_camera_mode;
+
+extern PLConsoleVariable *cv_base_path;
+extern PLConsoleVariable *cv_campaign_path;
+
+extern PLConsoleVariable *cv_display_texture_cache;
+extern PLConsoleVariable *cv_display_width;
+extern PLConsoleVariable *cv_display_height;
+extern PLConsoleVariable *cv_display_fullscreen;
+
+/************************************************************/
+
+void Console_Initialize(void);
+void Console_Toggle(void);
+void Console_Draw(void);

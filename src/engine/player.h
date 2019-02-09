@@ -15,13 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+#pragma once
 
-    /* queue the videos used for the launch of the game */
-    //var videos = ["sheff.bik", "infologo.bik"];
-    //QueueVideos(videos, videos.length);
+typedef struct Player {
+    uint8_t ident;
 
-    /* immediately begin playing the videos as soon as we're ready */
-    //PlayVideos();
-}
+    bool is_local;
+    bool is_active;
+
+    char name[24];
+    uint8_t team;
+
+    struct Actor *pigs[MAX_PIGS];
+    unsigned int num_pigs;
+    unsigned int current_pig;
+} Player;
+
+PL_EXTERN_C
+
+void ClearPlayers(void);
+
+PL_EXTERN_C_END

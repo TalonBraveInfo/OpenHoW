@@ -15,13 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+#pragma once
 
-    /* queue the videos used for the launch of the game */
-    //var videos = ["sheff.bik", "infologo.bik"];
-    //QueueVideos(videos, videos.length);
+enum { // supported languages
+    LANG_ENGLISH,
+    LANG_FRENCH,
+    LANG_GERMAN,
+    LANG_ITALIAN,
+    LANG_SPANISH,
+};
 
-    /* immediately begin playing the videos as soon as we're ready */
-    //PlayVideos();
-}
+PL_EXTERN_C
+
+void RegisterLanguages(void);
+void ClearLanguages(void);
+
+void SetLanguageCallback(const PLConsoleVariable *var);
+
+PL_EXTERN_C_END

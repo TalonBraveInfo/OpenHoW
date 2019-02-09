@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+#pragma once
 
-    /* queue the videos used for the launch of the game */
-    //var videos = ["sheff.bik", "infologo.bik"];
-    //QueueVideos(videos, videos.length);
+PL_EXTERN_C
 
-    /* immediately begin playing the videos as soon as we're ready */
-    //PlayVideos();
-}
+const char *Config_GetUserConfigPath(void);
+
+void Config_Save(const char *path);
+void Config_Load(const char *path);
+
+PL_EXTERN_C_END

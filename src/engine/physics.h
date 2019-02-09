@@ -15,13 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+#pragma once
 
-    /* queue the videos used for the launch of the game */
-    //var videos = ["sheff.bik", "infologo.bik"];
-    //QueueVideos(videos, videos.length);
+// Physics Declarations
 
-    /* immediately begin playing the videos as soon as we're ready */
-    //PlayVideos();
-}
+enum {
+    /* ...original... */
+    PHYS_BOUNDS_BOX     = 0,
+    PHYS_BOUNDS_PRISM   = 1,
+    PHYS_BOUNDS_SPHERE  = 2,
+    PHYS_BOUNDS_NONE    = 3,
+    /* ...any new types below... */
+
+    MAX_PHYS_BOUND_TYPES
+};
