@@ -115,7 +115,7 @@ void Engine_Shutdown(void) {
     Server_Shutdown();
     Script_Shutdown();
 
-    Config_Save(g_state.config_path);
+    Config_Save(Config_GetUserConfigPath());
 
     plShutdown();
 }
