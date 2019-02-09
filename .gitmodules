@@ -1,6 +1,6 @@
 [submodule "platform"]
-	path = platform
+	path = src/3rdparty/platform
 	url = https://github.com/TalonBraveInfo/platform
 [submodule "imgui"]
-	path = imgui
+	path = src/3rdparty/imgui
 	url = https://github.com/ocornut/imgui.git
