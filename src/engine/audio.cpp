@@ -17,28 +17,41 @@
 
 #include "engine.h"
 #include "audio.h"
-
 #include "client/frontend.h"
 
-#ifndef __APPLE__ // todo!!!
-
 #ifdef __APPLE__
-
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-//#include <OpenAL/alext.h>
-//#include <OpenAL/efx-presets.h>
-
+#   include <OpenAL/al.h>
+#   include <OpenAL/alc.h>
+//# include <OpenAL/alext.h>
+//# include <OpenAL/efx-presets.h>
 #else
-
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <AL/alext.h>
-#include <AL/efx-presets.h>
-
+#   include <AL/al.h>
+#   include <AL/alc.h>
+#   include <AL/alext.h>
+#   include <AL/efx-presets.h>
 #endif
 
 #include <PL/platform_graphics_camera.h>
+
+/* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL?? */
+/* todo: get this working on macOS */
+
+static void OALCheckErrors() {
+    ALenum err = alGetError();
+    if(err != AL_NO_ERROR) {
+        /* alut is apparently deprecated in OpenAL Soft, yay... */
+        /*Error("%s\n", alutGetErrorString(err));*/
+
+        switch(err) {
+            default: Error("unknown openal error, aborting!\n");
+            case AL_OUT_OF_MEMORY: Error("openal ran out of memory, aborting!\n");
+            case AL_INVALID_VALUE: Error("invalid value passed to openal, aborting!\n");
+            case AL_INVALID_OPERATION: Error("invalid operation performed with openal, aborting!\n");
+        }
+    }
+}
+
+/************************************************************/
 
 LPALGENEFFECTS alGenEffects;
 LPALDELETEEFFECTS alDeleteEffects;
@@ -64,24 +77,26 @@ LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
 LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
-struct {
-    /* extensions */
-    bool ext_efx;
-    bool ext_soft_buffer_samples;
+static bool audio_enabled = false;
 
-    bool enabled;
-} audio;
+enum {
+    AUDIO_EXT_EFX,
+    AUDIO_EXT_SOFT_BUFFER_SAMPLES,
+
+    MAX_AUDIO_EXT_SLOTS
+};
+static bool audio_extensions[MAX_AUDIO_EXT_SLOTS];
 
 void Audio_Initialize(void) {
-    if(audio.enabled) {
+    if(audio_enabled) {
         LogInfo("resetting audio...\n");
         Audio_Shutdown();
     }
 
-    memset(&audio, 0, sizeof(audio));
+    memset(audio_extensions, false, MAX_AUDIO_EXT_SLOTS);
 
-    ALCdevice *device = alcOpenDevice(NULL);
-    if(device == NULL) {
+    ALCdevice *device = alcOpenDevice(nullptr);
+    if(device == nullptr) {
         LogWarn("failed to open audio device, aborting audio initialisation!\n");
         Audio_Shutdown();
         return;
@@ -102,7 +117,7 @@ void Audio_Initialize(void) {
         alIsAuxiliaryEffectSlot = (LPALISAUXILIARYEFFECTSLOT) alGetProcAddress("alIsAuxiliaryEffectSlot");
         alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI) alGetProcAddress("alAuxiliaryEffectSloti");
 
-        audio.ext_efx = true;
+        audio_extensions[AUDIO_EXT_EFX] = true;
     }
 
     int attr[]={
@@ -112,7 +127,7 @@ void Audio_Initialize(void) {
     };
 
     ALCcontext *context = alcCreateContext(device, attr);
-    if(context == NULL || !alcMakeContextCurrent(context)) {
+    if(context == nullptr || !alcMakeContextCurrent(context)) {
         LogWarn("failed to create audio context, aborting audio initialisation!\n");
         Audio_Shutdown();
         return;
@@ -120,14 +135,16 @@ void Audio_Initialize(void) {
 
     if(alIsExtensionPresent("AL_SOFT_buffer_samples")) {
         LogInfo("AL_SOFT_buffer_samples detected\n");
-        audio.ext_soft_buffer_samples = true;
+        audio_extensions[AUDIO_EXT_SOFT_BUFFER_SAMPLES] = true;
     }
 
     alDopplerFactor(4.f);
     alDopplerVelocity(350.f);
 
-    audio.enabled = true;
+    audio_enabled = true;
 }
+
+#include <AL/alut.h>
 
 bool Audio_CacheSample(const char *path, bool preserve) {
     if(plIsEmptyString(path)) {
@@ -135,11 +152,13 @@ bool Audio_CacheSample(const char *path, bool preserve) {
         return false;
     }
 
+    /* todo: ensure the path is under <basedir>/audio/ */
+
     return false;
 }
 
-void StopAudio(void) {
-    if(!audio.enabled) {
+void Audio_Stop(void) {
+    if(!audio_enabled) {
         return;
     }
 
@@ -147,7 +166,7 @@ void StopAudio(void) {
 }
 
 void Audio_Simulate(void) {
-    if(!audio.enabled) {
+    if(!audio_enabled) {
         return;
     }
 
@@ -170,33 +189,102 @@ void Audio_Simulate(void) {
 }
 
 void Audio_Shutdown(void) {
-    if(!audio.enabled) {
+    if(!audio_enabled) {
         return;
     }
     
     LogInfo("shutting down audio sub-system...\n");
 
-    /* todo: clear sounds */
+    //Audio_StopSounds();
+    //Audio_ClearSamples();
 
     ALCcontext *context = alcGetCurrentContext();
-    if(context != NULL) {
-        alcMakeContextCurrent(NULL);
+    if(context != nullptr) {
+        alcMakeContextCurrent(nullptr);
         alcDestroyContext(context);
 
         ALCdevice *device = alcGetContextsDevice(context);
-        if(device != NULL) {
+        if(device != nullptr) {
             alcCloseDevice(device);
         }
     }
 
-    audio.enabled = false;
+    audio_enabled = false;
 }
 
-#else
+class AudioSource {
+public:
+    AudioSource(PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping);
+    ~AudioSource();
 
-void InitAudio(void) {}
-void StopAudio(void) {}
-void SimulateAudio(void) {}
-void ShutdownAudio(void) {}
+    void SetPosition(PLVector3 position);
+    void SetVelocity(PLVector3 velocity);
+    void SetGain(float gain);
+    void SetPitch(float pitch);
 
-#endif
+    PLVector3 GetPosition() { return position_; }
+    PLVector3 GetVelocity() { return velocity_; }
+    float GetGain() { return gain_; }
+    float GetPitch() { return pitch_; }
+
+    void StartPlaying();
+    void StopPlaying();
+
+private:
+    PLVector3 position_{0, 0, 0};
+    PLVector3 velocity_{0, 0, 0};
+
+    float gain_{1.0f};
+    float pitch_{1.0f};
+
+    unsigned int source_{0};
+};
+
+AudioSource::AudioSource(PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping) {
+    alGenSources(1, &source_);
+    OALCheckErrors();
+
+    SetPosition(pos);
+    SetVelocity(vel);
+    SetGain(gain);
+    SetPitch(pitch);
+
+    alSourcei(source_, AL_LOOPING, looping);
+    OALCheckErrors();
+}
+
+AudioSource::~AudioSource() {
+    alDeleteSources(1, &source_);
+}
+
+void AudioSource::SetPosition(PLVector3 position) {
+    alSource3f(source_, AL_POSITION, position.x, position.y, position.z);
+    OALCheckErrors();
+    position_ = position;
+}
+
+void AudioSource::SetVelocity(PLVector3 velocity) {
+    alSource3f(source_, AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+    OALCheckErrors();
+    velocity_ = velocity;
+}
+
+void AudioSource::SetGain(float gain) {
+    alSourcef(source_, AL_GAIN, gain);
+    OALCheckErrors();
+    gain_ = gain;
+}
+
+void AudioSource::SetPitch(float pitch) {
+    alSourcef(source_, AL_PITCH, pitch);
+    OALCheckErrors();
+    pitch_ = pitch;
+}
+
+void AudioSource::StartPlaying() {
+    alSourcePlay(source_);
+    OALCheckErrors();
+}
+
+static std::vector<AudioSource> audio_sources;
+static std::map<std::string, unsigned int> audio_buffers;

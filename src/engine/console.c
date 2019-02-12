@@ -272,6 +272,11 @@ PLConsoleVariable *cv_display_width = NULL;
 PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
 
+PLConsoleVariable *cv_audio_volume = NULL;
+PLConsoleVariable *cv_audio_volume_sfx = NULL;
+PLConsoleVariable *cv_audio_voices = NULL;
+PLConsoleVariable *cv_audio_mode = NULL;
+
 void Console_Initialize(void) {
 #define rvar(var, arc, ...) (var) = plRegisterConsoleVariable(plStringify(var), __VA_ARGS__); (var)->archive = (arc)
     rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
@@ -282,13 +287,21 @@ void Console_Initialize(void) {
                           "1: keyboard states\n2: controller states"
     );
     rvar(cv_debug_cache, false, "0", pl_bool_var, NULL, "display memory and other info");
+
     rvar(cv_base_path, true, ".", pl_string_var, NULL, "");
     rvar(cv_campaign_path, false, "", pl_string_var, NULL, "");
+
     rvar(cv_camera_mode, false, "0", pl_int_var, NULL, "0 = default, 1 = debug");
+
     rvar(cv_display_texture_cache, false, "-1", pl_int_var, NULL, "");
     rvar(cv_display_width, true, "1024", pl_int_var, NULL, "");
     rvar(cv_display_height, true, "768", pl_int_var, NULL, "");
     rvar(cv_display_fullscreen, true, "true", pl_bool_var, NULL, "");
+
+    rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
+    rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
+    rvar(cv_audio_mode, true, "1", pl_int_var, NULL, "0 = mono, 1 = stereo");
+    rvar(cv_audio_voices, true, "true", pl_bool_var, NULL, "enable/disable pig voices");
 
     plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 

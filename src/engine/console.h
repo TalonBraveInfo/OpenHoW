@@ -33,6 +33,11 @@ extern PLConsoleVariable *cv_display_width;
 extern PLConsoleVariable *cv_display_height;
 extern PLConsoleVariable *cv_display_fullscreen;
 
+extern PLConsoleVariable *cv_audio_volume;
+extern PLConsoleVariable *cv_audio_volume_sfx;
+extern PLConsoleVariable *cv_audio_voices;
+extern PLConsoleVariable *cv_audio_mode;
+
 /************************************************************/
 
 void Console_Initialize(void);

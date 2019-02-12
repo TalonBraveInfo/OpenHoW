@@ -55,4 +55,10 @@ PL_EXTERN_C
 void Audio_Initialize(void);
 void Audio_Shutdown(void);
 
+void Audio_StopSources(void);
+void Audio_ListSources(void);
+
+void Audio_ClearSources(void);
+void AUdio_ClearBuffers(void);
+
 PL_EXTERN_C_END
