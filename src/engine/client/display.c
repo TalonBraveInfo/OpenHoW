@@ -518,10 +518,6 @@ static void DrawDebugOverlay(void) {
         return;
     }
 
-    if(cv_display_texture_cache->i_value > -1) {
-        DrawTextureCache((unsigned int) cv_display_texture_cache->i_value);
-    }
-
     if (cv_debug_fps->b_value) {
         static unsigned int fps = 0;
         static unsigned int ms = 0;

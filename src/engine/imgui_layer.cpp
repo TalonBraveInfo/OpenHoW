@@ -187,16 +187,16 @@ void UI_DisplayFileBox() {
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(-1.f, 0));
     ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() - 64), true);
     ImGui::Columns(2);
-    for (unsigned int i = 0; i < file_list.size(); ++i) {
-        if (filter.PassFilter(file_list[i].path)) {
-            if(ImGui::Button(file_list[i].path)) {
-                switch(file_list[i].type) {
+    for (auto &i : file_list) {
+        if (filter.PassFilter(i.path)) {
+            if(ImGui::Button(i.path)) {
+                switch(i.type) {
                     case FILE_TYPE_IMAGE: {
                         if(cur_texture != nullptr) {
                             plDeleteTexture(cur_texture, true);
                         }
 
-                        cur_texture = Display_LoadTexture(file_list[i].path, PL_TEXTURE_FILTER_LINEAR);
+                        cur_texture = Display_LoadTexture(i.path, PL_TEXTURE_FILTER_LINEAR);
                         show_texture = true;
                     } break;
 
@@ -207,7 +207,7 @@ void UI_DisplayFileBox() {
             ImGui::NextColumn();
 
             const char *type = "Unknown";
-            switch(file_list[i].type) {
+            switch(i.type) {
                 case FILE_TYPE_AUDIO:       type = "Audio"; break;
                 case FILE_TYPE_PARTICLE:    type = "Particle System"; break;
                 case FILE_TYPE_IMAGE:       type = "Image"; break;
