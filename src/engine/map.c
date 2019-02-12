@@ -131,7 +131,7 @@ typedef struct MapDesc {
 
 static MapManifest *map_descriptors = NULL;
 static unsigned int num_maps = 0;
-static unsigned int max_maps = 2048;
+static unsigned int max_maps = 32; /* this will expand, if required */
 
 MapManifest *Map_GetMapManifest(const char *name) {
     const char *ext = plGetFileExtension(name);

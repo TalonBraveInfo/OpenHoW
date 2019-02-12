@@ -79,10 +79,13 @@ void Engine_Initialize(void) {
     RegisterLanguages();
     RegisterCampaigns();
 
-    if((var = plGetCommandLineArgumentValue("-mod")) != NULL ||
-       (var = plGetCommandLineArgumentValue("-campaign")) != NULL) {
-        SetCampaign(var);
+    if((var = plGetCommandLineArgumentValue("-mod")) == NULL &&
+       (var = plGetCommandLineArgumentValue("-campaign")) == NULL) {
+        /* otherwise default to Hogs of War's campaign */
+        var = "how";
     }
+
+    SetCampaign(var);
 
     /* now initialize all other sub-systems */
 
