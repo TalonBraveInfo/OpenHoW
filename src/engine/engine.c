@@ -104,15 +104,6 @@ bool Engine_IsRunning(void) {
     return true;
 }
 
-void Engine_Simulate(void) {
-    g_state.sim_ticks = System_GetTicks();
-
-    Client_Simulate();
-    Server_Simulate();
-
-    g_state.last_sim_tick = System_GetTicks();
-}
-
 void Engine_Shutdown(void) {
     Client_Shutdown();
     Server_Shutdown();

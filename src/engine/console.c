@@ -22,7 +22,6 @@
 #include "input.h"
 #include "map.h"
 #include "language.h"
-#include "audio.h"
 
 #include "client/particle.h"
 #include "client/display.h"
@@ -162,10 +161,6 @@ static void FrontendModeCommand(unsigned int argc, char *argv[]) {
     }
 
     FE_SetState((unsigned int) mode);
-}
-
-static void ResetAudioCommand(unsigned int argc, char *argv[]) {
-    Audio_Initialize();
 }
 
 static void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
@@ -317,7 +312,6 @@ void Console_Initialize(void) {
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("config", ConfigCommand, "Loads the specified config");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
-    plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
     plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");
     plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
 }

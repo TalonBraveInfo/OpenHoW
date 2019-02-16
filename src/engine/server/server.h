@@ -17,6 +17,10 @@
 
 #pragma once
 
-void Server_Initialize(void);
-void Server_Simulate(void);
-void Server_Shutdown(void);
+PL_EXTERN_C
+
+void Server_Initialize();
+void Server_Simulate();
+void Server_Shutdown();
+
+PL_EXTERN_C_END

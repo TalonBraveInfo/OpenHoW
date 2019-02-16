@@ -23,11 +23,11 @@
 
 PL_EXTERN_C
 
-void Server_Initialize(void) {
+void Server_Initialize() {
     LogInfo("initializing server...\n");
 }
 
-void Server_Simulate(void) {
+void Server_Simulate() {
     if(!g_state.is_host) {
         return;
     }
@@ -35,7 +35,7 @@ void Server_Simulate(void) {
     ActorManager::GetInstance()->SimulateActors();
 }
 
-void Server_Shutdown(void) {
+void Server_Shutdown() {
     LogInfo("shutting down server...\n");
 
     ActorManager::GetInstance()->ClearActors();

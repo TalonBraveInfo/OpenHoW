@@ -17,6 +17,8 @@
 
 #pragma once
 
+PL_EXTERN_C
+
 extern PLConsoleVariable *cv_debug_mode;
 extern PLConsoleVariable *cv_debug_fps;
 extern PLConsoleVariable *cv_debug_skeleton;
@@ -43,3 +45,5 @@ extern PLConsoleVariable *cv_audio_mode;
 void Console_Initialize(void);
 void Console_Toggle(void);
 void Console_Draw(void);
+
+PL_EXTERN_C_END
