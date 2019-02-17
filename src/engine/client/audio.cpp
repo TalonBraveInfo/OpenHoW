@@ -77,6 +77,7 @@ AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, f
     OALCheckErrors();
 
     alSourceQueueBuffers(al_source_id_, 1, &al_sample);
+    OALCheckErrors();
 
     AudioManager::GetInstance()->sources_.insert(this);
 }
@@ -129,29 +130,29 @@ void AudioSource::StopPlaying() {
 
 /************************************************************/
 
-LPALGENEFFECTS alGenEffects;
-LPALDELETEEFFECTS alDeleteEffects;
-LPALISEFFECT alIsEffect;
-LPALEFFECTI alEffecti;
-LPALEFFECTIV alEffectiv;
-LPALEFFECTF alEffectf;
-LPALEFFECTFV alEffectfv;
-LPALGETEFFECTI alGetEffecti;
-LPALGETEFFECTIV alGetEffectiv;
-LPALGETEFFECTF alGetEffectf;
-LPALGETEFFECTFV alGetEffectfv;
+static LPALGENEFFECTS alGenEffects;
+static LPALDELETEEFFECTS alDeleteEffects;
+static LPALISEFFECT alIsEffect;
+static LPALEFFECTI alEffecti;
+static LPALEFFECTIV alEffectiv;
+static LPALEFFECTF alEffectf;
+static LPALEFFECTFV alEffectfv;
+static LPALGETEFFECTI alGetEffecti;
+static LPALGETEFFECTIV alGetEffectiv;
+static LPALGETEFFECTF alGetEffectf;
+static LPALGETEFFECTFV alGetEffectfv;
 
-LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots;
-LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots;
-LPALISAUXILIARYEFFECTSLOT alIsAuxiliaryEffectSlot;
-LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
-LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv;
-LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf;
-LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv;
-LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
-LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
-LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
-LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
+static LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots;
+static LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots;
+static LPALISAUXILIARYEFFECTSLOT alIsAuxiliaryEffectSlot;
+static LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
+static LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv;
+static LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf;
+static LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv;
+static LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
+static LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
+static LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
+static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
 AudioManager *AudioManager::instance_ = nullptr;
 
