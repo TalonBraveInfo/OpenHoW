@@ -44,6 +44,7 @@ private:
 /* Particle Editor */
 
 #include "client/particle.h"
+#include "client/audio.h"
 
 class ParticleEditor {
 public:
@@ -200,6 +201,10 @@ void UI_DisplayFileBox() {
                         show_texture = true;
                     } break;
 
+                    case FILE_TYPE_AUDIO: {
+                        AudioManager::GetInstance()->PlayGlobalSound(i.path);
+                    } break;
+
                     default:break;
                 }
             }
@@ -297,7 +302,7 @@ void UI_DisplayDebugMenu(void) {
 
         if(ImGui::BeginMenu("Debug")) {
             ImGui::MenuItem("Show Console", "`", &show_console);
-            if(ImGui::MenuItem("Show FPS", NULL, &show_fps)) {
+            if(ImGui::MenuItem("Show FPS", nullptr, &show_fps)) {
                 plSetConsoleVariable(cv_debug_fps, show_fps ? "true" : "false");
             }
 
@@ -309,7 +314,7 @@ void UI_DisplayDebugMenu(void) {
 
             if(ImGui::IsItemHovered() && tc > 0) {
                 const PLTexture *texture = Display_GetCachedTexture((unsigned int) cv_display_texture_cache->i_value);
-                if(texture != NULL) {
+                if(texture != nullptr) {
                     ImGui::BeginTooltip();
                     ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id), ImVec2(texture->w, texture->h));
                     ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
@@ -334,7 +339,7 @@ void UI_DisplayDebugMenu(void) {
         }
 
         if(ImGui::BeginMenu("Help")) {
-            ImGui::MenuItem("About", NULL, &show_about);
+            ImGui::MenuItem("About", nullptr, &show_about);
             ImGui::EndMenu();
         }
 

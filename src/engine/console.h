@@ -17,6 +17,8 @@
 
 #pragma once
 
+PL_EXTERN_C
+
 extern PLConsoleVariable *cv_debug_mode;
 extern PLConsoleVariable *cv_debug_fps;
 extern PLConsoleVariable *cv_debug_skeleton;
@@ -33,8 +35,15 @@ extern PLConsoleVariable *cv_display_width;
 extern PLConsoleVariable *cv_display_height;
 extern PLConsoleVariable *cv_display_fullscreen;
 
+extern PLConsoleVariable *cv_audio_volume;
+extern PLConsoleVariable *cv_audio_volume_sfx;
+extern PLConsoleVariable *cv_audio_voices;
+extern PLConsoleVariable *cv_audio_mode;
+
 /************************************************************/
 
 void Console_Initialize(void);
 void Console_Toggle(void);
 void Console_Draw(void);
+
+PL_EXTERN_C_END

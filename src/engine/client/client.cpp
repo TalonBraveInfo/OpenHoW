@@ -19,11 +19,11 @@
 
 #include "../engine.h"
 #include "../input.h"
-#include "../audio.h"
 
 #include "../script/script.h"
 
 #include "client.h"
+#include "audio.h"
 #include "display.h"
 #include "frontend.h"
 
@@ -90,18 +90,25 @@ void Client_ProcessInput(void) {
 void Client_Initialize(void) {
     Input_Initialize();
     Display_Initialize();
-    Audio_Initialize();
+    AudioManager::GetInstance();
     FE_Initialize();
 }
 
 void Client_Simulate(void) {
     Client_ProcessInput();
 
+    AudioManager::GetInstance()->Simulate();
     FE_Simulate();
+}
+
+void Client_Render(double delta) {
+
 }
 
 void Client_Shutdown(void) {
     plParseConsoleString("audio_shutdown");
     Display_Shutdown();
     /* todo: input, etc */
+
+    AudioManager::DestroyInstance();
 }

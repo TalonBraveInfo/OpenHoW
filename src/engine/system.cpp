@@ -27,7 +27,10 @@
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl2.h"
 
+#include "server/server.h"
 #include "client/display.h"
+#include "client/client.h"
+#include "client/audio.h"
 
 static SDL_Window *window = nullptr;
 static SDL_GLContext gl_context = nullptr;
@@ -525,10 +528,23 @@ int main(int argc, char **argv) {
 
         loops = 0;
         while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-            Engine_Simulate();
+            g_state.sim_ticks = System_GetTicks();
+            Client_Simulate();
+            Server_Simulate();
+            g_state.last_sim_tick = System_GetTicks();
+
             next_tick += SKIP_TICKS;
             loops++;
         }
+
+        /* refactor this...
+         * todo: move all of the below into Client_Render
+         * */
+
+#if 0
+        delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
+        Client_Render(delta_time);
+#else
 
         ImGui_ImplOpenGL2_NewFrame();
         ImGui::NewFrame();
@@ -551,6 +567,7 @@ int main(int argc, char **argv) {
         /* and finally, swap */
 
         Display_Flush();
+#endif
     }
 
     System_Shutdown();

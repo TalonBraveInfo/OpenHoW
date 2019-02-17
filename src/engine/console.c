@@ -22,7 +22,6 @@
 #include "input.h"
 #include "map.h"
 #include "language.h"
-#include "audio.h"
 
 #include "client/particle.h"
 #include "client/display.h"
@@ -164,10 +163,6 @@ static void FrontendModeCommand(unsigned int argc, char *argv[]) {
     FE_SetState((unsigned int) mode);
 }
 
-static void ResetAudioCommand(unsigned int argc, char *argv[]) {
-    Audio_Initialize();
-}
-
 static void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
     Display_UpdateState();
 }
@@ -272,6 +267,11 @@ PLConsoleVariable *cv_display_width = NULL;
 PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
 
+PLConsoleVariable *cv_audio_volume = NULL;
+PLConsoleVariable *cv_audio_volume_sfx = NULL;
+PLConsoleVariable *cv_audio_voices = NULL;
+PLConsoleVariable *cv_audio_mode = NULL;
+
 void Console_Initialize(void) {
 #define rvar(var, arc, ...) (var) = plRegisterConsoleVariable(plStringify(var), __VA_ARGS__); (var)->archive = (arc)
     rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
@@ -282,13 +282,21 @@ void Console_Initialize(void) {
                           "1: keyboard states\n2: controller states"
     );
     rvar(cv_debug_cache, false, "0", pl_bool_var, NULL, "display memory and other info");
+
     rvar(cv_base_path, true, ".", pl_string_var, NULL, "");
     rvar(cv_campaign_path, false, "", pl_string_var, NULL, "");
+
     rvar(cv_camera_mode, false, "0", pl_int_var, NULL, "0 = default, 1 = debug");
+
     rvar(cv_display_texture_cache, false, "-1", pl_int_var, NULL, "");
     rvar(cv_display_width, true, "1024", pl_int_var, NULL, "");
     rvar(cv_display_height, true, "768", pl_int_var, NULL, "");
     rvar(cv_display_fullscreen, true, "true", pl_bool_var, NULL, "");
+
+    rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
+    rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
+    rvar(cv_audio_mode, true, "1", pl_int_var, NULL, "0 = mono, 1 = stereo");
+    rvar(cv_audio_voices, true, "true", pl_bool_var, NULL, "enable/disable pig voices");
 
     plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 
@@ -304,7 +312,6 @@ void Console_Initialize(void) {
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("config", ConfigCommand, "Loads the specified config");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
-    plRegisterConsoleCommand("audio_reset", ResetAudioCommand, "Initialize/reset the audio sub-system");
     plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");
     plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
 }

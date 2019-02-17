@@ -74,8 +74,6 @@ PL_EXTERN_C
 void Engine_Initialize(void);
 void Engine_Shutdown(void);
 
-void Engine_Simulate(void);
-
 bool Engine_IsRunning(void);
 
 const char *GetBasePath(void);
