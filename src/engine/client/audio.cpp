@@ -134,25 +134,25 @@ static LPALGENEFFECTS alGenEffects;
 static LPALDELETEEFFECTS alDeleteEffects;
 static LPALISEFFECT alIsEffect;
 static LPALEFFECTI alEffecti;
-static LPALEFFECTIV alEffectiv;
+//static LPALEFFECTIV alEffectiv;
 static LPALEFFECTF alEffectf;
-static LPALEFFECTFV alEffectfv;
-static LPALGETEFFECTI alGetEffecti;
-static LPALGETEFFECTIV alGetEffectiv;
-static LPALGETEFFECTF alGetEffectf;
-static LPALGETEFFECTFV alGetEffectfv;
+//static LPALEFFECTFV alEffectfv;
+//static LPALGETEFFECTI alGetEffecti;
+//static LPALGETEFFECTIV alGetEffectiv;
+//static LPALGETEFFECTF alGetEffectf;
+//static LPALGETEFFECTFV alGetEffectfv;
 
 static LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots;
 static LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots;
 static LPALISAUXILIARYEFFECTSLOT alIsAuxiliaryEffectSlot;
 static LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
-static LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv;
-static LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf;
-static LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv;
-static LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
-static LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
-static LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
-static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
+//static LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv;
+//static LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf;
+//static LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv;
+//static LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
+//static LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
+//static LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
+//static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
 AudioManager *AudioManager::instance_ = nullptr;
 
@@ -327,26 +327,32 @@ void AudioManager::SilenceSources() {
     global_source_->StopPlaying();
 }
 
+/* Will invalidate ALL references to AudioSource objects.
+ * Only use in contexts where this is safe. */
 void AudioManager::FreeSources() {
-    LogInfo("freeing all sources...\n");
+    LogInfo("freeing all audio sources...\n");
 
     SilenceSources();
+    global_source_.reset(nullptr);
     sources_.clear();
 }
 
 void AudioManager::FreeSamples(bool force) {
-    LogInfo("freeing all samples...\n");
+    u_assert(sources_.empty(), "audio sources weren't emptied!\n");
+
+    LogInfo("freeing all audio samples...\n");
+
     if(force) {
         /* clears absolutely everything */
         samples_.clear();
     } else {
         /* clears only those not marked with preserve */
-        for(auto sample : samples_) {
-            if(sample.second.preserve_) {
-                continue;
+        for(auto sample = samples_.begin(); sample != samples_.end();) {
+            if(!sample->second.preserve_) {
+                sample = samples_.erase(sample);
+            } else {
+                ++sample;
             }
-
-            samples_.erase(sample.first);
         }
     }
 }
