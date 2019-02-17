@@ -107,6 +107,11 @@ public:
 
     void PlayGlobalSound(const std::string &path);
 
+    void SilenceSources();
+
+    void FreeSources();
+    void FreeSamples(bool force = false);
+
 protected:
 private:
     enum {
@@ -118,9 +123,12 @@ private:
     bool al_extensions_[MAX_AUDIO_EXT_SLOTS];
 
     typedef struct AudioSample {
-        unsigned int    al_buffer_id;
-        uint8_t         *data;
-        bool            preserve;
+        AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve);
+        ~AudioSample();
+
+        unsigned int    al_buffer_id_;
+        uint8_t         *data_{};
+        bool            preserve_;
     } AudioSample;
 
     std::map<std::string, AudioSample> samples_;

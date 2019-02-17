@@ -156,12 +156,12 @@ LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 AudioManager *AudioManager::instance_ = nullptr;
 
 AudioManager::AudioManager() {
-    memset(al_extensions_, false, MAX_AUDIO_EXT_SLOTS);
-
     ALCdevice *device = alcOpenDevice(nullptr);
     if(device == nullptr) {
         Error("failed to open audio device, aborting audio initialisation!\n");
     }
+
+    memset(al_extensions_, 0, sizeof(al_extensions_));
 
     if(alcIsExtensionPresent(device, "ALC_EXT_EFX")) {
         LogInfo("ALC_EXT_EFX detected\n");
@@ -204,8 +204,8 @@ AudioManager::AudioManager() {
 AudioManager::~AudioManager() {
     LogInfo("shutting down audio sub-system...\n");
 
-    //Audio_StopSounds();
-    //Audio_ClearSamples();
+    FreeSources();
+    FreeSamples();
 
     ALCcontext *context = alcGetCurrentContext();
     if(context != nullptr) {
@@ -220,11 +220,6 @@ AudioManager::~AudioManager() {
 }
 
 void AudioManager::CacheSample(const std::string &path, bool preserve) {
-    if(plIsEmptyString(path)) {
-        LogWarn("invalid path, aborting!\n");
-        return;
-    }
-
     auto i = samples_.find(path);
     if(i != samples_.end()) {
         LogWarn("attempted to double cache audio sample, \"%s\"!\n", path.c_str());
@@ -269,17 +264,11 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
         return;
     }
 
-    unsigned int buf_index;
-    alGenBuffers(1, &buf_index);
-    OALCheckErrors();
-    alBufferData(buf_index, format, buffer, length, spec.freq);
-    OALCheckErrors();
-
-    AudioSample sample;
-    sample.data = buffer;
-    sample.al_buffer_id = buf_index;
-    sample.preserve = preserve;
-    samples_.insert(std::make_pair(path, sample));
+    samples_.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(path),
+            std::forward_as_tuple(buffer, spec.freq, format, length, preserve)
+            );
 }
 
 const AudioManager::AudioSample *AudioManager::GetCachedSample(const std::string &path) {
@@ -297,12 +286,12 @@ const AudioManager::AudioSample *AudioManager::GetCachedSample(const std::string
 }
 
 AudioSource *AudioManager::CreateSource(const std::string &path, float gain, float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path)->al_buffer_id, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path)->al_buffer_id_, gain, pitch, looping);
 }
 
 AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, float gain,
                                         float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path)->al_buffer_id, pos, vel, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path)->al_buffer_id_, pos, vel, gain, pitch, looping);
 }
 
 void AudioManager::Simulate() {
@@ -327,4 +316,53 @@ void AudioManager::Simulate() {
 void AudioManager::PlayGlobalSound(const std::string &path) {
     global_source_.reset(CreateSource(path));
     global_source_->StartPlaying();
+}
+
+void AudioManager::SilenceSources() {
+    for(auto sound : sources_) {
+        sound->StopPlaying();
+    }
+
+    global_source_->StopPlaying();
+}
+
+void AudioManager::FreeSources() {
+    LogInfo("freeing all sources...\n");
+
+    SilenceSources();
+    sources_.clear();
+}
+
+void AudioManager::FreeSamples(bool force) {
+    LogInfo("freeing all samples...\n");
+    if(force) {
+        /* clears absolutely everything */
+        samples_.clear();
+    } else {
+        /* clears only those not marked with preserve */
+        for(auto sample : samples_) {
+            if(sample.second.preserve_) {
+                continue;
+            }
+
+            samples_.erase(sample.first);
+        }
+    }
+}
+
+/************************************************************/
+/* Audio Sample */
+
+AudioManager::AudioSample::~AudioSample() {
+    alDeleteBuffers(1, &al_buffer_id_);
+    OALCheckErrors();
+
+    SDL_FreeWAV(data_);
+}
+
+AudioManager::AudioSample::AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve) {
+    alGenBuffers(1, &al_buffer_id_);
+    OALCheckErrors();
+    alBufferData(al_buffer_id_, format, data, length, freq);
+    OALCheckErrors();
 }
