@@ -36,9 +36,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wsign-compare")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #GCC
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function -Wno-unused-variable -Wno-format-truncation -Wold-style-declaration")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wsign-compare -Wno-unused-function -Wno-unused-variable -Wno-format-truncation -Wold-style-declaration")
 endif()
 
 add_definitions("-D_DEBUG")
