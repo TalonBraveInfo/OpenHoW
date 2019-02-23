@@ -60,8 +60,8 @@ typedef struct CampaignManifest {
 
 typedef struct GameModeSetup {
     char map[32];
-    uint mode;          /* passed to the map loader */
-    uint num_players;
+    unsigned int mode;          /* passed to the map loader */
+    unsigned int num_players;
 
     bool force_start;   /* kills any current game */
 } GameModeSetup;
@@ -75,7 +75,7 @@ void SetCampaign(const char *dir);
 
 /****************************************************/
 
-void Game_StartNewGame(const char *map, uint mode, uint8_t num_players, bool force_start);
+void Game_StartNewGame(const char *map, unsigned int mode, uint8_t num_players, bool force_start);
 void Game_End(void);
 
 PL_EXTERN_C_END
