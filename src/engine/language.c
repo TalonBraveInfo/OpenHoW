@@ -50,11 +50,11 @@ void RegisterLanguages(void) {
     LogDebug("caching language data...\n");
 
     /* load in the language manifest and store it in a buffer */
-    FILE *fp = fopen(man_path, "r");
-    if(fp == NULL) Error("failed to load \"%s\"!\n", man_path);
+    FILE *fp = fopen(man_path, "rb");
+    if(fp == NULL) Error("Failed to load \"%s\"!\n", man_path);
     size_t length = plGetFileSize(man_path);
     char buf[length + 1];
-    if(fread(buf, sizeof(char), length, fp) != length) Error("failed to read entirety of language manifest!\n");
+    if(fread(buf, sizeof(char), length, fp) != length) Error("Failed to read entirety of language manifest!\n");
     fclose(fp);
     buf[length] = '\0';
 

@@ -690,7 +690,7 @@ void ShutdownModels(void) {
 
 ////////////////////////////////////////////////////////////////
 
-#if 1
+#if 0
 #include <GL/glew.h>
 #endif
 
@@ -704,7 +704,7 @@ void DEBUGDrawSkeleton(void) {
         skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, model_cache.num_bones * 2);
     }
 
-#if 1
+#if 0
     glPushMatrix();
 
     static float rotation = 90;
@@ -740,7 +740,7 @@ void DEBUGDrawSkeleton(void) {
     plUploadMesh(skeleton_mesh);
     plDrawMesh(skeleton_mesh);
 
-#if 1
+#if 0
     glPopMatrix();
 #endif
 }
