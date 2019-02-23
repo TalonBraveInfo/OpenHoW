@@ -32,9 +32,8 @@
 #   include <AL/efx-presets.h>
 #endif
 
-#include <PL/platform_graphics_camera.h>
-
 #include <SDL2/SDL_audio.h>
+#include <PL/platform_graphics_camera.h>
 
 #include <list>
 
@@ -84,7 +83,6 @@ AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, f
 
 AudioSource::~AudioSource() {
     AudioManager::GetInstance()->sources_.erase(this);
-
     alDeleteSources(1, &al_source_id_);
 }
 
@@ -233,7 +231,7 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
     uint32_t length;
     uint8_t *buffer;
     if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
-        LogWarn("failed to load \"%s\"!\n", path);
+        LogWarn("failed to load \"%s\"!\n", path.c_str());
         return;
     }
 
