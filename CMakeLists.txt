@@ -44,4 +44,5 @@ endif()
 add_definitions("-D_DEBUG")
 
 add_subdirectory(src/3rdparty/platform/platform)
+add_subdirectory(src/3rdparty/openal-soft)
 add_subdirectory(src/engine)

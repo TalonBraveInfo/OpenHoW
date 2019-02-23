@@ -27,8 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 project(OpenHoW)
 
-option(OPENHOW_USE_IMGUI "ImGui" ON)
-
 file(
         GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
@@ -51,24 +49,30 @@ file(
         client/*.h
 
         include/pork/*.h
+
+        ################## ImGui
+
+        ../3rdparty/imgui/imgui.cpp
+        ../3rdparty/imgui/imgui_draw.cpp
+        ../3rdparty/imgui/imgui_widgets.cpp
+        #../3rdparty/imgui/imgui_demo.cpp
+        ../3rdparty/imgui/examples/imgui_impl_opengl2.cpp
+        ../3rdparty/imgui/examples/imgui_impl_opengl2.h
+        ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 
-if(OPENHOW_USE_IMGUI)
-        file(GLOB OPENHOW_IMGUI_SOURCE
-                ../3rdparty/imgui/imgui.cpp
-                ../3rdparty/imgui/imgui_draw.cpp
-                ../3rdparty/imgui/imgui_widgets.cpp
-                #../3rdparty/imgui/imgui_demo.cpp
+add_executable(OpenHoW ${OPENHOW_SOURCE_FILES})
 
-                # todo: replace with internal implementation?
-                ../3rdparty/imgui/examples/imgui_impl_opengl2.cpp
-                ../3rdparty/imgui/examples/imgui_impl_opengl2.h
-
-                ../3rdparty/imgui_tabs/imgui_tabs.cpp
-                )
+if(WIN32)
+    target_include_directories(OpenHoW PRIVATE ../3rdparty/SDL2/include/ ../3rdparty/openal-soft/include/)
+    target_link_directories(OpenHoW PRIVATE ../3rdparty/SDL2/lib/ ../3rdparty/openal-soft/lib/ ../../bin/)
+    target_compile_options(OpenHoW PRIVATE -static -static-libstdc++ -static-libgcc)
+    target_link_libraries(OpenHoW OpenAL)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(OpenHoW "-framework OpenAL")
+else()
+    target_link_libraries(OpenHoW openal)
 endif()
-
-add_executable(OpenHoW ${OPENHOW_SOURCE_FILES} ${OPENHOW_IMGUI_SOURCE})
 
 #set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
