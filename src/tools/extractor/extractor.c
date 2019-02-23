@@ -424,7 +424,7 @@ static CopyPath pc_copy_paths[] = {
 };
 
 static CopyPath pc_package_paths[] = {
-        {"/Chars/british2.mad",         "/chars/pigs/"},    /* actually contains all the pig models */
+        {"/Chars/british.mad",          "/chars/pigs/"},    /* actually contains all the pig models */
         {"/Chars/FACES.MTD",            "/chars/faces/"},   /* contains all the face textures       */
 
         /* hats */
@@ -537,11 +537,7 @@ static CopyPath pc_package_paths[] = {
 /* Extraction process for initial setup */
 
 static void ExtractPTGPackage(const char *input_path, const char *output_path) {
-    if(input_path == NULL || input_path[0] == '\0') {
-        LogInfo("encountered invalid path for PTG, aborting!\n");
-        return;
-    }
-
+    u_assert(input_path != NULL && input_path[0] != '\0', "encountered invalid path for PTG!\n");
     char ptg_name[PL_SYSTEM_MAX_PATH] = {'\0'};
     plStripExtension(ptg_name, sizeof(ptg_name), plGetFileName(input_path));
     pl_strtolower(ptg_name);
@@ -596,11 +592,7 @@ static void ExtractPTGPackage(const char *input_path, const char *output_path) {
 }
 
 static void ExtractMADPackage(const char *input_path, const char *output_path) {
-    if(input_path == NULL || input_path[0] == '\0') { // technically, this should never, ever, ever, ever happen...
-        LogInfo("encountered invalid path for MAD, aborting!\n");
-        return;
-    }
-
+    u_assert(input_path != NULL && input_path[0] != '\0', "encountered invalid path for MAD!\n");
     char package_name[PL_SYSTEM_MAX_PATH] = {'\0'};
     plStripExtension(package_name, sizeof(package_name), plGetFileName(input_path));
     pl_strtolower(package_name);
@@ -1033,7 +1025,15 @@ int main(int argc, char **argv) {
     /* now deal with any arguments */
 
     char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    char output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    char output_path[PL_SYSTEM_MAX_PATH];
+#if 0
+    if(getcwd(output_path, sizeof(output_path) - 1) == NULL) {
+        strcpy(output_path, "./");
+    }
+#else
+    strcpy(output_path, "./");
+#endif
+
     for(int i = 1; i < argc; ++i) {
         if(argv[i][0] == '-') {
             strncpy(output_path, argv[i] + 1, sizeof(output_path));
@@ -1067,9 +1067,7 @@ int main(int argc, char **argv) {
         }
 
         case VERSION_ENG_PSX: {
-            /* todo, psx still needs a lot of thought here...
-             * I don't know if we even want to bother? */
-            u_assert(0, "TODO");
+            u_assert(0, "Unsupported");
             return EXIT_FAILURE;
         }
 
