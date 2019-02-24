@@ -70,7 +70,7 @@ void Config_Save(const char *path) {
 }
 
 void Config_Load(const char *path) {
-    FILE *fp = fopen(path, "r");
+    FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
         LogWarn("failed to open config, \"%s\"!\n", path);
         return;

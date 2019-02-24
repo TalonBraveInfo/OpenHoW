@@ -180,13 +180,15 @@ AudioManager::AudioManager() {
         al_extensions_[AUDIO_EXT_EFX] = true;
     }
 
+#if 0
     int attr[]={
             ALC_FREQUENCY, 44100, /* todo: tune this */
             ALC_MAX_AUXILIARY_SENDS, 4,
             0
     };
+#endif
 
-    ALCcontext *context = alcCreateContext(device, attr);
+    ALCcontext *context = alcCreateContext(device, nullptr);
     if(context == nullptr || !alcMakeContextCurrent(context)) {
         Error("failed to create audio context, aborting audio initialisation!\n");
     }
