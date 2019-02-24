@@ -86,12 +86,12 @@ PLShaderProgram *programs[MAX_SHADERS];
 
 static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *fragment, size_t fl) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
-        Error("invalid stage for shader program, aborting!\n");
+        Error("Invalid stage for shader program, aborting!\n");
     }
 
     PLShaderProgram *program = plCreateShaderProgram();
     if(program == NULL) {
-        Error("failed to create shader program, aborting!\n%s", plGetError());
+        Error("Failed to create shader program, aborting!\n%s", plGetError());
     }
 
 #if 0
@@ -107,11 +107,11 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
     }
 #else
     if(!plRegisterShaderStageFromMemory(program, vertex, vl, PL_SHADER_TYPE_VERTEX)) {
-        Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
+        Error("Failed to register vertex stage, \"%s\", aborting!\n", plGetError());
     }
 
     if(!plRegisterShaderStageFromMemory(program, fragment, fl, PL_SHADER_TYPE_FRAGMENT)) {
-        Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
+        Error("Failed to register fragment stage, \"%s\", aborting!\n", plGetError());
     }
 #endif
 

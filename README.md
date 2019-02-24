@@ -5,7 +5,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW?ref=badge_shield)
 [![CodeFactor](https://www.codefactor.io/repository/github/talonbraveinfo/openhow/badge)](https://www.codefactor.io/repository/github/talonbraveinfo/openhow)
 
-### What's this? :astonished:
+## What's this? :astonished:
 OpenHoW aims to be an open-source reimplementation of [Hogs of War](https://en.wikipedia.org/wiki/Hogs_of_War),
 a turn-based strategy game produced by [Gremlin Interactive](https://en.wikipedia.org/wiki/Gremlin_Interactive).
 
@@ -16,13 +16,13 @@ version of the game, featuring completely new assets to
 replace those of the original (think 
 [FreeDOOM](https://freedoom.github.io/)).
 
-### Features :page_with_curl:
+## Features :page_with_curl:
 Consider this more of a wish-list at this  point in time ;)
 * Support for Windows and Linux, with possibly more to follow!
 * An editor to allow for easy modification of game-data
 * Enhanced graphics over the original game
 
-### Status :mag:
+## Status :mag:
 Right now the project is only in it's infancy and a lot of focus
 is currently going towards producing an engine for the game to be 
 built upon; right now the primary part of this is creatively called 
@@ -37,7 +37,7 @@ allow for easy modification of OpenHoW -
 though compatibility with the original isn't a huge concern right 
 now.
 
-### Contributing :hammer:
+## Contributing :hammer:
 Interested in contributing to the project? Know C/C++ and looking to get deep down
 into some code? Then what are you waiting for!?
 
@@ -48,7 +48,7 @@ interested then jump on in!
 Otherwise if you're just simply interested in the progression of the project, you too
 are more than welcome to join us. :smirk:
 
-#### Getting Started
+### Getting Started
 
 Here's a rough guide to getting up and running.
 
@@ -58,10 +58,9 @@ have been listed below.
 * [CMake](https://cmake.org/) (needed for project generation)
 * [SDL2](https://www.libsdl.org/) (needed for input, window creation and audio)
 * [OpenAL Soft](https://github.com/kcat/openal-soft) (needed for audio)
-* [FFmpeg](https://www.ffmpeg.org/) (needed for video playback)
 
-At this time the project should compile for Linux (_Ubuntu 18.10_) with these depedencies 100%
-but Windows needs some further care before it will be up and running correctly.
+At this time the project should compile for Linux (_Ubuntu 18.10_) with these dependencies 100%
+but Windows needs some further care before it will be up and running correctly (see Windows section below).
 
 Once you've got everything you need, you'll need to compile the [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility. In order to do this you'll need to generate your project files
 using the CMakeLists found under 'src/tools/'.
@@ -72,6 +71,17 @@ It's advised that you point the extractor to the 'bin' directory, otherwise you 
 
 Once that's done, you're now set to generate the project files via the 
 CMakeLists found under the root OpenHoW directory and compile the rest of the project.
+
+#### Windows
+
+On Windows, the project has been successfully compiled against MinGW 64-bit. One additional step
+you may need to perform is to download a copy of the [SDL2 development libraries](https://www.libsdl.org/release/SDL2-devel-2.0.9-mingw.tar.gz)
+for MinGW 64-bit.
+
+After you've downloaded these files, place the 'include' and 'lib' directories under 'SDL2-2.0.9/x86_64-w64-mingw32'
+in a new 'SDL2' directory under 'src/3rdparty'.
+
+This will be changing at a later point to make things a little easier.
 
 ----
 
