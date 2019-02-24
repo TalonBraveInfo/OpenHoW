@@ -66,12 +66,16 @@ add_executable(OpenHoW ${OPENHOW_SOURCE_FILES})
 if(WIN32)
     target_include_directories(OpenHoW PRIVATE ../3rdparty/SDL2/include/ ../3rdparty/openal-soft/include/)
     target_link_directories(OpenHoW PRIVATE ../3rdparty/SDL2/lib/ ../3rdparty/openal-soft/lib/ ../../bin/)
-    target_compile_options(OpenHoW PRIVATE -static -static-libstdc++ -static-libgcc)
-    target_link_libraries(OpenHoW OpenAL)
+    target_link_options(OpenHoW PRIVATE -mwindows)
+    target_link_libraries(OpenHoW -Wl,-Bstatic SDL2 stdc++ winpthread -Wl,-Bdynamic -static-libstdc++ -static-libgcc
+            # Window Libraries
+            Version SetupAPI Winmm Imm32
+            # Anything else...
+            OpenAL)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(OpenHoW "-framework OpenAL")
+    target_link_libraries(OpenHoW "-framework OpenAL" SDL2)
 else()
-    target_link_libraries(OpenHoW openal)
+    target_link_libraries(OpenHoW openal SDL2)
 endif()
 
 #set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
@@ -80,8 +84,6 @@ target_compile_options(OpenHoW PUBLIC -fPIC)
 target_include_directories(OpenHoW PUBLIC ../3rdparty/imgui/ script/duktape-2.2.0/)
 target_link_libraries(OpenHoW
         platform
-
-        SDL2
 
         #avformat
         #avcodec
