@@ -26,15 +26,17 @@
 //# include <OpenAL/alext.h>
 //# include <OpenAL/efx-presets.h>
 #else
+#   ifdef WIN32
+#       define AL_LIBTYPE_STATIC
+#   endif
 #   include <AL/al.h>
 #   include <AL/alc.h>
 #   include <AL/alext.h>
 #   include <AL/efx-presets.h>
 #endif
 
-#include <PL/platform_graphics_camera.h>
-
 #include <SDL2/SDL_audio.h>
+#include <PL/platform_graphics_camera.h>
 
 #include <list>
 
@@ -84,7 +86,6 @@ AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, f
 
 AudioSource::~AudioSource() {
     AudioManager::GetInstance()->sources_.erase(this);
-
     alDeleteSources(1, &al_source_id_);
 }
 
@@ -182,13 +183,15 @@ AudioManager::AudioManager() {
         al_extensions_[AUDIO_EXT_EFX] = true;
     }
 
+#if 0
     int attr[]={
             ALC_FREQUENCY, 44100, /* todo: tune this */
             ALC_MAX_AUXILIARY_SENDS, 4,
             0
     };
+#endif
 
-    ALCcontext *context = alcCreateContext(device, attr);
+    ALCcontext *context = alcCreateContext(device, nullptr);
     if(context == nullptr || !alcMakeContextCurrent(context)) {
         Error("failed to create audio context, aborting audio initialisation!\n");
     }
@@ -233,7 +236,7 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
     uint32_t length;
     uint8_t *buffer;
     if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
-        LogWarn("failed to load \"%s\"!\n", path);
+        LogWarn("failed to load \"%s\"!\n", path.c_str());
         return;
     }
 

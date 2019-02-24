@@ -181,7 +181,7 @@ unsigned int Map_GetModeFlag(const char *str) {
 void Map_Register(const char *path) {
     LogInfo("registering %s\n", path);
 
-    FILE *fp = fopen(path, "r");
+    FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
         LogWarn("failed to open map description, %s\n", path);
         return;

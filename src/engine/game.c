@@ -95,7 +95,7 @@ void RegisterCampaign(const char *path) {
     }
 #endif
 
-    FILE *fp = fopen(path, "r");
+    FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
         LogWarn("failed to load \"%s\"!\n", path);
         return;

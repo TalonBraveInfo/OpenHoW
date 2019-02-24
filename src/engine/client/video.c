@@ -23,10 +23,12 @@
 #include "frontend.h"
 #include "shader.h"
 
+#if 0
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavfilter/avfilter.h>
 #include <libavdevice/avdevice.h>
+#endif
 
 const char *video_paths[]={
         /* intro */
@@ -50,12 +52,14 @@ const char *video_paths[]={
 typedef struct VideoState {
     bool is_playing;
 
+#if 0
     AVPacket        *av_packet;
     AVCodecContext  *av_codec_context;
     AVCodec         *av_codec;
     AVStream        *av_stream;
     AVFormatContext *av_format_context;
     AVFrame         *av_frame;
+#endif
 
     unsigned int stream_index;
 
@@ -84,8 +88,10 @@ void PlayVideoCommand(unsigned int argc, char *argv[]) {
 void Video_Initialize(void) {
     memset(&video, 0, sizeof(VideoState));
 
+#if 0
     av_register_all();
     avformat_network_init();
+#endif
 
     plRegisterConsoleCommand("play_video", PlayVideoCommand, "Play the given videos.");
     plParseConsoleString("play_video \"streams/fmv 01.bik\"");
@@ -146,6 +152,7 @@ void Video_Play(const char *path) {
 }
 
 void Video_SkipCurrent(void) {
+#if 0
     if(video.av_packet != NULL) {
         av_packet_unref(video.av_packet);
         video.av_packet = NULL;
@@ -164,6 +171,7 @@ void Video_SkipCurrent(void) {
         }
         return;
     }
+#endif
 
     /* nothing left to play */
     FE_RestoreLastState();

@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <SDL2/SDL.h>
-
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
 
@@ -31,6 +29,13 @@
 #include "client/display.h"
 #include "client/client.h"
 #include "client/audio.h"
+
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
+/* kill windows forever pls */
+#undef near
+#undef far
 
 static SDL_Window *window = nullptr;
 static SDL_GLContext gl_context = nullptr;
