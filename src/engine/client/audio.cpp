@@ -20,20 +20,13 @@
 #include "audio.h"
 #include "frontend.h"
 
-#ifdef __APPLE__
-#   include <OpenAL/al.h>
-#   include <OpenAL/alc.h>
-//# include <OpenAL/alext.h>
-//# include <OpenAL/efx-presets.h>
-#else
-#   ifdef WIN32
-#       define AL_LIBTYPE_STATIC
-#   endif
-#   include <AL/al.h>
-#   include <AL/alc.h>
-#   include <AL/alext.h>
-#   include <AL/efx-presets.h>
+#if defined(WIN32) || defined(__APPLE__)
+#   define AL_LIBTYPE_STATIC
 #endif
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
+#include <AL/efx-presets.h>
 
 #include <SDL2/SDL_audio.h>
 #include <PL/platform_graphics_camera.h>
@@ -263,7 +256,7 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
     }
 
     if(format == 0) {
-        LogWarn("invalid audio format for \"%s\"!\n", path);
+        LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
         SDL_FreeWAV(buffer);
         return;
     }

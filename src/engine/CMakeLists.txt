@@ -72,8 +72,11 @@ if(WIN32)
     target_link_libraries(OpenHoW -Wl,-Bstatic SDL2 OpenAL32 stdc++ winpthread -Wl,-Bdynamic -static-libstdc++ -static-libgcc
             # Window Libraries
             Version SetupAPI Winmm Imm32)
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(OpenHoW "-framework OpenAL" SDL2)
+elseif(APPLE)
+    add_dependencies(OpenHoW OpenAL)
+
+    target_include_directories(OpenHoW PRIVATE ../3rdparty/openal-soft/include/)
+    target_link_libraries(OpenHoW OpenAL32 SDL2)
 else()
     target_link_libraries(OpenHoW openal SDL2)
 endif()

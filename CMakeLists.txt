@@ -52,7 +52,7 @@ function(build_openal)
     add_subdirectory(src/3rdparty/openal-soft)
 endfunction()
 
-if(WIN32)
+if(WIN32 OR APPLE)
     build_openal()
 endif()
 
