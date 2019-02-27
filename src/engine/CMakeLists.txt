@@ -76,7 +76,7 @@ elseif(APPLE)
     add_dependencies(OpenHoW OpenAL)
 
     target_include_directories(OpenHoW PRIVATE ../3rdparty/openal-soft/include/)
-    target_link_libraries(OpenHoW OpenAL32 SDL2)
+    target_link_libraries(OpenHoW OpenAL SDL2)
 else()
     target_link_libraries(OpenHoW openal SDL2)
 endif()
