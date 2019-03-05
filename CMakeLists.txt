@@ -47,6 +47,7 @@ add_definitions("-D_DEBUG")
 
 function(build_openal)
     set(LIBTYPE "STATIC")
+    add_definitions("-DAL_LIBTYPE_STATIC")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/src/3rdparty/openal-soft/lib/")
     set(ALSOFT_EXAMPLES OFF CACHE BOOL "Build and install example programs")
     add_subdirectory(src/3rdparty/openal-soft)
