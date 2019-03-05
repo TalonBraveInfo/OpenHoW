@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "game.h"
+
 typedef struct Player {
     uint8_t ident;
 

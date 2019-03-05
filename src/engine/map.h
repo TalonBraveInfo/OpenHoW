@@ -59,6 +59,14 @@ enum {
 #define TILE_FLAG_MINE      64
 #define TILE_FLAG_WALL      128
 
+typedef struct MapManifest {
+    char            name[16];
+    char            path[PL_SYSTEM_MAX_PATH];
+    char            description[64];
+    char            sky[32];
+    unsigned int    flags;
+} MapManifest;
+
 PL_EXTERN_C
 
 void CacheMapData(void);
@@ -70,5 +78,7 @@ void Map_Draw(void);
 
 const char *Map_GetCurrentName(void);           // returns the name of the current map.
 const char *Map_GetCurrentDescription(void);    // returns the description of the current map.
+
+const MapManifest *Map_GetMapList(unsigned int *num);
 
 PL_EXTERN_C_END

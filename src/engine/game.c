@@ -196,22 +196,22 @@ void SetCampaign(const char *dir) {
 
 bool game_started = false;
 
-void Game_StartNewGame(const char *map, uint mode, uint8_t num_players, bool force_start) {
+void Game_StartNewGame(const GameModeSetup *mode) {
     LogDebug("starting new game...\n");
 
-    if(force_start && game_started) {
+    if(mode->force_start && game_started) {
         Game_End();
     }
 
     FE_SetState(FE_MODE_LOADING);
 
-    if(Map_Load(map, mode) == false) {
+    if(Map_Load(mode->map, mode->game_mode) == false) {
         LogWarn("failed to load map, aborting game!\n");
         FE_RestoreLastState();
         return;
     }
 
-    g_state.max_players = num_players;
+    g_state.max_players = mode->num_players;
     if(g_state.max_players > MAX_PLAYERS) {
         g_state.max_players = MAX_PLAYERS;
     }

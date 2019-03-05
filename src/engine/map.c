@@ -121,17 +121,14 @@ MapManifest map_descriptors[]={
 };
 #endif
 
-typedef struct MapDesc {
-    char name[16];
-    char path[PL_SYSTEM_MAX_PATH];
-    char description[64];
-    char sky[32];
-    unsigned int flags;
-} MapManifest;
-
 static MapManifest *map_descriptors = NULL;
 static unsigned int num_maps = 0;
 static unsigned int max_maps = 32; /* this will expand, if required */
+
+const MapManifest *Map_GetMapList(unsigned int *num) {
+    *num = num_maps;
+    return map_descriptors;
+}
 
 MapManifest *Map_GetMapManifest(const char *name) {
     const char *ext = plGetFileExtension(name);
@@ -423,14 +420,22 @@ void MapCommand(unsigned int argc, char *argv[]) {
         return;
     }
 
-    const char *map_name = argv[1];
-    unsigned int mode = MAP_MODE_DEATHMATCH;
+    GameModeSetup mode;
+    memset(&mode, 0, sizeof(GameModeSetup));
+
+    mode.game_mode = MAP_MODE_DEATHMATCH;
     if(argc > 2) {
         const char *cmd_mode = argv[2];
-        mode = Map_GetModeFlag(cmd_mode);
+        mode.game_mode = Map_GetModeFlag(cmd_mode);
     }
 
-    Game_StartNewGame(map_name, mode, 1, true);
+    mode.num_players = 2;
+    mode.teams[0] = TEAM_BRITISH;
+    mode.teams[1] = TEAM_AMERICAN;
+
+    snprintf(mode.map, sizeof(mode.map), argv[1]);
+
+    Game_StartNewGame(&mode);
 }
 
 void MapsCommand(unsigned int argc, char *argv[]) {

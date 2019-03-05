@@ -36,13 +36,6 @@ PL_EXTERN_C_END
 #endif
 
 /************************************************************/
-/* Player */
-
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
-
-/************************************************************/
 
 // todo: move into items.h
 
