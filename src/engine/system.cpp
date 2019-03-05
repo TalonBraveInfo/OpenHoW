@@ -185,6 +185,11 @@ void System_SetWindowTitle(const char *title) {
     SDL_SetWindowTitle(window, title);
 }
 
+void System_GetWindowSize(int *width, int *height, bool *fs) {
+    SDL_GetWindowSize(window, width, height);
+    *fs = static_cast<bool>(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
+}
+
 bool System_SetWindowSize(int *width, int *height, bool fs) {
     SDL_SetWindowSize(window, *width, *height);
     SDL_SetWindowFullscreen(window, (fs ? SDL_WINDOW_FULLSCREEN : 0));

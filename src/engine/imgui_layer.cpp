@@ -116,6 +116,25 @@ void UI_DisplaySettings() {
     }
 
     ImGui::Begin("Settings", &show_settings);
+
+    static int res[2] = {0, 0};
+    static bool fs;
+    if(res[0] == 0 && res[1] == 0) {
+        System_GetWindowSize(&res[0], &res[1], &fs);
+    }
+
+    ImGui::InputInt2("Resolution", res);
+    ImGui::Checkbox("Fullscreen", &fs);
+
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
+    if(ImGui::Button("Apply")) {
+        System_SetWindowSize(&res[0], &res[1], fs);
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Cancel")) {
+        show_settings = false;
+    }
+
     ImGui::End();
 }
 
