@@ -25,10 +25,12 @@
 
 static bool show_quit               = false;
 static bool show_file               = false;
+static bool show_new_game           = false;
 static bool show_about              = false;
 static bool show_console            = false;
 static bool show_texture            = false;
 static bool show_fps                = false;
+static bool show_settings           = false;
 
 class BaseWindow {
 public:
@@ -45,6 +47,8 @@ private:
 
 #include "client/particle.h"
 #include "client/audio.h"
+#include "game.h"
+#include "map.h"
 
 class ParticleEditor {
 public:
@@ -99,6 +103,76 @@ void UI_DisplayTextureViewer() {
     ImGui::Text("Name: %s", cur_texture->name);
     ImGui::Text("W:%d H:%d", cur_texture->w, cur_texture->h);
     ImGui::Text("Size: %lu", cur_texture->size);
+
+    ImGui::End();
+}
+
+/************************************************************/
+/* Settings */
+
+void UI_DisplaySettings() {
+    if(!show_settings) {
+        return;
+    }
+
+    ImGui::Begin("Settings", &show_settings);
+    ImGui::End();
+}
+
+/************************************************************/
+/* New Game */
+
+static GameModeSetup mode;
+
+void UI_DisplayNewGame() {
+    if(!show_new_game) {
+        return;
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(plGetCurrentViewport()->w, plGetCurrentViewport()->h));
+    ImGui::SetNextWindowBgAlpha(1.0f);
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::Begin("Select Team", &show_new_game,
+                 ImGuiWindowFlags_NoResize |
+                 ImGuiWindowFlags_NoTitleBar |
+                 ImGuiWindowFlags_NoDecoration
+    );
+
+#if 0
+    ImGui::ListBoxHeader("Maps");
+    ImGui::ListBoxFooter();
+#endif
+
+    ImGui::SliderInt("Number of Players", reinterpret_cast<int *>(&mode.num_players), 1, 4);
+
+    const char *teams[MAX_TEAMS]={
+            /* todo: use translation */
+            "Tommy's Trotters",
+            "Uncle Hams Hogs",
+            "Garlic Grunts",
+            "Sow-A-Krauts",
+            "Piggystroika",
+            "Sushi-Swine",
+            "Lard",
+    };
+    for (unsigned int i = 0; i < mode.num_players; ++i) {
+        std::string label_name = "Player " + std::to_string(i);
+        ImGui::Combo(label_name.c_str(), reinterpret_cast<int *>(&mode.teams[i]), teams, IM_ARRAYSIZE(teams), 12);
+    }
+
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
+
+    if(ImGui::Button("Start Game!")) {
+        mode.force_start = true;
+        mode.game_mode = MAP_MODE_TRAINING;
+        mode.num_players = 1;
+        snprintf(mode.map, sizeof(mode.map) - 1, "camp");
+        Game_StartNewGame(&mode);
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Cancel")) {
+        show_new_game = false;
+    }
 
     ImGui::End();
 }
@@ -294,7 +368,16 @@ void UI_DisplayDebugMenu(void) {
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
+            if(ImGui::MenuItem("New Game...")) {
+                memset(&mode, 0, sizeof(GameModeSetup));
+                mode.num_players = 1;
+                show_new_game = true;
+            }
+            if(ImGui::MenuItem("Load Game...")) {}
+            ImGui::Separator();
             if(ImGui::MenuItem("Open...")) { show_file = true; }
+            ImGui::Separator();
+            if(ImGui::MenuItem("Settings...")) { show_settings = true; }
             ImGui::Separator();
             if(ImGui::MenuItem("Quit")) { show_quit = true; }
             ImGui::EndMenu();
@@ -339,7 +422,7 @@ void UI_DisplayDebugMenu(void) {
         }
 
         if(ImGui::BeginMenu("Help")) {
-            ImGui::MenuItem("About", nullptr, &show_about);
+            ImGui::MenuItem("About OpenHoW", nullptr, &show_about);
             ImGui::EndMenu();
         }
 
@@ -348,6 +431,8 @@ void UI_DisplayDebugMenu(void) {
 
     UI_DisplayFileBox();
     UI_DisplayQuitBox();
+    UI_DisplayNewGame();
+    UI_DisplaySettings();
 
     /* Editors */
     ParticleEditor::GetInstance()->DisplayWindow();
