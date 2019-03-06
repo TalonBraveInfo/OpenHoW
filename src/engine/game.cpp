@@ -105,9 +105,9 @@ void RegisterCampaign(const char *path) {
 
     try {
         ScriptConfig config(path);
-        snprintf(slot->name, sizeof(slot->name), "%s", config.GetStringProperty("name"));
-        snprintf(slot->version, sizeof(slot->version), "%s", config.GetStringProperty("version"));
-        snprintf(slot->author, sizeof(slot->author), "%s", config.GetStringProperty("author"));
+        snprintf(slot->name, sizeof(slot->name), "%s", config.GetStringProperty("name").c_str());
+        snprintf(slot->version, sizeof(slot->version), "%s", config.GetStringProperty("version").c_str());
+        snprintf(slot->author, sizeof(slot->author), "%s", config.GetStringProperty("author").c_str());
     } catch(const std::exception &e) {
         LogWarn("Failed to read campaign config, \"%s\"!\n%s\n", path, e.what());
     }
