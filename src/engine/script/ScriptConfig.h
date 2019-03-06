@@ -17,19 +17,23 @@
 
 #pragma once
 
-enum { // supported languages
-    LANG_ENGLISH,
-    LANG_FRENCH,
-    LANG_GERMAN,
-    LANG_ITALIAN,
-    LANG_SPANISH,
+class ScriptConfig {
+public:
+    explicit ScriptConfig(const std::string &path);
+    ScriptConfig();
+    ~ScriptConfig();
+
+    void ParseBuffer(const char *buf);
+
+    std::string GetStringProperty(const std::string &property, const std::string &def = "");
+    int GetIntegerProperty(const std::string &property, int def = 0);
+    bool GetBooleanProperty(const std::string &property, bool def = false);
+
+    unsigned int GetArrayLength(const std::string &property);
+    std::vector<std::string> GetArrayStrings(const std::string &property);
+    std::string GetArrayStringProperty(const std::string &property, unsigned int index);
+
+protected:
+private:
+    void* ctx_{nullptr};
 };
-
-PL_EXTERN_C
-
-void Languages_Initialize(void);
-void Languages_Clear(void);
-
-void SetLanguageCallback(const PLConsoleVariable *var);
-
-PL_EXTERN_C_END

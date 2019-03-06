@@ -29,6 +29,7 @@
 #include "client/display.h"
 
 #include "server/actor.h"
+#include "script/ScriptConfig.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -121,7 +122,9 @@ MapManifest map_descriptors[]={
 };
 #endif
 
-static MapManifest *map_descriptors = NULL;
+/* todo: take better advantage of std */
+
+static MapManifest *map_descriptors = nullptr;
 static unsigned int num_maps = 0;
 static unsigned int max_maps = 32; /* this will expand, if required */
 
@@ -147,7 +150,7 @@ MapManifest *Map_GetMapManifest(const char *name) {
     }
 
     LogWarn("failed to get descriptor for \"%s\"!\n", name);
-    return NULL;
+    return nullptr;
 }
 
 unsigned int Map_GetModeFlag(const char *str) {
@@ -178,31 +181,6 @@ unsigned int Map_GetModeFlag(const char *str) {
 void Map_Register(const char *path) {
     LogInfo("registering %s\n", path);
 
-    FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
-        LogWarn("failed to open map description, %s\n", path);
-        return;
-    }
-
-    size_t length = plGetFileSize(path);
-    if(length > 1024) {
-        fclose(fp);
-        LogWarn("map description for %s has exceeded hard-limit of 1024 (%d), aborting!\n", path, length);
-        return;
-    } else if(length <= 1) {
-        fclose(fp);
-        LogWarn("map description for %s is of an invalid size, %d, aborting!\n", path, length);
-        return;
-    }
-
-    char buf[length + 1];
-    if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of map description for %s!\n", path);
-    }
-    fclose(fp);
-
-    buf[length] = '\0';
-
     if((num_maps + 1) >= max_maps) {
         LogDebug("reached maximum maps (%u) - allocating more slots...\n", max_maps);
 
@@ -210,7 +188,8 @@ void Map_Register(const char *path) {
         unsigned int old_max_maps = max_maps;
 
         max_maps += 128;
-        if((map_descriptors = realloc(map_descriptors, sizeof(MapManifest) * max_maps)) == NULL) {
+        if((map_descriptors = static_cast<MapManifest *>(realloc(map_descriptors, sizeof(MapManifest) * max_maps))) ==
+                nullptr) {
             LogWarn("failed to resize map descriptors array to %u bytes!\n", sizeof(MapManifest) * max_maps);
             map_descriptors = old_desc;
             max_maps = old_max_maps;
@@ -224,28 +203,23 @@ void Map_Register(const char *path) {
     MapManifest *slot = &map_descriptors[num_maps];
     memset(slot, 0, sizeof(MapManifest));
 
-    LogDebug("%s\n", buf);
-
     strncpy(slot->path, path, sizeof(slot->path));
     LogDebug("%s\n", slot->path);
 
-    ScriptContext *ctx = Script_CreateContext();
-    Script_ParseBuffer(ctx, buf);
-
     plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
 
-    strncpy(slot->description, Script_GetStringProperty(ctx, "name", ""), sizeof(slot->description));
-    strncpy(slot->sky, Script_GetStringProperty(ctx, "sky", ""), sizeof(slot->sky));
+    try {
+        ScriptConfig config(path);
+        strncpy(slot->description, config.GetStringProperty("name").c_str(), sizeof(slot->description));
+        strncpy(slot->sky, config.GetStringProperty("sky").c_str(), sizeof(slot->sky));
 
-    ScriptArray *array = Script_GetArrayStrings(ctx, "modes");
-    if(array != NULL) {
-        for(unsigned int i = 0; i < array->num_strings; ++i) {
-            slot->flags |= Map_GetModeFlag(array->strings[i].data);
+        std::vector<std::string> modes = config.GetArrayStrings("modes");
+        for(const auto &mode : modes) {
+            slot->flags |= Map_GetModeFlag(mode.c_str());
         }
+    } catch(const std::exception &e) {
+        LogWarn("Failed to read map config, \"%s\"!\n%s\n", path, e.what());
     }
-
-    Script_DestroyArrayStrings(array);
-    Script_DestroyContext(ctx);
 
     /* todo, the above is fucked, fix it you fool! */
     /* temp */ slot->flags |= MAP_MODE_DEATHMATCH;
@@ -293,22 +267,22 @@ typedef struct ActorSpawn { /* this should be 94 bytes */
 
 typedef struct MapTile {
     /* surface properties */
-    unsigned int type;  /* e.g. wood? */
-    unsigned int slip;  /* e.g. full, bottom or left? */
+    unsigned int type{0};  /* e.g. wood? */
+    unsigned int slip{0};  /* e.g. full, bottom or left? */
 
     /* texture */
-    unsigned int tex;
-    unsigned int flip;
+    unsigned int tex{0};
+    unsigned int flip{0};
 } MapTile;
 
 typedef struct MapChunk {
     MapTile tiles[16];
 
     struct {
-        int16_t height;
+        int16_t height{0};
     } vertices[25];
 
-    PLVector3 offset;
+    PLVector3 offset{0, 0, 0};
 } MapChunk;
 
 struct {
@@ -346,14 +320,14 @@ const char *Map_GetCurrentDescription(void) {
     }
 
     MapManifest *desc = Map_GetMapManifest(name);
-    if(desc == NULL) {
+    if(desc == nullptr) {
         return "";
     }
 
     return &desc->description[0];
 }
 
-PLMesh *terrain_mesh = NULL;
+PLMesh *terrain_mesh = nullptr;
 
 /************************************************************/
 /* Water */
@@ -433,13 +407,13 @@ void MapCommand(unsigned int argc, char *argv[]) {
     mode.teams[0] = TEAM_BRITISH;
     mode.teams[1] = TEAM_AMERICAN;
 
-    snprintf(mode.map, sizeof(mode.map), argv[1]);
+    snprintf(mode.map, sizeof(mode.map), "%s", argv[1]);
 
     Game_StartNewGame(&mode);
 }
 
 void MapsCommand(unsigned int argc, char *argv[]) {
-    if(map_descriptors == NULL) {
+    if(map_descriptors == nullptr) {
         Error("attempted to list indexed maps before index generated, aborting!\n");
     }
 
@@ -458,7 +432,7 @@ void MapsCommand(unsigned int argc, char *argv[]) {
 void CacheMapData(void) {
     /* register all of the existing maps */
 
-    map_descriptors = u_alloc(max_maps, sizeof(MapManifest), true);
+    map_descriptors = static_cast<MapManifest *>(u_alloc(max_maps, sizeof(MapManifest), true));
 
     char map_path[PL_SYSTEM_MAX_PATH];
     if(!plIsEmptyString(GetCampaignPath())) {
@@ -489,12 +463,12 @@ void Map_Unload(void) {
     if(map_state.num_textures > 0) {
         LogDebug("freeing %u textures...\n", map_state.num_textures);
         for(unsigned int i = 0; i < map_state.num_textures; ++i) {
-            if(map_state.textures[i] == NULL) {
+            if(map_state.textures[i] == nullptr) {
                 break;
             }
 
             plDeleteTexture(map_state.textures[i], true);
-            map_state.textures[i] = NULL;
+            map_state.textures[i] = nullptr;
         }
 
         u_free(map_state.textures);
@@ -553,7 +527,7 @@ static MapChunk *GetChunkAtPosition(const PLVector2 *pos) {
     uint idx = ((uint)(pos->x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos->y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
     if(idx >= map_state.num_chunks) {
         LogWarn("attempted to get an out of bounds chunk index!\n");
-        return NULL;
+        return nullptr;
     }
 
     //LogDebug("chunk idx = %d\n", idx);
@@ -563,15 +537,15 @@ static MapChunk *GetChunkAtPosition(const PLVector2 *pos) {
 
 static MapTile *GetTileAtPosition(const PLVector2 *pos) {
     MapChunk *chunk = GetChunkAtPosition(pos);
-    if(chunk == NULL) {
-        return NULL;
+    if(chunk == nullptr) {
+        return nullptr;
     }
 
     uint idx = (((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
                ((((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
     if(idx >= MAP_CHUNK_TILES) {
         LogWarn("attempted to get an out of bounds tile index!\n");
-        return NULL;
+        return nullptr;
     }
 
     LogDebug("tile idx = %d\n", idx);
@@ -583,7 +557,7 @@ static MapTile *GetTileAtPosition(const PLVector2 *pos) {
 
 static void LoadMapSpawns(const char *path) {
     FILE *fh = fopen(path, "rb");
-    if(fh == NULL) {
+    if(fh == nullptr) {
         Error("failed to open actor data, \"%s\", aborting\n", path);
     }
 
@@ -592,7 +566,7 @@ static void LoadMapSpawns(const char *path) {
         Error("failed to get number of indices from pog, \"%s\", aborting\n", path);
     }
 
-    map_state.spawns = u_alloc(num_indices, sizeof(*map_state.spawns), true);
+    map_state.spawns = static_cast<ActorSpawn *>(u_alloc(num_indices, sizeof(*map_state.spawns), true));
     map_state.num_spawns = num_indices;
     for(unsigned int i = 0; i < num_indices; ++i) {
         if(fread(&map_state.spawns[i], sizeof(ActorSpawn), 1, fh) != 1) {
@@ -614,17 +588,15 @@ static void LoadMapTiles(const char *path) {
     LogDebug("loading map tiles...\n");
 
     FILE *fh = fopen(path, "rb");
-    if(fh == NULL) {
+    if(fh == nullptr) {
         Error("failed to open tile data, \"%s\", aborting\n", path);
     }
 
     /* done here in case the enhanced format supports larger chunk sizes */
     map_state.num_chunks = MAP_CHUNKS;
-    map_state.chunks = u_alloc(sizeof(MapChunk), map_state.num_chunks, true);
+    map_state.chunks = static_cast<MapChunk *>(u_alloc(sizeof(MapChunk), map_state.num_chunks, true));
 
     LogDebug("%u chunks for terrain\n", map_state.num_chunks);
-
-    memset(map_state.chunks, 0, sizeof(MapChunk) * map_state.num_chunks);
 
     for(unsigned int chunk_y = 0; chunk_y < MAP_CHUNK_ROW; ++chunk_y) {
         for(unsigned int chunk_x = 0; chunk_x < MAP_CHUNK_ROW; ++chunk_x) {
@@ -708,12 +680,12 @@ static void LoadMapTiles(const char *path) {
 
     u_fclose(fh);
 
-    if(terrain_mesh != NULL) {
+    if(terrain_mesh != nullptr) {
         plDeleteMesh(terrain_mesh);
     }
 
     terrain_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
-    if(terrain_mesh == NULL) {
+    if(terrain_mesh == nullptr) {
         Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
     }
 }
@@ -722,10 +694,10 @@ static void LoadMapTextures(MapManifest *desc, const char *path) {
 
     /* load in the textures we'll be using for the sky dome */
 
-    if(map_state.sky_textures[0] != NULL) {
-        for(unsigned int i = 0; i < 4; ++i) {
-            plDeleteTexture(map_state.sky_textures[i], true);
-            map_state.sky_textures[0] = NULL;
+    if(map_state.sky_textures[0] != nullptr) {
+        for (auto &sky_texture : map_state.sky_textures) {
+            plDeleteTexture(sky_texture, true);
+            map_state.sky_textures[0] = nullptr;
         }
     }
 
@@ -755,7 +727,7 @@ static void LoadMapTextures(MapManifest *desc, const char *path) {
 }
 
 static void GenerateMinimapTexture(void) {
-    if(map_state.overview != NULL) {
+    if(map_state.overview != nullptr) {
         plDeleteTexture(map_state.overview, true);
     }
 
@@ -785,16 +757,17 @@ static void GenerateMinimapTexture(void) {
     image.size          = plGetImageSize(image.format, image.width, image.height);
     image.levels        = 1;
 
-    image.data = u_alloc(image.levels, sizeof(uint8_t *), true);
-    image.data[0] = u_alloc(1, image.size, true);
+    image.data = static_cast<uint8_t **>(u_alloc(image.levels, sizeof(uint8_t *), true));
+    image.data[0] = static_cast<uint8_t *>(u_alloc(1, image.size, true));
 
     /* now write into the image buffer */
 
     uint8_t *buf = image.data[0];
     for(uint8_t y = 0; y < 64; ++y) {
         for(uint8_t x = 0; x < 64; ++x) {
-            MapTile *tile = GetTileAtPosition(&PLVector2(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64)));
-            if(tile == NULL) {
+            PLVector2 position(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64));
+            MapTile *tile = GetTileAtPosition(&position);
+            if(tile == nullptr) {
                 Error("hit an invalid tile during minimap generation!\n");
             }
 
@@ -836,7 +809,7 @@ bool Map_Load(const char *name, unsigned int mode) {
     }
 
     MapManifest *desc = Map_GetMapManifest(name);
-    if(desc == NULL) {
+    if(desc == nullptr) {
         /* todo: support maps without .map manifest? */
         LogWarn("failed to get descriptor for map, \"%s\", aborting!\n", name);
         return false;
@@ -851,11 +824,13 @@ bool Map_Load(const char *name, unsigned int mode) {
 
     FE_SetLoadingBackground(name);
 
-    char map_name[64];
-    snprintf(map_name, sizeof(map_name), "LOADING %s", desc->description);
-    pl_strntoupper(map_name, sizeof(map_name));
+    std::string loading_text = "LOADING " + std::string(desc->description);
+    for(auto c : loading_text) {
+        c = static_cast<char>(std::toupper(c));
+    }
+
     FE_SetLoadingProgress(0);
-    FE_SetLoadingDescription(map_name);
+    FE_SetLoadingDescription(loading_text.c_str());
 
     Map_Unload();
 
@@ -902,7 +877,7 @@ bool Map_Load(const char *name, unsigned int mode) {
     }
 
     LoadMapSpawns(p);
-    LoadMapTextures(desc, NULL);
+    LoadMapTextures(desc, nullptr);
 
     strncpy(map_state.name, desc->name, sizeof(map_state.name));
 
@@ -929,7 +904,7 @@ void Map_Draw(void) {
         return;
     }
 
-    if(map_state.sky_model != NULL) {
+    if(map_state.sky_model != nullptr) {
         plDrawModel(map_state.sky_model);
     }
 
@@ -938,9 +913,9 @@ void Map_Draw(void) {
 
     plSetShaderProgram(programs[SHADER_WATER]);
 
-    for(unsigned int i = 0; i < WATER_TILES; ++i) {
+    for (auto &water_tile : water_tiles) {
         // todo!!!!
-        plTranslateMatrix(water_tiles[i].position);
+        plTranslateMatrix(water_tile.position);
 
         plDrawMesh(water_mesh);
     }

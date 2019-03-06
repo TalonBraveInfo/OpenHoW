@@ -76,7 +76,7 @@ void Engine_Initialize(void) {
 
     /* load in the manifests */
 
-    RegisterLanguages();
+    Languages_Initialize();
     RegisterCampaigns();
 
     if((var = plGetCommandLineArgumentValue("-mod")) == NULL &&

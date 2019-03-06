@@ -24,6 +24,7 @@ void Script_Shutdown(void);
 
 /************************************************************/
 
+#if 0
 typedef void ScriptContext;
 
 typedef struct ScriptArray {
@@ -46,6 +47,7 @@ const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property
 
 const char *Script_GetStringProperty(ScriptContext *ctx, const char *property, const char *def);
 int Script_GetIntegerProperty(ScriptContext *ctx, const char *property, int def);
+#endif
 
 /************************************************************/
 /* CallScript Functions */

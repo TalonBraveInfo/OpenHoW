@@ -20,12 +20,15 @@
 #include "engine.h"
 #include "language.h"
 #include "script/script.h"
+#include "script/ScriptConfig.h"
+
+/* todo: rewrite to take better advantage of std */
 
 typedef struct LanguageKey {
     char key[64];
     char translation[512]; // todo: UTF-8 pls
 } LanguageKey;
-LanguageKey *l_cache = NULL;
+LanguageKey *l_cache = nullptr;
 unsigned int l_cache_keys = 0;
 
 typedef struct Language {
@@ -33,36 +36,25 @@ typedef struct Language {
     char name[64];  /* "English" */ // todo: UTF-8 pls
     char font[32];  /* "whatever" */
 } Language;
-Language *l_manifest = NULL;
+Language *l_manifest = nullptr;
 
 unsigned int num_languages = 0;
 unsigned int num_translations = 0;
 
-void RegisterLanguages(void) {
+void Languages_Initialize(void) {
     char man_path[PL_SYSTEM_MAX_PATH];
     strncpy(man_path, u_find("languages.manifest"), sizeof(man_path));
 
     const char *var;
-    if((var = plGetCommandLineArgumentValue("-manifest")) != NULL) {
+    if((var = plGetCommandLineArgumentValue("-manifest")) != nullptr) {
         strncpy(man_path, var, sizeof(man_path));
     }
 
     LogDebug("caching language data...\n");
 
-    /* load in the language manifest and store it in a buffer */
-    FILE *fp = fopen(man_path, "rb");
-    if(fp == NULL) Error("Failed to load \"%s\"!\n", man_path);
-    size_t length = plGetFileSize(man_path);
-    char buf[length + 1];
-    if(fread(buf, sizeof(char), length, fp) != length) Error("Failed to read entirety of language manifest!\n");
-    fclose(fp);
-    buf[length] = '\0';
+    /* load in the language manifest */
 
-    /* now read it in */
-
-    ScriptContext *ctx = Script_CreateContext();
-    Script_ParseBuffer(ctx, buf);
-
+#if 0 // todo: rethink this
     num_languages = Script_GetArrayLength(ctx, "languages");
     l_manifest = u_alloc(num_languages, sizeof(Language), true);
     for(unsigned int i = 0; i < num_languages; ++i) {
@@ -72,19 +64,20 @@ void RegisterLanguages(void) {
         strncpy(l_manifest[i].font_path, Script_GetStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
     }
 
-#if 0 /* debug */
+#if _DEBUG /* debug */
     for(unsigned int i = 0; i < num_languages; ++i) {
         printf("key %s\n", l_manifest[i].key);
         printf("name %s\n", l_manifest[i].name);
-        printf("path %s\n", l_manifest[i].path);
+        printf("font %s\n", l_manifest[i].font);
     }
     printf("done!\n");
 #endif
 
     Script_DestroyContext(ctx);
+#endif
 }
 
-void ClearLanguages(void) {
+void Languages_Clear(void) {
     u_free(l_manifest);
     u_free(l_cache);
 }
