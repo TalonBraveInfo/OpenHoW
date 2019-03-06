@@ -691,7 +691,6 @@ static void LoadMapTiles(const char *path) {
 }
 
 static void LoadMapTextures(MapManifest *desc, const char *path) {
-
     /* load in the textures we'll be using for the sky dome */
 
     if(map_state.sky_textures[0] != nullptr) {
