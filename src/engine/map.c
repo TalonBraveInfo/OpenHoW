@@ -433,7 +433,7 @@ void MapCommand(unsigned int argc, char *argv[]) {
     mode.teams[0] = TEAM_BRITISH;
     mode.teams[1] = TEAM_AMERICAN;
 
-    snprintf(mode.map, sizeof(mode.map), argv[1]);
+    snprintf(mode.map, sizeof(mode.map), "%s", argv[1]);
 
     Game_StartNewGame(&mode);
 }
