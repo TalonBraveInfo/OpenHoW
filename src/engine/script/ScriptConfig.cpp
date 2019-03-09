@@ -29,8 +29,7 @@ ScriptConfig::ScriptConfig(const std::string &path) : ScriptConfig() {
         throw std::runtime_error("Empty path for config, aborting!\n");
     }
 
-    const char* p = path.c_str();
-    size_t sz = plGetFileSize(p);
+    size_t sz = plGetFileSize(path.c_str());
     if(sz == 0) {
         throw std::runtime_error("Failed to load file, empty config!\n");
     }
@@ -40,12 +39,11 @@ ScriptConfig::ScriptConfig(const std::string &path) : ScriptConfig() {
         throw std::runtime_error("Failed to open config at \"%s\", aborting!\n");
     }
 
-    char buf[sz];
-    fread(buf, sizeof(char), sz, fp);
+    std::vector<char> buf(sz + 1);
+    fread(buf.data(), sizeof(char), sz, fp);
     buf[sz] = '\0';
     fclose(fp);
-
-    ParseBuffer(buf);
+    ParseBuffer(buf.data());
 }
 
 ScriptConfig::ScriptConfig() {
@@ -137,13 +135,13 @@ std::string ScriptConfig::GetArrayStringProperty(const std::string &property, un
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
         LogMissingProperty(p);
-        return nullptr;
+        return "";
     }
 
     if(!duk_is_array(context, -1)) {
         duk_pop(context);
         LogInvalidArray(p);
-        return nullptr;
+        return "";
     }
 
     duk_size_t length = duk_get_length(context, -1);

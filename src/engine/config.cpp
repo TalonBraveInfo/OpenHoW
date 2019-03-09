@@ -38,7 +38,7 @@ const char *Config_GetUserConfigPath(void) {
 }
 
 void Config_Save(const char *path) {
-    FILE *fp = fopen(path, "w");
+    FILE *fp = fopen(path, "wb");
     if(fp == nullptr) {
         LogWarn("failed to write config to \"%s\"!\n", path);
         return;
