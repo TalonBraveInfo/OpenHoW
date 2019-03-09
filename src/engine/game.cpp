@@ -23,6 +23,7 @@
 #include "language.h"
 
 #include "script/script.h"
+#include "script/ScriptConfig.h"
 
 #include "client/frontend.h"
 
@@ -36,9 +37,10 @@
  *  > Should scan through campaigns directory for any included campaigns [DONE]
  *  > Add loaded campaign path to a paths list, so we can check against multiple paths
  *    when loading in files
+ *  > this needs rewriting to better take advantage of std
  */
 
-static CampaignManifest *campaigns = NULL;
+static CampaignManifest *campaigns = nullptr;
 static uint num_campaigns = 0;
 static uint max_campaigns = 8;
 
@@ -48,7 +50,7 @@ CampaignManifest *Game_GetCampaignBySlot(uint num) {
     if(num >= max_campaigns) {
         uint old_max_campaigns = max_campaigns;
         max_campaigns += 8;
-        if((campaigns = realloc(campaigns, sizeof(CampaignManifest) * max_campaigns)) == NULL) {
+        if((campaigns = static_cast<CampaignManifest *>(realloc(campaigns, sizeof(CampaignManifest) * max_campaigns))) == NULL) {
             Error("failed to resize campaign list, aborting!\n");
         }
 
@@ -66,7 +68,7 @@ CampaignManifest *Game_GetCampaignByName(const char *name) {
     }
 
     LogWarn("failed to find campaign \"%s\"!\n");
-    return NULL;
+    return nullptr;
 }
 
 CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
@@ -77,7 +79,7 @@ CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
     }
 
     LogWarn("failed to find campaign \"%s\"!\n");
-    return NULL;
+    return nullptr;
 }
 
 /** Load in the campaign manifest and store it into a buffer.
@@ -95,37 +97,20 @@ void RegisterCampaign(const char *path) {
     }
 #endif
 
-    FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
-        LogWarn("failed to load \"%s\"!\n", path);
-        return;
-    }
-
-    size_t length = plGetFileSize(path);
-    char buf[length + 1];
-    if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of manifest!\n");
-    }
-    fclose(fp);
-    buf[length] = '\0';
-
-    /* pass it into our JSON parser */
-
-    ScriptContext *ctx = Script_CreateContext();
-    Script_ParseBuffer(ctx, buf);
-
     CampaignManifest *slot = Game_GetCampaignBySlot(num_campaigns++);
-    if(slot == NULL) {
+    if(slot == nullptr) {
         LogWarn("failed to fetch campaign slot, hit memory limit!?\n");
-        Script_DestroyContext(ctx);
         return;
     }
 
-    snprintf(slot->name, sizeof(slot->name), "%s", Script_GetStringProperty(ctx, "name", ""));
-    snprintf(slot->version, sizeof(slot->version), "%s", Script_GetStringProperty(ctx, "version", ""));
-    snprintf(slot->author, sizeof(slot->author), "%s", Script_GetStringProperty(ctx, "author", ""));
-
-    Script_DestroyContext(ctx);
+    try {
+        ScriptConfig config(path);
+        snprintf(slot->name, sizeof(slot->name), "%s", config.GetStringProperty("name").c_str());
+        snprintf(slot->version, sizeof(slot->version), "%s", config.GetStringProperty("version").c_str());
+        snprintf(slot->author, sizeof(slot->author), "%s", config.GetStringProperty("author").c_str());
+    } catch(const std::exception &e) {
+        LogWarn("Failed to read campaign config, \"%s\"!\n%s\n", path, e.what());
+    }
 
     char filename[64];
     snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
@@ -134,8 +119,9 @@ void RegisterCampaign(const char *path) {
     strncpy(slot->dir, filename, sizeof(slot->dir));
     plStripExtension(slot->dir, sizeof(slot->name), plGetFileName(path));
 
-#if 0
-    LogDebug("name:    %s\n"
+#if _DEBUG
+    LogDebug("\nRegistered Campaign\n"
+             "name:    %s\n"
              "version: %s\n"
              "author:  %s\n"
              "path:    %s\n"
@@ -154,7 +140,7 @@ void RegisterCampaign(const char *path) {
  *  directory.
  */
 void RegisterCampaigns(void) {
-    campaigns = u_alloc(max_campaigns, sizeof(CampaignManifest), true);
+    campaigns = static_cast<CampaignManifest *>(u_alloc(max_campaigns, sizeof(CampaignManifest), true));
 
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "%s/campaigns/", GetBasePath());
@@ -171,7 +157,7 @@ CampaignManifest *GetCurrentCampaign(void) {
 
 void SetCampaign(const char *dir) {
     CampaignManifest *campaign = Game_GetCampaignByDirectory(dir);
-    if(campaign == NULL) {
+    if(campaign == nullptr) {
         LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
 
         char path[PL_SYSTEM_MAX_PATH];
@@ -181,7 +167,7 @@ void SetCampaign(const char *dir) {
             campaign = Game_GetCampaignByDirectory(dir);
         }
 
-        if(campaign == NULL) {
+        if(campaign == nullptr) {
             LogWarn("campaign \"%s\" doesn't exist!\n", dir);
             return;
         }
@@ -205,7 +191,7 @@ void Game_StartNewGame(const GameModeSetup *mode) {
 
     FE_SetState(FE_MODE_LOADING);
 
-    if(Map_Load(mode->map, mode->game_mode) == false) {
+    if(!Map_Load(mode->map, mode->game_mode)) {
         LogWarn("failed to load map, aborting game!\n");
         FE_RestoreLastState();
         return;

@@ -21,24 +21,25 @@
 #include "config.h"
 
 #include "script/script.h"
+#include "script/ScriptConfig.h"
 
 const char *Config_GetUserConfigPath(void) {
-    static char config_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    if(config_path[0] == '\0') {
+    static std::string config_path;
+    if(config_path.empty()) {
         char out[PL_SYSTEM_MAX_PATH];
-        if(plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH) == NULL) {
+        if(plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH) == nullptr) {
             LogWarn("failed to get app data directory!\n%s\n", plGetError());
-            snprintf(config_path, sizeof(config_path), "./user.config");
+            config_path = "./user.config";
         } else {
-            snprintf(config_path, sizeof(config_path), "%s/user.config", out);
+            config_path = std::string(out) + "/user.config";
         }
     }
-    return config_path;
+    return config_path.c_str();
 }
 
 void Config_Save(const char *path) {
-    FILE *fp = fopen(path, "w");
-    if(fp == NULL) {
+    FILE *fp = fopen(path, "wb");
+    if(fp == nullptr) {
         LogWarn("failed to write config to \"%s\"!\n", path);
         return;
     }
@@ -70,37 +71,22 @@ void Config_Save(const char *path) {
 }
 
 void Config_Load(const char *path) {
-    FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
-        LogWarn("failed to open config, \"%s\"!\n", path);
-        return;
-    }
+    try {
+        ScriptConfig config(path);
 
-    LogInfo("found \"%s\", parsing...\n", path);
+        size_t num_c;
+        PLConsoleVariable **vars;
+        plGetConsoleVariables(&vars, &num_c);
 
-    size_t length = plGetFileSize(path);
-    char buf[length + 1];
-    if(fread(buf, sizeof(char), length, fp) != length) {
-        LogWarn("failed to read entirety of config for \"%s\"!\n", path);
-    }
-    fclose(fp);
+        for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
+            std::string result = config.GetStringProperty((*var)->var);
+            if(result.empty()) {
+                continue;
+            }
 
-    buf[length] = '\0';
-
-    ScriptContext *ctx = Script_CreateContext();
-    Script_ParseBuffer(ctx, buf);
-
-    size_t num_c;
-    PLConsoleVariable **vars;
-    plGetConsoleVariables(&vars, &num_c);
-    for(PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-        const char *result = Script_GetStringProperty(ctx, (*var)->var, NULL);
-        if(result == NULL) {
-            continue;
+            plSetConsoleVariable((*var), result.c_str());
         }
-
-        plSetConsoleVariable((*var), result);
+    } catch(const std::exception &e) {
+        LogWarn("Failed to read user config, \"%s\"!\n%s\n", path, e.what());
     }
-
-    Script_DestroyContext(ctx);
 }
