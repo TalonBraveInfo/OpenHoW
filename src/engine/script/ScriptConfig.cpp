@@ -36,7 +36,7 @@ ScriptConfig::ScriptConfig(const std::string &path) : ScriptConfig() {
 
     FILE *fp = fopen(path.c_str(), "rb");
     if(fp == nullptr) {
-        throw std::runtime_error("Failed to open config at \"%s\", aborting!\n");
+        throw std::runtime_error("Failed to open config at \"" + path + "\", aborting!\n");
     }
 
     std::vector<char> buf(sz + 1);

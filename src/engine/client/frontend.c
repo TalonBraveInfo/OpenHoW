@@ -239,7 +239,7 @@ void FE_SetLoadingBackground(const char *name) {
     char screen_path[PL_SYSTEM_MAX_PATH];
     snprintf(screen_path, sizeof(screen_path), "fe/briefing/%s", name);
     if(!plFileExists(screen_path)) {
-        snprintf(screen_path, sizeof(screen_path), "fe/loadmult");
+        snprintf(screen_path, sizeof(screen_path), "fe/briefing/loadmult");
     }
 
     fe_background = Display_LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);

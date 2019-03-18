@@ -91,7 +91,7 @@ static CopyPath pc_copy_paths[] = {
 
         /* briefing */
 
-        {"/Language/Tims/loadmult.bmp", "/fe/briefing/"},
+        {"/Language/Tims/Briefing/loadmult.bmp", "/fe/briefing/"},
 
         {"/Language/Tims/Briefing/Level0.bmp", "/fe/briefing/"},
         {"/Language/Tims/Briefing/Level1.bmp", "/fe/briefing/"},
