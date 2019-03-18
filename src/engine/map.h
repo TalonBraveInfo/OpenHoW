@@ -59,25 +59,127 @@ enum {
 #define TILE_FLAG_MINE      64
 #define TILE_FLAG_WALL      128
 
+#define MAP_FLIP_FLAG_X             1
+#define MAP_FLIP_FLAG_ROTATE_90     2
+#define MAP_FLIP_FLAG_ROTATE_180    4
+#define MAP_FLIP_FLAG_ROTATE_270    6
+
+/* format data */
+
+typedef struct MapSpawn { /* this should be 94 bytes */
+    char        name[16];               // class name
+    char        unused0[16];
+
+    int16_t     position[3];            // position in the world
+    uint16_t    index;                  // todo
+    int16_t     angles[3];              // angles in the world
+    uint16_t    type;                   // todo
+
+    int16_t     bounds[3];              // collision bounds
+    uint16_t    bounds_type;            // box, prism, sphere and none
+
+    int16_t     energy;
+    uint8_t     appearance;
+    uint8_t     team;                   // uk, usa, german, french, japanese, soviet
+
+    uint16_t    objective;
+    uint8_t     objective_actor_id;
+    uint8_t     objective_extra[2];
+
+    uint8_t     unused1;
+    uint16_t    unused2[8];
+
+    int16_t     fallback_position[3];
+    int16_t     extra;
+    int16_t     attached_actor_num;
+    int16_t     unused3;
+} MapSpawn;
+
+typedef struct MapTile {
+    /* surface properties */
+    unsigned int type{0};  /* e.g. wood? */
+    unsigned int slip{0};  /* e.g. full, bottom or left? */
+
+    /* texture */
+    unsigned int tex{0};
+    unsigned int flip{0};
+} MapTile;
+
+typedef struct MapChunk {
+    MapTile tiles[16];
+
+    struct {
+        int16_t height{0};
+    } vertices[25];
+
+    PLVector3 offset{0, 0, 0};
+} MapChunk;
+
+/* end format data */
+
 typedef struct MapManifest {
-    char            name[16];
-    char            path[PL_SYSTEM_MAX_PATH];
-    char            description[64];
-    char            sky[32];
+    std::string     name;
+    std::string     path;
+    std::string     description;
+    std::string     sky;
     unsigned int    flags;
 } MapManifest;
+
+class Map {
+public:
+    Map(const std::string &name, const GameModeSetup &mode);
+    ~Map();
+
+    void Reset();
+    void Draw();
+
+    float GetMaxHeight() { return max_height_; }
+    float GetMinHeight() { return min_height_; }
+
+    const GameModeSetup *GetMode() { return &mode_; }
+
+    const std::string &GetName() { return name_; }
+    const std::string &GetDescription() { return description_; }
+
+    MapChunk *GetChunk(const PLVector2 *pos);
+    MapTile *GetTile(const PLVector2 *pos);
+    float GetHeight(const PLVector2 *pos);
+
+    const PLTexture *GetOverviewTexture() { return overview_; }
+
+protected:
+private:
+    void LoadSpawns(const std::string &path);
+    void LoadTiles(const std::string &path);
+    void LoadTextures(const std::string &path);
+
+    void GenerateOverview();
+
+    std::string name_{"none"};
+    std::string description_{"none"};
+    std::string sky_{"none"};
+
+    GameModeSetup mode_;
+
+    float max_height_{0};
+    float min_height_{0};
+
+    std::vector<MapChunk> chunks_;
+    std::vector<MapSpawn> spawns_;
+
+    PLTexture *overview_{nullptr};
+
+    std::vector<PLTexture*> tile_textures_;
+
+    PLModel *sky_model_{nullptr};
+    PLTexture *sky_textures_[4];
+};
 
 PL_EXTERN_C
 
 void CacheMapData(void);
 
-void Map_Unload(void);
-void Map_ResetState(void);
 bool Map_Load(const char *name, unsigned int mode);
-void Map_Draw(void);
-
-const char *Map_GetCurrentName(void);           // returns the name of the current map.
-const char *Map_GetCurrentDescription(void);    // returns the description of the current map.
 
 const MapManifest *Map_GetMapList(unsigned int *num);
 
