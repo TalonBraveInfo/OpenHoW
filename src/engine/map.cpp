@@ -201,10 +201,9 @@ void Map_Register(const char *path) {
     }
 
     MapManifest *slot = &map_descriptors[num_maps];
-    memset(slot, 0, sizeof(MapManifest));
 
-    strncpy(slot->path, path, sizeof(slot->path));
-    LogDebug("%s\n", slot->path);
+    slot->path = path;
+    LogDebug("%s\n", slot->path.c_str());
 
     plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
 
@@ -291,117 +290,10 @@ void CacheMapData(void) {
     snprintf(map_path, sizeof(map_path), "%s/maps", GetBasePath());
     plScanDirectory(map_path, "map", Map_Register, false);
 
-    sky_model = LoadModel("skys/skydome", true);
-
-    /* generate base meshes */
-
-    //GenerateWaterTiles();
-
     /* register console commands */
 
     plRegisterConsoleCommand("map", MapCommand, "Changes the current level to whatever is specified");
     plRegisterConsoleCommand("maps", MapsCommand, "Lists all the indexed maps");
-}
-
-static MapChunk *GetChunkAtPosition(const PLVector2 *pos) {
-    uint idx = ((uint)(pos->x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos->y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
-    if(idx >= map_state.num_chunks) {
-        LogWarn("attempted to get an out of bounds chunk index!\n");
-        return nullptr;
-    }
-
-    //LogDebug("chunk idx = %d\n", idx);
-
-    return &map_state.chunks[idx];
-}
-
-static MapTile *GetTileAtPosition(const PLVector2 *pos) {
-    MapChunk *chunk = GetChunkAtPosition(pos);
-    if(chunk == nullptr) {
-        return nullptr;
-    }
-
-    uint idx = (((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
-               ((((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
-    if(idx >= MAP_CHUNK_TILES) {
-        LogWarn("attempted to get an out of bounds tile index!\n");
-        return nullptr;
-    }
-
-    LogDebug("tile idx = %d\n", idx);
-    LogDebug("tile x = %d ",(((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH)) );
-    LogDebug("tile y = %d\n", (((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) ));
-
-    return &chunk->tiles[idx];
-}
-
-static float GetHeightAtPosition(const PLVector2 *pos) {
-    return 0;
-}
-
-static void LoadMapSpawns(const char *path) {
-    FILE *fh = fopen(path, "rb");
-    if(fh == nullptr) {
-        Error("failed to open actor data, \"%s\", aborting\n", path);
-    }
-
-    uint16_t num_indices;
-    if(fread(&num_indices, sizeof(uint16_t), 1, fh) != 1) {
-        Error("failed to get number of indices from pog, \"%s\", aborting\n", path);
-    }
-
-    map_state.spawns = static_cast<ActorSpawn *>(u_alloc(num_indices, sizeof(*map_state.spawns), true));
-    map_state.num_spawns = num_indices;
-    for(unsigned int i = 0; i < num_indices; ++i) {
-        if(fread(&map_state.spawns[i], sizeof(ActorSpawn), 1, fh) != 1) {
-            Error("failed to load index %d from POG, \"%s\"!\n", i, path);
-        }
-
-#define v(a) map_state.spawns[i].a[0], map_state.spawns[i].a[1], map_state.spawns[i].a[2]
-        LogDebug("name %s\n", map_state.spawns[i].name);
-        LogDebug("position %d %d %d\n", v(position));
-        LogDebug("bounds %d %d %d\n", v(bounds));
-        LogDebug("angles %d %d %d\n", v(angles));
-        LogDebug("fallback %d %d %d\n", v(fallback_position));
-    }
-
-    u_fclose(fh);
-}
-
-static void LoadMapTextures(MapManifest *desc, const char *path) {
-    /* free any textures previously loaded */
-    for (auto &sky_texture : map_state.sky_textures) {
-        if(sky_texture == nullptr) {
-            continue;
-        }
-
-        plDeleteTexture(sky_texture, true);
-        sky_texture = nullptr;
-    }
-
-    char sky_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-    /* was this even the default in the original!? */
-    if(desc->sky[0] != '\0' && desc->sky[0] != ' ') {
-        snprintf(sky_path, sizeof(sky_path), "%s%s1", u_find("skys/"), desc->sky);
-        if(!plPathExists(sky_path)) {
-            LogWarn("failed to find texture path for sky at \"%s\", reverting to default!\n", sky_path);
-            sky_path[0] = '\0';
-        }
-    }
-
-    if(sky_path[0] == '\0') {
-        LogInfo("no sky specified, using default\n");
-        snprintf(sky_path, sizeof(sky_path), "%s", u_find("skys/sunny/"));
-    }
-
-    /*
-    FILE *fh = fopen(path, "rb");
-    if(fh == NULL) {
-        Error("failed to open texture data, \"%s\", aborting\n", path);
-    }
-
-    fclose(fh);
-     */
 }
 
 Map::Map(const std::string &name, const GameModeSetup &mode) {
@@ -430,15 +322,18 @@ Map::Map(const std::string &name, const GameModeSetup &mode) {
 
     LoadTiles(p);
 
-    GenerateOverview();
-
     p = u_find(std::string(base_path + name + ".pog").c_str());
     if (!plFileExists(p.c_str())) {
         throw std::runtime_error("POG, " + p + ", doesn't exist!\n");
     }
 
     LoadSpawns(p);
-    LoadTextures(desc, nullptr);
+
+    LoadTextures(p);
+
+    sky_model_ = LoadModel("skys/skydome", true);
+
+    GenerateOverview();
 
     Reset();
 }
@@ -462,6 +357,46 @@ Map::~Map() {
 
         plDeleteTexture(sky_texture, true);
     }
+
+    if(sky_model_ != nullptr) {
+        plDeleteModel(sky_model_);
+    }
+}
+
+MapChunk *Map::GetChunk(const PLVector2 *pos) {
+    uint idx = ((uint)(pos->x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos->y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
+    if(idx >= chunks_.size()) {
+        LogWarn("attempted to get an out of bounds chunk index!\n");
+        return nullptr;
+    }
+
+    //LogDebug("chunk idx = %d\n", idx);
+
+    return &chunks_[idx];
+}
+
+MapTile *Map::GetTile(const PLVector2 *pos) {
+    MapChunk *chunk = GetChunk(pos);
+    if(chunk == nullptr) {
+        return nullptr;
+    }
+
+    uint idx = (((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
+               ((((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
+    if(idx >= MAP_CHUNK_TILES) {
+        LogWarn("attempted to get an out of bounds tile index!\n");
+        return nullptr;
+    }
+
+    //LogDebug("tile idx = %d\n", idx);
+    //LogDebug("tile x = %d ",(((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH)) );
+    //LogDebug("tile y = %d\n", (((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) ));
+
+    return &chunk->tiles[idx];
+}
+
+float Map::GetHeight(const PLVector2 *pos) {
+    return 0;
 }
 
 void Map::Reset() {
@@ -498,6 +433,41 @@ void Map::Reset() {
         //actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
     }
 #endif
+}
+
+void Map::LoadSpawns(const std::string &path) {
+    std::ifstream ifs(path, std::ios_base::in | std::ios_base::binary);
+    if(ifs.is_open()) {
+        Error("Failed to open actor data, \"%s\", aborting!\n", path.c_str());
+    }
+
+    uint16_t num_indices;
+    try {
+        ifs.read(reinterpret_cast<char *>(&num_indices), sizeof(uint16_t));
+    } catch(std::ifstream::failure &err) {
+        Error("Failed to read POG indices count, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
+    }
+
+    spawns_.reserve(num_indices);
+
+    try {
+        ifs.read(reinterpret_cast<char *>(&spawns_[0]), sizeof(MapSpawn) * num_indices);
+    } catch(std::ifstream::failure &err) {
+        Error("Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
+    }
+
+#ifdef _DEBUG
+    for(unsigned int i = 0; i < num_indices; ++i) {
+#define v(a) spawns_[i].a[0], spawns_[i].a[1], spawns_[i].a[2]
+        LogDebug("name %s\n", spawns_[i].name);
+        LogDebug("position %d %d %d\n", v(position));
+        LogDebug("bounds %d %d %d\n", v(bounds));
+        LogDebug("angles %d %d %d\n", v(angles));
+        LogDebug("fallback %d %d %d\n", v(fallback_position));
+    }
+#endif
+
+    ifs.close();
 }
 
 void Map::LoadTiles(const std::string &path) {
@@ -579,7 +549,7 @@ void Map::LoadTiles(const std::string &path) {
                     u_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
 
-#if 1
+#if 0
                     LogDebug("\ntile %u\n"
                              "  type %u\n",
                              tile_x + tile_y * MAP_CHUNK_ROW_TILES,
@@ -603,6 +573,29 @@ void Map::LoadTiles(const std::string &path) {
         Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
     }
 #endif
+}
+
+void Map::LoadTextures(const std::string &path) {
+    static const char *default_sky = "skys/sunny/";
+    if(sky_.empty() || sky_ == "none") {
+        LogWarn("No sky specified, using default\n");
+        sky_ = u_find(default_sky);
+    }
+
+    std::string sky_path = u_find("skys/") + sky_ + "1";
+    if(!plPathExists(sky_path.c_str())) {
+        LogWarn("Failed to find texture path for sky at \"%s\"!\n", sky_path.c_str());
+        return;
+    }
+
+    /*
+    FILE *fh = fopen(path, "rb");
+    if(fh == NULL) {
+        Error("failed to open texture data, \"%s\", aborting\n", path);
+    }
+
+    fclose(fh);
+     */
 }
 
 void Map::GenerateOverview() {
@@ -641,7 +634,7 @@ void Map::GenerateOverview() {
     for(uint8_t y = 0; y < 64; ++y) {
         for(uint8_t x = 0; x < 64; ++x) {
             PLVector2 position(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64));
-            MapTile *tile = GetTileAtPosition(&position);
+            MapTile *tile = GetTile(&position);
             if(tile == nullptr) {
                 Error("hit an invalid tile during minimap generation!\n");
             }

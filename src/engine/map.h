@@ -122,7 +122,7 @@ typedef struct MapManifest {
     std::string     path;
     std::string     description;
     std::string     sky;
-    unsigned int    flags;
+    unsigned int    flags{0};
 } MapManifest;
 
 class Map {
