@@ -27,8 +27,6 @@ MapManager *MapManager::instance_ = nullptr;
 MapManager::MapManager() {
     plRegisterConsoleCommand("map", MapCommand, "");
     plRegisterConsoleCommand("maps", MapsCommand, "");
-
-    RegisterManifests();
 }
 
 MapManager::~MapManager() {
@@ -126,7 +124,10 @@ void MapManager::MapsCommand(unsigned int argc, char **argv) {
 
     for(auto manifest : GetInstance()->manifests_) {
         MapManifest *desc = &manifest.second;
-        std::string out = desc->name + " : " + desc->description + " : " + std::to_string(desc->flags);
+        std::string out =
+                desc->name + "/" + manifest.first +
+                " : " + desc->description +
+                " : " + std::to_string(desc->flags);
         LogInfo("%s\n", out.c_str());
     }
 

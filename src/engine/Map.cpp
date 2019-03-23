@@ -264,7 +264,7 @@ void Map::Reset() {
 
 void Map::LoadSpawns(const std::string &path) {
     std::ifstream ifs(path, std::ios_base::in | std::ios_base::binary);
-    if(ifs.is_open()) {
+    if(!ifs.is_open()) {
         Error("Failed to open actor data, \"%s\", aborting!\n", path.c_str());
     }
 
@@ -303,10 +303,7 @@ void Map::LoadTiles(const std::string &path) {
         Error("Failed to open tile data, \"%s\", aborting\n", path.c_str());
     }
 
-    /* done here in case the enhanced format supports larger chunk sizes */
-    chunks_.reserve(MAP_CHUNKS);
-
-    LogDebug("%u chunks for terrain\n", chunks_.max_size());
+    chunks_.resize(MAP_CHUNKS);
 
     for(unsigned int chunk_y = 0; chunk_y < MAP_CHUNK_ROW; ++chunk_y) {
         for(unsigned int chunk_x = 0; chunk_x < MAP_CHUNK_ROW; ++chunk_x) {
