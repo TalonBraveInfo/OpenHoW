@@ -22,6 +22,8 @@
 #include "Map.h"
 #include "script/ScriptConfig.h"
 
+MapManager *MapManager::instance_ = nullptr;
+
 MapManager::MapManager() {
     plRegisterConsoleCommand("map", MapCommand, "");
     plRegisterConsoleCommand("maps", MapsCommand, "");

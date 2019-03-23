@@ -119,7 +119,7 @@ typedef struct MapChunk {
 
 class Map {
 public:
-    Map(const std::string &name, const GameModeSetup &mode);
+    explicit Map(const GameModeSetup &mode);
     ~Map();
 
     void Reset();

@@ -123,23 +123,17 @@ MapManifest map_descriptors[]={
 };
 #endif
 
-void Map_Register(const char *path) {
-    plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
-}
-
-/************************************************************/
-
-Map::Map(const std::string &name, const GameModeSetup &mode) {
-    LogDebug("Loading map, %s, in mode %u\n", name.c_str(), mode.game_mode);
+Map::Map(const GameModeSetup &mode) {
+    LogDebug("Loading map, %s, in mode %u\n", mode.map, mode.game_mode);
     /* map manager now worries about resetting map state etc. */
 
-    MapManifest *desc = MapManager::GetInstance()->GetManifest(name);
+    MapManifest *desc = MapManager::GetInstance()->GetManifest(mode.map);
     if(desc == nullptr) {
-        LogWarn("Failed to get map descriptor, %s!\n", name.c_str());
+        LogWarn("Failed to get map descriptor, %s!\n", mode.map);
     } else {
         LogDebug("Found map descriptor!\n %s\n %s", desc->name.c_str(), desc->description.c_str());
         if(mode.game_mode != MAP_MODE_EDITOR && !(desc->flags & mode.game_mode)) {
-            throw std::runtime_error("This mode is unsupported by this map, " + name + ", aborting!\n");
+            throw std::runtime_error("This mode is unsupported by this map, " + std::string(mode.map) + ", aborting!\n");
         }
 
         name_           = desc->name;
@@ -147,15 +141,15 @@ Map::Map(const std::string &name, const GameModeSetup &mode) {
         sky_            = desc->sky;
     }
 
-    std::string base_path = "maps/" + name + "/";
-    std::string p = u_find(std::string(base_path + name + ".pmg").c_str());
+    std::string base_path = "maps/" + std::string(mode.map) + "/";
+    std::string p = u_find(std::string(base_path + std::string(mode.map) + ".pmg").c_str());
     if(!plFileExists(p.c_str())) {
         throw std::runtime_error("PMG, " + p + ", doesn't exist!\n");
     }
 
     LoadTiles(p);
 
-    p = u_find(std::string(base_path + name + ".pog").c_str());
+    p = u_find(std::string(base_path + std::string(mode.map) + ".pog").c_str());
     if (!plFileExists(p.c_str())) {
         throw std::runtime_error("POG, " + p + ", doesn't exist!\n");
     }

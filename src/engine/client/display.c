@@ -20,7 +20,7 @@
 
 #include "../engine.h"
 #include "../input.h"
-#include "../Map.h"
+//#include "../Map.h"
 #include "../mad.h"
 #include "../imgui_layer.h"
 
@@ -653,7 +653,7 @@ void Display_SetupDraw(double delta) {
 }
 
 void Display_DrawScene(void) {
-    Map_Draw();
+    //Map_Draw();
     //DrawActors(cur_delta);
     DrawParticles(cur_delta);
 }

@@ -19,7 +19,6 @@
 #include "../input.h"
 #include "../game.h"
 #include "../engine.h"
-#include "../Map.h"
 
 #include "../client/video.h"
 
@@ -50,12 +49,12 @@ static duk_ret_t SC_GetCampaignName(duk_context *context) {
 }
 
 static duk_ret_t SC_GetCurrentMapName(duk_context *context) {
-    duk_push_string(context, Map_GetCurrentName());
+    //duk_push_string(context, Map_GetCurrentName());
     return 0;
 }
 
 static duk_ret_t SC_GetCurrentMapDescription(duk_context *context) {
-    duk_push_string(context, Map_GetCurrentDescription());
+    //duk_push_string(context, Map_GetCurrentDescription());
     return 0;
 }
 

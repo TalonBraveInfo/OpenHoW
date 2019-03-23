@@ -18,7 +18,6 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "Map.h"
 #include "language.h"
 #include "mad.h"
 #include "model.h"
@@ -93,7 +92,6 @@ void Engine_Initialize(void) {
     Server_Initialize();
 
     CacheModelData();
-    CacheMapData();
 
     LogInfo("base path: \"%s\"\n", GetBasePath());
     LogInfo("campaign path: \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
