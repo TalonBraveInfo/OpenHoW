@@ -19,7 +19,7 @@
 
 #include "engine.h"
 #include "game.h"
-#include "map.h"
+#include "Map.h"
 #include "language.h"
 
 #include "script/script.h"

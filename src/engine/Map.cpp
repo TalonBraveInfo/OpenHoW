@@ -19,7 +19,7 @@
 #include <PL/platform_graphics_camera.h>
 
 #include "engine.h"
-#include "map.h"
+#include "Map.h"
 #include "model.h"
 #include "game.h"
 
@@ -30,6 +30,7 @@
 
 #include "server/actor.h"
 #include "script/ScriptConfig.h"
+#include "MapManager.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -122,185 +123,17 @@ MapManifest map_descriptors[]={
 };
 #endif
 
-/* todo: take better advantage of std */
-
-static MapManifest *map_descriptors = nullptr;
-static unsigned int num_maps = 0;
-static unsigned int max_maps = 32; /* this will expand, if required */
-
-const MapManifest *Map_GetMapList(unsigned int *num) {
-    *num = num_maps;
-    return map_descriptors;
-}
-
-static MapManifest *GetMapManifest(const std::string &name) {
-    const char *ext = plGetFileExtension(name.c_str());
-    if(!plIsEmptyString(ext)) {
-        for(unsigned int i = 0; i < num_maps; ++i) {
-            if(map_descriptors[i].path == name) {
-                return &map_descriptors[i];
-            }
-        }
-    } else {
-        for (unsigned int i = 0; i < num_maps; ++i) {
-            if(map_descriptors[i].name == name) {
-                return &map_descriptors[i];
-            }
-        }
-    }
-
-    LogWarn("Failed to get descriptor for \"%s\"!\n", name.c_str());
-    return nullptr;
-}
-
-static unsigned int GetModeFlag(const char *str) {
-    if (pl_strncasecmp("dm", str, 2) == 0) {
-        return MAP_MODE_DEATHMATCH;
-    } else if (pl_strncasecmp("sp", str, 2) == 0) {
-        return MAP_MODE_SINGLEPLAYER;
-    } else if(pl_strncasecmp("se", str, 2) == 0) {
-        return MAP_MODE_SURVIVAL_EXPERT;
-    } else if(pl_strncasecmp("sn", str, 2) == 0) {
-        return MAP_MODE_SURVIVAL_NOVICE;
-    } else if(pl_strncasecmp("ss", str, 2) == 0) {
-        return MAP_MODE_SURVIVAL_STRATEGY;
-    } else if(pl_strncasecmp("ge", str, 2) == 0) {
-        return MAP_MODE_GENERATED;
-    } else if(pl_strncasecmp("tm", str, 2)) {
-        /* special case, used for CAMP in original
-         * campaign */
-        return MAP_MODE_TRAINING;
-    } else if(pl_strncasecmp("edit", str, 4) == 0) {
-        return MAP_MODE_EDITOR;
-    } else {
-        LogWarn("Unknown mode type %s, ignoring!\n", str);
-        return MAP_MODE_DEATHMATCH;
-    }
-}
-
 void Map_Register(const char *path) {
-    LogInfo("Registering %s\n", path);
-
-    if((num_maps + 1) >= max_maps) {
-        LogDebug("Reached maximum maps (%u) - allocating more slots...\n", max_maps);
-
-        MapManifest *old_desc = map_descriptors;
-        unsigned int old_max_maps = max_maps;
-
-        max_maps += 128;
-        if((map_descriptors = static_cast<MapManifest *>(realloc(map_descriptors, sizeof(MapManifest) * max_maps))) ==
-                nullptr) {
-            LogWarn("Failed to resize map descriptors array to %u bytes!\n", sizeof(MapManifest) * max_maps);
-            map_descriptors = old_desc;
-            max_maps = old_max_maps;
-            num_maps--;
-            return;
-        }
-
-        memset(map_descriptors + old_max_maps, 0, sizeof(MapManifest) * (max_maps - old_max_maps));
-    }
-
-    MapManifest *slot = &map_descriptors[num_maps];
-
-    slot->path = path;
-    LogDebug("%s\n", slot->path.c_str());
-
     plStripExtension(slot->name, sizeof(slot->name), plGetFileName(path));
-
-    try {
-        ScriptConfig config(path);
-        strncpy(slot->description, config.GetStringProperty("name").c_str(), sizeof(slot->description));
-        strncpy(slot->sky, config.GetStringProperty("sky").c_str(), sizeof(slot->sky));
-
-        std::vector<std::string> modes = config.GetArrayStrings("modes");
-        for(const auto &mode : modes) {
-            slot->flags |= GetModeFlag(mode.c_str());
-        }
-    } catch(const std::exception &e) {
-        LogWarn("Failed to read map config, \"%s\"!\n%s\n", path, e.what());
-    }
-
-    /* todo, the above is fucked, fix it you fool! */
-    /* temp */ slot->flags |= MAP_MODE_DEATHMATCH;
-
-    printf("flags = %d\n", slot->flags);
-
-    num_maps++;
 }
 
 /************************************************************/
-
-/* possible optimisations...
- *  a) tiles that use the same texture are part of the same mesh instance
- *  b) convert all tiles into a single texture, upload to GPU - using all tiles as single mesh
- *  c) keep all tiles separate, apply simple ray tracing algorithm to check whether tile is visible from camera
- */
-
-void MapCommand(unsigned int argc, char *argv[]) {
-    if(argc < 2) {
-        LogWarn("Invalid number of arguments, ignoring!\n");
-        return;
-    }
-
-    GameModeSetup mode;
-    memset(&mode, 0, sizeof(GameModeSetup));
-
-    mode.game_mode = MAP_MODE_DEATHMATCH;
-    if(argc > 2) {
-        const char *cmd_mode = argv[2];
-        mode.game_mode = GetModeFlag(cmd_mode);
-    }
-
-    mode.num_players = 2;
-    mode.teams[0] = TEAM_BRITISH;
-    mode.teams[1] = TEAM_AMERICAN;
-
-    snprintf(mode.map, sizeof(mode.map), "%s", argv[1]);
-
-    Game_StartNewGame(&mode);
-}
-
-void MapsCommand(unsigned int argc, char *argv[]) {
-    if(map_descriptors == nullptr) {
-        Error("Attempted to list indexed maps before index generated, aborting!\n");
-    }
-
-    for(unsigned int i = 0; i < num_maps; ++i) {
-        char str[128];
-        snprintf(str, sizeof(str), "%s : %s : %u\n",
-                 map_descriptors[i].name.c_str(),
-                 map_descriptors[i].description.c_str(),
-                 map_descriptors[i].flags
-        );
-        LogInfo("%s", str);
-    }
-    LogInfo("%u maps\n", num_maps);
-}
-
-void CacheMapData(void) {
-    /* register all of the existing maps */
-
-    map_descriptors = static_cast<MapManifest *>(u_alloc(max_maps, sizeof(MapManifest), true));
-
-    char map_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetCampaignPath())) {
-        snprintf(map_path, sizeof(map_path), "%s/campaigns/%s/maps", GetBasePath(), GetCampaignPath());
-        plScanDirectory(map_path, "map", Map_Register, false);
-    }
-    snprintf(map_path, sizeof(map_path), "%s/maps", GetBasePath());
-    plScanDirectory(map_path, "map", Map_Register, false);
-
-    /* register console commands */
-
-    plRegisterConsoleCommand("map", MapCommand, "Changes the current level to whatever is specified");
-    plRegisterConsoleCommand("maps", MapsCommand, "Lists all the indexed maps");
-}
 
 Map::Map(const std::string &name, const GameModeSetup &mode) {
     LogDebug("Loading map, %s, in mode %u\n", name.c_str(), mode.game_mode);
     /* map manager now worries about resetting map state etc. */
 
-    MapManifest *desc = GetMapManifest(name);
+    MapManifest *desc = MapManager::GetInstance()->GetManifest(name);
     if(desc == nullptr) {
         LogWarn("Failed to get map descriptor, %s!\n", name.c_str());
     } else {
@@ -309,9 +142,9 @@ Map::Map(const std::string &name, const GameModeSetup &mode) {
             throw std::runtime_error("This mode is unsupported by this map, " + name + ", aborting!\n");
         }
 
-        name_ = desc->name;
-        description_ = desc->description;
-        sky_ = desc->sky;
+        name_           = desc->name;
+        description_    = desc->description;
+        sky_            = desc->sky;
     }
 
     std::string base_path = "maps/" + name + "/";

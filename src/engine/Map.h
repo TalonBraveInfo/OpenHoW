@@ -117,14 +117,6 @@ typedef struct MapChunk {
 
 /* end format data */
 
-typedef struct MapManifest {
-    std::string     name;
-    std::string     path;
-    std::string     description;
-    std::string     sky;
-    unsigned int    flags{0};
-} MapManifest;
-
 class Map {
 public:
     Map(const std::string &name, const GameModeSetup &mode);
@@ -181,6 +173,6 @@ void CacheMapData(void);
 
 bool Map_Load(const char *name, unsigned int mode);
 
-const MapManifest *Map_GetMapList(unsigned int *num);
+const struct MapManifest *Map_GetMapList(unsigned int *num);
 
 PL_EXTERN_C_END

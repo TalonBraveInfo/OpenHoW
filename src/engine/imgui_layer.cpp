@@ -48,7 +48,7 @@ private:
 #include "client/particle.h"
 #include "client/audio.h"
 #include "game.h"
-#include "map.h"
+#include "Map.h"
 
 class ParticleEditor {
 public:

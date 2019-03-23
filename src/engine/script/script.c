@@ -19,7 +19,7 @@
 #include "../input.h"
 #include "../game.h"
 #include "../engine.h"
-#include "../map.h"
+#include "../Map.h"
 
 #include "../client/video.h"
 

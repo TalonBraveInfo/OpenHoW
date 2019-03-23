@@ -20,7 +20,7 @@
 
 #include "../engine.h"
 #include "../input.h"
-#include "../map.h"
+#include "../Map.h"
 #include "../mad.h"
 #include "../imgui_layer.h"
 

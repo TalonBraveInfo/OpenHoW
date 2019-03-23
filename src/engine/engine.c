@@ -18,7 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "map.h"
+#include "Map.h"
 #include "language.h"
 #include "mad.h"
 #include "model.h"

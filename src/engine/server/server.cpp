@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 #include "../script/script.h"
-#include "../map.h"
+#include "../Map.h"
 
 #include "actor.h"
 
