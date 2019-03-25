@@ -190,8 +190,8 @@ Map::~Map() {
     }
 }
 
-MapChunk *Map::GetChunk(const PLVector2 *pos) {
-    uint idx = ((uint)(pos->x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos->y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
+MapChunk *Map::GetChunk(const PLVector2 &pos) {
+    uint idx = ((uint)(pos.x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos.y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
     if(idx >= chunks_.size()) {
         LogWarn("attempted to get an out of bounds chunk index!\n");
         return nullptr;
@@ -202,14 +202,14 @@ MapChunk *Map::GetChunk(const PLVector2 *pos) {
     return &chunks_[idx];
 }
 
-MapTile *Map::GetTile(const PLVector2 *pos) {
+MapTile *Map::GetTile(const PLVector2 &pos) {
     MapChunk *chunk = GetChunk(pos);
     if(chunk == nullptr) {
         return nullptr;
     }
 
-    uint idx = (((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
-               ((((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
+    uint idx = (((uint)(pos.x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
+               ((((uint)(pos.y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
     if(idx >= MAP_CHUNK_TILES) {
         LogWarn("attempted to get an out of bounds tile index!\n");
         return nullptr;
@@ -222,8 +222,20 @@ MapTile *Map::GetTile(const PLVector2 *pos) {
     return &chunk->tiles[idx];
 }
 
-float Map::GetHeight(const PLVector2 *pos) {
-    return 0;
+float Map::GetHeight(const PLVector2 &pos) {
+    MapTile *tile = GetTile(pos);
+    if(tile == nullptr) {
+        return 0;
+    }
+
+    float tile_x = pos.x - floor(pos.x);
+    float tile_y = pos.y - floor(pos.y);
+
+    float x = tile->height[0] + ((tile->height[1] - tile->height[0]) * tile_x);
+    float y = tile->height[2] + ((tile->height[3] - tile->height[2]) * tile_x);
+    float z = x + ((y - x) * tile_y);
+
+    return z;
 }
 
 void Map::Reset() {
@@ -283,7 +295,7 @@ void Map::LoadSpawns(const std::string &path) {
         Error("Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
     }
 
-#ifdef _DEBUG
+#if 0
     for(unsigned int i = 0; i < num_indices; ++i) {
 #define v(a) spawns_[i].a[0], spawns_[i].a[1], spawns_[i].a[2]
         LogDebug("name %s\n", spawns_[i].name);
@@ -322,17 +334,12 @@ void Map::LoadTiles(const std::string &path) {
             }
             CUR_CHUNK.offset = PLVector3(chunk.x, chunk.y, chunk.z);
 
-            for(unsigned int vertex_y = 0; vertex_y < 5; ++vertex_y) {
-                for(unsigned int vertex_x = 0; vertex_x < 5; ++vertex_x) {
-                    struct __attribute__((packed)) {
-                        int16_t     height{0};
-                        uint16_t    lighting{0};
-                    } vertex;
-                    if(std::fread(&vertex, sizeof(vertex), 1, fh) != 1) {
-                        Error("unexpected end of file, aborting!\n");
-                    }
-                    CUR_CHUNK.vertices[vertex_x + vertex_y * 5].height = vertex.height;
-                }
+            struct __attribute__((packed)) {
+                int16_t     height{0};
+                uint16_t    lighting{0};
+            } vertices[25];
+            if(std::fread(vertices, sizeof(*vertices), 25, fh) != 25) {
+                Error("Unexpected end of file, aborting!\n");
             }
 
             std::fseek(fh, 4, SEEK_CUR);
@@ -365,10 +372,19 @@ void Map::LoadTiles(const std::string &path) {
                      * trying to add massive textures for each tile... :(
                      */
 
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type   = (unsigned int) (tile.type & 31);
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip   = tile.rotation;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip   = 0;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex    = tile.texture;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type     = (unsigned int) (tile.type & 31);
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip     = tile.rotation;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip     = 0;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex      = tile.texture;
+
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[0] = vertices[
+                            (tile_y * 5) + tile_x].height;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[1] = vertices[
+                            (tile_y * 5) + tile_x + 1].height;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[2] = vertices[
+                            ((tile_y + 1) * 5) + tile_x].height;
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[3] = vertices[
+                            ((tile_y + 1) * 5) + tile_x + 1].height;
 
                     u_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
@@ -458,14 +474,20 @@ void Map::GenerateOverview() {
     for(uint8_t y = 0; y < 64; ++y) {
         for(uint8_t x = 0; x < 64; ++x) {
             PLVector2 position(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64));
-            MapTile *tile = GetTile(&position);
+            MapTile *tile = GetTile(position);
             if(tile == nullptr) {
                 Error("hit an invalid tile during minimap generation!\n");
             }
 
-            *(buf++) = colours[tile->type].r;
-            *(buf++) = colours[tile->type].g;
-            *(buf++) = colours[tile->type].b;
+#if 0
+            uint8_t mod = static_cast<uint8_t>(
+                    ((GetHeight(position) - GetMinHeight()) * 130) /
+                    (GetMaxHeight() - GetMinHeight()) + 64);
+#endif
+            uint8_t mod = static_cast<uint8_t>(GetHeight(position) / 32);
+            *(buf++) = mod ; //colours[tile->type].r;
+            *(buf++) = mod ; //colours[tile->type].g;
+            *(buf++) = mod ; //colours[tile->type].b;
 
 #if 0
             LogDebug("%d(%d): %d %d %d\n", x * y,

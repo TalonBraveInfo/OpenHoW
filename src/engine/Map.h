@@ -103,15 +103,12 @@ typedef struct MapTile {
     /* texture */
     unsigned int tex{0};
     unsigned int flip{0};
+
+    float height[4]{0, 0, 0, 0};
 } MapTile;
 
 typedef struct MapChunk {
     MapTile tiles[16];
-
-    struct {
-        int16_t height{0};
-    } vertices[25];
-
     PLVector3 offset{0, 0, 0};
 } MapChunk;
 
@@ -133,9 +130,10 @@ public:
     const std::string &GetName() { return name_; }
     const std::string &GetDescription() { return description_; }
 
-    MapChunk *GetChunk(const PLVector2 *pos);
-    MapTile *GetTile(const PLVector2 *pos);
-    float GetHeight(const PLVector2 *pos);
+    MapChunk *GetChunk(const PLVector2 &pos);
+    MapTile *GetTile(const PLVector2 &pos);
+
+    float GetHeight(const PLVector2 &pos);
 
     const PLTexture *GetOverviewTexture() { return overview_; }
 
