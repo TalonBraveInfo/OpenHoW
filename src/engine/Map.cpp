@@ -228,8 +228,8 @@ float Map::GetHeight(const PLVector2 &pos) {
         return 0;
     }
 
-    float tile_x = pos.x - floor(pos.x);
-    float tile_y = pos.y - floor(pos.y);
+    float tile_x = pos.x - std::floor(pos.x);
+    float tile_y = pos.y - std::floor(pos.y);
 
     float x = tile->height[0] + ((tile->height[1] - tile->height[0]) * tile_x);
     float y = tile->height[2] + ((tile->height[3] - tile->height[2]) * tile_x);
@@ -372,7 +372,8 @@ void Map::LoadTiles(const std::string &path) {
                      * trying to add massive textures for each tile... :(
                      */
 
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type     = (unsigned int) (tile.type & 31);
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type     = (tile.type & 31U);
+                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flags    = (tile.type & ~31U);
                     CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip     = tile.rotation;
                     CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip     = 0;
                     CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex      = tile.texture;
@@ -479,23 +480,15 @@ void Map::GenerateOverview() {
                 Error("hit an invalid tile during minimap generation!\n");
             }
 
-#if 0
-            uint8_t mod = static_cast<uint8_t>(
-                    ((GetHeight(position) - GetMinHeight()) * 130) /
-                    (GetMaxHeight() - GetMinHeight()) + 64);
-#endif
-            uint8_t mod = static_cast<uint8_t>(GetHeight(position) / 32);
-            *(buf++) = mod ; //colours[tile->type].r;
-            *(buf++) = mod ; //colours[tile->type].g;
-            *(buf++) = mod ; //colours[tile->type].b;
+            auto mod = static_cast<uint8_t>(GetHeight(position) / 100);
 
-#if 0
-            LogDebug("%d(%d): %d %d %d\n", x * y,
-                     tile->type,
-                     colours[tile->type].r,
-                     colours[tile->type].g,
-                     colours[tile->type].b);
-#endif
+            // TODO: some obvious improvements to PLColour can be made here...
+            PLColour rgb = (colours[tile->type] / uint8_t(16)) * PLColour(mod, mod, mod);
+            if(tile->flags & TILE_FLAG_MINE) {
+                rgb = PLColour(255, 0, 0);
+            }
+
+            *(buf++) = rgb.r; *(buf++) = rgb.g; *(buf++) = rgb.b;
         }
     }
 

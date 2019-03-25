@@ -97,8 +97,9 @@ typedef struct MapSpawn { /* this should be 94 bytes */
 
 typedef struct MapTile {
     /* surface properties */
-    unsigned int type{0};  /* e.g. wood? */
-    unsigned int slip{0};  /* e.g. full, bottom or left? */
+    unsigned int type{0};   /* e.g. wood? */
+    unsigned int flags{0};  /* e.g. mine, watery */
+    unsigned int slip{0};   /* e.g. full, bottom or left? */
 
     /* texture */
     unsigned int tex{0};
