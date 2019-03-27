@@ -155,7 +155,6 @@ Map::Map(const GameModeSetup &mode) {
     }
 
     LoadSpawns(p);
-
     LoadTextures(p);
 
     sky_model_ = LoadModel("skys/skydome", true);
@@ -197,8 +196,6 @@ MapChunk *Map::GetChunk(const PLVector2 &pos) {
         return nullptr;
     }
 
-    //LogDebug("chunk idx = %d\n", idx);
-
     return &chunks_[idx];
 }
 
@@ -214,10 +211,6 @@ MapTile *Map::GetTile(const PLVector2 &pos) {
         LogWarn("attempted to get an out of bounds tile index!\n");
         return nullptr;
     }
-
-    //LogDebug("tile idx = %d\n", idx);
-    //LogDebug("tile x = %d ",(((uint)(pos->x) / MAP_TILE_PIXEL_WIDTH)) );
-    //LogDebug("tile y = %d\n", (((uint)(pos->y) / MAP_TILE_PIXEL_WIDTH) ));
 
     return &chunk->tiles[idx];
 }
@@ -342,6 +335,16 @@ void Map::LoadTiles(const std::string &path) {
                 Error("Unexpected end of file, aborting!\n");
             }
 
+            // Find the maximum and minimum points
+            for (auto &vertex : vertices) {
+                if(vertex.height > max_height_) {
+                    max_height_ = vertex.height;
+                }
+                if(vertex.height < min_height_) {
+                    min_height_ = vertex.height;
+                }
+            }
+
             std::fseek(fh, 4, SEEK_CUR);
 
             for(unsigned int tile_y = 0; tile_y < MAP_CHUNK_ROW_TILES; ++tile_y) {
@@ -389,14 +392,6 @@ void Map::LoadTiles(const std::string &path) {
 
                     u_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
-
-#if 0
-                    LogDebug("\ntile %u\n"
-                             "  type %u\n",
-                             tile_x + tile_y * MAP_CHUNK_ROW_TILES,
-                             CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type
-                    );
-#endif
                 }
             }
         }
@@ -417,7 +412,7 @@ void Map::LoadTiles(const std::string &path) {
 }
 
 void Map::LoadTextures(const std::string &path) {
-    static const char *default_sky = "skys/sunny/";
+    static const char *default_sky = "sunny/";
     if(sky_.empty() || sky_ == "none") {
         LogWarn("No sky specified, using default\n");
         sky_ = u_find(default_sky);
@@ -455,7 +450,7 @@ void Map::GenerateOverview() {
             { 100, 240, 53 }    // Lava/Poison
     };
 
-    /* create our storage */
+    // Create our storage
 
     PLImage image;
     memset(&image, 0, sizeof(PLImage));
@@ -469,30 +464,36 @@ void Map::GenerateOverview() {
     image.data = static_cast<uint8_t **>(u_alloc(image.levels, sizeof(uint8_t *), true));
     image.data[0] = static_cast<uint8_t *>(u_alloc(1, image.size, true));
 
-    /* now write into the image buffer */
+    // Now write into the image buffer
 
     uint8_t *buf = image.data[0];
     for(uint8_t y = 0; y < 64; ++y) {
         for(uint8_t x = 0; x < 64; ++x) {
             PLVector2 position(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64));
             MapTile *tile = GetTile(position);
-            if(tile == nullptr) {
-                Error("hit an invalid tile during minimap generation!\n");
-            }
+            u_assert(tile != nullptr, "Hit an invalid tile during overview generation!\n");
 
-            auto mod = static_cast<uint8_t>(GetHeight(position) / 100);
-
-            // TODO: some obvious improvements to PLColour can be made here...
-            PLColour rgb = (colours[tile->type] / uint8_t(16)) * PLColour(mod, mod, mod);
+            auto mod = static_cast<int>((GetHeight(position) + ((GetMaxHeight() + GetMinHeight()) / 2)) / 255);
+            PLColour rgb = PLColour(
+                    std::min((colours[tile->type].r / 9) * mod, 255),
+                    std::min((colours[tile->type].g / 9) * mod, 255),
+                    std::min((colours[tile->type].b / 9) * mod, 255)
+                    );
             if(tile->flags & TILE_FLAG_MINE) {
                 rgb = PLColour(255, 0, 0);
             }
 
-            *(buf++) = rgb.r; *(buf++) = rgb.g; *(buf++) = rgb.b;
+            *(buf++) = rgb.r;
+            *(buf++) = rgb.g;
+            *(buf++) = rgb.b;
         }
     }
 
-    plWriteImage(&image, "./test.png");
+    if((overview_ = plCreateTexture()) == nullptr) {
+        Error("Failed to generate overview texture slot!\n%s\n", plGetError());
+    }
+
+    plUploadTextureImage(overview_, &image);
     plFreeImage(&image);
 }
 
