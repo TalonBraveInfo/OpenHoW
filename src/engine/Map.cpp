@@ -192,7 +192,7 @@ Map::~Map() {
 MapChunk *Map::GetChunk(const PLVector2 &pos) {
     if( pos.x < 0 || std::floor(pos.x) >= MAP_PIXEL_WIDTH ||
         pos.y < 0 || std::floor(pos.y) >= MAP_PIXEL_WIDTH) {
-        LogWarn("Invalid width / height range (%fx%f) vs (%sx%s)!\n", pos.x, pos.y, MAP_PIXEL_WIDTH, MAP_PIXEL_WIDTH);
+        LogWarn("Invalid width / height range (%fx%f) vs (%dx%d)!\n", pos.x, pos.y, MAP_PIXEL_WIDTH, MAP_PIXEL_WIDTH);
         return nullptr;
     }
 
