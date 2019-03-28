@@ -20,7 +20,6 @@
 
 #include "engine.h"
 #include "input.h"
-#include "map.h"
 #include "language.h"
 
 #include "client/particle.h"
@@ -172,7 +171,7 @@ static void QuitCommand(unsigned int argc, char *argv[]) {
 }
 
 static void DisconnectCommand(unsigned int argc, char *argv[]) {
-    Map_Unload();
+    //Map_Unload();
 }
 
 static void ConfigCommand(unsigned int argc, char *argv[]) {
@@ -231,7 +230,8 @@ static void OpenCommand(unsigned int argc, char *argv[]) {
                 return;
             }
 
-            Map_Load(map_name, MAP_MODE_EDITOR);
+            u_assert(0);
+            //Map_Load(map_name, MAP_MODE_EDITOR);
         } break;
     }
 }

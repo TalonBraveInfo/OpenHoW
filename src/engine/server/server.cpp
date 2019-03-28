@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 #include "../script/script.h"
-#include "../map.h"
+#include "../Map.h"
 
 #include "actor.h"
 
@@ -39,8 +39,7 @@ void Server_Shutdown() {
     LogInfo("shutting down server...\n");
 
     ActorManager::GetInstance()->ClearActors();
-
-    Map_Unload();
+    // TODO unload current map!
 }
 
 PL_EXTERN_C_END

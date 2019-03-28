@@ -19,13 +19,14 @@
 
 #include "engine.h"
 #include "game.h"
-#include "map.h"
+#include "Map.h"
 #include "language.h"
 
 #include "script/script.h"
 #include "script/ScriptConfig.h"
 
 #include "client/frontend.h"
+#include "MapManager.h"
 
 /* Gamemode Management
  *
@@ -175,12 +176,17 @@ void SetCampaign(const char *dir) {
 
     plSetConsoleVariable(cv_campaign_path, campaign->dir);
 
-    LogInfo("campaign has been set to \"%s\" successfully!\n", campaign->name);
+    LogInfo("Campaign has been set to \"%s\" successfully!\n", campaign->name);
+
+    // Ensure that our manifest list is updated
+    MapManager::GetInstance()->RegisterManifests();
 }
 
 /******************************************************/
 
 bool game_started = false;
+
+Map *temp_map = nullptr; // Temporary, until we have a proper interface...
 
 void Game_StartNewGame(const GameModeSetup *mode) {
     LogDebug("starting new game...\n");
@@ -191,8 +197,10 @@ void Game_StartNewGame(const GameModeSetup *mode) {
 
     FE_SetState(FE_MODE_LOADING);
 
-    if(!Map_Load(mode->map, mode->game_mode)) {
-        LogWarn("failed to load map, aborting game!\n");
+    try {
+        temp_map = new Map(*mode);
+    } catch(std::exception &e) {
+        LogWarn("Failed to load map, aborting game!\n");
         FE_RestoreLastState();
         return;
     }
@@ -216,7 +224,7 @@ void Game_StartNewGame(const GameModeSetup *mode) {
 void Game_End(void) {
     LogDebug("ending current game...\n");
 
-    Map_Unload();
+    delete temp_map;
 
     FE_SetState(FE_MODE_MAIN_MENU); // todo: should take to results screen???
 }

@@ -48,7 +48,7 @@ private:
 #include "client/particle.h"
 #include "client/audio.h"
 #include "game.h"
-#include "map.h"
+#include "Map.h"
 
 class ParticleEditor {
 public:
@@ -245,7 +245,7 @@ void AddFilePath(const char *path) {
 }
 
 void ScanDirectories() {
-    file_list.empty();
+    file_list.clear();
     plScanDirectory(GetBasePath(), "map", AddFilePath, true);
     plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
     plScanDirectory(GetBasePath(), "pps", AddFilePath, true);
