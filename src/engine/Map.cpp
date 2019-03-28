@@ -142,14 +142,14 @@ Map::Map(const GameModeSetup &mode) {
     }
 
     std::string base_path = "maps/" + std::string(mode.map) + "/";
-    std::string p = u_find(std::string(base_path + std::string(mode.map) + ".pmg").c_str());
+    std::string p = u_find(std::string(base_path + mode.map + ".pmg").c_str());
     if(!plFileExists(p.c_str())) {
         throw std::runtime_error("PMG, " + p + ", doesn't exist!\n");
     }
 
     LoadTiles(p);
 
-    p = u_find(std::string(base_path + std::string(mode.map) + ".pog").c_str());
+    p = u_find(std::string(base_path + mode.map + ".pog").c_str());
     if (!plFileExists(p.c_str())) {
         throw std::runtime_error("POG, " + p + ", doesn't exist!\n");
     }
@@ -190,9 +190,15 @@ Map::~Map() {
 }
 
 MapChunk *Map::GetChunk(const PLVector2 &pos) {
+    if( pos.x < 0 || std::floor(pos.x) >= MAP_PIXEL_WIDTH ||
+        pos.y < 0 || std::floor(pos.y) >= MAP_PIXEL_WIDTH) {
+        LogWarn("Invalid width / height range (%fx%f) vs (%sx%s)!\n", pos.x, pos.y, MAP_PIXEL_WIDTH, MAP_PIXEL_WIDTH);
+        return nullptr;
+    }
+
     uint idx = ((uint)(pos.x) / MAP_CHUNK_PIXEL_WIDTH) + (((uint)(pos.y) / MAP_CHUNK_PIXEL_WIDTH) * MAP_CHUNK_ROW);
     if(idx >= chunks_.size()) {
-        LogWarn("attempted to get an out of bounds chunk index!\n");
+        LogWarn("Attempted to get an out of bounds chunk index!\n");
         return nullptr;
     }
 
@@ -276,30 +282,17 @@ void Map::LoadSpawns(const std::string &path) {
     uint16_t num_indices;
     try {
         ifs.read(reinterpret_cast<char *>(&num_indices), sizeof(uint16_t));
-    } catch(std::ifstream::failure &err) {
+    } catch(const std::ifstream::failure &err) {
         Error("Failed to read POG indices count, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
     }
 
-    spawns_.reserve(num_indices);
+    spawns_.resize(num_indices);
 
     try {
-        ifs.read(reinterpret_cast<char *>(&spawns_[0]), sizeof(MapSpawn) * num_indices);
-    } catch(std::ifstream::failure &err) {
+        ifs.read(reinterpret_cast<char *>(spawns_.data()), sizeof(MapSpawn) * num_indices);
+    } catch(const std::ifstream::failure &err) {
         Error("Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
     }
-
-#if 0
-    for(unsigned int i = 0; i < num_indices; ++i) {
-#define v(a) spawns_[i].a[0], spawns_[i].a[1], spawns_[i].a[2]
-        LogDebug("name %s\n", spawns_[i].name);
-        LogDebug("position %d %d %d\n", v(position));
-        LogDebug("bounds %d %d %d\n", v(bounds));
-        LogDebug("angles %d %d %d\n", v(angles));
-        LogDebug("fallback %d %d %d\n", v(fallback_position));
-    }
-#endif
-
-    ifs.close();
 }
 
 void Map::LoadTiles(const std::string &path) {
@@ -312,7 +305,7 @@ void Map::LoadTiles(const std::string &path) {
 
     for(unsigned int chunk_y = 0; chunk_y < MAP_CHUNK_ROW; ++chunk_y) {
         for(unsigned int chunk_x = 0; chunk_x < MAP_CHUNK_ROW; ++chunk_x) {
-#define CUR_CHUNK chunks_[chunk_x + chunk_y * MAP_CHUNK_ROW]
+            MapChunk &current_chunk = chunks_[chunk_x + chunk_y * MAP_CHUNK_ROW];
 
             struct __attribute__((packed)) {
                 /* offsets */
@@ -325,7 +318,7 @@ void Map::LoadTiles(const std::string &path) {
             if(std::fread(&chunk, sizeof(chunk), 1, fh) != 1) {
                 Error("unexpected end of file, aborting!\n");
             }
-            CUR_CHUNK.offset = PLVector3(chunk.x, chunk.y, chunk.z);
+            current_chunk.offset = PLVector3(chunk.x, chunk.y, chunk.z);
 
             struct __attribute__((packed)) {
                 int16_t     height{0};
@@ -375,22 +368,22 @@ void Map::LoadTiles(const std::string &path) {
                      * trying to add massive textures for each tile... :(
                      */
 
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type     = (tile.type & 31U);
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flags    = (tile.type & ~31U);
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip     = tile.rotation;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip     = 0;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex      = tile.texture;
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type     = (tile.type & 31U);
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flags    = (tile.type & ~31U);
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip     = tile.rotation;
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip     = 0;
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex      = tile.texture;
 
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[0] = vertices[
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[0] = vertices[
                             (tile_y * 5) + tile_x].height;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[1] = vertices[
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[1] = vertices[
                             (tile_y * 5) + tile_x + 1].height;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[2] = vertices[
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[2] = vertices[
                             ((tile_y + 1) * 5) + tile_x].height;
-                    CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[3] = vertices[
+                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[3] = vertices[
                             ((tile_y + 1) * 5) + tile_x + 1].height;
 
-                    u_assert(CUR_CHUNK.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
+                    u_assert(current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
                 }
             }
@@ -412,26 +405,7 @@ void Map::LoadTiles(const std::string &path) {
 }
 
 void Map::LoadTextures(const std::string &path) {
-    static const char *default_sky = "sunny/";
-    if(sky_.empty() || sky_ == "none") {
-        LogWarn("No sky specified, using default\n");
-        sky_ = u_find(default_sky);
-    }
-
-    std::string sky_path = u_find("skys/") + sky_ + "1";
-    if(!plPathExists(sky_path.c_str())) {
-        LogWarn("Failed to find texture path for sky at \"%s\"!\n", sky_path.c_str());
-        return;
-    }
-
-    /*
-    FILE *fh = fopen(path, "rb");
-    if(fh == NULL) {
-        Error("failed to open texture data, \"%s\", aborting\n", path);
-    }
-
-    fclose(fh);
-     */
+    // TODO
 }
 
 void Map::GenerateOverview() {
