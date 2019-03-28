@@ -165,13 +165,3 @@ private:
     PLModel *sky_model_{nullptr};
     PLTexture *sky_textures_[4];
 };
-
-PL_EXTERN_C
-
-void CacheMapData(void);
-
-bool Map_Load(const char *name, unsigned int mode);
-
-const struct MapManifest *Map_GetMapList(unsigned int *num);
-
-PL_EXTERN_C_END
