@@ -67,7 +67,7 @@ void System_DisplayMessageBox(unsigned int level, const char *msg, ...) {
     vsnprintf(buf, sizeof(buf), msg, args);
     va_end(args);
 
-    SDL_ShowSimpleMessageBox(level, ENGINE_TITLE, msg, window);
+    SDL_ShowSimpleMessageBox(level, ENGINE_TITLE, buf, window);
 }
 
 const char *System_GetClipboardText(void*) {
