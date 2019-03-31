@@ -229,7 +229,7 @@ void FE_Simulate(void) {
 char loading_description[256];
 uint8_t loading_progress = 0;
 
-#define Redraw()   FE_Draw();
+#define Redraw()   Display_DrawInterface();
 
 void FE_SetLoadingBackground(const char *name) {
     if(fe_background != NULL) {
