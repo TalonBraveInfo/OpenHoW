@@ -69,7 +69,12 @@ add_executable(OpenHoW ${OPENHOW_SOURCE_FILES})
 if(WIN32)
     add_dependencies(OpenHoW OpenAL)
 
-    target_include_directories(OpenHoW PRIVATE ../3rdparty/SDL2/include/ ../3rdparty/openal-soft/include/)
+    target_include_directories(OpenHoW PRIVATE
+            ../3rdparty/SDL2/include/
+            ../3rdparty/openal-soft/include/
+            # below is hack to get imgui compiled on Windows with GLEW.
+            ../3rdparty/platform/platform/3rdparty/glew-2.2.0/include/
+            )
     target_link_directories(OpenHoW PRIVATE ../3rdparty/SDL2/lib/ ../3rdparty/openal-soft/lib/ ../../lib/)
     target_link_options(OpenHoW PRIVATE -mwindows)
     target_link_libraries(OpenHoW -Wl,-Bstatic SDL2 OpenAL32 stdc++ winpthread -Wl,-Bdynamic -static-libstdc++ -static-libgcc
