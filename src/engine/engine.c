@@ -67,7 +67,6 @@ void Engine_Initialize(void) {
     /* this MUST be done after all vars have been
      * initialized, otherwise, right now, certain
      * vars will not be loaded/saved! */
-    Config_Load(u_find("default.config"));
     Config_Load(Config_GetUserConfigPath());
 
     RegisterPackageInterfaces();
