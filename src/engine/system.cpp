@@ -23,7 +23,7 @@
 #include "imgui_layer.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
-#include "../3rdparty/imgui/examples/imgui_impl_opengl2.h"
+#include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
 #include "server/server.h"
 #include "client/display.h"
@@ -97,9 +97,10 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
 #if 1
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 #if 1
     if(SDL_GL_SetSwapInterval(-1) != 0) {
@@ -176,7 +177,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     io.ImeWindowHandle = wmInfo.info.win.window;
 #endif
 
-    ImGui_ImplOpenGL2_Init();
+    ImGui_ImplOpenGL3_Init();
 
     ImGui::StyleColorsDark();
 }
@@ -187,6 +188,11 @@ void System_SetWindowTitle(const char *title) {
 
 void System_GetWindowSize(int *width, int *height, bool *fs) {
     SDL_GetWindowSize(window, width, height);
+    *fs = static_cast<bool>(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
+}
+
+void System_GetWindowDrawableSize(int *width, int *height, bool *fs) {
+    SDL_GL_GetDrawableSize(window, width, height);
     *fs = static_cast<bool>(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
 }
 
@@ -227,7 +233,7 @@ void System_SwapDisplay(void) {
 void System_Shutdown(void) {
     Engine_Shutdown();
 
-    ImGui_ImplOpenGL2_DestroyDeviceObjects();
+    ImGui_ImplOpenGL3_DestroyDeviceObjects();
     ImGui::DestroyContext();
 
     SDL_StopTextInput();
@@ -556,7 +562,7 @@ int main(int argc, char **argv) {
         Client_Render(delta_time);
 #else
 
-        ImGui_ImplOpenGL2_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
 
         delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
@@ -564,15 +570,16 @@ int main(int argc, char **argv) {
 
         Display_DrawScene();
         Display_DrawInterface();
+        Display_Composite();
+        Display_DrawDebug();
 
         /* now render imgui */
-
         ImGui::Render();
 
         plSetupCamera(imgui_camera);
         plSetShaderProgram(nullptr);
 
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         /* and finally, swap */
 

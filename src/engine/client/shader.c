@@ -22,11 +22,11 @@
 #include "shader.h"
 
 #define GLSL(...) #__VA_ARGS__
-#define GLSL_DEFAULT_UNIFORMS \
-        "uniform sampler2D diffuse;"
+#define GLSL_DEFAULT_VS_UNIFORMS "attribute vec3 pos; attribute vec3 norm; attribute vec2 UV; attribute vec4 col;"
+#define GLSL_DEFAULT_PS_UNIFORMS "uniform sampler2D diffuse;"
 
 static const char *fragment_water =
-        GLSL_DEFAULT_UNIFORMS
+        GLSL_DEFAULT_PS_UNIFORMS
         GLSL(
                 void main() {
                     gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
@@ -34,7 +34,7 @@ static const char *fragment_water =
         );
 
 static const char *vertex_water =
-        GLSL_DEFAULT_UNIFORMS
+        GLSL_DEFAULT_VS_UNIFORMS
         GLSL(
                 attribute vec2 position;
 
@@ -44,41 +44,75 @@ static const char *vertex_water =
                 }
         );
 
-static const char *fragment_default =
-        GLSL_DEFAULT_UNIFORMS
+static const char *fragment_colour =
+        GLSL_DEFAULT_PS_UNIFORMS
         GLSL(
-                varying vec4 v_colour;
+                in vec3 interp_normal;
+                in vec2 interp_UV;
+                in vec4 interp_colour;
 
                 void main() {
-                    gl_FragColor = v_colour * texture2D(diffuse, gl_TexCoord[0].st);
+                    gl_FragColor = interp_colour;
                 }
         );
 
-static const char *fragment_alpha_test =
-        GLSL_DEFAULT_UNIFORMS
+static const char *fragment_texture =
+        GLSL_DEFAULT_PS_UNIFORMS
         GLSL(
-                varying vec4 v_colour;
+                in vec3 interp_normal;
+                in vec2 interp_UV;
+                in vec4 interp_colour;
 
                 void main() {
-                    vec4 colour = texture2D(diffuse, gl_TexCoord[0].st);
-                    if(colour.a < 0.1) {
+                    gl_FragColor = interp_colour * texture2D(diffuse, interp_UV);
+                }
+        );
+
+static const char *fragment_alpha_test_texture =
+        GLSL_DEFAULT_PS_UNIFORMS
+        GLSL(
+                in vec3 interp_normal;
+                in vec2 interp_UV;
+                in vec4 interp_colour;
+
+                void main() {
+                    vec4 sample = texture2D(diffuse, interp_UV);
+                    if(sample.a < 0.1) {
                         discard;
                     }
 
-                    gl_FragColor = v_colour * colour;
+                    gl_FragColor = interp_colour * sample;
                 }
         );
 
 static const char *vertex_default =
-        GLSL_DEFAULT_UNIFORMS
+        GLSL_DEFAULT_VS_UNIFORMS
         GLSL(
-                varying vec4 v_colour;
+                out vec3 interp_normal;
+                out vec2 interp_UV;
+                out vec4 interp_colour;
 
                 void main() {
-                    v_colour = gl_Color;
+                    gl_Position = pl_proj * pl_model_view * vec4(pos, 1.0f);
+                    interp_normal = norm;
+                    interp_UV = UV;
+                    interp_colour = col;
+                }
+        );
 
-                    gl_TexCoord[0] = gl_MultiTexCoord0;
-                    gl_Position = ftransform();
+static const char *vertex_debug_test =
+        GLSL_DEFAULT_VS_UNIFORMS
+        GLSL(
+                void main() {
+                    gl_Position = pl_proj * pl_model_view * vec4(pos, 1.0f);
+                }
+        );
+
+static const char *fragment_debug_test =
+        GLSL_DEFAULT_PS_UNIFORMS
+        GLSL(
+                void main() {
+                    gl_FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);
                 }
         );
 
@@ -124,13 +158,15 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
 
 void Shaders_Initialize(void) {
     memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
-    programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default),
-                                                      fragment_default, strlen(fragment_default));
-    programs[SHADER_WATER]      = CreateShaderProgram(vertex_water, strlen(vertex_water),
-                                                      fragment_water, strlen(fragment_water));
-    programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default),
-                                                      fragment_alpha_test, strlen(fragment_alpha_test));
+    programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_texture, strlen(fragment_texture));
+    programs[SHADER_WATER]      = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_water, strlen(fragment_water));
+    programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_alpha_test_texture, strlen(fragment_alpha_test_texture));
     //programs[SHADER_VIDEO]      = CreateShaderProgram("video", "video");
+    programs[SHADER_DEBUG_TEST]       = CreateShaderProgram(vertex_debug_test, strlen(vertex_debug_test), fragment_debug_test, strlen(fragment_debug_test));
+
+
+
+
 
     /* set defaults */
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {

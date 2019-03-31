@@ -50,6 +50,8 @@ int Display_GetViewportHeight(const PLViewport *viewport);
 void Display_SetupDraw(double delta);
 void Display_DrawScene(void);
 void Display_DrawInterface(void);
+void Display_DrawDebug(void);
+void Display_Composite(void);
 void Display_Flush(void);
 
 void Display_ClearTextureIndex(unsigned int id);

@@ -101,6 +101,7 @@ enum {
     SHADER_ALPHA_TEST,  /* */
     SHADER_WATER,       /* */
     SHADER_VIDEO,       /* */
+    SHADER_DEBUG_TEST,
 
     MAX_SHADERS
 };

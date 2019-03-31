@@ -27,6 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 project(OpenHoW)
 
+#Required for OpenGL3.x imgui setup
+add_definitions("-DIMGUI_IMPL_OPENGL_LOADER_GLEW")
+
 file(
         GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
@@ -56,8 +59,8 @@ file(
         ../3rdparty/imgui/imgui_draw.cpp
         ../3rdparty/imgui/imgui_widgets.cpp
         #../3rdparty/imgui/imgui_demo.cpp
-        ../3rdparty/imgui/examples/imgui_impl_opengl2.cpp
-        ../3rdparty/imgui/examples/imgui_impl_opengl2.h
+        ../3rdparty/imgui/examples/imgui_impl_opengl3.cpp
+        ../3rdparty/imgui/examples/imgui_impl_opengl3.h
         ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 
@@ -66,7 +69,12 @@ add_executable(OpenHoW ${OPENHOW_SOURCE_FILES})
 if(WIN32)
     add_dependencies(OpenHoW OpenAL)
 
-    target_include_directories(OpenHoW PRIVATE ../3rdparty/SDL2/include/ ../3rdparty/openal-soft/include/)
+    target_include_directories(OpenHoW PRIVATE
+            ../3rdparty/SDL2/include/
+            ../3rdparty/openal-soft/include/
+            # below is hack to get imgui compiled on Windows with GLEW.
+            ../3rdparty/platform/platform/3rdparty/glew-2.2.0/include/
+            )
     target_link_directories(OpenHoW PRIVATE ../3rdparty/SDL2/lib/ ../3rdparty/openal-soft/lib/ ../../lib/)
     target_link_options(OpenHoW PRIVATE -mwindows)
     target_link_libraries(OpenHoW -Wl,-Bstatic SDL2 OpenAL32 stdc++ winpthread -Wl,-Bdynamic -static-libstdc++ -static-libgcc
