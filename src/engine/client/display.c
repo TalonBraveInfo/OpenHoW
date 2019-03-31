@@ -36,8 +36,8 @@
 #define MAX_TEXTURES_PER_INDEX  1024
 
 
-PLFrameBuffer* game_target;
-PLFrameBuffer* frontend_target;
+static PLFrameBuffer* game_target;
+static PLFrameBuffer* frontend_target;
 
 typedef struct TextureIndex {
     struct {
@@ -449,7 +449,13 @@ void Display_Initialize(void) {
 
     //Create the render textures
     game_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+    if(game_target == NULL) {
+        Error("Failed to create game_target framebuffer, aborting!\n%s\n", plGetError());
+    }
     frontend_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+    if(frontend_target == NULL) {
+        Error("Failed to create frontend_target framebuffer, aborting!\n%s\n", plGetError());
+    }
 
     Shaders_Initialize();
 
@@ -632,7 +638,6 @@ static void DrawDebugOverlay(void) {
 static void SetupFrontendCamera(int w, int h) {
     g_state.ui_camera->viewport.w = w;
     g_state.ui_camera->viewport.h = h;
-    plBindFrameBuffer(frontend_target, PL_FRAMEBUFFER_DRAW);
     plSetupCamera(g_state.ui_camera);
 }
 
@@ -661,10 +666,19 @@ void Display_DrawScene(void) {
 
 void Display_DrawInterface(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
+    plBindFrameBuffer(frontend_target, PL_FRAMEBUFFER_DRAW);
     SetupFrontendCamera(640, 480);
     FE_Draw();
+}
 
-    SetupFrontendCamera(640, 480);
+void Display_DrawDebug(void) {
+    int window_draw_w, window_draw_h;
+    bool fs;
+    System_GetWindowDrawableSize(&window_draw_w, &window_draw_h, &fs);
+
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
+    SetupFrontendCamera(window_draw_w, window_draw_h);
     DrawDebugOverlay();
     Console_Draw();
 }
@@ -672,10 +686,10 @@ void Display_DrawInterface(void) {
 void Display_Composite(void) {
     //TODO: PS blend game and frontend buffers in one op, write to BB.
     //      For now just blit & linear scale the frontend target to BB since nothing is rendered in the game scene 
-    int bbWidth, bbHeight;
+    int bb_width, bb_height;
     bool fs;
-    System_GetWindowDrawableSize(&bbWidth, &bbHeight, &fs);
-    plBlitFrameBuffers(frontend_target, frontend_target->width, frontend_target->height, 0, bbWidth, bbHeight, true);
+    System_GetWindowDrawableSize(&bb_width, &bb_height, &fs);
+    plBlitFrameBuffers(frontend_target, frontend_target->width, frontend_target->height, 0, bb_width, bb_height, true);
 
     //Leave default BB bound for debug overlays
     plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);

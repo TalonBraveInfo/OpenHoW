@@ -571,6 +571,7 @@ int main(int argc, char **argv) {
         Display_DrawScene();
         Display_DrawInterface();
         Display_Composite();
+        Display_DrawDebug();
 
         /* now render imgui */
         ImGui::Render();

@@ -93,7 +93,7 @@ static const char *vertex_default =
                 out vec4 interp_colour;
 
                 void main() {
-                    gl_Position = proj * modelView * vec4(pos, 1.0f);
+                    gl_Position = pl_proj * pl_model_view * vec4(pos, 1.0f);
                     interp_normal = norm;
                     interp_UV = UV;
                     interp_colour = col;
@@ -104,7 +104,7 @@ static const char *vertex_debug_test =
         GLSL_DEFAULT_VS_UNIFORMS
         GLSL(
                 void main() {
-                    gl_Position = proj * modelView * vec4(pos, 1.0f);
+                    gl_Position = pl_proj * pl_model_view * vec4(pos, 1.0f);
                 }
         );
 
