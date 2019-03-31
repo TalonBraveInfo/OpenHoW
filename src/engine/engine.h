@@ -117,6 +117,7 @@ void System_SwapDisplay(void);
 
 void System_SetWindowTitle(const char *title);
 void System_GetWindowSize(int *width, int *height, bool *fs);
+void System_GetWindowDrawableSize(int *width, int *height, bool *fs);
 bool System_SetWindowSize(int *width, int *height, bool fs);
 
 void System_Shutdown(void);

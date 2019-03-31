@@ -35,6 +35,10 @@
 
 #define MAX_TEXTURES_PER_INDEX  1024
 
+
+PLFrameBuffer* game_target;
+PLFrameBuffer* frontend_target;
+
 typedef struct TextureIndex {
     struct {
         int x, y;
@@ -371,18 +375,10 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
 }
 
 int Display_GetViewportWidth(const PLViewport *viewport) {
-    if(viewport->r_w != 0 && viewport->r_w != viewport->w) {
-        return viewport->r_w;
-    }
-
     return viewport->w;
 }
 
 int Display_GetViewportHeight(const PLViewport *viewport) {
-    if(viewport->r_h != 0 && viewport->r_h != viewport->h) {
-        return viewport->r_h;
-    }
-
     return viewport->h;
 }
 
@@ -451,6 +447,10 @@ void Display_Initialize(void) {
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
+    //Create the render textures
+    game_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+    frontend_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+
     Shaders_Initialize();
 
     //////////////////////////////////////////////////////////
@@ -477,8 +477,6 @@ void Display_Initialize(void) {
     g_state.ui_camera->far          = 1000;
     g_state.ui_camera->viewport.w   = cv_display_width->i_value;
     g_state.ui_camera->viewport.h   = cv_display_height->i_value;
-    g_state.ui_camera->viewport.r_w = 640;
-    g_state.ui_camera->viewport.r_h = 480;
 
     //plSetCullMode(PL_CULL_POSTIVE);
 
@@ -632,8 +630,9 @@ static void DrawDebugOverlay(void) {
 }
 
 static void SetupFrontendCamera(int w, int h) {
-    g_state.ui_camera->viewport.r_w = w;
-    g_state.ui_camera->viewport.r_h = h;
+    g_state.ui_camera->viewport.w = w;
+    g_state.ui_camera->viewport.h = h;
+    plBindFrameBuffer(frontend_target, PL_FRAMEBUFFER_DRAW);
     plSetupCamera(g_state.ui_camera);
 }
 
@@ -649,22 +648,37 @@ void Display_SetupDraw(double delta) {
     }
     plClearBuffers(clear_flags);
 
+    plBindFrameBuffer(game_target, PL_FRAMEBUFFER_DRAW);
     plSetupCamera(g_state.camera);
 }
 
 void Display_DrawScene(void) {
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
     //Map_Draw();
     //DrawActors(cur_delta);
     DrawParticles(cur_delta);
 }
 
 void Display_DrawInterface(void) {
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
     SetupFrontendCamera(640, 480);
     FE_Draw();
 
-    SetupFrontendCamera(0, 0);
+    SetupFrontendCamera(640, 480);
     DrawDebugOverlay();
     Console_Draw();
+}
+
+void Display_Composite(void) {
+    //TODO: PS blend game and frontend buffers in one op, write to BB.
+    //      For now just blit & linear scale the frontend target to BB since nothing is rendered in the game scene 
+    int bbWidth, bbHeight;
+    bool fs;
+    System_GetWindowDrawableSize(&bbWidth, &bbHeight, &fs);
+    plBlitFrameBuffers(frontend_target, frontend_target->width, frontend_target->height, 0, bbWidth, bbHeight, true);
+
+    //Leave default BB bound for debug overlays
+    plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
 }
 
 void Display_Flush(void) {

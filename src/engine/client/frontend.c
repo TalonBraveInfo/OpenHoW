@@ -378,8 +378,6 @@ void FE_Draw(void) {
             } break;
         }
     }
-
-    plDrawPerspectivePOST(g_state.ui_camera);
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */

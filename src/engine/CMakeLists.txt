@@ -27,6 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 project(OpenHoW)
 
+#Required for OpenGL3.x imgui setup
+add_definitions("-DIMGUI_IMPL_OPENGL_LOADER_GLEW")
+
 file(
         GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
@@ -56,8 +59,8 @@ file(
         ../3rdparty/imgui/imgui_draw.cpp
         ../3rdparty/imgui/imgui_widgets.cpp
         #../3rdparty/imgui/imgui_demo.cpp
-        ../3rdparty/imgui/examples/imgui_impl_opengl2.cpp
-        ../3rdparty/imgui/examples/imgui_impl_opengl2.h
+        ../3rdparty/imgui/examples/imgui_impl_opengl3.cpp
+        ../3rdparty/imgui/examples/imgui_impl_opengl3.h
         ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 

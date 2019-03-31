@@ -701,7 +701,7 @@ void DEBUGDrawSkeleton(void) {
 
     static PLMesh *skeleton_mesh = NULL;
     if(skeleton_mesh == NULL) {
-        skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, model_cache.num_bones * 2);
+        skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, model_cache.num_bones * 2);
     }
 
 #if 0
