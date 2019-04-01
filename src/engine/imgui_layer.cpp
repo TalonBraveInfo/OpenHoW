@@ -22,13 +22,13 @@
 #include "imgui_layer.h"
 
 #include "client/display.h"
+#include "MapManager.h"
 
 static bool show_quit               = false;
 static bool show_file               = false;
 static bool show_new_game           = false;
 static bool show_about              = false;
 static bool show_console            = false;
-static bool show_texture            = false;
 static bool show_fps                = false;
 static bool show_settings           = false;
 
@@ -44,6 +44,7 @@ public:
     virtual void Display() = 0;
 
     bool GetStatus() { return status_; }
+    void SetStatus(bool status) { status_ = status; }
 
 protected:
     bool status_{true};
@@ -57,6 +58,12 @@ static std::vector<DebugWindow*> windows;
 
 class MapConfigEditor : public DebugWindow {
 public:
+    MapConfigEditor() {
+        manifests_ = &MapManager::GetInstance()->GetManifests();
+    }
+
+    ~MapConfigEditor() {}
+
     void Display() override {
         ImGui::Begin("Map Config Editor", &status_, ImGuiWindowFlags_MenuBar);
         ImGui::End();
@@ -64,6 +71,7 @@ public:
 
 protected:
 private:
+    const std::map<std::string, MapManifest> *manifests_;
 };
 
 /************************************************************/
@@ -448,6 +456,11 @@ void UI_DisplayDebugMenu(void) {
     UpdateViewport(pos.x, pos.y, size.x, size.y);
     ImGui::End();
 #endif
+
+    static MapConfigEditor *instance_mce = nullptr;
+    if(instance_mce == nullptr) {
+        instance_mce = new MapConfigEditor();
+    }
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {

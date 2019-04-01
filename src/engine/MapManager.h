@@ -22,6 +22,12 @@ struct MapManifest {
     std::string     path;
     std::string     description;
     std::string     sky;
+
+    PLColour    ambient_colour; // ambient colour
+
+    PLColour    sun_colour;
+    PLVector3   sun_position;   // sun always projects towards center
+
     unsigned int    flags{0};
 };
 
@@ -47,8 +53,8 @@ public:
 
     unsigned int GetModeFlags(const std::string &mode);
 
-    MapManifest *GetManifest(const std::string &name);
-    std::map<std::string, MapManifest> GetManifests() { return manifests_; };
+    const MapManifest *GetManifest(const std::string &name);
+    const std::map<std::string, MapManifest> &GetManifests() { return manifests_; };
 
 protected:
 private:

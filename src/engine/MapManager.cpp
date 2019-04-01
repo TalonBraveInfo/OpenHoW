@@ -43,11 +43,7 @@ void MapManager::RegisterManifest(const std::string &path) {
         manifest.name = config.GetStringProperty("name");
         manifest.description = config.GetStringProperty("description");
         manifest.sky = config.GetStringProperty("sky");
-
-        std::vector<std::string> modes = config.GetArrayStrings("modes");
-        for(const auto &mode : modes) {
-            manifest.flags |= GetModeFlags(mode);
-        }
+        manifest.flags |= config.GetIntegerProperty("flags");
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }
@@ -69,7 +65,7 @@ void MapManager::RegisterManifests() {
     plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 
-MapManifest *MapManager::GetManifest(const std::string &name) {
+const MapManifest *MapManager::GetManifest(const std::string &name) {
     auto manifest = manifests_.find(name);
     if(manifest != manifests_.end()) {
         return &manifest->second;

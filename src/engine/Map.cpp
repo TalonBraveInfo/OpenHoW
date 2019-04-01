@@ -127,7 +127,7 @@ Map::Map(const GameModeSetup &mode) {
     LogDebug("Loading map, %s, in mode %u\n", mode.map, mode.game_mode);
     /* map manager now worries about resetting map state etc. */
 
-    MapManifest *desc = MapManager::GetInstance()->GetManifest(mode.map);
+    const MapManifest *desc = MapManager::GetInstance()->GetManifest(mode.map);
     if(desc == nullptr) {
         LogWarn("Failed to get map descriptor, %s!\n", mode.map);
     } else {
