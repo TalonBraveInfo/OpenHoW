@@ -32,14 +32,38 @@ static bool show_texture            = false;
 static bool show_fps                = false;
 static bool show_settings           = false;
 
-class BaseWindow {
+static unsigned int windows_id_counter = 0;
+class DebugWindow {
 public:
-    virtual void ShowWindow(bool show = true) { show_ = show; }
-    bool IsWindowShowing() { return show_; }
+    DebugWindow() {
+        id_ = windows_id_counter++;
+    }
+
+    virtual ~DebugWindow() = default;
+
+    virtual void Display() = 0;
+
+    bool GetStatus() { return status_; }
+
+protected:
+    bool status_{true};
+    unsigned int id_;
+};
+
+static std::vector<DebugWindow*> windows;
+
+/************************************************************/
+/* Map Config Editor */
+
+class MapConfigEditor : public DebugWindow {
+public:
+    void Display() override {
+        ImGui::Begin("Map Config Editor", &status_, ImGuiWindowFlags_MenuBar);
+        ImGui::End();
+    }
 
 protected:
 private:
-    bool show_{false};
 };
 
 /************************************************************/
@@ -78,34 +102,73 @@ private:
 /************************************************************/
 /* Texture Viewer */
 
-static PLTexture *cur_texture = nullptr;
-
-void UI_DisplayTextureViewer() {
-    if(!show_texture) {
-        return;
+class TextureViewer : public DebugWindow {
+public:
+    explicit TextureViewer(const std::string &path, PLTexture *texture) {
+        texture_ = texture;
+        texture_path = path;
     }
 
-    ImGui::SetNextWindowSize(ImVec2(cur_texture->w, cur_texture->h), ImGuiCond_Once);
-    ImGui::Begin("Texture Viewer", &show_texture, ImGuiWindowFlags_MenuBar);
+    ~TextureViewer() override {
+        plDeleteTexture(texture_, true);
+    }
 
-    if(ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if(ImGui::MenuItem("Open...")) {
-                show_file = true;
-            }
-            ImGui::EndMenu();
+    void ReloadTexture(PLTextureFilter filter_mode) {
+        if(filter_mode == filter_mode_) {
+            return;
         }
-        ImGui::EndMenuBar();
+
+        plDeleteTexture(texture_, true);
+        texture_ = Display_LoadTexture(texture_path.c_str(), filter_mode);
+        filter_mode_ = filter_mode;
     }
 
-    ImGui::Image(reinterpret_cast<ImTextureID>(cur_texture->internal.id), ImVec2(cur_texture->w, cur_texture->h));
-    ImGui::Separator();
-    ImGui::Text("Name: %s", cur_texture->name);
-    ImGui::Text("W:%d H:%d", cur_texture->w, cur_texture->h);
-    ImGui::Text("Size: %lu", cur_texture->size);
+    void Display() override {
+        ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
+        ImGui::Begin(std::string("Texture Viewer##" + std::to_string(id_)).c_str(), &status_, ImGuiWindowFlags_MenuBar);
 
-    ImGui::End();
-}
+        if(ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if(ImGui::MenuItem("Open...")) {
+                    show_file = true;
+                }
+                ImGui::EndMenu();
+            }
+            if(ImGui::BeginMenu("View")) {
+                ImGui::SliderInt("Scale", &scale_, 1, 8);
+                if(ImGui::BeginMenu("Filter Mode")) {
+                    if(ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
+                        ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
+                    }
+                    if(ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
+                        ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+
+        ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
+                texture_->w * scale_, texture_->h * scale_));
+        ImGui::Separator();
+        ImGui::Text("Name: %s", texture_->name);
+        ImGui::Text("W:%d H:%d", texture_->w, texture_->h);
+        ImGui::Text("Size: %lu", texture_->size);
+
+        ImGui::End();
+    }
+
+protected:
+private:
+    PLTexture *texture_{nullptr};
+    std::string texture_path;
+
+    PLTextureFilter filter_mode_{PL_TEXTURE_FILTER_LINEAR};
+
+    int scale_{1};
+};
 
 /************************************************************/
 /* Settings */
@@ -286,12 +349,13 @@ void UI_DisplayFileBox() {
             if(ImGui::Button(i.path)) {
                 switch(i.type) {
                     case FILE_TYPE_IMAGE: {
-                        if(cur_texture != nullptr) {
-                            plDeleteTexture(cur_texture, true);
+                        PLTexture *texture = Display_LoadTexture(i.path, PL_TEXTURE_FILTER_LINEAR);
+                        if(texture == nullptr) {
+                            LogWarn("Failed to load specified texture, \"%s\"!\n", i.path);
+                            break;
                         }
 
-                        cur_texture = Display_LoadTexture(i.path, PL_TEXTURE_FILTER_LINEAR);
-                        show_texture = true;
+                        windows.push_back(new TextureViewer(i.path, texture));
                     } break;
 
                     case FILE_TYPE_AUDIO: {
@@ -434,6 +498,9 @@ void UI_DisplayDebugMenu(void) {
         }
 
         if(ImGui::BeginMenu("Tools")) {
+            if(ImGui::MenuItem("Map Config Editor...")) {
+
+            }
             if(ImGui::MenuItem("Particle Editor...")) {
                 ParticleEditor::GetInstance()->ShowWindow(true);
             }
@@ -455,7 +522,17 @@ void UI_DisplayDebugMenu(void) {
 
     /* Editors */
     ParticleEditor::GetInstance()->DisplayWindow();
-    UI_DisplayTextureViewer();
 
     UI_DisplayConsole();
+
+    for(auto window = windows.begin(); window != windows.end();) {
+        if((*window)->GetStatus()) {
+            (*window)->Display();
+            ++window;
+            continue;
+        }
+
+        delete (*window);
+        window = windows.erase(window);
+    }
 }
