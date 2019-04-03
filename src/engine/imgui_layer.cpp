@@ -35,8 +35,9 @@ static bool show_settings           = false;
 static unsigned int windows_id_counter = 0;
 class DebugWindow {
 public:
-    DebugWindow() {
+    explicit DebugWindow(bool status = true) {
         id_ = windows_id_counter++;
+        status_ = status;
     }
 
     virtual ~DebugWindow() = default;
@@ -47,7 +48,7 @@ public:
     void SetStatus(bool status) { status_ = status; }
 
 protected:
-    bool status_{true};
+    bool status_;
     unsigned int id_;
 };
 
@@ -56,22 +57,53 @@ static std::vector<DebugWindow*> windows;
 /************************************************************/
 /* Map Config Editor */
 
-class MapConfigEditor : public DebugWindow {
+class MapConfigOpenWindow : public DebugWindow {
 public:
-    MapConfigEditor() {
+    MapConfigOpenWindow() : DebugWindow(false) {
         manifests_ = &MapManager::GetInstance()->GetManifests();
     }
 
-    ~MapConfigEditor() {}
-
     void Display() override {
-        ImGui::Begin("Map Config Editor", &status_, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Open Map Config", &status_);
         ImGui::End();
     }
 
 protected:
 private:
     const std::map<std::string, MapManifest> *manifests_;
+};
+
+class MapConfigEditor : public DebugWindow {
+public:
+    MapConfigEditor() {
+        open_window_ = new MapConfigOpenWindow();
+    }
+
+    ~MapConfigEditor() override {
+        delete open_window_;
+    }
+
+    void Display() override {
+        ImGui::Begin("Map Config Editor", &status_, ImGuiWindowFlags_MenuBar);
+        if(ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if(ImGui::MenuItem("Open...")) {}
+                ImGui::Separator();
+                if(ImGui::MenuItem("Save")) {}
+                if(ImGui::MenuItem("Save As...")) {}
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+        ImGui::End();
+
+        open_window_->Display();
+    }
+
+protected:
+private:
+
+    MapConfigOpenWindow *open_window_{nullptr};
 };
 
 /************************************************************/
@@ -133,7 +165,8 @@ public:
 
     void Display() override {
         ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
-        ImGui::Begin(std::string("Texture Viewer##" + std::to_string(id_)).c_str(), &status_, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin(std::string("Texture Viewer##" + std::to_string(id_)).c_str(), &status_,
+                ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
 
         if(ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("File")) {
@@ -161,9 +194,9 @@ public:
         ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
                 texture_->w * scale_, texture_->h * scale_));
         ImGui::Separator();
-        ImGui::Text("Name: %s", texture_->name);
-        ImGui::Text("W:%d H:%d", texture_->w, texture_->h);
-        ImGui::Text("Size: %lu", texture_->size);
+        ImGui::Text("Path: %s", texture_path.c_str());
+        ImGui::Text("%dx%d", texture_->w, texture_->h);
+        ImGui::Text("Size: %ukB (%luB)", (unsigned int)plBytesToKilobytes(texture_->size), (long unsigned) texture_->size);
 
         ImGui::End();
     }
@@ -254,7 +287,6 @@ void UI_DisplayNewGame() {
 
     if(ImGui::Button("Start Game!")) {
         mode.force_start = true;
-        mode.game_mode = MAP_MODE_TRAINING;
         mode.num_players = 1;
         snprintf(mode.map, sizeof(mode.map) - 1, "camp");
         Game_StartNewGame(&mode);
@@ -317,8 +349,8 @@ void AddFilePath(const char *path) {
 
 void ScanDirectories() {
     file_list.clear();
-    plScanDirectory(GetBasePath(), "map", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
+    //plScanDirectory(GetBasePath(), "map", AddFilePath, true);
+    //plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
     plScanDirectory(GetBasePath(), "pps", AddFilePath, true);
     plScanDirectory(GetBasePath(), "tim", AddFilePath, true);
     plScanDirectory(GetBasePath(), "bmp", AddFilePath, true);

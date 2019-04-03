@@ -106,6 +106,65 @@ bool ScriptConfig::GetBooleanProperty(const std::string &property, bool def) {
     return var;
 }
 
+float ScriptConfig::GetFloatProperty(const std::string &property, float def) {
+    auto *context = static_cast<duk_context *>(ctx_);
+
+    const char *p = property.c_str();
+    if(!duk_get_prop_string(context, -1, p)) {
+        duk_pop(context);
+        LogMissingProperty(p);
+        return def;
+    }
+
+    float var = duk_to_number(context, -1);
+    duk_pop(context);
+
+    return var;
+}
+
+PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour def) {
+    auto *context = static_cast<duk_context *>(ctx_);
+
+    const char *p = property.c_str();
+    if(!duk_get_prop_string(context, -1, p)) {
+        duk_pop(context);
+        LogMissingProperty(p);
+        return def;
+    }
+
+    const char *str = duk_safe_to_string(context, -1);
+    duk_pop(context);
+
+    PLColour out(255, 255, 255, 255);
+    if(std::sscanf(str, "%hhu %hhu %hhu %hhu", &out.r, &out.g, &out.b, &out.a) < 3) {
+        // can still ignore alpha channel
+        throw std::runtime_error("Failed to parse entirety of colour from JSON property, \"" + property + "\"!\n");
+    }
+
+    return out;
+}
+
+PLVector3 ScriptConfig::GetVector3Property(const std::string &property, PLVector3 def) {
+    auto *context = static_cast<duk_context *>(ctx_);
+
+    const char *p = property.c_str();
+    if(!duk_get_prop_string(context, -1, p)) {
+        duk_pop(context);
+        LogMissingProperty(p);
+        return def;
+    }
+
+    const char *str = duk_safe_to_string(context, -1);
+    duk_pop(context);
+
+    PLVector3 out;
+    if(std::sscanf(str, "%f %f %f", &out.x, &out.y, &out.z) < 3) {
+        throw std::runtime_error("Failed to parse entirety of vector from JSON property, \"" + property + "\"!\n");
+    }
+
+    return out;
+}
+
 unsigned int ScriptConfig::GetArrayLength(const std::string &property) {
     auto *context = static_cast<duk_context *>(ctx_);
 

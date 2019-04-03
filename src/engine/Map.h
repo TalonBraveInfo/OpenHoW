@@ -17,14 +17,7 @@
 
 #pragma once
 
-#define MAP_MODE_DEATHMATCH         (unsigned int)(1 << 0)
-#define MAP_MODE_SINGLEPLAYER       (unsigned int)(1 << 1)
-#define MAP_MODE_SURVIVAL_NOVICE    (unsigned int)(1 << 2)
-#define MAP_MODE_SURVIVAL_EXPERT    (unsigned int)(1 << 3)
-#define MAP_MODE_SURVIVAL_STRATEGY  (unsigned int)(1 << 4)
-#define MAP_MODE_GENERATED          (unsigned int)(1 << 5)
-#define MAP_MODE_TRAINING           (unsigned int)(1 << 6)
-#define MAP_MODE_EDITOR             (unsigned int)(1 << 7)
+#include "MapManager.h"
 
 #define MAP_CHUNK_ROW           16
 #define MAP_CHUNKS              (MAP_CHUNK_ROW * MAP_CHUNK_ROW)
@@ -66,7 +59,7 @@ enum {
 
 /* format data */
 
-typedef struct MapSpawn { /* this should be 94 bytes */
+struct MapSpawn {
     char        name[16];               // class name
     char        unused0[16];
 
@@ -93,9 +86,10 @@ typedef struct MapSpawn { /* this should be 94 bytes */
     int16_t     extra;
     int16_t     attached_actor_num;
     int16_t     unused3;
-} MapSpawn;
+};
+static_assert(sizeof(MapSpawn) == 94, "Invalid size for MapSpawn, should be 94 bytes!");
 
-typedef struct MapTile {
+struct MapTile {
     /* surface properties */
     unsigned int type{0};   /* e.g. wood? */
     unsigned int flags{0};  /* e.g. mine, watery */
@@ -106,18 +100,20 @@ typedef struct MapTile {
     unsigned int flip{0};
 
     float height[4]{0, 0, 0, 0};
-} MapTile;
+};
 
-typedef struct MapChunk {
+struct MapChunk {
     MapTile tiles[16];
     PLVector3 offset{0, 0, 0};
-} MapChunk;
+};
+
+struct MapManifest;
 
 /* end format data */
 
 class Map {
 public:
-    explicit Map(const GameModeSetup &mode);
+    explicit Map(const std::string &name);
     ~Map();
 
     void Reset();
@@ -126,10 +122,8 @@ public:
     float GetMaxHeight() { return max_height_; }
     float GetMinHeight() { return min_height_; }
 
-    const GameModeSetup *GetMode() { return &mode_; }
-
-    const std::string &GetName() { return name_; }
-    const std::string &GetDescription() { return description_; }
+    const std::string &GetName() { return manifest_->name; }
+    const std::string &GetDescription() { return manifest_->description; }
 
     MapChunk *GetChunk(const PLVector2 &pos);
     MapTile *GetTile(const PLVector2 &pos);
@@ -146,14 +140,10 @@ private:
 
     void GenerateOverview();
 
-    std::string name_{"none"};
-    std::string description_{"none"};
-    std::string sky_{"none"};
-
-    GameModeSetup mode_;
-
     float max_height_{0};
     float min_height_{0};
+
+    const MapManifest *manifest_{nullptr};
 
     std::vector<MapChunk> chunks_;
     std::vector<MapSpawn> spawns_;
@@ -163,5 +153,5 @@ private:
     std::vector<PLTexture*> tile_textures_;
 
     PLModel *sky_model_{nullptr};
-    PLTexture *sky_textures_[4];
+    PLTexture *sky_textures_[4]{nullptr, nullptr, nullptr, nullptr};
 };

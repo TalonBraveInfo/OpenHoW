@@ -123,33 +123,29 @@ MapManifest map_descriptors[]={
 };
 #endif
 
-Map::Map(const GameModeSetup &mode) {
-    LogDebug("Loading map, %s, in mode %u\n", mode.map, mode.game_mode);
-    /* map manager now worries about resetting map state etc. */
+Map::Map(const std::string &name) {
+    LogDebug("Loading map, %s...\n", name.c_str());
 
-    const MapManifest *desc = MapManager::GetInstance()->GetManifest(mode.map);
-    if(desc == nullptr) {
-        LogWarn("Failed to get map descriptor, %s!\n", mode.map);
-    } else {
-        LogDebug("Found map descriptor!\n %s\n %s", desc->name.c_str(), desc->description.c_str());
-        if(mode.game_mode != MAP_MODE_EDITOR && !(desc->flags & mode.game_mode)) {
-            throw std::runtime_error("This mode is unsupported by this map, " + std::string(mode.map) + ", aborting!\n");
-        }
-
-        name_           = desc->name;
-        description_    = desc->description;
-        sky_            = desc->sky;
+    manifest_ = MapManager::GetInstance()->GetManifest(name);
+    if(manifest_ == nullptr) {
+        throw std::runtime_error("Failed to get map descriptor, \"" + name + "\"\n");
     }
 
-    std::string base_path = "maps/" + std::string(mode.map) + "/";
-    std::string p = u_find(std::string(base_path + mode.map + ".pmg").c_str());
+#if 0
+    if(mode.game_mode != MAP_MODE_EDITOR && !(desc->flags & mode.game_mode)) {
+        throw std::runtime_error("This mode is unsupported by this map, " + std::string(mode.map) + ", aborting!\n");
+    }
+#endif
+
+    std::string base_path = "maps/" + name + "/";
+    std::string p = u_find(std::string(base_path + name + ".pmg").c_str());
     if(!plFileExists(p.c_str())) {
         throw std::runtime_error("PMG, " + p + ", doesn't exist!\n");
     }
 
     LoadTiles(p);
 
-    p = u_find(std::string(base_path + mode.map + ".pog").c_str());
+    p = u_find(std::string(base_path + name + ".pog").c_str());
     if (!plFileExists(p.c_str())) {
         throw std::runtime_error("POG, " + p + ", doesn't exist!\n");
     }

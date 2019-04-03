@@ -1,7 +1,9 @@
 {
   "name":"$map_how_archi",
   "sky": "sunny/sunny",
+  "flags": 0,
   "modes":[
-    "se", "dm"
+    "survival-expert",
+    "deathmatch"
   ]
 }
