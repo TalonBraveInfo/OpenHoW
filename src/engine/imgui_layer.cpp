@@ -23,21 +23,22 @@
 
 #include "client/display.h"
 #include "MapManager.h"
+#include "client/audio.h"
 
 static bool show_quit               = false;
 static bool show_file               = false;
 static bool show_new_game           = false;
 static bool show_about              = false;
 static bool show_console            = false;
-static bool show_fps                = false;
 static bool show_settings           = false;
 
 static unsigned int windows_id_counter = 0;
 class DebugWindow {
 public:
-    explicit DebugWindow(bool status = true) {
-        id_ = windows_id_counter++;
+    explicit DebugWindow(DebugWindow *parent = nullptr, bool status = true) {
+        id_     = windows_id_counter++;
         status_ = status;
+        parent_ = parent;
     }
 
     virtual ~DebugWindow() = default;
@@ -47,9 +48,15 @@ public:
     bool GetStatus() { return status_; }
     void SetStatus(bool status) { status_ = status; }
 
+    void ToggleStatus() {
+        status_ = !status_;
+    }
+
 protected:
     bool status_;
     unsigned int id_;
+
+    DebugWindow *parent_{nullptr};
 };
 
 static std::vector<DebugWindow*> windows;
@@ -57,14 +64,52 @@ static std::vector<DebugWindow*> windows;
 /************************************************************/
 /* Map Config Editor */
 
+class MapConfigOpenWindow;
+
+class MapConfigEditor : public DebugWindow {
+public:
+    MapConfigEditor();
+    ~MapConfigEditor() override;
+
+    void Display() override;
+
+    void OpenManifest(const std::string &name);
+    void CloseManifest();
+    void SaveManifest();
+
+protected:
+private:
+    MapManifest manifest_;
+    MapConfigOpenWindow *open_window_{nullptr};
+};
+
 class MapConfigOpenWindow : public DebugWindow {
 public:
-    MapConfigOpenWindow() : DebugWindow(false) {
+    explicit MapConfigOpenWindow(DebugWindow *parent) : DebugWindow(parent, false) {
         manifests_ = &MapManager::GetInstance()->GetManifests();
     }
 
     void Display() override {
-        ImGui::Begin("Open Map Config", &status_);
+        ImGui::SetNextWindowSize(ImVec2(128, 256));
+        ImGui::Begin(std::string("Open Map Config##" + std::to_string((ptrdiff_t)(this))).c_str(), &status_);
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(-1.f, 0));
+        ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() - 64), true);
+        ImGui::Columns(1);
+        for (const auto& manifest : *manifests_) {
+            if(ImGui::Button(manifest.first.c_str())) {
+                status_ = false;
+
+                auto *editor = dynamic_cast<MapConfigEditor*>(parent_);
+                editor->OpenManifest(manifest.first);
+            }
+            //ImGui::NextColumn();
+            //ImGui::Text("%s", manifest.second.author.c_str());
+            ImGui::NextColumn();
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
         ImGui::End();
     }
 
@@ -73,74 +118,52 @@ private:
     const std::map<std::string, MapManifest> *manifests_;
 };
 
-class MapConfigEditor : public DebugWindow {
-public:
-    MapConfigEditor() {
-        open_window_ = new MapConfigOpenWindow();
-    }
+MapConfigEditor::MapConfigEditor() {
+    open_window_ = new MapConfigOpenWindow(this);
+}
 
-    ~MapConfigEditor() override {
-        delete open_window_;
-    }
+MapConfigEditor::~MapConfigEditor() {
+    delete open_window_;
+}
 
-    void Display() override {
-        ImGui::Begin("Map Config Editor", &status_, ImGuiWindowFlags_MenuBar);
-        if(ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if(ImGui::MenuItem("Open...")) {}
-                ImGui::Separator();
-                if(ImGui::MenuItem("Save")) {}
-                if(ImGui::MenuItem("Save As...")) {}
-                ImGui::EndMenu();
+void MapConfigEditor::Display() {
+    ImGui::SetNextWindowSize(ImVec2(256, 512));
+
+    ImGui::Begin(std::string("Map Config Editor##" + std::to_string((ptrdiff_t)(this))).c_str(), &status_,
+                 ImGuiWindowFlags_MenuBar);
+    if(ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if(ImGui::MenuItem("New")) {
+                open_window_->SetStatus(false);
+
+                manifest_ = MapManifest();
             }
-            ImGui::EndMenuBar();
-        }
-        ImGui::End();
+            if(ImGui::MenuItem("Open...")) {
+                open_window_->ToggleStatus();
+            }
+            ImGui::Separator();
+            if(ImGui::MenuItem("Save")) {
 
+            }
+            if(ImGui::MenuItem("Save As...")) {
+
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+    ImGui::End();
+
+    if(open_window_->GetStatus()) {
         open_window_->Display();
     }
+}
 
-protected:
-private:
-
-    MapConfigOpenWindow *open_window_{nullptr};
-};
-
-/************************************************************/
-/* Particle Editor */
-
-#include "client/particle.h"
-#include "client/audio.h"
-#include "game.h"
-#include "Map.h"
-
-class ParticleEditor {
-public:
-    static ParticleEditor *GetInstance() {
-        static ParticleEditor *instance = nullptr;
-        if(instance == nullptr) {
-            instance = new ParticleEditor();
-        }
-
-        return instance;
-    }
-
-    void ShowWindow(bool show = true) { show_ = show; }
-    void DisplayWindow() {
-        if(!show_) {
-            return;
-        }
-    }
-
-protected:
-private:
-    ParticleSystem *current_system_{nullptr};
-
-    bool show_{false};
-};
+void MapConfigEditor::OpenManifest(const std::string &name) {
+    manifest_ = *MapManager::GetInstance()->GetManifest(name);
+}
 
 /************************************************************/
-/* Texture Viewer */
 
 class TextureViewer : public DebugWindow {
 public:
@@ -476,23 +499,8 @@ void UI_DisplayConsole() {
 void UI_DisplayDebugMenu(void) {
     /* keep vars in sync with console vars, in case they
      * are changed during startup or whenever... */
-
+    static bool show_fps;
     show_fps = cv_debug_fps->b_value;
-
-    /* */
-
-#if 0
-    ImGui::Begin("Game", NULL);
-    ImVec2 pos = ImGui::GetWindowPos();
-    ImVec2 size = ImGui::GetWindowSize();
-    UpdateViewport(pos.x, pos.y, size.x, size.y);
-    ImGui::End();
-#endif
-
-    static MapConfigEditor *instance_mce = nullptr;
-    if(instance_mce == nullptr) {
-        instance_mce = new MapConfigEditor();
-    }
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
@@ -544,11 +552,9 @@ void UI_DisplayDebugMenu(void) {
 
         if(ImGui::BeginMenu("Tools")) {
             if(ImGui::MenuItem("Map Config Editor...")) {
-
+                windows.push_back(new MapConfigEditor());
             }
-            if(ImGui::MenuItem("Particle Editor...")) {
-                ParticleEditor::GetInstance()->ShowWindow(true);
-            }
+            if(ImGui::MenuItem("Particle Editor...")) {}
             ImGui::EndMenu();
         }
 
@@ -564,10 +570,6 @@ void UI_DisplayDebugMenu(void) {
     UI_DisplayQuitBox();
     UI_DisplayNewGame();
     UI_DisplaySettings();
-
-    /* Editors */
-    ParticleEditor::GetInstance()->DisplayWindow();
-
     UI_DisplayConsole();
 
     for(auto window = windows.begin(); window != windows.end();) {
