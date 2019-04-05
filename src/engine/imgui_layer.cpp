@@ -59,6 +59,8 @@ protected:
     DebugWindow *parent_{nullptr};
 };
 
+#define dname(a)  std::string(a "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()
+
 static std::vector<DebugWindow*> windows;
 
 /************************************************************/
@@ -81,6 +83,10 @@ protected:
 private:
     MapManifest manifest_;
     MapConfigOpenWindow *open_window_{nullptr};
+
+    char name_buffer[32]{'\0'};
+    char author_buffer[32]{'\0'};
+    char sky_buffer[32]{'\0'};
 };
 
 class MapConfigOpenWindow : public DebugWindow {
@@ -90,26 +96,20 @@ public:
     }
 
     void Display() override {
-        ImGui::SetNextWindowSize(ImVec2(128, 256));
-        ImGui::Begin(std::string("Open Map Config##" + std::to_string((ptrdiff_t)(this))).c_str(), &status_);
-        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(-1.f, 0));
-        ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() - 64), true);
-        ImGui::Columns(1);
+        ImGui::SetNextWindowSize(ImVec2(256, 256), ImGuiCond_Once);
+        ImGui::Begin(dname("Open Map Config"), &status_, ImGuiWindowFlags_NoSavedSettings);
+
+        ImGui::PushItemWidth(ImGui::GetWindowContentRegionWidth());
+        ImGui::ListBoxHeader("##", manifests_->size(), 16);
         for (const auto& manifest : *manifests_) {
             if(ImGui::Button(manifest.first.c_str())) {
                 status_ = false;
-
                 auto *editor = dynamic_cast<MapConfigEditor*>(parent_);
                 editor->OpenManifest(manifest.first);
             }
-            //ImGui::NextColumn();
-            //ImGui::Text("%s", manifest.second.author.c_str());
-            ImGui::NextColumn();
         }
-        ImGui::EndChild();
-        ImGui::PopStyleVar();
-        ImGui::PopStyleVar();
+        ImGui::ListBoxFooter();
+
         ImGui::End();
     }
 
@@ -127,10 +127,11 @@ MapConfigEditor::~MapConfigEditor() {
 }
 
 void MapConfigEditor::Display() {
-    ImGui::SetNextWindowSize(ImVec2(256, 512));
+    ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
 
-    ImGui::Begin(std::string("Map Config Editor##" + std::to_string((ptrdiff_t)(this))).c_str(), &status_,
+    ImGui::Begin(dname("Map Config Editor"), &status_,
                  ImGuiWindowFlags_MenuBar);
+
     if(ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New")) {
@@ -152,6 +153,14 @@ void MapConfigEditor::Display() {
         }
         ImGui::EndMenuBar();
     }
+
+    ImGui::LabelText("Path", "%s", manifest_.path.c_str());
+    ImGui::Separator();
+    if(ImGui::InputText("Name", name_buffer, sizeof(name_buffer))) {}
+    if(ImGui::InputText("Author", author_buffer, sizeof(author_buffer))) {}
+    ImGui::Separator();
+    if(ImGui::InputText("Sky", sky_buffer, sizeof(sky_buffer))) {}
+
     ImGui::End();
 
     if(open_window_->GetStatus()) {
@@ -161,78 +170,14 @@ void MapConfigEditor::Display() {
 
 void MapConfigEditor::OpenManifest(const std::string &name) {
     manifest_ = *MapManager::GetInstance()->GetManifest(name);
+    strncpy(name_buffer, manifest_.name.c_str(), sizeof(name_buffer));
+    strncpy(author_buffer, manifest_.author.c_str(), sizeof(author_buffer));
+    strncpy(sky_buffer, manifest_.sky.c_str(), sizeof(sky_buffer));
 }
 
 /************************************************************/
 
-class TextureViewer : public DebugWindow {
-public:
-    explicit TextureViewer(const std::string &path, PLTexture *texture) {
-        texture_ = texture;
-        texture_path = path;
-    }
-
-    ~TextureViewer() override {
-        plDeleteTexture(texture_, true);
-    }
-
-    void ReloadTexture(PLTextureFilter filter_mode) {
-        if(filter_mode == filter_mode_) {
-            return;
-        }
-
-        plDeleteTexture(texture_, true);
-        texture_ = Display_LoadTexture(texture_path.c_str(), filter_mode);
-        filter_mode_ = filter_mode;
-    }
-
-    void Display() override {
-        ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
-        ImGui::Begin(std::string("Texture Viewer##" + std::to_string(id_)).c_str(), &status_,
-                ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
-
-        if(ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if(ImGui::MenuItem("Open...")) {
-                    show_file = true;
-                }
-                ImGui::EndMenu();
-            }
-            if(ImGui::BeginMenu("View")) {
-                ImGui::SliderInt("Scale", &scale_, 1, 8);
-                if(ImGui::BeginMenu("Filter Mode")) {
-                    if(ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
-                        ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
-                    }
-                    if(ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
-                        ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
-
-        ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
-                texture_->w * scale_, texture_->h * scale_));
-        ImGui::Separator();
-        ImGui::Text("Path: %s", texture_path.c_str());
-        ImGui::Text("%dx%d", texture_->w, texture_->h);
-        ImGui::Text("Size: %ukB (%luB)", (unsigned int)plBytesToKilobytes(texture_->size), (long unsigned) texture_->size);
-
-        ImGui::End();
-    }
-
-protected:
-private:
-    PLTexture *texture_{nullptr};
-    std::string texture_path;
-
-    PLTextureFilter filter_mode_{PL_TEXTURE_FILTER_LINEAR};
-
-    int scale_{1};
-};
+#include "TextureViewer.h"
 
 /************************************************************/
 /* Settings */
@@ -454,47 +399,58 @@ void UI_DisplayFileBox() {
     ImGui::End();
 }
 
-void UI_DisplayQuitBox() {
-    if(!show_quit) {
-        return;
+class QuitWindow : public DebugWindow {
+public:
+    void Display() override {
+        ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+        ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
+                                                  ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
+        ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
+        ImGui::Dummy(ImVec2(0, 5));
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0, 5));
+
+        if (ImGui::Button("Yes", ImVec2(64, 0))) {
+            System_Shutdown();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No", ImVec2(64, 0))) {
+            ToggleStatus();
+        }
+
+        ImGui::End();
     }
 
-    ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-    ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
-                                              ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
-    ImGui::Dummy(ImVec2(0, 5));
-    ImGui::Separator();
-    ImGui::Dummy(ImVec2(0, 5));
-
-    if (ImGui::Button("Yes", ImVec2(64, 0))) {
-        System_Shutdown();
+protected:
+private:
+};
+class ConsoleWindow : public DebugWindow {
+public:
+    void SendCommand() {
+        plParseConsoleString(input_buf_);
+        strncpy(input_buf_, "", sizeof(input_buf_));
     }
 
-    ImGui::SameLine();
-
-    if (ImGui::Button("No", ImVec2(64, 0))) {
-        show_quit = false;
+    void Display() override {
+        ImGui::SetNextWindowSize(ImVec2(Display_GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
+        ImGui::Begin("Console", &show_console);
+        if(ImGui::InputText("", input_buf_, 256, ImGuiInputTextFlags_EnterReturnsTrue) && input_buf_[0] != '\0') {
+            SendCommand();
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Submit")) {
+            SendCommand();
+        }
+        ImGui::End();
     }
 
-    ImGui::End();
-}
-
-void UI_DisplayConsole() {
-    if(!show_console) {
-        return;
-    }
-
-    static char buf[256];
-
-    ImGui::SetNextWindowSize(ImVec2(Display_GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
-    ImGui::Begin("Console", &show_console);
-    if(ImGui::InputText("Input", buf, 256)) {
-        u_assert(0, "todo\n");
-    }
-    ImGui::End();
-}
+protected:
+private:
+    char input_buf_[256]{'\0'};
+};
 
 void UI_DisplayDebugMenu(void) {
     /* keep vars in sync with console vars, in case they
@@ -515,12 +471,16 @@ void UI_DisplayDebugMenu(void) {
             ImGui::Separator();
             if(ImGui::MenuItem("Settings...")) { show_settings = true; }
             ImGui::Separator();
-            if(ImGui::MenuItem("Quit")) { show_quit = true; }
+            if(ImGui::MenuItem("Quit")) {
+                windows.push_back(new QuitWindow());
+            }
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("Debug")) {
-            ImGui::MenuItem("Show Console", "`", &show_console);
+            if(ImGui::MenuItem("Show Console", "`")) {
+                windows.push_back(new ConsoleWindow());
+            }
             if(ImGui::MenuItem("Show FPS", nullptr, &show_fps)) {
                 plSetConsoleVariable(cv_debug_fps, show_fps ? "true" : "false");
             }
@@ -563,14 +523,21 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
+        ImGui::Separator();
+
+        unsigned int fps, ms;
+        Display_GetFramesCount(&fps, &ms);
+
+        ImGui::PushItemWidth(64);
+        ImGui::Text("FPS %d (%dms)", fps, ms);
+        ImGui::PopItemWidth();
+
         ImGui::EndMainMenuBar();
     }
 
     UI_DisplayFileBox();
-    UI_DisplayQuitBox();
     UI_DisplayNewGame();
     UI_DisplaySettings();
-    UI_DisplayConsole();
 
     for(auto window = windows.begin(); window != windows.end();) {
         if((*window)->GetStatus()) {
