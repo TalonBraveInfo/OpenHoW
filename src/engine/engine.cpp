@@ -131,7 +131,6 @@ bool Engine_IsRunning(void) {
 
     Display_DrawScene();
     Display_DrawInterface();
-    Display_Composite();
     Display_DrawDebug();
 
     ImGuiImpl_Draw();

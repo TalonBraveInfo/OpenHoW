@@ -39,8 +39,6 @@
 static SDL_Window *window = nullptr;
 static SDL_GLContext gl_context = nullptr;
 
-static PLCamera *imgui_camera = nullptr;
-
 unsigned int System_GetTicks(void) {
     return SDL_GetTicks();
 }

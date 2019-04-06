@@ -759,7 +759,6 @@ void Display_DrawDebug(void) {
     Console_Draw();
 }
 
-
 void Display_Flush(void) {
     System_SwapDisplay();
     g_state.last_draw_ms = System_GetTicks() - g_state.draw_ticks;
