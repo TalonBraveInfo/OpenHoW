@@ -25,7 +25,6 @@
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
-#include "server/server.h"
 #include "client/display.h"
 #include "client/client.h"
 #include "client/audio.h"
@@ -312,7 +311,7 @@ bool System_SetWindowSize(int width, int height, bool fs) {
 
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
-    
+
     // ensure that the window updated successfully
     SDL_DisplayMode mode;
     if(SDL_GetWindowDisplayMode(window, &mode) == 0) {
@@ -357,6 +356,8 @@ void System_Shutdown(void) {
 
     SDL_EnableScreenSaver();
     SDL_Quit();
+
+    plShutdown();
 
     exit(EXIT_SUCCESS);
 }
@@ -438,7 +439,7 @@ static int TranslateSDLButton(int button) {
     }
 }
 
-static void PollEvents() {
+void System_PollEvents() {
     ImGuiIO &io = ImGui::GetIO();
 
     SDL_Event event;
@@ -555,9 +556,7 @@ static void PollEvents() {
                     plSetConsoleVariable(cv_display_width, pl_itoa((unsigned int) event.window.data1, buf, 16, 10));
                     plSetConsoleVariable(cv_display_height, pl_itoa((unsigned int) event.window.data2, buf, 16, 10));
                     Display_UpdateViewport(0, 0, (unsigned int) event.window.data1, (unsigned int) event.window.data2);
-                    
-                    imgui_camera->viewport.w = event.window.data1;
-                    imgui_camera->viewport.h = event.window.data2;
+                    ImGuiImpl_UpdateViewport(event.window.data1, event.window.data2);
                     io.DisplaySize = ImVec2(event.window.data1, event.window.data2);
                 }
             } break;
@@ -611,27 +610,7 @@ int main(int argc, char **argv) {
 
     Engine_Initialize();
 
-    // deal with any console vars provided (todo: pl should deal with this?)
-    for(int i = 1; i < argc; ++i) {
-        if(pl_strncasecmp("+", argv[i], 1) == 0) {
-            plParseConsoleString(argv[i] + 1);
-            ++i;
-            // todo: deal with other var arguments ... :(
-        }
-    }
-
     /* setup the camera we'll use for drawing the imgui overlay */
-
-    if((imgui_camera = plCreateCamera()) == nullptr) {
-        Error("failed to create ui camera, aborting!\n%s\n", plGetError());
-    }
-
-    imgui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    imgui_camera->fov          = 90;
-    imgui_camera->near         = 0;
-    imgui_camera->far          = 1000;
-    imgui_camera->viewport.w   = cv_display_width->i_value;
-    imgui_camera->viewport.h   = cv_display_height->i_value;
 
     //SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_CaptureMouse(SDL_TRUE);
@@ -642,60 +621,7 @@ int main(int argc, char **argv) {
      * ourselves                            */
     SDL_StartTextInput();
 
-#define TICKS_PER_SECOND    25
-#define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
-#define MAX_FRAMESKIP       5
-
-    unsigned int next_tick = System_GetTicks();
-    unsigned int loops;
-    double delta_time;
-
-    while(Engine_IsRunning()) {
-        PollEvents();
-
-        loops = 0;
-        while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-            g_state.sim_ticks = System_GetTicks();
-            Client_Simulate();
-            Server_Simulate();
-            g_state.last_sim_tick = System_GetTicks();
-
-            next_tick += SKIP_TICKS;
-            loops++;
-        }
-
-        /* refactor this...
-         * todo: move all of the below into Client_Render
-         * */
-
-#if 0
-        delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        Client_Render(delta_time);
-#else
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui::NewFrame();
-
-        delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        Display_SetupDraw(delta_time);
-
-        Display_DrawScene();
-        Display_DrawInterface();
-        Display_DrawDebug();
-
-        /* now render imgui */
-        ImGui::Render();
-
-        plSetupCamera(imgui_camera);
-        plSetShaderProgram(nullptr);
-
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        /* and finally, swap */
-
-        Display_Flush();
-#endif
-    }
+    while(Engine_IsRunning());
 
     System_Shutdown();
 

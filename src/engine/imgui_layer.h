@@ -27,6 +27,11 @@
 
 PL_EXTERN_C
 
+void ImGuiImpl_SetupCamera(void);
+void ImGuiImpl_SetupFrame(void);
+void ImGuiImpl_Draw(void);
+void ImGuiImpl_UpdateViewport(int w, int h);
+
 void UI_DisplayDebugMenu(void);
 
 PL_EXTERN_C_END

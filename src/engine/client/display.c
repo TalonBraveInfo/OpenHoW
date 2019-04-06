@@ -543,6 +543,8 @@ void Display_Initialize(void) {
     g_state.ui_camera->viewport.w   = cv_display_width->i_value;
     g_state.ui_camera->viewport.h   = cv_display_height->i_value;
 
+    ImGuiImpl_SetupCamera();
+
     //plSetCullMode(PL_CULL_POSTIVE);
 
     /* initialize the texture cache */
