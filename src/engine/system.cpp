@@ -124,6 +124,33 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
         Engine_Shutdown();
     }
 
+    {
+        //Gen list of video presets
+        VideoPreset tmp_preset;
+        int num_display_modes = SDL_GetNumDisplayModes(0);
+        if(num_display_modes > 0) {
+            LogInfo("Generating video presets from %d display modes", num_display_modes);
+            for (int i = 0; i < num_display_modes; ++i) {
+                SDL_DisplayMode tmp_mode;
+                if( SDL_GetDisplayMode(0, i, &tmp_mode) != 0 ){
+                    LogInfo("Failed to get an SDL display mode: %s", SDL_GetError());
+                    continue;
+                }
+                //Presets enumerated in order, avoid duplicates with differing refresh rates
+                if(tmp_preset.width != tmp_mode.w || tmp_preset.height != tmp_mode.h){
+                    Display_AppendVideoPreset(tmp_mode.w, tmp_mode.h);
+                    tmp_preset.width = tmp_mode.w;
+                    tmp_preset.height = tmp_mode.h;
+                }
+
+            }
+        }
+        else {
+            LogInfo("No display modes founds, failed to generate video presets");
+        }
+    }
+
+
     SDL_SetWindowMinimumSize(window, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
     if((gl_context = SDL_GL_CreateContext(window)) == nullptr) {
@@ -295,32 +322,9 @@ bool System_SetWindowSize(int width, int height, bool fs) {
     SDL_SetWindowSize(window, width, height);
 
     if( fs ) {
-        //Set display mode while windowed
-        SDL_DisplayMode target;
-        SDL_DisplayMode closest;
-        target.w = width;
-        target.h = height;
-        target.format = 0;
-        target.refresh_rate = 60;
-        target.driverdata = 0;
-        SDL_GetClosestDisplayMode(0, &target, &closest);
-        if( SDL_SetWindowDisplayMode(window, &closest ) )
-            LogInfo("SDL_SetWindowDisplayMode: %s", SDL_GetError());
-
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
-
-    // ensure that the window updated successfully
-    SDL_DisplayMode mode;
-    if(SDL_GetWindowDisplayMode(window, &mode) == 0) {
-        if(mode.w != width || mode.h != height) {
-            if(mode.w < 0) mode.w = 0;
-            if(mode.h < 0) mode.h = 0;
-            width = mode.w;
-            height = mode.h;
-        }
-    }
-
+    
     //Update console values
     char buf[16];
     plSetConsoleVariable(cv_display_width, pl_itoa(width, buf, 16, 10));

@@ -265,16 +265,16 @@ void UI_DisplaySettings() {
     
     static int item_current = 0;
     bool display_changed = false;
-    const DisplayMode* mode = Display_GetDisplayMode(item_current);
+    const VideoPreset* mode = Display_GetVideoPreset(item_current);
     char s[32] = { 0 };
-    snprintf(s, 32, "%dx%d@%d", mode->width, mode->height, mode->refresh_rate);
-    if (ImGui::BeginCombo("Resolution", s, 0)) // The second parameter is the label previewed before opening the combo.
+    snprintf(s, 32, "%dx%d", mode->width, mode->height);
+    if (ImGui::BeginCombo("Resolution", s, 0))
     {
-        int num_display_modes = Display_GetNumDisplayModes();
-        for (int n = 0; n < num_display_modes; n++)
+        int num_modes = Display_GetNumVideoPresets();
+        for (int n = 0; n < num_modes; n++)
         {
-            mode = Display_GetDisplayMode(n);
-            snprintf(s, 32, "%dx%d@%d", mode->width, mode->height, mode->refresh_rate);
+            mode = Display_GetVideoPreset(n);
+            snprintf(s, 32, "%dx%d", mode->width, mode->height);
             bool is_selected = (item_current == n);
             if (ImGui::Selectable(s, is_selected)){
                 item_current = n;
@@ -282,7 +282,7 @@ void UI_DisplaySettings() {
                 break;
             }
             if (is_selected)
-                ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+                ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
