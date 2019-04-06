@@ -59,6 +59,9 @@ void Display_UpdateViewport(int x, int y, int width, int height);
 int Display_GetViewportWidth(const PLViewport *viewport);
 int Display_GetViewportHeight(const PLViewport *viewport);
 
+// debugging
+void Display_GetFramesCount(unsigned int *fps, unsigned int *ms);
+
 void Display_SetupDraw(double delta);
 void Display_DrawScene(void);
 void Display_DrawInterface(void);

@@ -570,6 +570,20 @@ void Display_Shutdown(void) {
 
 void DEBUGDrawSkeleton();
 
+void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
+    static unsigned int fps_ = 0;
+    static unsigned int ms_ = 0;
+    static unsigned int update_delay = 60;
+    if (update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0) {
+        ms_ = g_state.last_draw_ms;
+        fps_ = 1000 / ms_;
+        update_delay = g_state.draw_ticks + 60;
+    }
+
+    *fps = fps_;
+    *ms = ms_;
+}
+
 static void DrawDebugOverlay(void) {
     if(FE_GetState() == FE_MODE_EDITOR) {
         return;
@@ -582,14 +596,8 @@ static void DrawDebugOverlay(void) {
     }
 
     if (cv_debug_fps->b_value) {
-        static unsigned int fps = 0;
-        static unsigned int ms = 0;
-        static unsigned int update_delay = 60;
-        if (update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0) {
-            ms = g_state.last_draw_ms;
-            fps = 1000 / ms;
-            update_delay = g_state.draw_ticks + 60;
-        }
+        unsigned int fps, ms;
+        Display_GetFramesCount(&fps, &ms);
 
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
@@ -741,7 +749,11 @@ void Display_DrawDebug(void) {
 
     plSetShaderProgram(programs[SHADER_DEFAULT]);
     plSetupCamera(g_state.ui_camera);
-    DrawDebugOverlay();
+
+    if(cv_debug_mode->i_value > 0) {
+        DrawDebugOverlay();
+    }
+
     Console_Draw();
 }
 

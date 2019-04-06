@@ -18,11 +18,15 @@
 #pragma once
 
 struct MapManifest {
-    std::string     name;
-    std::string     path;
-    std::string     description;
-    std::string     sky;
-    unsigned int    flags{0};
+    std::string                 path;                           // path to manifest
+    std::string                 name{"none"};                   // 'BOOT CAMP'
+    std::string                 author{"none"};                 // creator of the map
+    std::string                 description{"none"};            //
+    std::string                 sky{"sunny"};                   // sky texture group (skys/sunny/sunny1 etc.)
+    std::vector<std::string>    modes;                          // supported gameplay types
+    PLColour                    ambient_colour{255, 255, 255};  // ambient colour
+    PLColour                    sun_colour{255, 255, 255};      // directional colour
+    float                       sun_yaw{0}, sun_pitch{0};       // light direction (yaw/angle)
 };
 
 class MapManager {
@@ -45,10 +49,8 @@ public:
     void RegisterManifest(const std::string &path);
     void RegisterManifests();
 
-    unsigned int GetModeFlags(const std::string &mode);
-
-    MapManifest *GetManifest(const std::string &name);
-    std::map<std::string, MapManifest> GetManifests() { return manifests_; };
+    const MapManifest *GetManifest(const std::string &name);
+    const std::map<std::string, MapManifest> &GetManifests() { return manifests_; };
 
 protected:
 private:

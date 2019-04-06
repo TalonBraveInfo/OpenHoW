@@ -198,7 +198,7 @@ void Game_StartNewGame(const GameModeSetup *mode) {
     FE_SetState(FE_MODE_LOADING);
 
     try {
-        temp_map = new Map(*mode);
+        temp_map = new Map(mode->map);
     } catch(std::exception &e) {
         LogWarn("Failed to load map, aborting game!\n");
         FE_RestoreLastState();

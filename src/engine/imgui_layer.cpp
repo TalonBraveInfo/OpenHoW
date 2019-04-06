@@ -22,90 +22,199 @@
 #include "imgui_layer.h"
 
 #include "client/display.h"
+#include "MapManager.h"
+#include "client/audio.h"
 
 static bool show_quit               = false;
 static bool show_file               = false;
 static bool show_new_game           = false;
 static bool show_about              = false;
 static bool show_console            = false;
-static bool show_texture            = false;
-static bool show_fps                = false;
 static bool show_settings           = false;
 
-class BaseWindow {
+static unsigned int windows_id_counter = 0;
+class DebugWindow {
 public:
-    virtual void ShowWindow(bool show = true) { show_ = show; }
-    bool IsWindowShowing() { return show_; }
-
-protected:
-private:
-    bool show_{false};
-};
-
-/************************************************************/
-/* Particle Editor */
-
-#include "client/particle.h"
-#include "client/audio.h"
-#include "game.h"
-#include "Map.h"
-
-class ParticleEditor {
-public:
-    static ParticleEditor *GetInstance() {
-        static ParticleEditor *instance = nullptr;
-        if(instance == nullptr) {
-            instance = new ParticleEditor();
-        }
-
-        return instance;
+    explicit DebugWindow(DebugWindow *parent = nullptr, bool status = true) {
+        id_     = windows_id_counter++;
+        status_ = status;
+        parent_ = parent;
     }
 
-    void ShowWindow(bool show = true) { show_ = show; }
-    void DisplayWindow() {
-        if(!show_) {
-            return;
-        }
+    virtual ~DebugWindow() = default;
+
+    virtual void Display() = 0;
+
+    bool GetStatus() { return status_; }
+    void SetStatus(bool status) { status_ = status; }
+
+    void ToggleStatus() {
+        status_ = !status_;
     }
 
 protected:
-private:
-    ParticleSystem *current_system_{nullptr};
+    bool status_;
+    unsigned int id_;
 
-    bool show_{false};
+    DebugWindow *parent_{nullptr};
 };
 
+#define dname(a)  std::string(a "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()
+
+static std::vector<DebugWindow*> windows;
+
 /************************************************************/
-/* Texture Viewer */
+/* Map Config Editor */
 
-static PLTexture *cur_texture = nullptr;
+class MapConfigOpenWindow;
 
-void UI_DisplayTextureViewer() {
-    if(!show_texture) {
-        return;
+class MapConfigEditor : public DebugWindow {
+public:
+    MapConfigEditor();
+    ~MapConfigEditor() override;
+
+    void Display() override;
+
+    void OpenManifest(const std::string &name);
+    void SyncManifest();
+    void CloseManifest();
+    void SaveManifest();
+
+protected:
+private:
+    MapManifest manifest_;
+    MapConfigOpenWindow *open_window_{nullptr};
+
+    char name_buffer[32]{'\0'};
+    char author_buffer[32]{'\0'};
+    char sky_buffer[32]{'\0'};
+    char filename_buffer[32]{'\0'};
+};
+
+class MapConfigOpenWindow : public DebugWindow {
+public:
+    explicit MapConfigOpenWindow(DebugWindow *parent) : DebugWindow(parent, false) {
+        manifests_ = &MapManager::GetInstance()->GetManifests();
     }
 
-    ImGui::SetNextWindowSize(ImVec2(cur_texture->w, cur_texture->h), ImGuiCond_Once);
-    ImGui::Begin("Texture Viewer", &show_texture, ImGuiWindowFlags_MenuBar);
+    void Display() override {
+        ImGui::SetNextWindowSize(ImVec2(256, 256), ImGuiCond_Once);
+        ImGui::Begin(dname("Open Map Config"), &status_, ImGuiWindowFlags_NoSavedSettings);
+
+        ImGui::PushItemWidth(ImGui::GetWindowContentRegionWidth());
+        ImGui::ListBoxHeader("##", manifests_->size(), 16);
+        for (const auto& manifest : *manifests_) {
+            if(ImGui::Button(manifest.first.c_str())) {
+                status_ = false;
+                auto *editor = dynamic_cast<MapConfigEditor*>(parent_);
+                editor->OpenManifest(manifest.first);
+            }
+        }
+        ImGui::ListBoxFooter();
+
+        ImGui::End();
+    }
+
+protected:
+private:
+    const std::map<std::string, MapManifest> *manifests_;
+};
+
+MapConfigEditor::MapConfigEditor() {
+    open_window_ = new MapConfigOpenWindow(this);
+}
+
+MapConfigEditor::~MapConfigEditor() {
+    delete open_window_;
+}
+
+void MapConfigEditor::Display() {
+    ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
+
+    ImGui::Begin(dname("Map Config Editor"), &status_,
+                 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings);
 
     if(ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
+            if(ImGui::MenuItem("New")) {
+                open_window_->SetStatus(false);
+
+                CloseManifest();
+            }
             if(ImGui::MenuItem("Open...")) {
-                show_file = true;
+                open_window_->ToggleStatus();
+            }
+            ImGui::Separator();
+            if(ImGui::MenuItem("Save")) {
+
+            }
+            if(ImGui::MenuItem("Save As...")) {
+
             }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
     }
 
-    ImGui::Image(reinterpret_cast<ImTextureID>(cur_texture->internal.id), ImVec2(cur_texture->w, cur_texture->h));
+    ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
+    ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
+
+    // todo: mode selection - need to query wherever this ends up being implemented...
+
     ImGui::Separator();
-    ImGui::Text("Name: %s", cur_texture->name);
-    ImGui::Text("W:%d H:%d", cur_texture->w, cur_texture->h);
-    ImGui::Text("Size: %lu", cur_texture->size);
+
+    ImGui::InputText("Sky", sky_buffer, sizeof(sky_buffer));
+
+    ImGui::SliderAngle("Sun Pitch", &manifest_.sun_pitch, 0, 90, nullptr);
+    ImGui::SliderAngle("Sun Yaw", &manifest_.sun_yaw, 0, 360, nullptr);
+
+    float rgb[3];
+    rgb[0] = plByteToFloat(manifest_.sun_colour.r);
+    rgb[1] = plByteToFloat(manifest_.sun_colour.g);
+    rgb[2] = plByteToFloat(manifest_.sun_colour.b);
+    ImGui::ColorPicker3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB);
+    manifest_.sun_colour.r = plFloatToByte(rgb[0]);
+    manifest_.sun_colour.g = plFloatToByte(rgb[1]);
+    manifest_.sun_colour.b = plFloatToByte(rgb[2]);
+
+    rgb[0] = plByteToFloat(manifest_.ambient_colour.r);
+    rgb[1] = plByteToFloat(manifest_.ambient_colour.g);
+    rgb[2] = plByteToFloat(manifest_.ambient_colour.b);
+    ImGui::ColorPicker3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB);
+    manifest_.ambient_colour.r = plFloatToByte(rgb[0]);
+    manifest_.ambient_colour.g = plFloatToByte(rgb[1]);
+    manifest_.ambient_colour.b = plFloatToByte(rgb[2]);
 
     ImGui::End();
+
+    if(open_window_->GetStatus()) {
+        open_window_->Display();
+    }
 }
+
+void MapConfigEditor::OpenManifest(const std::string &name) {
+    manifest_ = *MapManager::GetInstance()->GetManifest(name);
+    SyncManifest();
+}
+
+void MapConfigEditor::CloseManifest() {
+    manifest_ = MapManifest();
+    SyncManifest();
+}
+
+void MapConfigEditor::SyncManifest() {
+    strncpy(name_buffer, manifest_.name.c_str(), sizeof(name_buffer));
+    strncpy(author_buffer, manifest_.author.c_str(), sizeof(author_buffer));
+    strncpy(sky_buffer, manifest_.sky.c_str(), sizeof(sky_buffer));
+}
+
+void MapConfigEditor::SaveManifest() {
+
+}
+
+/************************************************************/
+
+#include "TextureViewer.h"
 
 /************************************************************/
 /* Settings */
@@ -231,7 +340,6 @@ void UI_DisplayNewGame() {
 
     if(ImGui::Button("Start Game!")) {
         mode.force_start = true;
-        mode.game_mode = MAP_MODE_TRAINING;
         mode.num_players = 1;
         snprintf(mode.map, sizeof(mode.map) - 1, "camp");
         Game_StartNewGame(&mode);
@@ -294,8 +402,8 @@ void AddFilePath(const char *path) {
 
 void ScanDirectories() {
     file_list.clear();
-    plScanDirectory(GetBasePath(), "map", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
+    //plScanDirectory(GetBasePath(), "map", AddFilePath, true);
+    //plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
     plScanDirectory(GetBasePath(), "pps", AddFilePath, true);
     plScanDirectory(GetBasePath(), "tim", AddFilePath, true);
     plScanDirectory(GetBasePath(), "bmp", AddFilePath, true);
@@ -334,12 +442,13 @@ void UI_DisplayFileBox() {
             if(ImGui::Button(i.path)) {
                 switch(i.type) {
                     case FILE_TYPE_IMAGE: {
-                        if(cur_texture != nullptr) {
-                            plDeleteTexture(cur_texture, true);
+                        PLTexture *texture = Display_LoadTexture(i.path, PL_TEXTURE_FILTER_LINEAR);
+                        if(texture == nullptr) {
+                            LogWarn("Failed to load specified texture, \"%s\"!\n", i.path);
+                            break;
                         }
 
-                        cur_texture = Display_LoadTexture(i.path, PL_TEXTURE_FILTER_LINEAR);
-                        show_texture = true;
+                        windows.push_back(new TextureViewer(i.path, texture));
                     } break;
 
                     case FILE_TYPE_AUDIO: {
@@ -375,64 +484,61 @@ void UI_DisplayFileBox() {
     ImGui::End();
 }
 
-void UI_DisplayQuitBox() {
-    if(!show_quit) {
-        return;
+class QuitWindow : public DebugWindow {
+public:
+    void Display() override {
+        ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
+        ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
+                                                  ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
+        ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
+        ImGui::Dummy(ImVec2(0, 5));
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0, 5));
+
+        if (ImGui::Button("Yes", ImVec2(64, 0))) {
+            System_Shutdown();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No", ImVec2(64, 0))) {
+            ToggleStatus();
+        }
+
+        ImGui::End();
     }
 
-    ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-    ImGui::Begin("Are you sure?", &show_quit, ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize |
-                                              ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Text("Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n");
-    ImGui::Dummy(ImVec2(0, 5));
-    ImGui::Separator();
-    ImGui::Dummy(ImVec2(0, 5));
+protected:
+private:
+};
 
-    if (ImGui::Button("Yes", ImVec2(64, 0))) {
-        System_Shutdown();
+class ConsoleWindow : public DebugWindow {
+public:
+    void SendCommand() {
+        plParseConsoleString(input_buf_);
+        strncpy(input_buf_, "", sizeof(input_buf_));
     }
 
-    ImGui::SameLine();
-
-    if (ImGui::Button("No", ImVec2(64, 0))) {
-        show_quit = false;
+    void Display() override {
+        ImGui::SetNextWindowSize(ImVec2(Display_GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
+        ImGui::Begin("Console", &show_console);
+        if(ImGui::InputText("", input_buf_, 256, ImGuiInputTextFlags_EnterReturnsTrue) && input_buf_[0] != '\0') {
+            SendCommand();
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Submit")) {
+            SendCommand();
+        }
+        ImGui::End();
     }
 
-    ImGui::End();
-}
-
-void UI_DisplayConsole() {
-    if(!show_console) {
-        return;
-    }
-
-    static char buf[256];
-
-    ImGui::SetNextWindowSize(ImVec2(Display_GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
-    ImGui::Begin("Console", &show_console);
-    if(ImGui::InputText("Input", buf, 256)) {
-        u_assert(0, "todo\n");
-    }
-    ImGui::End();
-}
+protected:
+private:
+    char input_buf_[256]{'\0'};
+};
 
 void UI_DisplayDebugMenu(void) {
-    /* keep vars in sync with console vars, in case they
-     * are changed during startup or whenever... */
-
-    show_fps = cv_debug_fps->b_value;
-
-    /* */
-
-#if 0
-    ImGui::Begin("Game", NULL);
-    ImVec2 pos = ImGui::GetWindowPos();
-    ImVec2 size = ImGui::GetWindowSize();
-    UpdateViewport(pos.x, pos.y, size.x, size.y);
-    ImGui::End();
-#endif
-
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
@@ -446,14 +552,15 @@ void UI_DisplayDebugMenu(void) {
             ImGui::Separator();
             if(ImGui::MenuItem("Settings...")) { show_settings = true; }
             ImGui::Separator();
-            if(ImGui::MenuItem("Quit")) { show_quit = true; }
+            if(ImGui::MenuItem("Quit")) {
+                windows.push_back(new QuitWindow());
+            }
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("Debug")) {
-            ImGui::MenuItem("Show Console", "`", &show_console);
-            if(ImGui::MenuItem("Show FPS", nullptr, &show_fps)) {
-                plSetConsoleVariable(cv_debug_fps, show_fps ? "true" : "false");
+            if(ImGui::MenuItem("Show Console", "`")) {
+                windows.push_back(new ConsoleWindow());
             }
 
             static int tc = 0;
@@ -478,13 +585,57 @@ void UI_DisplayDebugMenu(void) {
                 plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
             }
 
+            ImGui::Separator();
+
+            if(ImGui::BeginMenu("Console Variables")) {
+                size_t num_c;
+                PLConsoleVariable **vars;
+                plGetConsoleVariables(&vars, &num_c);
+
+                for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
+                    switch ((*var)->type) {
+                        case pl_float_var:
+                            if(ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
+                                    ImGuiInputTextFlags_EnterReturnsTrue)) {
+                                plSetConsoleVariable((*var), std::to_string((*var)->f_value).c_str());
+                            }
+                            break;
+                        case pl_int_var:
+                            if (ImGui::InputInt((*var)->var, &(*var)->i_value, 1, 10,
+                                                ImGuiInputTextFlags_EnterReturnsTrue)) {
+                                plSetConsoleVariable((*var), std::to_string((*var)->i_value).c_str());
+                            }
+                            break;
+                        case pl_string_var:
+                            // read-only for now
+                            ImGui::LabelText((*var)->var, "%s", (*var)->s_value);
+                            break;
+                        case pl_bool_var:
+                            bool b = (*var)->b_value;
+                            if (ImGui::Checkbox((*var)->var, &b)) {
+                                plSetConsoleVariable((*var), b ? "true" : "false");
+                            }
+                            break;
+                    }
+
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::TextUnformatted((*var)->description);
+                        ImGui::EndTooltip();
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
+
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("Tools")) {
-            if(ImGui::MenuItem("Particle Editor...")) {
-                ParticleEditor::GetInstance()->ShowWindow(true);
+            if(ImGui::MenuItem("Map Config Editor...")) {
+                windows.push_back(new MapConfigEditor());
             }
+            if(ImGui::MenuItem("Particle Editor...")) {}
             ImGui::EndMenu();
         }
 
@@ -493,17 +644,30 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
+        ImGui::Separator();
+
+        unsigned int fps, ms;
+        Display_GetFramesCount(&fps, &ms);
+
+        ImGui::PushItemWidth(64);
+        ImGui::Text("FPS %d (%dms)", fps, ms);
+        ImGui::PopItemWidth();
+
         ImGui::EndMainMenuBar();
     }
 
     UI_DisplayFileBox();
-    UI_DisplayQuitBox();
     UI_DisplayNewGame();
     UI_DisplaySettings();
 
-    /* Editors */
-    ParticleEditor::GetInstance()->DisplayWindow();
-    UI_DisplayTextureViewer();
+    for(auto window = windows.begin(); window != windows.end();) {
+        if((*window)->GetStatus()) {
+            (*window)->Display();
+            ++window;
+            continue;
+        }
 
-    UI_DisplayConsole();
+        delete (*window);
+        window = windows.erase(window);
+    }
 }

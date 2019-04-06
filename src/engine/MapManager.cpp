@@ -40,14 +40,15 @@ void MapManager::RegisterManifest(const std::string &path) {
     manifest.path = path;
     try {
         ScriptConfig config(path);
-        manifest.name = config.GetStringProperty("name");
-        manifest.description = config.GetStringProperty("description");
-        manifest.sky = config.GetStringProperty("sky");
-
-        std::vector<std::string> modes = config.GetArrayStrings("modes");
-        for(const auto &mode : modes) {
-            manifest.flags |= GetModeFlags(mode);
-        }
+        manifest.name           = config.GetStringProperty("name");
+        manifest.author         = config.GetStringProperty("author");
+        manifest.description    = config.GetStringProperty("description");
+        manifest.sky            = config.GetStringProperty("sky");
+        manifest.modes          = config.GetArrayStrings("modes");
+        manifest.ambient_colour = config.GetColourProperty("ambient_colour", PLColour(255, 255, 255));
+        manifest.sun_colour     = config.GetColourProperty("sun_colour", PLColour(255, 255, 255));
+        manifest.sun_yaw        = config.GetFloatProperty("sun_yaw");
+        manifest.sun_pitch      = config.GetFloatProperty("sun_pitch");
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }
@@ -69,7 +70,7 @@ void MapManager::RegisterManifests() {
     plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 
-MapManifest *MapManager::GetManifest(const std::string &name) {
+const MapManifest *MapManager::GetManifest(const std::string &name) {
     auto manifest = manifests_.find(name);
     if(manifest != manifests_.end()) {
         return &manifest->second;
@@ -77,19 +78,6 @@ MapManifest *MapManager::GetManifest(const std::string &name) {
 
     LogWarn("Failed to get manifest for \"%s\"!\n", name.c_str());
     return nullptr;
-}
-
-unsigned int MapManager::GetModeFlags(const std::string &mode) {
-    if(mode == "dm") return MAP_MODE_DEATHMATCH;
-    if(mode == "sp") return MAP_MODE_SINGLEPLAYER;
-    if(mode == "se") return MAP_MODE_SURVIVAL_EXPERT;
-    if(mode == "sn") return MAP_MODE_SURVIVAL_NOVICE;
-    if(mode == "ss") return MAP_MODE_SURVIVAL_STRATEGY;
-    if(mode == "ge") return MAP_MODE_GENERATED;
-    if(mode == "tm") return MAP_MODE_TRAINING;
-
-    LogWarn("Unknown mode type \"%s\", defaulting to \"dm\"!\n", mode.c_str());
-    return MAP_MODE_DEATHMATCH;
 }
 
 void MapManager::MapCommand(unsigned int argc, char **argv) {
@@ -100,12 +88,6 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
 
     GameModeSetup mode;
     memset(&mode, 0, sizeof(GameModeSetup));
-
-    mode.game_mode = MAP_MODE_DEATHMATCH;
-    if(argc > 2) {
-        const char *cmd_mode = argv[2];
-        mode.game_mode = GetInstance()->GetModeFlags(cmd_mode);
-    }
 
     mode.num_players = 2;
     mode.teams[0] = TEAM_BRITISH;
@@ -127,7 +109,11 @@ void MapManager::MapsCommand(unsigned int argc, char **argv) {
         std::string out =
                 desc->name + "/" + manifest.first +
                 " : " + desc->description +
-                " : " + std::to_string(desc->flags);
+                " :";
+        // print out all the supported modes
+        for(size_t i = 0; i < desc->modes.size(); ++i) {
+            out += (i == 0 ? " " : ", ") + desc->modes[i];
+        }
         LogInfo("%s\n", out.c_str());
     }
 
