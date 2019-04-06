@@ -26,7 +26,7 @@ struct MapManifest {
     std::vector<std::string>    modes;                          // supported gameplay types
     PLColour                    ambient_colour{255, 255, 255};  // ambient colour
     PLColour                    sun_colour{255, 255, 255};      // directional colour
-    float                       sun_yaw{0}, sun_angle{0};       // light direction (yaw/angle)
+    float                       sun_yaw{0}, sun_pitch{0};       // light direction (yaw/angle)
 };
 
 class MapManager {

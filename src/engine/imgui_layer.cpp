@@ -76,6 +76,7 @@ public:
     void Display() override;
 
     void OpenManifest(const std::string &name);
+    void SyncManifest();
     void CloseManifest();
     void SaveManifest();
 
@@ -87,6 +88,7 @@ private:
     char name_buffer[32]{'\0'};
     char author_buffer[32]{'\0'};
     char sky_buffer[32]{'\0'};
+    char filename_buffer[32]{'\0'};
 };
 
 class MapConfigOpenWindow : public DebugWindow {
@@ -130,14 +132,14 @@ void MapConfigEditor::Display() {
     ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
 
     ImGui::Begin(dname("Map Config Editor"), &status_,
-                 ImGuiWindowFlags_MenuBar);
+                 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings);
 
     if(ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New")) {
                 open_window_->SetStatus(false);
 
-                manifest_ = MapManifest();
+                CloseManifest();
             }
             if(ImGui::MenuItem("Open...")) {
                 open_window_->ToggleStatus();
@@ -154,12 +156,34 @@ void MapConfigEditor::Display() {
         ImGui::EndMenuBar();
     }
 
-    ImGui::LabelText("Path", "%s", manifest_.path.c_str());
+    ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
+    ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
+
+    // todo: mode selection - need to query wherever this ends up being implemented...
+
     ImGui::Separator();
-    if(ImGui::InputText("Name", name_buffer, sizeof(name_buffer))) {}
-    if(ImGui::InputText("Author", author_buffer, sizeof(author_buffer))) {}
-    ImGui::Separator();
-    if(ImGui::InputText("Sky", sky_buffer, sizeof(sky_buffer))) {}
+
+    ImGui::InputText("Sky", sky_buffer, sizeof(sky_buffer));
+
+    ImGui::SliderAngle("Sun Pitch", &manifest_.sun_pitch, 0, 90, nullptr);
+    ImGui::SliderAngle("Sun Yaw", &manifest_.sun_yaw, 0, 360, nullptr);
+
+    float rgb[3];
+    rgb[0] = plByteToFloat(manifest_.sun_colour.r);
+    rgb[1] = plByteToFloat(manifest_.sun_colour.g);
+    rgb[2] = plByteToFloat(manifest_.sun_colour.b);
+    ImGui::ColorPicker3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB);
+    manifest_.sun_colour.r = plFloatToByte(rgb[0]);
+    manifest_.sun_colour.g = plFloatToByte(rgb[1]);
+    manifest_.sun_colour.b = plFloatToByte(rgb[2]);
+
+    rgb[0] = plByteToFloat(manifest_.ambient_colour.r);
+    rgb[1] = plByteToFloat(manifest_.ambient_colour.g);
+    rgb[2] = plByteToFloat(manifest_.ambient_colour.b);
+    ImGui::ColorPicker3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB);
+    manifest_.ambient_colour.r = plFloatToByte(rgb[0]);
+    manifest_.ambient_colour.g = plFloatToByte(rgb[1]);
+    manifest_.ambient_colour.b = plFloatToByte(rgb[2]);
 
     ImGui::End();
 
@@ -170,9 +194,22 @@ void MapConfigEditor::Display() {
 
 void MapConfigEditor::OpenManifest(const std::string &name) {
     manifest_ = *MapManager::GetInstance()->GetManifest(name);
+    SyncManifest();
+}
+
+void MapConfigEditor::CloseManifest() {
+    manifest_ = MapManifest();
+    SyncManifest();
+}
+
+void MapConfigEditor::SyncManifest() {
     strncpy(name_buffer, manifest_.name.c_str(), sizeof(name_buffer));
     strncpy(author_buffer, manifest_.author.c_str(), sizeof(author_buffer));
     strncpy(sky_buffer, manifest_.sky.c_str(), sizeof(sky_buffer));
+}
+
+void MapConfigEditor::SaveManifest() {
+
 }
 
 /************************************************************/
@@ -426,6 +463,7 @@ public:
 protected:
 private:
 };
+
 class ConsoleWindow : public DebugWindow {
 public:
     void SendCommand() {
@@ -453,11 +491,6 @@ private:
 };
 
 void UI_DisplayDebugMenu(void) {
-    /* keep vars in sync with console vars, in case they
-     * are changed during startup or whenever... */
-    static bool show_fps;
-    show_fps = cv_debug_fps->b_value;
-
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
@@ -481,9 +514,6 @@ void UI_DisplayDebugMenu(void) {
             if(ImGui::MenuItem("Show Console", "`")) {
                 windows.push_back(new ConsoleWindow());
             }
-            if(ImGui::MenuItem("Show FPS", nullptr, &show_fps)) {
-                plSetConsoleVariable(cv_debug_fps, show_fps ? "true" : "false");
-            }
 
             static int tc = 0;
             if(ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
@@ -505,6 +535,49 @@ void UI_DisplayDebugMenu(void) {
             if(ImGui::SliderInt("Show Input States", &im, 0, 2)) {
                 char buf[4];
                 plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
+            }
+
+            ImGui::Separator();
+
+            if(ImGui::BeginMenu("Console Variables")) {
+                size_t num_c;
+                PLConsoleVariable **vars;
+                plGetConsoleVariables(&vars, &num_c);
+
+                for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
+                    switch ((*var)->type) {
+                        case pl_float_var:
+                            if(ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
+                                    ImGuiInputTextFlags_EnterReturnsTrue)) {
+                                plSetConsoleVariable((*var), std::to_string((*var)->f_value).c_str());
+                            }
+                            break;
+                        case pl_int_var:
+                            if (ImGui::InputInt((*var)->var, &(*var)->i_value, 1, 10,
+                                                ImGuiInputTextFlags_EnterReturnsTrue)) {
+                                plSetConsoleVariable((*var), std::to_string((*var)->i_value).c_str());
+                            }
+                            break;
+                        case pl_string_var:
+                            // read-only for now
+                            ImGui::LabelText((*var)->var, "%s", (*var)->s_value);
+                            break;
+                        case pl_bool_var:
+                            bool b = (*var)->b_value;
+                            if (ImGui::Checkbox((*var)->var, &b)) {
+                                plSetConsoleVariable((*var), b ? "true" : "false");
+                            }
+                            break;
+                    }
+
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::TextUnformatted((*var)->description);
+                        ImGui::EndTooltip();
+                    }
+                }
+
+                ImGui::EndMenu();
             }
 
             ImGui::EndMenu();

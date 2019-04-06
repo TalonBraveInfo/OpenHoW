@@ -687,7 +687,11 @@ void Display_DrawDebug(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
     plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
     SetupFrontendCamera(window_draw_w, window_draw_h);
-    DrawDebugOverlay();
+
+    if(cv_debug_mode->i_value > 0) {
+        DrawDebugOverlay();
+    }
+
     Console_Draw();
 }
 
