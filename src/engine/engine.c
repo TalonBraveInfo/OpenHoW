@@ -26,7 +26,6 @@
 #include "script/script.h"
 
 #include "client/client.h"
-#include "server/server.h"
 #include "config.h"
 #include "client/display.h"
 #include "input.h"
@@ -108,7 +107,6 @@ bool Engine_IsRunning(void) {
 
 void Engine_Shutdown(void) {
     Client_Shutdown();
-    Server_Shutdown();
     Script_Shutdown();
 
     Config_Save(Config_GetUserConfigPath());

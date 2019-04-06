@@ -25,7 +25,6 @@
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
-#include "server/server.h"
 #include "client/display.h"
 #include "client/client.h"
 #include "client/audio.h"
