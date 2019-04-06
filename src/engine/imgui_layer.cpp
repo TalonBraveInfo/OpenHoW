@@ -116,21 +116,69 @@ void UI_DisplaySettings() {
     }
 
     ImGui::Begin("Settings", &show_settings);
+    
+    static int item_current = 0;
+    bool display_changed = false;
+    const DisplayMode* mode = Display_GetDisplayMode(item_current);
+    char s[32] = { 0 };
+    snprintf(s, 32, "%dx%d@%d", mode->width, mode->height, mode->refresh_rate);
+    if (ImGui::BeginCombo("Resolution", s, 0)) // The second parameter is the label previewed before opening the combo.
+    {
+        int num_display_modes = Display_GetNumDisplayModes();
+        for (int n = 0; n < num_display_modes; n++)
+        {
+            mode = Display_GetDisplayMode(n);
+            snprintf(s, 32, "%dx%d@%d", mode->width, mode->height, mode->refresh_rate);
+            bool is_selected = (item_current == n);
+            if (ImGui::Selectable(s, is_selected)){
+                item_current = n;
+                display_changed = true;
+                break;
+            }
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+        }
+        ImGui::EndCombo();
+    }
 
-    static int res[2] = {0, 0};
     static bool fs;
-    if(res[0] == 0 && res[1] == 0) {
-        System_GetWindowSize(&res[0], &res[1], &fs);
-    }
+    bool fs_changed = false;
+    fs_changed |= ImGui::Checkbox("Fullscreen", &fs);
 
-    ImGui::InputInt2("Resolution", res);
-    ImGui::Checkbox("Fullscreen", &fs);
+    static int aspect_opt = 0;
+    bool aspect_changed = false;
+    ImGui::Text("Aspect ratio:");
+    aspect_changed |= ImGui::RadioButton("4:3", &aspect_opt, 0); ImGui::SameLine();
+    aspect_changed |= ImGui::RadioButton("Fit window", &aspect_opt, 1);
 
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
-    if(ImGui::Button("Apply")) {
-        System_SetWindowSize(&res[0], &res[1], fs);
+    static int ui_scale_opt = 0;
+    bool ui_scale_changed = false;
+    ImGui::Text("UI scale:");
+    ui_scale_changed |= ImGui::RadioButton("Auto", &ui_scale_opt, 0); ImGui::SameLine();
+    ui_scale_changed |= ImGui::RadioButton("1x", &ui_scale_opt, 1); ImGui::SameLine();
+    ui_scale_changed |= ImGui::RadioButton("2x", &ui_scale_opt, 2); ImGui::SameLine();
+    ui_scale_changed |= ImGui::RadioButton("3x", &ui_scale_opt, 3); ImGui::SameLine();
+    ui_scale_changed |= ImGui::RadioButton("4x", &ui_scale_opt, 4);
+
+    //Apply changes
+    char buf[16];
+    if(display_changed) {
+        plSetConsoleVariable(cv_display_width, pl_itoa(mode->width, buf, 16, 10));
+        plSetConsoleVariable(cv_display_height, pl_itoa(mode->height, buf, 16, 10));
+        System_SetWindowSize(cv_display_width->i_value, cv_display_height->i_value, cv_display_fullscreen->b_value);
     }
-    ImGui::SameLine();
+    if(fs_changed) {
+        plSetConsoleVariable(cv_display_fullscreen, fs ? "true" : "false" );
+        System_SetWindowSize(cv_display_width->i_value, cv_display_height->i_value, cv_display_fullscreen->b_value);
+    }
+    if(aspect_changed) {
+        plSetConsoleVariable(cv_display_use_window_aspect, aspect_opt ? "true" : "false");
+        Display_UpdateViewport(0, 0, cv_display_width->i_value, cv_display_height->i_value);
+    }
+    if(ui_scale_changed) {
+        plSetConsoleVariable(cv_display_ui_scale, pl_itoa(ui_scale_opt, buf, 16, 10));
+    }
+    
     if(ImGui::Button("Cancel")) {
         show_settings = false;
     }

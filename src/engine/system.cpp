@@ -108,7 +108,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     }
 #endif
 
-    unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
+    unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
     if(fullscreen) {
         flags |= SDL_WINDOW_FULLSCREEN;
     } else {
@@ -126,6 +126,8 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, "Failed to create window!\n%s", SDL_GetError());
         Engine_Shutdown();
     }
+
+    SDL_SetWindowMinimumSize(window, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
     if((gl_context = SDL_GL_CreateContext(window)) == nullptr) {
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, "Failed to create context!\n%s", SDL_GetError());
@@ -196,32 +198,47 @@ void System_GetWindowDrawableSize(int *width, int *height, bool *fs) {
     *fs = static_cast<bool>(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
 }
 
-bool System_SetWindowSize(int *width, int *height, bool fs) {
-    SDL_SetWindowSize(window, *width, *height);
-    SDL_SetWindowFullscreen(window, (fs ? SDL_WINDOW_FULLSCREEN : 0));
+bool System_SetWindowSize(int width, int height, bool fs) {
+    //Kick window out of minimized / maximized mode when resizing
+    SDL_SetWindowFullscreen(window, 0);
+    SDL_RestoreWindow(window);
 
+    //Ensure the size_changed event is triggered, this will auto-maximise window when width/height are greater than the desktop dimensions
+    SDL_SetWindowSize(window, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
+    SDL_SetWindowSize(window, width, height);
+
+    if( fs ) {
+        //Set display mode while windowed
+        SDL_DisplayMode target;
+        SDL_DisplayMode closest;
+        target.w = width;
+        target.h = height;
+        target.format = 0;
+        target.refresh_rate = 60;
+        target.driverdata = 0;
+        SDL_GetClosestDisplayMode(0, &target, &closest);
+        if( SDL_SetWindowDisplayMode(window, &closest ) )
+            LogInfo("SDL_SetWindowDisplayMode: %s", SDL_GetError());
+
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+    
     // ensure that the window updated successfully
     SDL_DisplayMode mode;
     if(SDL_GetWindowDisplayMode(window, &mode) == 0) {
-        if(mode.w != *width || mode.h != *height) {
+        if(mode.w != width || mode.h != height) {
             if(mode.w < 0) mode.w = 0;
             if(mode.h < 0) mode.h = 0;
-            *width = mode.w;
-            *height = mode.h;
-            return false;
+            width = mode.w;
+            height = mode.h;
         }
     }
 
-    /* ensure that imgui is kept up to date */
-
-    ImGuiIO &io = ImGui::GetIO();
-
-    int w, h;
-    int display_w, display_h;
-    SDL_GetWindowSize(window, &w, &h);
-    SDL_GL_GetDrawableSize(window, &display_w, &display_h);
-    io.DisplaySize = ImVec2((float)w, (float)h);
-    io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+    //Update console values
+    char buf[16];
+    plSetConsoleVariable(cv_display_width, pl_itoa(width, buf, 16, 10));
+    plSetConsoleVariable(cv_display_height, pl_itoa(height, buf, 16, 10));
+    plSetConsoleVariable(cv_display_fullscreen, fs ? "true" : "false" );
 
     return true;
 }
@@ -443,11 +460,15 @@ static void PollEvents() {
             } break;
 
             case SDL_WINDOWEVENT: {
-                if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                if(event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                    char buf[16];
+                    plSetConsoleVariable(cv_display_width, pl_itoa((unsigned int) event.window.data1, buf, 16, 10));
+                    plSetConsoleVariable(cv_display_height, pl_itoa((unsigned int) event.window.data2, buf, 16, 10));
                     Display_UpdateViewport(0, 0, (unsigned int) event.window.data1, (unsigned int) event.window.data2);
-
+                    
                     imgui_camera->viewport.w = event.window.data1;
                     imgui_camera->viewport.h = event.window.data2;
+                    io.DisplaySize = ImVec2(event.window.data1, event.window.data2);
                 }
             } break;
         }
@@ -570,7 +591,6 @@ int main(int argc, char **argv) {
 
         Display_DrawScene();
         Display_DrawInterface();
-        Display_Composite();
         Display_DrawDebug();
 
         /* now render imgui */

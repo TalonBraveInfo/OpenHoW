@@ -266,6 +266,8 @@ PLConsoleVariable *cv_display_texture_cache = NULL;
 PLConsoleVariable *cv_display_width = NULL;
 PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
+PLConsoleVariable *cv_display_use_window_aspect = NULL;
+PLConsoleVariable *cv_display_ui_scale = NULL;
 
 PLConsoleVariable *cv_audio_volume = NULL;
 PLConsoleVariable *cv_audio_volume_sfx = NULL;
@@ -291,7 +293,10 @@ void Console_Initialize(void) {
     rvar(cv_display_texture_cache, false, "-1", pl_int_var, NULL, "");
     rvar(cv_display_width, true, "1024", pl_int_var, NULL, "");
     rvar(cv_display_height, true, "768", pl_int_var, NULL, "");
-    rvar(cv_display_fullscreen, true, "true", pl_bool_var, NULL, "");
+    rvar(cv_display_fullscreen, true, "false", pl_bool_var, NULL, "");
+    rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, NULL, "");
+    rvar(cv_display_ui_scale, true, "1", pl_int_var, NULL,"0 = automatic scale"
+    );
 
     rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
     rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
