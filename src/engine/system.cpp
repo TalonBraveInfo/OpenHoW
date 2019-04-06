@@ -590,15 +590,6 @@ int main(int argc, char **argv) {
 
     Engine_Initialize();
 
-    // deal with any console vars provided (todo: pl should deal with this?)
-    for(int i = 1; i < argc; ++i) {
-        if(pl_strncasecmp("+", argv[i], 1) == 0) {
-            plParseConsoleString(argv[i] + 1);
-            ++i;
-            // todo: deal with other var arguments ... :(
-        }
-    }
-
     /* setup the camera we'll use for drawing the imgui overlay */
 
     if((imgui_camera = plCreateCamera()) == nullptr) {
@@ -635,22 +626,14 @@ int main(int argc, char **argv) {
         loops = 0;
         while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
             g_state.sim_ticks = System_GetTicks();
-            Client_Simulate();
-            Server_Simulate();
-            g_state.last_sim_tick = System_GetTicks();
 
+            Client_Simulate();
+            AudioManager::GetInstance()->Simulate();
+
+            g_state.last_sim_tick = System_GetTicks();
             next_tick += SKIP_TICKS;
             loops++;
         }
-
-        /* refactor this...
-         * todo: move all of the below into Client_Render
-         * */
-
-#if 0
-        delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        Client_Render(delta_time);
-#else
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
@@ -674,7 +657,6 @@ int main(int argc, char **argv) {
         /* and finally, swap */
 
         Display_Flush();
-#endif
     }
 
     System_Shutdown();

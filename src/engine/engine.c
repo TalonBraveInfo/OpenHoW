@@ -28,6 +28,9 @@
 #include "client/client.h"
 #include "server/server.h"
 #include "config.h"
+#include "client/display.h"
+#include "input.h"
+#include "client/frontend.h"
 
 EngineState g_state;
 
@@ -87,8 +90,10 @@ void Engine_Initialize(void) {
 
     /* now initialize all other sub-systems */
 
+    Input_Initialize();
+    Display_Initialize();
     Client_Initialize();
-    Server_Initialize();
+    FE_Initialize();
 
     CacheModelData();
 

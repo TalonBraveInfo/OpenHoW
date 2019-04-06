@@ -88,21 +88,14 @@ void Client_ProcessInput(void) {
 /************************************************************/
 
 void Client_Initialize(void) {
-    Input_Initialize();
-    Display_Initialize();
+
     AudioManager::GetInstance();
-    FE_Initialize();
+
 }
 
 void Client_Simulate(void) {
     Client_ProcessInput();
-
-    AudioManager::GetInstance()->Simulate();
     FE_Simulate();
-}
-
-void Client_Render(double delta) {
-
 }
 
 void Client_Shutdown(void) {
