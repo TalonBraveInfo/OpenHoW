@@ -19,8 +19,6 @@
 
 PL_EXTERN_C
 
-void Client_Initialize(void);
 void Client_Simulate(void);
-void Client_Shutdown(void);
 
 PL_EXTERN_C_END

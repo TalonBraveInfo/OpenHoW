@@ -87,21 +87,7 @@ void Client_ProcessInput(void) {
 
 /************************************************************/
 
-void Client_Initialize(void) {
-
-    AudioManager::GetInstance();
-
-}
-
 void Client_Simulate(void) {
     Client_ProcessInput();
     FE_Simulate();
-}
-
-void Client_Shutdown(void) {
-    plParseConsoleString("audio_shutdown");
-    Display_Shutdown();
-    /* todo: input, etc */
-
-    AudioManager::DestroyInstance();
 }

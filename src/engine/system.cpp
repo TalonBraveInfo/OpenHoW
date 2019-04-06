@@ -340,6 +340,8 @@ void System_Shutdown(void) {
     SDL_EnableScreenSaver();
     SDL_Quit();
 
+    plShutdown();
+
     exit(EXIT_SUCCESS);
 }
 
@@ -420,7 +422,7 @@ static int TranslateSDLButton(int button) {
     }
 }
 
-static void PollEvents() {
+void System_PollEvents() {
     ImGuiIO &io = ImGui::GetIO();
 
     SDL_Event event;
@@ -534,9 +536,7 @@ static void PollEvents() {
             case SDL_WINDOWEVENT: {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
                     Display_UpdateViewport(0, 0, (unsigned int) event.window.data1, (unsigned int) event.window.data2);
-
-                    imgui_camera->viewport.w = event.window.data1;
-                    imgui_camera->viewport.h = event.window.data2;
+                    ImGuiImpl_UpdateViewport(event.window.data1, event.window.data2);
                 }
             } break;
         }
@@ -591,17 +591,6 @@ int main(int argc, char **argv) {
 
     /* setup the camera we'll use for drawing the imgui overlay */
 
-    if((imgui_camera = plCreateCamera()) == nullptr) {
-        Error("failed to create ui camera, aborting!\n%s\n", plGetError());
-    }
-
-    imgui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    imgui_camera->fov          = 90;
-    imgui_camera->near         = 0;
-    imgui_camera->far          = 1000;
-    imgui_camera->viewport.w   = cv_display_width->i_value;
-    imgui_camera->viewport.h   = cv_display_height->i_value;
-
     //SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_CaptureMouse(SDL_TRUE);
     SDL_ShowCursor(SDL_TRUE);
@@ -611,52 +600,7 @@ int main(int argc, char **argv) {
      * ourselves                            */
     SDL_StartTextInput();
 
-#define TICKS_PER_SECOND    25
-#define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
-#define MAX_FRAMESKIP       5
-
-    unsigned int next_tick = System_GetTicks();
-    unsigned int loops;
-    double delta_time;
-
-    while(Engine_IsRunning()) {
-        PollEvents();
-
-        loops = 0;
-        while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-            g_state.sim_ticks = System_GetTicks();
-
-            Client_Simulate();
-            AudioManager::GetInstance()->Simulate();
-
-            g_state.last_sim_tick = System_GetTicks();
-            next_tick += SKIP_TICKS;
-            loops++;
-        }
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui::NewFrame();
-
-        delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-        Display_SetupDraw(delta_time);
-
-        Display_DrawScene();
-        Display_DrawInterface();
-        Display_Composite();
-        Display_DrawDebug();
-
-        /* now render imgui */
-        ImGui::Render();
-
-        plSetupCamera(imgui_camera);
-        plSetShaderProgram(nullptr);
-
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        /* and finally, swap */
-
-        Display_Flush();
-    }
+    while(Engine_IsRunning());
 
     System_Shutdown();
 

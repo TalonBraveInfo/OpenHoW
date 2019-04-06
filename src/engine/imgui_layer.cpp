@@ -20,10 +20,47 @@
 
 #include "engine.h"
 #include "imgui_layer.h"
+#include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
 #include "client/display.h"
 #include "MapManager.h"
 #include "client/audio.h"
+
+static PLCamera *imgui_camera = nullptr;
+
+void ImGuiImpl_SetupCamera(void) {
+    if((imgui_camera = plCreateCamera()) == nullptr) {
+        Error("failed to create ui camera, aborting!\n%s\n", plGetError());
+    }
+
+    imgui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    imgui_camera->fov          = 90;
+    imgui_camera->near         = 0;
+    imgui_camera->far          = 1000;
+    imgui_camera->viewport.w   = cv_display_width->i_value;
+    imgui_camera->viewport.h   = cv_display_height->i_value;
+}
+
+void ImGuiImpl_SetupFrame(void) {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui::NewFrame();
+}
+
+void ImGuiImpl_UpdateViewport(int w, int h) {
+    imgui_camera->viewport.w = w;
+    imgui_camera->viewport.h = h;
+}
+
+void ImGuiImpl_Draw(void) {
+    ImGui::Render();
+
+    plSetupCamera(imgui_camera);
+    plSetShaderProgram(nullptr);
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+/************************************************************/
 
 static bool show_quit               = false;
 static bool show_file               = false;
