@@ -27,6 +27,8 @@
 
 #include "client/frontend.h"
 #include "MapManager.h"
+#include "game/GameMode.h"
+#include "game/TrainingGameMode.h"
 
 /* Gamemode Management
  *
@@ -183,48 +185,23 @@ void SetCampaign(const char *dir) {
 }
 
 /******************************************************/
+// !!temporary interface!!
 
-bool game_started = false;
+static GameMode *mode = nullptr; // todo: temp
 
-Map *temp_map = nullptr; // Temporary, until we have a proper interface...
-
-void Game_StartNewGame(const GameModeSetup *mode) {
+void Game_StartNewGame(const std::string &mode_desc) {
     LogDebug("starting new game...\n");
 
-    if(mode->force_start && game_started) {
-        Game_End();
+    if(mode != nullptr) {
+        mode->EndMode();
+        delete mode;
     }
 
-    FE_SetState(FE_MODE_LOADING);
-
-    try {
-        temp_map = new Map(mode->map);
-    } catch(std::exception &e) {
-        LogWarn("Failed to load map, aborting game!\n");
-        FE_RestoreLastState();
-        return;
+    if(mode_desc == "training") {
+        mode = new TrainingGameMode();
+    } else {
+        Error("Unknown gamemode specified, \"%s\"!\n", mode_desc.c_str());
     }
 
-    g_state.max_players = mode->num_players;
-    if(g_state.max_players > MAX_PLAYERS) {
-        g_state.max_players = MAX_PLAYERS;
-    }
-
-    memset(g_state.players, 0, sizeof(Player) * g_state.max_players);
-    for(unsigned int i = 0; i < g_state.max_players; ++i) {
-        g_state.players[i].is_active = true;
-    }
-
-    /* we'll assume we're hosting */
-    g_state.is_host = true;
-
-    FE_SetState(FE_MODE_GAME);
-}
-
-void Game_End(void) {
-    LogDebug("ending current game...\n");
-
-    delete temp_map;
-
-    FE_SetState(FE_MODE_MAIN_MENU); // todo: should take to results screen???
+    mode->StartMode();
 }

@@ -22,6 +22,11 @@
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 
+// remove this once everything is C++'fied
+#ifdef __cplusplus
+#include <string>
+#endif
+
 #include "util.h"
 #include "pork_math.h"
 #include "console.h"
