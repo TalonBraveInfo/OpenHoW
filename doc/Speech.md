@@ -66,7 +66,7 @@ XX = LineIndex
 | `02` | Plays when walking first time
 | `03` | Plays when picking up `7 [CRATE1] (Bayonet)`
 | `04` | Plays when opening weapon menu first time
-| `05` | Plays when equiping bayonet first tiem
+| `05` | Plays when equiping bayonet first time
 | `06` | Plays when destroying group 1
 | `07` | Plays when lingering on picking crates.
 | `08` | Plays when picking up `12 [CRATE1] (Rifle)`
