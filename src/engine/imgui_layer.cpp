@@ -70,6 +70,7 @@ class MapConfigOpenWindow;
 
 class MapConfigEditor : public DebugWindow {
 public:
+    explicit MapConfigEditor(const std::string &path);
     MapConfigEditor();
     ~MapConfigEditor() override;
 
@@ -119,6 +120,12 @@ protected:
 private:
     const std::map<std::string, MapManifest> *manifests_;
 };
+
+MapConfigEditor::MapConfigEditor(const std::string &path) : MapConfigEditor() {
+    std::string name = plGetFileName(path.c_str());
+    name.erase(name.find(".map"));
+    OpenManifest(name);
+}
 
 MapConfigEditor::MapConfigEditor() {
     open_window_ = new MapConfigOpenWindow(this);
@@ -310,6 +317,8 @@ enum {
     FILE_TYPE_UNKNOWN,
     FILE_TYPE_MAP,
     FILE_TYPE_MAP_POG,
+    FILE_TYPE_MAP_PTG,
+    FILE_TYPE_MAP_PMG,
     FILE_TYPE_IMAGE,
     FILE_TYPE_AUDIO,
     FILE_TYPE_PARTICLE,
@@ -347,6 +356,18 @@ void AddFilePath(const char *path) {
                 pl_strncasecmp(ext, "wav", 3) == 0
                 ) {
             descriptor.type = FILE_TYPE_AUDIO;
+        } else if(
+                pl_strncasecmp(ext, "ptg", 3) == 0
+                ) {
+            descriptor.type = FILE_TYPE_MAP_PTG;
+        } else if(
+                pl_strncasecmp(ext, "pog", 3) == 0
+                ) {
+            descriptor.type = FILE_TYPE_MAP_POG;
+        } else if(
+                pl_strncasecmp(ext, "pmg", 3) == 0
+                ) {
+            descriptor.type = FILE_TYPE_MAP_PMG;
         }
     }
 
@@ -398,6 +419,10 @@ void UI_DisplayFileBox() {
                         windows.push_back(new TextureViewer(i.path, texture));
                     } break;
 
+                    case FILE_TYPE_MAP: {
+                        windows.push_back(new MapConfigEditor(i.path));
+                    } break;
+
                     case FILE_TYPE_AUDIO: {
                         AudioManager::GetInstance()->PlayGlobalSound(i.path);
                     } break;
@@ -413,9 +438,10 @@ void UI_DisplayFileBox() {
                 case FILE_TYPE_AUDIO:       type = "Audio"; break;
                 case FILE_TYPE_PARTICLE:    type = "Particle System"; break;
                 case FILE_TYPE_IMAGE:       type = "Image"; break;
-                case FILE_TYPE_MAP:         type = "Map"; break;
+                case FILE_TYPE_MAP:         type = "Map Manifest"; break;
                 case FILE_TYPE_MAP_POG:     type = "Map Objects"; break;
-
+                case FILE_TYPE_MAP_PTG:     type = "Map Textures"; break;
+                case FILE_TYPE_MAP_PMG:     type = "Map Geometry"; break;
                 default:break;
             }
 
