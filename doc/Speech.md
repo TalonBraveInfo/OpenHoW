@@ -24,6 +24,7 @@ Speech file names for pigs are formatted as follows: `WWXXYYZZ.wav`
 Speech file names for the sergeants are formatted as follows: `SGENXXYY.wav`
 
 XX = Category   
+
 | Cagetory | Name                           | Description                                                                      |
 | -------- | ------------------------------ | -------------------------------------------------------------------------------- |
 | `01`     | SP_DEATH                       | Plays when a pig from your team dies. (POST TURN)                                |
