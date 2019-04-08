@@ -330,23 +330,24 @@ void AddFilePath(const char *path) {
     descriptor.type = FILE_TYPE_UNKNOWN;
 
     const char *ext = plGetFileExtension(path);
-    u_assert(!plIsEmptyString(ext), "failed to identify file, extension was empty!\n");
-    if(pl_strncasecmp(ext, "map", 3) == 0) {
-        descriptor.type = FILE_TYPE_MAP;
-    } else if(
-            pl_strncasecmp(ext, "tim", 3) == 0 ||
-            pl_strncasecmp(ext, "bmp", 3) == 0 ||
-            pl_strncasecmp(ext, "png", 3) == 0
-            ) {
-        descriptor.type = FILE_TYPE_IMAGE;
-    } else if(
-            pl_strncasecmp(ext, "pps", 3) == 0
-            ) {
-        descriptor.type = FILE_TYPE_PARTICLE;
-    } else if(
-            pl_strncasecmp(ext, "wav", 3) == 0
-            ) {
-        descriptor.type = FILE_TYPE_AUDIO;
+    if(ext != nullptr) {
+        if(pl_strncasecmp(ext, "map", 3) == 0) {
+            descriptor.type = FILE_TYPE_MAP;
+        } else if(
+                pl_strncasecmp(ext, "tim", 3) == 0 ||
+                pl_strncasecmp(ext, "bmp", 3) == 0 ||
+                pl_strncasecmp(ext, "png", 3) == 0
+                ) {
+            descriptor.type = FILE_TYPE_IMAGE;
+        } else if(
+                pl_strncasecmp(ext, "pps", 3) == 0
+                ) {
+            descriptor.type = FILE_TYPE_PARTICLE;
+        } else if(
+                pl_strncasecmp(ext, "wav", 3) == 0
+                ) {
+            descriptor.type = FILE_TYPE_AUDIO;
+        }
     }
 
     file_list.push_back(descriptor);
@@ -354,13 +355,7 @@ void AddFilePath(const char *path) {
 
 void ScanDirectories() {
     file_list.clear();
-    //plScanDirectory(GetBasePath(), "map", AddFilePath, true);
-    //plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "pps", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "tim", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "bmp", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "png", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "wav", AddFilePath, true);
+    plScanDirectory(GetBasePath(), nullptr, AddFilePath, true);
 }
 
 void UI_DisplayFileBox() {
