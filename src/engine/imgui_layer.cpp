@@ -61,30 +61,32 @@ protected:
 
 #define dname(a)  std::string(a "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()
 
+static const unsigned int default_flags = ImGuiWindowFlags_NoSavedSettings;
+
 static std::vector<DebugWindow*> windows;
 
 /************************************************************/
 /* Map Config Editor */
 
-class MapConfigOpenWindow;
-
 class MapConfigEditor : public DebugWindow {
 public:
-    explicit MapConfigEditor(const std::string &path);
     MapConfigEditor();
+    explicit MapConfigEditor(const std::string &path);
+
     ~MapConfigEditor() override;
 
     void Display() override;
 
-    void OpenManifest(const std::string &name);
+    void OpenManifest(const std::string &path);
     void SyncManifest();
     void CloseManifest();
-    void SaveManifest();
+    void SaveManifest(const std::string &path);
 
 protected:
 private:
     MapManifest manifest_;
-    MapConfigOpenWindow *open_window_{nullptr};
+
+    bool save_dialog{false};
 
     char name_buffer[32]{'\0'};
     char author_buffer[32]{'\0'};
@@ -92,71 +94,34 @@ private:
     char filename_buffer[32]{'\0'};
 };
 
-class MapConfigOpenWindow : public DebugWindow {
-public:
-    explicit MapConfigOpenWindow(DebugWindow *parent) : DebugWindow(parent, false) {
-        manifests_ = &MapManager::GetInstance()->GetManifests();
-    }
-
-    void Display() override {
-        ImGui::SetNextWindowSize(ImVec2(256, 256), ImGuiCond_Once);
-        ImGui::Begin(dname("Open Map Config"), &status_, ImGuiWindowFlags_NoSavedSettings);
-
-        ImGui::PushItemWidth(ImGui::GetWindowContentRegionWidth());
-        ImGui::ListBoxHeader("##", manifests_->size(), 16);
-        for (const auto& manifest : *manifests_) {
-            if(ImGui::Button(manifest.first.c_str())) {
-                status_ = false;
-                auto *editor = dynamic_cast<MapConfigEditor*>(parent_);
-                editor->OpenManifest(manifest.first);
-            }
-        }
-        ImGui::ListBoxFooter();
-
-        ImGui::End();
-    }
-
-protected:
-private:
-    const std::map<std::string, MapManifest> *manifests_;
-};
-
-MapConfigEditor::MapConfigEditor(const std::string &path) : MapConfigEditor() {
-    std::string name = plGetFileName(path.c_str());
-    name.erase(name.find(".map"));
-    OpenManifest(name);
+MapConfigEditor::MapConfigEditor() = default;
+MapConfigEditor::MapConfigEditor(const std::string &path) {
+    OpenManifest(path);
 }
 
-MapConfigEditor::MapConfigEditor() {
-    open_window_ = new MapConfigOpenWindow(this);
-}
-
-MapConfigEditor::~MapConfigEditor() {
-    delete open_window_;
-}
+MapConfigEditor::~MapConfigEditor() = default;
 
 void MapConfigEditor::Display() {
     ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
 
     ImGui::Begin(dname("Map Config Editor"), &status_,
-                 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings);
+                 ImGuiWindowFlags_MenuBar | default_flags);
 
     if(ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New")) {
-                open_window_->SetStatus(false);
-
                 CloseManifest();
             }
-            if(ImGui::MenuItem("Open...")) {
-                open_window_->ToggleStatus();
-            }
-            ImGui::Separator();
-            if(ImGui::MenuItem("Save")) {
 
+            ImGui::Separator();
+
+            if(ImGui::MenuItem("Save")) {
+                if(filename_buffer[0] == '\0') {
+                    save_dialog = true;
+                }
             }
             if(ImGui::MenuItem("Save As...")) {
-
+                save_dialog = true;
             }
             ImGui::EndMenu();
         }
@@ -192,16 +157,38 @@ void MapConfigEditor::Display() {
     manifest_.ambient_colour.g = plFloatToByte(rgb[1]);
     manifest_.ambient_colour.b = plFloatToByte(rgb[2]);
 
+    ImGui::Separator();
+
+    const char *temperatures[]={ "hot", "cold" };
+
+    //ImGui::ListBox("Temperature", temperatures, , );
+
     ImGui::End();
 
-    if(open_window_->GetStatus()) {
-        open_window_->Display();
+    if(save_dialog) {
+        ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
+        ImGui::Begin(dname("Map Config Editor / Save"), &save_dialog, default_flags);
+        ImGui::InputText("Name", filename_buffer, sizeof(filename_buffer));
+        ImGui::Separator();
+        if(ImGui::Button("Save")) {
+            SaveManifest(std::string(GetFullCampaignPath()) + "/maps/" + filename_buffer + ".map");
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")) {
+            save_dialog = false;
+        }
+        ImGui::End();
     }
 }
 
-void MapConfigEditor::OpenManifest(const std::string &name) {
+void MapConfigEditor::OpenManifest(const std::string &path) {
+    std::string name = plGetFileName(path.c_str());
+    name.erase(name.find(".map"));
     manifest_ = *MapManager::GetInstance()->GetManifest(name);
+
     SyncManifest();
+
+    strncpy(filename_buffer, path.c_str(), sizeof(filename_buffer));
 }
 
 void MapConfigEditor::CloseManifest() {
@@ -215,8 +202,43 @@ void MapConfigEditor::SyncManifest() {
     strncpy(sky_buffer, manifest_.sky.c_str(), sizeof(sky_buffer));
 }
 
-void MapConfigEditor::SaveManifest() {
+void MapConfigEditor::SaveManifest(const std::string &path) {
+    std::ofstream output(path);
+    if(!output.is_open()) {
+        LogWarn("Failed to write to \"%s\", aborting!n\"\n", filename_buffer);
+        return;
+    }
 
+    output << "{";
+    output << R"("name":")" + manifest_.name + "\",";
+    output << R"("author":")" + manifest_.author + "\",";
+    output << R"("description":")" + manifest_.description + "\",";
+    output << R"("sky":")" + manifest_.sky + "\",";
+    if(!manifest_.modes.empty()) {
+        output << R"("modes":[)";
+        for (unsigned int i = 0; i < manifest_.modes.size(); ++i) {
+            output << "\"" + manifest_.modes[i] + "\"";
+            if (i != manifest_.modes.size()) {
+                output << ",";
+            }
+        }
+        output << "],";
+    }
+    output << R"("ambient_colour":")" +
+        std::to_string(manifest_.ambient_colour.r) + " " +
+        std::to_string(manifest_.ambient_colour.g) + " " +
+        std::to_string(manifest_.ambient_colour.b) + "\",";
+    output << R"("sun_colour":")" +
+        std::to_string(manifest_.sun_colour.r) + " " +
+        std::to_string(manifest_.sun_colour.g) + " " +
+        std::to_string(manifest_.sun_colour.b) + "\",";
+    output << R"("sun_yaw":")" + std::to_string(manifest_.sun_yaw) + "\",";
+    output << R"("sun_pitch":")" + std::to_string(manifest_.sun_pitch) + "\",";
+    output << R"("temperature":")" + manifest_.temperature + "\",";
+    output << R"("time":")" + manifest_.time + "\"";
+    output << "}\n";
+
+    LogInfo("Wrote \"%s\"!\n", path.c_str());
 }
 
 /************************************************************/
@@ -270,7 +292,7 @@ void UI_DisplayNewGame() {
     ImGui::Begin("Select Team", &show_new_game,
                  ImGuiWindowFlags_NoResize |
                  ImGuiWindowFlags_NoTitleBar |
-                 ImGuiWindowFlags_NoDecoration
+                 ImGuiWindowFlags_NoDecoration | default_flags
     );
 
 #if 0
@@ -322,8 +344,6 @@ enum {
     FILE_TYPE_IMAGE,
     FILE_TYPE_AUDIO,
     FILE_TYPE_PARTICLE,
-
-    MAX_FILE_TYPES
 };
 
 typedef struct FileDescriptor {

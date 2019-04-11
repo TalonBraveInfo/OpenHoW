@@ -41,6 +41,12 @@ const char *GetCampaignPath(void) {
     return cv_campaign_path->s_value;
 }
 
+const char *GetFullCampaignPath(void) {
+    static char path[PL_SYSTEM_MAX_PATH];
+    snprintf(path, sizeof(path), "%s/campaigns/%s", cv_base_path->s_value, cv_campaign_path->s_value);
+    return path;
+}
+
 void Engine_Initialize(void) {
     LogInfo("initializing engine (%d.%d.%d)...\n",
             ENGINE_MAJOR_VERSION,
