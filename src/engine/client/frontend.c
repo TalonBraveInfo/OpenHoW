@@ -269,13 +269,12 @@ uint8_t FE_GetLoadingProgress(void) {
  * else. For now we'll just keep
  * things fixed and worry about this
  * later. */
-#define FRONTEND_MENU_WIDTH     640
-#define FRONTEND_MENU_HEIGHT    480
 
 static void DrawLoadingScreen(void) {
-    //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
-    //int c_y = (GetUIViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
-    plDrawTexturedRectangle(0, 0, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+    int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+    int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
+    plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
 
     /* originally I wrote some code ensuring the menu bar
      * was centered... that was until I found out that on
@@ -303,8 +302,10 @@ static void DrawLoadingScreen(void) {
 void FE_Draw(void) {
     /* render and handle the main menu */
     if(frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
-        //int c_x = (GetUIViewportWidth() / 2) - FRONTEND_MENU_WIDTH / 2;
-        //int c_y = (GetUIViewportHeight() / 2) - FRONTEND_MENU_HEIGHT / 2;
+
+        int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+        int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
         switch(frontend_state) {
             default:break;
 
@@ -316,7 +317,7 @@ void FE_Draw(void) {
                  * final one */
                 static bool is_background_drawn = false;
                 if(!is_background_drawn) {
-                    plDrawTexturedRectangle(0, 0, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+                    plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
                     plDeleteTexture(fe_background, true);
                     is_background_drawn = true;
                 }
@@ -328,7 +329,7 @@ void FE_Draw(void) {
                     plSetBlendMode(PL_BLEND_DEFAULT);
                     plDrawFilledRectangle(plCreateRectangle(
                             PLVector2(0, 464),
-                            PLVector2(FRONTEND_MENU_WIDTH, 16),
+                            PLVector2(frontend_width, 16),
                             PLColour(0, 0, 0, 150),
                             PLColour(0, 0, 0, 150),
                             PLColour(0, 0, 0, 150),
@@ -350,15 +351,15 @@ void FE_Draw(void) {
             } break;
 
             case FE_MODE_START: {
-                plDrawTexturedRectangle(0, 0, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+                plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
 
                 /* this will probably be rewritten later on, but below we're setting up
                  * where each of the little blocks of text will be and then moving them
                  * up and down until the player presses an action (which is handled via
                  * our crappy callback) */
 
-                int press_x = (FRONTEND_MENU_WIDTH / 2) - (180 / 2);
-                int press_y = 435;
+                int press_x = (frontend_width / 2) - (180 / 2);
+                int press_y = frontend_height - 45;
                 /* todo, these should be bouncing... */
                 plDrawTexturedRectangle(press_x, press_y, 62, 16, fe_press);
                 plDrawTexturedRectangle(press_x += 70, press_y, 40, 16, fe_any);
@@ -366,7 +367,7 @@ void FE_Draw(void) {
             } break;
 
             case FE_MODE_MAIN_MENU: {
-                plDrawTexturedRectangle(0, 0, FRONTEND_MENU_WIDTH, FRONTEND_MENU_HEIGHT, fe_background);
+                plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
             } break;
 
             case FE_MODE_LOADING: {

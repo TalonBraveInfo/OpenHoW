@@ -34,8 +34,10 @@
 /* Texture Cache */
 
 #define MAX_TEXTURES_PER_INDEX  1024
+#define MAX_VIDEO_PRESETS 32
 
-
+static int num_vid_presets;
+static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 static PLFrameBuffer* game_target;
 static PLFrameBuffer* frontend_target;
 
@@ -356,8 +358,37 @@ PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter) {
 
 /************************************************************/
 
-#define MIN_DISPLAY_WIDTH   320
-#define MIN_DISPLAY_HEIGHT  200
+bool Display_AppendVideoPreset(int width, int height) {
+    if(num_vid_presets >= MAX_VIDEO_PRESETS){
+        LogWarn("Cannot append video preset, hit max limit! Try increasing \"MAX_VIDEO_PRESETS\"");
+        return false;
+    }
+    vid_presets[num_vid_presets].width = width;
+    vid_presets[num_vid_presets].height = height;
+    num_vid_presets++;
+    LogInfo("Added %dx%d video preset", width, height);
+    return true;
+}
+
+void Display_ClearVideoPresets() {
+    memset(vid_presets, 0, sizeof(VideoPreset) * MAX_VIDEO_PRESETS);
+    num_vid_presets = 0;
+    LogInfo("Cleared all video presets");
+}
+
+int Display_GetNumVideoPresets() {
+    return num_vid_presets;
+}
+
+const VideoPreset* Display_GetVideoPreset(int idx) {
+    if(idx < 0 || idx >= num_vid_presets) {
+        LogWarn("Attempted to get an out of range video preset \'%d\', current count is %d", idx, num_vid_presets);
+        return NULL;
+    }
+    return &vid_presets[idx];
+}
+
+/************************************************************/
 
 /* shared function */
 void Display_UpdateViewport(int x, int y, int width, int height) {
@@ -368,10 +399,32 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
         return;
     }
 
-    g_state.ui_camera->viewport.x = g_state.camera->viewport.x = x;
-    g_state.ui_camera->viewport.y = g_state.camera->viewport.y = y;
-    g_state.ui_camera->viewport.w = g_state.camera->viewport.w = width;
-    g_state.ui_camera->viewport.h = g_state.camera->viewport.h = height;
+    float current_aspect = (float)width / (float)height;
+    float target_aspect = 4.0f / 3.0f;
+    float relative_width = target_aspect / current_aspect;
+    float relative_height = current_aspect / target_aspect;
+    relative_width = relative_width > 1.0f ? 1.0f : relative_width;
+    relative_height = relative_height > 1.0f ? 1.0f : relative_height;
+
+    int newWidth = (float)width * relative_width;
+    int newHeight = (float)height * relative_height;
+
+    //TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
+    //      For now, just use the same viewport aspect for both.
+    if(cv_display_use_window_aspect->b_value){
+        //If enabled, use full window for 3d scene
+        g_state.camera->viewport.x = g_state.ui_camera->viewport.x = x;
+        g_state.camera->viewport.y = g_state.ui_camera->viewport.y = y;
+        g_state.camera->viewport.w = g_state.ui_camera->viewport.w = width;
+        g_state.camera->viewport.h = g_state.ui_camera->viewport.h = height;
+    }
+    else{
+        g_state.camera->viewport.x = g_state.ui_camera->viewport.x = (width - newWidth) / 2;
+        g_state.camera->viewport.y = g_state.ui_camera->viewport.y = (height - newHeight) / 2;
+        g_state.camera->viewport.w = g_state.ui_camera->viewport.w = newWidth;
+        g_state.camera->viewport.h = g_state.ui_camera->viewport.h = newHeight;
+    }
+
 }
 
 int Display_GetViewportWidth(const PLViewport *viewport) {
@@ -399,7 +452,7 @@ void Display_UpdateState(void) {
     // attempt to set the new display size, otherwise update cvars to match
     int w = cv_display_width->i_value;
     int h = cv_display_height->i_value;
-    if(!System_SetWindowSize(&w, &h, false)) {
+    if(!System_SetWindowSize(w, h, false)) {
         LogWarn("failed to set display size to %dx%d!\n", cv_display_width->i_value, cv_display_height->i_value);
         LogInfo("display set to %dx%d\n", w, h);
 
@@ -434,7 +487,6 @@ void Display_Initialize(void) {
     }
 
     // now create the window and update the display
-
     System_DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
     char win_title[32];
@@ -483,6 +535,8 @@ void Display_Initialize(void) {
     g_state.ui_camera->far          = 1000;
     g_state.ui_camera->viewport.w   = cv_display_width->i_value;
     g_state.ui_camera->viewport.h   = cv_display_height->i_value;
+
+    ImGuiImpl_SetupCamera();
 
     //plSetCullMode(PL_CULL_POSTIVE);
 
@@ -543,8 +597,19 @@ static void DrawDebugOverlay(void) {
         char ms_count[32];
         sprintf(ms_count, "FPS: %d (%d)", fps, ms);
         Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
-                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
+                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 64, 0, 1.f, PL_COLOUR_WHITE,
                               ms_count);
+    }
+
+    {
+        char debug_display[128];
+        int w, h;
+        bool fs;
+        System_GetWindowDrawableSize(&w, &h, &fs);
+        sprintf(debug_display, "%d X %d %s", w, h, fs == true ? "FULLSCREEN" : "WINDOWED");
+        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
+                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
+                              debug_display);
     }
 
     if (cv_debug_input->i_value > 0) {
@@ -643,12 +708,6 @@ static void DrawDebugOverlay(void) {
 #endif
 }
 
-static void SetupFrontendCamera(int w, int h) {
-    g_state.ui_camera->viewport.w = w;
-    g_state.ui_camera->viewport.h = h;
-    plSetupCamera(g_state.ui_camera);
-}
-
 double cur_delta = 0;
 
 void Display_SetupDraw(double delta) {
@@ -661,7 +720,7 @@ void Display_SetupDraw(double delta) {
     }
     plClearBuffers(clear_flags);
 
-    plBindFrameBuffer(game_target, PL_FRAMEBUFFER_DRAW);
+    plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
     plSetupCamera(g_state.camera);
 }
 
@@ -674,8 +733,7 @@ void Display_DrawScene(void) {
 
 void Display_DrawInterface(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
-    plBindFrameBuffer(frontend_target, PL_FRAMEBUFFER_DRAW);
-    SetupFrontendCamera(640, 480);
+    plSetupCamera(g_state.ui_camera);
     FE_Draw();
 }
 
@@ -685,26 +743,13 @@ void Display_DrawDebug(void) {
     System_GetWindowDrawableSize(&window_draw_w, &window_draw_h, &fs);
 
     plSetShaderProgram(programs[SHADER_DEFAULT]);
-    plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
-    SetupFrontendCamera(window_draw_w, window_draw_h);
+    plSetupCamera(g_state.ui_camera);
 
     if(cv_debug_mode->i_value > 0) {
         DrawDebugOverlay();
     }
 
     Console_Draw();
-}
-
-void Display_Composite(void) {
-    //TODO: PS blend game and frontend buffers in one op, write to BB.
-    //      For now just blit & linear scale the frontend target to BB since nothing is rendered in the game scene 
-    int bb_width, bb_height;
-    bool fs;
-    System_GetWindowDrawableSize(&bb_width, &bb_height, &fs);
-    plBlitFrameBuffers(frontend_target, frontend_target->width, frontend_target->height, 0, bb_width, bb_height, true);
-
-    //Leave default BB bound for debug overlays
-    plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
 }
 
 void Display_Flush(void) {

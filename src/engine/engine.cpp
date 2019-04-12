@@ -26,8 +26,11 @@
 #include "script/script.h"
 
 #include "client/client.h"
-#include "server/server.h"
 #include "config.h"
+#include "client/display.h"
+#include "input.h"
+#include "client/frontend.h"
+#include "client/audio.h"
 
 EngineState g_state;
 
@@ -60,7 +63,7 @@ void Engine_Initialize(void) {
     // check for any command line arguments
 
     const char *var;
-    if((var = plGetCommandLineArgumentValue("-path")) != NULL) {
+    if((var = plGetCommandLineArgumentValue("-path")) != nullptr) {
         if(!plPathExists(var)) {
             LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
         }
@@ -83,8 +86,8 @@ void Engine_Initialize(void) {
     Languages_Initialize();
     RegisterCampaigns();
 
-    if((var = plGetCommandLineArgumentValue("-mod")) == NULL &&
-       (var = plGetCommandLineArgumentValue("-campaign")) == NULL) {
+    if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
+       (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
         /* otherwise default to Hogs of War's campaign */
         var = "how";
     }
@@ -93,8 +96,10 @@ void Engine_Initialize(void) {
 
     /* now initialize all other sub-systems */
 
-    Client_Initialize();
-    Server_Initialize();
+    Input_Initialize();
+    Display_Initialize();
+    AudioManager::GetInstance();
+    FE_Initialize();
 
     CacheModelData();
 
@@ -103,16 +108,48 @@ void Engine_Initialize(void) {
     LogInfo("working directory: \"%s\"\n", plGetWorkingDirectory());
 }
 
+#include "imgui_layer.h"
+
 bool Engine_IsRunning(void) {
+    System_PollEvents();
+
+    static unsigned int next_tick = 0;
+    if(next_tick == 0) {
+        next_tick = System_GetTicks();
+    }
+
+    unsigned int loops = 0;
+    while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
+        g_state.sim_ticks = System_GetTicks();
+
+        Client_Simulate();
+        AudioManager::GetInstance()->Simulate();
+
+        g_state.last_sim_tick = System_GetTicks();
+        next_tick += SKIP_TICKS;
+        loops++;
+    }
+
+    ImGuiImpl_SetupFrame();
+
+    double delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
+    Display_SetupDraw(delta_time);
+
+    Display_DrawScene();
+    Display_DrawInterface();
+    Display_DrawDebug();
+
+    ImGuiImpl_Draw();
+
+    Display_Flush();
+
     return true;
 }
 
 void Engine_Shutdown(void) {
-    Client_Shutdown();
-    Server_Shutdown();
+    Display_Shutdown();
+    AudioManager::DestroyInstance();
     Script_Shutdown();
 
     Config_Save(Config_GetUserConfigPath());
-
-    plShutdown();
 }

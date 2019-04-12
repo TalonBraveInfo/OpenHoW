@@ -35,6 +35,10 @@
 #define ENGINE_MINOR_VERSION    1
 #define ENGINE_PATCH_VERSION    0
 
+#define TICKS_PER_SECOND    25
+#define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
+#define MAX_FRAMESKIP       5
+
 static inline const char *GetVersionString(void) {
     /* this is here for when we start generating additional
      * versioning information (such as git version) */
@@ -75,6 +79,8 @@ void Engine_Initialize(void);
 void Engine_Shutdown(void);
 
 bool Engine_IsRunning(void);
+
+void Engine_Simulate();
 
 const char *GetBasePath(void);
 const char *GetCampaignPath(void);
@@ -119,7 +125,9 @@ void System_SwapDisplay(void);
 void System_SetWindowTitle(const char *title);
 void System_GetWindowSize(int *width, int *height, bool *fs);
 void System_GetWindowDrawableSize(int *width, int *height, bool *fs);
-bool System_SetWindowSize(int *width, int *height, bool fs);
+bool System_SetWindowSize(int width, int height, bool fs);
+
+void System_PollEvents();
 
 void System_Shutdown(void);
 

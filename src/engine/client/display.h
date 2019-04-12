@@ -19,6 +19,9 @@
 
 #include <PL/platform_graphics_camera.h>
 
+#define MIN_DISPLAY_WIDTH   640
+#define MIN_DISPLAY_HEIGHT  480
+
 enum {
     TEXTURE_INDEX_BRITISH,
     TEXTURE_INDEX_AMERICAN,
@@ -36,11 +39,21 @@ enum {
     MAX_TEXTURE_INDEX
 };
 
+typedef struct VideoPreset{
+    int width;
+    int height;
+} VideoPreset;
+
 PL_EXTERN_C
 
 void Display_Initialize(void);
 void Display_Shutdown(void);
 void Display_UpdateState(void);
+
+bool Display_AppendVideoPreset(int width, int height);
+void Display_ClearVideoPresets();
+int Display_GetNumVideoPresets();
+const VideoPreset* Display_GetVideoPreset(int idx);
 
 void Display_UpdateViewport(int x, int y, int width, int height);
 
@@ -54,7 +67,6 @@ void Display_SetupDraw(double delta);
 void Display_DrawScene(void);
 void Display_DrawInterface(void);
 void Display_DrawDebug(void);
-void Display_Composite(void);
 void Display_Flush(void);
 
 void Display_ClearTextureIndex(unsigned int id);
