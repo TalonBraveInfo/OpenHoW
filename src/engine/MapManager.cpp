@@ -87,15 +87,13 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
     }
 
     GameModeSetup mode;
-    memset(&mode, 0, sizeof(GameModeSetup));
-
     mode.num_players = 2;
     mode.teams[0] = TEAM_BRITISH;
     mode.teams[1] = TEAM_AMERICAN;
 
     snprintf(mode.map, sizeof(mode.map), "%s", argv[1]);
 
-    Game_StartNewGame(&mode);
+    Game_SetMode("deathmatch");
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {

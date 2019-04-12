@@ -51,7 +51,7 @@ enum PigClass {
     MAX_CLASSES
 };
 
-typedef struct CampaignManifest {
+struct CampaignManifest {
     char path[PL_SYSTEM_MAX_PATH];  /* path to the campaign manifest */
     char dir[64];                   /* directory under campaigns */
 
@@ -60,27 +60,18 @@ typedef struct CampaignManifest {
     char author[128];
 
     unsigned int num_supported_languages;
-} CampaignManifest;
-
-typedef struct GameModeSetup {
-    char            map[32];
-    unsigned int    game_mode;          /* passed to the map loader */
-    uint8_t         num_players;
-    unsigned int    teams[MAX_PLAYERS];
-
-    bool            force_start;   /* kills any current game */
-} GameModeSetup;
+};
 
 PL_EXTERN_C
 
-CampaignManifest *GetCurrentCampaign(void);
+CampaignManifest *Game_GetCurrentCampaign(void);
 
-void RegisterCampaigns(void);
-void SetCampaign(const char *dir);
+void Game_RegisterCampaigns(void);
+void Game_SetCampaign(const char *dir);
 
 /****************************************************/
 
-void Game_StartNewGame(const GameModeSetup *mode);
-void Game_End(void);
+void Game_SetMode(const std::string &mode_desc);
+void Game_EndMode(void);
 
 PL_EXTERN_C_END

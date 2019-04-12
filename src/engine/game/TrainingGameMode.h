@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include "GameMode.h"
+#include "BaseGameMode.h"
 
-class TrainingGameMode : public GameMode {
+class TrainingGameMode : public BaseGameMode {
 public:
 
     std::string GetDescription() override { return "training"; }

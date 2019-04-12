@@ -38,7 +38,7 @@ static duk_ret_t SC_LoadScript(duk_context *context) {
 }
 
 static duk_ret_t SC_GetCampaignName(duk_context *context) {
-    CampaignManifest *cur = GetCurrentCampaign();
+    CampaignManifest *cur = Game_GetCurrentCampaign();
     if(cur == NULL) {
         duk_push_string(context, "null");
         return 0;

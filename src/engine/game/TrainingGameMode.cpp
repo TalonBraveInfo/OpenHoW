@@ -17,6 +17,7 @@
 
 #include "../engine.h"
 #include "TrainingGameMode.h"
+#include "../Map.h"
 
 void TrainingGameMode::StartMode() {
     if(g_state.max_players > GetMaxPlayers()) {
@@ -28,7 +29,7 @@ void TrainingGameMode::StartMode() {
 }
 
 void TrainingGameMode::EndMode() {
-
+    // todo
 }
 
 void TrainingGameMode::StartTurn() {
@@ -52,5 +53,11 @@ void TrainingGameMode::EndRound() {
 }
 
 void TrainingGameMode::ChangeMap(const std::string &name) {
+    if(current_map_ != nullptr) {
 
+    }
+
+    try {
+        current_map_ = new Map(name);
+    }
 }

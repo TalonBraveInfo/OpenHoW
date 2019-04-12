@@ -78,7 +78,7 @@ void Engine_Initialize(void) {
     /* load in the manifests */
 
     Languages_Initialize();
-    RegisterCampaigns();
+    Game_RegisterCampaigns();
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
@@ -86,7 +86,7 @@ void Engine_Initialize(void) {
         var = "how";
     }
 
-    SetCampaign(var);
+    Game_SetCampaign(var);
 
     /* now initialize all other sub-systems */
 

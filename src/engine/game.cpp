@@ -27,7 +27,7 @@
 
 #include "client/frontend.h"
 #include "MapManager.h"
-#include "game/GameMode.h"
+#include "game/BaseGameMode.h"
 #include "game/TrainingGameMode.h"
 
 /* Gamemode Management
@@ -89,7 +89,7 @@ CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
  *
  * @param path Path to the manifest file.
  */
-void RegisterCampaign(const char *path) {
+void Game_RegisterCampaign(const char *path) {
 #if 0
     /* ensure the campaign actually exists before we proceed */
     char directory[PL_SYSTEM_MAX_PATH];
@@ -142,23 +142,23 @@ void RegisterCampaign(const char *path) {
 /** Registers all of the campaigns provided under the campaigns
  *  directory.
  */
-void RegisterCampaigns(void) {
+void Game_RegisterCampaigns(void) {
     campaigns = static_cast<CampaignManifest *>(u_alloc(max_campaigns, sizeof(CampaignManifest), true));
 
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "%s/campaigns/", GetBasePath());
-    plScanDirectory(path, "campaign", RegisterCampaign, false);
+    plScanDirectory(path, "campaign", Game_RegisterCampaign, false);
 }
 
 /** Returns a pointer to the campaign that's currently active.
  *
  * @return Pointer to the current campaign.
  */
-CampaignManifest *GetCurrentCampaign(void) {
+CampaignManifest *Game_GetCurrentCampaign(void) {
     return &campaigns[cur_campaign_idx];
 }
 
-void SetCampaign(const char *dir) {
+void Game_SetCampaign(const char *dir) {
     CampaignManifest *campaign = Game_GetCampaignByDirectory(dir);
     if(campaign == nullptr) {
         LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
@@ -166,7 +166,7 @@ void SetCampaign(const char *dir) {
         char path[PL_SYSTEM_MAX_PATH];
         snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", GetBasePath(), dir);
         if(plFileExists(path)) {
-            RegisterCampaign(path);
+            Game_RegisterCampaign(path);
             campaign = Game_GetCampaignByDirectory(dir);
         }
 
@@ -187,9 +187,12 @@ void SetCampaign(const char *dir) {
 /******************************************************/
 // !!temporary interface!!
 
-static GameMode *mode = nullptr; // todo: temp
+static BaseGameMode *mode = nullptr;
+const BaseGameMode *Game_GetMode() {
+    return mode;
+}
 
-void Game_StartNewGame(const std::string &mode_desc) {
+void Game_SetMode(const std::string &mode_desc) {
     LogDebug("starting new game...\n");
 
     if(mode != nullptr) {
@@ -200,7 +203,7 @@ void Game_StartNewGame(const std::string &mode_desc) {
     if(mode_desc == "training") {
         mode = new TrainingGameMode();
     } else {
-        Error("Unknown gamemode specified, \"%s\"!\n", mode_desc.c_str());
+        Error("Unknown game-mode specified, \"%s\"!\n", mode_desc.c_str());
     }
 
     mode->StartMode();

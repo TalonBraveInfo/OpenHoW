@@ -17,15 +17,17 @@
 
 #pragma once
 
-class GameMode {
+class Map;
+
+class BaseGameMode {
 public:
-    GameMode() = default;
-    virtual ~GameMode() = 0;
+    BaseGameMode() = default;
+    virtual ~BaseGameMode() = 0;
 
     virtual std::string GetDescription() = 0;   // mode identifier
 
-    virtual void StartMode() = 0;   // loads necessary map, etc.
-    virtual void EndMode() = 0;     // ends the mode, cleanup
+    virtual void StartMode();   // loads necessary map, etc.
+    virtual void EndMode();     // ends the mode, cleanup
 
     virtual uint8_t GetMaxSpectators() = 0;
     virtual uint8_t GetMaxPlayers() = 0;
@@ -38,18 +40,17 @@ public:
     virtual void PlayerLeft(uint8_t client_id) = 0;
 #endif
 
+    virtual void Tick();    // called per-frame
+
     virtual void StartTurn() = 0;
     virtual void EndTurn() = 0;
 
-    virtual void StartRound() = 0;
+    virtual void StartRound(const std::string &map_name) = 0;
     virtual void RestartRound() = 0;
     virtual void EndRound() = 0;
 
-    virtual void ChangeMap(const std::string &name) = 0;
-    virtual void UnloadMap() { delete current_map_; }
-
-    virtual bool IsRoundStarted() { return round_started_; }
-    virtual bool IsTurnStarted() { return turn_started_; }
+    virtual bool HasRoundStarted() { return round_started_; }
+    virtual bool HasTurnStarted() { return turn_started_; }
 
     virtual bool TogglePause() { return (is_paused_ = !is_paused_); }
     virtual bool IsPaused() { return is_paused_; }
@@ -67,4 +68,6 @@ private:
 
     std::vector<uint8_t> players_;      // todo: need proper identifier
     std::vector<uint8_t> spectators_;   // todo: need proper identifier
+
+    std::string properties
 };

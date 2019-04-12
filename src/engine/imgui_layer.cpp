@@ -65,7 +65,6 @@ void ImGuiImpl_Draw(void) {
 static bool show_quit               = false;
 static bool show_file               = false;
 static bool show_new_game           = false;
-static bool show_about              = false;
 static bool show_console            = false;
 static bool show_settings           = false;
 
@@ -379,7 +378,7 @@ void UI_DisplayNewGame() {
         mode.force_start = true;
         mode.num_players = 1;
         snprintf(mode.map, sizeof(mode.map) - 1, "camp");
-        Game_StartNewGame(&mode);
+        Game_SetMode(&mode);
     }
     ImGui::SameLine();
     if(ImGui::Button("Cancel")) {
@@ -576,6 +575,7 @@ private:
 };
 
 void UI_DisplayDebugMenu(void) {
+    static bool show_about = false;
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
