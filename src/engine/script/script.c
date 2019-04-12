@@ -17,11 +17,9 @@
 #include <PL/platform_filesystem.h>
 
 #include "../input.h"
-#include "../game.h"
 #include "../engine.h"
-
 #include "../client/video.h"
-
+#include "../game/TempGame.h"
 #include "script.h"
 
 #include "duktape-2.2.0/duktape.h"
@@ -38,13 +36,15 @@ static duk_ret_t SC_LoadScript(duk_context *context) {
 }
 
 static duk_ret_t SC_GetCampaignName(duk_context *context) {
-    CampaignManifest *cur = Game_GetCurrentCampaign();
+#if 0
+    ModManifest *cur = Mod_GetCurrentCampaign();
     if(cur == NULL) {
         duk_push_string(context, "null");
         return 0;
     }
 
     duk_push_string(context, cur->name);
+#endif
     return 0;
 }
 

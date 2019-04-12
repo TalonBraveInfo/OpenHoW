@@ -251,6 +251,7 @@ void MapConfigEditor::SaveManifest() {
 /************************************************************/
 
 #include "TextureViewer.h"
+#include "game/TempGame.h"
 
 /************************************************************/
 /* Settings */
@@ -334,8 +335,6 @@ void UI_DisplaySettings() {
 /************************************************************/
 /* New Game */
 
-static GameModeSetup mode;
-
 void UI_DisplayNewGame() {
     if(!show_new_game) {
         return;
@@ -355,6 +354,7 @@ void UI_DisplayNewGame() {
     ImGui::ListBoxFooter();
 #endif
 
+#if 0 // todo
     ImGui::SliderInt("Number of Players", reinterpret_cast<int *>(&mode.num_players), 1, 4);
 
     const char *teams[MAX_TEAMS]={
@@ -384,6 +384,7 @@ void UI_DisplayNewGame() {
     if(ImGui::Button("Cancel")) {
         show_new_game = false;
     }
+#endif
 
     ImGui::End();
 }
@@ -579,8 +580,6 @@ void UI_DisplayDebugMenu(void) {
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
-                memset(&mode, 0, sizeof(GameModeSetup));
-                mode.num_players = 1;
                 show_new_game = true;
             }
             if(ImGui::MenuItem("Load Game...")) {}

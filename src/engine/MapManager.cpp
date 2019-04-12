@@ -21,6 +21,7 @@
 #include "MapManager.h"
 #include "Map.h"
 #include "script/ScriptConfig.h"
+#include "game/Game.h"
 
 MapManager *MapManager::instance_ = nullptr;
 
@@ -85,13 +86,6 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         LogWarn("Invalid number of arguments, ignoring!\n");
         return;
     }
-
-    GameModeSetup mode;
-    mode.num_players = 2;
-    mode.teams[0] = TEAM_BRITISH;
-    mode.teams[1] = TEAM_AMERICAN;
-
-    snprintf(mode.map, sizeof(mode.map), "%s", argv[1]);
 
     Game_SetMode("deathmatch");
 }

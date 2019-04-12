@@ -27,8 +27,6 @@
 #include "client/font.h"
 #include "client/frontend.h"
 
-#include "server/actor.h"
-
 /************************************************************/
 
 #define check_args(num) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }

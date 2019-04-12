@@ -19,7 +19,8 @@
 
 #include "../client/frontend.h"
 
-#include "actor.h"
+#include "ActorManager.h"
+#include "Actor.h"
 
 /************************************************************/
 
@@ -81,41 +82,4 @@ ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string &
 
 ActorManager::ActorClassRegistration::~ActorClassRegistration() {
     ActorManager::actor_classes_.erase(name_);
-}
-
-/************************************************************/
-
-Actor::Actor(PLVector3 position) {
-    u_assert(0, "todo");
-}
-
-Actor::Actor() = default;
-Actor::~Actor() = default;
-
-bool Actor::Possess(Player *player) {
-    if(!player->is_active) {
-        LogWarn("failed to possess actor, inactive player!\n");
-        return false;
-    }
-
-    if(controller_ != nullptr && controller_ == player) {
-        return true;
-    } else if(controller_ != nullptr && controller_ != player) {
-        if(!Depossess(controller_)) {
-            LogWarn("failed to possess actor, already occupied!\n");
-            return false;
-        }
-    }
-
-    controller_ = player;
-    return true;
-}
-
-bool Actor::Depossess(Player *player) {
-    if(controller_ != nullptr && controller_ != player) {
-        return false;
-    }
-
-    controller_ = nullptr;
-    return true;
 }

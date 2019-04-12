@@ -15,17 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
+#include "../engine.h"
+#include "Game.h"
 #include "BaseGameMode.h"
 
-class TrainingGameMode : public BaseGameMode {
-public:
-    TrainingGameMode();
-    ~TrainingGameMode() override;
+static BaseGameMode *mode = nullptr;
+const BaseGameMode *Game_GetMode() {
+    return mode;
+}
 
-    std::string GetDescription() override { return "training"; }
+void Game_SetMode(const std::string &mode_desc) {
+    LogDebug("starting new game...\n");
 
-protected:
-private:
-};
+    if(mode != nullptr) {
+        mode->EndMode();
+        delete mode;
+    }
+
+    if(mode_desc == "training") {
+        //mode = new TrainingGameMode();
+    } else {
+        Error("Unknown game-mode specified, \"%s\"!\n", mode_desc.c_str());
+    }
+
+    mode->StartMode();
+}
+

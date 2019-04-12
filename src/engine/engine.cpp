@@ -21,7 +21,7 @@
 #include "language.h"
 #include "mad.h"
 #include "model.h"
-#include "game.h"
+#include "ModSupport.h"
 
 #include "script/script.h"
 
@@ -78,7 +78,7 @@ void Engine_Initialize(void) {
     /* load in the manifests */
 
     Languages_Initialize();
-    Game_RegisterCampaigns();
+    Mod_RegisterCampaigns();
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
@@ -86,7 +86,7 @@ void Engine_Initialize(void) {
         var = "how";
     }
 
-    Game_SetCampaign(var);
+    Mod_SetCampaign(var);
 
     /* now initialize all other sub-systems */
 

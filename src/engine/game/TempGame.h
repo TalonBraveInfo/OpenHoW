@@ -16,3 +16,39 @@
  */
 
 #pragma once
+
+// Legacy / Prototyping
+
+#define MAX_PLAYERS     4
+#define MAX_PIGS        24
+#define MAX_INVENTORY   32
+
+enum PigTeam {
+    /* ...original... */
+    TEAM_BRITISH,
+    TEAM_AMERICAN,
+    TEAM_FRENCH,
+    TEAM_GERMAN,
+    TEAM_RUSSIAN,
+    TEAM_JAPAN,
+    TEAM_LARD,
+    /* ...any new types below... */
+
+    MAX_TEAMS
+};
+
+enum PigClass {
+    /* ...original... */
+    PIG_CLASS_ACE,
+    PIG_CLASS_LEGEND,
+    PIG_CLASS_MEDIC,
+    PIG_CLASS_COMMANDO,
+    PIG_CLASS_SPY,
+    PIG_CLASS_SNIPER,
+    PIG_CLASS_SABOTEUR,
+    PIG_CLASS_HEAVY,
+    PIG_CLASS_GRUNT,
+    /* ...any new types below... */
+
+    MAX_CLASSES
+};

@@ -22,7 +22,7 @@ class Map;
 class BaseGameMode {
 public:
     BaseGameMode() = default;
-    virtual ~BaseGameMode() = 0;
+    virtual ~BaseGameMode() ;
 
     virtual std::string GetDescription() = 0;   // mode identifier
 
@@ -49,6 +49,9 @@ public:
     virtual void RestartRound() = 0;
     virtual void EndRound() = 0;
 
+    virtual void SpawnActors();
+    virtual void DestroyActors();
+
     virtual bool HasRoundStarted() { return round_started_; }
     virtual bool HasTurnStarted() { return turn_started_; }
 
@@ -68,6 +71,4 @@ private:
 
     std::vector<uint8_t> players_;      // todo: need proper identifier
     std::vector<uint8_t> spectators_;   // todo: need proper identifier
-
-    std::string properties
 };

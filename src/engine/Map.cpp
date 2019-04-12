@@ -21,14 +21,14 @@
 #include "engine.h"
 #include "Map.h"
 #include "model.h"
-#include "game.h"
+#include "ModSupport.h"
 
 #include "script/script.h"
 
 #include "client/frontend.h"
 #include "client/display.h"
 
-#include "server/actor.h"
+#include "game/ActorManager.h"
 #include "script/ScriptConfig.h"
 #include "MapManager.h"
 

@@ -21,7 +21,8 @@
 
 #include "../engine.h"
 #include "../input.h"
-#include "../game.h"
+
+#include "../game/TempGame.h"
 
 #include "frontend.h"
 #include "font.h"

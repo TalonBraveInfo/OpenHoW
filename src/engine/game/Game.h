@@ -15,22 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_math.h>
+#pragma once
 
-#include "../engine.h"
-#include "pig.h"
-#include "actor.h"
+#include "TempGame.h"
 
-class Pig : public Actor {
-public:
-    Pig();
-    ~Pig() override;
-};
-
-Pig::Pig() : Actor() {
-    u_assert(0, "todo");
-}
-
-Pig::~Pig() = default;
-
-//register_actor("JOHN", Pig);
+void Game_SetMode(const std::string &mode_desc);
+void Game_EndMode(void);

@@ -18,7 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "game.h"
+#include "ModSupport.h"
 #include "Map.h"
 #include "language.h"
 
@@ -43,38 +43,27 @@
  *  > this needs rewriting to better take advantage of std
  */
 
-static CampaignManifest *campaigns = nullptr;
+static ModManifest *campaigns = nullptr;
 static uint num_campaigns = 0;
 static uint max_campaigns = 8;
 
 static uint cur_campaign_idx = (uint) -1;
 
-CampaignManifest *Game_GetCampaignBySlot(uint num) {
+static ModManifest *GetModManifestBySlot(uint num) {
     if(num >= max_campaigns) {
         uint old_max_campaigns = max_campaigns;
         max_campaigns += 8;
-        if((campaigns = static_cast<CampaignManifest *>(realloc(campaigns, sizeof(CampaignManifest) * max_campaigns))) == NULL) {
+        if((campaigns = static_cast<ModManifest *>(realloc(campaigns, sizeof(ModManifest) * max_campaigns))) == NULL) {
             Error("failed to resize campaign list, aborting!\n");
         }
 
-        memset(campaigns + old_max_campaigns, 0, sizeof(CampaignManifest) * (max_campaigns - old_max_campaigns));
+        memset(campaigns + old_max_campaigns, 0, sizeof(ModManifest) * (max_campaigns - old_max_campaigns));
     }
 
     return &campaigns[num];
 }
 
-CampaignManifest *Game_GetCampaignByName(const char *name) {
-    for(unsigned int i = 0; i < num_campaigns; ++i) {
-        if(strncmp(campaigns[i].name, name, sizeof(campaigns[i].name)) == 0) {
-            return &campaigns[i];
-        }
-    }
-
-    LogWarn("failed to find campaign \"%s\"!\n");
-    return nullptr;
-}
-
-CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
+static ModManifest *GetModManifestByDirectory(const char *dir) {
     for(unsigned int i = 0; i < num_campaigns; ++i) {
         if(strncmp(campaigns[i].dir, dir, sizeof(campaigns[i].dir)) == 0) {
             return &campaigns[i];
@@ -89,7 +78,7 @@ CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
  *
  * @param path Path to the manifest file.
  */
-void Game_RegisterCampaign(const char *path) {
+void Mod_RegisterCampaign(const char *path) {
 #if 0
     /* ensure the campaign actually exists before we proceed */
     char directory[PL_SYSTEM_MAX_PATH];
@@ -100,7 +89,7 @@ void Game_RegisterCampaign(const char *path) {
     }
 #endif
 
-    CampaignManifest *slot = Game_GetCampaignBySlot(num_campaigns++);
+    ModManifest *slot = GetModManifestBySlot(num_campaigns++);
     if(slot == nullptr) {
         LogWarn("failed to fetch campaign slot, hit memory limit!?\n");
         return;
@@ -142,32 +131,32 @@ void Game_RegisterCampaign(const char *path) {
 /** Registers all of the campaigns provided under the campaigns
  *  directory.
  */
-void Game_RegisterCampaigns(void) {
-    campaigns = static_cast<CampaignManifest *>(u_alloc(max_campaigns, sizeof(CampaignManifest), true));
+void Mod_RegisterCampaigns(void) {
+    campaigns = static_cast<ModManifest *>(u_alloc(max_campaigns, sizeof(ModManifest), true));
 
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "%s/campaigns/", GetBasePath());
-    plScanDirectory(path, "campaign", Game_RegisterCampaign, false);
+    plScanDirectory(path, "campaign", Mod_RegisterCampaign, false);
 }
 
 /** Returns a pointer to the campaign that's currently active.
  *
  * @return Pointer to the current campaign.
  */
-CampaignManifest *Game_GetCurrentCampaign(void) {
+ModManifest *Mod_GetCurrentCampaign(void) {
     return &campaigns[cur_campaign_idx];
 }
 
-void Game_SetCampaign(const char *dir) {
-    CampaignManifest *campaign = Game_GetCampaignByDirectory(dir);
+void Mod_SetCampaign(const char *dir) {
+    ModManifest *campaign = GetModManifestByDirectory(dir);
     if(campaign == nullptr) {
         LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
 
         char path[PL_SYSTEM_MAX_PATH];
         snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", GetBasePath(), dir);
         if(plFileExists(path)) {
-            Game_RegisterCampaign(path);
-            campaign = Game_GetCampaignByDirectory(dir);
+            Mod_RegisterCampaign(path);
+            campaign = GetModManifestByDirectory(dir);
         }
 
         if(campaign == nullptr) {
@@ -182,29 +171,4 @@ void Game_SetCampaign(const char *dir) {
 
     // Ensure that our manifest list is updated
     MapManager::GetInstance()->RegisterManifests();
-}
-
-/******************************************************/
-// !!temporary interface!!
-
-static BaseGameMode *mode = nullptr;
-const BaseGameMode *Game_GetMode() {
-    return mode;
-}
-
-void Game_SetMode(const std::string &mode_desc) {
-    LogDebug("starting new game...\n");
-
-    if(mode != nullptr) {
-        mode->EndMode();
-        delete mode;
-    }
-
-    if(mode_desc == "training") {
-        mode = new TrainingGameMode();
-    } else {
-        Error("Unknown game-mode specified, \"%s\"!\n", mode_desc.c_str());
-    }
-
-    mode->StartMode();
 }

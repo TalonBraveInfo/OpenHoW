@@ -30,7 +30,6 @@
 #include "util.h"
 #include "pork_math.h"
 #include "console.h"
-#include "player.h"
 
 #define ENGINE_TITLE        "OpenHoW"
 #define ENGINE_APP_NAME     "OpenHoW"
@@ -71,7 +70,7 @@ typedef struct EngineState {
     unsigned int last_draw_ms;
 
     uint8_t max_players;            /* maximum players allowed in current game */
-    Player players[MAX_PLAYERS];    /* tracks all current players */
+    //Player players[MAX_PLAYERS];    /* tracks all current players */
 } EngineState;
 extern EngineState g_state;
 

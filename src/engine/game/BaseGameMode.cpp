@@ -19,6 +19,8 @@
 #include "../Map.h"
 #include "BaseGameMode.h"
 
+BaseGameMode::~BaseGameMode() = default;
+
 void BaseGameMode::StartMode() {
 }
 
@@ -39,9 +41,11 @@ void BaseGameMode::StartRound(const std::string &map_name) {
     } catch(const std::runtime_error &e) {
         Error("Failed to load map, aborting!\n%s\n", e.what());
     }
+
+
 }
 
-void BaseGameMode::EndRound(){
+void BaseGameMode::EndRound() {
     if(current_map_ == nullptr) {
         return;
     }
@@ -59,5 +63,13 @@ void BaseGameMode::Tick() {
         return;
     }
 
+
+}
+
+void BaseGameMode::SpawnActors() {
+
+}
+
+void BaseGameMode::DestroyActors() {
 
 }

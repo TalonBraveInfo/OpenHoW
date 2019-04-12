@@ -19,45 +19,5 @@
 #include "TrainingGameMode.h"
 #include "../Map.h"
 
-void TrainingGameMode::StartMode() {
-    if(g_state.max_players > GetMaxPlayers()) {
-        g_state.max_players = GetMaxPlayers();
-    }
-
-    // in this case, we'll forcefully load the training map
-    ChangeMap("camp");
-}
-
-void TrainingGameMode::EndMode() {
-    // todo
-}
-
-void TrainingGameMode::StartTurn() {
-    // todo
-}
-
-void TrainingGameMode::EndTurn() {
-    // todo
-}
-
-void TrainingGameMode::StartRound() {
-    // todo
-}
-
-void TrainingGameMode::RestartRound() {
-    // todo
-}
-
-void TrainingGameMode::EndRound() {
-    // todo
-}
-
-void TrainingGameMode::ChangeMap(const std::string &name) {
-    if(current_map_ != nullptr) {
-
-    }
-
-    try {
-        current_map_ = new Map(name);
-    }
-}
+TrainingGameMode::TrainingGameMode() = default;
+TrainingGameMode::~TrainingGameMode() = default;

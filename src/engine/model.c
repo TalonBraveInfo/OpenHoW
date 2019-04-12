@@ -20,9 +20,10 @@
 
 #include "engine.h"
 #include "model.h"
-#include "game.h"
 
 #include "client/display.h"
+
+#include "game/TempGame.h"
 
 struct {
     PLBone bones[MAX_BONES];
