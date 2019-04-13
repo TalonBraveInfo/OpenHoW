@@ -204,7 +204,7 @@ Map::~Map() {
         plDeleteTexture(sky_texture, true);
     }
 
-    for(unsigned int i = 0; i < chunks_.size(), ++i) {
+    for(unsigned int i = 0; i < chunks_.size(); i++) {
         if(chunks_[i].model != nullptr) {
             plDeleteModel(chunks_[i].model);
         }
