@@ -18,13 +18,16 @@
 #include "../engine.h"
 #include "../Map.h"
 #include "BaseGameMode.h"
+#include "ActorManager.h"
 
 BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartMode() {
+
 }
 
 void BaseGameMode::EndMode() {
+
 }
 
 void BaseGameMode::StartRound(const std::string &map_name) {
@@ -42,7 +45,12 @@ void BaseGameMode::StartRound(const std::string &map_name) {
         Error("Failed to load map, aborting!\n%s\n", e.what());
     }
 
+    SpawnActors();
+}
 
+void BaseGameMode::RestartRound() {
+    DestroyActors();
+    SpawnActors();
 }
 
 void BaseGameMode::EndRound() {
@@ -54,6 +62,8 @@ void BaseGameMode::EndRound() {
         Error("Attempted to unload map in the middle of a round, aborting!\n");
     }
 
+    DestroyActors();
+
     delete current_map_;
 }
 
@@ -63,13 +73,24 @@ void BaseGameMode::Tick() {
         return;
     }
 
-
+    ActorManager::GetInstance()->TickActors();
 }
 
 void BaseGameMode::SpawnActors() {
-
+    std::vector<MapSpawn> spawns = current_map_->GetSpawns();
+    for(auto spawn : spawns) {
+        ActorManager::GetInstance()->SpawnActor(spawn.name);
+    }
 }
 
 void BaseGameMode::DestroyActors() {
+
+}
+
+void BaseGameMode::StartTurn() {
+
+}
+
+void BaseGameMode::EndTurn() {
 
 }

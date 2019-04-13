@@ -21,7 +21,9 @@
 #include "MapManager.h"
 #include "Map.h"
 #include "script/ScriptConfig.h"
+
 #include "game/Game.h"
+#include "game/BaseGameMode.h"
 
 MapManager *MapManager::instance_ = nullptr;
 
@@ -87,7 +89,24 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         return;
     }
 
-    Game_SetMode("deathmatch");
+    const MapManifest *desc = GetInstance()->GetManifest(argv[0]);
+    if(desc == nullptr) {
+        LogWarn("Failed to find manifest for \"%s\"!\n", argv[0]);
+        return;
+    }
+
+    if(desc->modes.empty()) {
+        LogWarn("No modes specified for \"%s\"!\n", argv[0]);
+        return;
+    }
+
+    // set it to the first mode in the list for now
+    if(!SetGameMode(desc->modes[0])) {
+        return;
+    }
+
+    // now start it up!
+    g_state.mode->StartMode();
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {

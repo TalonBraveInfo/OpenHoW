@@ -252,6 +252,7 @@ void MapConfigEditor::SaveManifest() {
 
 #include "TextureViewer.h"
 #include "game/TempGame.h"
+#include "game/Game.h"
 
 /************************************************************/
 /* Settings */
@@ -384,6 +385,12 @@ void UI_DisplayNewGame() {
     if(ImGui::Button("Cancel")) {
         show_new_game = false;
     }
+#else
+
+    if(ImGui::Button("Start Game!")) {
+
+    }
+
 #endif
 
     ImGui::End();

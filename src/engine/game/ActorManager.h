@@ -38,9 +38,9 @@ public:
     Actor *SpawnActor(const std::string &name);
     void DestroyActor(Actor *actor);
 
-    void SimulateActors();
+    void TickActors();
     void DrawActors();
-    void ClearActors();
+    void DestroyActors();
 
     class ActorClassRegistration {
     public:
@@ -51,7 +51,6 @@ public:
     };
 
 private:
-
     static std::vector<Actor*> actors_;
 };
 

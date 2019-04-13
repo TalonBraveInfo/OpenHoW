@@ -24,13 +24,20 @@ public:
     BaseGameMode() = default;
     virtual ~BaseGameMode() ;
 
-    virtual std::string GetDescription() = 0;   // mode identifier
+    virtual std::string GetDescription() {
+        return "singleplayer";
+    }
 
     virtual void StartMode();   // loads necessary map, etc.
     virtual void EndMode();     // ends the mode, cleanup
 
-    virtual uint8_t GetMaxSpectators() = 0;
-    virtual uint8_t GetMaxPlayers() = 0;
+    virtual uint8_t GetMaxSpectators() {
+        return 0;
+    }
+
+    virtual uint8_t GetMaxPlayers() {
+        return 1;
+    }
 
 #if 0
     virtual void SpectatorJoined(uint8_t client_id) = 0;
@@ -42,16 +49,17 @@ public:
 
     virtual void Tick();    // called per-frame
 
-    virtual void StartTurn() = 0;
-    virtual void EndTurn() = 0;
+    virtual void StartTurn();
+    virtual void EndTurn();
 
-    virtual void StartRound(const std::string &map_name) = 0;
-    virtual void RestartRound() = 0;
-    virtual void EndRound() = 0;
+    virtual void StartRound(const std::string &map_name);
+    virtual void RestartRound();
+    virtual void EndRound();
 
     virtual void SpawnActors();
     virtual void DestroyActors();
 
+    virtual bool HasModeStarted() { return mode_started_; }
     virtual bool HasRoundStarted() { return round_started_; }
     virtual bool HasTurnStarted() { return turn_started_; }
 
@@ -64,6 +72,7 @@ protected:
 private:
     bool is_paused_{false};
 
+    bool mode_started_{false};
     bool round_started_{false};
     bool turn_started_{false};
 

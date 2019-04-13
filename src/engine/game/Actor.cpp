@@ -18,10 +18,6 @@
 #include "../engine.h"
 #include "Actor.h"
 
-Actor::Actor(PLVector3 position) {
-    u_assert(0, "todo");
-}
-
 Actor::Actor() = default;
 Actor::~Actor() = default;
 

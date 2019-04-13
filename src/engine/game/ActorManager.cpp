@@ -16,9 +16,7 @@
  */
 
 #include "../engine.h"
-
 #include "../client/frontend.h"
-
 #include "ActorManager.h"
 #include "Actor.h"
 
@@ -47,9 +45,9 @@ void ActorManager::DestroyActor(Actor *actor) {
     delete actor;
 }
 
-void ActorManager::SimulateActors() {
+void ActorManager::TickActors() {
     for(auto const &actor: actors_) {
-        actor->Simulate();
+        actor->Tick();
     }
 }
 
@@ -67,7 +65,7 @@ void ActorManager::DrawActors() {
     }
 }
 
-void ActorManager::ClearActors() {
+void ActorManager::DestroyActors() {
     for(auto &actor: actors_) {
         delete actor;
     }

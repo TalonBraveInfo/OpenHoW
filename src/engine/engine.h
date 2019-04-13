@@ -56,6 +56,12 @@ static inline const char *GetVersionString(void) {
     return &version[0];
 }
 
+#ifdef __cplusplus
+class BaseGameMode;
+#else
+typedef struct BaseGameMode BaseGameMode;
+#endif // __cplusplus; todo: remove this once all code is compiled as C++
+
 typedef struct EngineState {
     struct PLCamera *camera;       // camera used for general gameplay
     struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
@@ -68,6 +74,8 @@ typedef struct EngineState {
 
     unsigned int draw_ticks;
     unsigned int last_draw_ms;
+
+    BaseGameMode *mode;
 
     uint8_t max_players;            /* maximum players allowed in current game */
     //Player players[MAX_PLAYERS];    /* tracks all current players */

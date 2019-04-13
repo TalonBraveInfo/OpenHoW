@@ -47,10 +47,9 @@ enum ActorEvent {
 class Actor {
 public:
     Actor();
-    Actor(PLVector3 position);
     virtual ~Actor();
 
-    virtual void Simulate() {}
+    virtual void Tick() {}
     virtual void Draw() {}
 
     //virtual bool Possess(Player *player);

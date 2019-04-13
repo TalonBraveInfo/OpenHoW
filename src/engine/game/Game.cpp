@@ -16,28 +16,43 @@
  */
 
 #include "../engine.h"
+
 #include "Game.h"
 #include "BaseGameMode.h"
+#include "TrainingGameMode.h"
 
-static BaseGameMode *mode = nullptr;
-const BaseGameMode *Game_GetMode() {
-    return mode;
-}
+/* todo:
+ *  eventually this will operate through a list
+ *  of modes registered to a parent class and select
+ *  it by that, rather than this hard-coded method.
+ */
 
-void Game_SetMode(const std::string &mode_desc) {
+bool SetGameMode(const std::string &mode) {
     LogDebug("starting new game...\n");
 
-    if(mode != nullptr) {
-        mode->EndMode();
-        delete mode;
+    if(mode == g_state.mode->GetDescription()) {
+        return true;
     }
 
-    if(mode_desc == "training") {
-        //mode = new TrainingGameMode();
+    if(g_state.mode->HasRoundStarted() || g_state.mode->HasTurnStarted()) {
+        Error("Attempted to change mode in the middle of a round!\n");
+    }
+
+    BaseGameMode *new_mode = nullptr;
+    if(mode == "singleplayer") {
+        g_state.mode = new BaseGameMode();
+    } else if(mode == "training") {
+        //g_state.mode = new TrainingGameMode();
     } else {
-        Error("Unknown game-mode specified, \"%s\"!\n", mode_desc.c_str());
+        LogWarn("Unknown game-mode specified, \"%s\"!\n", mode.c_str());
+        return false;
     }
 
-    mode->StartMode();
+    // now switch them round
+
+    delete g_state.mode;
+    g_state.mode = new_mode;
+
+    return true;
 }
 

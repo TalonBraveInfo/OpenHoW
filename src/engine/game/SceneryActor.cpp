@@ -15,8 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "ActorManager.h"
+#include "Actor.h"
 
-#include "TempGame.h"
+class SceneryActor : public Actor {
+public:
+    SceneryActor();
+    ~SceneryActor() override;
 
-bool SetGameMode(const std::string &mode);
+protected:
+private:
+};
+
+SceneryActor::SceneryActor() = default;
+SceneryActor::~SceneryActor() = default;
+
+//register_actor("DUMMY", SceneryActor);

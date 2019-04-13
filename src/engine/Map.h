@@ -132,6 +132,8 @@ public:
 
     const PLTexture *GetOverviewTexture() { return overview_; }
 
+    const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
+
 protected:
 private:
     void LoadSpawns(const std::string &path);

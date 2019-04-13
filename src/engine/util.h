@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <PL/platform.h>
+
 #define u_fclose(FILE)  if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
 #define u_free(DATA)    free((DATA)); (DATA) = NULL
 
