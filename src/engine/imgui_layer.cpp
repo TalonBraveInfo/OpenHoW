@@ -225,7 +225,7 @@ void MapConfigEditor::OpenManifest(const std::string &path) {
 
     SyncManifest();
 
-    strncpy(filename_buffer, path.c_str(), sizeof(filename_buffer));
+    snprintf(filename_buffer, sizeof(filename_buffer), "%s", path.c_str());
 }
 
 void MapConfigEditor::CloseManifest() {
@@ -445,32 +445,32 @@ void AddFilePath(const char *path) {
 
     const char *ext = plGetFileExtension(path);
     if(ext != nullptr) {
-        if(pl_strncasecmp(ext, "map", 3) == 0) {
+        if(strcmp(ext, "map") == 0) {
             descriptor.type = FILE_TYPE_MAP;
         } else if(
-                pl_strncasecmp(ext, "tim", 3) == 0 ||
-                pl_strncasecmp(ext, "bmp", 3) == 0 ||
-                pl_strncasecmp(ext, "png", 3) == 0
+                strcmp(ext, "tim") == 0 ||
+                strcmp(ext, "bmp") == 0 ||
+                strcmp(ext, "png") == 0
                 ) {
             descriptor.type = FILE_TYPE_IMAGE;
         } else if(
-                pl_strncasecmp(ext, "pps", 3) == 0
+                strcmp(ext, "pps") == 0
                 ) {
             descriptor.type = FILE_TYPE_PARTICLE;
         } else if(
-                pl_strncasecmp(ext, "wav", 3) == 0
+                strcmp(ext, "wav") == 0
                 ) {
             descriptor.type = FILE_TYPE_AUDIO;
         } else if(
-                pl_strncasecmp(ext, "ptg", 3) == 0
+                strcmp(ext, "ptg") == 0
                 ) {
             descriptor.type = FILE_TYPE_MAP_PTG;
         } else if(
-                pl_strncasecmp(ext, "pog", 3) == 0
+                strcmp(ext, "pog") == 0
                 ) {
             descriptor.type = FILE_TYPE_MAP_POG;
         } else if(
-                pl_strncasecmp(ext, "pmg", 3) == 0
+                strcmp(ext, "pmg") == 0
                 ) {
             descriptor.type = FILE_TYPE_MAP_PMG;
         }
