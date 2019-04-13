@@ -737,6 +737,7 @@ void DEBUGDrawSkeleton(void) {
         plSetMeshVertexColour(skeleton_mesh, vert + 1, PLColour(0, 255, 0, 255));
     }
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(skeleton_mesh);
     plDrawMesh(skeleton_mesh);
 
