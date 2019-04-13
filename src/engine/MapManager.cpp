@@ -107,6 +107,7 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
 
     // now start it up!
     g_state.mode->StartMode();
+    g_state.mode->StartRound(argv[0]);
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {
