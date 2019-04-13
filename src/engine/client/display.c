@@ -30,17 +30,14 @@
 #include "shader.h"
 #include "display.h"
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-
 /************************************************************/
 /* Texture Cache */
 
 #define MAX_TEXTURES_PER_INDEX  1024
+#define MAX_VIDEO_PRESETS 32
 
-static int num_display_modes;
-static DisplayMode* supported_display_modes;
-
+static int num_vid_presets;
+static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 static PLFrameBuffer* game_target;
 static PLFrameBuffer* frontend_target;
 
@@ -361,17 +358,34 @@ PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter) {
 
 /************************************************************/
 
-
-int Display_GetNumDisplayModes() {
-    return num_display_modes;
+bool Display_AppendVideoPreset(int width, int height) {
+    if(num_vid_presets >= MAX_VIDEO_PRESETS){
+        LogWarn("Cannot append video preset, hit max limit! Try increasing \"MAX_VIDEO_PRESETS\"");
+        return false;
+    }
+    vid_presets[num_vid_presets].width = width;
+    vid_presets[num_vid_presets].height = height;
+    num_vid_presets++;
+    LogInfo("Added %dx%d video preset", width, height);
+    return true;
 }
 
-const DisplayMode* Display_GetDisplayMode(int idx) {
-    if(idx < 0 || idx >= num_display_modes) {
-        LogWarn("Attempted to get an out of range display mode, \'%d\'", idx);
+void Display_ClearVideoPresets() {
+    memset(vid_presets, 0, sizeof(VideoPreset) * MAX_VIDEO_PRESETS);
+    num_vid_presets = 0;
+    LogInfo("Cleared all video presets");
+}
+
+int Display_GetNumVideoPresets() {
+    return num_vid_presets;
+}
+
+const VideoPreset* Display_GetVideoPreset(int idx) {
+    if(idx < 0 || idx >= num_vid_presets) {
+        LogWarn("Attempted to get an out of range video preset \'%d\', current count is %d", idx, num_vid_presets);
         return NULL;
     }
-    return &supported_display_modes[idx];
+    return &vid_presets[idx];
 }
 
 /************************************************************/
@@ -470,27 +484,6 @@ void Display_Initialize(void) {
         plSetConsoleVariable(cv_display_fullscreen, "false");
     } else if(plHasCommandLineArgument("-fullscreen")) {
         plSetConsoleVariable(cv_display_fullscreen, "true");
-    }
-
-    //Enumerate all supported display modes
-    num_display_modes = SDL_GetNumDisplayModes(0);
-    if(num_display_modes == 0){
-        Error("Failed to find any SDL display modes: %s", SDL_GetError());
-    }
-    LogInfo("Found %d display modes", num_display_modes);
-    supported_display_modes = pl_malloc(sizeof(SDL_DisplayMode) * num_display_modes);
-    if(!supported_display_modes) {
-        Error("Failed to allocate memory for display modes!");
-    }
-    for (int i = 0; i < num_display_modes; ++i) {
-        SDL_DisplayMode tmp_mode;
-        if( SDL_GetDisplayMode(0, i, &tmp_mode) != 0 ){
-            Error("Failed to get an SDL display mode: %s", SDL_GetError());
-        }
-        supported_display_modes[i].width = tmp_mode.w;
-        supported_display_modes[i].height = tmp_mode.h;
-        supported_display_modes[i].refresh_rate = tmp_mode.refresh_rate;
-        LogInfo("DisplayMode %d: %dx%d@%d", i, supported_display_modes[i].width, supported_display_modes[i].height, supported_display_modes[i].refresh_rate);
     }
 
     // now create the window and update the display

@@ -39,11 +39,10 @@ enum {
     MAX_TEXTURE_INDEX
 };
 
-typedef struct DisplayMode{
+typedef struct VideoPreset{
     int width;
     int height;
-    int refresh_rate;
-} DisplayMode;
+} VideoPreset;
 
 PL_EXTERN_C
 
@@ -51,8 +50,10 @@ void Display_Initialize(void);
 void Display_Shutdown(void);
 void Display_UpdateState(void);
 
-int Display_GetNumDisplayModes();
-const DisplayMode* Display_GetDisplayMode(int idx);
+bool Display_AppendVideoPreset(int width, int height);
+void Display_ClearVideoPresets();
+int Display_GetNumVideoPresets();
+const VideoPreset* Display_GetVideoPreset(int idx);
 
 void Display_UpdateViewport(int x, int y, int width, int height);
 
