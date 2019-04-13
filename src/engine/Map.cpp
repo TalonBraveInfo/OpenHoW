@@ -204,9 +204,9 @@ Map::~Map() {
         plDeleteTexture(sky_texture, true);
     }
 
-    for(unsigned int i = 0; i < chunks_.size(); i++) {
-        if(chunks_[i].model != nullptr) {
-            plDeleteModel(chunks_[i].model);
+    for(auto & chunk : chunks_) {
+        if(chunk.model != nullptr) {
+            plDeleteModel(chunk.model);
         }
     }
 
@@ -417,17 +417,17 @@ void Map::LoadTiles(const std::string &path) {
             {
                 //Generate model for this chunk
                 current_chunk.model = (PLModel*)pl_malloc(sizeof(PLModel));
-                if(current_chunk.model == NULL) {
+                if(current_chunk.model == nullptr) {
                     Error("Unable to create map chunk mesh, aborting!\n");
                 }
 
                 current_chunk.model->meshes = (PLModelMesh*)pl_malloc(sizeof(PLModelMesh));
-                if(current_chunk.model->meshes == NULL) {
+                if(current_chunk.model->meshes == nullptr) {
                     Error("Unable to create map chunk mesh, aborting!\n");
                 }
 
-                current_chunk.model->meshes[0].mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, NULL);
-                if(current_chunk.model->meshes[0].mesh == NULL) {
+                current_chunk.model->meshes[0].mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
+                if(current_chunk.model->meshes[0].mesh == nullptr) {
                     Error("Unable to create map chunk mesh, aborting!\n");
                 }
 
@@ -447,17 +447,6 @@ void Map::LoadTiles(const std::string &path) {
     }
 
     std::fclose(fh);
-
-#if 0
-    if(terrain_mesh != nullptr) {
-        plDeleteMesh(terrain_mesh);
-    }
-
-    terrain_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
-    if(terrain_mesh == nullptr) {
-        Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
-    }
-#endif
 }
 
 void Map::LoadTextures(const std::string &path) {
@@ -528,33 +517,5 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
-#if 0 /* legacy code */
-    if(map_state.name[0] == '\0' || FE_GetState() != FE_MODE_GAME) {
-        return;
-    }
-
-    if(map_state.sky_model != nullptr) {
-        plDrawModel(map_state.sky_model);
-    }
-
-    /* todo: translate plane to camera pos - we will have
-     * another water plane outside / below without reflections? */
-
-    plSetShaderProgram(programs[SHADER_WATER]);
-
-    for (auto &water_tile : water_tiles) {
-        // todo!!!!
-        plTranslateMatrix(water_tile.position);
-
-        plDrawMesh(water_mesh);
-    }
-
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
-
-    // todo, clouds
-
-    // todo, update parts of terrain mesh from deformation etc?
-
-    plDrawMesh(terrain_mesh);
-#endif
+    // TODO
 }
