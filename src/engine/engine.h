@@ -84,6 +84,7 @@ void Engine_Simulate();
 
 const char *GetBasePath(void);
 const char *GetCampaignPath(void);
+const char *GetFullCampaignPath(void);
 
 /************************************************************/
 

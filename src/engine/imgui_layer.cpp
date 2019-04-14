@@ -98,29 +98,32 @@ protected:
 
 #define dname(a)  std::string(a "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()
 
+static const unsigned int default_flags = ImGuiWindowFlags_NoSavedSettings;
+
 static std::vector<DebugWindow*> windows;
 
 /************************************************************/
 /* Map Config Editor */
 
-class MapConfigOpenWindow;
-
 class MapConfigEditor : public DebugWindow {
 public:
     MapConfigEditor();
+    explicit MapConfigEditor(const std::string &path);
+
     ~MapConfigEditor() override;
 
     void Display() override;
 
-    void OpenManifest(const std::string &name);
+    void OpenManifest(const std::string &path);
     void SyncManifest();
     void CloseManifest();
-    void SaveManifest();
+    void SaveManifest(const std::string &path);
 
 protected:
 private:
     MapManifest manifest_;
-    MapConfigOpenWindow *open_window_{nullptr};
+
+    bool save_dialog{false};
 
     char name_buffer[32]{'\0'};
     char author_buffer[32]{'\0'};
@@ -128,65 +131,34 @@ private:
     char filename_buffer[32]{'\0'};
 };
 
-class MapConfigOpenWindow : public DebugWindow {
-public:
-    explicit MapConfigOpenWindow(DebugWindow *parent) : DebugWindow(parent, false) {
-        manifests_ = &MapManager::GetInstance()->GetManifests();
-    }
-
-    void Display() override {
-        ImGui::SetNextWindowSize(ImVec2(256, 256), ImGuiCond_Once);
-        ImGui::Begin(dname("Open Map Config"), &status_, ImGuiWindowFlags_NoSavedSettings);
-
-        ImGui::PushItemWidth(ImGui::GetWindowContentRegionWidth());
-        ImGui::ListBoxHeader("##", manifests_->size(), 16);
-        for (const auto& manifest : *manifests_) {
-            if(ImGui::Button(manifest.first.c_str())) {
-                status_ = false;
-                auto *editor = dynamic_cast<MapConfigEditor*>(parent_);
-                editor->OpenManifest(manifest.first);
-            }
-        }
-        ImGui::ListBoxFooter();
-
-        ImGui::End();
-    }
-
-protected:
-private:
-    const std::map<std::string, MapManifest> *manifests_;
-};
-
-MapConfigEditor::MapConfigEditor() {
-    open_window_ = new MapConfigOpenWindow(this);
+MapConfigEditor::MapConfigEditor() = default;
+MapConfigEditor::MapConfigEditor(const std::string &path) {
+    OpenManifest(path);
 }
 
-MapConfigEditor::~MapConfigEditor() {
-    delete open_window_;
-}
+MapConfigEditor::~MapConfigEditor() = default;
 
 void MapConfigEditor::Display() {
     ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
 
     ImGui::Begin(dname("Map Config Editor"), &status_,
-                 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings);
+                 ImGuiWindowFlags_MenuBar | default_flags);
 
     if(ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New")) {
-                open_window_->SetStatus(false);
-
                 CloseManifest();
             }
-            if(ImGui::MenuItem("Open...")) {
-                open_window_->ToggleStatus();
-            }
-            ImGui::Separator();
-            if(ImGui::MenuItem("Save")) {
 
+            ImGui::Separator();
+
+            if(ImGui::MenuItem("Save")) {
+                if(filename_buffer[0] == '\0') {
+                    save_dialog = true;
+                }
             }
             if(ImGui::MenuItem("Save As...")) {
-
+                save_dialog = true;
             }
             ImGui::EndMenu();
         }
@@ -222,16 +194,38 @@ void MapConfigEditor::Display() {
     manifest_.ambient_colour.g = plFloatToByte(rgb[1]);
     manifest_.ambient_colour.b = plFloatToByte(rgb[2]);
 
+    ImGui::Separator();
+
+    const char *temperatures[]={ "hot", "cold" };
+
+    //ImGui::ListBox("Temperature", temperatures, , );
+
     ImGui::End();
 
-    if(open_window_->GetStatus()) {
-        open_window_->Display();
+    if(save_dialog) {
+        ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
+        ImGui::Begin(dname("Map Config Editor / Save"), &save_dialog, default_flags);
+        ImGui::InputText("Name", filename_buffer, sizeof(filename_buffer));
+        ImGui::Separator();
+        if(ImGui::Button("Save")) {
+            SaveManifest(std::string(GetFullCampaignPath()) + "/maps/" + filename_buffer + ".map");
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")) {
+            save_dialog = false;
+        }
+        ImGui::End();
     }
 }
 
-void MapConfigEditor::OpenManifest(const std::string &name) {
+void MapConfigEditor::OpenManifest(const std::string &path) {
+    std::string name = plGetFileName(path.c_str());
+    name.erase(name.find(".map"));
     manifest_ = *MapManager::GetInstance()->GetManifest(name);
+
     SyncManifest();
+
+    snprintf(filename_buffer, sizeof(filename_buffer), "%s", path.c_str());
 }
 
 void MapConfigEditor::CloseManifest() {
@@ -245,8 +239,43 @@ void MapConfigEditor::SyncManifest() {
     strncpy(sky_buffer, manifest_.sky.c_str(), sizeof(sky_buffer));
 }
 
-void MapConfigEditor::SaveManifest() {
+void MapConfigEditor::SaveManifest(const std::string &path) {
+    std::ofstream output(path);
+    if(!output.is_open()) {
+        LogWarn("Failed to write to \"%s\", aborting!n\"\n", filename_buffer);
+        return;
+    }
 
+    output << "{";
+    output << R"("name":")" + manifest_.name + "\",";
+    output << R"("author":")" + manifest_.author + "\",";
+    output << R"("description":")" + manifest_.description + "\",";
+    output << R"("sky":")" + manifest_.sky + "\",";
+    if(!manifest_.modes.empty()) {
+        output << R"("modes":[)";
+        for (unsigned int i = 0; i < manifest_.modes.size(); ++i) {
+            output << "\"" + manifest_.modes[i] + "\"";
+            if (i != manifest_.modes.size()) {
+                output << ",";
+            }
+        }
+        output << "],";
+    }
+    output << R"("ambient_colour":")" +
+        std::to_string(manifest_.ambient_colour.r) + " " +
+        std::to_string(manifest_.ambient_colour.g) + " " +
+        std::to_string(manifest_.ambient_colour.b) + "\",";
+    output << R"("sun_colour":")" +
+        std::to_string(manifest_.sun_colour.r) + " " +
+        std::to_string(manifest_.sun_colour.g) + " " +
+        std::to_string(manifest_.sun_colour.b) + "\",";
+    output << R"("sun_yaw":")" + std::to_string(manifest_.sun_yaw) + "\",";
+    output << R"("sun_pitch":")" + std::to_string(manifest_.sun_pitch) + "\",";
+    output << R"("temperature":")" + manifest_.temperature + "\",";
+    output << R"("time":")" + manifest_.time + "\"";
+    output << "}\n";
+
+    LogInfo("Wrote \"%s\"!\n", path.c_str());
 }
 
 /************************************************************/
@@ -348,7 +377,7 @@ void UI_DisplayNewGame() {
     ImGui::Begin("Select Team", &show_new_game,
                  ImGuiWindowFlags_NoResize |
                  ImGuiWindowFlags_NoTitleBar |
-                 ImGuiWindowFlags_NoDecoration
+                 ImGuiWindowFlags_NoDecoration | default_flags
     );
 
 #if 0
@@ -395,11 +424,11 @@ enum {
     FILE_TYPE_UNKNOWN,
     FILE_TYPE_MAP,
     FILE_TYPE_MAP_POG,
+    FILE_TYPE_MAP_PTG,
+    FILE_TYPE_MAP_PMG,
     FILE_TYPE_IMAGE,
     FILE_TYPE_AUDIO,
     FILE_TYPE_PARTICLE,
-
-    MAX_FILE_TYPES
 };
 
 typedef struct FileDescriptor {
@@ -415,23 +444,36 @@ void AddFilePath(const char *path) {
     descriptor.type = FILE_TYPE_UNKNOWN;
 
     const char *ext = plGetFileExtension(path);
-    u_assert(!plIsEmptyString(ext), "failed to identify file, extension was empty!\n");
-    if(pl_strncasecmp(ext, "map", 3) == 0) {
-        descriptor.type = FILE_TYPE_MAP;
-    } else if(
-            pl_strncasecmp(ext, "tim", 3) == 0 ||
-            pl_strncasecmp(ext, "bmp", 3) == 0 ||
-            pl_strncasecmp(ext, "png", 3) == 0
-            ) {
-        descriptor.type = FILE_TYPE_IMAGE;
-    } else if(
-            pl_strncasecmp(ext, "pps", 3) == 0
-            ) {
-        descriptor.type = FILE_TYPE_PARTICLE;
-    } else if(
-            pl_strncasecmp(ext, "wav", 3) == 0
-            ) {
-        descriptor.type = FILE_TYPE_AUDIO;
+    if(ext != nullptr) {
+        if(strcmp(ext, "map") == 0) {
+            descriptor.type = FILE_TYPE_MAP;
+        } else if(
+                strcmp(ext, "tim") == 0 ||
+                strcmp(ext, "bmp") == 0 ||
+                strcmp(ext, "png") == 0
+                ) {
+            descriptor.type = FILE_TYPE_IMAGE;
+        } else if(
+                strcmp(ext, "pps") == 0
+                ) {
+            descriptor.type = FILE_TYPE_PARTICLE;
+        } else if(
+                strcmp(ext, "wav") == 0
+                ) {
+            descriptor.type = FILE_TYPE_AUDIO;
+        } else if(
+                strcmp(ext, "ptg") == 0
+                ) {
+            descriptor.type = FILE_TYPE_MAP_PTG;
+        } else if(
+                strcmp(ext, "pog") == 0
+                ) {
+            descriptor.type = FILE_TYPE_MAP_POG;
+        } else if(
+                strcmp(ext, "pmg") == 0
+                ) {
+            descriptor.type = FILE_TYPE_MAP_PMG;
+        }
     }
 
     file_list.push_back(descriptor);
@@ -439,13 +481,7 @@ void AddFilePath(const char *path) {
 
 void ScanDirectories() {
     file_list.clear();
-    //plScanDirectory(GetBasePath(), "map", AddFilePath, true);
-    //plScanDirectory(GetBasePath(), "pog", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "pps", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "tim", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "bmp", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "png", AddFilePath, true);
-    plScanDirectory(GetBasePath(), "wav", AddFilePath, true);
+    plScanDirectory(GetBasePath(), nullptr, AddFilePath, true);
 }
 
 void UI_DisplayFileBox() {
@@ -488,6 +524,10 @@ void UI_DisplayFileBox() {
                         windows.push_back(new TextureViewer(i.path, texture));
                     } break;
 
+                    case FILE_TYPE_MAP: {
+                        windows.push_back(new MapConfigEditor(i.path));
+                    } break;
+
                     case FILE_TYPE_AUDIO: {
                         AudioManager::GetInstance()->PlayGlobalSound(i.path);
                     } break;
@@ -503,9 +543,10 @@ void UI_DisplayFileBox() {
                 case FILE_TYPE_AUDIO:       type = "Audio"; break;
                 case FILE_TYPE_PARTICLE:    type = "Particle System"; break;
                 case FILE_TYPE_IMAGE:       type = "Image"; break;
-                case FILE_TYPE_MAP:         type = "Map"; break;
+                case FILE_TYPE_MAP:         type = "Map Manifest"; break;
                 case FILE_TYPE_MAP_POG:     type = "Map Objects"; break;
-
+                case FILE_TYPE_MAP_PTG:     type = "Map Textures"; break;
+                case FILE_TYPE_MAP_PMG:     type = "Map Geometry"; break;
                 default:break;
             }
 
