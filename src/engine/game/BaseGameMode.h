@@ -17,7 +17,8 @@
 
 #pragma once
 
-class Map;
+#include "../Map.h"
+#include "Game.h"
 
 class BaseGameMode {
 public:
@@ -78,6 +79,7 @@ private:
 
     uint8_t turn_time_{99};
 
-    std::vector<uint8_t> players_;      // todo: need proper identifier
-    std::vector<uint8_t> spectators_;   // todo: need proper identifier
+    std::vector<Player> players_;      // todo: need proper identifier
+    unsigned int current_player_{0};
+    std::vector<Player> spectators_;   // todo: need proper identifier
 };

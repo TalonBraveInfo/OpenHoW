@@ -76,9 +76,6 @@ typedef struct EngineState {
     unsigned int last_draw_ms;
 
     BaseGameMode *mode;
-
-    uint8_t max_players;            /* maximum players allowed in current game */
-    //Player players[MAX_PLAYERS];    /* tracks all current players */
 } EngineState;
 extern EngineState g_state;
 

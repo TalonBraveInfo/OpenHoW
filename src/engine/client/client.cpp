@@ -36,7 +36,7 @@ enum {
     MAX_CAMERA_MODES
 };
 
-void Client_ProcessInput(void) {
+void Client_ProcessInput() {
     static double input_delay = 0;
     if(input_delay < g_state.sim_ticks) {
         input_delay = g_state.sim_ticks + 50;
@@ -49,7 +49,6 @@ void Client_ProcessInput(void) {
 
     FE_ProcessInput();
 
-    /* todo: move this server-side or make safe... somehow :( */
     switch(cv_camera_mode->i_value) {
         default:break;
 

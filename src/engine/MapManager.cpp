@@ -94,14 +94,14 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         return;
     }
 
-    const MapManifest *desc = GetInstance()->GetManifest(argv[0]);
+    const MapManifest *desc = GetInstance()->GetManifest(argv[1]);
     if(desc == nullptr) {
-        LogWarn("Failed to find manifest for \"%s\"!\n", argv[0]);
+        LogWarn("Failed to find manifest for \"%s\"!\n", argv[1]);
         return;
     }
 
     if(desc->modes.empty()) {
-        LogWarn("No modes specified for \"%s\"!\n", argv[0]);
+        LogWarn("No modes specified for \"%s\"!\n", argv[1]);
         return;
     }
 
@@ -112,7 +112,7 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
 
     // now start it up!
     g_state.mode->StartMode();
-    g_state.mode->StartRound(argv[0]);
+    g_state.mode->StartRound(argv[1]);
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {

@@ -40,7 +40,6 @@ typedef struct CallbackConstruct {
 } CallbackConstruct;
 
 static CallbackConstruct callbacks[]={
-        {"menu", NULL, SetFEObjectCommand, NULL},
         {"actor", NULL, NULL, NULL},
         {"map", NULL, NULL, NULL},
 };

@@ -288,7 +288,7 @@ AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, 
     return new AudioSource(GetCachedSample(path)->al_buffer_id_, pos, vel, gain, pitch, looping);
 }
 
-void AudioManager::Simulate() {
+void AudioManager::Tick() {
     PLVector3 position = {0,0,0}, angles = {0,0,0};
     if(FE_GetState() == FE_MODE_GAME) {
         position = g_state.camera->position;

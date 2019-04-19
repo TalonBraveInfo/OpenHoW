@@ -79,6 +79,4 @@ unsigned int FE_GetState(void);
 void FE_SetState(unsigned int state);
 void FE_RestoreLastState(void);
 
-void SetFEObjectCommand(unsigned int argc, char *argv[]);
-
 PL_EXTERN_C_END

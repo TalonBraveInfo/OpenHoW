@@ -78,46 +78,6 @@ static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that w
 //static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
 /************************************************************/
-/* FE Object Implementation
- *  Individual frontend objects that can manipulated
- *  on the fly at runtime - specifically created for
- *  implementing Hogs of War's really awesome animated
- *  menu! */
-
-#define MAX_FE_OBJECTS  1024
-
-typedef struct FEObject {
-    int x, y;
-    unsigned int w, h;
-
-    PLTexture **frames;
-    unsigned int num_frames;
-    unsigned int cur_frame;
-
-    bool is_reserved;
-} FEObject;
-static FEObject fe_objects[MAX_FE_OBJECTS];
-
-void SimulateFEObjects(void) {
-    for(unsigned int i = 0; i < MAX_FE_OBJECTS; ++i) {
-        if(!fe_objects[i].is_reserved) {
-            continue;
-        }
-    }
-}
-
-void SetFEObjectCommand(unsigned int argc, char *argv[]) {
-    if(argc < 2) {
-        LogWarn("invalid number of arguments, ignoring!\n");
-        return;
-    }
-
-    for(unsigned int i = 2; i < argc; ++i) {
-
-    }
-}
-
-/************************************************************/
 
 void FrontendInputCallback(int key, bool is_pressed) {
     if(frontend_state == FE_MODE_START && is_pressed) {
@@ -168,8 +128,6 @@ static void ClearFEMenuData(void) {
 /************************************************************/
 
 void FE_Initialize(void) {
-    memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
-
     CacheFontData();
     CacheFEMenuData();
 }
@@ -198,8 +156,6 @@ void FE_ProcessInput(void) {
 }
 
 void FE_Simulate(void) {
-    SimulateFEObjects();
-
     switch(frontend_state) {
         default:break;
 

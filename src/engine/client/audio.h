@@ -98,7 +98,7 @@ public:
     AudioManager();
     ~AudioManager();
 
-    void Simulate();
+    void Tick();
 
     void CacheSample(const std::string &path, bool preserve);
 

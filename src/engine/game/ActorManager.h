@@ -17,9 +17,7 @@
 
 #pragma once
 
-#include "../util.h"
-
-class Actor;
+#include "Actor.h"
 
 class ActorManager {
 protected:

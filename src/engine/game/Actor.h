@@ -49,8 +49,8 @@ public:
     Actor();
     virtual ~Actor();
 
-    virtual void Tick() {}
-    virtual void Draw() {}
+    virtual void Tick() {}  // simulation tick, called per-frame
+    virtual void Draw() {}  // draw tick, called per-frame
 
     //virtual bool Possess(Player *player);
     //virtual bool Depossess(Player *player);
@@ -60,16 +60,20 @@ public:
     virtual PLVector3 GetPosition() { return position_; }
     virtual void SetPosition(PLVector3 position) { position_ = position; }
 
+    virtual void HandleInput() {}   // handle any player input, if applicable
+
     Actor *parent_{nullptr};
     Actor *child_{nullptr};
+
+    std::string class_name;
 
 private:
     uint16_t flags_{0};
 
     bool is_visible_{false};
 
-    PLVector3 position_{0, 0, 0};
-    PLVector3 angles_{0, 0, 0};
+    PLVector3 position_{0, 0, 0};   // x, y, z
+    PLVector3 angles_{0, 0, 0};     // p, y, r
     PLVector3 bounds_{0, 0, 0};
 
     //Player *controller_{nullptr};

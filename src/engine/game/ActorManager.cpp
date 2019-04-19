@@ -30,11 +30,14 @@ std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes
 Actor *ActorManager::SpawnActor(const std::string &name) {
     auto i = actor_classes_.find(name);
     if(i == actor_classes_.end()) {
-        LogWarn("attempted to spawn an invalid actor of class \"%s\", ignoring!\n", name.c_str());
+        LogWarn("Attempted to spawn an invalid actor of class \"%s\", ignoring!\n", name.c_str());
         return nullptr;
     }
 
     actors_.push_back(i->second());
+    Actor *actor = i->second();
+    actor->class_name = name;
+
     return i->second();
 }
 

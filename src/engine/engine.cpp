@@ -31,6 +31,7 @@
 #include "input.h"
 #include "client/frontend.h"
 #include "client/audio.h"
+#include "game/BaseGameMode.h"
 
 EngineState g_state;
 
@@ -123,7 +124,12 @@ bool Engine_IsRunning(void) {
         g_state.sim_ticks = System_GetTicks();
 
         Client_Simulate();
-        AudioManager::GetInstance()->Simulate();
+
+        if(g_state.mode != nullptr) {
+            g_state.mode->Tick();
+        }
+
+        AudioManager::GetInstance()->Tick();
 
         g_state.last_sim_tick = System_GetTicks();
         next_tick += SKIP_TICKS;

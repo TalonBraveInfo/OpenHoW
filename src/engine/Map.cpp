@@ -180,8 +180,6 @@ Map::Map(const std::string &name) {
     sky_model_ = LoadModel("skys/skydome", true);
 
     GenerateOverview();
-
-    Reset();
 }
 
 Map::~Map() {
@@ -261,42 +259,6 @@ float Map::GetHeight(const PLVector2 &pos) {
     float z = x + ((y - x) * tile_y);
 
     return z;
-}
-
-void Map::Reset() {
-#if 0 /* todo: redo */
-    SVClearActors();
-
-    for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
-        Actor *actor = Actor_Spawn();
-        if(actor == NULL) {
-            /* warn, and try to keep going for as long as we can :( */
-            LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
-            break;
-        }
-
-        actor->position.x = map_state.spawns[i].position[0];
-        actor->position.y = map_state.spawns[i].position[1];
-        actor->position.z = map_state.spawns[i].position[2];
-
-        actor->angles.x   = map_state.spawns[i].angles[0];
-        actor->angles.y   = map_state.spawns[i].angles[1];
-        actor->angles.z   = map_state.spawns[i].angles[2];
-
-        //actor->bounds   = map_state.spawns[i].bounds;
-        //actor->bounds   = map_state.spawns[i].bounds;
-        //actor->bounds   = map_state.spawns[i].bounds;
-
-        actor->team = map_state.spawns[i].team;
-
-        strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
-        /* todo, setup the actor here - name represents class - this will then
-         * set the model and other parms here
-         */
-
-        //actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
-    }
-#endif
 }
 
 void Map::LoadSpawns(const std::string &path) {

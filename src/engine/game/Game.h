@@ -18,5 +18,11 @@
 #pragma once
 
 #include "TempGame.h"
+#include "Actor.h"
+
+struct Player {
+    std::string     name;
+    Actor*          input_target{nullptr};
+};
 
 bool SetGameMode(const std::string &mode);

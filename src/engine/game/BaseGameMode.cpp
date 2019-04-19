@@ -16,7 +16,7 @@
  */
 
 #include "../engine.h"
-#include "../Map.h"
+
 #include "BaseGameMode.h"
 #include "ActorManager.h"
 
@@ -54,10 +54,6 @@ void BaseGameMode::RestartRound() {
 }
 
 void BaseGameMode::EndRound() {
-    if(current_map_ == nullptr) {
-        return;
-    }
-
     if(HasRoundStarted()) {
         Error("Attempted to unload map in the middle of a round, aborting!\n");
     }
@@ -65,6 +61,7 @@ void BaseGameMode::EndRound() {
     DestroyActors();
 
     delete current_map_;
+    current_map_ = nullptr;
 }
 
 void BaseGameMode::Tick() {
@@ -74,17 +71,33 @@ void BaseGameMode::Tick() {
     }
 
     ActorManager::GetInstance()->TickActors();
+
+    if(players_[current_player_].input_target != nullptr) {
+        players_[current_player_].input_target->HandleInput();
+    }
 }
 
 void BaseGameMode::SpawnActors() {
     std::vector<MapSpawn> spawns = current_map_->GetSpawns();
     for(auto spawn : spawns) {
-        ActorManager::GetInstance()->SpawnActor(spawn.name);
+        Actor *actor = ActorManager::GetInstance()->SpawnActor(spawn.name);
+        if(actor == nullptr) {
+            continue;
+        }
+
+        actor->SetPosition(PLVector3(
+                spawn.position[0],
+                spawn.position[1],
+                spawn.position[2]));
+        // todo: assign player pigs etc., temp hack
+        if(actor->class_name == "GR_ME") {
+            players_[0].input_target = actor;
+        }
     }
 }
 
 void BaseGameMode::DestroyActors() {
-
+    ActorManager::GetInstance()->DestroyActors();
 }
 
 void BaseGameMode::StartTurn() {
