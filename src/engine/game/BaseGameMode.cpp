@@ -105,5 +105,8 @@ void BaseGameMode::StartTurn() {
 }
 
 void BaseGameMode::EndTurn() {
-
+    // move onto the next player
+    if(++current_player_ >= players_.size()) {
+        current_player_ = 0;
+    }
 }
