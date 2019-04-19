@@ -123,6 +123,30 @@ MapManifest map_descriptors[]={
 };
 #endif
 
+//Precalculated vertices for chunk rendering
+//TODO: Share one index buffer instance between all chunks
+const static uint16_t chunkIndices[96] = {
+     0,  5,  1,  1,  5,  6,
+     1,  6,  2,  2,  6,  7,
+     2,  7,  3,  3,  7,  8,
+     3,  8,  4,  4,  8,  9,
+
+     5, 10,  6,  6, 10, 11,
+     6, 11,  7,  7, 11, 12,
+     7, 12,  8,  8, 12, 13,
+     8, 13,  9,  9, 13, 14,
+
+    10, 15, 11, 11, 15, 16,
+    11, 16, 12, 12, 16, 17,
+    12, 17, 13, 13, 17, 18,
+    13, 18, 14, 14, 18, 19,
+
+    15, 20, 16, 16, 20, 21,
+    16, 21, 17, 17, 21, 22,
+    17, 22, 18, 18, 22, 23,
+    18, 23, 19, 19, 23, 24,
+};
+
 Map::Map(const std::string &name) {
     LogDebug("Loading map, %s...\n", name.c_str());
 
@@ -178,6 +202,12 @@ Map::~Map() {
         }
 
         plDeleteTexture(sky_texture, true);
+    }
+
+    for(auto & chunk : chunks_) {
+        if(chunk.model != nullptr) {
+            plDeleteModel(chunk.model);
+        }
     }
 
     if(sky_model_ != nullptr) {
@@ -383,21 +413,40 @@ void Map::LoadTiles(const std::string &path) {
                              "invalid tile type!\n");
                 }
             }
+
+            {
+                //Generate model for this chunk
+                current_chunk.model = (PLModel*)pl_malloc(sizeof(PLModel));
+                if(current_chunk.model == nullptr) {
+                    Error("Unable to create map chunk mesh, aborting!\n");
+                }
+
+                current_chunk.model->meshes = (PLModelMesh*)pl_malloc(sizeof(PLModelMesh));
+                if(current_chunk.model->meshes == nullptr) {
+                    Error("Unable to create map chunk mesh, aborting!\n");
+                }
+
+                current_chunk.model->meshes[0].mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
+                if(current_chunk.model->meshes[0].mesh == nullptr) {
+                    Error("Unable to create map chunk mesh, aborting!\n");
+                }
+
+                snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
+                current_chunk.model->num_meshes = 1;
+                current_chunk.model->model_matrix = plTranslateMatrix( PLVector3((float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH), 0.0f, (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)) );
+
+                for(unsigned int vz = 0; vz < 5; ++vz) {
+                    for(unsigned int vx = 0; vx < 5; ++vx) {
+                        unsigned int idx = (vz*5)+vx;
+                        plSetMeshVertexPosition(current_chunk.model->meshes[0].mesh, idx, PLVector3(vx * MAP_TILE_PIXEL_WIDTH, vertices[idx].height, vz * MAP_TILE_PIXEL_WIDTH ) );
+                    }
+                }
+            }
+
         }
     }
 
     std::fclose(fh);
-
-#if 0
-    if(terrain_mesh != nullptr) {
-        plDeleteMesh(terrain_mesh);
-    }
-
-    terrain_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_STATIC, 64, 256);
-    if(terrain_mesh == nullptr) {
-        Error("failed to create terrain mesh, %s, aborting!\n", plGetError());
-    }
-#endif
 }
 
 void Map::LoadTextures(const std::string &path) {
@@ -468,33 +517,5 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
-#if 0 /* legacy code */
-    if(map_state.name[0] == '\0' || FE_GetState() != FE_MODE_GAME) {
-        return;
-    }
-
-    if(map_state.sky_model != nullptr) {
-        plDrawModel(map_state.sky_model);
-    }
-
-    /* todo: translate plane to camera pos - we will have
-     * another water plane outside / below without reflections? */
-
-    plSetShaderProgram(programs[SHADER_WATER]);
-
-    for (auto &water_tile : water_tiles) {
-        // todo!!!!
-        plTranslateMatrix(water_tile.position);
-
-        plDrawMesh(water_mesh);
-    }
-
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
-
-    // todo, clouds
-
-    // todo, update parts of terrain mesh from deformation etc?
-
-    plDrawMesh(terrain_mesh);
-#endif
+    // TODO
 }

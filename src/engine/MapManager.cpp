@@ -46,12 +46,17 @@ void MapManager::RegisterManifest(const std::string &path) {
         manifest.name           = config.GetStringProperty("name");
         manifest.author         = config.GetStringProperty("author");
         manifest.description    = config.GetStringProperty("description");
+
         manifest.sky            = config.GetStringProperty("sky");
         manifest.modes          = config.GetArrayStrings("modes");
+
         manifest.ambient_colour = config.GetColourProperty("ambient_colour", PLColour(255, 255, 255));
         manifest.sun_colour     = config.GetColourProperty("sun_colour", PLColour(255, 255, 255));
         manifest.sun_yaw        = config.GetFloatProperty("sun_yaw");
         manifest.sun_pitch      = config.GetFloatProperty("sun_pitch");
+
+        manifest.temperature    = config.GetStringProperty("temperature", "hot");
+        manifest.time           = config.GetStringProperty("time", "day");
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }

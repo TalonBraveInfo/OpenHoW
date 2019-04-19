@@ -105,6 +105,7 @@ struct MapTile {
 struct MapChunk {
     MapTile tiles[16];
     PLVector3 offset{0, 0, 0};
+    PLModel* model;
 };
 
 struct MapManifest;
