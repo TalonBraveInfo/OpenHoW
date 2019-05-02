@@ -30,12 +30,12 @@ private:
 PigActor::PigActor() = default;
 PigActor::~PigActor() = default;
 
-//register_actor("AC_ME", PigActor);    // Ace
-//register_actor("LE_ME", PigActor);    // Legend
-//register_actor("ME_ME", PigActor);    // Medic
-//register_actor("SB_ME", PigActor);    // Commando
-//register_actor("SP_ME", PigActor);    // Spy
-//register_actor("SN_ME", PigActor);    // Sniper
-//register_actor("SA_ME", PigActor);    // Saboteur
-//register_actor("GR_ME", PigActor);    // Grunt
+register_actor(AC_ME, PigActor);    // Ace
+register_actor(LE_ME, PigActor);    // Legend
+register_actor(ME_ME, PigActor);    // Medic
+register_actor(SB_ME, PigActor);    // Commando
+register_actor(SP_ME, PigActor);    // Spy
+register_actor(SN_ME, PigActor);    // Sniper
+register_actor(SA_ME, PigActor);    // Saboteur
+register_actor(GR_ME, PigActor);    // Grunt
 

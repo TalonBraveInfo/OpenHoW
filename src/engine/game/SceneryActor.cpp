@@ -30,4 +30,4 @@ private:
 SceneryActor::SceneryActor() = default;
 SceneryActor::~SceneryActor() = default;
 
-//register_actor("DUMMY", SceneryActor);
+register_actor(DUMMY, SceneryActor);

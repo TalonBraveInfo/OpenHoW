@@ -53,5 +53,5 @@ private:
 };
 
 #define register_actor(NAME, CLASS) \
-    static Actor * CLASS ## _make() { return new CLASS (); } \
-    static ActorManager::ActorClassRegistration _reg_actor_name((NAME), CLASS ## _make) __attribute__ ((init_priority(2000)))
+    static Actor * NAME ## _make() { return new CLASS (); } \
+    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make)
