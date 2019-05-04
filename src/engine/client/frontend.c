@@ -114,14 +114,14 @@ static void ClearFEGameData(void) {
         if(fe_tx_game_textures[i] == NULL) {
             continue;
         }
-        plDeleteTexture(fe_tx_game_textures[i], true);
+        plDestroyTexture(fe_tx_game_textures[i], true);
     }
 }
 
 static void ClearFEMenuData(void) {
-    plDeleteTexture(fe_background, true);
+    plDestroyTexture(fe_background, true);
     for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
-        plDeleteTexture(fe_papers_teams[i], true);
+        plDestroyTexture(fe_papers_teams[i], true);
     }
 }
 
@@ -190,7 +190,7 @@ uint8_t loading_progress = 0;
 
 void FE_SetLoadingBackground(const char *name) {
     if(fe_background != NULL) {
-        plDeleteTexture(fe_background, true);
+        plDestroyTexture(fe_background, true);
     }
 
     char screen_path[PL_SYSTEM_MAX_PATH];
@@ -275,7 +275,7 @@ void FE_Draw(void) {
                 static bool is_background_drawn = false;
                 if(!is_background_drawn) {
                     plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-                    plDeleteTexture(fe_background, true);
+                    plDestroyTexture(fe_background, true);
                     is_background_drawn = true;
                 }
 
@@ -373,10 +373,10 @@ void FE_SetState(unsigned int state) {
             /* remove the textures we loaded in
              * for the start screen - we won't
              * be needing them again... */
-            plDeleteTexture(fe_press, true);
-            plDeleteTexture(fe_any, true);
-            plDeleteTexture(fe_key, true);
-            plDeleteTexture(fe_background, true);
+            plDestroyTexture(fe_press, true);
+            plDestroyTexture(fe_any, true);
+            plDestroyTexture(fe_key, true);
+            plDestroyTexture(fe_background, true);
 
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;

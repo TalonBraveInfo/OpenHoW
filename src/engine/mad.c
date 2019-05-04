@@ -181,7 +181,7 @@ static PLPackage *LoadMADPackage(const char *path, bool cache) {
 
 /************************************************************/
 
-void RegisterPackageInterfaces(void) {
-    plRegisterPackageInterface("mad", LoadMADPackage);
-    plRegisterPackageInterface("mtd", LoadMADPackage);
+void RegisterPackageLoaders(void) {
+    plRegisterPackageLoader("mad", LoadMADPackage);
+    plRegisterPackageLoader("mtd", LoadMADPackage);
 }

@@ -209,7 +209,7 @@ void ClearFontData(void) {
             break;
         }
 
-        plDeleteTexture(g_fonts[i]->texture, true);
+        plDestroyTexture(g_fonts[i]->texture, true);
         free(g_fonts[i]);
     }
 }

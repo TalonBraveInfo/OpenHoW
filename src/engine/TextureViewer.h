@@ -23,7 +23,7 @@ public:
     }
 
     ~TextureViewer() override {
-        plDeleteTexture(texture_, true);
+        plDestroyTexture(texture_, true);
     }
 
     void ReloadTexture(PLTextureFilter filter_mode) {
@@ -31,7 +31,7 @@ public:
             return;
         }
 
-        plDeleteTexture(texture_, true);
+        plDestroyTexture(texture_, true);
         texture_ = Display_LoadTexture(texture_path.c_str(), filter_mode);
         filter_mode_ = filter_mode;
     }
