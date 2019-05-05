@@ -19,6 +19,6 @@
 
 PL_EXTERN_C
 
-void RegisterPackageInterfaces(void);
+void RegisterPackageLoaders(void);
 
 PL_EXTERN_C_END

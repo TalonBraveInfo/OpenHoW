@@ -141,7 +141,7 @@ void DrawTextureCache(unsigned int id) {
 void Display_ClearTextureIndex(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
-    plDeleteTexture(index->texture, true);
+    plDestroyTexture(index->texture, true);
     memset(index, 0, sizeof(TextureIndex));
 }
 
@@ -564,6 +564,7 @@ void Display_Shutdown(void) {
 /************************************************************/
 
 void DEBUGDrawSkeleton();
+void DEBUGDrawModel();
 
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     static unsigned int fps_ = 0;
@@ -729,6 +730,8 @@ void Display_DrawScene(void) {
     //Map_Draw();
     //DrawActors(cur_delta);
     DrawParticles(cur_delta);
+
+    DEBUGDrawModel();
 }
 
 void Display_DrawInterface(void) {

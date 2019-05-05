@@ -79,8 +79,8 @@ void Engine_Initialize(void) {
      * vars will not be loaded/saved! */
     Config_Load(Config_GetUserConfigPath());
 
-    RegisterPackageInterfaces();
-    RegisterModelInterfaces();
+    RegisterPackageLoaders();
+    RegisterModelLoaders();
 
     /* load in the manifests */
 

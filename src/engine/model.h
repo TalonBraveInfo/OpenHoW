@@ -20,17 +20,41 @@
 #define MAX_BONES 32
 
 typedef struct Keyframe {
-    PLVector3 transforms[10];
-    PLQuaternion rotations[15];
+    PLVector3       transforms[10];
+    PLQuaternion    rotations[15];
 } Keyframe;
 
 typedef struct Animation {
-    unsigned int id;
-    const char *name;
+    unsigned int    id;
+    const char*     name;
 
-    Keyframe *frames;
-    unsigned int num_frames;
+    Keyframe*       frames;
+    unsigned int    num_frames;
 } Animation;
+
+enum {
+    BONE_INDEX_PELVIS,
+    BONE_INDEX_SPINE,
+    BONE_INDEX_HEAD,
+
+    BONE_INDEX_UPPER_ARM_L,
+    BONE_INDEX_LOWER_ARM_L,
+    BONE_INDEX_HAND_L,
+
+    BONE_INDEX_UPPER_ARM_R,
+    BONE_INDEX_LOWER_ARM_R,
+    BONE_INDEX_HAND_R,
+
+    BONE_INDEX_UPPER_LEG_L,
+    BONE_INDEX_LOWER_LEG_L,
+    BONE_INDEX_FOOT_L,
+
+    BONE_INDEX_UPPER_LEG_R,
+    BONE_INDEX_LOWER_LEG_R,
+    BONE_INDEX_FOOT_R,
+
+    MAX_BONE_INDICES
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Animations
@@ -134,15 +158,15 @@ enum { // todo, switch over to using macros here
     ANI_92 = 92,                //
 };
 
-#define ANI_END 93
+#define MAX_ANIMATIONS 93
 
 /* * * * * * * * * * * * * * * * * */
 
 PL_EXTERN_C
 
-void RegisterModelInterfaces(void);
+void RegisterModelLoaders(void);
 
-PLModel *LoadModel(const char *path, bool abort_on_fail);
+PLModel *Model_LoadFile(const char *path, bool abort_on_fail);
 
 void Display_ClearTextureIndex(unsigned int id);
 
