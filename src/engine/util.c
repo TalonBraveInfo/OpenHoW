@@ -94,32 +94,17 @@ const char *u_find2(const char *path, const char **preference) {
     return out;
 }
 
-/*
-FILE *u_open(const char *path, const char *mode) {
-    FILE *fp;
-
-    char n_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetModPath())) {
-        snprintf(n_path, sizeof(n_path), "%s/mods/%s/%s", GetBasePath(), GetModPath(), path);
-        if(plFileExists(n_path)) {
-            fp = fopen(n_path, mode);
-            if(fp != NULL) {
-                return fp;
-            }
-
-            LogWarn("failed to load file at %s, falling back to base!\n", n_path);
+FILE* u_open(const char* path, const char* mode, bool abort_on_fail) {
+    FILE* fp = fopen(u_find(path), mode);
+    if(fp == NULL) {
+        /* todo: provide more detail! */
+        if(abort_on_fail) {
+            Error("Failed to open file at \"%s\"!\n", path);
+        } else {
+            LogWarn("Failed to open file at \"%s\"!\n", path);
         }
+        return NULL;
     }
 
-    snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
-    if(plFileExists(n_path)) {
-        fp = fopen(n_path, mode);
-        if(fp != NULL) {
-            return fp;
-        }
-    }
-
-    LogWarn("failed to load file at %s!\n", n_path);
-    return NULL;
+    return fp;
 }
- */

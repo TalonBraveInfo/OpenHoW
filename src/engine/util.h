@@ -29,10 +29,12 @@ void *u_alloc(size_t num, size_t size, bool abort_on_fail);
 const char *u_find(const char *path);
 const char *u_find2(const char *path, const char **preference);
 
+FILE* u_open(const char *path, const char *mode, bool abort_on_fail);
+
 PL_EXTERN_C_END
 
 #ifdef _DEBUG
-#   define u_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); LogInfo("assertion hit in \"%s\" on line %d\n", PL_FUNCTION, __LINE__); } assert((a))
+#   define u_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); LogInfo("Assertion hit in \"%s\" on line %d\n", PL_FUNCTION, __LINE__); } assert((a))
 #else
 #   define u_assert(a, ...) if(!((a))) { LogWarn(__VA_ARGS__); }
 #endif
