@@ -74,8 +74,6 @@ typedef struct EngineState {
 
     unsigned int draw_ticks;
     unsigned int last_draw_ms;
-
-    BaseGameMode *mode;
 } EngineState;
 extern EngineState g_state;
 

@@ -21,20 +21,22 @@
 #include "BaseGameMode.h"
 #include "TrainingGameMode.h"
 
+static BaseGameMode* current_mode = nullptr;
+
 bool SetGameMode(const std::string &mode) {
     LogDebug("starting new game...\n");
 
-    if(g_state.mode != nullptr) {
-        if (mode == g_state.mode->GetDescription()) {
+    if(current_mode != nullptr) {
+        if (mode == current_mode->GetDescription()) {
             return true;
         }
 
-        if (g_state.mode->HasRoundStarted() || g_state.mode->HasTurnStarted()) {
+        if (current_mode->HasRoundStarted() || current_mode->HasTurnStarted()) {
             Error("Attempted to change mode in the middle of a round!\n");
         }
 
-        delete g_state.mode;
-        g_state.mode = nullptr;
+        delete current_mode;
+        current_mode = nullptr;
     }
 
     /* todo:
@@ -43,9 +45,9 @@ bool SetGameMode(const std::string &mode) {
      *  it by that, rather than this hard-coded method.
      */
     if(mode == "singleplayer") {
-        g_state.mode = new BaseGameMode();
+        current_mode = new BaseGameMode();
     } else if(mode == "training") {
-        g_state.mode = new TrainingGameMode();
+        current_mode = new TrainingGameMode();
     } else {
         LogWarn("Unknown game-mode specified, \"%s\"!\n", mode.c_str());
         return false;
@@ -54,3 +56,6 @@ bool SetGameMode(const std::string &mode) {
     return true;
 }
 
+BaseGameMode *GetGameMode() {
+    return current_mode;
+}

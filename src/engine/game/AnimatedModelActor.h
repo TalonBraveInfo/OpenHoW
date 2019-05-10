@@ -15,19 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "ActorManager.h"
+#pragma once
 
-class SceneryActor : public Actor {
+#include "Actor.h"
+#include "ModelActor.h"
+
+class AnimatedModelActor : public ModelActor {
 public:
-    SceneryActor();
-    ~SceneryActor() override;
+    AnimatedModelActor();
+    ~AnimatedModelActor() override;
 
 protected:
 private:
 };
-
-SceneryActor::SceneryActor() = default;
-SceneryActor::~SceneryActor() = default;
-
-register_actor(DUMMY, SceneryActor);

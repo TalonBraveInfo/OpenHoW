@@ -17,24 +17,25 @@
 
 #pragma once
 
+#include "../Map.h"
 #include "Actor.h"
 
 class ActorManager {
 protected:
-    typedef Actor *(*actor_ctor_func)();
+    typedef Actor* (*actor_ctor_func)();
     static std::map<std::string, actor_ctor_func> actor_classes_;
 
 public:
-    static ActorManager *GetInstance() {
-        static ActorManager *instance = nullptr;
+    static ActorManager* GetInstance() {
+        static ActorManager* instance = nullptr;
         if(instance == nullptr) {
             instance = new ActorManager();
         }
         return instance;
     }
 
-    Actor *SpawnActor(const std::string &name);
-    void DestroyActor(Actor *actor);
+    Actor* SpawnActor(const std::string& name);
+    void DestroyActor(Actor* actor);
 
     void TickActors();
     void DrawActors();
@@ -44,7 +45,7 @@ public:
     public:
         const std::string name_;
 
-        ActorClassRegistration(const std::string &name, actor_ctor_func ctor_func);
+        ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func);
         ~ActorClassRegistration();
     };
 

@@ -21,8 +21,9 @@
 
 #include "engine.h"
 #include "model.h"
-#include "client/display.h"
 #include "game/TempGame.h"
+
+#include "graphics/display.h"
 
 /************************************************************/
 /* Hir Skeleton Format */
@@ -490,13 +491,15 @@ PLModel* Model_LoadMinFile(const char *path) {
 PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
     snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
-    PLModel *model = plLoadModel(model_path);
+    PLModel* model = plLoadModel(model_path);
     if(model == NULL) {
         if(abort_on_fail) {
             Error("Failed to load model, \"%s\", aborting (%s)!\n", model_path, plGetError());
         }
 
         LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
+        // todo: provide placeholder
+        //model = plCreateModelCube();
     }
     return model;
 }
@@ -519,7 +522,7 @@ void CacheModelData(void) {
 
     // animations
 
-    LogInfo("caching mcap.mad\n");
+    LogInfo("Caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
     strncpy(mcap_path, u_find("/chars/mcap.mad"), sizeof(mcap_path));

@@ -16,37 +16,37 @@
  */
 
 #include "../engine.h"
+#include "../input.h"
+
 #include "Actor.h"
+#include "Game.h"
 
 Actor::Actor() = default;
 Actor::~Actor() = default;
 
-#if 0
-bool Actor::Possess(Player *player) {
-    if(!player->is_active) {
-        LogWarn("failed to possess actor, inactive player!\n");
-        return false;
+void Actor::HandleInput() {
+    BaseGameMode* mode = GetGameMode();
+    if(mode == nullptr) {
+        return;
     }
 
-    if(controller_ != nullptr && controller_ == player) {
-        return true;
-    } else if(controller_ != nullptr && controller_ != player) {
-        if(!Depossess(controller_)) {
-            LogWarn("failed to possess actor, already occupied!\n");
-            return false;
-        }
+    Player* player = mode->GetCurrentPlayer();
+    if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
+
+    } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
+
     }
 
-    controller_ = player;
-    return true;
+    if(Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
+        angles_.y += 0.5f;
+    } else if(Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
+        angles_.y -= 0.5f;
+    }
+
+    if( Input_GetActionState(player->input_slot, ACTION_JUMP) ||
+        Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
+        position_.z += 0.5f;
+    } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
+        position_.z -= 0.5f;
+    }
 }
-
-bool Actor::Depossess(Player *player) {
-    if(controller_ != nullptr && controller_ != player) {
-        return false;
-    }
-
-    controller_ = nullptr;
-    return true;
-}
-#endif

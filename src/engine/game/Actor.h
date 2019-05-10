@@ -52,31 +52,35 @@ public:
     virtual void Tick() {}  // simulation tick, called per-frame
     virtual void Draw() {}  // draw tick, called per-frame
 
-    //virtual bool Possess(Player *player);
-    //virtual bool Depossess(Player *player);
+    //virtual bool Possess(Player* player);
+    //virtual bool Depossess(Player* player);
 
     virtual bool IsVisible() { return is_visible_; }
 
     virtual PLVector3 GetPosition() { return position_; }
     virtual void SetPosition(PLVector3 position) { position_ = position; }
 
-    virtual void HandleInput() {}   // handle any player input, if applicable
+    virtual PLVector3 GetAngles() { return angles_; }
+    virtual void SetAngles(PLVector3 angles) { angles_ = angles; }
 
-    Actor *parent_{nullptr};
-    Actor *child_{nullptr};
+    virtual void HandleInput();   // handle any player input, if applicable
 
-    std::string class_name;
+protected:
+    bool is_visible_{false};
+
+    PLVector3 position_{0, 0, 0};           // x, y, z
+    PLVector3 fallback_position_{0, 0, 0};
+    PLVector3 angles_{0, 0, 0};             // p, y, r
+    PLVector3 bounds_{0, 0, 0};
 
 private:
     uint16_t flags_{0};
 
-    bool is_visible_{false};
+    uint16_t    team_{0};
+    int16_t     health_{0};
 
-    PLVector3 position_{0, 0, 0};   // x, y, z
-    PLVector3 angles_{0, 0, 0};     // p, y, r
-    PLVector3 bounds_{0, 0, 0};
-
-    //Player *controller_{nullptr};
+    Actor* parent_{nullptr};
+    Actor* child_{nullptr};
 
     /* todo: collision sys */
 };

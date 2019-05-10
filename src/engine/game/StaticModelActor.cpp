@@ -15,17 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "../model.h"
 
-#include "TempGame.h"
-#include "BaseGameMode.h"
-#include "Actor.h"
+#include "StaticModelActor.h"
 
-struct Player {
-    std::string     name;
-    Actor*          input_target{nullptr};
-    unsigned int    input_slot{0};
-};
+StaticModelActor::StaticModelActor() = default;
+StaticModelActor::~StaticModelActor() = default;
 
-bool SetGameMode(const std::string &mode);
-BaseGameMode* GetGameMode();
+#if 0
+register_actor(DUMMY, StaticModelActor); // todo: needs special logic
+
+// Barbed Wire
+register_actor(BARBWIRE, StaticModelActor);
+register_actor(BARBWIR2, StaticModelActor);
+
+// Trees
+register_actor(TREEP, StaticModelActor);
+register_actor(TREEPH1, StaticModelActor);
+register_actor(TREEPH2, StaticModelActor);
+
+// Bridges
+register_actor(BRIDGE_C, StaticModelActor);
+register_actor(BRIDGE_S, StaticModelActor);
+
+// Building Components
+register_actor(IRONGATE, StaticModelActor);
+#endif

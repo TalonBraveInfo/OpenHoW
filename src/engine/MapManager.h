@@ -48,9 +48,6 @@ public:
         instance_ = nullptr;
     }
 
-    MapManager();
-    ~MapManager();
-
     void RegisterManifest(const std::string &path);
     void RegisterManifests();
 
@@ -59,6 +56,9 @@ public:
 
 protected:
 private:
+    MapManager();
+    ~MapManager();
+
     static void MapCommand(unsigned int argc, char *argv[]);
     static void MapsCommand(unsigned int argc, char *argv[]);
 

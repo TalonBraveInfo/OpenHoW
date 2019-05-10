@@ -20,17 +20,20 @@
 #include "../Map.h"
 #include "Game.h"
 
+struct Player;
+class Actor;
+
 class BaseGameMode {
 public:
-    BaseGameMode() = default;
+    BaseGameMode();
     virtual ~BaseGameMode() ;
 
     virtual std::string GetDescription() {
         return "singleplayer";
     }
 
-    virtual void StartMode();   // loads necessary map, etc.
-    virtual void EndMode();     // ends the mode, cleanup
+    virtual void StartMode(const std::string &map_name);    // loads necessary map, etc.
+    virtual void EndMode();                                 // ends the mode, cleanup
 
     virtual uint8_t GetMaxSpectators() {
         return 0;
@@ -50,15 +53,7 @@ public:
 
     virtual void Tick();    // called per-frame
 
-    virtual void StartTurn();
-    virtual void EndTurn();
-
-    virtual void StartRound(const std::string &map_name);
     virtual void RestartRound();
-    virtual void EndRound();
-
-    virtual void SpawnActors();
-    virtual void DestroyActors();
 
     virtual bool HasModeStarted() { return mode_started_; }
     virtual bool HasRoundStarted() { return round_started_; }
@@ -67,8 +62,20 @@ public:
     virtual bool TogglePause() { return (is_paused_ = !is_paused_); }
     virtual bool IsPaused() { return is_paused_; }
 
+    Player* GetCurrentPlayer();
+    Map* GetCurrentMap() { return current_map_; };
+
 protected:
-    Map *current_map_{nullptr};
+    Map* current_map_{nullptr};
+
+    virtual void StartTurn();
+    virtual void EndTurn();
+
+    virtual void StartRound();
+    virtual void EndRound();
+
+    virtual void SpawnActors();
+    virtual void DestroyActors();
 
 private:
     bool is_paused_{false};
@@ -82,4 +89,6 @@ private:
     std::vector<Player> players_;      // todo: need proper identifier
     unsigned int current_player_{0};
     std::vector<Player> spectators_;   // todo: need proper identifier
+
+    std::vector<Actor*> pigs_;
 };

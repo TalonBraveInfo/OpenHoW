@@ -19,15 +19,14 @@
 #include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
 
-#include "../engine.h"
-#include "../input.h"
-
-#include "../game/TempGame.h"
-
+#include "engine.h"
+#include "input.h"
+#include "game/TempGame.h"
 #include "frontend.h"
-#include "font.h"
-#include "display.h"
-#include "video.h"
+
+#include "graphics/font.h"
+#include "graphics/display.h"
+#include "graphics/video.h"
 
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = (unsigned int) -1;
@@ -48,12 +47,12 @@ static const char *papers_teams_paths[MAX_TEAMS]={
 };
 
 /* texture assets, these are loaded and free'd at runtime */
-static PLTexture *fe_background    = NULL;
-static PLTexture *fe_press         = NULL;
-static PLTexture *fe_any           = NULL;
-static PLTexture *fe_key           = NULL;
+static PLTexture *fe_background    = nullptr;
+static PLTexture *fe_press         = nullptr;
+static PLTexture *fe_any           = nullptr;
+static PLTexture *fe_key           = nullptr;
 static PLTexture *fe_papers_teams[MAX_TEAMS] = {
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
 enum {
@@ -79,14 +78,14 @@ static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that w
 
 /************************************************************/
 
-void FrontendInputCallback(int key, bool is_pressed) {
+static void FrontendInputCallback(int key, bool is_pressed) {
     if(frontend_state == FE_MODE_START && is_pressed) {
         /* todo, play 'ting' sound! */
 
         /* we've hit our key, we can take away this
          * callback now and carry on to whatever */
-        Input_SetKeyboardFocusCallback(NULL);
-        FE_SetState(FE_MODE_MAIN_MENU);
+        Input_SetKeyboardFocusCallback(nullptr);
+        FrontEnd_SetState(FE_MODE_MAIN_MENU);
         return;
     }
 }
@@ -110,18 +109,18 @@ static void CacheFEMenuData(void) {
 }
 
 static void ClearFEGameData(void) {
-    for(unsigned int i = 0; i < MAX_FE_GAME_TEXTURES; ++i) {
-        if(fe_tx_game_textures[i] == NULL) {
+    for(auto & fe_tx_game_texture : fe_tx_game_textures) {
+        if(fe_tx_game_texture == nullptr) {
             continue;
         }
-        plDestroyTexture(fe_tx_game_textures[i], true);
+        plDestroyTexture(fe_tx_game_texture, true);
     }
 }
 
 static void ClearFEMenuData(void) {
     plDestroyTexture(fe_background, true);
-    for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
-        plDestroyTexture(fe_papers_teams[i], true);
+    for(auto & fe_papers_team : fe_papers_teams) {
+        plDestroyTexture(fe_papers_team, true);
     }
 }
 
@@ -176,7 +175,7 @@ void FE_Simulate(void) {
                 break;
             }
 
-            FE_SetState(FE_MODE_START);
+            FrontEnd_SetState(FE_MODE_START);
         } break;
     }
 }
@@ -189,7 +188,7 @@ uint8_t loading_progress = 0;
 #define Redraw()   Display_DrawInterface();
 
 void FE_SetLoadingBackground(const char *name) {
-    if(fe_background != NULL) {
+    if(fe_background != nullptr) {
         plDestroyTexture(fe_background, true);
     }
 
@@ -341,14 +340,14 @@ void FE_Draw(void) {
 /* * * * * * * * * * * * * * * * * * * * * * */
 
 void FE_RestoreLastState(void) {
-    FE_SetState(old_frontend_state);
+    FrontEnd_SetState(old_frontend_state);
 }
 
-unsigned int FE_GetState(void) {
+unsigned int FrontEnd_GetState(void) {
     return frontend_state;
 }
 
-void FE_SetState(unsigned int state) {
+void FrontEnd_SetState(unsigned int state) {
     if(state == frontend_state) {
         LogDebug("attempted to set debug state to an already existing state!\n");
         return;

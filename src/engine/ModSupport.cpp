@@ -25,7 +25,7 @@
 #include "script/script.h"
 #include "script/ScriptConfig.h"
 
-#include "client/frontend.h"
+#include "frontend.h"
 #include "MapManager.h"
 #include "game/BaseGameMode.h"
 #include "game/TrainingGameMode.h"

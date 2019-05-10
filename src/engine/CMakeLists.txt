@@ -38,10 +38,9 @@ file(
         script/duktape-2.2.0/*.c
         script/duktape-2.2.0/*.h
 
+        graphics/*.*
         script/*.*
         game/*.*
-        server/*.*
-        client/*.*
 
         ################## ImGui
 

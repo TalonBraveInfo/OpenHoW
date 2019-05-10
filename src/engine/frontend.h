@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 /*
@@ -75,8 +76,8 @@ void FE_SetLoadingDescription(const char *description);
 void FE_SetLoadingProgress(uint8_t progress);
 uint8_t FE_GetLoadingProgress(void);
 
-unsigned int FE_GetState(void);
-void FE_SetState(unsigned int state);
+unsigned int FrontEnd_GetState(void);
+void FrontEnd_SetState(unsigned int state);
 void FE_RestoreLastState(void);
 
 PL_EXTERN_C_END

@@ -20,14 +20,14 @@
 
 #include "engine.h"
 #include "input.h"
+#include "client.h"
+#include "audio.h"
 #include "imgui_layer.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
-#include "client/display.h"
-#include "client/client.h"
-#include "client/audio.h"
+#include "graphics/display.h"
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -91,7 +91,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_ACCUM_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ACCUM_ALPHA_SIZE, 8);
 
-#if 1
+#ifdef _DEBUG
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
@@ -132,20 +132,19 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
             LogInfo("Generating video presets from %d display modes", num_display_modes);
             for (int i = 0; i < num_display_modes; ++i) {
                 SDL_DisplayMode tmp_mode;
-                if( SDL_GetDisplayMode(0, i, &tmp_mode) != 0 ){
+                if(SDL_GetDisplayMode(0, i, &tmp_mode) != 0) {
                     LogInfo("Failed to get an SDL display mode: %s", SDL_GetError());
                     continue;
                 }
+
                 //Presets enumerated in order, avoid duplicates with differing refresh rates
                 if(tmp_preset.width != tmp_mode.w || tmp_preset.height != tmp_mode.h){
                     Display_AppendVideoPreset(tmp_mode.w, tmp_mode.h);
                     tmp_preset.width = tmp_mode.w;
                     tmp_preset.height = tmp_mode.h;
                 }
-
             }
-        }
-        else {
+        } else {
             LogInfo("No display modes founds, failed to generate video presets");
         }
     }

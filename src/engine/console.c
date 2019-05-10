@@ -21,11 +21,11 @@
 #include "engine.h"
 #include "input.h"
 #include "language.h"
+#include "particle.h"
+#include "frontend.h"
 
-#include "client/particle.h"
-#include "client/display.h"
-#include "client/font.h"
-#include "client/frontend.h"
+#include "graphics/display.h"
+#include "graphics/font.h"
 
 /************************************************************/
 
@@ -156,7 +156,7 @@ static void FrontendModeCommand(unsigned int argc, char *argv[]) {
         return;
     }
 
-    FE_SetState((unsigned int) mode);
+    FrontEnd_SetState((unsigned int) mode);
 }
 
 static void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
@@ -266,6 +266,8 @@ PLConsoleVariable *cv_display_fullscreen = NULL;
 PLConsoleVariable *cv_display_use_window_aspect = NULL;
 PLConsoleVariable *cv_display_ui_scale = NULL;
 
+PLConsoleVariable *cv_graphics_cull = NULL;
+
 PLConsoleVariable *cv_audio_volume = NULL;
 PLConsoleVariable *cv_audio_volume_sfx = NULL;
 PLConsoleVariable *cv_audio_voices = NULL;
@@ -298,8 +300,9 @@ void Console_Initialize(void) {
     rvar(cv_display_height, true, "768", pl_int_var, NULL, "");
     rvar(cv_display_fullscreen, true, "false", pl_bool_var, NULL, "");
     rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, NULL, "");
-    rvar(cv_display_ui_scale, true, "1", pl_int_var, NULL,"0 = automatic scale"
-    );
+    rvar(cv_display_ui_scale, true, "1", pl_int_var, NULL,"0 = automatic scale");
+
+    rvar(cv_graphics_cull, false, "true", pl_bool_var, NULL, "toggles culling of visible objects");
 
     rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
     rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
@@ -325,7 +328,7 @@ void Console_Initialize(void) {
 }
 
 void Console_Draw(void) {
-    if(FE_GetState() == FE_MODE_INIT || FE_GetState() == FE_MODE_LOADING || !console_enabled) {
+    if(FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || !console_enabled) {
         return;
     }
 

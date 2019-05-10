@@ -15,17 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "../model.h"
 
-#include "TempGame.h"
-#include "BaseGameMode.h"
-#include "Actor.h"
+#include "ModelActor.h"
 
-struct Player {
-    std::string     name;
-    Actor*          input_target{nullptr};
-    unsigned int    input_slot{0};
-};
+ModelActor::ModelActor() : Actor() {}
+ModelActor::~ModelActor() {
+    plDestroyModel(model_);
+}
 
-bool SetGameMode(const std::string &mode);
-BaseGameMode* GetGameMode();
+void ModelActor::Draw() {
+    if(model_ != nullptr) {
+        model_->model_matrix = plTranslateMatrix(position_);
+        plDrawModel(model_);
+    }
+
+    Actor::Draw();
+}
+
+void ModelActor::SetModel(const std::string &path) {
+    model_ = Model_LoadFile(std::string("/chars" + path).c_str(), false);
+}

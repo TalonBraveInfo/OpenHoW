@@ -16,19 +16,45 @@
  */
 
 #include "../engine.h"
-#include "ActorManager.h"
+#include "../input.h"
 
-class PigActor : public Actor {
+#include "ActorManager.h"
+#include "ModelActor.h"
+#include "AnimatedModelActor.h"
+
+class PigActor : public AnimatedModelActor {
 public:
     PigActor();
     ~PigActor() override;
 
+    void HandleInput() override;
+
 protected:
 private:
+    enum {
+        EYES_OPEN,
+        EYES_CLOSED,
+        EYES_SAD,
+        EYES_SURPRISED,
+        EYES_ANGRY,
+    } upper_face_frame_{EYES_OPEN};
+
+    enum {
+        MOUTH_OPEN,
+        MOUTH_CLOSED,
+        MOUTH_SAD,
+        MOUTH_SURPRISED,
+        MOUTH_ANGRY,
+    } lower_face_frame_{MOUTH_OPEN};
 };
 
 PigActor::PigActor() = default;
 PigActor::~PigActor() = default;
+
+void PigActor::HandleInput() {
+    // todo: implement...
+    Actor::HandleInput();
+}
 
 register_actor(AC_ME, PigActor);    // Ace
 register_actor(LE_ME, PigActor);    // Legend
@@ -38,4 +64,3 @@ register_actor(SP_ME, PigActor);    // Spy
 register_actor(SN_ME, PigActor);    // Sniper
 register_actor(SA_ME, PigActor);    // Saboteur
 register_actor(GR_ME, PigActor);    // Grunt
-

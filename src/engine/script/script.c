@@ -14,12 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 
 #include "../input.h"
 #include "../engine.h"
-#include "../client/video.h"
 #include "../game/TempGame.h"
+
+#include "../graphics/video.h"
+
 #include "script.h"
 
 #include "duktape-2.2.0/duktape.h"

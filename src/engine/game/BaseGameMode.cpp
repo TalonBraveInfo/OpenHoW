@@ -15,28 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PL/platform_graphics_camera.h>
+
 #include "../engine.h"
+#include "../frontend.h"
 
 #include "BaseGameMode.h"
 #include "ActorManager.h"
 
+BaseGameMode::BaseGameMode() {
+    players_.resize(4);
+}
 BaseGameMode::~BaseGameMode() = default;
 
-void BaseGameMode::StartMode() {
-
-}
-
-void BaseGameMode::EndMode() {
-
-}
-
-void BaseGameMode::StartRound(const std::string &map_name) {
-    if(HasRoundStarted()) {
-        Error("Attempted to change map in the middle of a round, aborting!\n");
-    }
+void BaseGameMode::StartMode(const std::string &map_name) {
+    FrontEnd_SetState(FE_MODE_LOADING);
 
     if(current_map_ != nullptr) {
-        Error("Map already loaded in or dirty state, aborting!\n");
+        Error("Map already loaded or in dirty state, aborting!\n");
     }
 
     try {
@@ -45,7 +41,29 @@ void BaseGameMode::StartRound(const std::string &map_name) {
         Error("Failed to load map, aborting!\n%s\n", e.what());
     }
 
+    StartRound();
+}
+
+void BaseGameMode::EndMode() {
+    delete current_map_;
+    current_map_ = nullptr;
+
+    /* todo: should go to end-game screen! */
+    FrontEnd_SetState(FE_MODE_MAIN_MENU);
+}
+
+void BaseGameMode::StartRound() {
+    if(HasRoundStarted()) {
+        Error("Attempted to change map in the middle of a round, aborting!\n");
+    }
+
     SpawnActors();
+
+    /* todo: we should actually pause here and wait for user input
+     *       otherwise players won't have time to read the loading screen */
+    FrontEnd_SetState(FE_MODE_GAME);
+
+    round_started_ = true;
 }
 
 void BaseGameMode::RestartRound() {
@@ -59,9 +77,6 @@ void BaseGameMode::EndRound() {
     }
 
     DestroyActors();
-
-    delete current_map_;
-    current_map_ = nullptr;
 }
 
 void BaseGameMode::Tick() {
@@ -70,27 +85,30 @@ void BaseGameMode::Tick() {
         return;
     }
 
-    ActorManager::GetInstance()->TickActors();
+    Actor* slave = GetCurrentPlayer()->input_target;
+    if(slave != nullptr) {
+        slave->HandleInput();
 
-    if(players_[current_player_].input_target != nullptr) {
-        players_[current_player_].input_target->HandleInput();
+        /* temp: force the camera at the actor pos */
+        g_state.camera->position = slave->GetPosition();
+        g_state.camera->angles = slave->GetAngles();
     }
+
+    ActorManager::GetInstance()->TickActors();
 }
 
 void BaseGameMode::SpawnActors() {
     std::vector<MapSpawn> spawns = current_map_->GetSpawns();
     for(auto spawn : spawns) {
-        Actor *actor = ActorManager::GetInstance()->SpawnActor(spawn.name);
+        Actor* actor = ActorManager::GetInstance()->SpawnActor(spawn.name);
         if(actor == nullptr) {
             continue;
         }
 
-        actor->SetPosition(PLVector3(
-                spawn.position[0],
-                spawn.position[1],
-                spawn.position[2]));
+        actor->SetPosition(PLVector3(spawn.position[0], spawn.position[1], spawn.position[2]));
+
         // todo: assign player pigs etc., temp hack
-        if(actor->class_name == "GR_ME") {
+        if(strcmp(spawn.name, "GR_ME") == 0) {
             players_[0].input_target = actor;
         }
     }
@@ -101,7 +119,12 @@ void BaseGameMode::DestroyActors() {
 }
 
 void BaseGameMode::StartTurn() {
-
+    Player *player = GetCurrentPlayer();
+    if(player->input_target == nullptr) {
+        LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
+        EndTurn();
+        return;
+    }
 }
 
 void BaseGameMode::EndTurn() {
@@ -109,4 +132,8 @@ void BaseGameMode::EndTurn() {
     if(++current_player_ >= players_.size()) {
         current_player_ = 0;
     }
+}
+
+Player* BaseGameMode::GetCurrentPlayer() {
+    return &players_[current_player_];
 }

@@ -17,15 +17,15 @@
 
 #include <PL/platform_graphics_camera.h>
 
-#include "../engine.h"
-#include "../input.h"
-
-#include "../script/script.h"
-
+#include "engine.h"
+#include "input.h"
 #include "client.h"
 #include "audio.h"
-#include "display.h"
 #include "frontend.h"
+
+#include "script/script.h"
+
+#include "graphics/display.h"
 
 /************************************************************/
 

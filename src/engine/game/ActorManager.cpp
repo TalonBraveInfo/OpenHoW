@@ -16,51 +16,53 @@
  */
 
 #include "../engine.h"
-#include "../client/frontend.h"
+#include "../frontend.h"
+
 #include "ActorManager.h"
 #include "Actor.h"
 
 /************************************************************/
 
 std::vector<Actor*> ActorManager::actors_;
-
 std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
-Actor *ActorManager::SpawnActor(const std::string &name) {
+Actor* ActorManager::SpawnActor(const std::string& name) {
     auto i = actor_classes_.find(name);
     if(i == actor_classes_.end()) {
         LogWarn("Attempted to spawn an invalid actor of class \"%s\", ignoring!\n", name.c_str());
         return nullptr;
     }
 
-    actors_.push_back(i->second());
-    Actor *actor = i->second();
-    actor->class_name = name;
+    // name passed into actor is lowercase for
+    // convenience sake (e.g. loading models)
+    std::string lcname = name;
+    std::transform(lcname.begin(), lcname.end(), lcname.begin(), [](unsigned char c){ return std::tolower(c); });
 
-    return i->second();
+    Actor* actor = i->second();
+    actors_.push_back(actor);
+    return actor;
 }
 
-void ActorManager::DestroyActor(Actor *actor) {
+void ActorManager::DestroyActor(Actor* actor) {
     u_assert(actor != nullptr, "attempted to delete a null actor!\n");
     actors_.erase(std::remove(actors_.begin(), actors_.end(), actor), actors_.end());
-
     delete actor;
 }
 
 void ActorManager::TickActors() {
-    for(auto const &actor: actors_) {
+    for(auto const& actor: actors_) {
         actor->Tick();
     }
 }
 
 void ActorManager::DrawActors() {
-    if(FE_GetState() == FE_MODE_LOADING) {
+    if(FrontEnd_GetState() == FE_MODE_LOADING) {
         return;
     }
 
-    for(auto const &actor: actors_) {
-        if(!actor->IsVisible()) {
+    for(auto const& actor: actors_) {
+        if(cv_graphics_cull->b_value && !actor->IsVisible()) {
             continue;
         }
 
@@ -83,4 +85,9 @@ ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string &
 
 ActorManager::ActorClassRegistration::~ActorClassRegistration() {
     ActorManager::actor_classes_.erase(name_);
+}
+
+// Temporary interface, since graphics sub-system is written in C :^)
+extern "C" void DrawActors(void) {
+    ActorManager::GetInstance()->DrawActors();
 }

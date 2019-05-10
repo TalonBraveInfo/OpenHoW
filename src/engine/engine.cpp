@@ -22,16 +22,17 @@
 #include "mad.h"
 #include "model.h"
 #include "ModSupport.h"
+#include "client.h"
+#include "config.h"
+#include "input.h"
+#include "frontend.h"
+#include "audio.h"
+
+#include "game/BaseGameMode.h"
 
 #include "script/script.h"
 
-#include "client/client.h"
-#include "config.h"
-#include "client/display.h"
-#include "input.h"
-#include "client/frontend.h"
-#include "client/audio.h"
-#include "game/BaseGameMode.h"
+#include "graphics/display.h"
 
 EngineState g_state;
 
@@ -125,8 +126,9 @@ bool Engine_IsRunning(void) {
 
         Client_Simulate();
 
-        if(g_state.mode != nullptr) {
-            g_state.mode->Tick();
+        BaseGameMode* mode = GetGameMode();
+        if(mode != nullptr) {
+            mode->Tick();
         }
 
         AudioManager::GetInstance()->Tick();

@@ -21,10 +21,10 @@
 #include "engine.h"
 #include "imgui_layer.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
-
-#include "client/display.h"
 #include "MapManager.h"
-#include "client/audio.h"
+#include "audio.h"
+
+#include "graphics/display.h"
 
 static PLCamera *imgui_camera = nullptr;
 

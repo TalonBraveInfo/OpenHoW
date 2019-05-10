@@ -15,4 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* todo, code handling demo capture goes here */
+#pragma once
+
+#include "Actor.h"
+#include "ModelActor.h"
+
+class StaticModelActor : public ModelActor {
+public:
+    StaticModelActor();
+    ~StaticModelActor();
+
+protected:
+private:
+};

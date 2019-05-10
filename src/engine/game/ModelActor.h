@@ -17,15 +17,19 @@
 
 #pragma once
 
-#include "TempGame.h"
-#include "BaseGameMode.h"
 #include "Actor.h"
 
-struct Player {
-    std::string     name;
-    Actor*          input_target{nullptr};
-    unsigned int    input_slot{0};
-};
+class ModelActor : public Actor {
+public:
+    ModelActor();
+    ~ModelActor() override;
 
-bool SetGameMode(const std::string &mode);
-BaseGameMode* GetGameMode();
+    void Draw() override;
+
+    virtual void SetModel(const std::string &path);
+
+protected:
+    PLModel* model_{nullptr};
+
+private:
+};

@@ -22,15 +22,13 @@
 #include "Map.h"
 #include "model.h"
 #include "ModSupport.h"
-
+#include "frontend.h"
 #include "script/script.h"
-
-#include "client/frontend.h"
-#include "client/display.h"
-
 #include "game/ActorManager.h"
 #include "script/ScriptConfig.h"
 #include "MapManager.h"
+
+#include "graphics/display.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -463,5 +461,7 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
-    // TODO
+    for(auto chunk : chunks_) {
+        plDrawModel(chunk.model);
+    }
 }
