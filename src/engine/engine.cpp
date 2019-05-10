@@ -161,3 +161,25 @@ void Engine_Shutdown(void) {
 
     Config_Save(Config_GetUserConfigPath());
 }
+
+#include "game/ActorManager.h"
+
+// Temporary interface, since graphics sub-system is written in C :^)
+extern "C" void DrawActors(void) {
+    ActorManager::GetInstance()->DrawActors();
+}
+
+// Temporary interface, since graphics sub-system is written in C :^)
+extern "C" void DrawMap(void) {
+    BaseGameMode* mode = GetGameMode();
+    if(mode == nullptr) {
+        return;
+    }
+
+    Map* map = mode->GetCurrentMap();
+    if(map == nullptr) {
+        return;
+    }
+
+    map->Draw();
+}

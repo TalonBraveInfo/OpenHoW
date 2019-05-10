@@ -86,8 +86,3 @@ ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string &
 ActorManager::ActorClassRegistration::~ActorClassRegistration() {
     ActorManager::actor_classes_.erase(name_);
 }
-
-// Temporary interface, since graphics sub-system is written in C :^)
-extern "C" void DrawActors(void) {
-    ActorManager::GetInstance()->DrawActors();
-}

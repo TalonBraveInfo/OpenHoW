@@ -723,11 +723,12 @@ void Display_SetupDraw(double delta) {
     plSetupCamera(g_state.camera);
 }
 
-void DrawActors(void); /* declared in ActorManager.cpp */
+void DrawActors(void); /* declared in engine.cpp */
+void DrawMap(void); /* declared in engine.cpp */
 void Display_DrawScene(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
 
-    //DrawMap();
+    DrawMap();
     DrawActors();
     DrawParticles(cur_delta);
 
