@@ -17,8 +17,22 @@
 
 #pragma once
 
+enum {
+    SHADER_DEFAULT,     /* unlit */
+    SHADER_GOURAUD_LIT, /* lit */
+    SHADER_ALPHA_TEST,  /* */
+    SHADER_WATER,       /* */
+    SHADER_VIDEO,       /* */
+    SHADER_DEBUG_TEST,
+
+    MAX_SHADERS
+};
+
 PL_EXTERN_C
 
-void RegisterPackageLoaders(void);
+extern PLShaderProgram *programs[MAX_SHADERS];
+
+void Shaders_Initialize(void);
+void Shaders_Shutdown(void);
 
 PL_EXTERN_C_END

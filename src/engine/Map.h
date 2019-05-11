@@ -103,9 +103,9 @@ struct MapTile {
 };
 
 struct MapChunk {
-    MapTile tiles[16];
-    PLVector3 offset{0, 0, 0};
-    PLModel* model;
+    MapTile     tiles[16];
+    PLVector3   offset{0, 0, 0};
+    PLModel     *model{nullptr};
 };
 
 struct MapManifest;
@@ -117,7 +117,6 @@ public:
     explicit Map(const std::string &name);
     ~Map();
 
-    void Reset();
     void Draw();
 
     float GetMaxHeight() { return max_height_; }
@@ -132,6 +131,8 @@ public:
     float GetHeight(const PLVector2 &pos);
 
     const PLTexture *GetOverviewTexture() { return overview_; }
+
+    const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
 
 protected:
 private:

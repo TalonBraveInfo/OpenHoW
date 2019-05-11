@@ -37,21 +37,10 @@ file(
 
         script/duktape-2.2.0/*.c
         script/duktape-2.2.0/*.h
-        script/*.cpp
-        script/*.c
-        script/*.h
 
-        game/*.cpp game/*.c game/*.h
-
-        server/*.cpp
-        server/*.c
-        server/*.h
-
-        client/*.cpp
-        client/*.c
-        client/*.h
-
-        include/pork/*.h
+        graphics/*.*
+        script/*.*
+        game/*.*
 
         ################## ImGui
 

@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "AnimatedModelActor.h"
 
-PL_EXTERN_C
+AnimatedModelActor::AnimatedModelActor() {
 
-void RegisterPackageLoaders(void);
+}
 
-PL_EXTERN_C_END
+AnimatedModelActor::~AnimatedModelActor() {
+
+}

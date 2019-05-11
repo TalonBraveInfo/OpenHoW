@@ -17,8 +17,15 @@
 
 #pragma once
 
-PL_EXTERN_C
+#include "TempGame.h"
+#include "BaseGameMode.h"
+#include "Actor.h"
 
-void RegisterPackageLoaders(void);
+struct Player {
+    std::string     name;
+    Actor*          input_target{nullptr};
+    unsigned int    input_slot{0};
+};
 
-PL_EXTERN_C_END
+bool SetGameMode(const std::string &mode);
+BaseGameMode* GetGameMode();

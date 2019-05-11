@@ -17,10 +17,6 @@
 
 #pragma once
 
-#include "../util.h"
-#include "../game.h"
-#include "../player.h"
-
 enum ActorFlag {
     /* ...original... */
     ACTOR_FLAG_PLAYABLE = 1,
@@ -48,79 +44,43 @@ enum ActorEvent {
     /* ...any new types below... */
 };
 
-#ifdef __cplusplus
-
 class Actor {
 public:
     Actor();
-    Actor(PLVector3 position);
     virtual ~Actor();
 
-    virtual void Simulate() {}
-    virtual void Draw() {}
+    virtual void Tick() {}  // simulation tick, called per-frame
+    virtual void Draw() {}  // draw tick, called per-frame
 
-    virtual bool Possess(Player *player);
-    virtual bool Depossess(Player *player);
+    //virtual bool Possess(Player* player);
+    //virtual bool Depossess(Player* player);
 
     virtual bool IsVisible() { return is_visible_; }
 
     virtual PLVector3 GetPosition() { return position_; }
     virtual void SetPosition(PLVector3 position) { position_ = position; }
 
-    Actor *parent_{nullptr};
-    Actor *child_{nullptr};
+    virtual PLVector3 GetAngles() { return angles_; }
+    virtual void SetAngles(PLVector3 angles) { angles_ = angles; }
 
-private:
+    virtual void HandleInput();   // handle any player input, if applicable
 
-    uint16_t flags_{0};
-
+protected:
     bool is_visible_{false};
 
-    PLVector3 position_{0, 0, 0};
-    PLVector3 angles_{0, 0, 0};
+    PLVector3 position_{0, 0, 0};           // x, y, z
+    PLVector3 fallback_position_{0, 0, 0};
+    PLVector3 angles_{0, 0, 0};             // p, y, r
     PLVector3 bounds_{0, 0, 0};
 
-    Player *controller_{nullptr};
+private:
+    uint16_t flags_{0};
+
+    uint16_t    team_{0};
+    int16_t     health_{0};
+
+    Actor* parent_{nullptr};
+    Actor* child_{nullptr};
 
     /* todo: collision sys */
 };
-
-class ActorManager {
-protected:
-    typedef Actor *(*actor_ctor_func)();
-    static std::map<std::string, actor_ctor_func> actor_classes_;
-
-public:
-    static ActorManager *GetInstance() {
-        static ActorManager *instance = nullptr;
-        if(instance == nullptr) {
-            instance = new ActorManager();
-        }
-        return instance;
-    }
-
-    Actor *SpawnActor(const std::string &name);
-    void DestroyActor(Actor *actor);
-
-    void SimulateActors();
-    void DrawActors();
-    void ClearActors();
-
-    class ActorClassRegistration {
-    public:
-        const std::string name_;
-
-        ActorClassRegistration(const std::string &name, actor_ctor_func ctor_func);
-        ~ActorClassRegistration();
-    };
-
-private:
-
-    static std::vector<Actor*> actors_;
-};
-
-#define register_actor(NAME, CLASS) \
-    static Actor * CLASS ## _make() { return new CLASS (); } \
-    static ActorManager::ActorClassRegistration _reg_actor_name((NAME), CLASS ## _make) __attribute__ ((init_priority(2000)))
-
-#endif

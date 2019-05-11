@@ -21,10 +21,10 @@
 #include "engine.h"
 #include "imgui_layer.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
-
-#include "client/display.h"
 #include "MapManager.h"
-#include "client/audio.h"
+#include "audio.h"
+
+#include "graphics/display.h"
 
 static PLCamera *imgui_camera = nullptr;
 
@@ -65,7 +65,6 @@ void ImGuiImpl_Draw(void) {
 static bool show_quit               = false;
 static bool show_file               = false;
 static bool show_new_game           = false;
-static bool show_about              = false;
 static bool show_console            = false;
 static bool show_settings           = false;
 
@@ -281,6 +280,8 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
 /************************************************************/
 
 #include "TextureViewer.h"
+#include "game/TempGame.h"
+#include "game/Game.h"
 
 /************************************************************/
 /* Settings */
@@ -364,8 +365,6 @@ void UI_DisplaySettings() {
 /************************************************************/
 /* New Game */
 
-static GameModeSetup mode;
-
 void UI_DisplayNewGame() {
     if(!show_new_game) {
         return;
@@ -385,6 +384,7 @@ void UI_DisplayNewGame() {
     ImGui::ListBoxFooter();
 #endif
 
+#if 0 // todo
     ImGui::SliderInt("Number of Players", reinterpret_cast<int *>(&mode.num_players), 1, 4);
 
     const char *teams[MAX_TEAMS]={
@@ -408,12 +408,19 @@ void UI_DisplayNewGame() {
         mode.force_start = true;
         mode.num_players = 1;
         snprintf(mode.map, sizeof(mode.map) - 1, "camp");
-        Game_StartNewGame(&mode);
+        Game_SetMode(&mode);
     }
     ImGui::SameLine();
     if(ImGui::Button("Cancel")) {
         show_new_game = false;
     }
+#else
+
+    if(ImGui::Button("Start Game!")) {
+
+    }
+
+#endif
 
     ImGui::End();
 }
@@ -617,11 +624,10 @@ private:
 };
 
 void UI_DisplayDebugMenu(void) {
+    static bool show_about = false;
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
-                memset(&mode, 0, sizeof(GameModeSetup));
-                mode.num_players = 1;
                 show_new_game = true;
             }
             if(ImGui::MenuItem("Load Game...")) {}

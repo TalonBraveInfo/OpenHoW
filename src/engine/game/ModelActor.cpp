@@ -15,10 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "../model.h"
 
-PL_EXTERN_C
+#include "ModelActor.h"
 
-void RegisterPackageLoaders(void);
+ModelActor::ModelActor() : Actor() {}
+ModelActor::~ModelActor() {
+    plDestroyModel(model_);
+}
 
-PL_EXTERN_C_END
+void ModelActor::Draw() {
+    if(model_ != nullptr) {
+        model_->model_matrix = plTranslateMatrix(position_);
+        plDrawModel(model_);
+    }
+
+    Actor::Draw();
+}
+
+void ModelActor::SetModel(const std::string &path) {
+    model_ = Model_LoadFile(std::string("/chars" + path).c_str(), false);
+}

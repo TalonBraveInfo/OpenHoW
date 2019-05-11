@@ -37,6 +37,8 @@ extern PLConsoleVariable *cv_display_fullscreen;
 extern PLConsoleVariable *cv_display_use_window_aspect;
 extern PLConsoleVariable *cv_display_ui_scale;
 
+extern PLConsoleVariable *cv_graphics_cull;
+
 extern PLConsoleVariable *cv_audio_volume;
 extern PLConsoleVariable *cv_audio_volume_sfx;
 extern PLConsoleVariable *cv_audio_voices;

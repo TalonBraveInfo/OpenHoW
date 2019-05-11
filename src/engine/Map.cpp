@@ -21,16 +21,14 @@
 #include "engine.h"
 #include "Map.h"
 #include "model.h"
-#include "game.h"
-
+#include "ModSupport.h"
+#include "frontend.h"
 #include "script/script.h"
-
-#include "client/frontend.h"
-#include "client/display.h"
-
-#include "server/actor.h"
+#include "game/ActorManager.h"
 #include "script/ScriptConfig.h"
 #include "MapManager.h"
+
+#include "graphics/display.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -177,42 +175,30 @@ Map::Map(const std::string &name) {
     LoadSpawns(p);
     LoadTextures(p);
 
-    sky_model_ = LoadModel("skys/skydome", true);
+    sky_model_ = Model_LoadFile("skys/skydome", true);
 
     GenerateOverview();
-
-    Reset();
 }
 
 Map::~Map() {
     if(!tile_textures_.empty()) {
         LogDebug("Freeing %u textures...\n", tile_textures_.size());
         for(auto texture : tile_textures_) {
-            plDeleteTexture(texture, true);
+            plDestroyTexture(texture, true);
         }
     }
 
-    if(overview_ != nullptr) {
-        plDeleteTexture(overview_, true);
-    }
+    plDestroyTexture(overview_, true);
 
     for (auto &sky_texture : sky_textures_) {
-        if(sky_texture == nullptr) {
-            break;
-        }
-
-        plDeleteTexture(sky_texture, true);
+        plDestroyTexture(sky_texture, true);
     }
 
     for(auto & chunk : chunks_) {
-        if(chunk.model != nullptr) {
-            plDeleteModel(chunk.model);
-        }
+        plDestroyModel(chunk.model);
     }
 
-    if(sky_model_ != nullptr) {
-        plDeleteModel(sky_model_);
-    }
+    plDestroyModel(sky_model_);
 }
 
 MapChunk *Map::GetChunk(const PLVector2 &pos) {
@@ -261,42 +247,6 @@ float Map::GetHeight(const PLVector2 &pos) {
     float z = x + ((y - x) * tile_y);
 
     return z;
-}
-
-void Map::Reset() {
-#if 0 /* todo: redo */
-    SVClearActors();
-
-    for(unsigned int i = 0; i < map_state.num_spawns; ++i) {
-        Actor *actor = Actor_Spawn();
-        if(actor == NULL) {
-            /* warn, and try to keep going for as long as we can :( */
-            LogWarn("failed to spawn actor, probably a memory issue? aborting\n");
-            break;
-        }
-
-        actor->position.x = map_state.spawns[i].position[0];
-        actor->position.y = map_state.spawns[i].position[1];
-        actor->position.z = map_state.spawns[i].position[2];
-
-        actor->angles.x   = map_state.spawns[i].angles[0];
-        actor->angles.y   = map_state.spawns[i].angles[1];
-        actor->angles.z   = map_state.spawns[i].angles[2];
-
-        //actor->bounds   = map_state.spawns[i].bounds;
-        //actor->bounds   = map_state.spawns[i].bounds;
-        //actor->bounds   = map_state.spawns[i].bounds;
-
-        actor->team = map_state.spawns[i].team;
-
-        strncpy(actor->name, map_state.spawns[i].name, sizeof(actor->name));
-        /* todo, setup the actor here - name represents class - this will then
-         * set the model and other parms here
-         */
-
-        //actor->logic.spawn_delay = map_state.spawns[i].spawn_delay;
-    }
-#endif
 }
 
 void Map::LoadSpawns(const std::string &path) {
@@ -414,35 +364,29 @@ void Map::LoadTiles(const std::string &path) {
                 }
             }
 
-            {
-                //Generate model for this chunk
-                current_chunk.model = (PLModel*)pl_malloc(sizeof(PLModel));
-                if(current_chunk.model == nullptr) {
-                    Error("Unable to create map chunk mesh, aborting!\n");
-                }
+            PLMesh *chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
+            if(chunk_mesh == nullptr) {
+                Error("Unable to create map chunk mesh (%s), aborting!\n", plGetError());
+            }
 
-                current_chunk.model->meshes = (PLModelMesh*)pl_malloc(sizeof(PLModelMesh));
-                if(current_chunk.model->meshes == nullptr) {
-                    Error("Unable to create map chunk mesh, aborting!\n");
-                }
-
-                current_chunk.model->meshes[0].mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
-                if(current_chunk.model->meshes[0].mesh == nullptr) {
-                    Error("Unable to create map chunk mesh, aborting!\n");
-                }
-
-                snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
-                current_chunk.model->num_meshes = 1;
-                current_chunk.model->model_matrix = plTranslateMatrix( PLVector3((float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH), 0.0f, (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)) );
-
-                for(unsigned int vz = 0; vz < 5; ++vz) {
-                    for(unsigned int vx = 0; vx < 5; ++vx) {
-                        unsigned int idx = (vz*5)+vx;
-                        plSetMeshVertexPosition(current_chunk.model->meshes[0].mesh, idx, PLVector3(vx * MAP_TILE_PIXEL_WIDTH, vertices[idx].height, vz * MAP_TILE_PIXEL_WIDTH ) );
-                    }
+            for(unsigned int vz = 0; vz < 5; ++vz) {
+                for(unsigned int vx = 0; vx < 5; ++vx) {
+                    unsigned int idx = (vz*5)+vx;
+                    plSetMeshVertexPosition(chunk_mesh, idx, PLVector3(vx * MAP_TILE_PIXEL_WIDTH, vertices[idx].height, vz * MAP_TILE_PIXEL_WIDTH ) );
                 }
             }
 
+            // attach the mesh to our model
+            current_chunk.model = plNewBasicStaticModel(chunk_mesh);
+            if(current_chunk.model == nullptr) {
+                Error("Failed to create map model (%s), aborting!\n", plGetError());
+            }
+
+            snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
+            current_chunk.model->model_matrix = plTranslateMatrix(
+                    PLVector3((float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH),
+                    0.0f,
+                    (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)) );
         }
     }
 
@@ -517,5 +461,7 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
-    // TODO
+    for(auto chunk : chunks_) {
+        plDrawModel(chunk.model);
+    }
 }

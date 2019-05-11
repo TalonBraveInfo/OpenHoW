@@ -17,15 +17,15 @@
 
 #include <PL/platform_graphics_camera.h>
 
-#include "../engine.h"
-#include "../input.h"
-
-#include "../script/script.h"
-
+#include "engine.h"
+#include "input.h"
 #include "client.h"
 #include "audio.h"
-#include "display.h"
 #include "frontend.h"
+
+#include "script/script.h"
+
+#include "graphics/display.h"
 
 /************************************************************/
 
@@ -36,7 +36,7 @@ enum {
     MAX_CAMERA_MODES
 };
 
-void Client_ProcessInput(void) {
+void Client_ProcessInput() {
     static double input_delay = 0;
     if(input_delay < g_state.sim_ticks) {
         input_delay = g_state.sim_ticks + 50;
@@ -49,7 +49,6 @@ void Client_ProcessInput(void) {
 
     FE_ProcessInput();
 
-    /* todo: move this server-side or make safe... somehow :( */
     switch(cv_camera_mode->i_value) {
         default:break;
 

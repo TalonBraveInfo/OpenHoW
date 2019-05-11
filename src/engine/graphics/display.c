@@ -20,13 +20,12 @@
 
 #include "../engine.h"
 #include "../input.h"
-//#include "../Map.h"
 #include "../mad.h"
 #include "../imgui_layer.h"
+#include "../frontend.h"
+#include "../particle.h"
 
-#include "particle.h"
 #include "font.h"
-#include "frontend.h"
 #include "shader.h"
 #include "display.h"
 
@@ -141,7 +140,7 @@ void DrawTextureCache(unsigned int id) {
 void Display_ClearTextureIndex(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
     TextureIndex *index = &texture_cache[id];
-    plDeleteTexture(index->texture, true);
+    plDestroyTexture(index->texture, true);
     memset(index, 0, sizeof(TextureIndex));
 }
 
@@ -259,8 +258,8 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
     cache.levels          = 1;
     cache.size            = plGetImageSize(cache.format, cache.width, cache.height);
 
-    cache.data = u_alloc(cache.levels, sizeof(uint8_t *), true);
-    cache.data[0] = u_alloc(cache.size, sizeof(uint8_t), true);
+    cache.data = (uint8_t**)u_alloc(cache.levels, sizeof(uint8_t *), true);
+    cache.data[0] = (uint8_t*)u_alloc(cache.size, sizeof(uint8_t), true);
     for(unsigned int i = 0; i < index->num_textures; ++i) {
         uint8_t *pos = cache.data[0] + ((index->offsets[i].y * cache.width) + index->offsets[i].x) * 4;
         uint8_t *src = images[i].data[0];
@@ -520,7 +519,6 @@ void Display_Initialize(void) {
         Error("failed to create camera, aborting!\n%s\n", plGetError());
     }
     g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.camera->bounds      = (PLAABB){{-20, -20},{20, 20}}; // applying so we can handle clipping later
     g_state.camera->fov         = 90;
     g_state.camera->viewport.w  = cv_display_width->i_value;
     g_state.camera->viewport.h  = cv_display_height->i_value;
@@ -564,6 +562,7 @@ void Display_Shutdown(void) {
 /************************************************************/
 
 void DEBUGDrawSkeleton();
+void DEBUGDrawModel();
 
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     static unsigned int fps_ = 0;
@@ -580,13 +579,13 @@ void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
 }
 
 static void DrawDebugOverlay(void) {
-    if(FE_GetState() == FE_MODE_EDITOR) {
+    if(FrontEnd_GetState() == FE_MODE_EDITOR) {
         return;
     }
 
     UI_DisplayDebugMenu();
 
-    if(FE_GetState() == FE_MODE_INIT || FE_GetState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
+    if(FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
         return;
     }
 
@@ -715,20 +714,25 @@ void Display_SetupDraw(double delta) {
     g_state.draw_ticks = System_GetTicks();
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
-    if(FE_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
+    if(FrontEnd_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
 
-    plBindFrameBuffer(0, PL_FRAMEBUFFER_DRAW);
+    plBindFrameBuffer(NULL, PL_FRAMEBUFFER_DRAW);
     plSetupCamera(g_state.camera);
 }
 
+void DrawActors(void); /* declared in engine.cpp */
+void DrawMap(void); /* declared in engine.cpp */
 void Display_DrawScene(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
-    //Map_Draw();
-    //DrawActors(cur_delta);
+
+    DrawMap();
+    DrawActors();
     DrawParticles(cur_delta);
+
+    DEBUGDrawModel();
 }
 
 void Display_DrawInterface(void) {

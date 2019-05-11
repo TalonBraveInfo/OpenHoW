@@ -15,10 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "../model.h"
 
-PL_EXTERN_C
+#include "StaticModelActor.h"
 
-void RegisterPackageLoaders(void);
+StaticModelActor::StaticModelActor() = default;
+StaticModelActor::~StaticModelActor() = default;
 
-PL_EXTERN_C_END
+#if 0
+register_actor(DUMMY, StaticModelActor); // todo: needs special logic
+
+// Barbed Wire
+register_actor(BARBWIRE, StaticModelActor);
+register_actor(BARBWIR2, StaticModelActor);
+
+// Trees
+register_actor(TREEP, StaticModelActor);
+register_actor(TREEPH1, StaticModelActor);
+register_actor(TREEPH2, StaticModelActor);
+
+// Bridges
+register_actor(BRIDGE_C, StaticModelActor);
+register_actor(BRIDGE_S, StaticModelActor);
+
+// Building Components
+register_actor(IRONGATE, StaticModelActor);
+#endif

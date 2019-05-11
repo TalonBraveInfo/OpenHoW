@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <PL/platform_filesystem.h>
 
 #include "../input.h"
-#include "../game.h"
 #include "../engine.h"
+#include "../game/TempGame.h"
 
-#include "../client/video.h"
+#include "../graphics/video.h"
 
 #include "script.h"
 
@@ -38,13 +39,15 @@ static duk_ret_t SC_LoadScript(duk_context *context) {
 }
 
 static duk_ret_t SC_GetCampaignName(duk_context *context) {
-    CampaignManifest *cur = GetCurrentCampaign();
+#if 0
+    ModManifest *cur = Mod_GetCurrentCampaign();
     if(cur == NULL) {
         duk_push_string(context, "null");
         return 0;
     }
 
     duk_push_string(context, cur->name);
+#endif
     return 0;
 }
 

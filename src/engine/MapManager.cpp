@@ -22,6 +22,9 @@
 #include "Map.h"
 #include "script/ScriptConfig.h"
 
+#include "game/Game.h"
+#include "game/BaseGameMode.h"
+
 MapManager *MapManager::instance_ = nullptr;
 
 MapManager::MapManager() {
@@ -91,16 +94,24 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         return;
     }
 
-    GameModeSetup mode;
-    memset(&mode, 0, sizeof(GameModeSetup));
+    const MapManifest *desc = GetInstance()->GetManifest(argv[1]);
+    if(desc == nullptr) {
+        LogWarn("Failed to find manifest for \"%s\"!\n", argv[1]);
+        return;
+    }
 
-    mode.num_players = 2;
-    mode.teams[0] = TEAM_BRITISH;
-    mode.teams[1] = TEAM_AMERICAN;
+    if(desc->modes.empty()) {
+        LogWarn("No modes specified for \"%s\"!\n", argv[1]);
+        return;
+    }
 
-    snprintf(mode.map, sizeof(mode.map), "%s", argv[1]);
+    // set it to the first mode in the list for now
+    if(!SetGameMode(desc->modes[0])) {
+        return;
+    }
 
-    Game_StartNewGame(&mode);
+    // now start it up!
+    GetGameMode()->StartMode(argv[1]);
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {

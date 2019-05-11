@@ -17,8 +17,15 @@
 
 #pragma once
 
-PL_EXTERN_C
+#include "BaseGameMode.h"
 
-void RegisterPackageLoaders(void);
+class TrainingGameMode : public BaseGameMode {
+public:
+    TrainingGameMode();
+    ~TrainingGameMode() override;
 
-PL_EXTERN_C_END
+    std::string GetDescription() override { return "training"; }
+
+protected:
+private:
+};

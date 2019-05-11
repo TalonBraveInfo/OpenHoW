@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "TrainingGameMode.h"
+#include "../Map.h"
 
-PL_EXTERN_C
-
-void RegisterPackageLoaders(void);
-
-PL_EXTERN_C_END
+TrainingGameMode::TrainingGameMode() = default;
+TrainingGameMode::~TrainingGameMode() = default;

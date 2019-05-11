@@ -21,16 +21,18 @@
 #include "language.h"
 #include "mad.h"
 #include "model.h"
-#include "game.h"
+#include "ModSupport.h"
+#include "client.h"
+#include "config.h"
+#include "input.h"
+#include "frontend.h"
+#include "audio.h"
+
+#include "game/BaseGameMode.h"
 
 #include "script/script.h"
 
-#include "client/client.h"
-#include "config.h"
-#include "client/display.h"
-#include "input.h"
-#include "client/frontend.h"
-#include "client/audio.h"
+#include "graphics/display.h"
 
 EngineState g_state;
 
@@ -78,13 +80,13 @@ void Engine_Initialize(void) {
      * vars will not be loaded/saved! */
     Config_Load(Config_GetUserConfigPath());
 
-    RegisterPackageInterfaces();
-    RegisterModelInterfaces();
+    RegisterPackageLoaders();
+    RegisterModelLoaders();
 
     /* load in the manifests */
 
     Languages_Initialize();
-    RegisterCampaigns();
+    Mod_RegisterCampaigns();
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
@@ -92,7 +94,7 @@ void Engine_Initialize(void) {
         var = "how";
     }
 
-    SetCampaign(var);
+    Mod_SetCampaign(var);
 
     /* now initialize all other sub-systems */
 
@@ -123,7 +125,13 @@ bool Engine_IsRunning(void) {
         g_state.sim_ticks = System_GetTicks();
 
         Client_Simulate();
-        AudioManager::GetInstance()->Simulate();
+
+        BaseGameMode* mode = GetGameMode();
+        if(mode != nullptr) {
+            mode->Tick();
+        }
+
+        AudioManager::GetInstance()->Tick();
 
         g_state.last_sim_tick = System_GetTicks();
         next_tick += SKIP_TICKS;
@@ -152,4 +160,26 @@ void Engine_Shutdown(void) {
     Script_Shutdown();
 
     Config_Save(Config_GetUserConfigPath());
+}
+
+#include "game/ActorManager.h"
+
+// Temporary interface, since graphics sub-system is written in C :^)
+extern "C" void DrawActors(void) {
+    ActorManager::GetInstance()->DrawActors();
+}
+
+// Temporary interface, since graphics sub-system is written in C :^)
+extern "C" void DrawMap(void) {
+    BaseGameMode* mode = GetGameMode();
+    if(mode == nullptr) {
+        return;
+    }
+
+    Map* map = mode->GetCurrentMap();
+    if(map == nullptr) {
+        return;
+    }
+
+    map->Draw();
 }

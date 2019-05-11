@@ -19,14 +19,14 @@
 #include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
 
-#include "../engine.h"
-#include "../input.h"
-#include "../game.h"
-
+#include "engine.h"
+#include "input.h"
+#include "game/TempGame.h"
 #include "frontend.h"
-#include "font.h"
-#include "display.h"
-#include "video.h"
+
+#include "graphics/font.h"
+#include "graphics/display.h"
+#include "graphics/video.h"
 
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = (unsigned int) -1;
@@ -47,12 +47,12 @@ static const char *papers_teams_paths[MAX_TEAMS]={
 };
 
 /* texture assets, these are loaded and free'd at runtime */
-static PLTexture *fe_background    = NULL;
-static PLTexture *fe_press         = NULL;
-static PLTexture *fe_any           = NULL;
-static PLTexture *fe_key           = NULL;
+static PLTexture *fe_background    = nullptr;
+static PLTexture *fe_press         = nullptr;
+static PLTexture *fe_any           = nullptr;
+static PLTexture *fe_key           = nullptr;
 static PLTexture *fe_papers_teams[MAX_TEAMS] = {
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
 enum {
@@ -77,55 +77,15 @@ static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that w
 //static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
 /************************************************************/
-/* FE Object Implementation
- *  Individual frontend objects that can manipulated
- *  on the fly at runtime - specifically created for
- *  implementing Hogs of War's really awesome animated
- *  menu! */
 
-#define MAX_FE_OBJECTS  1024
-
-typedef struct FEObject {
-    int x, y;
-    unsigned int w, h;
-
-    PLTexture **frames;
-    unsigned int num_frames;
-    unsigned int cur_frame;
-
-    bool is_reserved;
-} FEObject;
-static FEObject fe_objects[MAX_FE_OBJECTS];
-
-void SimulateFEObjects(void) {
-    for(unsigned int i = 0; i < MAX_FE_OBJECTS; ++i) {
-        if(!fe_objects[i].is_reserved) {
-            continue;
-        }
-    }
-}
-
-void SetFEObjectCommand(unsigned int argc, char *argv[]) {
-    if(argc < 2) {
-        LogWarn("invalid number of arguments, ignoring!\n");
-        return;
-    }
-
-    for(unsigned int i = 2; i < argc; ++i) {
-
-    }
-}
-
-/************************************************************/
-
-void FrontendInputCallback(int key, bool is_pressed) {
+static void FrontendInputCallback(int key, bool is_pressed) {
     if(frontend_state == FE_MODE_START && is_pressed) {
         /* todo, play 'ting' sound! */
 
         /* we've hit our key, we can take away this
          * callback now and carry on to whatever */
-        Input_SetKeyboardFocusCallback(NULL);
-        FE_SetState(FE_MODE_MAIN_MENU);
+        Input_SetKeyboardFocusCallback(nullptr);
+        FrontEnd_SetState(FE_MODE_MAIN_MENU);
         return;
     }
 }
@@ -149,26 +109,24 @@ static void CacheFEMenuData(void) {
 }
 
 static void ClearFEGameData(void) {
-    for(unsigned int i = 0; i < MAX_FE_GAME_TEXTURES; ++i) {
-        if(fe_tx_game_textures[i] == NULL) {
+    for(auto & fe_tx_game_texture : fe_tx_game_textures) {
+        if(fe_tx_game_texture == nullptr) {
             continue;
         }
-        plDeleteTexture(fe_tx_game_textures[i], true);
+        plDestroyTexture(fe_tx_game_texture, true);
     }
 }
 
 static void ClearFEMenuData(void) {
-    plDeleteTexture(fe_background, true);
-    for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
-        plDeleteTexture(fe_papers_teams[i], true);
+    plDestroyTexture(fe_background, true);
+    for(auto & fe_papers_team : fe_papers_teams) {
+        plDestroyTexture(fe_papers_team, true);
     }
 }
 
 /************************************************************/
 
 void FE_Initialize(void) {
-    memset(fe_objects, 0, sizeof(FEObject) * MAX_FE_OBJECTS);
-
     CacheFontData();
     CacheFEMenuData();
 }
@@ -197,8 +155,6 @@ void FE_ProcessInput(void) {
 }
 
 void FE_Simulate(void) {
-    SimulateFEObjects();
-
     switch(frontend_state) {
         default:break;
 
@@ -219,7 +175,7 @@ void FE_Simulate(void) {
                 break;
             }
 
-            FE_SetState(FE_MODE_START);
+            FrontEnd_SetState(FE_MODE_START);
         } break;
     }
 }
@@ -232,8 +188,8 @@ uint8_t loading_progress = 0;
 #define Redraw()   Display_DrawInterface();
 
 void FE_SetLoadingBackground(const char *name) {
-    if(fe_background != NULL) {
-        plDeleteTexture(fe_background, true);
+    if(fe_background != nullptr) {
+        plDestroyTexture(fe_background, true);
     }
 
     char screen_path[PL_SYSTEM_MAX_PATH];
@@ -318,7 +274,7 @@ void FE_Draw(void) {
                 static bool is_background_drawn = false;
                 if(!is_background_drawn) {
                     plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-                    plDeleteTexture(fe_background, true);
+                    plDestroyTexture(fe_background, true);
                     is_background_drawn = true;
                 }
 
@@ -384,14 +340,14 @@ void FE_Draw(void) {
 /* * * * * * * * * * * * * * * * * * * * * * */
 
 void FE_RestoreLastState(void) {
-    FE_SetState(old_frontend_state);
+    FrontEnd_SetState(old_frontend_state);
 }
 
-unsigned int FE_GetState(void) {
+unsigned int FrontEnd_GetState(void) {
     return frontend_state;
 }
 
-void FE_SetState(unsigned int state) {
+void FrontEnd_SetState(unsigned int state) {
     if(state == frontend_state) {
         LogDebug("attempted to set debug state to an already existing state!\n");
         return;
@@ -416,10 +372,10 @@ void FE_SetState(unsigned int state) {
             /* remove the textures we loaded in
              * for the start screen - we won't
              * be needing them again... */
-            plDeleteTexture(fe_press, true);
-            plDeleteTexture(fe_any, true);
-            plDeleteTexture(fe_key, true);
-            plDeleteTexture(fe_background, true);
+            plDestroyTexture(fe_press, true);
+            plDestroyTexture(fe_any, true);
+            plDestroyTexture(fe_key, true);
+            plDestroyTexture(fe_background, true);
 
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;

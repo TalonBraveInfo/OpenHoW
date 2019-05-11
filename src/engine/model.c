@@ -17,83 +17,230 @@
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_mesh.h>
+#include <PL/platform_model.h>
 
 #include "engine.h"
 #include "model.h"
-#include "game.h"
+#include "game/TempGame.h"
 
-#include "client/display.h"
+#include "graphics/display.h"
 
-struct {
-    PLBone bones[MAX_BONES];
-    unsigned int num_bones;
+/************************************************************/
+/* Hir Skeleton Format */
 
-    Animation animations[ANI_END];
-    unsigned int num_animations;
+typedef struct HirHandle {
+    PLModelBone*    bones;
+    unsigned int    num_bones;
+} HirHandle;
 
-    PLModel *pigs[MAX_CLASSES];
-    PLModel *hats[MAX_CLASSES];
+static HirHandle* Hir_LoadFile(const char* path) {
+    size_t hir_size = plGetFileSize(path);
+    if(hir_size == 0) {
+        LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
+        return NULL;
+    }
 
-    PLModel **decorations;
-    unsigned int num_decorations;
-    unsigned int max_decorations;
-} model_cache;
+    FILE *file = fopen(path, "rb");
+    if(file == NULL) {
+        LogWarn("Failed to load \"%s\", aborting!\n", path);
+        return NULL;
+    }
 
-//#define PIG_EYES_INDEX  118
-//#define PIG_GOBS_INDEX  119
+    typedef struct __attribute__((packed)) HirBone {
+        int32_t parent;
+        int16_t coords[3];
+        int8_t  unknown[10];
+    } HirBone;
 
-static PLModel *LoadVTXModel(const char *path) {
-    LogInfo("loading %s\n", path);
+    unsigned int num_bones = (unsigned int)(hir_size / sizeof(HirBone));
+    HirBone bones[num_bones];
+    unsigned int rnum_bones = fread(bones, sizeof(HirBone), num_bones, file);
+    fclose(file);
 
+    if(rnum_bones != num_bones) {
+        LogWarn("Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones);
+        return NULL;
+    }
+
+    /* for debugging */
+    static const char* bone_names[MAX_BONE_INDICES]={
+            "Pelvis",
+            "Spine",
+            "Head",
+            "UpperArm.L", "LowerArm.L", "Hand.L",
+            "UpperArm.R", "LowerArm.R", "Hand.R",
+            "UpperLeg.L", "LowerLeg.L", "Foot.L",
+            "UpperLeg.R", "LowerLeg.R", "Foot.R",
+    };
+
+    /* in the long term, we won't have this here, we'll probably extend the format
+     * to include the names of each bone (.skeleton format?) */
+    if(num_bones >= MAX_BONE_INDICES) {
+        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
+    }
+
+    HirHandle* handle = u_alloc(1, sizeof(HirHandle), true);
+    handle->bones = u_alloc(num_bones, sizeof(PLModelBone), true);
+    for(unsigned int i = 0; i < num_bones; ++i) {
+        handle->bones[i].position = PLVector3(bones[i].coords[0], bones[i].coords[1], bones[i].coords[2]);
+        handle->bones[i].parent = bones[i].parent;
+        strcpy(handle->bones[i].name, bone_names[i]);
+    }
+    return handle;
+}
+
+static void Hir_DestroyHandle(HirHandle* handle) {
+    if(handle == NULL) {
+        return;
+    }
+
+    free(handle->bones);
+    free(handle);
+}
+
+/************************************************************/
+/* Vtx Vertex Format */
+
+typedef struct VtxHandle {
+    PLVertex*       vertices;
+    unsigned int    num_vertices;
+} VtxHandle;
+
+static VtxHandle* Vtx_LoadFile(const char* path) {
     FILE *vtx_file = fopen(path, "rb");
     if(vtx_file == NULL) {
-        LogWarn("failed to load vtx \"%s\", aborting!\n", path);
+        LogWarn("Failed to load Vtx \"%s\", aborting!\n", path);
         return NULL;
     }
 
     /* load in the vertices */
 
-    typedef struct __attribute__((packed)) VTXCoord {
-        int16_t v[3];
-        uint16_t bone_index;
-    } VTXCoord;
-    unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VTXCoord));
-    VTXCoord vertices[num_vertices];
-    if(fread(vertices, sizeof(VTXCoord), num_vertices, vtx_file) != num_vertices) {
-        Error("failed to read in all vertices from \"%s\", aborting!\n", path);
-    }
+    typedef struct __attribute__((packed)) VtxCoord {
+        int16_t     v[3];
+        uint16_t    bone_index;
+    } VtxCoord;
+    unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VtxCoord));
+    VtxCoord vertices[num_vertices];
+    unsigned int rnum_vertices = fread(vertices, sizeof(VtxCoord), num_vertices, vtx_file);
     fclose(vtx_file);
 
-    /* now we load in all the faces */
+    if(num_vertices == 0) {
+        LogWarn("No vertices found in Vtx \"%s\"!\n", path);
+        return NULL;
+    }
 
+    if(rnum_vertices != num_vertices) {
+        LogWarn("Failed to read in all vertices from \"%s\", aborting!\n", path);
+        return NULL;
+    }
+
+    VtxHandle* handle = u_alloc(1, sizeof(VtxHandle), true);
+    handle->vertices = u_alloc(num_vertices, sizeof(PLVertex), true);
+    handle->num_vertices = num_vertices;
+    for(unsigned int i = 0; i < num_vertices; ++i) {
+        handle->vertices[i].position = PLVector3(vertices[i].v[0], vertices[i].v[1], vertices[i].v[2]);
+        handle->vertices[i].bone_index = vertices[i].bone_index;
+        handle->vertices[i].colour = PL_COLOUR_WHITE;
+    }
+    return handle;
+}
+
+static void Vtx_DestroyHandle(VtxHandle* handle) {
+    if(handle == NULL) {
+        return;
+    }
+
+    free(handle->vertices);
+    free(handle);
+}
+
+/************************************************************/
+/* No2 Normals Format */
+
+typedef struct __attribute__((packed)) No2Coord {
+    float v[3];
+    float bone_index;
+} No2Coord;
+
+typedef struct No2Handle {
+    No2Coord*       coords;
+    unsigned int    num_coords;
+} No2Handle;
+
+static No2Handle *No2_LoadFile(const char *path) {
+    FILE* fp = fopen(path, "rb");
+    if(fp == NULL) {
+        LogWarn("Failed to load no2 \"%s\"!\n", path);
+        return NULL;
+    }
+
+    unsigned int num_normals = (unsigned int)(plGetFileSize(path) / sizeof(No2Coord));
+    No2Coord normals[num_normals];
+    unsigned int rnum_normals = fread(normals, sizeof(No2Coord), num_normals, fp);
+    fclose(fp);
+
+    if(rnum_normals != num_normals) {
+        LogWarn("Failed to read in all normals from \"%s\"!\n", path);
+        return NULL;
+    }
+
+    No2Handle* handle = u_alloc(1, sizeof(No2Handle), true);
+    handle->coords = u_alloc(num_normals, sizeof(No2Coord), true);
+    handle->num_coords = num_normals;
+    memcpy(handle->coords, normals, sizeof(No2Coord) * num_normals);
+    return handle;
+}
+
+static void No2_DestroyHandle(No2Handle *handle) {
+    if(handle == NULL) {
+        return;
+    }
+
+    free(handle->coords);
+    free(handle);
+}
+
+/************************************************************/
+
+struct {
+    HirHandle*      pig_skeleton;
+
+    Animation       animations[MAX_ANIMATIONS];
+    unsigned int    num_animations;
+
+    PLModel* pigs[MAX_CLASSES];
+    PLModel* hats[MAX_CLASSES];
+} model_cache;
+
+#define PIG_EYES_INDEX  118
+#define PIG_GOBS_INDEX  119
+
+static PLModel* Model_LoadVtxFile(const char* path) {
+    VtxHandle* vtx = Vtx_LoadFile(path);
+    if(vtx == NULL) {
+        LogWarn("Failed to load Vtx, \"%s\"!\n", path);
+        return NULL;
+    }
+
+    /* now we load in all the faces */
     char fac_path[PL_SYSTEM_MAX_PATH];
     strncpy(fac_path, path, strlen(path) - 3);
     fac_path[strlen(path) - 3] = '\0';
     strcat(fac_path, "fac");
-
-    FILE *fac_file = fopen(fac_path, "rb");
+    FILE* fac_file = fopen(fac_path, "rb");
     if(fac_file == NULL) {
-        LogWarn("failed to load fac \"%s\", aborting!\n", fac_path);
+        Vtx_DestroyHandle(vtx);
+        LogWarn("Failed to load fac \"%s\", aborting!\n", fac_path);
         return NULL;
     }
 
-    /* unused heading block
-     * we'll load it in just so we can check
-     * this is a valid fac file... */
-    char padding[16];
-    if(fread(padding, sizeof(char), 16, fac_file) != 16) {
-        Error("failed to read fac, \"%s\", aborting!\n", fac_path);
-    }
-    for(unsigned int i = 0; i < 16; ++i) {
-        if(padding[i] != '\0') {
-            Error("invalid fac, \"%s\", aborting!\n", fac_path);
-        }
-    }
+    fseek(fac_file, 16, SEEK_CUR);
 
     uint32_t num_triangles;
     if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
         Error("failed to get number of triangles, \"%s\", aborting!\n", fac_path);
     }
+
     LogDebug("\"%s\" has %u triangles", fac_path, num_triangles);
 
     struct __attribute__((packed)) {
@@ -139,34 +286,18 @@ static PLModel *LoadVTXModel(const char *path) {
 
     fclose(fac_file);
 
-    /* now to shuffle all that data into our model! */
-
-    PLModel *model = u_alloc(1, sizeof(PLModel), true);
-
-    /* copy the bones into the model struct */
-
-    model->bones = u_alloc(model_cache.num_bones, sizeof(PLBone), true);
-    memcpy(model->bones, model_cache.bones, sizeof(PLBone) * model_cache.num_bones);
-    model->num_bones = model_cache.num_bones;
-
-#if 0 /* don't bother for now... */
-    /* check if it's a LOD model, these are appended with '_hi' */
-    char file_name[16];
-    snprintf(file_name, sizeof(file_name), plGetFileName(path));
-    if(file_name[0] != '\0' && strstr(file_name, "_hi") != 0) {
-        char lod_path[PL_SYSTEM_MAX_PATH];
-        strncpy(lod_path, path, strlen(path) - 7);  /* _hi.vtx */
-        lod_path[strlen(path) - 7] = '\0';          /* _hi.vtx */
-        strcat(lod_path, "_med.vtx");
-        if(plFileExists(lod_path)) {
-            LogDebug("found lod, \"%s\", adding to model\n", lod_path);
-            model->num_lods += 1;
-        } else {
-            LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
-        }
+    /* attempt to load the normals */
+    char no2_path[PL_SYSTEM_MAX_PATH];
+    strncpy(no2_path, path, strlen(path) - 3);
+    no2_path[strlen(path) - 3] = '\0';
+    strcat(no2_path, "no2");
+    No2Handle* no2 = No2_LoadFile(no2_path);
+    if(no2 == NULL) {
+        LogWarn("Failed to load normals, \"%s\"!\n", no2_path);
+        /* in this case, we'll just generate them later */
     }
-#endif
 
+#if 0 /* dumped! */
     /* figure out how many textures we have for this model
      * so that we can generate a mesh for each later */
 
@@ -178,29 +309,28 @@ static PLModel *LoadVTXModel(const char *path) {
     for(unsigned int i = 0; i < num_quads; ++i) {
         for(unsigned int j = 0; j < num_texture_indices; ++j) {
             if(quads[i].texture_index == texture_indices[j]) {
-                continue;
+                goto NEXT_QUAD;
             }
-
-            texture_indices[num_texture_indices++] = quads[i].texture_index;
-            u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
         }
+
+        u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+        texture_indices[num_texture_indices++] = quads[i].texture_index;
+
+        NEXT_QUAD:;
     }
 
     for(unsigned int i = 0; i < num_triangles; ++i) {
         for(unsigned int j = 0; j < num_texture_indices; ++j) {
             if(triangles[i].texture_index == texture_indices[j]) {
-                continue;
+                goto NEXT_TRIANGLE;
             }
-
-            texture_indices[num_texture_indices++] = triangles[i].texture_index;
-            u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
         }
+
+        u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
+        texture_indices[num_texture_indices++] = triangles[i].texture_index;
+
+        NEXT_TRIANGLE:;
     }
-
-    /* now allocate our mesh container */
-
-    model->num_meshes = num_texture_indices;
-    model->meshes = u_alloc(model->num_meshes, sizeof(PLModelMesh), true);
 
     /* now group together all our "meshes" */
 
@@ -216,9 +346,9 @@ static PLModel *LoadVTXModel(const char *path) {
             uint32_t texture_index;
         } triangles[4096]; /* temporary until I can be assed */
         unsigned int num_triangles;
-    } meshes[model->num_meshes];
+    } meshes[num_texture_indices];
 
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+    for(unsigned int i = 0; i < num_texture_indices; ++i) {
         for(unsigned int j = 0; j < num_quads; ++j) {
             /* todo */
         }
@@ -250,81 +380,106 @@ static PLModel *LoadVTXModel(const char *path) {
 
     /* and allocate all of our meshes */
 
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        model->meshes[i].mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, meshes[i].num_triangles, num_vertices);
-        if(model->meshes[i].mesh == NULL) {
-            Error("failed to allocate mesh for %s, aborting!\n%s\n", path, plGetError());
+    PLMesh **model_meshes = u_alloc(1, sizeof(PLMesh*), true);
+    for(unsigned int i = 0; i < num_texture_indices; ++i) {
+        model_meshes[i] = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, meshes[i].num_triangles, vtx->num_vertices);
+        if(model_meshes[i] == NULL) {
+            Error("Failed to allocate mesh for %s, aborting (%s)!\n", path, plGetError());
         }
 
-        PLMesh *cur_mesh = model->meshes[i].mesh;
-
-        model->meshes[i].bone_weights = u_alloc(num_vertices, sizeof(PLBoneWeight), true);
-        model->meshes[i].num_bone_weights = num_vertices;
-
-#if 1 /* debug */
-        srand(num_vertices * i);
-#endif
-        for(unsigned int j = 0; j < num_vertices; ++j) {
-            plSetMeshVertexPosition(cur_mesh, j, PLVector3(vertices[j].v[0], vertices[j].v[1], vertices[j].v[2]));
+        for(unsigned int j = 0; j < vtx->num_vertices; ++j) {
+            plSetMeshVertexPosition(model_meshes[i], j, vtx->vertices[j].position);
 
 #if 1 /* debug */
             uint8_t r = (uint8_t)(rand() % 255);
             uint8_t g = (uint8_t)(rand() % 255);
             uint8_t b = (uint8_t)(rand() % 255);
-            plSetMeshVertexColour(cur_mesh, j, PLColour(r, g, b, 255));
+            plSetMeshVertexColour(model_meshes[i], j, PLColour(r, g, b, 255));
 #else
             plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
 #endif
 
-            model->meshes[i].bone_weights[i].bone_index = vertices[i].bone_index;
-            model->meshes[i].bone_weights[i].bone_weight = 1.f;
-            model->meshes[i].bone_weights[i].vertex_index = i;
+            model_meshes[i]->vertices[i].bone_index = vtx->vertices[i].bone_index;
+            model_meshes[i]->vertices[i].bone_weight = 1.f;
         }
 
         unsigned int cur_index = 0;
         for(unsigned int j = 0; j < meshes[i].num_triangles; ++j) {
-            plSetMeshTrianglePosition(cur_mesh, &cur_index,
+            plSetMeshTrianglePosition(model_meshes[i], &cur_index,
                                       meshes[i].triangles[j].vertex_indices[0],
                                       meshes[i].triangles[j].vertex_indices[1],
                                       meshes[i].triangles[j].vertex_indices[2]
             );
         }
     }
+#endif
 
-    /* and finally the normals...
-     * if we're not able to find the normals,
-     * then we'll just generate them instead */
-
-    char no2_path[PL_SYSTEM_MAX_PATH];
-    strncpy(no2_path, path, strlen(path) - 3);
-    no2_path[strlen(path) - 3] = '\0';
-    strcat(no2_path, "no2");
-
-    FILE *no2_file = fopen(path, "rb");
-    if(no2_file == NULL) {
-        LogWarn("failed to load no2 \"%s\", generating normals instead\n", path);
-        plGenerateModelNormals(model);
-        return model;
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles, vtx->num_vertices);
+    if(mesh == NULL) {
+        LogWarn("Failed to create mesh (%s)!\n", plGetError());
+        return NULL;
     }
 
-    typedef struct __attribute__((packed)) NO2Coord {
-        float v[3];
-        float bone_index;
-    } NO2Coord;
-    unsigned int num_normals = (unsigned int)(plGetFileSize(no2_path) / sizeof(NO2Coord));
-    NO2Coord normals[num_normals];
-    if(fread(normals, sizeof(NO2Coord), num_normals, no2_file) != num_normals) {
-        LogWarn("failed to read in all normals from \"%s\", generating normals instead\n", no2_path);
-        plGenerateModelNormals(model);
-        return model;
+    for(unsigned int j = 0; j < vtx->num_vertices; ++j) {
+        plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
+
+#if 1 /* debug */
+        uint8_t r = (uint8_t)(rand() % 255);
+        uint8_t g = (uint8_t)(rand() % 255);
+        uint8_t b = (uint8_t)(rand() % 255);
+        plSetMeshVertexColour(mesh, j, PLColour(r, g, b, 255));
+#else
+        plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
+#endif
+
+        mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
+        mesh->vertices[j].bone_weight = 1.f;
     }
 
-    fclose(no2_file);
+    unsigned int cur_index = 0;
+    for(unsigned int j = 0; j < num_triangles; ++j) {
+        plSetMeshTrianglePosition(mesh, &cur_index,
+                                  triangles[j].vertex_indices[0],
+                                  triangles[j].vertex_indices[1],
+                                  triangles[j].vertex_indices[2]
+        );
+    }
+
+    PLModelBone* skeleton = u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true);
+    memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
+
+    PLMesh **model_meshes = u_alloc(1, sizeof(PLMesh*), true);
+    model_meshes[0] = mesh;
+    PLModel *model = plNewSkeletalModel(
+            &(PLModelLod){model_meshes, 1}, 1,
+            skeleton, model_cache.pig_skeleton->num_bones, BONE_INDEX_PELVIS);
+    if(model == NULL) {
+        LogWarn("Failed to create model (%s)!\n", plGetError());
+        return NULL;
+    }
+
+#if 0 /* don't bother for now... */
+    /* check if it's a LOD model, these are appended with '_hi' */
+    char file_name[16];
+    snprintf(file_name, sizeof(file_name), plGetFileName(path));
+    if(file_name[0] != '\0' && strstr(file_name, "_hi") != 0) {
+        char lod_path[PL_SYSTEM_MAX_PATH];
+        strncpy(lod_path, path, strlen(path) - 7);  /* _hi.vtx */
+        lod_path[strlen(path) - 7] = '\0';          /* _hi.vtx */
+        strcat(lod_path, "_med.vtx");
+        if(plFileExists(lod_path)) {
+            LogDebug("found lod, \"%s\", adding to model\n", lod_path);
+            model->num_lods += 1;
+        } else {
+            LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
+        }
+    }
+#endif
 
     return model;
 }
 
-PLModel *LoadMINModel(const char *path) {
+PLModel* Model_LoadMinFile(const char *path) {
     u_assert(0, "TODO");
     return NULL;
 }
@@ -333,119 +488,41 @@ PLModel *LoadMINModel(const char *path) {
 
 /* like plLoadModel, only prefixes with base path
  * and can abort on error */
-PLModel *LoadModel(const char *path, bool abort_on_fail) {
+PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
     snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
-    PLModel *model = plLoadModel(model_path);
+    PLModel* model = plLoadModel(model_path);
     if(model == NULL) {
         if(abort_on_fail) {
-            Error("failed to load model, \"%s\", aborting!\n%s\n", model_path, plGetError());
+            Error("Failed to load model, \"%s\", aborting (%s)!\n", model_path, plGetError());
         }
 
-        LogWarn("failed to load model, \"%s\"!\n%s\n", model_path, plGetError());
+        LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
+        // todo: provide placeholder
+        //model = plCreateModelCube();
     }
     return model;
 }
 
-// todo, load hir from anywhere - open the potential to have
-// multiple hirs for different models :)
-PLBone *LoadBones(const char *path, bool abort_on_fail) {
-    return NULL;
-}
-
-Animation *LoadAnimations(const char *path, bool abort_on_fail) {
+Animation* LoadAnimations(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
 /************************************************************/
-
-//00: Hip
-//01: Spine
-//02: Head
-//03: UpperArm.L
-//04: LowerArm.L
-//05: Hand.L
-//06: UpperArm.R
-//07: LowerArm.R
-//08: Hand.R
-//09: UpperLeg.L
-//10: LowerLeg.L
-//11: Foot.L
-//12: UpperLeg.R
-//13: LowerLeg.R
-//14: Foot.R
 
 /* cache the pigs data into memory, since we
  * share it between all of them anyway :) */
 void CacheModelData(void) {
     memset(&model_cache, 0, sizeof(model_cache));
 
-    LogInfo("caching pig.hir\n");
-
-    char hir_path[PL_SYSTEM_MAX_PATH];
-    strncpy(hir_path, u_find("/chars/pig.hir"), sizeof(hir_path));
-    size_t hir_bytes = plGetFileSize(hir_path);
-    if(hir_bytes == 0) {
-        Error("unexpected \"pig.hir\" size, aborting!\n(perhaps try copying your data again?)");
-    }
-
-    FILE *file = fopen(hir_path, "rb");
-    if(file == NULL) {
-        Error("failed to load \"%s\"!\n", hir_path);
-    }
-
-    /* HIR Format Specification
-     * Used to store our piggy bones. */
-    typedef struct __attribute__((packed)) HIRBone {
-        uint32_t parent;
-        int16_t coords[3];
-        int8_t unknown[10];
-    } HIRBone;
-
-    model_cache.num_bones = (unsigned int)(hir_bytes / sizeof(HIRBone));
-    if(model_cache.num_bones > MAX_BONES) {
-        Error("number of bones within \"%s\" exceeds %d limit!\n", hir_path, MAX_BONES);
-    }
-
-    HIRBone bones[model_cache.num_bones];
-    if(fread(bones, sizeof(HIRBone), model_cache.num_bones, file) != model_cache.num_bones) {
-        Error("failed to read in all bones, expected %d!\n", model_cache.num_bones);
-    }
-    fclose(file);
-
-    // scary shit - assumes this matches up with indices in pig.hir, if not, boo hoo!
-    const char *bone_names[]={
-          "Hip",
-          "Spine",
-          "Head",
-          "UpperArm.L",
-          "LowerArm.L",
-          "Hand.L",
-          "UpperArm.R",
-          "LowerArm.R",
-          "Hand.R",
-          "UpperLeg.L",
-          "LowerLeg.L",
-          "Foot.L",
-          "UpperLeg.R",
-          "LowerLeg.R",
-          "Foot.R",
-    };
-
-    // copy each bone into our global bones list
-    for(unsigned int i = 0; i < model_cache.num_bones; ++i) {
-        model_cache.bones[i].parent = bones[i].parent;
-        model_cache.bones[i].position.x = bones[i].coords[0];
-        model_cache.bones[i].position.y = bones[i].coords[1];
-        model_cache.bones[i].position.z = bones[i].coords[2];
-        strncpy(model_cache.bones[i].name, bone_names[i], sizeof(model_cache.bones[i].name));
-
-        //plScaleVector3f(&g_model_cache.bones[i].coords, 4);
+    model_cache.pig_skeleton = Hir_LoadFile(u_find("/chars/pig.hir"));
+    if(model_cache.pig_skeleton == NULL) {
+        Error("Failed to load skeleton, aborting!\n");
     }
 
     // animations
 
-    LogInfo("caching mcap.mad\n");
+    LogInfo("Caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
     strncpy(mcap_path, u_find("/chars/mcap.mad"), sizeof(mcap_path));
@@ -457,111 +534,53 @@ void CacheModelData(void) {
         Error("unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
     }
 
-    file = fopen(mcap_path, "rb");
+    FILE* file = fopen(mcap_path, "rb");
     if(file == NULL) {
         Error("failed to load \"%s\", aborting!\n", mcap_path);
     }
 
     /* todo, split this up, as the psx version deals with these as separate files */
-    const char *animation_names[ANI_END]={
-            "Run cycle (normal)",
-            "Run cycle (wounded)",
-            "Run cycle (more wounded)",
-            "Walk cycle (backwards)",
+    static const char* animation_names[] = {
+            "Run cycle (normal)", "Run cycle (wounded)", "Run cycle (more wounded)", "Walk cycle (backwards)",
             "Turning on Spot",
-            "Swimming",
-            "Swimming like Rick",
+            "Swimming", "Swimming like Rick",
             "Getting into Vehicles",
-            "Jumping - Start",
-            "Jumping - Middle",
-            "Jumping - End",
+            "Jumping - Start", "Jumping - Middle", "Jumping - End",
             "Scramble",
-            "Getting out Handgun",
-            "Getting out Rifle",
-            "Getting out Machine gun",
-            "Getting out Heavy weapon",
-            "Getting out Punch",
-            "Getting out Grenade",
-            "Getting out Sword / Knife",
-            "Using Grenade",
-            "Using Punch",
+            "Getting out Handgun", "Getting out Rifle", "Getting out Machine gun", "Getting out Heavy weapon",
+            "Getting out Punch", "Getting out Grenade", "Getting out Sword / Knife",
+            "Using Grenade", "Using Punch",
             "Sword / Knife",
             "Bayonet",
-            "Aiming Handgun",
-            "Aiming Rifle",
-            "Aiming Machine gun",
-            "Aiming Heavy weapon",
-            "Standing around cycle 1",
-            "Standing around cycle 2",
+            "Aiming Handgun", "Aiming Rifle", "Aiming Machine gun", "Aiming Heavy weapon",
+            "Standing around cycle 1", "Standing around cycle 2",
             "Very Wounded",
             "Lord Flash-Heart Pose",
-            "Looking around",
-            "Looking gormless",
+            "Looking around", "Looking gormless",
             "Cowering",
-            "Brushoff 1",
-            "Brushoff 2",
-            "Brushoff 3",
+            "Brushoff 1", "Brushoff 2", "Brushoff 3",
             "Sneeze",
             "Flying through air/falling",
             "Bouncing on B-Hind",
             "Getting to feet",
-            "Celebration #1",
-            "Celebration #2",
-            "Celebration #3",
+            "Celebration #1", "Celebration #2", "Celebration #3",
             "Salute",
             "Look back",
             "Thinking",
-            "Dying #1",
-            "Dying #2",
-            "Dying #3",
+            "Dying #1", "Dying #2", "Dying #3",
             "Drowning",
-            "Idle Cold",
-            "Idle Hot",
+            "Idle Cold", "Idle Hot",
             "Lay Mine",
             "Heal",
             "Pick pocket",
             "Air strike",
             "Hari Kiri",
             "Parachuting",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
     };
 
     // run through each animation and copy it
     // into our global animation list
-    for(unsigned int i = 0; i < ANI_END; ++i) {
+    for(unsigned int i = 0; i < MAX_ANIMATIONS; ++i) {
         // basically a MAD package, but without the
         // file name
         struct __attribute__((packed)) {
@@ -577,7 +596,7 @@ void CacheModelData(void) {
 
         /* MCAP Format Specification
          * Used to store our piggy animations. */
-        typedef struct __attribute__((packed)) MCAPKeyframe {
+        typedef struct __attribute__((packed)) McapKeyframe {
             int16_t unused;
 
             struct __attribute__((packed)) {
@@ -592,9 +611,9 @@ void CacheModelData(void) {
                 float z;
                 float w;
             } rotations[15];
-        } MCAPKeyframe;
+        } McapKeyframe;
 
-        unsigned int num_keyframes = (unsigned int) (index.length / sizeof(MCAPKeyframe));
+        unsigned int num_keyframes = (unsigned int) (index.length / sizeof(McapKeyframe));
         if(num_keyframes == 0) {
             Error("odd keyframe at index, aborting!\n");
         }
@@ -610,8 +629,8 @@ void CacheModelData(void) {
 
         for(unsigned int j = 0; j < num_keyframes; ++j) {
             // read in the keyframe data
-            MCAPKeyframe frame;
-            if(fread(&frame, sizeof(MCAPKeyframe), 1, file) != 1) {
+            McapKeyframe frame;
+            if(fread(&frame, sizeof(McapKeyframe), 1, file) != 1) {
                 Error("failed to read animation keyframe, aborting!\n");
             }
 
@@ -632,7 +651,9 @@ void CacheModelData(void) {
         }
 
         model_cache.animations[i].num_frames = num_keyframes;
-        model_cache.animations[i].name = animation_names[i];
+        if(i < plArrayElements(animation_names)) {
+            model_cache.animations[i].name = animation_names[i];
+        }
 
         // return us from whence we came
         if(fseek(file, position, SEEK_SET) != 0) {
@@ -664,44 +685,46 @@ void CacheModelData(void) {
 
     /* models */
 
-    model_cache.pigs[PIG_CLASS_ACE]         = LoadModel("chars/pigs/ac_hi", true);
-    model_cache.pigs[PIG_CLASS_COMMANDO]    = LoadModel("chars/pigs/sb_hi", true);
-    model_cache.pigs[PIG_CLASS_GRUNT]       = LoadModel("chars/pigs/gr_hi", true);
-    model_cache.pigs[PIG_CLASS_HEAVY]       = LoadModel("chars/pigs/hv_hi", true);
-    model_cache.pigs[PIG_CLASS_LEGEND]      = LoadModel("chars/pigs/le_hi", true);
-    model_cache.pigs[PIG_CLASS_MEDIC]       = LoadModel("chars/pigs/me_hi", true);
-    model_cache.pigs[PIG_CLASS_SABOTEUR]    = LoadModel("chars/pigs/sa_hi", true);
-    model_cache.pigs[PIG_CLASS_SNIPER]      = LoadModel("chars/pigs/sn_hi", true);
-    model_cache.pigs[PIG_CLASS_SPY]         = LoadModel("chars/pigs/sp_hi", true);
+    model_cache.pigs[PIG_CLASS_ACE]         = Model_LoadFile("chars/pigs/ac_hi", true);
+    model_cache.pigs[PIG_CLASS_COMMANDO]    = Model_LoadFile("chars/pigs/sb_hi", true);
+    model_cache.pigs[PIG_CLASS_GRUNT]       = Model_LoadFile("chars/pigs/gr_hi", true);
+    model_cache.pigs[PIG_CLASS_HEAVY]       = Model_LoadFile("chars/pigs/hv_hi", true);
+    model_cache.pigs[PIG_CLASS_LEGEND]      = Model_LoadFile("chars/pigs/le_hi", true);
+    model_cache.pigs[PIG_CLASS_MEDIC]       = Model_LoadFile("chars/pigs/me_hi", true);
+    model_cache.pigs[PIG_CLASS_SABOTEUR]    = Model_LoadFile("chars/pigs/sa_hi", true);
+    model_cache.pigs[PIG_CLASS_SNIPER]      = Model_LoadFile("chars/pigs/sn_hi", true);
+    model_cache.pigs[PIG_CLASS_SPY]         = Model_LoadFile("chars/pigs/sp_hi", true);
 }
 
-void RegisterModelInterfaces(void) {
-    plRegisterModelLoader("vtx", LoadVTXModel);
-    plRegisterModelLoader("min", LoadMINModel);
+void RegisterModelLoaders(void) {
+    plRegisterModelLoader("vtx", Model_LoadVtxFile);
+    plRegisterModelLoader("min", Model_LoadMinFile);
 }
 
 void ShutdownModels(void) {
     /* clear the model cache */
     LogInfo("clearing model cache...\n");
+
     for(unsigned int i = 0; i < MAX_CLASSES; ++i) {
-        plDeleteModel(model_cache.pigs[i]);
+        plDestroyModel(model_cache.pigs[i]);
     }
 }
 
 ////////////////////////////////////////////////////////////////
 
-#if 0
-#include <GL/glew.h>
-#endif
+void DEBUGDrawModel(void) {
+    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, -2048));
+    plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
+}
 
 void DEBUGDrawSkeleton(void) {
     if(!cv_debug_skeleton->b_value) {
         return;
     }
 
-    static PLMesh *skeleton_mesh = NULL;
+    static PLMesh* skeleton_mesh = NULL;
     if(skeleton_mesh == NULL) {
-        skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, model_cache.num_bones * 2);
+        skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, model_cache.pig_skeleton->num_bones * 2);
     }
 
 #if 0
@@ -727,13 +750,15 @@ void DEBUGDrawSkeleton(void) {
         frame = 0;
     }
 
-    for(unsigned int i = 0, vert = 0; i < model_cache.num_bones; ++i, vert += 2) {
+    for(unsigned int i = 0, vert = 0; i < model_cache.pig_skeleton->num_bones; ++i, vert += 2) {
+        PLModelBone* bone = &model_cache.pig_skeleton->bones[i];
+
         //start
-        plSetMeshVertexPosition(skeleton_mesh, vert, model_cache.bones[i].position);
+        plSetMeshVertexPosition(skeleton_mesh, vert, bone->position);
         plSetMeshVertexColour(skeleton_mesh, vert, PLColour(255, 0, 0, 255));
 
         //end
-        plSetMeshVertexPosition(skeleton_mesh, vert + 1, model_cache.bones[model_cache.bones[i].parent].position);
+        plSetMeshVertexPosition(skeleton_mesh, vert + 1, model_cache.pig_skeleton->bones[bone->parent].position);
         plSetMeshVertexColour(skeleton_mesh, vert + 1, PLColour(0, 255, 0, 255));
     }
 

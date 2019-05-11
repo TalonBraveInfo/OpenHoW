@@ -15,22 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_math.h>
+#pragma once
 
-#include "../engine.h"
-#include "pig.h"
-#include "actor.h"
+#include "Actor.h"
+#include "ModelActor.h"
 
-class Pig : public Actor {
+class StaticModelActor : public ModelActor {
 public:
-    Pig();
-    ~Pig() override;
+    StaticModelActor();
+    ~StaticModelActor();
+
+protected:
+private:
 };
-
-Pig::Pig() : Actor() {
-    u_assert(0, "todo");
-}
-
-Pig::~Pig() = default;
-
-//register_actor("JOHN", Pig);

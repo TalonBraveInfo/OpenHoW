@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../mad.h"
+#include "engine.h"
+#include "mad.h"
 #include "particle.h"
 #include "client.h"
-#include "display.h"
+
+#include "graphics/display.h"
 
 PPSFormat pps_docs[512];
 

@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "engine.h"
 #include "audio.h"
 #include "frontend.h"
 
@@ -288,9 +287,9 @@ AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, 
     return new AudioSource(GetCachedSample(path)->al_buffer_id_, pos, vel, gain, pitch, looping);
 }
 
-void AudioManager::Simulate() {
+void AudioManager::Tick() {
     PLVector3 position = {0,0,0}, angles = {0,0,0};
-    if(FE_GetState() == FE_MODE_GAME) {
+    if(FrontEnd_GetState() == FE_MODE_GAME) {
         position = g_state.camera->position;
         angles = g_state.camera->angles;
     }

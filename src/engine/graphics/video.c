@@ -18,9 +18,9 @@
 #include <PL/platform_filesystem.h>
 
 #include "../engine.h"
+#include "../frontend.h"
 
 #include "video.h"
-#include "frontend.h"
 #include "shader.h"
 
 #if 0
@@ -82,7 +82,7 @@ void PlayVideoCommand(unsigned int argc, char *argv[]) {
     Video_QueuePlayback(&cmd, argc - 1);
 
     /* immediately begin playing the videos */
-    FE_SetState(FE_MODE_VIDEO);
+    FrontEnd_SetState(FE_MODE_VIDEO);
 }
 
 void Video_Initialize(void) {
@@ -148,7 +148,7 @@ void Video_Play(const char *path) {
     }
 
     /* immediately begin playing the videos */
-    FE_SetState(FE_MODE_VIDEO);
+    FrontEnd_SetState(FE_MODE_VIDEO);
 }
 
 void Video_SkipCurrent(void) {

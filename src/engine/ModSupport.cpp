@@ -18,15 +18,17 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "game.h"
+#include "ModSupport.h"
 #include "Map.h"
 #include "language.h"
 
 #include "script/script.h"
 #include "script/ScriptConfig.h"
 
-#include "client/frontend.h"
+#include "frontend.h"
 #include "MapManager.h"
+#include "game/BaseGameMode.h"
+#include "game/TrainingGameMode.h"
 
 /* Gamemode Management
  *
@@ -41,38 +43,27 @@
  *  > this needs rewriting to better take advantage of std
  */
 
-static CampaignManifest *campaigns = nullptr;
+static ModManifest *campaigns = nullptr;
 static uint num_campaigns = 0;
 static uint max_campaigns = 8;
 
 static uint cur_campaign_idx = (uint) -1;
 
-CampaignManifest *Game_GetCampaignBySlot(uint num) {
+static ModManifest *GetModManifestBySlot(uint num) {
     if(num >= max_campaigns) {
         uint old_max_campaigns = max_campaigns;
         max_campaigns += 8;
-        if((campaigns = static_cast<CampaignManifest *>(realloc(campaigns, sizeof(CampaignManifest) * max_campaigns))) == NULL) {
+        if((campaigns = static_cast<ModManifest *>(realloc(campaigns, sizeof(ModManifest) * max_campaigns))) == NULL) {
             Error("failed to resize campaign list, aborting!\n");
         }
 
-        memset(campaigns + old_max_campaigns, 0, sizeof(CampaignManifest) * (max_campaigns - old_max_campaigns));
+        memset(campaigns + old_max_campaigns, 0, sizeof(ModManifest) * (max_campaigns - old_max_campaigns));
     }
 
     return &campaigns[num];
 }
 
-CampaignManifest *Game_GetCampaignByName(const char *name) {
-    for(unsigned int i = 0; i < num_campaigns; ++i) {
-        if(strncmp(campaigns[i].name, name, sizeof(campaigns[i].name)) == 0) {
-            return &campaigns[i];
-        }
-    }
-
-    LogWarn("failed to find campaign \"%s\"!\n");
-    return nullptr;
-}
-
-CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
+static ModManifest *GetModManifestByDirectory(const char *dir) {
     for(unsigned int i = 0; i < num_campaigns; ++i) {
         if(strncmp(campaigns[i].dir, dir, sizeof(campaigns[i].dir)) == 0) {
             return &campaigns[i];
@@ -87,7 +78,7 @@ CampaignManifest *Game_GetCampaignByDirectory(const char *dir) {
  *
  * @param path Path to the manifest file.
  */
-void RegisterCampaign(const char *path) {
+void Mod_RegisterCampaign(const char *path) {
 #if 0
     /* ensure the campaign actually exists before we proceed */
     char directory[PL_SYSTEM_MAX_PATH];
@@ -98,7 +89,7 @@ void RegisterCampaign(const char *path) {
     }
 #endif
 
-    CampaignManifest *slot = Game_GetCampaignBySlot(num_campaigns++);
+    ModManifest *slot = GetModManifestBySlot(num_campaigns++);
     if(slot == nullptr) {
         LogWarn("failed to fetch campaign slot, hit memory limit!?\n");
         return;
@@ -140,32 +131,32 @@ void RegisterCampaign(const char *path) {
 /** Registers all of the campaigns provided under the campaigns
  *  directory.
  */
-void RegisterCampaigns(void) {
-    campaigns = static_cast<CampaignManifest *>(u_alloc(max_campaigns, sizeof(CampaignManifest), true));
+void Mod_RegisterCampaigns(void) {
+    campaigns = static_cast<ModManifest *>(u_alloc(max_campaigns, sizeof(ModManifest), true));
 
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "%s/campaigns/", GetBasePath());
-    plScanDirectory(path, "campaign", RegisterCampaign, false);
+    plScanDirectory(path, "campaign", Mod_RegisterCampaign, false);
 }
 
 /** Returns a pointer to the campaign that's currently active.
  *
  * @return Pointer to the current campaign.
  */
-CampaignManifest *GetCurrentCampaign(void) {
+ModManifest *Mod_GetCurrentCampaign(void) {
     return &campaigns[cur_campaign_idx];
 }
 
-void SetCampaign(const char *dir) {
-    CampaignManifest *campaign = Game_GetCampaignByDirectory(dir);
+void Mod_SetCampaign(const char *dir) {
+    ModManifest *campaign = GetModManifestByDirectory(dir);
     if(campaign == nullptr) {
         LogInfo("campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
 
         char path[PL_SYSTEM_MAX_PATH];
         snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", GetBasePath(), dir);
         if(plFileExists(path)) {
-            RegisterCampaign(path);
-            campaign = Game_GetCampaignByDirectory(dir);
+            Mod_RegisterCampaign(path);
+            campaign = GetModManifestByDirectory(dir);
         }
 
         if(campaign == nullptr) {
@@ -180,51 +171,4 @@ void SetCampaign(const char *dir) {
 
     // Ensure that our manifest list is updated
     MapManager::GetInstance()->RegisterManifests();
-}
-
-/******************************************************/
-
-bool game_started = false;
-
-Map *temp_map = nullptr; // Temporary, until we have a proper interface...
-
-void Game_StartNewGame(const GameModeSetup *mode) {
-    LogDebug("starting new game...\n");
-
-    if(mode->force_start && game_started) {
-        Game_End();
-    }
-
-    FE_SetState(FE_MODE_LOADING);
-
-    try {
-        temp_map = new Map(mode->map);
-    } catch(std::exception &e) {
-        LogWarn("Failed to load map, aborting game!\n");
-        FE_RestoreLastState();
-        return;
-    }
-
-    g_state.max_players = mode->num_players;
-    if(g_state.max_players > MAX_PLAYERS) {
-        g_state.max_players = MAX_PLAYERS;
-    }
-
-    memset(g_state.players, 0, sizeof(Player) * g_state.max_players);
-    for(unsigned int i = 0; i < g_state.max_players; ++i) {
-        g_state.players[i].is_active = true;
-    }
-
-    /* we'll assume we're hosting */
-    g_state.is_host = true;
-
-    FE_SetState(FE_MODE_GAME);
-}
-
-void Game_End(void) {
-    LogDebug("ending current game...\n");
-
-    delete temp_map;
-
-    FE_SetState(FE_MODE_MAIN_MENU); // todo: should take to results screen???
 }

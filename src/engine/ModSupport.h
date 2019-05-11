@@ -17,24 +17,23 @@
 
 #pragma once
 
-#include "game.h"
+struct ModManifest {
+    char path[PL_SYSTEM_MAX_PATH];  /* path to the campaign manifest */
+    char dir[64];                   /* directory under campaigns */
 
-typedef struct Player {
-    uint8_t ident;
+    char name[256];
+    char version[16];
+    char author[128];
 
-    bool is_local;
-    bool is_active;
-
-    char name[24];
-    uint8_t team;
-
-    struct Actor *pigs[MAX_PIGS];
-    unsigned int num_pigs;
-    unsigned int current_pig;
-} Player;
+    unsigned int num_supported_languages;
+};
 
 PL_EXTERN_C
 
-void ClearPlayers(void);
+ModManifest *Mod_GetCurrentCampaign(void);
+
+void Mod_RegisterCampaigns(void);
+void Mod_RegisterCampaign(const char *path);
+void Mod_SetCampaign(const char *dir);
 
 PL_EXTERN_C_END

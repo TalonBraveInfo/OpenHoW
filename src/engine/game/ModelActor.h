@@ -17,8 +17,19 @@
 
 #pragma once
 
-PL_EXTERN_C
+#include "Actor.h"
 
-void RegisterPackageLoaders(void);
+class ModelActor : public Actor {
+public:
+    ModelActor();
+    ~ModelActor() override;
 
-PL_EXTERN_C_END
+    void Draw() override;
+
+    virtual void SetModel(const std::string &path);
+
+protected:
+    PLModel* model_{nullptr};
+
+private:
+};

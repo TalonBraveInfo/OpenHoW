@@ -22,10 +22,14 @@
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 
+// remove this once everything is C++'fied
+#ifdef __cplusplus
+#include <string>
+#endif
+
 #include "util.h"
 #include "pork_math.h"
 #include "console.h"
-#include "player.h"
 
 #define ENGINE_TITLE        "OpenHoW"
 #define ENGINE_APP_NAME     "OpenHoW"
@@ -52,6 +56,12 @@ static inline const char *GetVersionString(void) {
     return &version[0];
 }
 
+#ifdef __cplusplus
+class BaseGameMode;
+#else
+typedef struct BaseGameMode BaseGameMode;
+#endif // __cplusplus; todo: remove this once all code is compiled as C++
+
 typedef struct EngineState {
     struct PLCamera *camera;       // camera used for general gameplay
     struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
@@ -64,9 +74,6 @@ typedef struct EngineState {
 
     unsigned int draw_ticks;
     unsigned int last_draw_ms;
-
-    uint8_t max_players;            /* maximum players allowed in current game */
-    Player players[MAX_PLAYERS];    /* tracks all current players */
 } EngineState;
 extern EngineState g_state;
 
@@ -135,8 +142,16 @@ PL_EXTERN_C_END
 
 #define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
 #define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
-#define Error(...) {                                            \
-    _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);      \
-    System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__); \
-    exit(EXIT_FAILURE);                                         \
-}
+#ifdef _DEBUG
+    #define Error(...) {                                            \
+        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        u_assert(0, __VA_ARGS__);                                   \
+        exit(EXIT_FAILURE);                                         \
+    }
+#else
+    #define Error(...) {                                            \
+        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
+        exit(EXIT_FAILURE);                                         \
+    }
+#endif
