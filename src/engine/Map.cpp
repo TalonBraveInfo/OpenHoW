@@ -389,9 +389,9 @@ void Map::LoadTiles(const std::string &path) {
             snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
             current_chunk.model->model_matrix = plTranslateMatrix(
                     PLVector3(
-                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH),
+                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH) - (MAP_PIXEL_WIDTH / 2),
                             0.0f,
-                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)) );
+                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH) - (MAP_PIXEL_WIDTH / 2)) );
         }
     }
 
