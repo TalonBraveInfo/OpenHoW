@@ -32,21 +32,26 @@ void Actor::HandleInput() {
 
     Player* player = mode->GetCurrentPlayer();
     if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-
+        position_.z += 100.f;
     } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-
+        position_.z -= 100.f;
     }
 
     if(Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-        angles_.y += 0.5f;
+        angles_.y += 100.f;
     } else if(Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-        angles_.y -= 0.5f;
+        angles_.y -= 100.f;
     }
 
     if( Input_GetActionState(player->input_slot, ACTION_JUMP) ||
         Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
-        position_.z += 0.5f;
+        position_.y += 100.f;
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
-        position_.z -= 0.5f;
+        position_.y -= 100.f;
     }
+}
+
+void Actor::SetAngles(PLVector3 angles) {
+    angles_ = angles;
+    /* todo: limit angles... */
 }

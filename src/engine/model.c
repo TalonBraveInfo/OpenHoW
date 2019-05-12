@@ -75,8 +75,9 @@ static HirHandle* Hir_LoadFile(const char* path) {
 
     /* in the long term, we won't have this here, we'll probably extend the format
      * to include the names of each bone (.skeleton format?) */
-    if(num_bones >= MAX_BONE_INDICES) {
+    if(num_bones > MAX_BONE_INDICES) {
         LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
+        return NULL;
     }
 
     HirHandle* handle = u_alloc(1, sizeof(HirHandle), true);
@@ -713,7 +714,7 @@ void ShutdownModels(void) {
 ////////////////////////////////////////////////////////////////
 
 void DEBUGDrawModel(void) {
-    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, -2048));
+    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, 512));
     plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
 }
 

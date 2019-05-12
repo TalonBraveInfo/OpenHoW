@@ -61,7 +61,7 @@ public:
     virtual void SetPosition(PLVector3 position) { position_ = position; }
 
     virtual PLVector3 GetAngles() { return angles_; }
-    virtual void SetAngles(PLVector3 angles) { angles_ = angles; }
+    virtual void SetAngles(PLVector3 angles);
 
     virtual void HandleInput();   // handle any player input, if applicable
 

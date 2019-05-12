@@ -366,13 +366,17 @@ void Map::LoadTiles(const std::string &path) {
 
             PLMesh *chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
             if(chunk_mesh == nullptr) {
-                Error("Unable to create map chunk mesh (%s), aborting!\n", plGetError());
+                Error("Unable to create map chunk mesh, aborting (%s)!\n", plGetError());
             }
 
             for(unsigned int vz = 0; vz < 5; ++vz) {
                 for(unsigned int vx = 0; vx < 5; ++vx) {
                     unsigned int idx = (vz*5)+vx;
-                    plSetMeshVertexPosition(chunk_mesh, idx, PLVector3(vx * MAP_TILE_PIXEL_WIDTH, vertices[idx].height, vz * MAP_TILE_PIXEL_WIDTH ) );
+                    plSetMeshVertexPosition(chunk_mesh, idx, PLVector3(
+                            vx * MAP_TILE_PIXEL_WIDTH,
+                            vertices[idx].height,
+                            vz * MAP_TILE_PIXEL_WIDTH ) );
+                    plSetMeshVertexColour(chunk_mesh, idx, PLColour(255, 255, 255, 255));
                 }
             }
 
@@ -384,9 +388,10 @@ void Map::LoadTiles(const std::string &path) {
 
             snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
             current_chunk.model->model_matrix = plTranslateMatrix(
-                    PLVector3((float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH),
-                    0.0f,
-                    (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)) );
+                    PLVector3(
+                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH),
+                            0.0f,
+                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)) );
         }
     }
 
