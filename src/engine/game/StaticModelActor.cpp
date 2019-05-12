@@ -18,12 +18,9 @@
 #include "../engine.h"
 #include "../model.h"
 
+#include "ActorManager.h"
 #include "StaticModelActor.h"
 
-StaticModelActor::StaticModelActor() = default;
-StaticModelActor::~StaticModelActor() = default;
-
-#if 0
 register_actor(DUMMY, StaticModelActor); // todo: needs special logic
 
 // Barbed Wire
@@ -41,4 +38,9 @@ register_actor(BRIDGE_S, StaticModelActor);
 
 // Building Components
 register_actor(IRONGATE, StaticModelActor);
-#endif
+
+StaticModelActor::StaticModelActor() {
+    SetModel("decoration/blah");
+}
+
+StaticModelActor::~StaticModelActor() = default;

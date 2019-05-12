@@ -56,6 +56,7 @@ void Client_ProcessInput() {
             /* follow currently selected pig */
         } break;
 
+#if 0
         case CAMERA_MODE_FREE: {
             if(Input_GetActionState(0, ACTION_MOVE_FORWARD)) {
                 g_state.camera->position.x += 4.f;
@@ -81,6 +82,7 @@ void Client_ProcessInput() {
                 g_state.camera->angles.z -= 4.f;
             }
         } break;
+#endif
     }
 }
 

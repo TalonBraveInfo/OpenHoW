@@ -500,7 +500,7 @@ PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
 
         LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
         // todo: provide placeholder
-        //model = plCreateModelCube();
+        model = model_cache.pigs[PIG_CLASS_ACE]; //plCreateModelCube();
     }
     return model;
 }
@@ -713,8 +713,8 @@ void ShutdownModels(void) {
 
 ////////////////////////////////////////////////////////////////
 
-void DEBUGDrawModel(void) {
-    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, 512));
+void DEBUGDrawModel(PLVector3 position) {
+    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(position);
     plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
 }
 

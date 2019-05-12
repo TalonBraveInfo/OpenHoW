@@ -512,7 +512,7 @@ void Display_Initialize(void) {
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(0, 0, 0, 255));
+    plSetClearColour(PLColour(255, 0, 0, 255));
 
     g_state.camera = plCreateCamera();
     if(g_state.camera == NULL) {

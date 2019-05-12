@@ -24,6 +24,8 @@
 Actor::Actor() = default;
 Actor::~Actor() = default;
 
+#include <PL/platform_graphics_camera.h>
+
 void Actor::HandleInput() {
     BaseGameMode* mode = GetGameMode();
     if(mode == nullptr) {
@@ -31,16 +33,31 @@ void Actor::HandleInput() {
     }
 
     Player* player = mode->GetCurrentPlayer();
+
     if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-        position_.z += 100.f;
+        //position_.z += 100.f;
+        position_.x += 100.f * g_state.camera->forward.x;
+        position_.y += 100.f * g_state.camera->forward.y;
+        position_.z += 100.f * g_state.camera->forward.z;
     } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-        position_.z -= 100.f;
+        //position_.z -= 100.f;
+        position_.x -= 100.f * g_state.camera->forward.x;
+        position_.y -= 100.f * g_state.camera->forward.y;
+        position_.z -= 100.f * g_state.camera->forward.z;
     }
 
-    if(Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-        angles_.y += 100.f;
-    } else if(Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-        angles_.y -= 100.f;
+    if(Input_GetActionState(player->input_slot, ACTION_SELECT)) {
+        if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
+            position_.x += 100.f;
+        } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
+            position_.x -= 100.f;
+        }
+    } else {
+        if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
+            angles_.y -= 2.f;
+        } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
+            angles_.y += 2.f;
+        }
     }
 
     if( Input_GetActionState(player->input_slot, ACTION_JUMP) ||
