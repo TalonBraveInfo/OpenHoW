@@ -73,9 +73,8 @@ void Display_ClearTextureIndex(unsigned int id);
 void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w,
                                     unsigned int *h);
-const PLTexture *Display_GetCachedTexture(unsigned int id);
-
-PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter);
+PLTexture* Display_GetCachedTexture(unsigned int id);
+PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter);
 
 extern const char *supported_image_formats[];
 

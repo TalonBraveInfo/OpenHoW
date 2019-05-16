@@ -75,7 +75,7 @@ void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x
     *h = index->offsets[tex_id].h;
 }
 
-const PLTexture *Display_GetCachedTexture(unsigned int id) {
+PLTexture* Display_GetCachedTexture(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
     return texture_cache[id].texture;
 }
