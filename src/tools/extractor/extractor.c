@@ -117,7 +117,7 @@ static CopyPath pc_package_paths[] = {
         {"/Language/Tims/MENUTIMS.MAD", "/fe/dash/menu/"},
         {"/Language/Tims/TBOXTIMS.MAD", "/fe/dash/"},
 
-#if 0
+#if 1
         {"/Maps/BAY.PTG",        "/campaigns/how/maps/bay/tiles/"},
         {"/Maps/ICE.PTG",        "/campaigns/how/maps/ice/tiles/"},
         {"/Maps/BOOM.PTG",       "/campaigns/how/maps/boom/tiles/"},
@@ -203,6 +203,15 @@ static void ExtractPTGPackage(const char *input_path, const char *output_path) {
     }
 
     FILE *out = NULL;
+    FILE *out_index = NULL;
+
+    char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    snprintf(index_path, sizeof(index_path), "%s/%s.index", output_path, ptg_name);
+    out_index = fopen(index_path, "w");
+    if (out_index == NULL) {
+        LogWarn("failed to open %s for writing!\n", index_path);
+        goto ABORT_PTG;
+    }
 
     uint32_t num_textures;
     if(fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
@@ -222,21 +231,24 @@ static void ExtractPTGPackage(const char *input_path, const char *output_path) {
         sprintf(out_path, "%s/%d.tim", output_path, i);
         out = fopen(out_path, "wb");
         if(out == NULL) {
-            LogInfo("failed to open %s for writing, aborting!\n", out_path);
+            LogInfo("Failed to open %s for writing, aborting!\n", out_path);
             goto ABORT_PTG;
         }
 
         //print(" %s\n", out_path);
         if(fwrite(tim, tim_size, 1, out) != 1) {
-            LogInfo("failed to write %s, aborting!\n", out_path);
+            LogInfo("Failed to write %s, aborting!\n", out_path);
             goto ABORT_PTG;
         }
+
+        fprintf(out_index, "%d\n", i);
 
         u_fclose(out);
     }
 
     ABORT_PTG:
     u_fclose(out);
+    u_fclose(out_index);
     u_fclose(file);
 }
 
