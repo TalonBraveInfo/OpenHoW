@@ -20,10 +20,10 @@
 
 #include "../engine.h"
 #include "../input.h"
-#include "../mad.h"
 #include "../imgui_layer.h"
 #include "../frontend.h"
 #include "../particle.h"
+#include "../loaders/loaders.h"
 
 #include "font.h"
 #include "shader.h"
@@ -39,6 +39,8 @@ static int num_vid_presets;
 static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 static PLFrameBuffer* game_target;
 static PLFrameBuffer* frontend_target;
+
+static PLTexture* placeholder_texture = NULL;
 
 typedef struct TextureIndex {
     struct {
@@ -165,8 +167,12 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
         return;
     }
 
+    char tmp[PL_SYSTEM_MAX_PATH];
+    snprintf(tmp, sizeof(tmp), "%s%s", path, index_name);
+
     char texture_index_path[PL_SYSTEM_MAX_PATH];
-    snprintf(texture_index_path, sizeof(texture_index_path), "%s/%s%s", GetBasePath(), path, index_name);
+    snprintf(texture_index_path, sizeof(texture_index_path), "%s", u_find(tmp));
+
     if(!plFileExists(texture_index_path)) {
         Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
     }
@@ -194,12 +200,11 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
             line[strcspn(line, "\r\n")] = '\0';
             //LogDebug("  %s\n", line);
 
+
+
             char texture_path[PL_SYSTEM_MAX_PATH];
-            snprintf(texture_path, sizeof(texture_path), "%s/%s%s.tim", GetBasePath(), path, line);
-            if(!plFileExists(texture_path)) {
-                /* check for PNG variant */
-                snprintf(texture_path, sizeof(texture_path), "%s/%s%s.png", GetBasePath(), path, line);
-            }
+            snprintf(tmp, sizeof(tmp), "%s%s", path, line);
+            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats));
 
             if(index->num_textures >= MAX_TEXTURES_PER_INDEX) {
                 Error("hit max index (%u) for texture sheet, aborting!\n", MAX_TEXTURES_PER_INDEX);
@@ -417,14 +422,12 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
         g_state.camera->viewport.y = g_state.ui_camera->viewport.y = y;
         g_state.camera->viewport.w = g_state.ui_camera->viewport.w = width;
         g_state.camera->viewport.h = g_state.ui_camera->viewport.h = height;
-    }
-    else{
+    } else {
         g_state.camera->viewport.x = g_state.ui_camera->viewport.x = (width - newWidth) / 2;
         g_state.camera->viewport.y = g_state.ui_camera->viewport.y = (height - newHeight) / 2;
         g_state.camera->viewport.w = g_state.ui_camera->viewport.w = newWidth;
         g_state.camera->viewport.h = g_state.ui_camera->viewport.h = newHeight;
     }
-
 }
 
 int Display_GetViewportWidth(const PLViewport *viewport) {
@@ -539,7 +542,10 @@ void Display_Initialize(void) {
 
     ImGuiImpl_SetupCamera();
 
-    //plSetCullMode(PL_CULL_POSTIVE);
+    plSetCullMode(PL_CULL_POSTIVE);
+
+    /* go ahead and create our placeholder texture, used if
+     * one fails to load */
 
     /* initialize the texture cache */
 

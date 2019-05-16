@@ -106,12 +106,12 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
     }
 
     // set it to the first mode in the list for now
-    if(!SetGameMode(desc->modes[0])) {
+    if(!Game_SetMode(desc->modes[0])) {
         return;
     }
 
     // now start it up!
-    GetGameMode()->StartMode(argv[1]);
+    Game_GetMode()->StartMode(argv[1]);
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {

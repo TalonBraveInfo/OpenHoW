@@ -41,6 +41,7 @@ file(
         graphics/*.*
         script/*.*
         game/*.*
+        loaders/*.*
 
         ################## ImGui
 

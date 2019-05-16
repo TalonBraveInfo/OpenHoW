@@ -21,139 +21,9 @@
 
 #include "engine.h"
 #include "model.h"
+#include "loaders/loaders.h"
 #include "game/TempGame.h"
-
 #include "graphics/display.h"
-
-/************************************************************/
-/* Hir Skeleton Format */
-
-typedef struct HirHandle {
-    PLModelBone*    bones;
-    unsigned int    num_bones;
-} HirHandle;
-
-static HirHandle* Hir_LoadFile(const char* path) {
-    size_t hir_size = plGetFileSize(path);
-    if(hir_size == 0) {
-        LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
-        return NULL;
-    }
-
-    FILE *file = fopen(path, "rb");
-    if(file == NULL) {
-        LogWarn("Failed to load \"%s\", aborting!\n", path);
-        return NULL;
-    }
-
-    typedef struct __attribute__((packed)) HirBone {
-        int32_t parent;
-        int16_t coords[3];
-        int8_t  unknown[10];
-    } HirBone;
-
-    unsigned int num_bones = (unsigned int)(hir_size / sizeof(HirBone));
-    HirBone bones[num_bones];
-    unsigned int rnum_bones = fread(bones, sizeof(HirBone), num_bones, file);
-    fclose(file);
-
-    if(rnum_bones != num_bones) {
-        LogWarn("Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones);
-        return NULL;
-    }
-
-    /* for debugging */
-    static const char* bone_names[MAX_BONE_INDICES]={
-            "Pelvis",
-            "Spine",
-            "Head",
-            "UpperArm.L", "LowerArm.L", "Hand.L",
-            "UpperArm.R", "LowerArm.R", "Hand.R",
-            "UpperLeg.L", "LowerLeg.L", "Foot.L",
-            "UpperLeg.R", "LowerLeg.R", "Foot.R",
-    };
-
-    /* in the long term, we won't have this here, we'll probably extend the format
-     * to include the names of each bone (.skeleton format?) */
-    if(num_bones > MAX_BONE_INDICES) {
-        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
-        return NULL;
-    }
-
-    HirHandle* handle = u_alloc(1, sizeof(HirHandle), true);
-    handle->bones = u_alloc(num_bones, sizeof(PLModelBone), true);
-    for(unsigned int i = 0; i < num_bones; ++i) {
-        handle->bones[i].position = PLVector3(bones[i].coords[0], bones[i].coords[1], bones[i].coords[2]);
-        handle->bones[i].parent = bones[i].parent;
-        strcpy(handle->bones[i].name, bone_names[i]);
-    }
-    return handle;
-}
-
-static void Hir_DestroyHandle(HirHandle* handle) {
-    if(handle == NULL) {
-        return;
-    }
-
-    free(handle->bones);
-    free(handle);
-}
-
-/************************************************************/
-/* Vtx Vertex Format */
-
-typedef struct VtxHandle {
-    PLVertex*       vertices;
-    unsigned int    num_vertices;
-} VtxHandle;
-
-static VtxHandle* Vtx_LoadFile(const char* path) {
-    FILE *vtx_file = fopen(path, "rb");
-    if(vtx_file == NULL) {
-        LogWarn("Failed to load Vtx \"%s\", aborting!\n", path);
-        return NULL;
-    }
-
-    /* load in the vertices */
-
-    typedef struct __attribute__((packed)) VtxCoord {
-        int16_t     v[3];
-        uint16_t    bone_index;
-    } VtxCoord;
-    unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VtxCoord));
-    VtxCoord vertices[num_vertices];
-    unsigned int rnum_vertices = fread(vertices, sizeof(VtxCoord), num_vertices, vtx_file);
-    fclose(vtx_file);
-
-    if(num_vertices == 0) {
-        LogWarn("No vertices found in Vtx \"%s\"!\n", path);
-        return NULL;
-    }
-
-    if(rnum_vertices != num_vertices) {
-        LogWarn("Failed to read in all vertices from \"%s\", aborting!\n", path);
-        return NULL;
-    }
-
-    VtxHandle* handle = u_alloc(1, sizeof(VtxHandle), true);
-    handle->vertices = u_alloc(num_vertices, sizeof(PLVertex), true);
-    handle->num_vertices = num_vertices;
-    for(unsigned int i = 0; i < num_vertices; ++i) {
-        handle->vertices[i].position = PLVector3(vertices[i].v[0], vertices[i].v[1], vertices[i].v[2]);
-        handle->vertices[i].bone_index = vertices[i].bone_index;
-        handle->vertices[i].colour = PL_COLOUR_WHITE;
-    }
-    return handle;
-}
-
-static void Vtx_DestroyHandle(VtxHandle* handle) {
-    if(handle == NULL) {
-        return;
-    }
-
-    free(handle->vertices);
-    free(handle);
-}
 
 /************************************************************/
 /* No2 Normals Format */
@@ -197,8 +67,8 @@ static void No2_DestroyHandle(No2Handle *handle) {
         return;
     }
 
-    free(handle->coords);
-    free(handle);
+    u_free(handle->coords);
+    u_free(handle);
 }
 
 /************************************************************/
@@ -415,7 +285,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     }
 #endif
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles, vtx->num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles + (num_quads * 2), vtx->num_vertices);
     if(mesh == NULL) {
         LogWarn("Failed to create mesh (%s)!\n", plGetError());
         return NULL;
@@ -430,7 +300,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         uint8_t b = (uint8_t)(rand() % 255);
         plSetMeshVertexColour(mesh, j, PLColour(r, g, b, 255));
 #else
-        plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
+        plSetMeshVertexColour(mesh, j, PLColour(255, 255, 255, 255));
 #endif
 
         mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
@@ -449,7 +319,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     PLModelBone* skeleton = u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true);
     memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
 
-    PLMesh **model_meshes = u_alloc(1, sizeof(PLMesh*), true);
+    PLMesh** model_meshes = u_alloc(1, sizeof(PLMesh*), true);
     model_meshes[0] = mesh;
     PLModel *model = plNewSkeletalModel(
             &(PLModelLod){model_meshes, 1}, 1,

@@ -19,7 +19,6 @@
 
 #include "engine.h"
 #include "language.h"
-#include "mad.h"
 #include "model.h"
 #include "ModSupport.h"
 #include "client.h"
@@ -29,9 +28,8 @@
 #include "audio.h"
 
 #include "game/BaseGameMode.h"
-
 #include "script/script.h"
-
+#include "loaders/loaders.h"
 #include "graphics/display.h"
 
 EngineState g_state;
@@ -126,7 +124,7 @@ bool Engine_IsRunning(void) {
 
         Client_Simulate();
 
-        BaseGameMode* mode = GetGameMode();
+        BaseGameMode* mode = Game_GetMode();
         if(mode != nullptr) {
             mode->Tick();
         }
@@ -171,7 +169,7 @@ extern "C" void DrawActors(void) {
 
 // Temporary interface, since graphics sub-system is written in C :^)
 extern "C" void DrawMap(void) {
-    BaseGameMode* mode = GetGameMode();
+    BaseGameMode* mode = Game_GetMode();
     if(mode == nullptr) {
         return;
     }

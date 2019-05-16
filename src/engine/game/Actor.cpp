@@ -27,7 +27,7 @@ Actor::~Actor() = default;
 #include <PL/platform_graphics_camera.h>
 
 void Actor::HandleInput() {
-    BaseGameMode* mode = GetGameMode();
+    BaseGameMode* mode = Game_GetMode();
     if(mode == nullptr) {
         return;
     }

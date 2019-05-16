@@ -23,7 +23,7 @@
 
 static BaseGameMode* current_mode = nullptr;
 
-bool SetGameMode(const std::string &mode) {
+bool Game_SetMode(const std::string &mode) {
     LogDebug("starting new game...\n");
 
     if(current_mode != nullptr) {
@@ -56,6 +56,6 @@ bool SetGameMode(const std::string &mode) {
     return true;
 }
 
-BaseGameMode *GetGameMode() {
+BaseGameMode *Game_GetMode() {
     return current_mode;
 }

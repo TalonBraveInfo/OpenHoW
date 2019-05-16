@@ -145,7 +145,7 @@ const static uint16_t chunkIndices[96] = {
     18, 23, 19, 19, 23, 24,
 };
 
-Map::Map(const std::string &name) {
+Map::Map(const std::string& name) {
     LogDebug("Loading map, %s...\n", name.c_str());
 
     manifest_ = MapManager::GetInstance()->GetManifest(name);
@@ -160,6 +160,8 @@ Map::Map(const std::string &name) {
 #endif
 
     std::string base_path = "maps/" + name + "/";
+    Display_CacheTextureIndex(std::string(base_path + "tiles/").c_str(), std::string(name + ".index").c_str(), TEXTURE_INDEX_MAP);
+
     std::string p = u_find(std::string(base_path + name + ".pmg").c_str());
     if(!plFileExists(p.c_str())) {
         throw std::runtime_error("PMG, " + p + ", doesn't exist!\n");
@@ -173,7 +175,6 @@ Map::Map(const std::string &name) {
     }
 
     LoadSpawns(p);
-    LoadTextures(p);
 
     sky_model_ = Model_LoadFile("skys/skydome", true);
 
@@ -370,7 +371,7 @@ void Map::LoadTiles(const std::string &path) {
                 }
             }
 
-            PLMesh *chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
+            PLMesh* chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
             if(chunk_mesh == nullptr) {
                 Error("Unable to create map chunk mesh, aborting (%s)!\n", plGetError());
             }
@@ -402,10 +403,6 @@ void Map::LoadTiles(const std::string &path) {
     }
 
     std::fclose(fh);
-}
-
-void Map::LoadTextures(const std::string &path) {
-    // TODO
 }
 
 void Map::GenerateOverview() {

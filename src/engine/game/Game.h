@@ -27,5 +27,5 @@ struct Player {
     unsigned int    input_slot{0};
 };
 
-bool SetGameMode(const std::string &mode);
-BaseGameMode* GetGameMode();
+bool Game_SetMode(const std::string &mode);
+BaseGameMode* Game_GetMode();
