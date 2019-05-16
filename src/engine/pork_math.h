@@ -22,6 +22,20 @@
 /* extension of Platform's math functionality
  * a lot of these are borrowed from ioq3 to fill gaps */
 
+#ifdef __cplusplus
+
+inline static void VecAngleClamp(PLVector3* vector) {
+    for(unsigned int i = 0; i < 3; ++i) {
+        if((*vector)[i] >= 360) {
+            (*vector)[i] = 0;
+        } else if((*vector)[i] <= -360) {
+            (*vector)[i] = 0;
+        }
+    }
+}
+
+#endif
+
 inline static void Mat4Copy(PLMatrix4x4 in, PLMatrix4x4 *out) {
     memcpy(out, &in, sizeof(PLMatrix4x4));
 }

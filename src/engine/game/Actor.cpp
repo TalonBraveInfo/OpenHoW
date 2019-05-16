@@ -66,9 +66,12 @@ void Actor::HandleInput() {
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
         position_.y -= 100.f;
     }
+
+    VecAngleClamp(&angles_);
 }
 
 void Actor::SetAngles(PLVector3 angles) {
+    VecAngleClamp(&angles);
     angles_ = angles;
     /* todo: limit angles... */
 }

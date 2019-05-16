@@ -269,6 +269,12 @@ void Map::LoadSpawns(const std::string &path) {
     } catch(const std::ifstream::failure &err) {
         Error("Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
     }
+
+    /* now we'll bump the coords here, to make life easy */
+    for(auto &spawn : spawns_) {
+        spawn.position[0] += (MAP_PIXEL_WIDTH / 2);
+        spawn.position[2] += (MAP_PIXEL_WIDTH / 2);
+    }
 }
 
 void Map::LoadTiles(const std::string &path) {
@@ -389,9 +395,9 @@ void Map::LoadTiles(const std::string &path) {
             snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
             current_chunk.model->model_matrix = plTranslateMatrix(
                     PLVector3(
-                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH) - (MAP_PIXEL_WIDTH / 2),
+                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH)/* - (MAP_PIXEL_WIDTH / 2)*/,
                             0.0f,
-                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH) - (MAP_PIXEL_WIDTH / 2)) );
+                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)/* - (MAP_PIXEL_WIDTH / 2)*/) );
         }
     }
 
