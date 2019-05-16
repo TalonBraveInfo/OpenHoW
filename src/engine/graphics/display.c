@@ -410,7 +410,8 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
 
     //TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
     //      For now, just use the same viewport aspect for both.
-    if(cv_display_use_window_aspect->b_value){
+
+    if(FrontEnd_GetState() == FE_MODE_GAME || cv_display_use_window_aspect->b_value){
         //If enabled, use full window for 3d scene
         g_state.camera->viewport.x = g_state.ui_camera->viewport.x = x;
         g_state.camera->viewport.y = g_state.ui_camera->viewport.y = y;

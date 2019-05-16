@@ -399,5 +399,8 @@ void FrontEnd_SetState(unsigned int state) {
     }
     old_frontend_state = frontend_state;
     frontend_state = state;
+
+    /* !!hacky!! force the display to update due to aspect change, yeah this is gross... */
+    Display_UpdateViewport(0, 0, cv_display_width->i_value, cv_display_height->i_value);
 }
 
