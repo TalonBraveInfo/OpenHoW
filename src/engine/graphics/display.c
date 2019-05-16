@@ -460,7 +460,7 @@ void Display_UpdateState(void) {
         if(h < MIN_DISPLAY_HEIGHT) h = MIN_DISPLAY_HEIGHT;
 
         plSetConsoleVariable(cv_display_width, pl_itoa(w, buf, 4, 10));
-        plSetConsoleVariable(cv_display_height, pl_itoa(w, buf, 4, 10));
+        plSetConsoleVariable(cv_display_height, pl_itoa(h, buf, 4, 10));
     } else {
         LogInfo("display set to %dx%d\n", w, h);
     }
