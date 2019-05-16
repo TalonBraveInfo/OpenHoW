@@ -26,6 +26,9 @@ extern PLConsoleVariable *cv_debug_input;
 extern PLConsoleVariable *cv_debug_cache;
 
 extern PLConsoleVariable *cv_camera_mode;
+extern PLConsoleVariable *cv_camera_fov;
+extern PLConsoleVariable *cv_camera_near;
+extern PLConsoleVariable *cv_camera_far;
 
 extern PLConsoleVariable *cv_base_path;
 extern PLConsoleVariable *cv_campaign_path;

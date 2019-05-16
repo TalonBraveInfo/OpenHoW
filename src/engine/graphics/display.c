@@ -512,14 +512,16 @@ void Display_Initialize(void) {
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(255, 0, 0, 255));
+    plSetClearColour(PLColour(200, 200, 255, 255));
 
     g_state.camera = plCreateCamera();
     if(g_state.camera == NULL) {
         Error("failed to create camera, aborting!\n%s\n", plGetError());
     }
     g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.camera->fov         = 90;
+    g_state.camera->fov         = cv_camera_fov->f_value;
+    g_state.camera->far         = cv_camera_far->f_value;
+    g_state.camera->near        = cv_camera_near->f_value;
     g_state.camera->viewport.w  = cv_display_width->i_value;
     g_state.camera->viewport.h  = cv_display_height->i_value;
 
@@ -562,7 +564,7 @@ void Display_Shutdown(void) {
 /************************************************************/
 
 void DEBUGDrawSkeleton();
-void DEBUGDrawModel();
+void DEBUGDrawModel(PLVector3 position);
 
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     static unsigned int fps_ = 0;
@@ -720,6 +722,12 @@ void Display_SetupDraw(double delta) {
     plClearBuffers(clear_flags);
 
     plBindFrameBuffer(NULL, PL_FRAMEBUFFER_DRAW);
+
+    /* update camera state to match vars */
+    g_state.camera->fov     = cv_camera_fov->f_value;
+    g_state.camera->near    = cv_camera_near->f_value;
+    g_state.camera->far     = cv_camera_far->f_value;
+
     plSetupCamera(g_state.camera);
 }
 
@@ -732,7 +740,7 @@ void Display_DrawScene(void) {
     DrawActors();
     DrawParticles(cur_delta);
 
-    DEBUGDrawModel();
+    DEBUGDrawModel(PLVector3(0, 0, 512));
 }
 
 void Display_DrawInterface(void) {

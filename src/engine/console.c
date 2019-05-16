@@ -255,6 +255,9 @@ PLConsoleVariable *cv_debug_input = NULL;
 PLConsoleVariable *cv_debug_cache = NULL;
 
 PLConsoleVariable *cv_camera_mode = NULL;
+PLConsoleVariable *cv_camera_fov = NULL;
+PLConsoleVariable *cv_camera_near = NULL;
+PLConsoleVariable *cv_camera_far = NULL;
 
 PLConsoleVariable *cv_base_path = NULL;
 PLConsoleVariable *cv_campaign_path = NULL;
@@ -294,6 +297,9 @@ void Console_Initialize(void) {
     rvar(cv_campaign_path, false, "", pl_string_var, NULL, "");
 
     rvar(cv_camera_mode, false, "0", pl_int_var, NULL, "0 = default, 1 = debug");
+    rvar(cv_camera_fov, true, "75", pl_float_var, NULL, "field of view");
+    rvar(cv_camera_near, false, "0.1", pl_float_var, NULL, "");
+    rvar(cv_camera_far, false, "999999", pl_float_var, NULL, "");
 
     rvar(cv_display_texture_cache, false, "-1", pl_int_var, NULL, "");
     rvar(cv_display_width, true, "1024", pl_int_var, NULL, "");
