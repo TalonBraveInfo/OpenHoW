@@ -65,18 +65,21 @@ size_t GetTextureCacheSize(void) {
     return size;
 }
 
-void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w,
-                                    unsigned int *h) {
+void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h) {
     u_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
     TextureIndex *index = &texture_cache[id];
-    *x = index->offsets[tex_id].x;
-    *y = index->offsets[tex_id].y;
-    *w = index->offsets[tex_id].w;
-    *h = index->offsets[tex_id].h;
+    *x = (float)index->offsets[tex_id].x / index->texture->w;
+    *y = (float)index->offsets[tex_id].y / index->texture->h;
+    *w = (float)index->offsets[tex_id].w / index->texture->w;
+    *h = (float)index->offsets[tex_id].h / index->texture->h;
 }
 
 PLTexture* Display_GetCachedTexture(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
+    if(texture_cache[id].texture == NULL) {
+        return placeholder_texture;
+    }
+
     return texture_cache[id].texture;
 }
 

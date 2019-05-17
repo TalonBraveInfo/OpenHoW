@@ -123,6 +123,7 @@ MapManifest map_descriptors[]={
 
 //Precalculated vertices for chunk rendering
 //TODO: Share one index buffer instance between all chunks
+#if 0
 const static uint16_t chunkIndices[96] = {
      0,  5,  1,  1,  5,  6,
      1,  6,  2,  2,  6,  7,
@@ -144,6 +145,26 @@ const static uint16_t chunkIndices[96] = {
     17, 22, 18, 18, 22, 23,
     18, 23, 19, 19, 23, 24,
 };
+#else
+const static uint16_t chunkIndices[96] = {
+        0, 2, 1, 1, 2, 3,
+        4, 6, 5, 5, 6, 7,
+        8, 10, 9, 9, 10, 11,
+        12, 14, 13, 13, 14, 15,
+        16, 18, 17, 17, 18, 19,
+        20, 22, 21, 21, 22, 23,
+        24, 26, 25, 25, 26, 27,
+        28, 30, 29, 29, 30, 31,
+        32, 34, 33, 33, 34, 35,
+        36, 38, 37, 37, 38, 39,
+        40, 42, 41, 41, 42, 43,
+        44, 46, 45, 45, 46, 47,
+        48, 50, 49, 49, 50, 51,
+        52, 54, 53, 53, 54, 55,
+        56, 58, 57, 57, 58, 59,
+        60, 62, 61, 61, 62, 63,
+};
+#endif
 
 Map::Map(const std::string& name) {
     LogDebug("Loading map, %s...\n", name.c_str());
@@ -274,6 +295,7 @@ void Map::LoadSpawns(const std::string &path) {
     /* now we'll bump the coords here, to make life easy */
     for(auto &spawn : spawns_) {
         spawn.position[0] += (MAP_PIXEL_WIDTH / 2);
+        spawn.position[2] *= -1;
         spawn.position[2] += (MAP_PIXEL_WIDTH / 2);
     }
 }
@@ -323,6 +345,13 @@ void Map::LoadTiles(const std::string &path) {
 
             std::fseek(fh, 4, SEEK_CUR);
 
+            PLMesh* chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, (void*)chunkIndices, nullptr);
+            if(chunk_mesh == nullptr) {
+                Error("Unable to create map chunk mesh, aborting (%s)!\n", plGetError());
+            }
+
+            int cm_idx = 0;
+
             for(unsigned int tile_y = 0; tile_y < MAP_CHUNK_ROW_TILES; ++tile_y) {
                 for(unsigned int tile_x = 0; tile_x < MAP_CHUNK_ROW_TILES; ++tile_x) {
                     struct __attribute__((packed)) {
@@ -346,46 +375,71 @@ void Map::LoadTiles(const std::string &path) {
                         Error("unexpected end of file, aborting!\n");
                     }
 
-                    /* todo, load texture and apply it to texture atlas
-                     * let's do this per-block? i'm paranoid about people
-                     * trying to add massive textures for each tile... :(
-                     */
+                    MapTile* current_tile = &current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES];
+                    current_tile->type     = (tile.type & 31U);
+                    current_tile->flags    = (tile.type & ~31U);
+                    current_tile->flip     = tile.rotation;
+                    current_tile->slip     = 0;
+                    current_tile->tex      = tile.texture;
 
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type     = (tile.type & 31U);
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flags    = (tile.type & ~31U);
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].flip     = tile.rotation;
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].slip     = 0;
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].tex      = tile.texture;
-
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[0] = vertices[
-                            (tile_y * 5) + tile_x].height;
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[1] = vertices[
-                            (tile_y * 5) + tile_x + 1].height;
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[2] = vertices[
-                            ((tile_y + 1) * 5) + tile_x].height;
-                    current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].height[3] = vertices[
-                            ((tile_y + 1) * 5) + tile_x + 1].height;
+                    current_tile->height[0] = vertices[(tile_y * 5) + tile_x].height;
+                    current_tile->height[1] = vertices[(tile_y * 5) + tile_x + 1].height;
+                    current_tile->height[2] = vertices[((tile_y + 1) * 5) + tile_x].height;
+                    current_tile->height[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].height;
 
                     u_assert(current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
+
+                    float tx_x, tx_y, tx_w, tx_h;
+                    Display_GetCachedTextureCoords(TEXTURE_INDEX_MAP, current_tile->tex, &tx_x, &tx_y, &tx_w, &tx_h);
+
+                    /* MAP_FLIP_FLAG_X flips around texture sheet coords, not map coords. */
+                    if(current_tile->flip & MAP_FLIP_FLAG_X) {
+                        tx_x = tx_x + tx_w;
+                        tx_w = -tx_w;
+                    }
+
+                    /* ST coords for each corner of the tile. */
+                    float tx_Ax[] = { tx_x, tx_x + tx_w, tx_x, tx_x + tx_w };
+                    float tx_Ay[] = { tx_y, tx_y, tx_y + tx_h, tx_y + tx_h };
+
+                    /* Rotate a quad of ST coords 90 degrees clockwise. */
+                    auto rot90 = [](float *x)
+                    {
+                        float c = x[0];
+                        x[0] = x[2];
+                        x[2] = x[3];
+                        x[3] = x[1];
+                        x[1] = c;
+                    };
+
+                    if(current_tile->flip & MAP_FLIP_FLAG_ROTATE_90) {
+                        rot90(tx_Ax);
+                        rot90(tx_Ay);
+                    }
+
+                    if(current_tile->flip & MAP_FLIP_FLAG_ROTATE_180) {
+                        rot90(tx_Ax);
+                        rot90(tx_Ay);
+                        rot90(tx_Ax);
+                        rot90(tx_Ay);
+                    }
+
+                    /* MAP_FLIP_FLAG_ROTATE_270 is implemented by ORing 90 and 180 together. */
+
+                    for(int i = 0; i < 4; ++i, ++cm_idx)
+                    {
+                        float x = (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
+                        float z = (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
+
+                        plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
+                        plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(255, 255, 255, 255));
+                        plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
+                    }
                 }
             }
 
-            PLMesh* chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 25, (void*)chunkIndices, nullptr);
-            if(chunk_mesh == nullptr) {
-                Error("Unable to create map chunk mesh, aborting (%s)!\n", plGetError());
-            }
-
-            for(unsigned int vz = 0; vz < 5; ++vz) {
-                for(unsigned int vx = 0; vx < 5; ++vx) {
-                    unsigned int idx = (vz*5)+vx;
-                    plSetMeshVertexPosition(chunk_mesh, idx, PLVector3(
-                            vx * MAP_TILE_PIXEL_WIDTH,
-                            vertices[idx].height,
-                            vz * MAP_TILE_PIXEL_WIDTH ) );
-                    plSetMeshVertexColour(chunk_mesh, idx, PLColour(255, 255, 255, 255));
-                }
-            }
+            chunk_mesh->texture = Display_GetCachedTexture(TEXTURE_INDEX_MAP);
 
             // attach the mesh to our model
             current_chunk.model = plNewBasicStaticModel(chunk_mesh);
