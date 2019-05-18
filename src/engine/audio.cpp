@@ -198,7 +198,7 @@ AudioManager::~AudioManager() {
     LogInfo("shutting down audio sub-system...\n");
 
     FreeSources();
-    FreeSamples();
+    FreeSamples(true);
 
     ALCcontext *context = alcGetCurrentContext();
     if(context != nullptr) {

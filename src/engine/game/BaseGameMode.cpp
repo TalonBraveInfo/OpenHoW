@@ -19,6 +19,7 @@
 
 #include "../engine.h"
 #include "../frontend.h"
+#include "../audio.h"
 
 #include "BaseGameMode.h"
 #include "ActorManager.h"
@@ -26,7 +27,10 @@
 BaseGameMode::BaseGameMode() {
     players_.resize(4);
 }
-BaseGameMode::~BaseGameMode() = default;
+
+BaseGameMode::~BaseGameMode() {
+    AudioManager::GetInstance()->FreeSamples();
+}
 
 void BaseGameMode::StartMode(const std::string &map_name) {
     FrontEnd_SetState(FE_MODE_LOADING);

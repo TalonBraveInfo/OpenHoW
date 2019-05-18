@@ -171,7 +171,11 @@ Map::Map(const std::string& name) {
 
     manifest_ = MapManager::GetInstance()->GetManifest(name);
     if(manifest_ == nullptr) {
+#if 0
         throw std::runtime_error("Failed to get map descriptor, \"" + name + "\"\n");
+#else
+        LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
+#endif
     }
 
 #if 0

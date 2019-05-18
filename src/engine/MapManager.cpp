@@ -94,19 +94,14 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         return;
     }
 
+    std::string mode = "singleplayer";
     const MapManifest *desc = GetInstance()->GetManifest(argv[1]);
-    if(desc == nullptr) {
-        LogWarn("Failed to find manifest for \"%s\"!\n", argv[1]);
-        return;
-    }
-
-    if(desc->modes.empty()) {
-        LogWarn("No modes specified for \"%s\"!\n", argv[1]);
-        return;
+    if(desc != nullptr && !desc->modes.empty()) {
+        mode = desc->modes[0];
     }
 
     // set it to the first mode in the list for now
-    if(!Game_SetMode(desc->modes[0])) {
+    if(!Game_SetMode(mode)) {
         return;
     }
 
