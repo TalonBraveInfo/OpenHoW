@@ -547,6 +547,9 @@ void Display_Initialize(void) {
 
     plSetCullMode(PL_CULL_POSTIVE);
 
+    plSetDepthBufferMode(PL_DEPTHBUFFER_ENABLE);
+    plSetDepthMask(true);
+
     /* go ahead and create our placeholder texture, used if
      * one fails to load */
 
