@@ -99,7 +99,8 @@ struct MapTile {
     unsigned int tex{0};
     unsigned int flip{0};
 
-    float height[4]{0, 0, 0, 0};
+    float       height[4]{0, 0, 0, 0};
+    uint8_t     shading[4]{0, 0, 0, 0};
 };
 
 struct MapChunk {

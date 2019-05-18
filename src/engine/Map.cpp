@@ -330,8 +330,8 @@ void Map::LoadTiles(const std::string &path) {
             current_chunk.offset = PLVector3(chunk.x, chunk.y, chunk.z);
 
             struct __attribute__((packed)) {
-                int16_t     height{0};
-                uint16_t    lighting{0};
+                int16_t height{0};
+                uint8_t lighting[2]{0, 0};
             } vertices[25];
             if(std::fread(vertices, sizeof(*vertices), 25, fh) != 25) {
                 Error("Unexpected end of file, aborting!\n");
@@ -391,6 +391,11 @@ void Map::LoadTiles(const std::string &path) {
                     current_tile->height[2] = vertices[((tile_y + 1) * 5) + tile_x].height;
                     current_tile->height[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].height;
 
+                    current_tile->shading[0] = vertices[(tile_y * 5) + tile_x].lighting[0];
+                    current_tile->shading[1] = vertices[(tile_y * 5) + tile_x + 1].lighting[0];
+                    current_tile->shading[2] = vertices[((tile_y + 1) * 5) + tile_x].lighting[0];
+                    current_tile->shading[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].lighting[0];
+
                     u_assert(current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
 
@@ -436,9 +441,12 @@ void Map::LoadTiles(const std::string &path) {
                         float x = (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
                         float z = (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
 
-                        plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
-                        plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(255, 255, 255, 255));
                         plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
+                        plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
+                        plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(
+                                current_tile->shading[i],
+                                current_tile->shading[i],
+                                current_tile->shading[i]));
                     }
                 }
             }
