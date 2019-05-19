@@ -26,6 +26,10 @@ BitmapFont *g_fonts[NUM_FONTS];
 PLMesh *font_mesh = NULL;
 
 void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character) {
+    if(scale == 0) {
+        return;
+    }
+
     // ensure that the character we're being passed fits within HoW's bitmap set
     if(character < 33 || character > 138) {
         return;
@@ -48,9 +52,9 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
 
     BitmapChar *bitmap_char = &font->chars[character];
     plSetMeshVertexPosition(font_mesh, 0, PLVector3(x, y, 0));
-    plSetMeshVertexPosition(font_mesh, 1, PLVector3(x, y + bitmap_char->h, 0));
-    plSetMeshVertexPosition(font_mesh, 2, PLVector3(x + bitmap_char->w, y, 0));
-    plSetMeshVertexPosition(font_mesh, 3, PLVector3(x + bitmap_char->w, y + bitmap_char->h, 0));
+    plSetMeshVertexPosition(font_mesh, 1, PLVector3(x, y + (bitmap_char->h * scale), 0));
+    plSetMeshVertexPosition(font_mesh, 2, PLVector3(x + (bitmap_char->w * scale), y, 0));
+    plSetMeshVertexPosition(font_mesh, 3, PLVector3(x + (bitmap_char->w * scale), y + (bitmap_char->h * scale), 0));
 
     float tw = (float)bitmap_char->w / font->width;
     float th = (float)bitmap_char->h / font->height;
@@ -68,6 +72,10 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
 
 void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
                            const char *msg) {
+    if(scale == 0) {
+        return;
+    }
+
     unsigned int num_chars = (unsigned int)strlen(msg);
     if(num_chars == 0) {
         return;
@@ -175,7 +183,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
         Error("failed to create texture for font, %s, aborting!\n", plGetError());
     }
 
-    font->texture->filter = PL_TEXTURE_FILTER_NEAREST;
+    font->texture->filter = PL_TEXTURE_FILTER_LINEAR;
 
     plUploadTextureImage(font->texture, &image);
     plFreeImage(&image);

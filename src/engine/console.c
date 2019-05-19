@@ -239,11 +239,15 @@ static void DebugModeCallback(const PLConsoleVariable *variable) {
 
 /************************************************************/
 
-#define MAX_BUFFER_SIZE 512
+#define MAX_INPUT_BUFFER_SIZE 256
+#define MAX_OUTPUT_BUFFER_SIZE  4096
 
 struct {
-    char buffer[MAX_BUFFER_SIZE];
-    unsigned int buffer_pos;
+    char out_buffer[MAX_OUTPUT_BUFFER_SIZE];
+    unsigned out_buffer_pos;
+
+    char in_buffer[MAX_INPUT_BUFFER_SIZE];
+    unsigned int in_buffer_pos;
 } console_state;
 
 static bool console_enabled = false;
@@ -275,6 +279,28 @@ PLConsoleVariable *cv_audio_volume = NULL;
 PLConsoleVariable *cv_audio_volume_sfx = NULL;
 PLConsoleVariable *cv_audio_voices = NULL;
 PLConsoleVariable *cv_audio_mode = NULL;
+
+static void ConsoleBufferUpdate(int level, const char* msg) {
+    size_t len = strlen(msg);
+    u_assert(len < MAX_OUTPUT_BUFFER_SIZE);
+    if(len + console_state.out_buffer_pos > MAX_OUTPUT_BUFFER_SIZE) {
+        unsigned int cpy_pos = 0;
+        while(len + (console_state.out_buffer_pos - cpy_pos) > MAX_OUTPUT_BUFFER_SIZE || console_state.out_buffer[cpy_pos] != '\n') {
+            ++cpy_pos;
+        }
+
+        memmove(console_state.out_buffer, console_state.out_buffer + cpy_pos, console_state.out_buffer_pos - cpy_pos);
+        console_state.out_buffer_pos -= cpy_pos;
+    }
+
+    strncpy(console_state.out_buffer + console_state.out_buffer_pos, msg, len);
+    console_state.out_buffer_pos += len;
+}
+
+static void ClearConsoleOutputBuffer(unsigned int argc, char** argv) {
+    (void)argc; (void)argv;
+    console_state.out_buffer_pos = 0;
+}
 
 void Console_Initialize(void) {
 #define rvar(var, arc, ...) \
@@ -331,13 +357,14 @@ void Console_Initialize(void) {
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
     plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");
     plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
+    plRegisterConsoleCommand("clear", ClearConsoleOutputBuffer, "Clears the console output buffer");
+    plRegisterConsoleCommand("cls", ClearConsoleOutputBuffer, "Clears the console output buffer");
+
+    ClearConsoleOutputBuffer(0, NULL);
+    plSetConsoleOutputCallback(ConsoleBufferUpdate);
 }
 
-void Console_Draw(void) {
-    if(FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || !console_enabled) {
-        return;
-    }
-
+static void DrawInputPane(void) {
     plSetBlendMode(PL_BLEND_DEFAULT);
 
     BitmapFont* font = g_fonts[FONT_CHARS2];
@@ -352,16 +379,12 @@ void Console_Draw(void) {
             PLColour(0, 0, 0, 0)
     ));
 
-    char msg_buf[MAX_BUFFER_SIZE];
-    strncpy(msg_buf, console_state.buffer, sizeof(msg_buf));
-    pl_strtoupper(msg_buf);
-
     plSetBlendMode(PL_BLEND_ADDITIVE);
 
     unsigned int x = 20;
     unsigned int y = scr_h - font->chars[0].h;
 
-    char anim[]={'I', '/', '-', '\\', 'I', '/', '-', '\\'};
+    char anim[]={'I', '/', '-', '\\'};
     static unsigned int frame = 0;
     static double delay = 0;
     if(delay < g_state.sim_ticks) {
@@ -373,9 +396,11 @@ void Console_Draw(void) {
 
     Font_DrawBitmapCharacter(font, x, y, 1.f, PL_COLOUR_GREEN, anim[frame]);
 
-    if(console_state.buffer_pos > 0) {
+    if(console_state.in_buffer_pos > 0) {
+        char msg_buf[MAX_INPUT_BUFFER_SIZE];
+        strncpy(msg_buf, console_state.in_buffer, sizeof(msg_buf));
         unsigned int w = font->chars[0].w;
-        Font_DrawBitmapString(font, x + w + 10, y, 1, 1.f, PL_COLOUR_GREEN, msg_buf);
+        Font_DrawBitmapString(font, x + w + 10, y, 1, 1.f, PL_COLOUR_GREEN, pl_strtoupper(msg_buf));
     }
 
     /* DrawBitmapString disables blend - no need to call again here */
@@ -383,30 +408,72 @@ void Console_Draw(void) {
     plSetBlendMode(PL_BLEND_DEFAULT);
 }
 
-static void ResetConsole(void) {
-    memset(console_state.buffer, 0, sizeof(console_state.buffer));
-    console_state.buffer_pos = 0;
+static void DrawOutputPane(void) {
+    //unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+    unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
+    BitmapFont* font = g_fonts[FONT_CHARS2];
+    for (size_t i = 0, cur_line = 0; i < console_state.out_buffer_pos;) {
+        if (console_state.out_buffer[i] == '\n') {
+            ++i;
+            continue;
+        }
+
+        char *line_end = memchr(console_state.out_buffer + i, '\n', console_state.out_buffer_pos - i);
+        if (line_end == NULL) {
+            line_end = console_state.out_buffer + console_state.out_buffer_pos;
+        }
+
+        size_t line_len = line_end - (console_state.out_buffer + i);
+
+        char line[512];
+        strncpy(line, console_state.out_buffer + i, line_len);
+        line[line_len] = '\0';
+
+        int y = font->chars[0].h * cur_line;
+        Font_DrawBitmapString(font, font->chars[0].w, y, 1, 1.0f, PL_COLOUR_GREEN, pl_strtoupper(line));
+
+        cur_line++;
+        i += line_len;
+    }
+}
+
+void Console_Draw(void) {
+    if(FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || !console_enabled) {
+        return;
+    }
+
+    DrawInputPane();
+    DrawOutputPane();
+}
+
+static void ResetInputBuffer(void) {
+    memset(console_state.in_buffer, 0, sizeof(console_state.in_buffer));
+    console_state.in_buffer_pos = 0;
 }
 
 static void ConsoleTextInputCallback(const char *c) {
-    if(console_state.buffer_pos > MAX_BUFFER_SIZE) {
-        LogWarn("hit console buffer limit, aborting!\n");
+    if(console_state.in_buffer_pos > MAX_INPUT_BUFFER_SIZE) {
+        LogWarn("Hit console buffer limit!\n");
         return;
     }
 
-    console_state.buffer[console_state.buffer_pos++] = *c;
+    console_state.in_buffer[console_state.in_buffer_pos++] = *c;
 }
 
 static void ConsoleInputCallback(int key, bool pressed) {
-    if(key == '\r') {
-        /* todo, allow multiple commands, seperated with ';' */
-        plParseConsoleString(console_state.buffer);
-        Console_Toggle();
+    if(!pressed) {
         return;
     }
 
-    if(key == '\b' && console_state.buffer_pos > 0) {
-        console_state.buffer[--console_state.buffer_pos] = '\0';
+    if(key == '\r' && console_state.in_buffer[0] != '\0') {
+        plParseConsoleString(console_state.in_buffer);
+        ResetInputBuffer();
+        return;
+    }
+
+    if(key == '\b' && console_state.in_buffer_pos > 0) {
+        console_state.in_buffer[--console_state.in_buffer_pos] = '\0';
         return;
     }
 }
@@ -416,7 +483,7 @@ void Console_Toggle(void) {
     if(console_enabled) {
         Input_SetTextFocusCallback(ConsoleTextInputCallback);
         Input_SetKeyboardFocusCallback(ConsoleInputCallback);
-        ResetConsole();
+        ResetInputBuffer();
     } else {
         Input_SetTextFocusCallback(NULL);
         Input_SetKeyboardFocusCallback(NULL);
