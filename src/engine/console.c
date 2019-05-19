@@ -340,9 +340,12 @@ void Console_Draw(void) {
 
     plSetBlendMode(PL_BLEND_DEFAULT);
 
+    BitmapFont* font = g_fonts[FONT_CHARS2];
+    unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+    unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
     plDrawFilledRectangle(plCreateRectangle(
-            PLVector2(0, 0),
-            PLVector2(Display_GetViewportWidth(&g_state.ui_camera->viewport), 32),
+            PLVector2(0, scr_h - font->chars[0].h),
+            PLVector2(scr_w, font->chars[0].h),
             PLColour(0, 0, 0, 255),
             PLColour(0, 0, 0, 0),
             PLColour(0, 0, 0, 255),
@@ -356,10 +359,23 @@ void Console_Draw(void) {
     plSetBlendMode(PL_BLEND_ADDITIVE);
 
     unsigned int x = 20;
-    unsigned int w = g_fonts[FONT_GAME_CHARS]->chars[0].w;
-    Font_DrawBitmapCharacter(g_fonts[FONT_GAME_CHARS], x, 10, 1.f, PL_COLOUR_RED, '>');
+    unsigned int y = scr_h - font->chars[0].h;
+
+    char anim[]={'I', '/', '-', '\\', 'I', '/', '-', '\\'};
+    static unsigned int frame = 0;
+    static double delay = 0;
+    if(delay < g_state.sim_ticks) {
+        if(++frame >= plArrayElements(anim)) {
+            frame = 0;
+        }
+        delay = g_state.sim_ticks + 128;
+    }
+
+    Font_DrawBitmapCharacter(font, x, y, 1.f, PL_COLOUR_GREEN, anim[frame]);
+
     if(console_state.buffer_pos > 0) {
-        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], x + w + 5, 10, 1, 1.f, PL_COLOUR_WHITE, msg_buf);
+        unsigned int w = font->chars[0].w;
+        Font_DrawBitmapString(font, x + w + 10, y, 1, 1.f, PL_COLOUR_GREEN, msg_buf);
     }
 
     /* DrawBitmapString disables blend - no need to call again here */
@@ -372,11 +388,16 @@ static void ResetConsole(void) {
     console_state.buffer_pos = 0;
 }
 
-static void ConsoleInputCallback(int key, bool is_pressed) {
-    if(!is_pressed || !console_enabled) {
+static void ConsoleTextInputCallback(const char *c) {
+    if(console_state.buffer_pos > MAX_BUFFER_SIZE) {
+        LogWarn("hit console buffer limit, aborting!\n");
         return;
     }
 
+    console_state.buffer[console_state.buffer_pos++] = *c;
+}
+
+static void ConsoleInputCallback(int key, bool pressed) {
     if(key == '\r') {
         /* todo, allow multiple commands, seperated with ';' */
         plParseConsoleString(console_state.buffer);
@@ -388,25 +409,16 @@ static void ConsoleInputCallback(int key, bool is_pressed) {
         console_state.buffer[--console_state.buffer_pos] = '\0';
         return;
     }
-
-    if(console_state.buffer_pos > MAX_BUFFER_SIZE) {
-        LogWarn("hit console buffer limit, aborting!\n");
-        return;
-    }
-
-    if(isprint(key) == 0) {
-        return;
-    }
-
-    console_state.buffer[console_state.buffer_pos++] = (char) key;
 }
 
 void Console_Toggle(void) {
     console_enabled = !console_enabled;
     if(console_enabled) {
+        Input_SetTextFocusCallback(ConsoleTextInputCallback);
         Input_SetKeyboardFocusCallback(ConsoleInputCallback);
         ResetConsole();
     } else {
+        Input_SetTextFocusCallback(NULL);
         Input_SetKeyboardFocusCallback(NULL);
     }
 

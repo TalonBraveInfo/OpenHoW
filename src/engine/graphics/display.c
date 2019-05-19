@@ -547,7 +547,6 @@ void Display_Initialize(void) {
 
     plSetCullMode(PL_CULL_POSTIVE);
 
-    plSetDepthBufferMode(PL_DEPTHBUFFER_ENABLE);
     plSetDepthMask(true);
 
     /* go ahead and create our placeholder texture, used if
@@ -733,6 +732,7 @@ void Display_SetupDraw(double delta) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
+    plSetDepthBufferMode(PL_DEPTHBUFFER_ENABLE);
 
     plBindFrameBuffer(NULL, PL_FRAMEBUFFER_DRAW);
 
@@ -759,6 +759,7 @@ void Display_DrawScene(void) {
 void Display_DrawInterface(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
     plSetupCamera(g_state.ui_camera);
+    plSetDepthBufferMode(PL_DEPTHBUFFER_DISABLE);
     FE_Draw();
 }
 

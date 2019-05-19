@@ -120,6 +120,7 @@ void Input_Initialize(void);
 void Input_ResetStates(void);
 
 void Input_SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed));
+void Input_SetTextFocusCallback(void(*Callback)(const char* c));
 
 bool Input_GetKeyState(int key);
 bool Input_GetButtonState(unsigned int controller, int button);
@@ -128,5 +129,7 @@ bool Input_GetActionState(unsigned int controller, int action);
 void Input_SetButtonState(unsigned int controller, int button, bool status);
 void Input_SetKeyState(int key, bool status);
 void Input_SetMouseState(int x, int y, int button, bool status);
+
+void Input_AddTextCharacter(const char* c);
 
 PL_EXTERN_C_END

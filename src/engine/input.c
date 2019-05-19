@@ -42,6 +42,7 @@ struct {
     unsigned int num_joysticks;
 
     void(*InputFocusCallback)(int key, bool is_pressed);
+    void(*InputTextCallback)(const char* c);
 } input_state;
 
 void Input_Initialize(void) {
@@ -127,6 +128,10 @@ void Input_SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed)) {
     input_state.InputFocusCallback = Callback;
 }
 
+void Input_SetTextFocusCallback(void(*Callback)(const char* c)) {
+    input_state.InputTextCallback = Callback;
+}
+
 bool Input_GetKeyState(int key) {
     u_assert(key < INPUT_MAX_KEYS);
     return input_state.keyboard.key_states[key];
@@ -164,4 +169,12 @@ void Input_SetMouseState(int x, int y, int button, bool status) {
     if(button >= 0) {
         input_state.mouse.button_states[button] = status;
     }
+}
+
+void Input_AddTextCharacter(const char* c) {
+    if(input_state.InputTextCallback == NULL) {
+        return;
+    }
+
+    input_state.InputTextCallback(c);
 }

@@ -149,7 +149,6 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
         }
     }
 
-
     SDL_SetWindowMinimumSize(window, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
     if((gl_context = SDL_GL_CreateContext(window)) == nullptr) {
@@ -472,6 +471,8 @@ void System_PollEvents() {
                     io.AddInputCharactersUTF8(event.text.text);
                     break;
                 }
+
+                Input_AddTextCharacter(event.text.text);
             } break;
 
             case SDL_MOUSEBUTTONUP:
