@@ -22,8 +22,8 @@
 
 class StaticModelActor : public ModelActor {
 public:
-    StaticModelActor();
-    ~StaticModelActor();
+    explicit StaticModelActor(const std::string& name);
+    ~StaticModelActor() override;
 
 protected:
 private:

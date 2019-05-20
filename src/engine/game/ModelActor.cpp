@@ -20,7 +20,7 @@
 
 #include "ModelActor.h"
 
-ModelActor::ModelActor() : Actor() {}
+ModelActor::ModelActor(const std::string& name) : Actor(name) {}
 ModelActor::~ModelActor() {
     plDestroyModel(model_);
 }

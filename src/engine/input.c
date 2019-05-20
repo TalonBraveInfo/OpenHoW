@@ -35,6 +35,7 @@ struct {
 
     struct {
         bool                button_states[INPUT_MAX_KEYS];
+        int                 axis_states[SDL_CONTROLLER_AXIS_MAX];
         int                 bindings[INPUT_MAX_ACTIONS];
         SDL_GameController  *pnt;
     } controllers[INPUT_MAX_CONTROLLERS];
@@ -132,6 +133,28 @@ void Input_SetTextFocusCallback(void(*Callback)(const char* c)) {
     input_state.InputTextCallback = Callback;
 }
 
+PLVector2 Input_GetJoystickState(unsigned int controller, unsigned int joystick) {
+    u_assert(controller < INPUT_MAX_CONTROLLERS);
+    switch(joystick) {
+        case INPUT_JOYSTICK_LEFT:
+            return PLVector2(
+                    input_state.controllers[controller].axis_states[SDL_CONTROLLER_AXIS_LEFTX],
+                    input_state.controllers[controller].axis_states[SDL_CONTROLLER_AXIS_LEFTY]
+                    );
+        case INPUT_JOYSTICK_RIGHT:
+            return PLVector2(
+                    input_state.controllers[controller].axis_states[SDL_CONTROLLER_AXIS_RIGHTX],
+                    input_state.controllers[controller].axis_states[SDL_CONTROLLER_AXIS_RIGHTY]
+                    );
+        case INPUT_JOYSTICK_TRIGGERS:
+            return PLVector2(
+                    input_state.controllers[controller].axis_states[SDL_CONTROLLER_AXIS_TRIGGERLEFT],
+                    input_state.controllers[controller].axis_states[SDL_CONTROLLER_AXIS_TRIGGERRIGHT]
+                    );
+        default: Error("Invalid joystick index (%d)!\n", joystick);
+    }
+}
+
 bool Input_GetKeyState(int key) {
     u_assert(key < INPUT_MAX_KEYS);
     return input_state.keyboard.key_states[key];
@@ -146,6 +169,13 @@ bool Input_GetActionState(unsigned int controller, int action) {
     u_assert(controller < INPUT_MAX_CONTROLLERS);
     return (Input_GetButtonState(controller, input_state.controllers[controller].bindings[action]) ||
             Input_GetKeyState(input_state.keyboard.bindings[action]));
+}
+
+void Input_SetAxisState(unsigned int controller, unsigned int axis, int status) {
+    u_assert(controller < INPUT_MAX_CONTROLLERS);
+    /* todo: make deadzone configurable */
+    if(status < 3500 && status > -3500) status = 0;
+    input_state.controllers[controller].axis_states[axis] = (status / 100);
 }
 
 void Input_SetButtonState(unsigned int controller, int button, bool status) {

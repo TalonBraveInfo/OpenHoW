@@ -126,12 +126,12 @@ public:
     const std::string &GetName() { return manifest_->name; }
     const std::string &GetDescription() { return manifest_->description; }
 
-    MapChunk *GetChunk(const PLVector2 &pos);
-    MapTile *GetTile(const PLVector2 &pos);
+    MapChunk* GetChunk(const PLVector2 &pos);
+    MapTile* GetTile(const PLVector2 &pos);
 
     float GetHeight(const PLVector2 &pos);
 
-    const PLTexture *GetOverviewTexture() { return overview_; }
+    PLTexture* GetOverviewTexture() { return overview_; }
 
     const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
 

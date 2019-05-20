@@ -18,10 +18,8 @@
 #include "../engine.h"
 #include "AnimatedModelActor.h"
 
-AnimatedModelActor::AnimatedModelActor() {
+AnimatedModelActor::AnimatedModelActor(const std::string& name) : ModelActor(name) {
 
 }
 
-AnimatedModelActor::~AnimatedModelActor() {
-
-}
+AnimatedModelActor::~AnimatedModelActor() = default;

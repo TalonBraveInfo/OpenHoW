@@ -21,8 +21,10 @@
 
 #include "engine.h"
 #include "input.h"
-#include "game/TempGame.h"
 #include "frontend.h"
+
+#include "game/TempGame.h"
+#include "game/Game.h"
 
 #include "graphics/font.h"
 #include "graphics/display.h"
@@ -219,6 +221,46 @@ uint8_t FE_GetLoadingProgress(void) {
 
 /************************************************************/
 
+static void DrawMinimap() {
+    BaseGameMode* mode = Game_GetMode();
+    if(mode == nullptr) {
+        return;
+    }
+
+    Map* map = mode->GetCurrentMap();
+    if(map == nullptr) {
+        return;
+    }
+
+#if 0
+    static PLMesh* pane = nullptr;
+    if(pane == nullptr) {
+        pane = plNewMeshRectangle(0, 0, 256, 256, PL_COLOUR_WHITE);
+        if(pane == nullptr) {
+            Error("Failed to create pane mesh!\n");
+        }
+    }
+
+    plSetTexture(map->GetOverviewTexture(), 0);
+
+    PLMatrix4x4 mat = plMatrix4x4Identity();
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", mat, false);
+
+    plUploadMesh(pane);
+    plDrawMesh(pane);
+
+    plSetTexture(nullptr, 0);
+#else
+    /* for debugging... */
+    unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+    plDrawTexturedRectangle(0, scr_h - 128, 128, 128, map->GetOverviewTexture());
+#endif
+}
+
+static void DrawGameOverlay() {
+    DrawMinimap();
+}
+
 /* Hogs of War's menu was designed
  * with a fixed resolution in mind
  * and scales poorly with anything
@@ -258,10 +300,8 @@ static void DrawLoadingScreen(void) {
 void FE_Draw(void) {
     /* render and handle the main menu */
     if(frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
-
         int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
         int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
-
         switch(frontend_state) {
             default:break;
 
@@ -334,7 +374,11 @@ void FE_Draw(void) {
                 Video_Draw();
             } break;
         }
+
+        return;
     }
+
+    DrawGameOverlay();
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */

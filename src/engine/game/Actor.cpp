@@ -21,10 +21,14 @@
 #include "Actor.h"
 #include "Game.h"
 
+#include <PL/platform_graphics_camera.h>
+
 Actor::Actor() = default;
 Actor::~Actor() = default;
 
-#include <PL/platform_graphics_camera.h>
+Actor::Actor(const std::string &name) {
+    spawn_name = name;
+}
 
 void Actor::HandleInput() {
     BaseGameMode* mode = Game_GetMode();
@@ -34,13 +38,14 @@ void Actor::HandleInput() {
 
     Player* player = mode->GetCurrentPlayer();
 
+    //PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
+    PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
+
     if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-        //position_.z += 100.f;
         position_.x += 100.f * g_state.camera->forward.x;
         position_.y += 100.f * g_state.camera->forward.y;
         position_.z += 100.f * g_state.camera->forward.z;
     } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-        //position_.z -= 100.f;
         position_.x -= 100.f * g_state.camera->forward.x;
         position_.y -= 100.f * g_state.camera->forward.y;
         position_.z -= 100.f * g_state.camera->forward.z;
@@ -57,6 +62,9 @@ void Actor::HandleInput() {
             angles_.y -= 2.f;
         } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
             angles_.y += 2.f;
+        } else {
+            angles_.y += cr.x / 50.f;
+            angles_.x -= cr.y / 50.f;
         }
     }
 
@@ -66,6 +74,15 @@ void Actor::HandleInput() {
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
         position_.y -= 100.f;
     }
+
+    // Clamp height based on current tile pos
+    float height = mode->GetCurrentMap()->GetHeight(PLVector2(position_.x, position_.z));
+    if((position_.y - 32.f) < height) {
+        position_.y = height + 32.f;
+    }
+
+    if(angles_.x < -70) angles_.x = -70;
+    if(angles_.x > 70) angles_.x = 70;
 
     VecAngleClamp(&angles_);
 }

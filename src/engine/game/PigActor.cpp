@@ -24,7 +24,7 @@
 
 class PigActor : public AnimatedModelActor {
 public:
-    PigActor();
+    explicit PigActor(const std::string& name);
     ~PigActor() override;
 
     void HandleInput() override;
@@ -48,14 +48,6 @@ private:
     } lower_face_frame_{MOUTH_OPEN};
 };
 
-PigActor::PigActor() = default;
-PigActor::~PigActor() = default;
-
-void PigActor::HandleInput() {
-    // todo: implement...
-    Actor::HandleInput();
-}
-
 register_actor(AC_ME, PigActor);    // Ace
 register_actor(LE_ME, PigActor);    // Legend
 register_actor(ME_ME, PigActor);    // Medic
@@ -64,3 +56,11 @@ register_actor(SP_ME, PigActor);    // Spy
 register_actor(SN_ME, PigActor);    // Sniper
 register_actor(SA_ME, PigActor);    // Saboteur
 register_actor(GR_ME, PigActor);    // Grunt
+
+PigActor::PigActor(const std::string& name) : AnimatedModelActor(name) {}
+PigActor::~PigActor() = default;
+
+void PigActor::HandleInput() {
+    // todo: implement...
+    Actor::HandleInput();
+}

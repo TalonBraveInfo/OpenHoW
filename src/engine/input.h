@@ -75,6 +75,14 @@ enum {
 };
 
 enum {
+    INPUT_JOYSTICK_LEFT,
+    INPUT_JOYSTICK_RIGHT,
+    INPUT_JOYSTICK_TRIGGERS,
+
+    INPUT_MAX_JOYSTICKS
+};
+
+enum {
     PORK_KEY_F1 = 128,
     PORK_KEY_F2,
     PORK_KEY_F3,
@@ -122,10 +130,12 @@ void Input_ResetStates(void);
 void Input_SetKeyboardFocusCallback(void(*Callback)(int key, bool is_pressed));
 void Input_SetTextFocusCallback(void(*Callback)(const char* c));
 
+struct PLVector2 Input_GetJoystickState(unsigned int controller, unsigned int joystick);
 bool Input_GetKeyState(int key);
 bool Input_GetButtonState(unsigned int controller, int button);
 bool Input_GetActionState(unsigned int controller, int action);
 
+void Input_SetAxisState(unsigned int controller, unsigned int axis, int status);
 void Input_SetButtonState(unsigned int controller, int button, bool status);
 void Input_SetKeyState(int key, bool status);
 void Input_SetMouseState(int x, int y, int button, bool status);

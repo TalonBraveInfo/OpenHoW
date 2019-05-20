@@ -536,16 +536,18 @@ void System_PollEvents() {
 
             case SDL_CONTROLLERAXISMOTION: {
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000) {
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, true);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_L2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000) {
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, false);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_L2, false);
                 }
 
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value > 1000) {
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, true);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_R2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value <= 1000){
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, false);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_R2, false);
                 }
+
+                Input_SetAxisState(event.caxis.which, event.caxis.axis, event.caxis.value);
             } break;
 
             case SDL_QUIT: {

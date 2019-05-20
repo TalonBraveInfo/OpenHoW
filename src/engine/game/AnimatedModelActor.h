@@ -22,7 +22,7 @@
 
 class AnimatedModelActor : public ModelActor {
 public:
-    AnimatedModelActor();
+    explicit AnimatedModelActor(const std::string& name);
     ~AnimatedModelActor() override;
 
 protected:

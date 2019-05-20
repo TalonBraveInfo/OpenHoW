@@ -117,6 +117,8 @@ static CopyPath pc_package_paths[] = {
         {"/Language/Tims/MENUTIMS.MAD", "/fe/dash/menu/"},
         {"/Language/Tims/TBOXTIMS.MAD", "/fe/dash/"},
 
+        {"/Maps/CAMP.MAD", "/chars/scenery/"},
+
 #if 1
         {"/Maps/BAY.PTG",        "/campaigns/how/maps/bay/tiles/"},
         {"/Maps/ICE.PTG",        "/campaigns/how/maps/ice/tiles/"},

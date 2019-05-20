@@ -110,7 +110,7 @@ void BaseGameMode::SpawnActors() {
         }
 
         actor->SetPosition(PLVector3(spawn.position[0], spawn.position[1], spawn.position[2]));
-        //actor->SetAngles(PLVector3(spawn.angles[0], spawn.angles[1], spawn.angles[2]));
+        actor->SetAngles(PLVector3(spawn.angles[0] / 360, spawn.angles[1] / 360, spawn.angles[2] / 360));
 
         // todo: assign player pigs etc., temp hack
         if(strcmp(spawn.name, "GR_ME") == 0) {

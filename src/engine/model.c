@@ -322,6 +322,19 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         );
     }
 
+    for(unsigned int j = 0; j < num_quads; ++j) {
+        plSetMeshTrianglePosition(mesh, &cur_index,
+                                  quads[j].vertex_indices[0],
+                                  quads[j].vertex_indices[1],
+                                  quads[j].vertex_indices[2]
+        );
+        plSetMeshTrianglePosition(mesh, &cur_index,
+                                  quads[j].vertex_indices[3],
+                                  quads[j].vertex_indices[0],
+                                  quads[j].vertex_indices[2]
+        );
+    }
+
     PLModelBone* skeleton = u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true);
     memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
 

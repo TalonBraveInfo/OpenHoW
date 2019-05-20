@@ -39,7 +39,7 @@ Actor* ActorManager::SpawnActor(const std::string& name) {
     std::string lcname = name;
     std::transform(lcname.begin(), lcname.end(), lcname.begin(), [](unsigned char c){ return std::tolower(c); });
 
-    Actor* actor = i->second();
+    Actor* actor = i->second(lcname);
     actors_.push_back(actor);
     return actor;
 }

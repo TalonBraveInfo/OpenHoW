@@ -21,7 +21,7 @@
 
 class ModelActor : public Actor {
 public:
-    ModelActor();
+    ModelActor(const std::string& name);
     ~ModelActor() override;
 
     void Draw() override;
