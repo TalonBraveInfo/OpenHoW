@@ -292,7 +292,11 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     }
 
     for(unsigned int j = 0; j < vtx->num_vertices; ++j) {
-        plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
+        plSetMeshVertexPosition(mesh, j,
+                PLVector3(
+                        vtx->vertices[j].position.x * -1,
+                        vtx->vertices[j].position.y * -1,
+                        vtx->vertices[j].position.z * -1));
 
 #if 1 /* debug */
         uint8_t r = (uint8_t)(rand() % 255);
@@ -306,6 +310,8 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
         mesh->vertices[j].bone_weight = 1.f;
     }
+
+    mesh->texture = Display_GetDefaultTexture();
 
     unsigned int cur_index = 0;
     for(unsigned int j = 0; j < num_triangles; ++j) {

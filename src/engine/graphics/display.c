@@ -40,7 +40,11 @@ static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 static PLFrameBuffer* game_target;
 static PLFrameBuffer* frontend_target;
 
-static PLTexture* placeholder_texture = NULL;
+static PLTexture* default_texture = NULL;
+
+PLTexture* Display_GetDefaultTexture(void) {
+    return default_texture;
+}
 
 typedef struct TextureIndex {
     struct {
@@ -49,7 +53,7 @@ typedef struct TextureIndex {
     } offsets[MAX_TEXTURES_PER_INDEX];
     unsigned int num_textures;
 
-    PLTexture *texture;
+    PLTexture* texture;
 } TextureIndex;
 TextureIndex texture_cache[MAX_TEXTURE_INDEX];
 
@@ -67,7 +71,11 @@ size_t GetTextureCacheSize(void) {
 
 void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h) {
     u_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
-    TextureIndex *index = &texture_cache[id];
+    TextureIndex* index = &texture_cache[id];
+    if(index->texture == default_texture) {
+        *x = 0; *y = 0; *w = 2; *h = 2;
+        return;
+    }
     *x = (float)index->offsets[tex_id].x / index->texture->w;
     *y = (float)index->offsets[tex_id].y / index->texture->h;
     *w = (float)index->offsets[tex_id].w / index->texture->w;
@@ -77,7 +85,7 @@ void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float 
 PLTexture* Display_GetCachedTexture(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
     if(texture_cache[id].texture == NULL) {
-        return placeholder_texture;
+        return default_texture;
     }
 
     return texture_cache[id].texture;
@@ -147,6 +155,7 @@ void Display_ClearTextureIndex(unsigned int id) {
     TextureIndex *index = &texture_cache[id];
     plDestroyTexture(index->texture, true);
     memset(index, 0, sizeof(TextureIndex));
+    index->texture = default_texture;
 }
 
 static int CompareImageHeight(const void *a, const void *b) {
@@ -162,12 +171,11 @@ static int CompareImageHeight(const void *a, const void *b) {
 }
 
 /* loads texture set into memory */
-void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
+void Display_CacheTextureIndex(const char* path, const char* index_name, unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &texture_cache[id];
+    TextureIndex* index = &texture_cache[id];
     if(index->num_textures > 0) {
-        LogWarn("textures already cached for index %s\n", index_name);
-        return;
+        Display_ClearTextureIndex(id);
     }
 
     char tmp[PL_SYSTEM_MAX_PATH];
@@ -177,15 +185,17 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
     snprintf(texture_index_path, sizeof(texture_index_path), "%s", u_find(tmp));
 
     if(!plFileExists(texture_index_path)) {
-        Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
+        LogWarn("Failed to find index at \"%s\" (%s)!\n", texture_index_path, plGetError());
+        return;
     }
 
     FILE *file = fopen(texture_index_path, "r");
     if(file == NULL) {
-        Error("failed to open texture index at \"%s\", aborting!\n", texture_index_path);
+        LogWarn("Failed to open texture index at \"%s\"!\n", texture_index_path);
+        return;
     }
 
-    LogInfo("parsing \"%s\"\n", texture_index_path);
+    LogInfo("Parsing \"%s\"\n", texture_index_path);
 
     /* todo, move all textures into a texture sheet on upload */
 
@@ -202,8 +212,6 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
         if(fgets(line, sizeof(line), file) != NULL) {
             line[strcspn(line, "\r\n")] = '\0';
             //LogDebug("  %s\n", line);
-
-
 
             char texture_path[PL_SYSTEM_MAX_PATH];
             snprintf(tmp, sizeof(tmp), "%s%s", path, line);
@@ -318,49 +326,46 @@ const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
 //const char *supported_audio_formats[]={"wav", NULL};
 //const char *supported_video_formats[]={"bik", NULL};
 
-PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter) {
-    /* todo: make this more friendly */
-
-    PLTexture *texture;
-
+PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
     char n_path[PL_SYSTEM_MAX_PATH];
-    const char *ext = plGetFileExtension(path);
+    const char* ext = plGetFileExtension(path);
     if(plIsEmptyString(ext)) {
         strncpy(n_path, u_find2(path, supported_image_formats), sizeof(n_path));
         if(plIsEmptyString(n_path)) {
-            Error("failed to find texture, \"%s\"!\n", path);
+            LogWarn("Failed to find texture, \"%s\"!\n", path);
+            return default_texture;
         }
-        ext = plGetFileExtension(n_path);
-    } else {
-        strncpy(n_path, u_find(path), sizeof(n_path));
 
-        /* pixel format of TIM will be changed before
-         * uploading */
+        PLTexture* texture = plLoadTextureImage(n_path, filter);
+        if(texture == NULL) {
+            LogWarn("%s, aborting!\n", plGetError());
+            return default_texture;
+        }
+
+        return texture;
+    }
+
+    PLImage img;
+    strncpy(n_path, u_find(path), sizeof(n_path));
+    if(plLoadImage(n_path, &img)) {
+        /* pixel format of TIM will be changed before uploading */
         if(pl_strncasecmp(ext, "tim", 3) == 0) {
-            PLImage img;
-            if(!plLoadImage(n_path, &img)) {
-                Error("%s, aborting!\n", plGetError());
-            }
-
             plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
+        }
 
-            if((texture = plCreateTexture()) != NULL) {
-                texture->filter = filter;
-                if(!plUploadTextureImage(texture, &img)) {
-                    Error("%s, aborting!\n", plGetError());
-                }
+        PLTexture* texture = plCreateTexture();
+        if(texture != NULL) {
+            texture->filter = filter;
+            if(plUploadTextureImage(texture, &img)) {
                 return texture;
             }
-            Error("%s, aborting!\n", plGetError());
         }
+        plDestroyTexture(texture, true);
     }
 
-    texture = plLoadTextureImage(n_path, PL_TEXTURE_FILTER_LINEAR);
-    if(texture == NULL) {
-        Error("%s, aborting!\n", plGetError());
-    }
-
-    return texture;
+    LogWarn("Failed to load texture, \"%s\" (%s)!\n", n_path, plGetError());
+    plFreeImage(&img);
+    return default_texture;
 }
 
 /************************************************************/
@@ -552,9 +557,27 @@ void Display_Initialize(void) {
     /* go ahead and create our placeholder texture, used if
      * one fails to load */
 
+    PLColour pbuffer[]={{ 255, 255, 0  , 255 }, { 0  , 0  , 0  , 255 }, { 0  , 0  , 0  , 255 }, { 255, 255, 0  , 255 }};
+    PLImage* image = plNewImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
+    if(image != NULL) {
+        default_texture = plCreateTexture();
+        if(!plUploadTextureImage(default_texture, image)) {
+            LogWarn("Failed to upload default texture (%s)!\n", plGetError());
+            plDestroyTexture(default_texture, true);
+            default_texture = NULL;
+        }
+        plFreeImage(image);
+    } else {
+        LogWarn("Failed to generate default texture (%s)!\n", plGetError());
+    }
+
     /* initialize the texture cache */
 
-    LogInfo("caching texture groups...\n");
+    LogInfo("Caching texture groups...\n");
+
+    for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
+        texture_cache[i].texture = default_texture;
+    }
 
     Display_CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
     Display_CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
@@ -571,6 +594,8 @@ void Display_Initialize(void) {
 
 void Display_Shutdown(void) {
     Shaders_Shutdown();
+
+    plDestroyTexture(default_texture, true);
 }
 
 /************************************************************/
