@@ -73,7 +73,7 @@ void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float 
     u_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
     TextureIndex* index = &texture_cache[id];
     if(index->texture == default_texture) {
-        *x = 0; *y = 0; *w = 2; *h = 2;
+        *x = 0; *y = 0; *w = 1.0f; *h = 1.0f;
         return;
     }
     *x = (float)index->offsets[tex_id].x / index->texture->w;
@@ -152,8 +152,10 @@ void DrawTextureCache(unsigned int id) {
 /* unloads texture set from memory */
 void Display_ClearTextureIndex(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &texture_cache[id];
-    plDestroyTexture(index->texture, true);
+    TextureIndex* index = &texture_cache[id];
+    if(index->texture != default_texture) {
+        plDestroyTexture(index->texture, true);
+    }
     memset(index, 0, sizeof(TextureIndex));
     index->texture = default_texture;
 }
@@ -576,7 +578,7 @@ void Display_Initialize(void) {
     LogInfo("Caching texture groups...\n");
 
     for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
-        texture_cache[i].texture = default_texture;
+        Display_ClearTextureIndex(i);
     }
 
     Display_CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);

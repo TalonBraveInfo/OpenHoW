@@ -34,7 +34,9 @@
  * POM : Mangled map object data
  * POG : Map object data
  * PTM : Mangled map textures package
- * PTG : Map Textures package
+ * PTG : Map textures package
+ * PMM : Mangled terrain data
+ * PMG : Terrain data
  * OFF : File offset sizes
  */
 
