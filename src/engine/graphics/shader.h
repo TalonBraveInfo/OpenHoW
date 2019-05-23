@@ -18,11 +18,11 @@
 #pragma once
 
 enum {
-    SHADER_DEFAULT,     /* unlit */
-    SHADER_GOURAUD_LIT, /* lit */
-    SHADER_ALPHA_TEST,  /* */
-    SHADER_WATER,       /* */
-    SHADER_VIDEO,       /* */
+    SHADER_DEFAULT,             /* unlit */
+    SHADER_UNTEXTURED,
+    SHADER_GOURAUD_LIT,         /* lit */
+    SHADER_ALPHA_TEST,          /* */
+    SHADER_WATER,               /* */
     SHADER_DEBUG_TEST,
 
     MAX_SHADERS

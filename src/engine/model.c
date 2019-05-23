@@ -23,7 +23,9 @@
 #include "model.h"
 #include "loaders/loaders.h"
 #include "game/TempGame.h"
+
 #include "graphics/display.h"
+#include "graphics/shader.h"
 
 /************************************************************/
 
@@ -36,6 +38,8 @@ struct {
     PLModel* pigs[MAX_CLASSES];
     PLModel* hats[MAX_CLASSES];
 } model_cache;
+
+static PLModel* default_model = NULL;   /* used if any model fails to load */
 
 #define PIG_EYES_INDEX  118
 #define PIG_GOBS_INDEX  119
@@ -64,64 +68,12 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     strncpy(fac_path, path, strlen(path) - 3);
     fac_path[strlen(path) - 3] = '\0';
     strcat(fac_path, "fac");
-    FILE* fac_file = fopen(fac_path, "rb");
-    if(fac_file == NULL) {
+    FacHandle* fac = Fac_LoadFile(fac_path);
+    if(fac == NULL) {
         Vtx_DestroyHandle(vtx);
-        LogWarn("Failed to load fac \"%s\", aborting!\n", fac_path);
+        LogWarn("Failed to load Fac, \"%s\"!\n", path);
         return NULL;
     }
-
-    fseek(fac_file, 16, SEEK_CUR);
-
-    uint32_t num_triangles;
-    if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
-        Error("failed to get number of triangles, \"%s\", aborting!\n", fac_path);
-    }
-
-    LogDebug("\"%s\" has %u triangles", fac_path, num_triangles);
-
-    struct __attribute__((packed)) {
-        int8_t uv_a[2];
-        int8_t uv_b[2];
-        int8_t uv_c[2];
-
-        uint16_t vertex_indices[3];
-        uint16_t normal_indices[3];
-
-        uint16_t unknown0;
-
-        uint32_t texture_index;
-
-        uint16_t unknown1[4];
-    } triangles[num_triangles];
-    if(fread(triangles, sizeof(*triangles), num_triangles, fac_file) != num_triangles) {
-        Error("failed to get %u triangles, \"%s\", aborting!\n", num_triangles, fac_path);
-    }
-
-    uint32_t num_quads;
-    if(fread(&num_quads, sizeof(uint32_t), 1, fac_file) != 1) {
-        Error("failed to get number of quads, \"%s\", aborting!\n", fac_path);
-    }
-    LogDebug("\"%s\" has %u quads", fac_path, num_quads);
-
-    struct __attribute__((packed)) {
-        int8_t uv_a[2];
-        int8_t uv_b[2];
-        int8_t uv_c[2];
-        int8_t uv_d[2];
-
-        uint16_t vertex_indices[4];
-        uint16_t normal_indices[4];
-
-        uint32_t texture_index;
-
-        uint16_t unknown[4];
-    } quads[num_quads];
-    if(fread(quads, sizeof(*quads), num_quads, fac_file) != num_quads) {
-        Error("failed to get %u quads, \"%s\", aborting!\n", num_quads, fac_path);
-    }
-
-    fclose(fac_file);
 
 #if 0 /* dumped! */
     /* figure out how many textures we have for this model
@@ -240,8 +192,10 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     }
 #endif
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles + (num_quads * 2), vtx->num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, vtx->num_vertices);
     if(mesh == NULL) {
+        Vtx_DestroyHandle(vtx);
+        Fac_DestroyHandle(fac);
         LogWarn("Failed to create mesh (%s)!\n", plGetError());
         return NULL;
     }
@@ -252,6 +206,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
                         vtx->vertices[j].position.x * -1,
                         vtx->vertices[j].position.y * -1,
                         vtx->vertices[j].position.z * -1));
+        plSetMeshVertexST(mesh, j, 0, 0);
 
 #if 1 /* debug */
         uint8_t r = (uint8_t)(rand() % 255);
@@ -269,24 +224,11 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     mesh->texture = Display_GetDefaultTexture();
 
     unsigned int cur_index = 0;
-    for(unsigned int j = 0; j < num_triangles; ++j) {
+    for(unsigned int j = 0; j < fac->num_triangles; ++j) {
         plSetMeshTrianglePosition(mesh, &cur_index,
-                                  triangles[j].vertex_indices[0],
-                                  triangles[j].vertex_indices[1],
-                                  triangles[j].vertex_indices[2]
-        );
-    }
-
-    for(unsigned int j = 0; j < num_quads; ++j) {
-        plSetMeshTrianglePosition(mesh, &cur_index,
-                                  quads[j].vertex_indices[0],
-                                  quads[j].vertex_indices[1],
-                                  quads[j].vertex_indices[2]
-        );
-        plSetMeshTrianglePosition(mesh, &cur_index,
-                                  quads[j].vertex_indices[3],
-                                  quads[j].vertex_indices[0],
-                                  quads[j].vertex_indices[2]
+                                  fac->triangles[j].vertex_indices[0],
+                                  fac->triangles[j].vertex_indices[1],
+                                  fac->triangles[j].vertex_indices[2]
         );
     }
 
@@ -347,8 +289,7 @@ PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
         }
 
         LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
-        // todo: provide placeholder
-        model = model_cache.pigs[PIG_CLASS_ACE]; //plCreateModelCube();
+        model = default_model;
     }
     return model;
 }
@@ -533,6 +474,18 @@ void CacheModelData(void) {
 #endif
 
     /* models */
+
+    PLMesh* default_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
+    plSetMeshVertexPosition(default_mesh, 0, PLVector3(0, 20, 0));
+    plSetMeshVertexPosition(default_mesh, 1, PLVector3(0, -20, 0));
+    plSetMeshVertexPosition(default_mesh, 2, PLVector3(20, 0, 0));
+    plSetMeshVertexPosition(default_mesh, 3, PLVector3(-20, 0, 0));
+    plSetMeshVertexPosition(default_mesh, 4, PLVector3(0, 0, 20));
+    plSetMeshVertexPosition(default_mesh, 5, PLVector3(0, 0, -20));
+    plSetMeshUniformColour(default_mesh, PLColour(255, 0, 0, 255));
+    plSetMeshShaderProgram(default_mesh, programs[SHADER_UNTEXTURED]);
+    plUploadMesh(default_mesh);
+    default_model = plNewBasicStaticModel(default_mesh);
 
     model_cache.pigs[PIG_CLASS_ACE]         = Model_LoadFile("chars/pigs/ac_hi", true);
     model_cache.pigs[PIG_CLASS_COMMANDO]    = Model_LoadFile("chars/pigs/sb_hi", true);

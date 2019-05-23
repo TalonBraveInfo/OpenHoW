@@ -38,7 +38,7 @@ VtxHandle* Vtx_LoadFile(const char* path) {
     unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VtxCoord));
     if(num_vertices >= MAX_MODEL_VERTICES) {
         u_fclose(vtx_file);
-        LogWarn("Invalid number of normals in \"%s\" (%d/%d)!\n", path, num_vertices, MAX_MODEL_VERTICES);
+        LogWarn("Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, MAX_MODEL_VERTICES);
         return NULL;
     }
 

@@ -22,28 +22,43 @@
  * BIN : Audio/Model/Texture data
  * DAT : Audio data
  * MAM : Mangled texture / model package
- * MAD : Texture / model package
+ * MAD : Texture / model package            (done)
  * MTM : Mangled model texture package
- * MTD : Texture / model package
+ * MTD : Texture / model package            (done)
  * MMM : Mangled model package
  * MGL : Mangled texture data
- * FAC : Model faces
- * VTX : Model vertices
- * NO2 : Model normals
- * HIR : Model skeleton
+ * MIN : PSX model data
+ * FAC : Model faces                        (done)
+ * VTX : Model vertices                     (done)
+ * NO2 : Model normals                      (done)
+ * HIR : Model skeleton                     (done)
  * POM : Mangled map object data
- * POG : Map object data
+ * POG : Map object data                    (done)
  * PTM : Mangled map textures package
- * PTG : Map textures package
+ * PTG : Map textures package               (done)
  * PMM : Mangled terrain data
- * PMG : Terrain data
- * OFF : File offset sizes
+ * PMG : Terrain data                       (done)
+ * OFF : File offset sizes                  (done)
  */
 
 #define MAX_MODEL_VERTICES  4096
 #define MAX_MODEL_TRIANGLES 8192
 
 PL_EXTERN_C
+
+typedef struct FacTriangle {
+    float       uv_coords[3][2];
+    uint16_t    vertex_indices[3];
+    uint16_t    normal_indices[3];
+    uint32_t    texture_index;
+} FacTriangle;
+
+typedef struct FacHandle {
+    FacTriangle*    triangles;
+    unsigned int    num_triangles;
+} FacHandle;
+FacHandle* Fac_LoadFile(const char* path);
+void Fac_DestroyHandle(FacHandle* handle);
 
 typedef struct VtxHandle {
     struct PLVertex*    vertices;

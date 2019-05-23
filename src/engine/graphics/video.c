@@ -245,11 +245,9 @@ void Video_Draw(void) {
         plUploadMesh(mesh);
     }
 
-    plSetShaderProgram(programs[SHADER_VIDEO]);
+    plSetShaderProgram(programs[SHADER_DEFAULT]);
 
     /* todo pass correct texture */
     plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plDrawMesh(mesh);
-
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
 }

@@ -159,9 +159,11 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
 void Shaders_Initialize(void) {
     memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
     programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_texture, strlen(fragment_texture));
+    programs[SHADER_UNTEXTURED] = CreateShaderProgram(
+            vertex_default, strlen(vertex_default),
+            fragment_colour, strlen(fragment_colour));
     programs[SHADER_WATER]      = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_water, strlen(fragment_water));
     programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_alpha_test_texture, strlen(fragment_alpha_test_texture));
-    //programs[SHADER_VIDEO]      = CreateShaderProgram("video", "video");
     programs[SHADER_DEBUG_TEST] = CreateShaderProgram(vertex_debug_test, strlen(vertex_debug_test), fragment_debug_test, strlen(fragment_debug_test));
 
     /* set defaults */
