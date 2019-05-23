@@ -22,14 +22,14 @@
 #include "shader.h"
 
 #define GLSL(...) #__VA_ARGS__
-#define GLSL_DEFAULT_VS_UNIFORMS "attribute vec3 pos; attribute vec3 norm; attribute vec2 UV; attribute vec4 col;"
+#define GLSL_DEFAULT_VS_UNIFORMS "in vec3 pos;in vec3 norm;in vec2 UV;in vec4 col;"
 #define GLSL_DEFAULT_PS_UNIFORMS "uniform sampler2D diffuse;"
 
 static const char *fragment_water =
         GLSL_DEFAULT_PS_UNIFORMS
         GLSL(
                 void main() {
-                    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+                    pl_frag = vec4(0.0, 0.0, 1.0, 1.0);
                 }
         );
 
@@ -52,7 +52,7 @@ static const char *fragment_colour =
                 in vec4 interp_colour;
 
                 void main() {
-                    gl_FragColor = interp_colour;
+                    pl_frag = interp_colour;
                 }
         );
 
@@ -64,7 +64,7 @@ static const char *fragment_texture =
                 in vec4 interp_colour;
 
                 void main() {
-                    gl_FragColor = interp_colour * texture2D(diffuse, interp_UV);
+                    pl_frag = interp_colour * texture(diffuse, interp_UV);
                 }
         );
 
@@ -76,12 +76,12 @@ static const char *fragment_alpha_test_texture =
                 in vec4 interp_colour;
 
                 void main() {
-                    vec4 sample = texture2D(diffuse, interp_UV);
+                    vec4 sample = texture(diffuse, interp_UV);
                     if(sample.a < 0.1) {
                         discard;
                     }
 
-                    gl_FragColor = interp_colour * sample;
+                    pl_frag = interp_colour * sample;
                 }
         );
 
@@ -112,7 +112,7 @@ static const char *fragment_debug_test =
         GLSL_DEFAULT_PS_UNIFORMS
         GLSL(
                 void main() {
-                    gl_FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);
+                    pl_frag = vec4(1.0f, 0.0f, 1.0f, 1.0f);
                 }
         );
 
@@ -162,11 +162,7 @@ void Shaders_Initialize(void) {
     programs[SHADER_WATER]      = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_water, strlen(fragment_water));
     programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_alpha_test_texture, strlen(fragment_alpha_test_texture));
     //programs[SHADER_VIDEO]      = CreateShaderProgram("video", "video");
-    programs[SHADER_DEBUG_TEST]       = CreateShaderProgram(vertex_debug_test, strlen(vertex_debug_test), fragment_debug_test, strlen(fragment_debug_test));
-
-
-
-
+    programs[SHADER_DEBUG_TEST] = CreateShaderProgram(vertex_debug_test, strlen(vertex_debug_test), fragment_debug_test, strlen(fragment_debug_test));
 
     /* set defaults */
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {

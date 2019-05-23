@@ -123,29 +123,6 @@ MapManifest map_descriptors[]={
 
 //Precalculated vertices for chunk rendering
 //TODO: Share one index buffer instance between all chunks
-#if 0
-const static uint16_t chunkIndices[96] = {
-     0,  5,  1,  1,  5,  6,
-     1,  6,  2,  2,  6,  7,
-     2,  7,  3,  3,  7,  8,
-     3,  8,  4,  4,  8,  9,
-
-     5, 10,  6,  6, 10, 11,
-     6, 11,  7,  7, 11, 12,
-     7, 12,  8,  8, 12, 13,
-     8, 13,  9,  9, 13, 14,
-
-    10, 15, 11, 11, 15, 16,
-    11, 16, 12, 12, 16, 17,
-    12, 17, 13, 13, 17, 18,
-    13, 18, 14, 14, 18, 19,
-
-    15, 20, 16, 16, 20, 21,
-    16, 21, 17, 17, 21, 22,
-    17, 22, 18, 18, 22, 23,
-    18, 23, 19, 19, 23, 24,
-};
-#else
 const static uint16_t chunkIndices[96] = {
         0, 2, 1, 1, 2, 3,
         4, 6, 5, 5, 6, 7,
@@ -164,7 +141,6 @@ const static uint16_t chunkIndices[96] = {
         56, 58, 57, 57, 58, 59,
         60, 62, 61, 61, 62, 63,
 };
-#endif
 
 Map::Map(const std::string& name) {
     LogDebug("Loading map, %s...\n", name.c_str());
