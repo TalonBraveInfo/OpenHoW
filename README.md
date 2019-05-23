@@ -78,4 +78,4 @@ This will be changing at a later point to make things a little easier.
 
 ----
 
-![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/wireframe00.png?raw=true)
+![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
