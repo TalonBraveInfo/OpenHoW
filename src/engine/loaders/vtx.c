@@ -36,6 +36,12 @@ VtxHandle* Vtx_LoadFile(const char* path) {
         uint16_t    bone_index;
     } VtxCoord;
     unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VtxCoord));
+    if(num_vertices >= MAX_MODEL_VERTICES) {
+        u_fclose(vtx_file);
+        LogWarn("Invalid number of normals in \"%s\" (%d/%d)!\n", path, num_vertices, MAX_MODEL_VERTICES);
+        return NULL;
+    }
+
     VtxCoord vertices[num_vertices];
     unsigned int rnum_vertices = fread(vertices, sizeof(VtxCoord), num_vertices, vtx_file);
     u_fclose(vtx_file);

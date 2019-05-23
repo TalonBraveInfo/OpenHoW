@@ -40,6 +40,9 @@
  * OFF : File offset sizes
  */
 
+#define MAX_MODEL_VERTICES  4096
+#define MAX_MODEL_TRIANGLES 8192
+
 PL_EXTERN_C
 
 typedef struct VtxHandle {
@@ -48,6 +51,8 @@ typedef struct VtxHandle {
 } VtxHandle;
 VtxHandle* Vtx_LoadFile(const char* path);
 void Vtx_DestroyHandle(VtxHandle* handle);
+
+VtxHandle* No2_LoadFile(const char *path, VtxHandle* vertex_data);;
 
 typedef struct HirHandle {
     PLModelBone*    bones;

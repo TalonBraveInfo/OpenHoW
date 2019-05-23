@@ -26,52 +26,6 @@
 #include "graphics/display.h"
 
 /************************************************************/
-/* No2 Normals Format */
-
-typedef struct __attribute__((packed)) No2Coord {
-    float v[3];
-    float bone_index;
-} No2Coord;
-
-typedef struct No2Handle {
-    No2Coord*       coords;
-    unsigned int    num_coords;
-} No2Handle;
-
-static No2Handle *No2_LoadFile(const char *path) {
-    FILE* fp = fopen(path, "rb");
-    if(fp == NULL) {
-        LogWarn("Failed to load no2 \"%s\"!\n", path);
-        return NULL;
-    }
-
-    unsigned int num_normals = (unsigned int)(plGetFileSize(path) / sizeof(No2Coord));
-    No2Coord normals[num_normals];
-    unsigned int rnum_normals = fread(normals, sizeof(No2Coord), num_normals, fp);
-    fclose(fp);
-
-    if(rnum_normals != num_normals) {
-        LogWarn("Failed to read in all normals from \"%s\"!\n", path);
-        return NULL;
-    }
-
-    No2Handle* handle = u_alloc(1, sizeof(No2Handle), true);
-    handle->coords = u_alloc(num_normals, sizeof(No2Coord), true);
-    handle->num_coords = num_normals;
-    memcpy(handle->coords, normals, sizeof(No2Coord) * num_normals);
-    return handle;
-}
-
-static void No2_DestroyHandle(No2Handle *handle) {
-    if(handle == NULL) {
-        return;
-    }
-
-    u_free(handle->coords);
-    u_free(handle);
-}
-
-/************************************************************/
 
 struct {
     HirHandle*      pig_skeleton;
@@ -91,6 +45,18 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     if(vtx == NULL) {
         LogWarn("Failed to load Vtx, \"%s\"!\n", path);
         return NULL;
+    }
+
+    /* attempt to load the normals */
+    char no2_path[PL_SYSTEM_MAX_PATH];
+    strncpy(no2_path, path, strlen(path) - 3);
+    no2_path[strlen(path) - 3] = '\0';
+    strcat(no2_path, "no2");
+    bool gen_normals = false;
+    if(No2_LoadFile(no2_path, vtx) == NULL) {
+        LogWarn("Failed to load normals, \"%s\"!\n", no2_path);
+        /* in this case, we'll just generate them later */
+        gen_normals = true;
     }
 
     /* now we load in all the faces */
@@ -156,17 +122,6 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     }
 
     fclose(fac_file);
-
-    /* attempt to load the normals */
-    char no2_path[PL_SYSTEM_MAX_PATH];
-    strncpy(no2_path, path, strlen(path) - 3);
-    no2_path[strlen(path) - 3] = '\0';
-    strcat(no2_path, "no2");
-    No2Handle* no2 = No2_LoadFile(no2_path);
-    if(no2 == NULL) {
-        LogWarn("Failed to load normals, \"%s\"!\n", no2_path);
-        /* in this case, we'll just generate them later */
-    }
 
 #if 0 /* dumped! */
     /* figure out how many textures we have for this model
@@ -333,6 +288,10 @@ static PLModel* Model_LoadVtxFile(const char* path) {
                                   quads[j].vertex_indices[0],
                                   quads[j].vertex_indices[2]
         );
+    }
+
+    if(gen_normals) {
+        plGenerateMeshNormals(mesh);
     }
 
     PLModelBone* skeleton = u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true);

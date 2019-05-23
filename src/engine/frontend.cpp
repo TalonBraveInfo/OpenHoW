@@ -421,6 +421,11 @@ void FrontEnd_SetState(unsigned int state) {
             plDestroyTexture(fe_key, true);
             plDestroyTexture(fe_background, true);
 
+            fe_press = NULL;
+            fe_any = NULL;
+            fe_key = NULL;
+            fe_background = NULL;
+
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;
 
