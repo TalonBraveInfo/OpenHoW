@@ -20,6 +20,7 @@
 
 #include "ActorManager.h"
 #include "Actor.h"
+#include "StaticModelActor.h"
 
 /************************************************************/
 
@@ -27,19 +28,21 @@ std::vector<Actor*> ActorManager::actors_;
 std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
-Actor* ActorManager::SpawnActor(const std::string& name) {
+Actor* ActorManager::SpawnMapActor(const std::string &name) {
     auto i = actor_classes_.find(name);
-    if(i == actor_classes_.end()) {
-        LogWarn("Attempted to spawn an invalid actor of class \"%s\", ignoring!\n", name.c_str());
-        return nullptr;
-    }
 
     // name passed into actor is lowercase for
     // convenience sake (e.g. loading models)
     std::string lcname = name;
     std::transform(lcname.begin(), lcname.end(), lcname.begin(), [](unsigned char c){ return std::tolower(c); });
 
-    Actor* actor = i->second(lcname);
+    Actor* actor;
+    if(i == actor_classes_.end()) {
+        actor = new StaticModelActor(lcname);
+    } else {
+        actor = i->second(lcname);
+    }
+
     actors_.push_back(actor);
     return actor;
 }
@@ -61,10 +64,13 @@ void ActorManager::DrawActors() {
         return;
     }
 
+    g_state.gfx.num_actors_drawn = 0;
     for(auto const& actor: actors_) {
         if(cv_graphics_cull->b_value && !actor->IsVisible()) {
             continue;
         }
+
+        g_state.gfx.num_actors_drawn++;
 
         actor->Draw();
     }

@@ -619,38 +619,63 @@ void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     *ms = ms_;
 }
 
-static void DrawDebugOverlay(void) {
-    if(FrontEnd_GetState() == FE_MODE_EDITOR) {
+static void DrawDisplayInfo(void) {
+    char debug_display[128];
+    int w, h;
+    bool fs;
+    System_GetWindowDrawableSize(&w, &h, &fs);
+    sprintf(debug_display, "%d X %d %s", w, h, fs == true ? "FULLSCREEN" : "WINDOWED");
+    Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
+                          Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
+                          debug_display);
+}
+
+static void DrawFPSOverlay(void) {
+    if(!cv_debug_fps->b_value) {
         return;
     }
 
-    UI_DisplayDebugMenu();
+    unsigned int fps, ms;
+    Display_GetFramesCount(&fps, &ms);
+
+    char ms_count[32];
+    sprintf(ms_count, "FPS: %d (%d)", fps, ms);
+    Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
+                          Display_GetViewportHeight(&g_state.ui_camera->viewport) - 64, 0, 1.f, PL_COLOUR_WHITE,
+                          ms_count);
+}
+
+static void DrawCameraInfoOverlay(void) {
+    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
+    unsigned int y = 50;
+    char cam_pos[32];
+    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+}
+
+static void DrawDebugOverlay(void) {
+    if(cv_debug_mode->i_value <= 0) {
+        return;
+    }
+
+    UI_DisplayDebugMenu(); /* aka imgui */
 
     if(FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
         return;
     }
 
-    if (cv_debug_fps->b_value) {
-        unsigned int fps, ms;
-        Display_GetFramesCount(&fps, &ms);
+    DrawDisplayInfo();
+    //DrawCameraInfoOverlay();
 
-        char ms_count[32];
-        sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
-                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 64, 0, 1.f, PL_COLOUR_WHITE,
-                              ms_count);
-    }
-
-    {
-        char debug_display[128];
-        int w, h;
-        bool fs;
-        System_GetWindowDrawableSize(&w, &h, &fs);
-        sprintf(debug_display, "%d X %d %s", w, h, fs == true ? "FULLSCREEN" : "WINDOWED");
-        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
-                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
-                              debug_display);
-    }
+    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS");
+    unsigned int y = 50;
+    char cam_pos[32];
+    snprintf(cam_pos, sizeof(cam_pos), "CHUNKS DRAWN : %d", g_state.gfx.num_chunks_drawn);
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    snprintf(cam_pos, sizeof(cam_pos), "ACTORS DRAWN : %d", g_state.gfx.num_actors_drawn);
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 
     if (cv_debug_input->i_value > 0) {
         switch (cv_debug_input->i_value) {
@@ -736,16 +761,6 @@ static void DrawDebugOverlay(void) {
         }
         return;
     }
-
-#if 1
-    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
-    unsigned int y = 50;
-    char cam_pos[32];
-    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
-    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
-    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
-    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
-#endif
 }
 
 double cur_delta = 0;
@@ -798,9 +813,8 @@ void Display_DrawDebug(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
     plSetupCamera(g_state.ui_camera);
 
-    if(cv_debug_mode->i_value > 0) {
-        DrawDebugOverlay();
-    }
+    DrawDebugOverlay();
+    DrawFPSOverlay();
 
     Console_Draw();
 }

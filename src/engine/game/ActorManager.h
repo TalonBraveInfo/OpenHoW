@@ -34,7 +34,7 @@ public:
         return instance;
     }
 
-    Actor* SpawnActor(const std::string& name);
+    Actor* SpawnMapActor(const std::string &name);
     void DestroyActor(Actor* actor);
 
     void TickActors();

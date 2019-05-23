@@ -511,7 +511,9 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
+    g_state.gfx.num_chunks_drawn = 0;
     for(auto chunk : chunks_) {
+        g_state.gfx.num_chunks_drawn++;
         plDrawModel(chunk.model);
     }
 }

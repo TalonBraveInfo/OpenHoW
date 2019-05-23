@@ -365,6 +365,7 @@ void Console_Initialize(void) {
 }
 
 static void DrawInputPane(void) {
+    plSetTexture(NULL, 0);
     plSetBlendMode(PL_BLEND_DEFAULT);
 
     BitmapFont* font = g_fonts[FONT_CHARS2];

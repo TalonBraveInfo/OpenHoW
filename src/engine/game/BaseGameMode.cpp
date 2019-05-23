@@ -104,7 +104,7 @@ void BaseGameMode::Tick() {
 void BaseGameMode::SpawnActors() {
     std::vector<MapSpawn> spawns = current_map_->GetSpawns();
     for(auto spawn : spawns) {
-        Actor* actor = ActorManager::GetInstance()->SpawnActor(spawn.name);
+        Actor* actor = ActorManager::GetInstance()->SpawnMapActor(spawn.name);
         if(actor == nullptr) {
             continue;
         }
