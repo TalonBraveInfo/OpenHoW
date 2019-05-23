@@ -24,6 +24,8 @@ Consider this more of a wish-list at this  point in time ;)
 * Enhanced graphics over the original game
 
 ## Status :mag:
+![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
+
 As of May 2019, the project is still in a very early phase of development, however we're now at a point
 in which models and levels can be loaded in. As we shift onto our next milestone (0.3.0)
 a lot of work will begin on actually getting the game into a basic playable form.
@@ -75,7 +77,3 @@ After you've downloaded these files, place the 'include' and 'lib' directories u
 in a new 'SDL2' directory under 'src/3rdparty'.
 
 This will be changing at a later point to make things a little easier.
-
-----
-
-![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
