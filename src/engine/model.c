@@ -249,6 +249,8 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         return NULL;
     }
 
+    plGenerateModelBounds(model);
+
 #if 0 /* don't bother for now... */
     /* check if it's a LOD model, these are appended with '_hi' */
     char file_name[16];
@@ -292,6 +294,15 @@ PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
         model = default_model;
     }
     return model;
+}
+
+void Model_DestroyHandle(PLModel* model) {
+    /* destroy model */
+    if(model == default_model) {
+        return;
+    }
+
+    plDestroyModel(model);
 }
 
 Animation* LoadAnimations(const char *path, bool abort_on_fail) {
@@ -450,7 +461,7 @@ void CacheModelData(void) {
             Error("failed to seek back to original position %d in file, aborting!\n", position);
         }
     }
-    fclose(file);
+    u_fclose(file);
 
 #if 0 // debug
     for(unsigned int i = 0; i < ANI_END; ++i) {

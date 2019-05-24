@@ -202,13 +202,13 @@ AudioManager::~AudioManager() {
 
     ALCcontext *context = alcGetCurrentContext();
     if(context != nullptr) {
-        alcMakeContextCurrent(nullptr);
-        alcDestroyContext(context);
-
         ALCdevice *device = alcGetContextsDevice(context);
         if(device != nullptr) {
             alcCloseDevice(device);
         }
+
+        alcMakeContextCurrent(nullptr);
+        alcDestroyContext(context);
     }
 }
 
@@ -316,7 +316,9 @@ void AudioManager::SilenceSources() {
         sound->StopPlaying();
     }
 
-    global_source_->StopPlaying();
+    if(global_source_ != nullptr) {
+        global_source_->StopPlaying();
+    }
 }
 
 /* Will invalidate ALL references to AudioSource objects.

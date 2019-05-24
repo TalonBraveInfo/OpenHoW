@@ -22,7 +22,7 @@
 
 ModelActor::ModelActor(const std::string& name) : Actor(name) {}
 ModelActor::~ModelActor() {
-    plDestroyModel(model_);
+    Model_DestroyHandle(model_);
 }
 
 void ModelActor::Draw() {
