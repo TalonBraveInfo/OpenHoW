@@ -85,7 +85,9 @@ const MapManifest *MapManager::GetManifest(const std::string &name) {
     }
 
     LogWarn("Failed to get manifest for \"%s\"!\n", name.c_str());
-    return nullptr;
+
+    static MapManifest default_descript;
+    return &default_descript;
 }
 
 void MapManager::MapCommand(unsigned int argc, char **argv) {

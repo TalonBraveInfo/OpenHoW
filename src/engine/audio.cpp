@@ -47,15 +47,17 @@ static void OALCheckErrors() {
     }
 }
 
+unsigned int reverb_effect_slot = 0;
+unsigned int reverb_sound_slot = 0;
+
 /************************************************************/
 /* Audio Source */
 
-AudioSource::AudioSource(unsigned int al_sample, float gain, float pitch, bool looping) :
-        AudioSource(al_sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), gain, pitch, looping) {
+AudioSource::AudioSource(const AudioSample* sample, float gain, float pitch, bool looping) :
+        AudioSource(sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), gain, pitch, looping) {
     alSourcei(al_source_id_, AL_SOURCE_RELATIVE, 1);
 }
-
-AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping) {
+AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping) {
     alGenSources(1, &al_source_id_);
     OALCheckErrors();
 
@@ -67,8 +69,12 @@ AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, f
     alSourcei(al_source_id_, AL_LOOPING, looping);
     OALCheckErrors();
 
-    alSourceQueueBuffers(al_source_id_, 1, &al_sample);
+    alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
     OALCheckErrors();
+
+    if(sample != nullptr) {
+        SetSample(sample);
+    }
 
     AudioManager::GetInstance()->sources_.insert(this);
 }
@@ -76,6 +82,29 @@ AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, f
 AudioSource::~AudioSource() {
     AudioManager::GetInstance()->sources_.erase(this);
     alDeleteSources(1, &al_source_id_);
+}
+
+void AudioSource::SetSample(const AudioSample* sample) {
+    if(sample == nullptr) {
+        LogWarn("Invalid sample passed, aborting!\n");
+        return;
+    }
+
+    if(sample == current_sample_) {
+        return;
+    }
+
+    if(current_sample_ != nullptr && sample != current_sample_) {
+        unsigned int buf = current_sample_->al_buffer_id_;
+        alSourceUnqueueBuffers(al_source_id_, 1, &buf);
+        u_assert(buf == current_sample_->al_buffer_id_);
+        OALCheckErrors();
+    }
+
+    alSourceQueueBuffers(al_source_id_, 1, &sample->al_buffer_id_);
+    OALCheckErrors();
+
+    current_sample_ = sample;
 }
 
 void AudioSource::SetPosition(PLVector3 position) {
@@ -172,14 +201,6 @@ AudioManager::AudioManager() {
         al_extensions_[AUDIO_EXT_EFX] = true;
     }
 
-#if 0
-    int attr[]={
-            ALC_FREQUENCY, 44100, /* todo: tune this */
-            ALC_MAX_AUXILIARY_SENDS, 4,
-            0
-    };
-#endif
-
     ALCcontext *context = alcCreateContext(device, nullptr);
     if(context == nullptr || !alcMakeContextCurrent(context)) {
         Error("failed to create audio context, aborting audio initialisation!\n");
@@ -192,6 +213,27 @@ AudioManager::AudioManager() {
 
     alDopplerFactor(4.f);
     alDopplerVelocity(350.f);
+
+    if(al_extensions_[AUDIO_EXT_EFX]) {
+        alGenEffects(1, &reverb_effect_slot);
+        alEffecti(reverb_effect_slot, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
+        const EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON; //EFX_REVERB_PRESET_OUTDOORS_VALLEY;
+        alEffectf(reverb_effect_slot, AL_REVERB_DENSITY, reverb.flDensity);
+        alEffectf(reverb_effect_slot, AL_REVERB_DIFFUSION, reverb.flDiffusion);
+        alEffectf(reverb_effect_slot, AL_REVERB_GAIN, reverb.flGain);
+        alEffectf(reverb_effect_slot, AL_REVERB_GAINHF, reverb.flGainHF);
+        alEffectf(reverb_effect_slot, AL_REVERB_DECAY_TIME, reverb.flDecayTime);
+        alEffectf(reverb_effect_slot, AL_REVERB_DECAY_HFRATIO, reverb.flDecayHFRatio);
+        alEffectf(reverb_effect_slot, AL_REVERB_REFLECTIONS_GAIN, reverb.flReflectionsGain);
+        alEffectf(reverb_effect_slot, AL_REVERB_REFLECTIONS_DELAY, reverb.flReflectionsDelay);
+        alEffectf(reverb_effect_slot, AL_REVERB_LATE_REVERB_GAIN, reverb.flLateReverbGain);
+        alEffectf(reverb_effect_slot, AL_REVERB_LATE_REVERB_DELAY, reverb.flLateReverbDelay);
+        alEffectf(reverb_effect_slot, AL_REVERB_AIR_ABSORPTION_GAINHF, reverb.flAirAbsorptionGainHF);
+        alEffectf(reverb_effect_slot, AL_REVERB_ROOM_ROLLOFF_FACTOR, reverb.flRoomRolloffFactor);
+        alEffecti(reverb_effect_slot, AL_REVERB_DECAY_HFLIMIT, reverb.iDecayHFLimit);
+        alGenAuxiliaryEffectSlots(1, &reverb_sound_slot);
+        alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
+    }
 }
 
 AudioManager::~AudioManager() {
@@ -212,11 +254,11 @@ AudioManager::~AudioManager() {
     }
 }
 
-void AudioManager::CacheSample(const std::string &path, bool preserve) {
+const AudioSample* AudioManager::CacheSample(const std::string &path, bool preserve) {
     auto i = samples_.find(path);
     if(i != samples_.end()) {
-        LogWarn("attempted to double cache audio sample, \"%s\"!\n", path.c_str());
-        return;
+        LogWarn("Attempted to double cache audio sample, \"%s\"!\n", path.c_str());
+        return nullptr;
     }
 
     /* todo: ensure the path is under <basedir/campaign>/audio/ ? */
@@ -225,8 +267,8 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
     uint32_t length;
     uint8_t *buffer;
     if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
-        LogWarn("failed to load \"%s\"!\n", path.c_str());
-        return;
+        LogWarn("Failed to load \"%s\"!\n", path.c_str());
+        return nullptr;
     }
 
     /* translate the spec over to oal
@@ -254,17 +296,19 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
     if(format == 0) {
         LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
         SDL_FreeWAV(buffer);
-        return;
+        return nullptr;
     }
 
-    samples_.emplace(
+    auto sample = samples_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(path),
             std::forward_as_tuple(buffer, spec.freq, format, length, preserve)
             );
+
+    return &(sample.first->second);
 }
 
-const AudioManager::AudioSample *AudioManager::GetCachedSample(const std::string &path) {
+const AudioSample *AudioManager::GetCachedSample(const std::string &path) {
     auto i = samples_.find(path);
     if(i == samples_.end()) {
         CacheSample(path, false);
@@ -279,12 +323,17 @@ const AudioManager::AudioSample *AudioManager::GetCachedSample(const std::string
 }
 
 AudioSource *AudioManager::CreateSource(const std::string &path, float gain, float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path)->al_buffer_id_, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path), gain, pitch, looping);
 }
 
 AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, float gain,
                                         float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path)->al_buffer_id_, pos, vel, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path), pos, vel, gain, pitch, looping);
+}
+
+AudioSource *AudioManager::CreateSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel, float gain,
+        float pitch, bool looping) {
+    return new AudioSource(sample, pos, vel, gain, pitch, looping);
 }
 
 void AudioManager::Tick() {
@@ -324,7 +373,7 @@ void AudioManager::SilenceSources() {
 /* Will invalidate ALL references to AudioSource objects.
  * Only use in contexts where this is safe. */
 void AudioManager::FreeSources() {
-    LogInfo("freeing all audio sources...\n");
+    LogInfo("Freeing all audio sources...\n");
 
     SilenceSources();
     global_source_.reset(nullptr);
@@ -354,14 +403,14 @@ void AudioManager::FreeSamples(bool force) {
 /************************************************************/
 /* Audio Sample */
 
-AudioManager::AudioSample::~AudioSample() {
+AudioSample::~AudioSample() {
     alDeleteBuffers(1, &al_buffer_id_);
     OALCheckErrors();
 
     SDL_FreeWAV(data_);
 }
 
-AudioManager::AudioSample::AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve) {
+AudioSample::AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve) {
     alGenBuffers(1, &al_buffer_id_);
     OALCheckErrors();
     alBufferData(al_buffer_id_, format, data, length, freq);

@@ -172,10 +172,10 @@ Map::Map(const std::string& name) {
 
     p = u_find(std::string(base_path + name + ".pog").c_str());
     if (!plFileExists(p.c_str())) {
-        throw std::runtime_error("POG, " + p + ", doesn't exist!\n");
+        LogWarn("POG, \"%s\", doesn't exist!\n", p.c_str());
+    } else {
+        LoadSpawns(p);
     }
-
-    LoadSpawns(p);
 
     sky_model_ = Model_LoadFile("skys/skydome", true);
 
