@@ -27,12 +27,8 @@ bool Game_SetMode(const std::string &mode) {
     LogDebug("starting new game...\n");
 
     if(current_mode != nullptr) {
-        if (mode == current_mode->GetDescription()) {
-            return true;
-        }
-
         if (current_mode->HasRoundStarted() || current_mode->HasTurnStarted()) {
-            Error("Attempted to change mode in the middle of a round!\n");
+            current_mode->EndMode();
         }
 
         delete current_mode;

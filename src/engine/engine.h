@@ -36,7 +36,7 @@
 #define ENGINE_LOG          "debug"
 
 #define ENGINE_MAJOR_VERSION    0
-#define ENGINE_MINOR_VERSION    1
+#define ENGINE_MINOR_VERSION    2
 #define ENGINE_PATCH_VERSION    0
 
 #define TICKS_PER_SECOND    25
@@ -69,8 +69,10 @@ typedef struct EngineState {
     /* server / client logic */
     bool is_host;
 
+    unsigned int sys_ticks;
+    unsigned int last_sys_tick;
+
     unsigned int sim_ticks;
-    unsigned int last_sim_tick;
 
     unsigned int draw_ticks;
     unsigned int last_draw_ms;

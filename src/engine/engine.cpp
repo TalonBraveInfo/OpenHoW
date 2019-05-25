@@ -120,7 +120,8 @@ bool Engine_IsRunning(void) {
 
     unsigned int loops = 0;
     while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-        g_state.sim_ticks = System_GetTicks();
+        g_state.sys_ticks = System_GetTicks();
+        g_state.sim_ticks++;
 
         Client_Simulate();
 
@@ -131,7 +132,7 @@ bool Engine_IsRunning(void) {
 
         AudioManager::GetInstance()->Tick();
 
-        g_state.last_sim_tick = System_GetTicks();
+        g_state.last_sys_tick = System_GetTicks();
         next_tick += SKIP_TICKS;
         loops++;
     }

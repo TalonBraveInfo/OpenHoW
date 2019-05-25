@@ -83,7 +83,7 @@ public:
     void Tick();
 
     const AudioSample *GetCachedSample(const std::string &path);
-    const AudioSample *CacheSample(const std::string &path, bool preserve);
+    const AudioSample *CacheSample(const std::string &path, bool preserve = false);
 
     AudioSource *CreateSource(const std::string &path, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
     AudioSource *CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, float gain = 1.0f, float pitch = 1.0f, bool looping = false);

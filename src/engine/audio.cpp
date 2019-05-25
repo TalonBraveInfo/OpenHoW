@@ -55,7 +55,7 @@ unsigned int reverb_sound_slot = 0;
 
 AudioSource::AudioSource(const AudioSample* sample, float gain, float pitch, bool looping) :
         AudioSource(sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), gain, pitch, looping) {
-    alSourcei(al_source_id_, AL_SOURCE_RELATIVE, 1);
+    alSourcei(al_source_id_, AL_SOURCE_RELATIVE, AL_TRUE);
 }
 AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping) {
     alGenSources(1, &al_source_id_);
@@ -68,7 +68,10 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
 
     alSourcei(al_source_id_, AL_LOOPING, looping);
     OALCheckErrors();
-
+    alSourcef(al_source_id_, AL_REFERENCE_DISTANCE, 300.0f);
+    OALCheckErrors();
+    alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
+    OALCheckErrors();
     alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
     OALCheckErrors();
 
@@ -217,7 +220,9 @@ AudioManager::AudioManager() {
     if(al_extensions_[AUDIO_EXT_EFX]) {
         alGenEffects(1, &reverb_effect_slot);
         alEffecti(reverb_effect_slot, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
-        const EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON; //EFX_REVERB_PRESET_OUTDOORS_VALLEY;
+        const EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_OUTDOORS_VALLEY;
+        // EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON
+        // EFX_REVERB_PRESET_OUTDOORS_VALLEY
         alEffectf(reverb_effect_slot, AL_REVERB_DENSITY, reverb.flDensity);
         alEffectf(reverb_effect_slot, AL_REVERB_DIFFUSION, reverb.flDiffusion);
         alEffectf(reverb_effect_slot, AL_REVERB_GAIN, reverb.flGain);
@@ -257,11 +262,8 @@ AudioManager::~AudioManager() {
 const AudioSample* AudioManager::CacheSample(const std::string &path, bool preserve) {
     auto i = samples_.find(path);
     if(i != samples_.end()) {
-        LogWarn("Attempted to double cache audio sample, \"%s\"!\n", path.c_str());
-        return nullptr;
+        return &(i->second);
     }
-
-    /* todo: ensure the path is under <basedir/campaign>/audio/ ? */
 
     SDL_AudioSpec spec;
     uint32_t length;
@@ -347,12 +349,13 @@ void AudioManager::Tick() {
     plAnglesAxes(angles, &left, &up, &forward);
 
     float ori[6];
-    ori[0] = forward.x; ori[3] = up.x;
+    ori[0] = forward.z; ori[3] = up.x;
     ori[1] = forward.y; ori[4] = up.y;
-    ori[2] = forward.z; ori[5] = up.z;
+    ori[2] = forward.x; ori[5] = up.z;
 
     alListener3f(AL_POSITION, position.x, position.y, position.z);
     alListenerfv(AL_ORIENTATION, ori);
+    alListenerf(AL_GAIN, cv_audio_volume->f_value);
 }
 
 void AudioManager::PlayGlobalSound(const std::string &path) {

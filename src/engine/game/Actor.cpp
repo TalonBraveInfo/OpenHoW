@@ -38,18 +38,19 @@ void Actor::HandleInput() {
 
     Player* player = mode->GetCurrentPlayer();
 
-    //PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
+    PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
     PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
 
+    float forward_speed = -cl.y;
     if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-        position_.x += 100.f * g_state.camera->forward.x;
-        position_.y += 100.f * g_state.camera->forward.y;
-        position_.z += 100.f * g_state.camera->forward.z;
+        forward_speed = 100.0f;
     } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-        position_.x -= 100.f * g_state.camera->forward.x;
-        position_.y -= 100.f * g_state.camera->forward.y;
-        position_.z -= 100.f * g_state.camera->forward.z;
+        forward_speed = -100.0f;
     }
+
+    position_.x += forward_speed * g_state.camera->forward.x;
+    position_.y += forward_speed * g_state.camera->forward.y;
+    position_.z += forward_speed * g_state.camera->forward.z;
 
     if(Input_GetActionState(player->input_slot, ACTION_SELECT)) {
         if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {

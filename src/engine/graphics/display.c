@@ -563,6 +563,7 @@ void Display_Initialize(void) {
     PLImage* image = plNewImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
     if(image != NULL) {
         default_texture = plCreateTexture();
+        default_texture->flags &= PL_TEXTURE_FLAG_NOMIPS;
         if(!plUploadTextureImage(default_texture, image)) {
             LogWarn("Failed to upload default texture (%s)!\n", plGetError());
             plDestroyTexture(default_texture, true);

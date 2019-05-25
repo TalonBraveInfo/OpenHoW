@@ -26,10 +26,12 @@
 
 BaseGameMode::BaseGameMode() {
     players_.resize(4);
+    ambient_emitter_ = AudioManager::GetInstance()->CreateSource((AudioSample*) nullptr);
 }
 
 BaseGameMode::~BaseGameMode() {
     AudioManager::GetInstance()->FreeSamples();
+    delete ambient_emitter_;
 }
 
 void BaseGameMode::StartMode(const std::string &map_name) {
@@ -45,10 +47,27 @@ void BaseGameMode::StartMode(const std::string &map_name) {
         Error("Failed to load map, aborting!\n%s\n", e.what());
     }
 
+    const MapManifest* manifest = MapManager::GetInstance()->GetManifest(map_name);
+
+    std::string sample_ext = "d";
+    if(manifest->time != "day") {
+        sample_ext = "n";
+    }
+
+    for(unsigned int i = 1, idx = 0; i < 4; ++i) {
+        if(i < 3) {
+            ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
+        }
+        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_s" + std::to_string(i) + ".wav", false);
+        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_l" + std::to_string(i) + ".wav", false);
+    }
+
     StartRound();
 }
 
 void BaseGameMode::EndMode() {
+    EndRound();
+
     delete current_map_;
     current_map_ = nullptr;
 
@@ -67,6 +86,8 @@ void BaseGameMode::StartRound() {
      *       otherwise players won't have time to read the loading screen */
     FrontEnd_SetState(FE_MODE_GAME);
 
+    ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
+
     round_started_ = true;
 }
 
@@ -76,10 +97,6 @@ void BaseGameMode::RestartRound() {
 }
 
 void BaseGameMode::EndRound() {
-    if(HasRoundStarted()) {
-        Error("Attempted to unload map in the middle of a round, aborting!\n");
-    }
-
     DestroyActors();
 }
 
@@ -87,6 +104,19 @@ void BaseGameMode::Tick() {
     if(!HasRoundStarted()) {
         // still setting the game up...
         return;
+    }
+
+    if(ambient_emit_delay_ < g_state.sim_ticks) {
+        ambient_emitter_->StopPlaying();
+        ambient_emitter_->SetPosition(PLVector3(
+                rand()%MAP_PIXEL_WIDTH,
+                current_map_->GetMaxHeight(),
+                rand()%MAP_PIXEL_WIDTH
+                ));
+        ambient_emitter_->SetGain(1.0f + (rand() % 20 / 1.0f));
+        ambient_emitter_->SetSample(ambient_samples_[rand()%MAX_AMBIENT_SAMPLES]);
+        ambient_emitter_->StartPlaying();
+        ambient_emit_delay_ = g_state.sim_ticks + 60 + rand() % 120;
     }
 
     Actor* slave = GetCurrentPlayer()->input_target;

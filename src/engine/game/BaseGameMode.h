@@ -21,7 +21,10 @@
 #include "Game.h"
 
 struct Player;
+struct AudioSample;
+
 class Actor;
+class AudioSource;
 
 class BaseGameMode {
 public:
@@ -84,7 +87,15 @@ private:
     bool round_started_{false};
     bool turn_started_{false};
 
+    AudioSource* ambient_emitter_{nullptr};
+#define MAX_AMBIENT_SAMPLES 8
+    const AudioSample* ambient_samples_[MAX_AMBIENT_SAMPLES]{
+            nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr
+    };
+
     uint8_t turn_time_{99};
+
+    double ambient_emit_delay_{0};
 
     std::vector<Player> players_;      // todo: need proper identifier
     unsigned int current_player_{0};

@@ -554,9 +554,9 @@ void DEBUGDrawSkeleton(void) {
 
     static unsigned int frame = 0;
     static double delay = 20;
-    if(g_state.sim_ticks > delay) {
+    if(g_state.sys_ticks > delay) {
         frame++;
-        delay = g_state.sim_ticks + 20;
+        delay = g_state.sys_ticks + 20;
     }
 
     if(frame == model_cache.animations[0].num_frames) {
