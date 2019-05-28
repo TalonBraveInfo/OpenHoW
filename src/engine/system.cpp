@@ -84,12 +84,6 @@ void System_SetClipboardText(void*, const char *text) {
 void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_ALPHA_SIZE, 8);
 
 #ifdef _DEBUG
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -99,10 +93,12 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-#if 1
+#if 0
     if(SDL_GL_SetSwapInterval(-1) != 0) {
         SDL_GL_SetSwapInterval(1);
     }
+#else
+    SDL_GL_SetSwapInterval(0);
 #endif
 
     unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;

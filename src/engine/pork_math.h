@@ -36,10 +36,6 @@ inline static void VecAngleClamp(PLVector3* vector) {
 
 #endif
 
-inline static void Mat4Copy(PLMatrix4x4 in, PLMatrix4x4 *out) {
-    memcpy(out, &in, sizeof(PLMatrix4x4));
-}
-
 inline static void Mat4Multiply(PLMatrix4x4 in1, PLMatrix4x4 in2, PLMatrix4x4 *out) {
     out->m[ 0] = in1.m[ 0] * in2.m[ 0] + in1.m[ 4] * in2.m[ 1] + in1.m[ 8] * in2.m[ 2] + in1.m[12] * in2.m[ 3];
     out->m[ 1] = in1.m[ 1] * in2.m[ 0] + in1.m[ 5] * in2.m[ 1] + in1.m[ 9] * in2.m[ 2] + in1.m[13] * in2.m[ 3];

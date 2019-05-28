@@ -284,6 +284,10 @@ PLModel* Model_LoadMinFile(const char *path) {
 PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
     snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
+    if(!plFileExists(model_path)) {
+        snprintf(model_path, sizeof(model_path), "%s.min", u_find(path));
+    }
+
     PLModel* model = plLoadModel(model_path);
     if(model == NULL) {
         if(abort_on_fail) {
@@ -332,12 +336,12 @@ void CacheModelData(void) {
     // to determine the length of animations later
     size_t mcap_bytes = plGetFileSize(mcap_path);
     if(mcap_bytes < 272) {
-        Error("unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
+        Error("Unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
     }
 
     FILE* file = fopen(mcap_path, "rb");
     if(file == NULL) {
-        Error("failed to load \"%s\", aborting!\n", mcap_path);
+        Error("Failed to load \"%s\", aborting!\n", mcap_path);
     }
 
     /* todo, split this up, as the psx version deals with these as separate files */
@@ -389,7 +393,7 @@ void CacheModelData(void) {
             uint32_t length;
         } index;
         if(fread(&index, sizeof(index), 1, file) != 1) {
-            Error("failed to read index, aborting!\n");
+            Error("Failed to read index, aborting!\n");
         }
 
         // position we'll return to for the next index
@@ -416,7 +420,7 @@ void CacheModelData(void) {
 
         unsigned int num_keyframes = (unsigned int) (index.length / sizeof(McapKeyframe));
         if(num_keyframes == 0) {
-            Error("odd keyframe at index, aborting!\n");
+            Error("Odd keyframe at index, aborting!\n");
         }
 
         // copy everything into our global animations array
@@ -425,14 +429,14 @@ void CacheModelData(void) {
 
         // move to where the first keyframe is
         if(fseek(file, index.offset, SEEK_SET) != 0) {
-            Error("failed to seek to offset %d in file, aborting!\n", index.offset);
+            Error("Failed to seek to offset %d in file, aborting!\n", index.offset);
         }
 
         for(unsigned int j = 0; j < num_keyframes; ++j) {
             // read in the keyframe data
             McapKeyframe frame;
             if(fread(&frame, sizeof(McapKeyframe), 1, file) != 1) {
-                Error("failed to read animation keyframe, aborting!\n");
+                Error("Failed to read animation keyframe, aborting!\n");
             }
 
             // copy transforms
@@ -458,7 +462,7 @@ void CacheModelData(void) {
 
         // return us from whence we came
         if(fseek(file, position, SEEK_SET) != 0) {
-            Error("failed to seek back to original position %d in file, aborting!\n", position);
+            Error("Failed to seek back to original position %d in file, aborting!\n", position);
         }
     }
     u_fclose(file);
@@ -516,7 +520,9 @@ void RegisterModelLoaders(void) {
 
 void ShutdownModels(void) {
     /* clear the model cache */
-    LogInfo("clearing model cache...\n");
+    LogInfo("Clearing model cache...\n");
+
+    plDestroyModel(default_model);
 
     for(unsigned int i = 0; i < MAX_CLASSES; ++i) {
         plDestroyModel(model_cache.pigs[i]);

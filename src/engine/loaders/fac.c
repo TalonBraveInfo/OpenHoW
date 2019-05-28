@@ -16,6 +16,7 @@
  */
 
 #include <PL/platform_filesystem.h>
+
 #include "../engine.h"
 #include "loaders.h"
 
@@ -37,7 +38,7 @@ FacHandle* Fac_LoadFile(const char* path) {
         LogWarn("Failed to get number of triangles, \"%s\"!\n", path);
     }
 
-    if(num_triangles >= MAX_MODEL_TRIANGLES) {
+    if(num_triangles == 0 || num_triangles >= MAX_MODEL_TRIANGLES) {
         u_fclose(fac_file);
         LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
         return NULL;
@@ -66,7 +67,7 @@ FacHandle* Fac_LoadFile(const char* path) {
 
     if(num_quads >= MAX_MODEL_TRIANGLES) {
         u_fclose(fac_file);
-        LogWarn("Invalid number of quads in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
+        LogWarn("Invalid number of quads in \"%s\" (%d/%d)!\n", path, num_quads, MAX_MODEL_TRIANGLES);
         return NULL;
     }
 
