@@ -84,6 +84,10 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
 
 AudioSource::~AudioSource() {
     AudioManager::GetInstance()->sources_.erase(this);
+    if(current_sample_ != nullptr) {
+        unsigned int buf = current_sample_->al_buffer_id_;
+        alSourceUnqueueBuffers(al_source_id_, 1, &buf);
+    }
     alDeleteSources(1, &al_source_id_);
 }
 

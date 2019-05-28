@@ -392,7 +392,7 @@ static void DrawInputPane(void) {
         if(++frame >= plArrayElements(anim)) {
             frame = 0;
         }
-        delay = g_state.sim_ticks + 128;
+        delay = g_state.sim_ticks + 2;
     }
 
     Font_DrawBitmapCharacter(font, x, y, 1.f, PL_COLOUR_GREEN, anim[frame]);

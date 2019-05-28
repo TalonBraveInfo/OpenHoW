@@ -38,8 +38,8 @@ enum {
 
 void Client_ProcessInput() {
     static double input_delay = 0;
-    if(input_delay < g_state.sim_ticks) {
-        input_delay = g_state.sim_ticks + 50;
+    if(input_delay < g_state.sys_ticks) {
+        input_delay = g_state.sys_ticks + 10;
 
         if (Input_GetKeyState('`')) {
             Console_Toggle();

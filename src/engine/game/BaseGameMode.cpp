@@ -30,6 +30,7 @@ BaseGameMode::BaseGameMode() {
 }
 
 BaseGameMode::~BaseGameMode() {
+    AudioManager::GetInstance()->FreeSources();
     AudioManager::GetInstance()->FreeSamples();
     delete ambient_emitter_;
 }
