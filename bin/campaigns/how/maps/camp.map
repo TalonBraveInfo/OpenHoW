@@ -1,6 +1,8 @@
 {
   "name":"$map_how_camp",
-  "sky":"",
+  "author":"Unknown",
+  "ambientColour":"88 88 96",
+  "sky":"coldsky",
   "background":"",
   "flags":0,
   "modes":[

@@ -306,8 +306,8 @@ void Map::LoadTiles(const std::string &path) {
             current_chunk.offset = PLVector3(chunk.x, chunk.y, chunk.z);
 
             struct __attribute__((packed)) {
-                int16_t height{0};
-                uint8_t lighting[2]{0, 0};
+                int16_t     height{0};
+                uint16_t    lighting{0};
             } vertices[25];
             if(std::fread(vertices, sizeof(*vertices), 25, fh) != 25) {
                 Error("Unexpected end of file, aborting!\n");
@@ -367,10 +367,10 @@ void Map::LoadTiles(const std::string &path) {
                     current_tile->height[2] = vertices[((tile_y + 1) * 5) + tile_x].height;
                     current_tile->height[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].height;
 
-                    current_tile->shading[0] = vertices[(tile_y * 5) + tile_x].lighting[0];
-                    current_tile->shading[1] = vertices[(tile_y * 5) + tile_x + 1].lighting[0];
-                    current_tile->shading[2] = vertices[((tile_y + 1) * 5) + tile_x].lighting[0];
-                    current_tile->shading[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].lighting[0];
+                    current_tile->shading[0] = vertices[(tile_y * 5) + tile_x].lighting;
+                    current_tile->shading[1] = vertices[(tile_y * 5) + tile_x + 1].lighting;
+                    current_tile->shading[2] = vertices[((tile_y + 1) * 5) + tile_x].lighting;
+                    current_tile->shading[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].lighting;
 
                     u_assert(current_chunk.tiles[tile_x + tile_y * MAP_CHUNK_ROW_TILES].type < MAX_TILE_TYPES,
                              "invalid tile type!\n");
@@ -412,17 +412,15 @@ void Map::LoadTiles(const std::string &path) {
 
                     /* MAP_FLIP_FLAG_ROTATE_270 is implemented by ORing 90 and 180 together. */
 
-                    for(int i = 0; i < 4; ++i, ++cm_idx)
-                    {
+                    for(int i = 0; i < 4; ++i, ++cm_idx) {
                         float x = (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
                         float z = (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
-
                         plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
                         plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
                         plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(
-                                current_tile->shading[i],
-                                current_tile->shading[i],
-                                current_tile->shading[i]));
+                                manifest_->ambient_colour.r * current_tile->shading[i] / 255,
+                                manifest_->ambient_colour.g * current_tile->shading[i] / 255,
+                                manifest_->ambient_colour.b * current_tile->shading[i] / 255));
                     }
                 }
             }

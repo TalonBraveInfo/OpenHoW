@@ -260,16 +260,16 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
         }
         output << "],";
     }
-    output << R"("ambient_colour":")" +
+    output << R"("ambientColour":")" +
         std::to_string(manifest_.ambient_colour.r) + " " +
         std::to_string(manifest_.ambient_colour.g) + " " +
         std::to_string(manifest_.ambient_colour.b) + "\",";
-    output << R"("sun_colour":")" +
+    output << R"("sunColour":")" +
         std::to_string(manifest_.sun_colour.r) + " " +
         std::to_string(manifest_.sun_colour.g) + " " +
         std::to_string(manifest_.sun_colour.b) + "\",";
-    output << R"("sun_yaw":")" + std::to_string(manifest_.sun_yaw) + "\",";
-    output << R"("sun_pitch":")" + std::to_string(manifest_.sun_pitch) + "\",";
+    output << R"("sunYaw":")" + std::to_string(manifest_.sun_yaw) + "\",";
+    output << R"("sunPitch":")" + std::to_string(manifest_.sun_pitch) + "\",";
     output << R"("temperature":")" + manifest_.temperature + "\",";
     output << R"("time":")" + manifest_.time + "\"";
     output << "}\n";

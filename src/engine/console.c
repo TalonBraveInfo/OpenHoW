@@ -26,6 +26,7 @@
 
 #include "graphics/display.h"
 #include "graphics/font.h"
+#include "config.h"
 
 /************************************************************/
 
@@ -171,11 +172,18 @@ static void DisconnectCommand(unsigned int argc, char *argv[]) {
     //Map_Unload();
 }
 
-static void ConfigCommand(unsigned int argc, char *argv[]) {
+static void LoadConfigCommand(unsigned int argc, char **argv) {
     check_args(2);
-
-    void Config_Load(const char *path);
     Config_Load(argv[1]);
+}
+
+static void SaveConfigCommand(unsigned int argc, char** argv) {
+    const char* name = Config_GetUserConfigPath();
+    if(argc > 1 && argv[1] != NULL) {
+        name = argv[1];
+    }
+
+    Config_Save(name);
 }
 
 static void OpenCommand(unsigned int argc, char *argv[]) {
@@ -353,7 +361,8 @@ void Console_Initialize(void) {
     plRegisterConsoleCommand("open", OpenCommand, "Opens the specified file");
     plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
     plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
-    plRegisterConsoleCommand("config", ConfigCommand, "Loads the specified config");
+    plRegisterConsoleCommand("loadConfig", LoadConfigCommand, "Loads the specified config");
+    plRegisterConsoleCommand("saveConfig", SaveConfigCommand, "Save current config");
     plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
     plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");
     plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
