@@ -38,7 +38,8 @@ FacHandle* Fac_LoadFile(const char* path) {
         LogWarn("Failed to get number of triangles, \"%s\"!\n", path);
     }
 
-    if(num_triangles == 0 || num_triangles >= MAX_MODEL_TRIANGLES) {
+    /* some models can have 0 triangles, as they'll use quads instead */
+    if(num_triangles >= MAX_MODEL_TRIANGLES) {
         u_fclose(fac_file);
         LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
         return NULL;
@@ -85,7 +86,7 @@ FacHandle* Fac_LoadFile(const char* path) {
     }
 
     unsigned int total_triangles = num_triangles + (num_quads * 2);
-    if(num_triangles >= MAX_MODEL_TRIANGLES) {
+    if(total_triangles == 0 || total_triangles >= MAX_MODEL_TRIANGLES) {
         u_fclose(fac_file);
         LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
         return NULL;
