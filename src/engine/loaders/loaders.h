@@ -76,6 +76,11 @@ typedef struct HirHandle {
 HirHandle* Hir_LoadFile(const char* path);
 void Hir_DestroyHandle(HirHandle* handle);
 
+typedef struct MinHandle {
+    unsigned int blah;
+} MinHandle;
+MinHandle* Min_LoadFile(const char* path);
+
 void RegisterPackageLoaders(void);
 
 PL_EXTERN_C_END
