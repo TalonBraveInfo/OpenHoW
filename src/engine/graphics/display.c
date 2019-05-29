@@ -639,11 +639,25 @@ static void DrawFPSOverlay(void) {
     unsigned int fps, ms;
     Display_GetFramesCount(&fps, &ms);
 
+    int w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+    int h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
+    BitmapFont* font = g_fonts[FONT_SMALL];
+
     char ms_count[32];
-    sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-    Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
-                          Display_GetViewportHeight(&g_state.ui_camera->viewport) - 64, 0, 1.f, PL_COLOUR_WHITE,
-                          ms_count);
+    sprintf(ms_count, "FPS %d/S (%d/MS)", fps, ms);
+    unsigned int str_w = (font->chars[0].w * 2) * strlen(ms_count);
+
+    PLColour colour;
+    if(fps < 20) {
+        colour = PL_COLOUR_RED;
+    } else if(fps < 30) {
+        colour = PL_COLOUR_YELLOW;
+    } else {
+        colour = PL_COLOUR_GREEN;
+    }
+
+    Font_DrawBitmapString(font, w - str_w, h - (font->chars[0].h * 2), 0, 1.f, colour, ms_count);
 }
 
 static void DrawCameraInfoOverlay(void) {
