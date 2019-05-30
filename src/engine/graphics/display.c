@@ -604,7 +604,7 @@ void Display_Shutdown(void) {
 /************************************************************/
 
 void DEBUGDrawSkeleton();
-void DEBUGDrawModel(PLVector3 position);
+void DEBUGDrawModel(void);
 
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     static unsigned int fps_ = 0;
@@ -810,7 +810,7 @@ void Display_DrawScene(void) {
     DrawActors();
     DrawParticles(cur_delta);
 
-    DEBUGDrawModel(PLVector3(0, 0, 512));
+    DEBUGDrawModel();
 }
 
 void Display_DrawInterface(void) {

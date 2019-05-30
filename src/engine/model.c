@@ -531,8 +531,9 @@ void ShutdownModels(void) {
 
 ////////////////////////////////////////////////////////////////
 
-void DEBUGDrawModel(PLVector3 position) {
-    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(position);
+void DEBUGDrawModel(void) {
+#if 1
+    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, 512));
     plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
 
     model_cache.pigs[PIG_CLASS_COMMANDO]->model_matrix = plTranslateMatrix(PLVector3(0, 1024, 512));
