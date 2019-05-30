@@ -534,6 +534,18 @@ void ShutdownModels(void) {
 void DEBUGDrawModel(PLVector3 position) {
     model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(position);
     plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
+
+    model_cache.pigs[PIG_CLASS_COMMANDO]->model_matrix = plTranslateMatrix(PLVector3(0, 1024, 512));
+    plDrawModel(model_cache.pigs[PIG_CLASS_COMMANDO]);
+#else
+    for(unsigned int y = 0; y < 80; y++) {
+        for(unsigned int x = 0; x < 80; x++) {
+            model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(x * 500, 0, y * 500));
+            plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
+            g_state.gfx.num_actors_drawn++;
+        }
+    }
+#endif
 }
 
 void DEBUGDrawSkeleton(void) {

@@ -51,7 +51,7 @@ public:
     void RegisterManifest(const std::string &path);
     void RegisterManifests();
 
-    const MapManifest *GetManifest(const std::string &name);
+    MapManifest *GetManifest(const std::string &name);
     const std::map<std::string, MapManifest> &GetManifests() { return manifests_; };
 
 protected:

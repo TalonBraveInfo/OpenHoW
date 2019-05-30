@@ -170,6 +170,10 @@ extern "C" void DrawActors(void) {
 
 // Temporary interface, since graphics sub-system is written in C :^)
 extern "C" void DrawMap(void) {
+    if(!cv_graphics_draw_world->b_value) {
+        return;
+    }
+
     BaseGameMode* mode = Game_GetMode();
     if(mode == nullptr) {
         return;

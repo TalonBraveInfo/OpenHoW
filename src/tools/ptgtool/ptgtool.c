@@ -88,16 +88,23 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
         Error("Failed to load %s, aborting!\n", input_path);
     }
 
-    FILE *out = NULL;
-
     uint32_t num_textures;
     if(fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
         LogInfo("invalid PTG file, failed to get number of textures!\n");
         goto ABORT_PTG;
     }
 
+    char index_path[PL_SYSTEM_MAX_PATH];
+    snprintf(index_path, sizeof(index_path), "%s/.index", output_path);
+    FILE* index = fopen(index_path, "w");
+    if(index == NULL) {
+        Error("Failed to open index for writing at \"%s\", aborting!\n", index_path);
+    }
+
     size_t tim_size = (plGetFileSize(input_path) - sizeof(num_textures)) / num_textures;
     for(unsigned int i = 0; i < num_textures; ++i) {
+        fprintf(index, "%d\n", i);
+
         uint8_t tim[tim_size];
         if(fread(tim, tim_size, 1, file) != 1) {
             LogInfo("failed to read tim, aborting!\n");
@@ -106,7 +113,7 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
 
         char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
         sprintf(out_path, "%s/%d.tim", output_path, i);
-        out = fopen(out_path, "wb");
+        FILE* out = fopen(out_path, "wb");
         if(out == NULL) {
             LogInfo("failed to open %s for writing, aborting!\n", out_path);
             goto ABORT_PTG;
@@ -114,15 +121,14 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
 
         //print(" %s\n", out_path);
         if(fwrite(tim, tim_size, 1, out) != 1) {
-            LogInfo("failed to write %s, aborting!\n", out_path);
-            goto ABORT_PTG;
+            LogInfo("Failed to write \"%s\", aborting!\n", out_path);
         }
 
         u_fclose(out);
     }
 
     ABORT_PTG:
-    u_fclose(out);
+    u_fclose(index);
     u_fclose(file);
 }
 

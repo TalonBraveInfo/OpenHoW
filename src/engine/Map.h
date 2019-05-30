@@ -125,6 +125,7 @@ public:
 
     const std::string &GetName() { return manifest_->name; }
     const std::string &GetDescription() { return manifest_->description; }
+    MapManifest* GetManifest() { return manifest_; }
 
     MapChunk* GetChunk(const PLVector2 &pos);
     MapTile* GetTile(const PLVector2 &pos);
@@ -145,7 +146,7 @@ private:
     float max_height_{0};
     float min_height_{0};
 
-    const MapManifest *manifest_{nullptr};
+    MapManifest *manifest_{nullptr};
 
     std::vector<MapChunk> chunks_;
     std::vector<MapSpawn> spawns_;

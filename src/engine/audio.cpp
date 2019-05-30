@@ -39,10 +39,12 @@ static void OALCheckErrors() {
         /*Error("%s\n", alutGetErrorString(err));*/
 
         switch(err) {
-            default: Error("unknown openal error, aborting!\n");
-            case AL_OUT_OF_MEMORY: Error("openal ran out of memory, aborting!\n");
-            case AL_INVALID_VALUE: Error("invalid value passed to openal, aborting!\n");
-            case AL_INVALID_OPERATION: Error("invalid operation performed with openal, aborting!\n");
+            default: Error("Unknown openal error, aborting!\n");
+            case AL_OUT_OF_MEMORY: Error("Openal ran out of memory, aborting!\n");
+            case AL_INVALID_VALUE: Error("Invalid value passed to openal, aborting!\n");
+            case AL_INVALID_OPERATION: Error("Invalid operation performed with openal, aborting!\n");
+            case AL_INVALID_ENUM: Error("Invalid enum passed to openal, aborting!\n");
+            case AL_INVALID_NAME: Error("Invalid name passed to openal, aborting!\n");
         }
     }
 }
@@ -54,10 +56,12 @@ unsigned int reverb_sound_slot = 0;
 /* Audio Source */
 
 AudioSource::AudioSource(const AudioSample* sample, float gain, float pitch, bool looping) :
-        AudioSource(sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), gain, pitch, looping) {
+        AudioSource(sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), false, gain, pitch, looping) {
     alSourcei(al_source_id_, AL_SOURCE_RELATIVE, AL_TRUE);
 }
-AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping) {
+
+AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel,
+        bool reverb, float gain, float pitch, bool looping) {
     alGenSources(1, &al_source_id_);
     OALCheckErrors();
 
@@ -72,8 +76,11 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
     OALCheckErrors();
     alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
     OALCheckErrors();
-    alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
-    OALCheckErrors();
+
+    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtType::AUDIO_EXT_EFX)) {
+        alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
+        OALCheckErrors();
+    }
 
     if(sample != nullptr) {
         SetSample(sample);
@@ -249,6 +256,12 @@ AudioManager::~AudioManager() {
     LogInfo("shutting down audio sub-system...\n");
 
     FreeSources();
+
+    if(al_extensions_[AUDIO_EXT_EFX]) {
+        alDeleteAuxiliaryEffectSlots(1, &reverb_sound_slot);
+        alDeleteEffects(1, &reverb_effect_slot);
+    }
+
     FreeSamples(true);
 
     ALCcontext *context = alcGetCurrentContext();
@@ -332,14 +345,14 @@ AudioSource *AudioManager::CreateSource(const std::string &path, float gain, flo
     return new AudioSource(GetCachedSample(path), gain, pitch, looping);
 }
 
-AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, float gain,
+AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
                                         float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path), pos, vel, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path), pos, vel, reverb, gain, pitch, looping);
 }
 
-AudioSource *AudioManager::CreateSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel, float gain,
-        float pitch, bool looping) {
-    return new AudioSource(sample, pos, vel, gain, pitch, looping);
+AudioSource *AudioManager::CreateSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel, bool reverb,
+        float gain, float pitch, bool looping) {
+    return new AudioSource(sample, pos, vel, reverb, gain, pitch, looping);
 }
 
 void AudioManager::Tick() {
@@ -390,7 +403,7 @@ void AudioManager::FreeSources() {
 void AudioManager::FreeSamples(bool force) {
     u_assert(sources_.empty(), "audio sources weren't emptied!\n");
 
-    LogInfo("freeing all audio samples...\n");
+    LogInfo("Freeing all audio samples...\n");
 
     if(force) {
         /* clears absolutely everything */

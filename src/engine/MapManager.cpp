@@ -78,7 +78,7 @@ void MapManager::RegisterManifests() {
     plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 
-const MapManifest *MapManager::GetManifest(const std::string &name) {
+MapManifest *MapManager::GetManifest(const std::string &name) {
     auto manifest = manifests_.find(name);
     if(manifest != manifests_.end()) {
         return &manifest->second;
