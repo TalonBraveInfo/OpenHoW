@@ -37,6 +37,8 @@ static void OALCheckErrors() {
     if(err != AL_NO_ERROR) {
         /* alut is apparently deprecated in OpenAL Soft, yay... */
         /*Error("%s\n", alutGetErrorString(err));*/
+        
+        LogWarn("OpenAL: %s\n", alGetString(err));
 
         switch(err) {
             default: Error("Unknown openal error, aborting!\n");
@@ -90,12 +92,17 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
 }
 
 AudioSource::~AudioSource() {
-    AudioManager::GetInstance()->sources_.erase(this);
+    StopPlaying();
+    
     if(current_sample_ != nullptr) {
         unsigned int buf = current_sample_->al_buffer_id_;
         alSourceUnqueueBuffers(al_source_id_, 1, &buf);
     }
+    
+    alSourcei(al_source_id_, AL_BUFFER, 0);
     alDeleteSources(1, &al_source_id_);
+    
+    AudioManager::GetInstance()->sources_.erase(this);
 }
 
 void AudioSource::SetSample(const AudioSample* sample) {
