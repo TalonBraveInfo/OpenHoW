@@ -2,9 +2,9 @@
   "name":"$map_how_camp",
   "author":"Unknown",
   "ambientColour":"88 88 96",
+  "skyColourTop":"0 104 156",
+  "skyColourBottom":"223 255 255",
   "sky":"coldsky",
-  "background":"",
-  "flags":0,
   "modes":[
     "training"
   ]
