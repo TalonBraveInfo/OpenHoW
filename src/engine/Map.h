@@ -140,6 +140,7 @@ protected:
 private:
     void LoadSpawns(const std::string &path);
     void LoadTiles(const std::string &path);
+    void LoadSky();
 
     void GenerateOverview();
 

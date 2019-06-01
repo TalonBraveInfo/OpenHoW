@@ -571,7 +571,7 @@ void Display_Initialize(void) {
         }
         plFreeImage(image);
     } else {
-        LogWarn("Failed to generate default texture (%s)!\n", plGetError());
+        Error("Failed to generate default texture (%s)!\n", plGetError());
     }
 
     /* initialize the texture cache */

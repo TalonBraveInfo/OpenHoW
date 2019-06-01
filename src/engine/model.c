@@ -313,6 +313,10 @@ Animation* LoadAnimations(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
+const PLModel* Model_GetDefaultModel(void) {
+    return default_model;
+}
+
 /************************************************************/
 
 /* cache the pigs data into memory, since we

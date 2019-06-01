@@ -43,20 +43,19 @@ void MapManager::RegisterManifest(const std::string &path) {
     manifest.path = path;
     try {
         ScriptConfig config(path);
-        manifest.name           = config.GetStringProperty("name");
-        manifest.author         = config.GetStringProperty("author", "Unknown");
-        manifest.description    = config.GetStringProperty("description");
-
-        manifest.sky            = config.GetStringProperty("sky");
-        manifest.modes          = config.GetArrayStrings("modes");
-
-        manifest.ambient_colour = config.GetColourProperty("ambientColour", PLColour(255, 255, 255));
-        manifest.sun_colour     = config.GetColourProperty("sunColour", PLColour(255, 255, 255));
-        manifest.sun_yaw        = config.GetFloatProperty("sunYaw");
-        manifest.sun_pitch      = config.GetFloatProperty("sunPitch");
-
-        manifest.temperature    = config.GetStringProperty("temperature", "hot");
-        manifest.time           = config.GetStringProperty("time", "day");
+        manifest.name               = config.GetStringProperty("name", manifest.name);
+        manifest.author             = config.GetStringProperty("author", manifest.author);
+        manifest.description        = config.GetStringProperty("description", manifest.description);
+        manifest.sky                = config.GetStringProperty("sky", manifest.sky);
+        manifest.modes              = config.GetArrayStrings("modes");
+        manifest.ambient_colour     = config.GetColourProperty("ambientColour", manifest.ambient_colour);
+        manifest.sky_colour_top     = config.GetColourProperty("skyColourTop", manifest.sky_colour_top);
+        manifest.sky_colour_bottom  = config.GetColourProperty("skyColourBottom", manifest.sky_colour_bottom);
+        manifest.sun_colour         = config.GetColourProperty("sunColour", manifest.sun_colour);
+        manifest.sun_yaw            = config.GetFloatProperty("sunYaw", manifest.sun_yaw);
+        manifest.sun_pitch          = config.GetFloatProperty("sunPitch", manifest.sun_pitch);
+        manifest.temperature        = config.GetStringProperty("temperature", manifest.temperature);
+        manifest.time               = config.GetStringProperty("time", manifest.time);
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }

@@ -29,6 +29,7 @@
 #include "MapManager.h"
 
 #include "graphics/display.h"
+#include "graphics/shader.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -177,7 +178,7 @@ Map::Map(const std::string& name) {
         LoadSpawns(p);
     }
 
-    sky_model_ = Model_LoadFile("skys/skydome", true);
+    LoadSky();
 
     GenerateOverview();
 }
@@ -236,7 +237,7 @@ MapTile *Map::GetTile(const PLVector2 &pos) {
 }
 
 float Map::GetHeight(const PLVector2 &pos) {
-    MapTile *tile = GetTile(pos);
+    MapTile* tile = GetTile(pos);
     if(tile == nullptr) {
         return 0;
     }
@@ -249,6 +250,52 @@ float Map::GetHeight(const PLVector2 &pos) {
     float z = x + ((y - x) * tile_y);
 
     return z;
+}
+
+void Map::LoadSky() {
+    sky_model_ = Model_LoadFile("skys/skydome", false);
+    if (sky_model_ == Model_GetDefaultModel()) {
+        return;
+    }
+
+    sky_model_->model_matrix = plTranslateMatrix(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
+    // Default skydome is smaller than the map, so we'll scale it
+    plScaleMatrix(&sky_model_->model_matrix, PLVector3(2, 2, 2));
+
+    PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
+    if (lod == nullptr) {
+        LogWarn("Failed to get first lod for sky mesh!\n");
+        return;
+    }
+
+    PLMesh *mesh = lod->meshes[0];
+    // This is a really crap hardcoded limit, just to ensure it's what we're expecting
+    if (mesh->num_verts != 257) {
+        LogWarn("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
+        return;
+    }
+
+    plSetMeshShaderProgram(mesh, programs[SHADER_UNTEXTURED]);
+
+    // Below is a PSX-style gradient sky implementation
+
+    const unsigned int solid_steps = 3;
+    const unsigned int grad_steps = 6;
+    PLColour colour = manifest_->sky_colour_top;
+    PLColour step = (manifest_->sky_colour_bottom - manifest_->sky_colour_top) / (uint8_t)(grad_steps);
+
+    for (int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
+        if (j == 32) {
+            if(++s >= solid_steps) {
+                colour += step;
+                colour.a = 255;
+            } j = 0;
+        }
+
+        mesh->vertices[i].colour = colour;
+    }
+
+    plUploadMesh(mesh);
 }
 
 void Map::LoadSpawns(const std::string &path) {
@@ -462,6 +509,7 @@ void Map::GenerateOverview() {
     };
 
     // Create our storage
+    // todo: use plNewImage here instead!
 
     PLImage image;
     memset(&image, 0, sizeof(PLImage));
@@ -509,6 +557,8 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
+    plDrawModel(sky_model_);
+
     g_state.gfx.num_chunks_drawn = 0;
     for(auto chunk : chunks_) {
         g_state.gfx.num_chunks_drawn++;
