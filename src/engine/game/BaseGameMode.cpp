@@ -26,7 +26,12 @@
 
 BaseGameMode::BaseGameMode() {
     players_.resize(4);
-    ambient_emitter_ = AudioManager::GetInstance()->CreateSource((AudioSample*) nullptr);
+    ambient_emitter_ = AudioManager::GetInstance()->CreateSource(
+            (AudioSample*) nullptr,
+            PLVector3(0, 0, 0),         // position
+            PLVector3(0, 0, 0),         // velocity
+            true                        // reverb
+            );
 }
 
 BaseGameMode::~BaseGameMode() {
@@ -57,7 +62,8 @@ void BaseGameMode::StartMode(const std::string &map_name) {
 
     for(unsigned int i = 1, idx = 0; i < 4; ++i) {
         if(i < 3) {
-            ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
+            ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample(
+                    "/audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
         }
         ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_s" + std::to_string(i) + ".wav", false);
         ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_l" + std::to_string(i) + ".wav", false);
