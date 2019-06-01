@@ -35,9 +35,10 @@ BaseGameMode::BaseGameMode() {
 }
 
 BaseGameMode::~BaseGameMode() {
+    delete ambient_emitter_;
+    
     AudioManager::GetInstance()->FreeSources();
     AudioManager::GetInstance()->FreeSamples();
-    delete ambient_emitter_;
 }
 
 void BaseGameMode::StartMode(const std::string &map_name) {
