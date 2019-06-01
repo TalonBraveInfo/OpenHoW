@@ -18,14 +18,12 @@
 #pragma once
 
 struct ModManifest {
-    char path[PL_SYSTEM_MAX_PATH];  /* path to the campaign manifest */
-    char dir[64];                   /* directory under campaigns */
-
-    char name[256];
-    char version[16];
-    char author[128];
-
-    unsigned int num_supported_languages;
+    std::string                 manifest_path;
+    std::string                 base_directory;
+    // Modification Details
+    std::string                 name{"Unknown"};
+    std::string                 version{"Unknown"};
+    std::string                 author{"Unknown"};
 };
 
 PL_EXTERN_C
