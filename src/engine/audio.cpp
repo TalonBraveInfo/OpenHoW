@@ -393,9 +393,6 @@ void AudioManager::Tick() {
     alListenerfv(AL_ORIENTATION, ori);
     alListenerf(AL_GAIN, cv_audio_volume->f_value);
 
-    LogInfo("AudioSources:     %d\n", sources_.size());
-    LogInfo("TempAudioSources: %d\n", temp_sources_.size());
-
     // ensure destruction of temporary sources
     for(auto source = temp_sources_.begin(); source != temp_sources_.end();) {
         if((*source)->IsPlaying() || (*source)->IsPaused()) {
