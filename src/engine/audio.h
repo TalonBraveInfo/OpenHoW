@@ -91,7 +91,12 @@ public:
     AudioSource* CreateSource(const AudioSample* sample, PLVector3 pos = {0, 0, 0}, PLVector3 vel = {0, 0, 0},
             bool reverb = false, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
 
-    void PlayGlobalSound(const std::string &path);
+    void PlayGlobalSound(const std::string& path);
+    void PlayGlobalSound(const AudioSample* sample);
+    void PlayLocalSound(const std::string& path, PLVector3 pos, PLVector3 vel = {0, 0, 0}, bool reverb = false,
+            float gain = 1.0f, float pitch = 1.0f);
+    void PlayLocalSound(const AudioSample* sample, PLVector3 pos, PLVector3 vel = {0, 0, 0}, bool reverb = false,
+            float gain = 1.0f, float pitch = 1.0f);
 
     void SilenceSources();
 
@@ -116,8 +121,7 @@ private:
 
     std::map<std::string, AudioSample> samples_;
     std::set<AudioSource*> sources_;
-
-    std::unique_ptr<AudioSource> global_source_;
+    std::set<AudioSource*> temp_sources_;
 
     static AudioManager *instance_;
 };
@@ -141,6 +145,9 @@ public:
 
     void StartPlaying();
     void StopPlaying();
+
+    bool IsPlaying();
+    bool IsPaused();
 
 private:
     PLVector3 position_{0, 0, 0};

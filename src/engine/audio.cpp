@@ -168,6 +168,18 @@ void AudioSource::StopPlaying() {
     alSourceStop(al_source_id_);
 }
 
+bool AudioSource::IsPlaying() {
+    int state;
+    alGetSourcei(al_source_id_, AL_SOURCE_STATE, &state);
+    return (state == AL_PLAYING);
+}
+
+bool AudioSource::IsPaused() {
+    int state;
+    alGetSourcei(al_source_id_, AL_SOURCE_STATE, &state);
+    return (state == AL_PAUSED);
+}
+
 /************************************************************/
 
 static LPALGENEFFECTS alGenEffects;
@@ -334,13 +346,13 @@ const AudioSample* AudioManager::CacheSample(const std::string &path, bool prese
     return &(sample.first->second);
 }
 
-const AudioSample *AudioManager::GetCachedSample(const std::string &path) {
+const AudioSample* AudioManager::GetCachedSample(const std::string &path) {
     auto i = samples_.find(path);
     if(i == samples_.end()) {
         CacheSample(path, false);
         i = samples_.find(path);
         if(i == samples_.end()) {
-            Error("failed to load sample, \"%s\"!\n", path.c_str());
+            Error("Failed to load sample, \"%s\"!\n", path.c_str());
             /* todo: in future, fall back to first loaded sound and continue? if it exists... */
         }
     }
@@ -380,20 +392,58 @@ void AudioManager::Tick() {
     alListener3f(AL_POSITION, position.x, position.y, position.z);
     alListenerfv(AL_ORIENTATION, ori);
     alListenerf(AL_GAIN, cv_audio_volume->f_value);
+
+    LogInfo("AudioSources:     %d\n", sources_.size());
+    LogInfo("TempAudioSources: %d\n", temp_sources_.size());
+
+    // ensure destruction of temporary sources
+    for(auto source = temp_sources_.begin(); source != temp_sources_.end();) {
+        if((*source)->IsPlaying() || (*source)->IsPaused()) {
+            ++source;
+            continue;
+        }
+
+        // this will automatically kill it everywhere
+        delete (*source);
+        source = temp_sources_.erase(source);
+    }
 }
 
-void AudioManager::PlayGlobalSound(const std::string &path) {
-    global_source_.reset(CreateSource(path));
-    global_source_->StartPlaying();
+void AudioManager::PlayGlobalSound(const std::string& path) {
+    const AudioSample* sample = GetCachedSample(path);
+    PlayGlobalSound(sample);
+}
+
+void AudioManager::PlayGlobalSound(const AudioSample* sample) {
+    if(sample == nullptr) {
+        return;
+    }
+
+    auto* source = new AudioSource(sample);
+    temp_sources_.insert(source);
+    source->StartPlaying();
+}
+
+void AudioManager::PlayLocalSound(const std::string& path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+                                  float pitch) {
+    const AudioSample* sample = GetCachedSample(path);
+    PlayLocalSound(sample, pos, vel, reverb, gain, pitch);
+}
+
+void AudioManager::PlayLocalSound(const AudioSample* sample, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+                                  float pitch) {
+    if(sample == nullptr) {
+        return;
+    }
+
+    auto* source = new AudioSource(sample, pos, vel, reverb, gain, pitch);
+    temp_sources_.insert(source);
+    source->StartPlaying();
 }
 
 void AudioManager::SilenceSources() {
     for(auto sound : sources_) {
         sound->StopPlaying();
-    }
-
-    if(global_source_ != nullptr) {
-        global_source_->StopPlaying();
     }
 }
 
@@ -403,8 +453,13 @@ void AudioManager::FreeSources() {
     LogInfo("Freeing all audio sources...\n");
 
     SilenceSources();
-    global_source_.reset(nullptr);
+
+    for(auto source : sources_) {
+        delete source;
+    }
+
     sources_.clear();
+    temp_sources_.clear();
 }
 
 void AudioManager::FreeSamples(bool force) {

@@ -115,16 +115,16 @@ void BaseGameMode::Tick() {
     }
 
     if(ambient_emit_delay_ < g_state.sim_ticks) {
-        ambient_emitter_->StopPlaying();
-        ambient_emitter_->SetPosition(PLVector3(
-                rand()%MAP_PIXEL_WIDTH,
-                current_map_->GetMaxHeight(),
-                rand()%MAP_PIXEL_WIDTH
-                ));
-        ambient_emitter_->SetGain(1.0f + (rand() % 20 / 1.0f));
-        ambient_emitter_->SetSample(ambient_samples_[rand()%MAX_AMBIENT_SAMPLES]);
-        ambient_emitter_->StartPlaying();
-        ambient_emit_delay_ = g_state.sim_ticks + 60 + rand() % 120;
+        const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
+        u_assert(sample != nullptr, "Audio sample was unexpectedly freed!\n");
+        float volume = 1.0f + (rand() %20 / 1.0f);
+        PLVector3 position = {
+                static_cast<float>(rand() % MAP_PIXEL_WIDTH), 0,
+                static_cast<float>(rand() % MAP_PIXEL_WIDTH)
+        };
+
+        AudioManager::GetInstance()->PlayLocalSound(sample, position, PLVector3(), true, volume);
+        ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
     }
 
     Actor* slave = GetCurrentPlayer()->input_target;
