@@ -17,15 +17,32 @@
 
 #pragma once
 
-#include "BaseGameMode.h"
+#include "GameMode.h"
 
-class TrainingGameMode : public BaseGameMode {
+class SPGameMode : public IGameMode {
 public:
-    TrainingGameMode();
-    ~TrainingGameMode() override;
+    SPGameMode();
+    ~SPGameMode() override;
 
-    std::string GetDescription() override { return "training"; }
+    void Tick() override;
+
+    void StartRound() override;
+    void RestartRound() override;
+    void EndRound() override;
+
+    void PlayerJoined(Player* player) override;
+    void PlayerLeft(Player* player) override;
+
+    void SpectatorJoined(Player* player) override;
+    void SpectatorLeft(Player* player) override;
+
+    unsigned int GetMaxSpectators() const override;
+    unsigned int GetMaxPlayers() const override;
 
 protected:
-private:
+    void StartTurn() override;
+    void EndTurn() override;
+
+    void SpawnActors() override;
+    void DestroyActors() override;
 };

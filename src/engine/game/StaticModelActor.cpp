@@ -54,7 +54,6 @@ register_actor(STW06_W_, StaticModelActor);
 register_actor(STW06PPP, StaticModelActor);
 register_actor(STW07PWW, StaticModelActor);
 
-
 // Buildings
 register_actor(SHELTER, StaticModelActor);
 

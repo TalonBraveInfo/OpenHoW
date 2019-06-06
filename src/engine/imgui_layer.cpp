@@ -104,16 +104,17 @@ static std::vector<DebugWindow*> windows;
 /************************************************************/
 /* Map Config Editor */
 
+#include "Map.h"
+
+#include "game/GameManager.h"
+
 class MapConfigEditor : public DebugWindow {
 public:
     MapConfigEditor();
-    explicit MapConfigEditor(const std::string &path);
-
     ~MapConfigEditor() override;
 
     void Display() override;
 
-    void OpenManifest(const std::string &path);
     void SyncManifest();
     void CloseManifest();
     void SaveManifest(const std::string &path);
@@ -121,6 +122,7 @@ public:
 protected:
 private:
     MapManifest* manifest_;
+    Map* map_{nullptr};
 
     bool save_dialog{false};
 
@@ -130,21 +132,14 @@ private:
     char filename_buffer[32]{'\0'};
 };
 
-#include "game/Game.h"
-
 MapConfigEditor::MapConfigEditor() {
-    BaseGameMode* mode = Game_GetMode();
-    if(mode == nullptr) {
-        return;
+    map_ = GameManager::GetInstance()->GetCurrentMap();
+    if(map_ == nullptr) {
+        throw std::runtime_error("Attempted to create config editor without a valid map loaded!\n");
     }
 
-    Map* map = mode->GetCurrentMap();
-    manifest_ = map->GetManifest();
+    manifest_ = map_->GetManifest();
     SyncManifest();
-}
-
-MapConfigEditor::MapConfigEditor(const std::string &path) {
-    OpenManifest(path);
 }
 
 MapConfigEditor::~MapConfigEditor() = default;
@@ -185,6 +180,28 @@ void MapConfigEditor::Display() {
 
     ImGui::Separator();
 
+    rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
+    rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
+    rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
+    if(ImGui::ColorPicker3("Sky Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+    manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
+    manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
+    manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
+
+    rgb[0] = plByteToFloat(manifest_->sky_colour_bottom.r);
+    rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
+    rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
+    if(ImGui::ColorPicker3("Sky Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+    manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
+    manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
+    manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
+
+    ImGui::Separator();
+
     const char *temperatures[]={ "hot", "cold" };
 
     //ImGui::ListBox("Temperature", temperatures, , );
@@ -205,16 +222,6 @@ void MapConfigEditor::Display() {
         }
         ImGui::End();
     }
-}
-
-void MapConfigEditor::OpenManifest(const std::string &path) {
-    std::string name = plGetFileName(path.c_str());
-    name.erase(name.find(".map"));
-    manifest_ = MapManager::GetInstance()->GetManifest(name);
-
-    SyncManifest();
-
-    snprintf(filename_buffer, sizeof(filename_buffer), "%s", path.c_str());
 }
 
 void MapConfigEditor::CloseManifest() {
@@ -271,7 +278,7 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
 
 #include "TextureViewer.h"
 #include "game/TempGame.h"
-#include "game/Game.h"
+#include "game/GameManager.h"
 
 /************************************************************/
 /* Settings */
@@ -419,7 +426,6 @@ void UI_DisplayNewGame() {
 
 enum {
     FILE_TYPE_UNKNOWN,
-    FILE_TYPE_MAP,
     FILE_TYPE_MAP_POG,
     FILE_TYPE_MAP_PTG,
     FILE_TYPE_MAP_PMG,
@@ -442,9 +448,7 @@ void AddFilePath(const char *path) {
 
     const char *ext = plGetFileExtension(path);
     if(ext != nullptr) {
-        if(strcmp(ext, "map") == 0) {
-            descriptor.type = FILE_TYPE_MAP;
-        } else if(
+        if(
                 strcmp(ext, "tim") == 0 ||
                 strcmp(ext, "bmp") == 0 ||
                 strcmp(ext, "png") == 0
@@ -521,10 +525,6 @@ void UI_DisplayFileBox() {
                         windows.push_back(new TextureViewer(i.path, texture));
                     } break;
 
-                    case FILE_TYPE_MAP: {
-                        windows.push_back(new MapConfigEditor(i.path));
-                    } break;
-
                     case FILE_TYPE_AUDIO: {
                         AudioManager::GetInstance()->PlayGlobalSound(i.path);
                     } break;
@@ -540,7 +540,6 @@ void UI_DisplayFileBox() {
                 case FILE_TYPE_AUDIO:       type = "Audio"; break;
                 case FILE_TYPE_PARTICLE:    type = "Particle System"; break;
                 case FILE_TYPE_IMAGE:       type = "Image"; break;
-                case FILE_TYPE_MAP:         type = "Map Manifest"; break;
                 case FILE_TYPE_MAP_POG:     type = "Map Objects"; break;
                 case FILE_TYPE_MAP_PTG:     type = "Map Textures"; break;
                 case FILE_TYPE_MAP_PMG:     type = "Map Geometry"; break;
@@ -705,11 +704,17 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
-        if(ImGui::BeginMenu("Tools")) {
-            if(ImGui::MenuItem("Map Config Editor...")) {
-                windows.push_back(new MapConfigEditor());
+        if(GameManager::GetInstance()->GetCurrentMap() != nullptr) {
+            if (ImGui::BeginMenu("Map Tools")) {
+                if (ImGui::MenuItem("Config Editor...")) {
+                    windows.push_back(new MapConfigEditor());
+                }
+                ImGui::EndMenu();
             }
-            if(ImGui::MenuItem("Particle Editor...")) {}
+        }
+
+        if(ImGui::BeginMenu("Tools")) {
+            if (ImGui::MenuItem("Particle Editor...")) {}
             ImGui::EndMenu();
         }
 

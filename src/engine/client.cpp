@@ -85,10 +85,3 @@ void Client_ProcessInput() {
 #endif
     }
 }
-
-/************************************************************/
-
-void Client_Simulate(void) {
-    Client_ProcessInput();
-    FE_Simulate();
-}

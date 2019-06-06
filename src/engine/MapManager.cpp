@@ -22,8 +22,8 @@
 #include "Map.h"
 #include "script/ScriptConfig.h"
 
-#include "game/Game.h"
-#include "game/BaseGameMode.h"
+#include "game/GameManager.h"
+#include "game/SPGameMode.h"
 
 MapManager *MapManager::instance_ = nullptr;
 
@@ -101,13 +101,7 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         mode = desc->modes[0];
     }
 
-    // set it to the first mode in the list for now
-    if(!Game_SetMode(mode)) {
-        return;
-    }
-
-    // now start it up!
-    Game_GetMode()->StartMode(argv[1]);
+    GameManager::GetInstance()->LoadMap(argv[1]);
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {

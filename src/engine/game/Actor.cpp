@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PL/platform_graphics_camera.h>
+
 #include "../engine.h"
 #include "../input.h"
+#include "../Map.h"
 
 #include "Actor.h"
-#include "Game.h"
-
-#include <PL/platform_graphics_camera.h>
+#include "GameManager.h"
 
 Actor::Actor() = default;
 Actor::~Actor() = default;
@@ -31,12 +32,10 @@ Actor::Actor(const std::string &name) {
 }
 
 void Actor::HandleInput() {
-    BaseGameMode* mode = Game_GetMode();
-    if(mode == nullptr) {
+    Player* player = GameManager::GetInstance()->GetCurrentPlayer();
+    if(player == nullptr) {
         return;
     }
-
-    Player* player = mode->GetCurrentPlayer();
 
     PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
     PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
@@ -77,7 +76,8 @@ void Actor::HandleInput() {
     }
 
     // Clamp height based on current tile pos
-    float height = mode->GetCurrentMap()->GetHeight(PLVector2(position_.x, position_.z));
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
+    float height = map->GetHeight(PLVector2(position_.x, position_.z));
     if((position_.y - 32.f) < height) {
         position_.y = height + 32.f;
     }

@@ -250,7 +250,7 @@ AudioManager::AudioManager() {
     if(al_extensions_[AUDIO_EXT_EFX]) {
         alGenEffects(1, &reverb_effect_slot);
         alEffecti(reverb_effect_slot, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
-        const EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_OUTDOORS_VALLEY;
+        const EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON;
         // EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON
         // EFX_REVERB_PRESET_OUTDOORS_VALLEY
         alEffectf(reverb_effect_slot, AL_REVERB_DENSITY, reverb.flDensity);

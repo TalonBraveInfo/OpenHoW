@@ -515,6 +515,15 @@ void CacheModelData(void) {
     model_cache.pigs[PIG_CLASS_SABOTEUR]    = Model_LoadFile("chars/pigs/sa_hi", true);
     model_cache.pigs[PIG_CLASS_SNIPER]      = Model_LoadFile("chars/pigs/sn_hi", true);
     model_cache.pigs[PIG_CLASS_SPY]         = Model_LoadFile("chars/pigs/sp_hi", true);
+
+    /* debug loading min models */
+#if 0
+    PLModel* debug = Model_LoadFile("chars/shed1d", false);
+    if(debug != NULL) {
+        plDestroyModel(default_model);
+        default_model = debug;
+    }
+#endif
 }
 
 void RegisterModelLoaders(void) {

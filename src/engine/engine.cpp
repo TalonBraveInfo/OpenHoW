@@ -27,7 +27,7 @@
 #include "frontend.h"
 #include "audio.h"
 
-#include "game/BaseGameMode.h"
+#include "game/SPGameMode.h"
 #include "script/script.h"
 #include "loaders/loaders.h"
 #include "graphics/display.h"
@@ -81,31 +81,32 @@ void Engine_Initialize(void) {
     RegisterPackageLoaders();
     RegisterModelLoaders();
 
-    /* load in the manifests */
+    // load in the manifests
 
     Languages_Initialize();
     Mod_RegisterCampaigns();
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
-        /* otherwise default to Hogs of War's campaign */
+        // otherwise default to Hogs of War's campaign
         var = "how";
     }
 
     Mod_SetCampaign(var);
 
-    /* now initialize all other sub-systems */
+    // now initialize all other sub-systems
 
     Input_Initialize();
     Display_Initialize();
     AudioManager::GetInstance();
+    GameManager::GetInstance();
     FE_Initialize();
 
     CacheModelData();
 
-    LogInfo("base path: \"%s\"\n", GetBasePath());
-    LogInfo("campaign path: \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
-    LogInfo("working directory: \"%s\"\n", plGetWorkingDirectory());
+    LogInfo("Base path:         \"%s\"\n", GetBasePath());
+    LogInfo("Campaign path:     \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
+    LogInfo("Working directory: \"%s\"\n", plGetWorkingDirectory());
 }
 
 #include "imgui_layer.h"
@@ -123,13 +124,9 @@ bool Engine_IsRunning(void) {
         g_state.sys_ticks = System_GetTicks();
         g_state.sim_ticks++;
 
-        Client_Simulate();
+        Client_ProcessInput(); // todo: kill this
 
-        BaseGameMode* mode = Game_GetMode();
-        if(mode != nullptr) {
-            mode->Tick();
-        }
-
+        GameManager::GetInstance()->Tick();
         AudioManager::GetInstance()->Tick();
 
         g_state.last_sys_tick = System_GetTicks();
@@ -174,12 +171,7 @@ extern "C" void DrawMap(void) {
         return;
     }
 
-    BaseGameMode* mode = Game_GetMode();
-    if(mode == nullptr) {
-        return;
-    }
-
-    Map* map = mode->GetCurrentMap();
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
     if(map == nullptr) {
         return;
     }

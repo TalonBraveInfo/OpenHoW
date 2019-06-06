@@ -22,9 +22,10 @@
 #include "engine.h"
 #include "input.h"
 #include "frontend.h"
+#include "Map.h"
 
 #include "game/TempGame.h"
-#include "game/Game.h"
+#include "game/GameManager.h"
 
 #include "graphics/font.h"
 #include "graphics/display.h"
@@ -156,7 +157,7 @@ void FE_ProcessInput(void) {
     }
 }
 
-void FE_Simulate(void) {
+void FrontEnd_Tick(void) {
     switch(frontend_state) {
         default:break;
 
@@ -222,12 +223,11 @@ uint8_t FE_GetLoadingProgress(void) {
 /************************************************************/
 
 static void DrawMinimap() {
-    BaseGameMode* mode = Game_GetMode();
-    if(mode == nullptr) {
+    if(FrontEnd_GetState() != FE_MODE_GAME) {
         return;
     }
 
-    Map* map = mode->GetCurrentMap();
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
     if(map == nullptr) {
         return;
     }
@@ -255,10 +255,6 @@ static void DrawMinimap() {
     unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
     plDrawTexturedRectangle(0, scr_h - 128, 128, 128, map->GetOverviewTexture());
 #endif
-}
-
-static void DrawGameOverlay() {
-    DrawMinimap();
 }
 
 /* Hogs of War's menu was designed
@@ -378,7 +374,7 @@ void FE_Draw(void) {
         return;
     }
 
-    DrawGameOverlay();
+    DrawMinimap();
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */
@@ -420,12 +416,6 @@ void FrontEnd_SetState(unsigned int state) {
             plDestroyTexture(fe_any, true);
             plDestroyTexture(fe_key, true);
             plDestroyTexture(fe_background, true);
-
-            fe_press = NULL;
-            fe_any = NULL;
-            fe_key = NULL;
-            fe_background = NULL;
-
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;
 

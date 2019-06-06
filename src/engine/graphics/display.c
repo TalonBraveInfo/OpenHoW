@@ -526,8 +526,6 @@ void Display_Initialize(void) {
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(200, 200, 255, 255));
-
     g_state.camera = plCreateCamera();
     if(g_state.camera == NULL) {
         Error("failed to create camera, aborting!\n%s\n", plGetError());
@@ -783,6 +781,8 @@ double cur_delta = 0;
 void Display_SetupDraw(double delta) {
     cur_delta = delta;
     g_state.draw_ticks = System_GetTicks();
+
+    plSetClearColour(g_state.gfx.clear_colour);
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
     if(FrontEnd_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {

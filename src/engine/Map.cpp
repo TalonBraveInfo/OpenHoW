@@ -202,6 +202,9 @@ Map::~Map() {
     }
 
     plDestroyModel(sky_model_);
+
+    // gross GROSS; change the clear colour back!
+    g_state.gfx.clear_colour = {0, 0, 0, 255};
 }
 
 MapChunk *Map::GetChunk(const PLVector2 &pos) {
@@ -253,38 +256,45 @@ float Map::GetHeight(const PLVector2 &pos) {
 }
 
 void Map::LoadSky() {
-    sky_model_ = Model_LoadFile("skys/skydome", false);
-    if (sky_model_ == Model_GetDefaultModel()) {
-        return;
-    }
-
+    sky_model_ = Model_LoadFile("skys/skydome", true);
     sky_model_->model_matrix = plTranslateMatrix(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
     // Default skydome is smaller than the map, so we'll scale it
     plScaleMatrix(&sky_model_->model_matrix, PLVector3(2, 2, 2));
 
-    PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
+    PLModelLod* lod = plGetModelLodLevel(sky_model_, 0);
+    if(lod == nullptr) {
+        Error("Failed to get first lod for sky mesh!\n");
+    }
+
+    PLMesh* mesh = lod->meshes[0];
+    // This is a really crap hardcoded limit, just to ensure it's what we're expecting
+    if (mesh->num_verts != 257) {
+        Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
+    }
+
+    plSetMeshShaderProgram(mesh, programs[SHADER_UNTEXTURED]);
+
+    ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+}
+
+void Map::ApplySkyColours(PLColour bottom, PLColour top) {
+    u_assert(sky_model_ != nullptr, "attempted to apply sky colours prior to loading sky dome");
+
+    PLModelLod* lod = plGetModelLodLevel(sky_model_, 0);
     if (lod == nullptr) {
         LogWarn("Failed to get first lod for sky mesh!\n");
         return;
     }
 
-    PLMesh *mesh = lod->meshes[0];
-    // This is a really crap hardcoded limit, just to ensure it's what we're expecting
-    if (mesh->num_verts != 257) {
-        LogWarn("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
-        return;
-    }
-
-    plSetMeshShaderProgram(mesh, programs[SHADER_UNTEXTURED]);
-
     // Below is a PSX-style gradient sky implementation
 
     const unsigned int solid_steps = 3;
     const unsigned int grad_steps = 6;
-    PLColour colour = manifest_->sky_colour_top;
-    PLColour step = (manifest_->sky_colour_bottom - manifest_->sky_colour_top) / (uint8_t)(grad_steps);
+    PLColour colour = top;
+    PLColour step = (bottom - top) / (uint8_t)(grad_steps);
 
-    for (int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
+    PLMesh* mesh = lod->meshes[0];
+    for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
         if (j == 32) {
             if(++s >= solid_steps) {
                 colour += step;
@@ -296,6 +306,9 @@ void Map::LoadSky() {
     }
 
     plUploadMesh(mesh);
+
+    // gross GROSS; ensures that the dome transitions out nicely
+    g_state.gfx.clear_colour = bottom;
 }
 
 void Map::LoadSpawns(const std::string &path) {

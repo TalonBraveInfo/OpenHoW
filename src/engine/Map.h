@@ -136,6 +136,8 @@ public:
 
     const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
 
+    void ApplySkyColours(PLColour bottom, PLColour top);
+
 protected:
 private:
     void LoadSpawns(const std::string &path);

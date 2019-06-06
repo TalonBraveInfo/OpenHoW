@@ -57,7 +57,7 @@ static inline const char *GetVersionString(void) {
 }
 
 #ifdef __cplusplus
-class BaseGameMode;
+class SPGameMode;
 #else
 typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
@@ -81,6 +81,8 @@ typedef struct EngineState {
         unsigned int num_chunks_drawn;
         unsigned int num_actors_drawn;
         unsigned int num_triangles_total;
+
+        PLColour clear_colour;
     } gfx;
 } EngineState;
 extern EngineState g_state;

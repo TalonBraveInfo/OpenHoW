@@ -68,7 +68,7 @@ PL_EXTERN_C
 void FE_Initialize(void);
 void FE_Shutdown(void);
 void FE_ProcessInput(void);
-void FE_Simulate(void);
+void FrontEnd_Tick(void);
 void FE_Draw(void);
 
 void FE_SetLoadingBackground(const char *name);

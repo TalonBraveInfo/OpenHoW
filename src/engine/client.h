@@ -19,6 +19,6 @@
 
 PL_EXTERN_C
 
-void Client_Simulate(void);
+void Client_ProcessInput();
 
 PL_EXTERN_C_END

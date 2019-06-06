@@ -42,6 +42,7 @@ public:
         if(instance_ == nullptr) {
             instance_ = new MapManager();
         }
+
         return instance_;
     }
 
