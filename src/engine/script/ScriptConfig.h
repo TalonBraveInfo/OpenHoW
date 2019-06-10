@@ -25,12 +25,12 @@ public:
 
     void ParseBuffer(const char *buf);
 
-    std::string GetStringProperty(const std::string &property, const std::string &def = "");
-    int GetIntegerProperty(const std::string &property, int def = 0);
-    bool GetBooleanProperty(const std::string &property, bool def = false);
-    float GetFloatProperty(const std::string &property, float def = 0.0f);
-    PLColour GetColourProperty(const std::string &property, PLColour def = PLColour(0, 0, 0));
-    PLVector3 GetVector3Property(const std::string &property, PLVector3 def = PLVector3(0, 0, 0));
+    std::string GetStringProperty(const std::string &property, const std::string &def = "", bool silent = true);
+    int GetIntegerProperty(const std::string &property, int def = 0, bool silent = true);
+    bool GetBooleanProperty(const std::string &property, bool def = false, bool silent = true);
+    float GetFloatProperty(const std::string &property, float def = 0.0f, bool silent = true);
+    PLColour GetColourProperty(const std::string &property, PLColour def = PLColour(0, 0, 0), bool silent = true);
+    PLVector3 GetVector3Property(const std::string &property, PLVector3 def = PLVector3(0, 0, 0), bool silent = true);
 
     unsigned int GetArrayLength(const std::string &property);
     std::vector<std::string> GetArrayStrings(const std::string &property);
