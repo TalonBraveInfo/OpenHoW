@@ -17,29 +17,8 @@
 
 #include <PL/platform_package.h>
 
-#include "engine.h"
-#include "mad.h"
-
-/* Hogs of War file formats
- * -----------------------------------
- * BIN : Audio/Model/Texture data
- * DAT : Audio data
- * MAM : Mangled texture / model package
- * MAD : Texture / model package
- * MTM : Mangled model texture package
- * MTD : Texture / model package
- * MMM : Mangled model package
- * MGL : Mangled texture data
- * FAC : Model faces
- * VTX : Model vertices
- * NO2 : Model normals
- * HIR : Model skeleton
- * POM : Mangled map object data
- * POG : Map object data
- * PTM : Mangled map textures package
- * PTG : Map Textures package
- * OFF : File offset sizes
- */
+#include "../engine.h"
+#include "loaders.h"
 
 /************************************************************/
 /* MAD/MTD Format Specification */
@@ -66,7 +45,7 @@ static bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
     return true;
 }
 
-static PLPackage *LoadMADPackage(const char *path, bool cache) {
+static PLPackage* LoadMADPackage(const char *path, bool cache) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         return NULL;

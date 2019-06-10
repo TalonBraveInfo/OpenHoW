@@ -104,23 +104,25 @@ static std::vector<DebugWindow*> windows;
 /************************************************************/
 /* Map Config Editor */
 
+#include "Map.h"
+
+#include "game/GameManager.h"
+
 class MapConfigEditor : public DebugWindow {
 public:
     MapConfigEditor();
-    explicit MapConfigEditor(const std::string &path);
-
     ~MapConfigEditor() override;
 
     void Display() override;
 
-    void OpenManifest(const std::string &path);
     void SyncManifest();
     void CloseManifest();
     void SaveManifest(const std::string &path);
 
 protected:
 private:
-    MapManifest manifest_;
+    MapManifest* manifest_;
+    Map* map_{nullptr};
 
     bool save_dialog{false};
 
@@ -130,9 +132,14 @@ private:
     char filename_buffer[32]{'\0'};
 };
 
-MapConfigEditor::MapConfigEditor() = default;
-MapConfigEditor::MapConfigEditor(const std::string &path) {
-    OpenManifest(path);
+MapConfigEditor::MapConfigEditor() {
+    map_ = GameManager::GetInstance()->GetCurrentMap();
+    if(map_ == nullptr) {
+        throw std::runtime_error("Attempted to create config editor without a valid map loaded!\n");
+    }
+
+    manifest_ = map_->GetManifest();
+    SyncManifest();
 }
 
 MapConfigEditor::~MapConfigEditor() = default;
@@ -140,29 +147,7 @@ MapConfigEditor::~MapConfigEditor() = default;
 void MapConfigEditor::Display() {
     ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
 
-    ImGui::Begin(dname("Map Config Editor"), &status_,
-                 ImGuiWindowFlags_MenuBar | default_flags);
-
-    if(ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if(ImGui::MenuItem("New")) {
-                CloseManifest();
-            }
-
-            ImGui::Separator();
-
-            if(ImGui::MenuItem("Save")) {
-                if(filename_buffer[0] == '\0') {
-                    save_dialog = true;
-                }
-            }
-            if(ImGui::MenuItem("Save As...")) {
-                save_dialog = true;
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
-    }
+    ImGui::Begin(dname("Map Config Editor"), &status_, default_flags);
 
     ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
     ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
@@ -173,25 +158,47 @@ void MapConfigEditor::Display() {
 
     ImGui::InputText("Sky", sky_buffer, sizeof(sky_buffer));
 
-    ImGui::SliderAngle("Sun Pitch", &manifest_.sun_pitch, 0, 90, nullptr);
-    ImGui::SliderAngle("Sun Yaw", &manifest_.sun_yaw, 0, 360, nullptr);
+    ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr);
+    ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr);
 
     float rgb[3];
-    rgb[0] = plByteToFloat(manifest_.sun_colour.r);
-    rgb[1] = plByteToFloat(manifest_.sun_colour.g);
-    rgb[2] = plByteToFloat(manifest_.sun_colour.b);
+    rgb[0] = plByteToFloat(manifest_->sun_colour.r);
+    rgb[1] = plByteToFloat(manifest_->sun_colour.g);
+    rgb[2] = plByteToFloat(manifest_->sun_colour.b);
     ImGui::ColorPicker3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB);
-    manifest_.sun_colour.r = plFloatToByte(rgb[0]);
-    manifest_.sun_colour.g = plFloatToByte(rgb[1]);
-    manifest_.sun_colour.b = plFloatToByte(rgb[2]);
+    manifest_->sun_colour.r = plFloatToByte(rgb[0]);
+    manifest_->sun_colour.g = plFloatToByte(rgb[1]);
+    manifest_->sun_colour.b = plFloatToByte(rgb[2]);
 
-    rgb[0] = plByteToFloat(manifest_.ambient_colour.r);
-    rgb[1] = plByteToFloat(manifest_.ambient_colour.g);
-    rgb[2] = plByteToFloat(manifest_.ambient_colour.b);
+    rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
+    rgb[1] = plByteToFloat(manifest_->ambient_colour.g);
+    rgb[2] = plByteToFloat(manifest_->ambient_colour.b);
     ImGui::ColorPicker3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB);
-    manifest_.ambient_colour.r = plFloatToByte(rgb[0]);
-    manifest_.ambient_colour.g = plFloatToByte(rgb[1]);
-    manifest_.ambient_colour.b = plFloatToByte(rgb[2]);
+    manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
+    manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
+    manifest_->ambient_colour.b = plFloatToByte(rgb[2]);
+
+    ImGui::Separator();
+
+    rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
+    rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
+    rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
+    if(ImGui::ColorPicker3("Sky Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+    manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
+    manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
+    manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
+
+    rgb[0] = plByteToFloat(manifest_->sky_colour_bottom.r);
+    rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
+    rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
+    if(ImGui::ColorPicker3("Sky Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+    manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
+    manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
+    manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
 
     ImGui::Separator();
 
@@ -217,25 +224,15 @@ void MapConfigEditor::Display() {
     }
 }
 
-void MapConfigEditor::OpenManifest(const std::string &path) {
-    std::string name = plGetFileName(path.c_str());
-    name.erase(name.find(".map"));
-    manifest_ = *MapManager::GetInstance()->GetManifest(name);
-
-    SyncManifest();
-
-    snprintf(filename_buffer, sizeof(filename_buffer), "%s", path.c_str());
-}
-
 void MapConfigEditor::CloseManifest() {
-    manifest_ = MapManifest();
+    //manifest_ = MapManifest();
     SyncManifest();
 }
 
 void MapConfigEditor::SyncManifest() {
-    strncpy(name_buffer, manifest_.name.c_str(), sizeof(name_buffer));
-    strncpy(author_buffer, manifest_.author.c_str(), sizeof(author_buffer));
-    strncpy(sky_buffer, manifest_.sky.c_str(), sizeof(sky_buffer));
+    strncpy(name_buffer, manifest_->name.c_str(), sizeof(name_buffer));
+    strncpy(author_buffer, manifest_->author.c_str(), sizeof(author_buffer));
+    strncpy(sky_buffer, manifest_->sky.c_str(), sizeof(sky_buffer));
 }
 
 void MapConfigEditor::SaveManifest(const std::string &path) {
@@ -246,32 +243,32 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     }
 
     output << "{";
-    output << R"("name":")" + manifest_.name + "\",";
-    output << R"("author":")" + manifest_.author + "\",";
-    output << R"("description":")" + manifest_.description + "\",";
-    output << R"("sky":")" + manifest_.sky + "\",";
-    if(!manifest_.modes.empty()) {
+    output << R"("name":")" + manifest_->name + "\",";
+    output << R"("author":")" + manifest_->author + "\",";
+    output << R"("description":")" + manifest_->description + "\",";
+    output << R"("sky":")" + manifest_->sky + "\",";
+    if(!manifest_->modes.empty()) {
         output << R"("modes":[)";
-        for (unsigned int i = 0; i < manifest_.modes.size(); ++i) {
-            output << "\"" + manifest_.modes[i] + "\"";
-            if (i != manifest_.modes.size()) {
+        for (unsigned int i = 0; i < manifest_->modes.size(); ++i) {
+            output << "\"" + manifest_->modes[i] + "\"";
+            if (i != manifest_->modes.size()) {
                 output << ",";
             }
         }
         output << "],";
     }
-    output << R"("ambient_colour":")" +
-        std::to_string(manifest_.ambient_colour.r) + " " +
-        std::to_string(manifest_.ambient_colour.g) + " " +
-        std::to_string(manifest_.ambient_colour.b) + "\",";
-    output << R"("sun_colour":")" +
-        std::to_string(manifest_.sun_colour.r) + " " +
-        std::to_string(manifest_.sun_colour.g) + " " +
-        std::to_string(manifest_.sun_colour.b) + "\",";
-    output << R"("sun_yaw":")" + std::to_string(manifest_.sun_yaw) + "\",";
-    output << R"("sun_pitch":")" + std::to_string(manifest_.sun_pitch) + "\",";
-    output << R"("temperature":")" + manifest_.temperature + "\",";
-    output << R"("time":")" + manifest_.time + "\"";
+    output << R"("ambientColour":")" +
+        std::to_string(manifest_->ambient_colour.r) + " " +
+        std::to_string(manifest_->ambient_colour.g) + " " +
+        std::to_string(manifest_->ambient_colour.b) + "\",";
+    output << R"("sunColour":")" +
+        std::to_string(manifest_->sun_colour.r) + " " +
+        std::to_string(manifest_->sun_colour.g) + " " +
+        std::to_string(manifest_->sun_colour.b) + "\",";
+    output << R"("sunYaw":")" + std::to_string(manifest_->sun_yaw) + "\",";
+    output << R"("sunPitch":")" + std::to_string(manifest_->sun_pitch) + "\",";
+    output << R"("temperature":")" + manifest_->temperature + "\",";
+    output << R"("time":")" + manifest_->time + "\"";
     output << "}\n";
 
     LogInfo("Wrote \"%s\"!\n", path.c_str());
@@ -281,7 +278,7 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
 
 #include "TextureViewer.h"
 #include "game/TempGame.h"
-#include "game/Game.h"
+#include "game/GameManager.h"
 
 /************************************************************/
 /* Settings */
@@ -429,7 +426,6 @@ void UI_DisplayNewGame() {
 
 enum {
     FILE_TYPE_UNKNOWN,
-    FILE_TYPE_MAP,
     FILE_TYPE_MAP_POG,
     FILE_TYPE_MAP_PTG,
     FILE_TYPE_MAP_PMG,
@@ -452,9 +448,7 @@ void AddFilePath(const char *path) {
 
     const char *ext = plGetFileExtension(path);
     if(ext != nullptr) {
-        if(strcmp(ext, "map") == 0) {
-            descriptor.type = FILE_TYPE_MAP;
-        } else if(
+        if(
                 strcmp(ext, "tim") == 0 ||
                 strcmp(ext, "bmp") == 0 ||
                 strcmp(ext, "png") == 0
@@ -531,10 +525,6 @@ void UI_DisplayFileBox() {
                         windows.push_back(new TextureViewer(i.path, texture));
                     } break;
 
-                    case FILE_TYPE_MAP: {
-                        windows.push_back(new MapConfigEditor(i.path));
-                    } break;
-
                     case FILE_TYPE_AUDIO: {
                         AudioManager::GetInstance()->PlayGlobalSound(i.path);
                     } break;
@@ -550,7 +540,6 @@ void UI_DisplayFileBox() {
                 case FILE_TYPE_AUDIO:       type = "Audio"; break;
                 case FILE_TYPE_PARTICLE:    type = "Particle System"; break;
                 case FILE_TYPE_IMAGE:       type = "Image"; break;
-                case FILE_TYPE_MAP:         type = "Map Manifest"; break;
                 case FILE_TYPE_MAP_POG:     type = "Map Objects"; break;
                 case FILE_TYPE_MAP_PTG:     type = "Map Textures"; break;
                 case FILE_TYPE_MAP_PMG:     type = "Map Geometry"; break;
@@ -715,11 +704,17 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
-        if(ImGui::BeginMenu("Tools")) {
-            if(ImGui::MenuItem("Map Config Editor...")) {
-                windows.push_back(new MapConfigEditor());
+        if(GameManager::GetInstance()->GetCurrentMap() != nullptr) {
+            if (ImGui::BeginMenu("Map Tools")) {
+                if (ImGui::MenuItem("Config Editor...")) {
+                    windows.push_back(new MapConfigEditor());
+                }
+                ImGui::EndMenu();
             }
-            if(ImGui::MenuItem("Particle Editor...")) {}
+        }
+
+        if(ImGui::BeginMenu("Tools")) {
+            if (ImGui::MenuItem("Particle Editor...")) {}
             ImGui::EndMenu();
         }
 

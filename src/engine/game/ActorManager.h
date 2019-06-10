@@ -22,7 +22,7 @@
 
 class ActorManager {
 protected:
-    typedef Actor* (*actor_ctor_func)();
+    typedef Actor* (*actor_ctor_func)(const std::string& name);
     static std::map<std::string, actor_ctor_func> actor_classes_;
 
 public:
@@ -34,7 +34,7 @@ public:
         return instance;
     }
 
-    Actor* SpawnActor(const std::string& name);
+    Actor* SpawnMapActor(const std::string &name);
     void DestroyActor(Actor* actor);
 
     void TickActors();
@@ -54,5 +54,5 @@ private:
 };
 
 #define register_actor(NAME, CLASS) \
-    static Actor * NAME ## _make() { return new CLASS (); } \
+    static Actor * NAME ## _make(const std::string& name) { return new CLASS (name); } \
     static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make)

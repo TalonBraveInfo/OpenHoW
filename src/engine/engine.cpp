@@ -19,7 +19,6 @@
 
 #include "engine.h"
 #include "language.h"
-#include "mad.h"
 #include "model.h"
 #include "ModSupport.h"
 #include "client.h"
@@ -28,10 +27,9 @@
 #include "frontend.h"
 #include "audio.h"
 
-#include "game/BaseGameMode.h"
-
+#include "game/SPGameMode.h"
 #include "script/script.h"
-
+#include "loaders/loaders.h"
 #include "graphics/display.h"
 
 EngineState g_state;
@@ -83,31 +81,32 @@ void Engine_Initialize(void) {
     RegisterPackageLoaders();
     RegisterModelLoaders();
 
-    /* load in the manifests */
+    // load in the manifests
 
     Languages_Initialize();
     Mod_RegisterCampaigns();
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
-        /* otherwise default to Hogs of War's campaign */
+        // otherwise default to Hogs of War's campaign
         var = "how";
     }
 
     Mod_SetCampaign(var);
 
-    /* now initialize all other sub-systems */
+    // now initialize all other sub-systems
 
     Input_Initialize();
     Display_Initialize();
     AudioManager::GetInstance();
+    GameManager::GetInstance();
     FE_Initialize();
 
     CacheModelData();
 
-    LogInfo("base path: \"%s\"\n", GetBasePath());
-    LogInfo("campaign path: \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
-    LogInfo("working directory: \"%s\"\n", plGetWorkingDirectory());
+    LogInfo("Base path:         \"%s\"\n", GetBasePath());
+    LogInfo("Campaign path:     \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
+    LogInfo("Working directory: \"%s\"\n", plGetWorkingDirectory());
 }
 
 #include "imgui_layer.h"
@@ -122,18 +121,15 @@ bool Engine_IsRunning(void) {
 
     unsigned int loops = 0;
     while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-        g_state.sim_ticks = System_GetTicks();
+        g_state.sys_ticks = System_GetTicks();
+        g_state.sim_ticks++;
 
-        Client_Simulate();
+        Client_ProcessInput(); // todo: kill this
 
-        BaseGameMode* mode = GetGameMode();
-        if(mode != nullptr) {
-            mode->Tick();
-        }
-
+        GameManager::GetInstance()->Tick();
         AudioManager::GetInstance()->Tick();
 
-        g_state.last_sim_tick = System_GetTicks();
+        g_state.last_sys_tick = System_GetTicks();
         next_tick += SKIP_TICKS;
         loops++;
     }
@@ -171,12 +167,11 @@ extern "C" void DrawActors(void) {
 
 // Temporary interface, since graphics sub-system is written in C :^)
 extern "C" void DrawMap(void) {
-    BaseGameMode* mode = GetGameMode();
-    if(mode == nullptr) {
+    if(!cv_graphics_draw_world->b_value) {
         return;
     }
 
-    Map* map = mode->GetCurrentMap();
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
     if(map == nullptr) {
         return;
     }

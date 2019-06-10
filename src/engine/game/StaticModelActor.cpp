@@ -18,13 +18,13 @@
 #include "../engine.h"
 #include "../model.h"
 
+#include "ActorManager.h"
 #include "StaticModelActor.h"
 
-StaticModelActor::StaticModelActor() = default;
-StaticModelActor::~StaticModelActor() = default;
-
-#if 0
 register_actor(DUMMY, StaticModelActor); // todo: needs special logic
+register_actor(SIGN, StaticModelActor);
+register_actor(CRATE1, StaticModelActor);
+register_actor(CRATE2, StaticModelActor);
 
 // Barbed Wire
 register_actor(BARBWIRE, StaticModelActor);
@@ -32,13 +32,33 @@ register_actor(BARBWIR2, StaticModelActor);
 
 // Trees
 register_actor(TREEP, StaticModelActor);
+register_actor(TREEPH, StaticModelActor);
 register_actor(TREEPH1, StaticModelActor);
 register_actor(TREEPH2, StaticModelActor);
 
 // Bridges
 register_actor(BRIDGE_C, StaticModelActor);
+register_actor(BRID2_C, StaticModelActor);
+register_actor(BRIDG_C2, StaticModelActor);
 register_actor(BRIDGE_S, StaticModelActor);
 
 // Building Components
 register_actor(IRONGATE, StaticModelActor);
-#endif
+register_actor(STF03PPP, StaticModelActor);
+register_actor(STW04_W_, StaticModelActor);
+register_actor(STW04_D2, StaticModelActor);
+register_actor(STW04PPP, StaticModelActor);
+register_actor(STW05_W_, StaticModelActor);
+register_actor(STW05PPP, StaticModelActor);
+register_actor(STW06_W_, StaticModelActor);
+register_actor(STW06PPP, StaticModelActor);
+register_actor(STW07PWW, StaticModelActor);
+
+// Buildings
+register_actor(SHELTER, StaticModelActor);
+
+StaticModelActor::StaticModelActor(const std::string &name) : ModelActor(name) {
+    SetModel("/scenery/" + spawn_name);
+}
+
+StaticModelActor::~StaticModelActor() = default;

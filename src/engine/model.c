@@ -21,184 +21,11 @@
 
 #include "engine.h"
 #include "model.h"
+#include "loaders/loaders.h"
 #include "game/TempGame.h"
 
 #include "graphics/display.h"
-
-/************************************************************/
-/* Hir Skeleton Format */
-
-typedef struct HirHandle {
-    PLModelBone*    bones;
-    unsigned int    num_bones;
-} HirHandle;
-
-static HirHandle* Hir_LoadFile(const char* path) {
-    size_t hir_size = plGetFileSize(path);
-    if(hir_size == 0) {
-        LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
-        return NULL;
-    }
-
-    FILE *file = fopen(path, "rb");
-    if(file == NULL) {
-        LogWarn("Failed to load \"%s\", aborting!\n", path);
-        return NULL;
-    }
-
-    typedef struct __attribute__((packed)) HirBone {
-        int32_t parent;
-        int16_t coords[3];
-        int8_t  unknown[10];
-    } HirBone;
-
-    unsigned int num_bones = (unsigned int)(hir_size / sizeof(HirBone));
-    HirBone bones[num_bones];
-    unsigned int rnum_bones = fread(bones, sizeof(HirBone), num_bones, file);
-    fclose(file);
-
-    if(rnum_bones != num_bones) {
-        LogWarn("Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones);
-        return NULL;
-    }
-
-    /* for debugging */
-    static const char* bone_names[MAX_BONE_INDICES]={
-            "Pelvis",
-            "Spine",
-            "Head",
-            "UpperArm.L", "LowerArm.L", "Hand.L",
-            "UpperArm.R", "LowerArm.R", "Hand.R",
-            "UpperLeg.L", "LowerLeg.L", "Foot.L",
-            "UpperLeg.R", "LowerLeg.R", "Foot.R",
-    };
-
-    /* in the long term, we won't have this here, we'll probably extend the format
-     * to include the names of each bone (.skeleton format?) */
-    if(num_bones >= MAX_BONE_INDICES) {
-        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
-    }
-
-    HirHandle* handle = u_alloc(1, sizeof(HirHandle), true);
-    handle->bones = u_alloc(num_bones, sizeof(PLModelBone), true);
-    for(unsigned int i = 0; i < num_bones; ++i) {
-        handle->bones[i].position = PLVector3(bones[i].coords[0], bones[i].coords[1], bones[i].coords[2]);
-        handle->bones[i].parent = bones[i].parent;
-        strcpy(handle->bones[i].name, bone_names[i]);
-    }
-    return handle;
-}
-
-static void Hir_DestroyHandle(HirHandle* handle) {
-    if(handle == NULL) {
-        return;
-    }
-
-    free(handle->bones);
-    free(handle);
-}
-
-/************************************************************/
-/* Vtx Vertex Format */
-
-typedef struct VtxHandle {
-    PLVertex*       vertices;
-    unsigned int    num_vertices;
-} VtxHandle;
-
-static VtxHandle* Vtx_LoadFile(const char* path) {
-    FILE *vtx_file = fopen(path, "rb");
-    if(vtx_file == NULL) {
-        LogWarn("Failed to load Vtx \"%s\", aborting!\n", path);
-        return NULL;
-    }
-
-    /* load in the vertices */
-
-    typedef struct __attribute__((packed)) VtxCoord {
-        int16_t     v[3];
-        uint16_t    bone_index;
-    } VtxCoord;
-    unsigned int num_vertices = (unsigned int)(plGetFileSize(path) / sizeof(VtxCoord));
-    VtxCoord vertices[num_vertices];
-    unsigned int rnum_vertices = fread(vertices, sizeof(VtxCoord), num_vertices, vtx_file);
-    fclose(vtx_file);
-
-    if(num_vertices == 0) {
-        LogWarn("No vertices found in Vtx \"%s\"!\n", path);
-        return NULL;
-    }
-
-    if(rnum_vertices != num_vertices) {
-        LogWarn("Failed to read in all vertices from \"%s\", aborting!\n", path);
-        return NULL;
-    }
-
-    VtxHandle* handle = u_alloc(1, sizeof(VtxHandle), true);
-    handle->vertices = u_alloc(num_vertices, sizeof(PLVertex), true);
-    handle->num_vertices = num_vertices;
-    for(unsigned int i = 0; i < num_vertices; ++i) {
-        handle->vertices[i].position = PLVector3(vertices[i].v[0], vertices[i].v[1], vertices[i].v[2]);
-        handle->vertices[i].bone_index = vertices[i].bone_index;
-        handle->vertices[i].colour = PL_COLOUR_WHITE;
-    }
-    return handle;
-}
-
-static void Vtx_DestroyHandle(VtxHandle* handle) {
-    if(handle == NULL) {
-        return;
-    }
-
-    free(handle->vertices);
-    free(handle);
-}
-
-/************************************************************/
-/* No2 Normals Format */
-
-typedef struct __attribute__((packed)) No2Coord {
-    float v[3];
-    float bone_index;
-} No2Coord;
-
-typedef struct No2Handle {
-    No2Coord*       coords;
-    unsigned int    num_coords;
-} No2Handle;
-
-static No2Handle *No2_LoadFile(const char *path) {
-    FILE* fp = fopen(path, "rb");
-    if(fp == NULL) {
-        LogWarn("Failed to load no2 \"%s\"!\n", path);
-        return NULL;
-    }
-
-    unsigned int num_normals = (unsigned int)(plGetFileSize(path) / sizeof(No2Coord));
-    No2Coord normals[num_normals];
-    unsigned int rnum_normals = fread(normals, sizeof(No2Coord), num_normals, fp);
-    fclose(fp);
-
-    if(rnum_normals != num_normals) {
-        LogWarn("Failed to read in all normals from \"%s\"!\n", path);
-        return NULL;
-    }
-
-    No2Handle* handle = u_alloc(1, sizeof(No2Handle), true);
-    handle->coords = u_alloc(num_normals, sizeof(No2Coord), true);
-    handle->num_coords = num_normals;
-    memcpy(handle->coords, normals, sizeof(No2Coord) * num_normals);
-    return handle;
-}
-
-static void No2_DestroyHandle(No2Handle *handle) {
-    if(handle == NULL) {
-        return;
-    }
-
-    free(handle->coords);
-    free(handle);
-}
+#include "graphics/shader.h"
 
 /************************************************************/
 
@@ -212,6 +39,8 @@ struct {
     PLModel* hats[MAX_CLASSES];
 } model_cache;
 
+static PLModel* default_model = NULL;   /* used if any model fails to load */
+
 #define PIG_EYES_INDEX  118
 #define PIG_GOBS_INDEX  119
 
@@ -222,79 +51,28 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         return NULL;
     }
 
-    /* now we load in all the faces */
-    char fac_path[PL_SYSTEM_MAX_PATH];
-    strncpy(fac_path, path, strlen(path) - 3);
-    fac_path[strlen(path) - 3] = '\0';
-    strcat(fac_path, "fac");
-    FILE* fac_file = fopen(fac_path, "rb");
-    if(fac_file == NULL) {
-        Vtx_DestroyHandle(vtx);
-        LogWarn("Failed to load fac \"%s\", aborting!\n", fac_path);
-        return NULL;
-    }
-
-    fseek(fac_file, 16, SEEK_CUR);
-
-    uint32_t num_triangles;
-    if(fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
-        Error("failed to get number of triangles, \"%s\", aborting!\n", fac_path);
-    }
-
-    LogDebug("\"%s\" has %u triangles", fac_path, num_triangles);
-
-    struct __attribute__((packed)) {
-        int8_t uv_a[2];
-        int8_t uv_b[2];
-        int8_t uv_c[2];
-
-        uint16_t vertex_indices[3];
-        uint16_t normal_indices[3];
-
-        uint16_t unknown0;
-
-        uint32_t texture_index;
-
-        uint16_t unknown1[4];
-    } triangles[num_triangles];
-    if(fread(triangles, sizeof(*triangles), num_triangles, fac_file) != num_triangles) {
-        Error("failed to get %u triangles, \"%s\", aborting!\n", num_triangles, fac_path);
-    }
-
-    uint32_t num_quads;
-    if(fread(&num_quads, sizeof(uint32_t), 1, fac_file) != 1) {
-        Error("failed to get number of quads, \"%s\", aborting!\n", fac_path);
-    }
-    LogDebug("\"%s\" has %u quads", fac_path, num_quads);
-
-    struct __attribute__((packed)) {
-        int8_t uv_a[2];
-        int8_t uv_b[2];
-        int8_t uv_c[2];
-        int8_t uv_d[2];
-
-        uint16_t vertex_indices[4];
-        uint16_t normal_indices[4];
-
-        uint32_t texture_index;
-
-        uint16_t unknown[4];
-    } quads[num_quads];
-    if(fread(quads, sizeof(*quads), num_quads, fac_file) != num_quads) {
-        Error("failed to get %u quads, \"%s\", aborting!\n", num_quads, fac_path);
-    }
-
-    fclose(fac_file);
-
     /* attempt to load the normals */
     char no2_path[PL_SYSTEM_MAX_PATH];
     strncpy(no2_path, path, strlen(path) - 3);
     no2_path[strlen(path) - 3] = '\0';
     strcat(no2_path, "no2");
-    No2Handle* no2 = No2_LoadFile(no2_path);
-    if(no2 == NULL) {
+    bool gen_normals = false;
+    if(No2_LoadFile(no2_path, vtx) == NULL) {
         LogWarn("Failed to load normals, \"%s\"!\n", no2_path);
         /* in this case, we'll just generate them later */
+        gen_normals = true;
+    }
+
+    /* now we load in all the faces */
+    char fac_path[PL_SYSTEM_MAX_PATH];
+    strncpy(fac_path, path, strlen(path) - 3);
+    fac_path[strlen(path) - 3] = '\0';
+    strcat(fac_path, "fac");
+    FacHandle* fac = Fac_LoadFile(fac_path);
+    if(fac == NULL) {
+        Vtx_DestroyHandle(vtx);
+        LogWarn("Failed to load Fac, \"%s\"!\n", path);
+        return NULL;
     }
 
 #if 0 /* dumped! */
@@ -414,14 +192,21 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     }
 #endif
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles, vtx->num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, vtx->num_vertices);
     if(mesh == NULL) {
+        Vtx_DestroyHandle(vtx);
+        Fac_DestroyHandle(fac);
         LogWarn("Failed to create mesh (%s)!\n", plGetError());
         return NULL;
     }
 
     for(unsigned int j = 0; j < vtx->num_vertices; ++j) {
-        plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
+        plSetMeshVertexPosition(mesh, j,
+                PLVector3(
+                        vtx->vertices[j].position.x * -1,
+                        vtx->vertices[j].position.y * -1,
+                        vtx->vertices[j].position.z * -1));
+        plSetMeshVertexST(mesh, j, 0, 0);
 
 #if 1 /* debug */
         uint8_t r = (uint8_t)(rand() % 255);
@@ -429,26 +214,32 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         uint8_t b = (uint8_t)(rand() % 255);
         plSetMeshVertexColour(mesh, j, PLColour(r, g, b, 255));
 #else
-        plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
+        plSetMeshVertexColour(mesh, j, PLColour(255, 255, 255, 255));
 #endif
 
         mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
         mesh->vertices[j].bone_weight = 1.f;
     }
 
+    mesh->texture = Display_GetDefaultTexture();
+
     unsigned int cur_index = 0;
-    for(unsigned int j = 0; j < num_triangles; ++j) {
+    for(unsigned int j = 0; j < fac->num_triangles; ++j) {
         plSetMeshTrianglePosition(mesh, &cur_index,
-                                  triangles[j].vertex_indices[0],
-                                  triangles[j].vertex_indices[1],
-                                  triangles[j].vertex_indices[2]
+                                  fac->triangles[j].vertex_indices[0],
+                                  fac->triangles[j].vertex_indices[1],
+                                  fac->triangles[j].vertex_indices[2]
         );
+    }
+
+    if(gen_normals) {
+        plGenerateMeshNormals(mesh);
     }
 
     PLModelBone* skeleton = u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true);
     memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
 
-    PLMesh **model_meshes = u_alloc(1, sizeof(PLMesh*), true);
+    PLMesh** model_meshes = u_alloc(1, sizeof(PLMesh*), true);
     model_meshes[0] = mesh;
     PLModel *model = plNewSkeletalModel(
             &(PLModelLod){model_meshes, 1}, 1,
@@ -457,6 +248,8 @@ static PLModel* Model_LoadVtxFile(const char* path) {
         LogWarn("Failed to create model (%s)!\n", plGetError());
         return NULL;
     }
+
+    plGenerateModelBounds(model);
 
 #if 0 /* don't bother for now... */
     /* check if it's a LOD model, these are appended with '_hi' */
@@ -491,6 +284,10 @@ PLModel* Model_LoadMinFile(const char *path) {
 PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
     char model_path[PL_SYSTEM_MAX_PATH];
     snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
+    if(!plFileExists(model_path)) {
+        snprintf(model_path, sizeof(model_path), "%s.min", u_find(path));
+    }
+
     PLModel* model = plLoadModel(model_path);
     if(model == NULL) {
         if(abort_on_fail) {
@@ -498,14 +295,26 @@ PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
         }
 
         LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
-        // todo: provide placeholder
-        //model = plCreateModelCube();
+        model = default_model;
     }
     return model;
 }
 
+void Model_DestroyHandle(PLModel* model) {
+    /* destroy model */
+    if(model == default_model) {
+        return;
+    }
+
+    plDestroyModel(model);
+}
+
 Animation* LoadAnimations(const char *path, bool abort_on_fail) {
     return NULL;
+}
+
+const PLModel* Model_GetDefaultModel(void) {
+    return default_model;
 }
 
 /************************************************************/
@@ -531,12 +340,12 @@ void CacheModelData(void) {
     // to determine the length of animations later
     size_t mcap_bytes = plGetFileSize(mcap_path);
     if(mcap_bytes < 272) {
-        Error("unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
+        Error("Unexpected \"mcap.mad\" size, %d, aborting!\n", mcap_bytes);
     }
 
     FILE* file = fopen(mcap_path, "rb");
     if(file == NULL) {
-        Error("failed to load \"%s\", aborting!\n", mcap_path);
+        Error("Failed to load \"%s\", aborting!\n", mcap_path);
     }
 
     /* todo, split this up, as the psx version deals with these as separate files */
@@ -588,7 +397,7 @@ void CacheModelData(void) {
             uint32_t length;
         } index;
         if(fread(&index, sizeof(index), 1, file) != 1) {
-            Error("failed to read index, aborting!\n");
+            Error("Failed to read index, aborting!\n");
         }
 
         // position we'll return to for the next index
@@ -615,7 +424,7 @@ void CacheModelData(void) {
 
         unsigned int num_keyframes = (unsigned int) (index.length / sizeof(McapKeyframe));
         if(num_keyframes == 0) {
-            Error("odd keyframe at index, aborting!\n");
+            Error("Odd keyframe at index, aborting!\n");
         }
 
         // copy everything into our global animations array
@@ -624,14 +433,14 @@ void CacheModelData(void) {
 
         // move to where the first keyframe is
         if(fseek(file, index.offset, SEEK_SET) != 0) {
-            Error("failed to seek to offset %d in file, aborting!\n", index.offset);
+            Error("Failed to seek to offset %d in file, aborting!\n", index.offset);
         }
 
         for(unsigned int j = 0; j < num_keyframes; ++j) {
             // read in the keyframe data
             McapKeyframe frame;
             if(fread(&frame, sizeof(McapKeyframe), 1, file) != 1) {
-                Error("failed to read animation keyframe, aborting!\n");
+                Error("Failed to read animation keyframe, aborting!\n");
             }
 
             // copy transforms
@@ -657,10 +466,10 @@ void CacheModelData(void) {
 
         // return us from whence we came
         if(fseek(file, position, SEEK_SET) != 0) {
-            Error("failed to seek back to original position %d in file, aborting!\n", position);
+            Error("Failed to seek back to original position %d in file, aborting!\n", position);
         }
     }
-    fclose(file);
+    u_fclose(file);
 
 #if 0 // debug
     for(unsigned int i = 0; i < ANI_END; ++i) {
@@ -685,6 +494,18 @@ void CacheModelData(void) {
 
     /* models */
 
+    PLMesh* default_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
+    plSetMeshVertexPosition(default_mesh, 0, PLVector3(0, 20, 0));
+    plSetMeshVertexPosition(default_mesh, 1, PLVector3(0, -20, 0));
+    plSetMeshVertexPosition(default_mesh, 2, PLVector3(20, 0, 0));
+    plSetMeshVertexPosition(default_mesh, 3, PLVector3(-20, 0, 0));
+    plSetMeshVertexPosition(default_mesh, 4, PLVector3(0, 0, 20));
+    plSetMeshVertexPosition(default_mesh, 5, PLVector3(0, 0, -20));
+    plSetMeshUniformColour(default_mesh, PLColour(255, 0, 0, 255));
+    plSetMeshShaderProgram(default_mesh, programs[SHADER_UNTEXTURED]);
+    plUploadMesh(default_mesh);
+    default_model = plNewBasicStaticModel(default_mesh);
+
     model_cache.pigs[PIG_CLASS_ACE]         = Model_LoadFile("chars/pigs/ac_hi", true);
     model_cache.pigs[PIG_CLASS_COMMANDO]    = Model_LoadFile("chars/pigs/sb_hi", true);
     model_cache.pigs[PIG_CLASS_GRUNT]       = Model_LoadFile("chars/pigs/gr_hi", true);
@@ -694,6 +515,15 @@ void CacheModelData(void) {
     model_cache.pigs[PIG_CLASS_SABOTEUR]    = Model_LoadFile("chars/pigs/sa_hi", true);
     model_cache.pigs[PIG_CLASS_SNIPER]      = Model_LoadFile("chars/pigs/sn_hi", true);
     model_cache.pigs[PIG_CLASS_SPY]         = Model_LoadFile("chars/pigs/sp_hi", true);
+
+    /* debug loading min models */
+#if 0
+    PLModel* debug = Model_LoadFile("chars/shed1d", false);
+    if(debug != NULL) {
+        plDestroyModel(default_model);
+        default_model = debug;
+    }
+#endif
 }
 
 void RegisterModelLoaders(void) {
@@ -703,7 +533,9 @@ void RegisterModelLoaders(void) {
 
 void ShutdownModels(void) {
     /* clear the model cache */
-    LogInfo("clearing model cache...\n");
+    LogInfo("Clearing model cache...\n");
+
+    plDestroyModel(default_model);
 
     for(unsigned int i = 0; i < MAX_CLASSES; ++i) {
         plDestroyModel(model_cache.pigs[i]);
@@ -713,8 +545,21 @@ void ShutdownModels(void) {
 ////////////////////////////////////////////////////////////////
 
 void DEBUGDrawModel(void) {
-    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, -2048));
+#if 1
+    model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(0, 0, 512));
     plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
+
+    model_cache.pigs[PIG_CLASS_COMMANDO]->model_matrix = plTranslateMatrix(PLVector3(0, 1024, 512));
+    plDrawModel(model_cache.pigs[PIG_CLASS_COMMANDO]);
+#else
+    for(unsigned int y = 0; y < 80; y++) {
+        for(unsigned int x = 0; x < 80; x++) {
+            model_cache.pigs[PIG_CLASS_ACE]->model_matrix = plTranslateMatrix(PLVector3(x * 500, 0, y * 500));
+            plDrawModel(model_cache.pigs[PIG_CLASS_ACE]);
+            g_state.gfx.num_actors_drawn++;
+        }
+    }
+#endif
 }
 
 void DEBUGDrawSkeleton(void) {
@@ -741,9 +586,9 @@ void DEBUGDrawSkeleton(void) {
 
     static unsigned int frame = 0;
     static double delay = 20;
-    if(g_state.sim_ticks > delay) {
+    if(g_state.sys_ticks > delay) {
         frame++;
-        delay = g_state.sim_ticks + 20;
+        delay = g_state.sys_ticks + 20;
     }
 
     if(frame == model_cache.animations[0].num_frames) {

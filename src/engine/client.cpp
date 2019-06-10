@@ -38,8 +38,8 @@ enum {
 
 void Client_ProcessInput() {
     static double input_delay = 0;
-    if(input_delay < g_state.sim_ticks) {
-        input_delay = g_state.sim_ticks + 50;
+    if(input_delay < g_state.sys_ticks) {
+        input_delay = g_state.sys_ticks + 10;
 
         if (Input_GetKeyState('`')) {
             Console_Toggle();
@@ -56,6 +56,7 @@ void Client_ProcessInput() {
             /* follow currently selected pig */
         } break;
 
+#if 0
         case CAMERA_MODE_FREE: {
             if(Input_GetActionState(0, ACTION_MOVE_FORWARD)) {
                 g_state.camera->position.x += 4.f;
@@ -81,12 +82,6 @@ void Client_ProcessInput() {
                 g_state.camera->angles.z -= 4.f;
             }
         } break;
+#endif
     }
-}
-
-/************************************************************/
-
-void Client_Simulate(void) {
-    Client_ProcessInput();
-    FE_Simulate();
 }

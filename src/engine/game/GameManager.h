@@ -18,7 +18,6 @@
 #pragma once
 
 #include "TempGame.h"
-#include "BaseGameMode.h"
 #include "Actor.h"
 
 struct Player {
@@ -27,5 +26,47 @@ struct Player {
     unsigned int    input_slot{0};
 };
 
-bool SetGameMode(const std::string &mode);
-BaseGameMode* GetGameMode();
+class IGameMode;
+class Map;
+
+class GameManager {
+private:
+    static GameManager* instance_;
+
+public:
+    static GameManager* GetInstance() {
+        if(instance_ == nullptr) {
+            instance_ = new GameManager();
+        }
+
+        return instance_;
+    }
+
+    static void DestroyInstance() {
+        delete instance_;
+        instance_ = nullptr;
+    }
+
+    /**********************************************/
+
+    GameManager();
+    ~GameManager();
+
+    void Tick();
+
+    void LoadMap(const std::string &name);
+    void UnloadMap();
+
+    Map* GetCurrentMap() { return active_map_; }
+
+    Player* GetCurrentPlayer();
+
+protected:
+private:
+    IGameMode*  active_mode_{nullptr};
+    Map*        active_map_{nullptr};
+
+#define MAX_AMBIENT_SAMPLES 8
+    double                      ambient_emit_delay_{0};
+    const struct AudioSample*   ambient_samples_[MAX_AMBIENT_SAMPLES];
+};

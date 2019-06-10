@@ -19,67 +19,42 @@
 
 #include "../engine.h"
 #include "../frontend.h"
+#include "../audio.h"
 
-#include "BaseGameMode.h"
+#include "SPGameMode.h"
 #include "ActorManager.h"
 
-BaseGameMode::BaseGameMode() {
+SPGameMode::SPGameMode() {
     players_.resize(4);
 }
-BaseGameMode::~BaseGameMode() = default;
 
-void BaseGameMode::StartMode(const std::string &map_name) {
-    FrontEnd_SetState(FE_MODE_LOADING);
+SPGameMode::~SPGameMode() {
+    AudioManager::GetInstance()->FreeSources();
+    AudioManager::GetInstance()->FreeSamples();
 
-    if(current_map_ != nullptr) {
-        Error("Map already loaded or in dirty state, aborting!\n");
-    }
-
-    try {
-        current_map_ = new Map(map_name);
-    } catch(const std::runtime_error &e) {
-        Error("Failed to load map, aborting!\n%s\n", e.what());
-    }
-
-    StartRound();
+    DestroyActors();
 }
 
-void BaseGameMode::EndMode() {
-    delete current_map_;
-    current_map_ = nullptr;
-
-    /* todo: should go to end-game screen! */
-    FrontEnd_SetState(FE_MODE_MAIN_MENU);
-}
-
-void BaseGameMode::StartRound() {
+void SPGameMode::StartRound() {
     if(HasRoundStarted()) {
         Error("Attempted to change map in the middle of a round, aborting!\n");
     }
 
     SpawnActors();
 
-    /* todo: we should actually pause here and wait for user input
-     *       otherwise players won't have time to read the loading screen */
-    FrontEnd_SetState(FE_MODE_GAME);
-
     round_started_ = true;
 }
 
-void BaseGameMode::RestartRound() {
+void SPGameMode::RestartRound() {
     DestroyActors();
     SpawnActors();
 }
 
-void BaseGameMode::EndRound() {
-    if(HasRoundStarted()) {
-        Error("Attempted to unload map in the middle of a round, aborting!\n");
-    }
-
+void SPGameMode::EndRound() {
     DestroyActors();
 }
 
-void BaseGameMode::Tick() {
+void SPGameMode::Tick() {
     if(!HasRoundStarted()) {
         // still setting the game up...
         return;
@@ -89,7 +64,7 @@ void BaseGameMode::Tick() {
     if(slave != nullptr) {
         slave->HandleInput();
 
-        /* temp: force the camera at the actor pos */
+        // temp: force the camera at the actor pos
         g_state.camera->position = slave->GetPosition();
         g_state.camera->angles = slave->GetAngles();
     }
@@ -97,15 +72,19 @@ void BaseGameMode::Tick() {
     ActorManager::GetInstance()->TickActors();
 }
 
-void BaseGameMode::SpawnActors() {
-    std::vector<MapSpawn> spawns = current_map_->GetSpawns();
+void SPGameMode::SpawnActors() {
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
+    u_assert(map != nullptr);
+
+    std::vector<MapSpawn> spawns = map->GetSpawns();
     for(auto spawn : spawns) {
-        Actor* actor = ActorManager::GetInstance()->SpawnActor(spawn.name);
+        Actor* actor = ActorManager::GetInstance()->SpawnMapActor(spawn.name);
         if(actor == nullptr) {
             continue;
         }
 
         actor->SetPosition(PLVector3(spawn.position[0], spawn.position[1], spawn.position[2]));
+        actor->SetAngles(PLVector3(spawn.angles[0] / 360, spawn.angles[1] / 360, spawn.angles[2] / 360));
 
         // todo: assign player pigs etc., temp hack
         if(strcmp(spawn.name, "GR_ME") == 0) {
@@ -114,11 +93,11 @@ void BaseGameMode::SpawnActors() {
     }
 }
 
-void BaseGameMode::DestroyActors() {
+void SPGameMode::DestroyActors() {
     ActorManager::GetInstance()->DestroyActors();
 }
 
-void BaseGameMode::StartTurn() {
+void SPGameMode::StartTurn() {
     Player *player = GetCurrentPlayer();
     if(player->input_target == nullptr) {
         LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
@@ -127,13 +106,33 @@ void BaseGameMode::StartTurn() {
     }
 }
 
-void BaseGameMode::EndTurn() {
+void SPGameMode::EndTurn() {
     // move onto the next player
     if(++current_player_ >= players_.size()) {
         current_player_ = 0;
     }
 }
 
-Player* BaseGameMode::GetCurrentPlayer() {
-    return &players_[current_player_];
+void SPGameMode::PlayerJoined(Player *player) {
+
+}
+
+void SPGameMode::PlayerLeft(Player *player) {
+
+}
+
+unsigned int SPGameMode::GetMaxSpectators() const {
+    return 0;
+}
+
+void SPGameMode::SpectatorJoined(Player *player) {
+
+}
+
+void SPGameMode::SpectatorLeft(Player *player) {
+
+}
+
+unsigned int SPGameMode::GetMaxPlayers() const {
+    return 0;
 }

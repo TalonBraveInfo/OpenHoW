@@ -20,10 +20,10 @@
 
 #include "../engine.h"
 #include "../input.h"
-#include "../mad.h"
 #include "../imgui_layer.h"
 #include "../frontend.h"
 #include "../particle.h"
+#include "../loaders/loaders.h"
 
 #include "font.h"
 #include "shader.h"
@@ -40,6 +40,12 @@ static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 static PLFrameBuffer* game_target;
 static PLFrameBuffer* frontend_target;
 
+static PLTexture* default_texture = NULL;
+
+PLTexture* Display_GetDefaultTexture(void) {
+    return default_texture;
+}
+
 typedef struct TextureIndex {
     struct {
         int x, y;
@@ -47,7 +53,7 @@ typedef struct TextureIndex {
     } offsets[MAX_TEXTURES_PER_INDEX];
     unsigned int num_textures;
 
-    PLTexture *texture;
+    PLTexture* texture;
 } TextureIndex;
 TextureIndex texture_cache[MAX_TEXTURE_INDEX];
 
@@ -63,18 +69,25 @@ size_t GetTextureCacheSize(void) {
     return size;
 }
 
-void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, int *x, int *y, unsigned int *w,
-                                    unsigned int *h) {
+void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h) {
     u_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
-    TextureIndex *index = &texture_cache[id];
-    *x = index->offsets[tex_id].x;
-    *y = index->offsets[tex_id].y;
-    *w = index->offsets[tex_id].w;
-    *h = index->offsets[tex_id].h;
+    TextureIndex* index = &texture_cache[id];
+    if(index->texture == default_texture) {
+        *x = 0; *y = 0; *w = 1.0f; *h = 1.0f;
+        return;
+    }
+    *x = (float)index->offsets[tex_id].x / index->texture->w;
+    *y = (float)index->offsets[tex_id].y / index->texture->h;
+    *w = (float)index->offsets[tex_id].w / index->texture->w;
+    *h = (float)index->offsets[tex_id].h / index->texture->h;
 }
 
-const PLTexture *Display_GetCachedTexture(unsigned int id) {
+PLTexture* Display_GetCachedTexture(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
+    if(texture_cache[id].texture == NULL) {
+        return default_texture;
+    }
+
     return texture_cache[id].texture;
 }
 
@@ -139,9 +152,12 @@ void DrawTextureCache(unsigned int id) {
 /* unloads texture set from memory */
 void Display_ClearTextureIndex(unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &texture_cache[id];
-    plDestroyTexture(index->texture, true);
+    TextureIndex* index = &texture_cache[id];
+    if(index->texture != default_texture) {
+        plDestroyTexture(index->texture, true);
+    }
     memset(index, 0, sizeof(TextureIndex));
+    index->texture = default_texture;
 }
 
 static int CompareImageHeight(const void *a, const void *b) {
@@ -157,26 +173,31 @@ static int CompareImageHeight(const void *a, const void *b) {
 }
 
 /* loads texture set into memory */
-void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id) {
+void Display_CacheTextureIndex(const char* path, const char* index_name, unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex *index = &texture_cache[id];
+    TextureIndex* index = &texture_cache[id];
     if(index->num_textures > 0) {
-        LogWarn("textures already cached for index %s\n", index_name);
-        return;
+        Display_ClearTextureIndex(id);
     }
 
+    char tmp[PL_SYSTEM_MAX_PATH];
+    snprintf(tmp, sizeof(tmp), "%s%s", path, index_name);
+
     char texture_index_path[PL_SYSTEM_MAX_PATH];
-    snprintf(texture_index_path, sizeof(texture_index_path), "%s/%s%s", GetBasePath(), path, index_name);
+    snprintf(texture_index_path, sizeof(texture_index_path), "%s", u_find(tmp));
+
     if(!plFileExists(texture_index_path)) {
-        Error("failed to find index at \"%s\", aborting!\n", texture_index_path);
+        LogWarn("Failed to find index at \"%s\" (%s)!\n", texture_index_path, plGetError());
+        return;
     }
 
     FILE *file = fopen(texture_index_path, "r");
     if(file == NULL) {
-        Error("failed to open texture index at \"%s\", aborting!\n", texture_index_path);
+        LogWarn("Failed to open texture index at \"%s\"!\n", texture_index_path);
+        return;
     }
 
-    LogInfo("parsing \"%s\"\n", texture_index_path);
+    LogInfo("Parsing \"%s\"\n", texture_index_path);
 
     /* todo, move all textures into a texture sheet on upload */
 
@@ -195,11 +216,8 @@ void Display_CacheTextureIndex(const char *path, const char *index_name, unsigne
             //LogDebug("  %s\n", line);
 
             char texture_path[PL_SYSTEM_MAX_PATH];
-            snprintf(texture_path, sizeof(texture_path), "%s/%s%s.tim", GetBasePath(), path, line);
-            if(!plFileExists(texture_path)) {
-                /* check for PNG variant */
-                snprintf(texture_path, sizeof(texture_path), "%s/%s%s.png", GetBasePath(), path, line);
-            }
+            snprintf(tmp, sizeof(tmp), "%s%s", path, line);
+            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats));
 
             if(index->num_textures >= MAX_TEXTURES_PER_INDEX) {
                 Error("hit max index (%u) for texture sheet, aborting!\n", MAX_TEXTURES_PER_INDEX);
@@ -310,49 +328,46 @@ const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
 //const char *supported_audio_formats[]={"wav", NULL};
 //const char *supported_video_formats[]={"bik", NULL};
 
-PLTexture *Display_LoadTexture(const char *path, PLTextureFilter filter) {
-    /* todo: make this more friendly */
-
-    PLTexture *texture;
-
+PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
     char n_path[PL_SYSTEM_MAX_PATH];
-    const char *ext = plGetFileExtension(path);
+    const char* ext = plGetFileExtension(path);
     if(plIsEmptyString(ext)) {
         strncpy(n_path, u_find2(path, supported_image_formats), sizeof(n_path));
         if(plIsEmptyString(n_path)) {
-            Error("failed to find texture, \"%s\"!\n", path);
+            LogWarn("Failed to find texture, \"%s\"!\n", path);
+            return default_texture;
         }
-        ext = plGetFileExtension(n_path);
-    } else {
-        strncpy(n_path, u_find(path), sizeof(n_path));
 
-        /* pixel format of TIM will be changed before
-         * uploading */
+        PLTexture* texture = plLoadTextureImage(n_path, filter);
+        if(texture == NULL) {
+            LogWarn("%s, aborting!\n", plGetError());
+            return default_texture;
+        }
+
+        return texture;
+    }
+
+    PLImage img;
+    strncpy(n_path, u_find(path), sizeof(n_path));
+    if(plLoadImage(n_path, &img)) {
+        /* pixel format of TIM will be changed before uploading */
         if(pl_strncasecmp(ext, "tim", 3) == 0) {
-            PLImage img;
-            if(!plLoadImage(n_path, &img)) {
-                Error("%s, aborting!\n", plGetError());
-            }
-
             plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
+        }
 
-            if((texture = plCreateTexture()) != NULL) {
-                texture->filter = filter;
-                if(!plUploadTextureImage(texture, &img)) {
-                    Error("%s, aborting!\n", plGetError());
-                }
+        PLTexture* texture = plCreateTexture();
+        if(texture != NULL) {
+            texture->filter = filter;
+            if(plUploadTextureImage(texture, &img)) {
                 return texture;
             }
-            Error("%s, aborting!\n", plGetError());
         }
+        plDestroyTexture(texture, true);
     }
 
-    texture = plLoadTextureImage(n_path, PL_TEXTURE_FILTER_LINEAR);
-    if(texture == NULL) {
-        Error("%s, aborting!\n", plGetError());
-    }
-
-    return texture;
+    LogWarn("Failed to load texture, \"%s\" (%s)!\n", n_path, plGetError());
+    plFreeImage(&img);
+    return default_texture;
 }
 
 /************************************************************/
@@ -410,20 +425,19 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
 
     //TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
     //      For now, just use the same viewport aspect for both.
-    if(cv_display_use_window_aspect->b_value){
+
+    if(FrontEnd_GetState() == FE_MODE_GAME || cv_display_use_window_aspect->b_value){
         //If enabled, use full window for 3d scene
         g_state.camera->viewport.x = g_state.ui_camera->viewport.x = x;
         g_state.camera->viewport.y = g_state.ui_camera->viewport.y = y;
         g_state.camera->viewport.w = g_state.ui_camera->viewport.w = width;
         g_state.camera->viewport.h = g_state.ui_camera->viewport.h = height;
-    }
-    else{
+    } else {
         g_state.camera->viewport.x = g_state.ui_camera->viewport.x = (width - newWidth) / 2;
         g_state.camera->viewport.y = g_state.ui_camera->viewport.y = (height - newHeight) / 2;
         g_state.camera->viewport.w = g_state.ui_camera->viewport.w = newWidth;
         g_state.camera->viewport.h = g_state.ui_camera->viewport.h = newHeight;
     }
-
 }
 
 int Display_GetViewportWidth(const PLViewport *viewport) {
@@ -460,7 +474,7 @@ void Display_UpdateState(void) {
         if(h < MIN_DISPLAY_HEIGHT) h = MIN_DISPLAY_HEIGHT;
 
         plSetConsoleVariable(cv_display_width, pl_itoa(w, buf, 4, 10));
-        plSetConsoleVariable(cv_display_height, pl_itoa(w, buf, 4, 10));
+        plSetConsoleVariable(cv_display_height, pl_itoa(h, buf, 4, 10));
     } else {
         LogInfo("display set to %dx%d\n", w, h);
     }
@@ -512,14 +526,14 @@ void Display_Initialize(void) {
 
     //////////////////////////////////////////////////////////
 
-    plSetClearColour(PLColour(0, 0, 0, 255));
-
     g_state.camera = plCreateCamera();
     if(g_state.camera == NULL) {
         Error("failed to create camera, aborting!\n%s\n", plGetError());
     }
     g_state.camera->mode        = PL_CAMERA_MODE_PERSPECTIVE;
-    g_state.camera->fov         = 90;
+    g_state.camera->fov         = cv_camera_fov->f_value;
+    g_state.camera->far         = cv_camera_far->f_value;
+    g_state.camera->near        = cv_camera_near->f_value;
     g_state.camera->viewport.w  = cv_display_width->i_value;
     g_state.camera->viewport.h  = cv_display_height->i_value;
 
@@ -536,11 +550,35 @@ void Display_Initialize(void) {
 
     ImGuiImpl_SetupCamera();
 
-    //plSetCullMode(PL_CULL_POSTIVE);
+    plSetCullMode(PL_CULL_POSTIVE);
+
+    plSetDepthMask(true);
+
+    /* go ahead and create our placeholder texture, used if
+     * one fails to load */
+
+    PLColour pbuffer[]={{ 255, 255, 0  , 255 }, { 0  , 255, 255, 255 }, { 0  , 255, 255, 255 }, { 255, 255, 0  , 255 }};
+    PLImage* image = plNewImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
+    if(image != NULL) {
+        default_texture = plCreateTexture();
+        default_texture->flags &= PL_TEXTURE_FLAG_NOMIPS;
+        if(!plUploadTextureImage(default_texture, image)) {
+            LogWarn("Failed to upload default texture (%s)!\n", plGetError());
+            plDestroyTexture(default_texture, true);
+            default_texture = NULL;
+        }
+        plFreeImage(image);
+    } else {
+        Error("Failed to generate default texture (%s)!\n", plGetError());
+    }
 
     /* initialize the texture cache */
 
-    LogInfo("caching texture groups...\n");
+    LogInfo("Caching texture groups...\n");
+
+    for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
+        Display_ClearTextureIndex(i);
+    }
 
     Display_CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
     Display_CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
@@ -557,12 +595,14 @@ void Display_Initialize(void) {
 
 void Display_Shutdown(void) {
     Shaders_Shutdown();
+
+    plDestroyTexture(default_texture, true);
 }
 
 /************************************************************/
 
 void DEBUGDrawSkeleton();
-void DEBUGDrawModel();
+void DEBUGDrawModel(void);
 
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     static unsigned int fps_ = 0;
@@ -578,38 +618,77 @@ void Display_GetFramesCount(unsigned int *fps, unsigned int *ms) {
     *ms = ms_;
 }
 
-static void DrawDebugOverlay(void) {
-    if(FrontEnd_GetState() == FE_MODE_EDITOR) {
+static void DrawDisplayInfo(void) {
+    char debug_display[128];
+    int w, h;
+    bool fs;
+    System_GetWindowDrawableSize(&w, &h, &fs);
+    sprintf(debug_display, "%d X %d %s", w, h, fs == true ? "FULLSCREEN" : "WINDOWED");
+    Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
+                          Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
+                          debug_display);
+}
+
+static void DrawFPSOverlay(void) {
+    if(!cv_debug_fps->b_value) {
         return;
     }
 
-    UI_DisplayDebugMenu();
+    unsigned int fps, ms;
+    Display_GetFramesCount(&fps, &ms);
+
+    int w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+    int h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
+    BitmapFont* font = g_fonts[FONT_SMALL];
+
+    char ms_count[32];
+    sprintf(ms_count, "FPS %d/S (%d/MS)", fps, ms);
+    unsigned int str_w = (font->chars[0].w * 2) * strlen(ms_count);
+
+    PLColour colour;
+    if(fps < 20) {
+        colour = PL_COLOUR_RED;
+    } else if(fps < 30) {
+        colour = PL_COLOUR_YELLOW;
+    } else {
+        colour = PL_COLOUR_GREEN;
+    }
+
+    Font_DrawBitmapString(font, w - str_w, h - (font->chars[0].h * 2), 0, 1.f, colour, ms_count);
+}
+
+static void DrawCameraInfoOverlay(void) {
+    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
+    unsigned int y = 50;
+    char cam_pos[32];
+    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+}
+
+static void DrawDebugOverlay(void) {
+    if(cv_debug_mode->i_value <= 0) {
+        return;
+    }
+
+    UI_DisplayDebugMenu(); /* aka imgui */
 
     if(FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || cv_debug_mode->i_value <= 0) {
         return;
     }
 
-    if (cv_debug_fps->b_value) {
-        unsigned int fps, ms;
-        Display_GetFramesCount(&fps, &ms);
+    DrawDisplayInfo();
+    //DrawCameraInfoOverlay();
 
-        char ms_count[32];
-        sprintf(ms_count, "FPS: %d (%d)", fps, ms);
-        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
-                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 64, 0, 1.f, PL_COLOUR_WHITE,
-                              ms_count);
-    }
-
-    {
-        char debug_display[128];
-        int w, h;
-        bool fs;
-        System_GetWindowDrawableSize(&w, &h, &fs);
-        sprintf(debug_display, "%d X %d %s", w, h, fs == true ? "FULLSCREEN" : "WINDOWED");
-        Font_DrawBitmapString(g_fonts[FONT_GAME_CHARS], 20,
-                              Display_GetViewportHeight(&g_state.ui_camera->viewport) - 32, 0, 1.f, PL_COLOUR_WHITE,
-                              debug_display);
-    }
+    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS");
+    unsigned int y = 50;
+    char cam_pos[32];
+    snprintf(cam_pos, sizeof(cam_pos), "CHUNKS DRAWN : %d", g_state.gfx.num_chunks_drawn);
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+    snprintf(cam_pos, sizeof(cam_pos), "ACTORS DRAWN : %d", g_state.gfx.num_actors_drawn);
+    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 
     if (cv_debug_input->i_value > 0) {
         switch (cv_debug_input->i_value) {
@@ -695,16 +774,6 @@ static void DrawDebugOverlay(void) {
         }
         return;
     }
-
-#if 1
-    Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
-    unsigned int y = 50;
-    char cam_pos[32];
-    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
-    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
-    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
-    Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
-#endif
 }
 
 double cur_delta = 0;
@@ -713,13 +782,22 @@ void Display_SetupDraw(double delta) {
     cur_delta = delta;
     g_state.draw_ticks = System_GetTicks();
 
+    plSetClearColour(g_state.gfx.clear_colour);
+
     unsigned int clear_flags = PL_BUFFER_DEPTH;
     if(FrontEnd_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {
         clear_flags |= PL_BUFFER_COLOUR;
     }
     plClearBuffers(clear_flags);
+    plSetDepthBufferMode(PL_DEPTHBUFFER_ENABLE);
 
     plBindFrameBuffer(NULL, PL_FRAMEBUFFER_DRAW);
+
+    /* update camera state to match vars */
+    g_state.camera->fov     = cv_camera_fov->f_value;
+    g_state.camera->near    = cv_camera_near->f_value;
+    g_state.camera->far     = cv_camera_far->f_value;
+
     plSetupCamera(g_state.camera);
 }
 
@@ -738,6 +816,7 @@ void Display_DrawScene(void) {
 void Display_DrawInterface(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
     plSetupCamera(g_state.ui_camera);
+    plSetDepthBufferMode(PL_DEPTHBUFFER_DISABLE);
     FE_Draw();
 }
 
@@ -749,9 +828,8 @@ void Display_DrawDebug(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
     plSetupCamera(g_state.ui_camera);
 
-    if(cv_debug_mode->i_value > 0) {
-        DrawDebugOverlay();
-    }
+    DrawDebugOverlay();
+    DrawFPSOverlay();
 
     Console_Draw();
 }

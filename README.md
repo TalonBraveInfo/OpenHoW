@@ -6,7 +6,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/talonbraveinfo/openhow/badge)](https://www.codefactor.io/repository/github/talonbraveinfo/openhow)
 [![Build Status](https://badge.buildkite.com/91e09e49d899659cf45b4898c8aaeb9d5927f2a7b23eaafb28.svg)](https://buildkite.com/solemnwarning/openhow)
 
-## What's this? :astonished:
+## What's this? :pig:
 OpenHoW aims to be an open-source reimplementation of [Hogs of War](https://en.wikipedia.org/wiki/Hogs_of_War),
 a turn-based strategy game produced by [Gremlin Interactive](https://en.wikipedia.org/wiki/Gremlin_Interactive).
 
@@ -24,19 +24,13 @@ Consider this more of a wish-list at this  point in time ;)
 * Enhanced graphics over the original game
 
 ## Status :mag:
-Right now the project is only in it's infancy and a lot of focus
-is currently going towards producing an engine for the game to be 
-built upon; right now the primary part of this is creatively called 
-the [platform library](https://github.com/TalonBraveInfo/platform).
+![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
 
-If you want to see what tasks are currently being worked on and what
-tasks still need doing, it might be worth taking a look at our [public
-Trello](https://trello.com/b/qdZ7LswA/openhow) or any tasks here marked as '[help wanted](https://github.com/TalonBraveInfo/OpenHoW/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)'.
+As of May 2019, the project is still in a very early phase of development, however we're now at a point
+in which models and levels can be loaded in. As we shift onto our next milestone (0.3.0)
+a lot of work will begin on actually getting the game into a basic playable form.
 
-Another task that is currently being looked into are tools that will
-allow for easy modification of OpenHoW -
-though compatibility with the original isn't a huge concern right 
-now.
+The current goal is to have the game in a rough playable state by the end of the year.
 
 ## Contributing :hammer:
 Interested in contributing to the project? Know C/C++ and looking to get deep down
@@ -83,7 +77,3 @@ After you've downloaded these files, place the 'include' and 'lib' directories u
 in a new 'SDL2' directory under 'src/3rdparty'.
 
 This will be changing at a later point to make things a little easier.
-
-----
-
-![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/wireframe00.png?raw=true)

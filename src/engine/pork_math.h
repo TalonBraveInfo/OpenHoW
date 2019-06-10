@@ -22,9 +22,19 @@
 /* extension of Platform's math functionality
  * a lot of these are borrowed from ioq3 to fill gaps */
 
-inline static void Mat4Copy(PLMatrix4x4 in, PLMatrix4x4 *out) {
-    memcpy(out, &in, sizeof(PLMatrix4x4));
+#ifdef __cplusplus
+
+inline static void VecAngleClamp(PLVector3* vector) {
+    for(unsigned int i = 0; i < 3; ++i) {
+        if((*vector)[i] >= 360) {
+            (*vector)[i] = 0;
+        } else if((*vector)[i] <= -360) {
+            (*vector)[i] = 0;
+        }
+    }
 }
+
+#endif
 
 inline static void Mat4Multiply(PLMatrix4x4 in1, PLMatrix4x4 in2, PLMatrix4x4 *out) {
     out->m[ 0] = in1.m[ 0] * in2.m[ 0] + in1.m[ 4] * in2.m[ 1] + in1.m[ 8] * in2.m[ 2] + in1.m[12] * in2.m[ 3];

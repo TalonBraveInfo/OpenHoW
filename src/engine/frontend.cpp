@@ -21,8 +21,11 @@
 
 #include "engine.h"
 #include "input.h"
-#include "game/TempGame.h"
 #include "frontend.h"
+#include "Map.h"
+
+#include "game/TempGame.h"
+#include "game/GameManager.h"
 
 #include "graphics/font.h"
 #include "graphics/display.h"
@@ -154,7 +157,7 @@ void FE_ProcessInput(void) {
     }
 }
 
-void FE_Simulate(void) {
+void FrontEnd_Tick(void) {
     switch(frontend_state) {
         default:break;
 
@@ -219,6 +222,41 @@ uint8_t FE_GetLoadingProgress(void) {
 
 /************************************************************/
 
+static void DrawMinimap() {
+    if(FrontEnd_GetState() != FE_MODE_GAME) {
+        return;
+    }
+
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
+    if(map == nullptr) {
+        return;
+    }
+
+#if 0
+    static PLMesh* pane = nullptr;
+    if(pane == nullptr) {
+        pane = plNewMeshRectangle(0, 0, 256, 256, PL_COLOUR_WHITE);
+        if(pane == nullptr) {
+            Error("Failed to create pane mesh!\n");
+        }
+    }
+
+    plSetTexture(map->GetOverviewTexture(), 0);
+
+    PLMatrix4x4 mat = plMatrix4x4Identity();
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", mat, false);
+
+    plUploadMesh(pane);
+    plDrawMesh(pane);
+
+    plSetTexture(nullptr, 0);
+#else
+    /* for debugging... */
+    unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+    plDrawTexturedRectangle(0, scr_h - 128, 128, 128, map->GetOverviewTexture());
+#endif
+}
+
 /* Hogs of War's menu was designed
  * with a fixed resolution in mind
  * and scales poorly with anything
@@ -258,10 +296,8 @@ static void DrawLoadingScreen(void) {
 void FE_Draw(void) {
     /* render and handle the main menu */
     if(frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
-
         int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
         int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
-
         switch(frontend_state) {
             default:break;
 
@@ -334,7 +370,11 @@ void FE_Draw(void) {
                 Video_Draw();
             } break;
         }
+
+        return;
     }
+
+    DrawMinimap();
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */
@@ -376,7 +416,6 @@ void FrontEnd_SetState(unsigned int state) {
             plDestroyTexture(fe_any, true);
             plDestroyTexture(fe_key, true);
             plDestroyTexture(fe_background, true);
-
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
         } break;
 
@@ -399,5 +438,8 @@ void FrontEnd_SetState(unsigned int state) {
     }
     old_frontend_state = frontend_state;
     frontend_state = state;
+
+    /* !!hacky!! force the display to update due to aspect change, yeah this is gross... */
+    Display_UpdateViewport(0, 0, cv_display_width->i_value, cv_display_height->i_value);
 }
 

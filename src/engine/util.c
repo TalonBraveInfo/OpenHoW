@@ -33,7 +33,7 @@ unsigned long u_unmangle(void *source, void *destination) {
 void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
     void *mem = calloc(num, size);
     if(mem == NULL && abort_on_fail) {
-        Error("failed to allocate %u bytes!\n", size * num);
+        Error("Failed to allocate %u bytes!\n", size * num);
     }
     return mem;
 }
@@ -46,13 +46,13 @@ const char *u_find(const char *path) {
     if(!plIsEmptyString(GetCampaignPath())) {
         snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
         if(plFileExists(n_path)) {
-            LogDebug("found \"%s\"\n", n_path);
+            LogDebug("Found \"%s\"\n", n_path);
             return n_path;
         }
     }
 
     snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
-    LogDebug("found \"%s\"\n", n_path);
+    LogDebug("Found \"%s\"\n", n_path);
     return n_path;
 }
 
@@ -61,12 +61,12 @@ const char *u_scan(const char *path, const char **preference) {
     while(*preference != NULL) {
         snprintf(find, sizeof(find), "%s.%s", path, *preference);
         if(plFileExists(find)) {
-            LogDebug("found \"%s\"\n", find);
+            LogDebug("Found \"%s\"\n", find);
             return find;
         } preference++;
     }
 
-    LogDebug("failed to find \"%s\"\n", path);
+    LogDebug("Failed to find \"%s\"\n", path);
     return "";
 }
 
@@ -79,7 +79,7 @@ const char *u_find2(const char *path, const char **preference) {
         snprintf(base_path, sizeof(base_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
         strncpy(out, u_scan(base_path, preference), sizeof(out));
         if(!plIsEmptyString(out)) {
-            LogDebug("found \"%s\"\n", out);
+            LogDebug("Found \"%s\"\n", out);
             return out;
         }
     }
@@ -87,10 +87,10 @@ const char *u_find2(const char *path, const char **preference) {
     snprintf(base_path, sizeof(base_path), "%s/%s", GetBasePath(), path);
     strncpy(out, u_scan(base_path, preference), sizeof(out));
     if(plIsEmptyString(out)) {
-        Error("failed to find \"%s\"!\n", path);
+        Error("Failed to find \"%s\"!\n", path);
     }
 
-    LogDebug("found \"%s\"\n", out);
+    LogDebug("Found \"%s\"\n", out);
     return out;
 }
 

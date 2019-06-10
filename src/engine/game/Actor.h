@@ -46,7 +46,9 @@ enum ActorEvent {
 
 class Actor {
 public:
+
     Actor();
+    explicit Actor(const std::string& name);
     virtual ~Actor();
 
     virtual void Tick() {}  // simulation tick, called per-frame
@@ -61,7 +63,7 @@ public:
     virtual void SetPosition(PLVector3 position) { position_ = position; }
 
     virtual PLVector3 GetAngles() { return angles_; }
-    virtual void SetAngles(PLVector3 angles) { angles_ = angles; }
+    virtual void SetAngles(PLVector3 angles);
 
     virtual void HandleInput();   // handle any player input, if applicable
 
@@ -72,6 +74,8 @@ protected:
     PLVector3 fallback_position_{0, 0, 0};
     PLVector3 angles_{0, 0, 0};             // p, y, r
     PLVector3 bounds_{0, 0, 0};
+
+    std::string spawn_name{"none"};
 
 private:
     uint16_t flags_{0};

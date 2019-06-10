@@ -16,10 +16,10 @@
  */
 
 #include "engine.h"
-#include "mad.h"
 #include "particle.h"
 #include "client.h"
 
+#include "loaders/loaders.h"
 #include "graphics/display.h"
 
 PPSFormat pps_docs[512];

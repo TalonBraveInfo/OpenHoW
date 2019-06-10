@@ -13,6 +13,7 @@
 | POM               | Map object data (mangled)
 | [PTG](PTG.md)     | Map texture package
 | PTM               | Map texture package (mangled)
+| [MIN](MIN.md)     | Model data
 | [VTX](VTX.md)     | Model vertices
 | [NO2](NO2.md)     | Model normals
 | [FAC](FAC.md)     | Model faces

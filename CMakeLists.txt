@@ -60,4 +60,5 @@ endif()
 
 add_subdirectory(src/3rdparty/platform/platform)
 add_subdirectory(src/tools/extractor)
+add_subdirectory(src/tools/ptgtool)
 add_subdirectory(src/engine)

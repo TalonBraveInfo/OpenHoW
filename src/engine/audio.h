@@ -50,34 +50,16 @@ typedef enum {
     AUDIO_REVERB_CHAPEL
 } AudioEffectReverb;
 
-class AudioSource {
-public:
-    AudioSource(unsigned int al_sample, float gain, float pitch, bool looping);
-    AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping);
-    ~AudioSource();
+class AudioSource;
 
-    void SetPosition(PLVector3 position);
-    void SetVelocity(PLVector3 velocity);
-    void SetGain(float gain);
-    void SetPitch(float pitch);
+typedef struct AudioSample {
+    AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve);
+    ~AudioSample();
 
-    PLVector3 GetPosition() { return position_; }
-    PLVector3 GetVelocity() { return velocity_; }
-    float GetGain() { return gain_; }
-    float GetPitch() { return pitch_; }
-
-    void StartPlaying();
-    void StopPlaying();
-
-private:
-    PLVector3 position_{0, 0, 0};
-    PLVector3 velocity_{0, 0, 0};
-
-    float gain_{1.0f};
-    float pitch_{1.0f};
-
-    unsigned int al_source_id_{0};
-};
+    unsigned int    al_buffer_id_{0};
+    uint8_t         *data_{nullptr};
+    bool            preserve_{false};
+} AudioSample;
 
 class AudioManager {
     friend class AudioSource;
@@ -100,43 +82,80 @@ public:
 
     void Tick();
 
-    void CacheSample(const std::string &path, bool preserve);
+    const AudioSample *GetCachedSample(const std::string &path);
+    const AudioSample *CacheSample(const std::string &path, bool preserve = false);
 
     AudioSource *CreateSource(const std::string &path, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
-    AudioSource *CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping);
+    AudioSource *CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb = false,
+            float gain = 1.0f, float pitch = 1.0f, bool looping = false);
+    AudioSource* CreateSource(const AudioSample* sample, PLVector3 pos = {0, 0, 0}, PLVector3 vel = {0, 0, 0},
+            bool reverb = false, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
 
-    void PlayGlobalSound(const std::string &path);
+    void PlayGlobalSound(const std::string& path);
+    void PlayGlobalSound(const AudioSample* sample);
+    void PlayLocalSound(const std::string& path, PLVector3 pos, PLVector3 vel = {0, 0, 0}, bool reverb = false,
+            float gain = 1.0f, float pitch = 1.0f);
+    void PlayLocalSound(const AudioSample* sample, PLVector3 pos, PLVector3 vel = {0, 0, 0}, bool reverb = false,
+            float gain = 1.0f, float pitch = 1.0f);
 
     void SilenceSources();
 
     void FreeSources();
     void FreeSamples(bool force = false);
 
-protected:
-private:
-    enum {
+    typedef enum ExtensionType {
         AUDIO_EXT_EFX,
         AUDIO_EXT_SOFT_BUFFER_SAMPLES,
 
         MAX_AUDIO_EXT_SLOTS
+    } ExtType;
+    inline bool SupportsExtension(ExtType extension) {
+        return al_extensions_[extension];
+    }
+
+protected:
+private:
+    bool al_extensions_[MAX_AUDIO_EXT_SLOTS]{
+        false, false
     };
-    bool al_extensions_[MAX_AUDIO_EXT_SLOTS];
-
-    typedef struct AudioSample {
-        AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve);
-        ~AudioSample();
-
-        unsigned int    al_buffer_id_;
-        uint8_t         *data_{};
-        bool            preserve_;
-    } AudioSample;
 
     std::map<std::string, AudioSample> samples_;
     std::set<AudioSource*> sources_;
-
-    std::unique_ptr<AudioSource> global_source_;
-
-    const AudioSample *GetCachedSample(const std::string &path);
+    std::set<AudioSource*> temp_sources_;
 
     static AudioManager *instance_;
+};
+
+class AudioSource {
+public:
+    explicit AudioSource(const AudioSample* sample, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
+    AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel, bool reverb = false, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
+    ~AudioSource();
+
+    void SetSample(const AudioSample* sample);
+    void SetPosition(PLVector3 position);
+    void SetVelocity(PLVector3 velocity);
+    void SetGain(float gain);
+    void SetPitch(float pitch);
+
+    PLVector3 GetPosition() { return position_; }
+    PLVector3 GetVelocity() { return velocity_; }
+    float GetGain() { return gain_; }
+    float GetPitch() { return pitch_; }
+
+    void StartPlaying();
+    void StopPlaying();
+
+    bool IsPlaying();
+    bool IsPaused();
+
+private:
+    PLVector3 position_{0, 0, 0};
+    PLVector3 velocity_{0, 0, 0};
+
+    float gain_{1.0f};
+    float pitch_{1.0f};
+
+    unsigned int al_source_id_{0};
+    const AudioSample* current_sample_{nullptr};
 };

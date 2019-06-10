@@ -99,7 +99,8 @@ struct MapTile {
     unsigned int tex{0};
     unsigned int flip{0};
 
-    float height[4]{0, 0, 0, 0};
+    float       height[4]{0, 0, 0, 0};
+    uint8_t     shading[4]{0, 0, 0, 0};
 };
 
 struct MapChunk {
@@ -124,28 +125,31 @@ public:
 
     const std::string &GetName() { return manifest_->name; }
     const std::string &GetDescription() { return manifest_->description; }
+    MapManifest* GetManifest() { return manifest_; }
 
-    MapChunk *GetChunk(const PLVector2 &pos);
-    MapTile *GetTile(const PLVector2 &pos);
+    MapChunk* GetChunk(const PLVector2 &pos);
+    MapTile* GetTile(const PLVector2 &pos);
 
     float GetHeight(const PLVector2 &pos);
 
-    const PLTexture *GetOverviewTexture() { return overview_; }
+    PLTexture* GetOverviewTexture() { return overview_; }
 
     const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
+
+    void ApplySkyColours(PLColour bottom, PLColour top);
 
 protected:
 private:
     void LoadSpawns(const std::string &path);
     void LoadTiles(const std::string &path);
-    void LoadTextures(const std::string &path);
+    void LoadSky();
 
     void GenerateOverview();
 
     float max_height_{0};
     float min_height_{0};
 
-    const MapManifest *manifest_{nullptr};
+    MapManifest *manifest_{nullptr};
 
     std::vector<MapChunk> chunks_;
     std::vector<MapSpawn> spawns_;

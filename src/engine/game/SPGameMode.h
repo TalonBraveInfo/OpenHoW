@@ -17,8 +17,32 @@
 
 #pragma once
 
-PL_EXTERN_C
+#include "GameMode.h"
 
-void RegisterPackageLoaders(void);
+class SPGameMode : public IGameMode {
+public:
+    SPGameMode();
+    ~SPGameMode() override;
 
-PL_EXTERN_C_END
+    void Tick() override;
+
+    void StartRound() override;
+    void RestartRound() override;
+    void EndRound() override;
+
+    void PlayerJoined(Player* player) override;
+    void PlayerLeft(Player* player) override;
+
+    void SpectatorJoined(Player* player) override;
+    void SpectatorLeft(Player* player) override;
+
+    unsigned int GetMaxSpectators() const override;
+    unsigned int GetMaxPlayers() const override;
+
+protected:
+    void StartTurn() override;
+    void EndTurn() override;
+
+    void SpawnActors() override;
+    void DestroyActors() override;
+};

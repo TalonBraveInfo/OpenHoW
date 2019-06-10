@@ -76,18 +76,9 @@ static CopyPath pc_package_paths[] = {
         {"/Chars/british.mad",          "/chars/pigs/"},    /* actually contains all the pig models */
         {"/Chars/FACES.MTD",            "/chars/faces/"},   /* contains all the face textures       */
 
-        /* hats */
-        {"/Chars/BRITHATS.MAD",         "/chars/hats/"},
-        {"/Chars/FHATS.MAD",            "/chars/hats/"},
-
-        /* teams */
-        {"/Chars/british.mtd",          "/chars/british/"},
-        {"/Chars/AMERICAN.MTD",         "/chars/american/"},
-        {"/Chars/FRENCH.MTD",           "/chars/french/"},
-        {"/Chars/GERMAN.MTD",           "/chars/german/"},
-        {"/Chars/JAPANESE.MTD",         "/chars/japanese/"},
-        {"/Chars/RUSSIAN.MTD",          "/chars/russian/"},
-        {"/Chars/TEAMLARD.MTD",         "/chars/teamlard/"},
+        /* weapons */
+        {"/Chars/WEAPONS.MAD",          "/chars/weapons/"},
+        {"/Chars/WEAPONS.MTD",          "/chars/weapons/"},
 
         /* sky */
         {"/Chars/SKYDOME.MAD",          "/skys/"},
@@ -102,10 +93,6 @@ static CopyPath pc_package_paths[] = {
         {"/Chars/COLDSKY.MAD",          "/skys/coldsky/"},
         {"/Chars/NIGHT1.MAD",           "/skys/night1/"},
 
-        /* weapons */
-        {"/Chars/WEAPONS.MAD",          "/chars/weapons/"},
-        {"/Chars/WEAPONS.MTD",          "/chars/weapons/"},
-
         /* frontend */
         {"/FEBmps/FEBMP.MAD",           "/fe/bitmaps/"},
         {"/Language/Tims/FEFXTIMS.MTD", "/fe/fx/"},
@@ -117,7 +104,45 @@ static CopyPath pc_package_paths[] = {
         {"/Language/Tims/MENUTIMS.MAD", "/fe/dash/menu/"},
         {"/Language/Tims/TBOXTIMS.MAD", "/fe/dash/"},
 
-#if 0
+        {"/Maps/BAY.MAD", "/chars/scenery/"},
+        {"/Maps/bay.mtd", "/chars/scenery/"},
+        {"/Maps/ICE.MAD", "/chars/scenery/"},
+        {"/Maps/ice.mtd", "/chars/scenery/"},
+        {"/Maps/BOOM.MAD", "/chars/scenery/"},
+        {"/Maps/boom.mtd", "/chars/scenery/"},
+        {"/Maps/BUTE.MAD", "/chars/scenery/"},
+        {"/Maps/bute.mtd", "/chars/scenery/"},
+        {"/Maps/CAMP.MAD", "/chars/scenery/"},
+        {"/Maps/camp.mtd", "/chars/scenery/"},
+        {"/Maps/DEMO.MAD", "/chars/scenery/"},
+        {"/Maps/demo.mtd", "/chars/scenery/"},
+        {"/Maps/DEVI.MAD", "/chars/scenery/"},
+        {"/Maps/devi.mtd", "/chars/scenery/"},
+        {"/Maps/DVAL.MAD", "/chars/scenery/"},
+        {"/Maps/dval.mtd", "/chars/scenery/"},
+        {"/Maps/EASY.MAD", "/chars/scenery/"},
+        {"/Maps/easy.mtd", "/chars/scenery/"},
+        {"/Maps/ESTU.MAD", "/chars/scenery/"},
+        {"/Maps/estu.mtd", "/chars/scenery/"},
+        {"/Maps/FOOT.MAD", "/chars/scenery/"},
+        {"/Maps/foot.mtd", "/chars/scenery/"},
+        {"/Maps/GUNS.MAD", "/chars/scenery/"},
+        {"/Maps/guns.mtd", "/chars/scenery/"},
+        {"/Maps/HELL2.MAD", "/chars/scenery/"},
+        {"/Maps/hell2.mtd", "/chars/scenery/"},
+        {"/Maps/HELL3.MAD", "/chars/scenery/"},
+        {"/Maps/hell3.mtd", "/chars/scenery/"},
+        {"/Maps/HILLBASE.MAD", "/chars/scenery/"},
+        {"/Maps/hillbase.mtd", "/chars/scenery/"},
+        {"/Maps/ICEFLOW.MAD", "/chars/scenery/"},
+        {"/Maps/iceflow.mtd", "/chars/scenery/"},
+        {"/Maps/ICE.MAD", "/chars/scenery/"},
+        {"/Maps/ice.mtd", "/chars/scenery/"},
+
+        {"/Maps/ZULUS.MAD", "/chars/scenery/"},
+        {"/Maps/zulus.mtd", "/chars/scenery/"},
+
+#if 1
         {"/Maps/BAY.PTG",        "/campaigns/how/maps/bay/tiles/"},
         {"/Maps/ICE.PTG",        "/campaigns/how/maps/ice/tiles/"},
         {"/Maps/BOOM.PTG",       "/campaigns/how/maps/boom/tiles/"},
@@ -203,6 +228,15 @@ static void ExtractPTGPackage(const char *input_path, const char *output_path) {
     }
 
     FILE *out = NULL;
+    FILE *out_index = NULL;
+
+    char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    snprintf(index_path, sizeof(index_path), "%s/%s.index", output_path, ptg_name);
+    out_index = fopen(index_path, "w");
+    if (out_index == NULL) {
+        LogWarn("failed to open %s for writing!\n", index_path);
+        goto ABORT_PTG;
+    }
 
     uint32_t num_textures;
     if(fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
@@ -222,21 +256,24 @@ static void ExtractPTGPackage(const char *input_path, const char *output_path) {
         sprintf(out_path, "%s/%d.tim", output_path, i);
         out = fopen(out_path, "wb");
         if(out == NULL) {
-            LogInfo("failed to open %s for writing, aborting!\n", out_path);
+            LogInfo("Failed to open %s for writing, aborting!\n", out_path);
             goto ABORT_PTG;
         }
 
         //print(" %s\n", out_path);
         if(fwrite(tim, tim_size, 1, out) != 1) {
-            LogInfo("failed to write %s, aborting!\n", out_path);
+            LogInfo("Failed to write %s, aborting!\n", out_path);
             goto ABORT_PTG;
         }
+
+        fprintf(out_index, "%d\n", i);
 
         u_fclose(out);
     }
 
     ABORT_PTG:
     u_fclose(out);
+    u_fclose(out_index);
     u_fclose(file);
 }
 
@@ -582,25 +619,48 @@ enum {
     VERSION_ENG_PSX,        /* English PSX version */
     VERSION_ENG_PC,         /* English PC version */
     VERSION_ENG_PC_DIGITAL, /* English PC/Digital version */
+    VERSION_GER_PC,         /* German PC version */
+};
+
+enum {
+    REGION_ENG,
+    REGION_GER,
 };
 
 static unsigned int CheckGameVersion(const char *path) {
+    unsigned int region = REGION_ENG;
+    bool is_digital = false;
+
     char fcheck[PL_SYSTEM_MAX_PATH];
     snprintf(fcheck, sizeof(fcheck), "%s/system.cnf", path);
     if(plFileExists(fcheck)) {
-        LogInfo("detected system.cnf, assuming PSX version\n");
+        LogInfo("Detected system.cnf, assuming PSX version\n");
         return VERSION_ENG_PSX;
     }
 
     snprintf(fcheck, sizeof(fcheck), "%s/Data/foxscale.d3d", path);
     if(plFileExists(fcheck)) {
-        LogInfo("detected Data/foxscale.d3d, assuming PC version\n");
+        LogInfo("Detected Data/foxscale.d3d, assuming PC version\n");
+
+        /* todo: need better method to determine this */
+        snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/fetext.bin", path);
+        unsigned int fetext_size = plGetFileSize(fcheck);
+        snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/gtext.bin", path);
+        unsigned int gtext_size = plGetFileSize(fcheck);
+        if(fetext_size == 9216 && gtext_size == 4608) {
+            region = REGION_GER;
+        }
+
         snprintf(fcheck, sizeof(fcheck), "%s/MUSIC/Track02.ogg", path);
         if(plFileExists(fcheck)) {
-            LogInfo("detected MUSIC/Track02.ogg, assuming GOG version\n");
+            LogInfo("Detected MUSIC/Track02.ogg, assuming GOG version\n");
             return VERSION_ENG_PC_DIGITAL;
         } else {
-            return VERSION_ENG_PC;
+            if(region == REGION_GER) {
+                return VERSION_GER_PC;
+            } else {
+                return VERSION_ENG_PC;
+            }
         }
     }
 
@@ -648,7 +708,7 @@ static void ProcessCopyPaths(const char *in, const char *out, const CopyPath *pa
 }
 
 int main(int argc, char **argv) {
-    if(argc < 1) {
+    if(argc == 1) {
         printf("invalid number of arguments ...\n"
                "  extractor <game_path> -<out_path>\n");
         return EXIT_SUCCESS;
@@ -720,6 +780,7 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
 
+        case VERSION_GER_PC:
         case VERSION_ENG_PC: {
             ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
             ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));

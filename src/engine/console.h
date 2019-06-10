@@ -26,6 +26,9 @@ extern PLConsoleVariable *cv_debug_input;
 extern PLConsoleVariable *cv_debug_cache;
 
 extern PLConsoleVariable *cv_camera_mode;
+extern PLConsoleVariable *cv_camera_fov;
+extern PLConsoleVariable *cv_camera_near;
+extern PLConsoleVariable *cv_camera_far;
 
 extern PLConsoleVariable *cv_base_path;
 extern PLConsoleVariable *cv_campaign_path;
@@ -38,6 +41,7 @@ extern PLConsoleVariable *cv_display_use_window_aspect;
 extern PLConsoleVariable *cv_display_ui_scale;
 
 extern PLConsoleVariable *cv_graphics_cull;
+extern PLConsoleVariable *cv_graphics_draw_world;
 
 extern PLConsoleVariable *cv_audio_volume;
 extern PLConsoleVariable *cv_audio_volume_sfx;

@@ -36,7 +36,7 @@
 #define ENGINE_LOG          "debug"
 
 #define ENGINE_MAJOR_VERSION    0
-#define ENGINE_MINOR_VERSION    1
+#define ENGINE_MINOR_VERSION    2
 #define ENGINE_PATCH_VERSION    0
 
 #define TICKS_PER_SECOND    25
@@ -57,7 +57,7 @@ static inline const char *GetVersionString(void) {
 }
 
 #ifdef __cplusplus
-class BaseGameMode;
+class SPGameMode;
 #else
 typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
@@ -69,11 +69,21 @@ typedef struct EngineState {
     /* server / client logic */
     bool is_host;
 
+    unsigned int sys_ticks;
+    unsigned int last_sys_tick;
+
     unsigned int sim_ticks;
-    unsigned int last_sim_tick;
 
     unsigned int draw_ticks;
     unsigned int last_draw_ms;
+
+    struct {
+        unsigned int num_chunks_drawn;
+        unsigned int num_actors_drawn;
+        unsigned int num_triangles_total;
+
+        PLColour clear_colour;
+    } gfx;
 } EngineState;
 extern EngineState g_state;
 

@@ -37,25 +37,33 @@ static void OALCheckErrors() {
     if(err != AL_NO_ERROR) {
         /* alut is apparently deprecated in OpenAL Soft, yay... */
         /*Error("%s\n", alutGetErrorString(err));*/
+        
+        LogWarn("OpenAL: %s\n", alGetString(err));
 
         switch(err) {
-            default: Error("unknown openal error, aborting!\n");
-            case AL_OUT_OF_MEMORY: Error("openal ran out of memory, aborting!\n");
-            case AL_INVALID_VALUE: Error("invalid value passed to openal, aborting!\n");
-            case AL_INVALID_OPERATION: Error("invalid operation performed with openal, aborting!\n");
+            default: Error("Unknown openal error, aborting!\n");
+            case AL_OUT_OF_MEMORY: Error("Openal ran out of memory, aborting!\n");
+            case AL_INVALID_VALUE: Error("Invalid value passed to openal, aborting!\n");
+            case AL_INVALID_OPERATION: Error("Invalid operation performed with openal, aborting!\n");
+            case AL_INVALID_ENUM: Error("Invalid enum passed to openal, aborting!\n");
+            case AL_INVALID_NAME: Error("Invalid name passed to openal, aborting!\n");
         }
     }
 }
 
+unsigned int reverb_effect_slot = 0;
+unsigned int reverb_sound_slot = 0;
+
 /************************************************************/
 /* Audio Source */
 
-AudioSource::AudioSource(unsigned int al_sample, float gain, float pitch, bool looping) :
-        AudioSource(al_sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), gain, pitch, looping) {
-    alSourcei(al_source_id_, AL_SOURCE_RELATIVE, 1);
+AudioSource::AudioSource(const AudioSample* sample, float gain, float pitch, bool looping) :
+        AudioSource(sample, PLVector3(0, 0, 0), PLVector3(0, 0, 0), false, gain, pitch, looping) {
+    alSourcei(al_source_id_, AL_SOURCE_RELATIVE, AL_TRUE);
 }
 
-AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, float gain, float pitch, bool looping) {
+AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel,
+        bool reverb, float gain, float pitch, bool looping) {
     alGenSources(1, &al_source_id_);
     OALCheckErrors();
 
@@ -66,16 +74,58 @@ AudioSource::AudioSource(unsigned int al_sample, PLVector3 pos, PLVector3 vel, f
 
     alSourcei(al_source_id_, AL_LOOPING, looping);
     OALCheckErrors();
-
-    alSourceQueueBuffers(al_source_id_, 1, &al_sample);
+    alSourcef(al_source_id_, AL_REFERENCE_DISTANCE, 300.0f);
     OALCheckErrors();
+    alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
+    OALCheckErrors();
+
+    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtType::AUDIO_EXT_EFX)) {
+        alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
+        OALCheckErrors();
+    }
+
+    if(sample != nullptr) {
+        SetSample(sample);
+    }
 
     AudioManager::GetInstance()->sources_.insert(this);
 }
 
 AudioSource::~AudioSource() {
-    AudioManager::GetInstance()->sources_.erase(this);
+    StopPlaying();
+    
+    if(current_sample_ != nullptr) {
+        unsigned int buf = current_sample_->al_buffer_id_;
+        alSourceUnqueueBuffers(al_source_id_, 1, &buf);
+    }
+    
+    alSourcei(al_source_id_, AL_BUFFER, 0);
     alDeleteSources(1, &al_source_id_);
+    
+    AudioManager::GetInstance()->sources_.erase(this);
+}
+
+void AudioSource::SetSample(const AudioSample* sample) {
+    if(sample == nullptr) {
+        LogWarn("Invalid sample passed, aborting!\n");
+        return;
+    }
+
+    if(sample == current_sample_) {
+        return;
+    }
+
+    if(current_sample_ != nullptr && sample != current_sample_) {
+        unsigned int buf = current_sample_->al_buffer_id_;
+        alSourceUnqueueBuffers(al_source_id_, 1, &buf);
+        u_assert(buf == current_sample_->al_buffer_id_);
+        OALCheckErrors();
+    }
+
+    alSourceQueueBuffers(al_source_id_, 1, &sample->al_buffer_id_);
+    OALCheckErrors();
+
+    current_sample_ = sample;
 }
 
 void AudioSource::SetPosition(PLVector3 position) {
@@ -116,6 +166,18 @@ void AudioSource::StopPlaying() {
     }
 
     alSourceStop(al_source_id_);
+}
+
+bool AudioSource::IsPlaying() {
+    int state;
+    alGetSourcei(al_source_id_, AL_SOURCE_STATE, &state);
+    return (state == AL_PLAYING);
+}
+
+bool AudioSource::IsPaused() {
+    int state;
+    alGetSourcei(al_source_id_, AL_SOURCE_STATE, &state);
+    return (state == AL_PAUSED);
 }
 
 /************************************************************/
@@ -172,14 +234,6 @@ AudioManager::AudioManager() {
         al_extensions_[AUDIO_EXT_EFX] = true;
     }
 
-#if 0
-    int attr[]={
-            ALC_FREQUENCY, 44100, /* todo: tune this */
-            ALC_MAX_AUXILIARY_SENDS, 4,
-            0
-    };
-#endif
-
     ALCcontext *context = alcCreateContext(device, nullptr);
     if(context == nullptr || !alcMakeContextCurrent(context)) {
         Error("failed to create audio context, aborting audio initialisation!\n");
@@ -192,41 +246,67 @@ AudioManager::AudioManager() {
 
     alDopplerFactor(4.f);
     alDopplerVelocity(350.f);
+
+    if(al_extensions_[AUDIO_EXT_EFX]) {
+        alGenEffects(1, &reverb_effect_slot);
+        alEffecti(reverb_effect_slot, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
+        const EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON;
+        // EFX_REVERB_PRESET_OUTDOORS_DEEPCANYON
+        // EFX_REVERB_PRESET_OUTDOORS_VALLEY
+        alEffectf(reverb_effect_slot, AL_REVERB_DENSITY, reverb.flDensity);
+        alEffectf(reverb_effect_slot, AL_REVERB_DIFFUSION, reverb.flDiffusion);
+        alEffectf(reverb_effect_slot, AL_REVERB_GAIN, reverb.flGain);
+        alEffectf(reverb_effect_slot, AL_REVERB_GAINHF, reverb.flGainHF);
+        alEffectf(reverb_effect_slot, AL_REVERB_DECAY_TIME, reverb.flDecayTime);
+        alEffectf(reverb_effect_slot, AL_REVERB_DECAY_HFRATIO, reverb.flDecayHFRatio);
+        alEffectf(reverb_effect_slot, AL_REVERB_REFLECTIONS_GAIN, reverb.flReflectionsGain);
+        alEffectf(reverb_effect_slot, AL_REVERB_REFLECTIONS_DELAY, reverb.flReflectionsDelay);
+        alEffectf(reverb_effect_slot, AL_REVERB_LATE_REVERB_GAIN, reverb.flLateReverbGain);
+        alEffectf(reverb_effect_slot, AL_REVERB_LATE_REVERB_DELAY, reverb.flLateReverbDelay);
+        alEffectf(reverb_effect_slot, AL_REVERB_AIR_ABSORPTION_GAINHF, reverb.flAirAbsorptionGainHF);
+        alEffectf(reverb_effect_slot, AL_REVERB_ROOM_ROLLOFF_FACTOR, reverb.flRoomRolloffFactor);
+        alEffecti(reverb_effect_slot, AL_REVERB_DECAY_HFLIMIT, reverb.iDecayHFLimit);
+        alGenAuxiliaryEffectSlots(1, &reverb_sound_slot);
+        alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
+    }
 }
 
 AudioManager::~AudioManager() {
     LogInfo("shutting down audio sub-system...\n");
 
     FreeSources();
-    FreeSamples();
+
+    if(al_extensions_[AUDIO_EXT_EFX]) {
+        alDeleteAuxiliaryEffectSlots(1, &reverb_sound_slot);
+        alDeleteEffects(1, &reverb_effect_slot);
+    }
+
+    FreeSamples(true);
 
     ALCcontext *context = alcGetCurrentContext();
     if(context != nullptr) {
-        alcMakeContextCurrent(nullptr);
-        alcDestroyContext(context);
-
         ALCdevice *device = alcGetContextsDevice(context);
         if(device != nullptr) {
             alcCloseDevice(device);
         }
+
+        alcMakeContextCurrent(nullptr);
+        alcDestroyContext(context);
     }
 }
 
-void AudioManager::CacheSample(const std::string &path, bool preserve) {
+const AudioSample* AudioManager::CacheSample(const std::string &path, bool preserve) {
     auto i = samples_.find(path);
     if(i != samples_.end()) {
-        LogWarn("attempted to double cache audio sample, \"%s\"!\n", path.c_str());
-        return;
+        return &(i->second);
     }
-
-    /* todo: ensure the path is under <basedir/campaign>/audio/ ? */
 
     SDL_AudioSpec spec;
     uint32_t length;
     uint8_t *buffer;
     if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
-        LogWarn("failed to load \"%s\"!\n", path.c_str());
-        return;
+        LogWarn("Failed to load \"%s\"!\n", path.c_str());
+        return nullptr;
     }
 
     /* translate the spec over to oal
@@ -254,23 +334,25 @@ void AudioManager::CacheSample(const std::string &path, bool preserve) {
     if(format == 0) {
         LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
         SDL_FreeWAV(buffer);
-        return;
+        return nullptr;
     }
 
-    samples_.emplace(
+    auto sample = samples_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(path),
             std::forward_as_tuple(buffer, spec.freq, format, length, preserve)
             );
+
+    return &(sample.first->second);
 }
 
-const AudioManager::AudioSample *AudioManager::GetCachedSample(const std::string &path) {
+const AudioSample* AudioManager::GetCachedSample(const std::string &path) {
     auto i = samples_.find(path);
     if(i == samples_.end()) {
         CacheSample(path, false);
         i = samples_.find(path);
         if(i == samples_.end()) {
-            Error("failed to load sample, \"%s\"!\n", path.c_str());
+            Error("Failed to load sample, \"%s\"!\n", path.c_str());
             /* todo: in future, fall back to first loaded sound and continue? if it exists... */
         }
     }
@@ -279,12 +361,17 @@ const AudioManager::AudioSample *AudioManager::GetCachedSample(const std::string
 }
 
 AudioSource *AudioManager::CreateSource(const std::string &path, float gain, float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path)->al_buffer_id_, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path), gain, pitch, looping);
 }
 
-AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, float gain,
+AudioSource *AudioManager::CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
                                         float pitch, bool looping) {
-    return new AudioSource(GetCachedSample(path)->al_buffer_id_, pos, vel, gain, pitch, looping);
+    return new AudioSource(GetCachedSample(path), pos, vel, reverb, gain, pitch, looping);
+}
+
+AudioSource *AudioManager::CreateSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel, bool reverb,
+        float gain, float pitch, bool looping) {
+    return new AudioSource(sample, pos, vel, reverb, gain, pitch, looping);
 }
 
 void AudioManager::Tick() {
@@ -298,41 +385,84 @@ void AudioManager::Tick() {
     plAnglesAxes(angles, &left, &up, &forward);
 
     float ori[6];
-    ori[0] = forward.x; ori[3] = up.x;
+    ori[0] = forward.z; ori[3] = up.x;
     ori[1] = forward.y; ori[4] = up.y;
-    ori[2] = forward.z; ori[5] = up.z;
+    ori[2] = forward.x; ori[5] = up.z;
 
     alListener3f(AL_POSITION, position.x, position.y, position.z);
     alListenerfv(AL_ORIENTATION, ori);
+    alListenerf(AL_GAIN, cv_audio_volume->f_value);
+
+    // ensure destruction of temporary sources
+    for(auto source = temp_sources_.begin(); source != temp_sources_.end();) {
+        if((*source)->IsPlaying() || (*source)->IsPaused()) {
+            ++source;
+            continue;
+        }
+
+        // this will automatically kill it everywhere
+        delete (*source);
+        source = temp_sources_.erase(source);
+    }
 }
 
-void AudioManager::PlayGlobalSound(const std::string &path) {
-    global_source_.reset(CreateSource(path));
-    global_source_->StartPlaying();
+void AudioManager::PlayGlobalSound(const std::string& path) {
+    const AudioSample* sample = GetCachedSample(path);
+    PlayGlobalSound(sample);
+}
+
+void AudioManager::PlayGlobalSound(const AudioSample* sample) {
+    if(sample == nullptr) {
+        return;
+    }
+
+    auto* source = new AudioSource(sample);
+    temp_sources_.insert(source);
+    source->StartPlaying();
+}
+
+void AudioManager::PlayLocalSound(const std::string& path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+                                  float pitch) {
+    const AudioSample* sample = GetCachedSample(path);
+    PlayLocalSound(sample, pos, vel, reverb, gain, pitch);
+}
+
+void AudioManager::PlayLocalSound(const AudioSample* sample, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+                                  float pitch) {
+    if(sample == nullptr) {
+        return;
+    }
+
+    auto* source = new AudioSource(sample, pos, vel, reverb, gain, pitch);
+    temp_sources_.insert(source);
+    source->StartPlaying();
 }
 
 void AudioManager::SilenceSources() {
     for(auto sound : sources_) {
         sound->StopPlaying();
     }
-
-    global_source_->StopPlaying();
 }
 
 /* Will invalidate ALL references to AudioSource objects.
  * Only use in contexts where this is safe. */
 void AudioManager::FreeSources() {
-    LogInfo("freeing all audio sources...\n");
+    LogInfo("Freeing all audio sources...\n");
 
     SilenceSources();
-    global_source_.reset(nullptr);
+
+    for(auto source : sources_) {
+        delete source;
+    }
+
     sources_.clear();
+    temp_sources_.clear();
 }
 
 void AudioManager::FreeSamples(bool force) {
     u_assert(sources_.empty(), "audio sources weren't emptied!\n");
 
-    LogInfo("freeing all audio samples...\n");
+    LogInfo("Freeing all audio samples...\n");
 
     if(force) {
         /* clears absolutely everything */
@@ -352,14 +482,14 @@ void AudioManager::FreeSamples(bool force) {
 /************************************************************/
 /* Audio Sample */
 
-AudioManager::AudioSample::~AudioSample() {
+AudioSample::~AudioSample() {
     alDeleteBuffers(1, &al_buffer_id_);
     OALCheckErrors();
 
     SDL_FreeWAV(data_);
 }
 
-AudioManager::AudioSample::AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve) {
+AudioSample::AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve) {
     alGenBuffers(1, &al_buffer_id_);
     OALCheckErrors();
     alBufferData(al_buffer_id_, format, data, length, freq);

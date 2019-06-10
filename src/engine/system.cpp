@@ -84,12 +84,6 @@ void System_SetClipboardText(void*, const char *text) {
 void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ACCUM_ALPHA_SIZE, 8);
 
 #ifdef _DEBUG
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -99,10 +93,12 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-#if 1
+#if 0
     if(SDL_GL_SetSwapInterval(-1) != 0) {
         SDL_GL_SetSwapInterval(1);
     }
+#else
+    SDL_GL_SetSwapInterval(0);
 #endif
 
     unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
@@ -148,7 +144,6 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
             LogInfo("No display modes founds, failed to generate video presets");
         }
     }
-
 
     SDL_SetWindowMinimumSize(window, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
@@ -472,6 +467,8 @@ void System_PollEvents() {
                     io.AddInputCharactersUTF8(event.text.text);
                     break;
                 }
+
+                Input_AddTextCharacter(event.text.text);
             } break;
 
             case SDL_MOUSEBUTTONUP:
@@ -535,16 +532,18 @@ void System_PollEvents() {
 
             case SDL_CONTROLLERAXISMOTION: {
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000) {
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, true);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_L2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000) {
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_L2, false);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_L2, false);
                 }
 
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value > 1000) {
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, true);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_R2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value <= 1000){
-                    Input_SetButtonState((unsigned int) event.cbutton.which, PORK_BUTTON_R2, false);
+                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_R2, false);
                 }
+
+                Input_SetAxisState(event.caxis.which, event.caxis.axis, event.caxis.value);
             } break;
 
             case SDL_QUIT: {

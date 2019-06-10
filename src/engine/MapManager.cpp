@@ -22,8 +22,8 @@
 #include "Map.h"
 #include "script/ScriptConfig.h"
 
-#include "game/Game.h"
-#include "game/BaseGameMode.h"
+#include "game/GameManager.h"
+#include "game/SPGameMode.h"
 
 MapManager *MapManager::instance_ = nullptr;
 
@@ -43,20 +43,19 @@ void MapManager::RegisterManifest(const std::string &path) {
     manifest.path = path;
     try {
         ScriptConfig config(path);
-        manifest.name           = config.GetStringProperty("name");
-        manifest.author         = config.GetStringProperty("author");
-        manifest.description    = config.GetStringProperty("description");
-
-        manifest.sky            = config.GetStringProperty("sky");
-        manifest.modes          = config.GetArrayStrings("modes");
-
-        manifest.ambient_colour = config.GetColourProperty("ambient_colour", PLColour(255, 255, 255));
-        manifest.sun_colour     = config.GetColourProperty("sun_colour", PLColour(255, 255, 255));
-        manifest.sun_yaw        = config.GetFloatProperty("sun_yaw");
-        manifest.sun_pitch      = config.GetFloatProperty("sun_pitch");
-
-        manifest.temperature    = config.GetStringProperty("temperature", "hot");
-        manifest.time           = config.GetStringProperty("time", "day");
+        manifest.name               = config.GetStringProperty("name", manifest.name);
+        manifest.author             = config.GetStringProperty("author", manifest.author);
+        manifest.description        = config.GetStringProperty("description", manifest.description);
+        manifest.sky                = config.GetStringProperty("sky", manifest.sky);
+        manifest.modes              = config.GetArrayStrings("modes");
+        manifest.ambient_colour     = config.GetColourProperty("ambientColour", manifest.ambient_colour);
+        manifest.sky_colour_top     = config.GetColourProperty("skyColourTop", manifest.sky_colour_top);
+        manifest.sky_colour_bottom  = config.GetColourProperty("skyColourBottom", manifest.sky_colour_bottom);
+        manifest.sun_colour         = config.GetColourProperty("sunColour", manifest.sun_colour);
+        manifest.sun_yaw            = config.GetFloatProperty("sunYaw", manifest.sun_yaw);
+        manifest.sun_pitch          = config.GetFloatProperty("sunPitch", manifest.sun_pitch);
+        manifest.temperature        = config.GetStringProperty("temperature", manifest.temperature);
+        manifest.time               = config.GetStringProperty("time", manifest.time);
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }
@@ -78,14 +77,16 @@ void MapManager::RegisterManifests() {
     plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 
-const MapManifest *MapManager::GetManifest(const std::string &name) {
+MapManifest *MapManager::GetManifest(const std::string &name) {
     auto manifest = manifests_.find(name);
     if(manifest != manifests_.end()) {
         return &manifest->second;
     }
 
     LogWarn("Failed to get manifest for \"%s\"!\n", name.c_str());
-    return nullptr;
+
+    static MapManifest default_descript;
+    return &default_descript;
 }
 
 void MapManager::MapCommand(unsigned int argc, char **argv) {
@@ -94,24 +95,13 @@ void MapManager::MapCommand(unsigned int argc, char **argv) {
         return;
     }
 
+    std::string mode = "singleplayer";
     const MapManifest *desc = GetInstance()->GetManifest(argv[1]);
-    if(desc == nullptr) {
-        LogWarn("Failed to find manifest for \"%s\"!\n", argv[1]);
-        return;
+    if(desc != nullptr && !desc->modes.empty()) {
+        mode = desc->modes[0];
     }
 
-    if(desc->modes.empty()) {
-        LogWarn("No modes specified for \"%s\"!\n", argv[1]);
-        return;
-    }
-
-    // set it to the first mode in the list for now
-    if(!SetGameMode(desc->modes[0])) {
-        return;
-    }
-
-    // now start it up!
-    GetGameMode()->StartMode(argv[1]);
+    GameManager::GetInstance()->LoadMap(argv[1]);
 }
 
 void MapManager::MapsCommand(unsigned int argc, char **argv) {
