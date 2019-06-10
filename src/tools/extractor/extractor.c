@@ -708,7 +708,7 @@ static void ProcessCopyPaths(const char *in, const char *out, const CopyPath *pa
 }
 
 int main(int argc, char **argv) {
-    if(argc < 1) {
+    if(argc == 1) {
         printf("invalid number of arguments ...\n"
                "  extractor <game_path> -<out_path>\n");
         return EXIT_SUCCESS;
