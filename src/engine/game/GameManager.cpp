@@ -80,10 +80,10 @@ void GameManager::LoadMap(const std::string &name) {
     for(unsigned int i = 1, idx = 0; i < 4; ++i) {
         if(i < 3) {
             ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample(
-                    "/audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
+                    "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
         }
-        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_s" + std::to_string(i) + ".wav", false);
-        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_l" + std::to_string(i) + ".wav", false);
+        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
+        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
     }
 
     ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
