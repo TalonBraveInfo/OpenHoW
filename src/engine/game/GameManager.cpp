@@ -42,16 +42,15 @@ void GameManager::Tick() {
 
     if(ambient_emit_delay_ < g_state.sim_ticks) {
         const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
-        u_assert(sample != nullptr, "Audio sample was unexpectedly freed!\n");
+        if(sample != nullptr) {
+            PLVector3 position = {
+                    plGenerateRandomf(MAP_PIXEL_WIDTH),
+                    active_map_->GetMaxHeight(),
+                    plGenerateRandomf(MAP_PIXEL_WIDTH)
+            };
+            AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, 0.5f);
+        }
 
-        float volume = 0.5f + (rand() % 10 / 1.0f);
-        LogDebug("Volume: %f\n", volume);
-        PLVector3 position = {
-                static_cast<float>(rand() % MAP_PIXEL_WIDTH), 0,
-                static_cast<float>(rand() % MAP_PIXEL_WIDTH)
-        };
-
-        AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, volume);
         ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
     }
 
