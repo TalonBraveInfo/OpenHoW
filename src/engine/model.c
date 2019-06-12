@@ -324,7 +324,7 @@ const PLModel* Model_GetDefaultModel(void) {
 void CacheModelData(void) {
     memset(&model_cache, 0, sizeof(model_cache));
 
-    model_cache.pig_skeleton = Hir_LoadFile(u_find("/chars/pig.hir"));
+    model_cache.pig_skeleton = Hir_LoadFile(u_find("chars/pig.hir"));
     if(model_cache.pig_skeleton == NULL) {
         Error("Failed to load skeleton, aborting!\n");
     }
@@ -334,7 +334,7 @@ void CacheModelData(void) {
     LogInfo("Caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    strncpy(mcap_path, u_find("/chars/mcap.mad"), sizeof(mcap_path));
+    strncpy(mcap_path, u_find("chars/mcap.mad"), sizeof(mcap_path));
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later

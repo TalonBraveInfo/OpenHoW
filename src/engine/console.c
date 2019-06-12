@@ -74,7 +74,7 @@ static void AddCommand(unsigned int argc, char *argv[]) {
             return;
         }
     }
-    LogWarn("invalid ADD command, %s!\n", cmd);
+    LogWarn("Invalid ADD command, %s!\n", cmd);
 }
 
 static void SetCommand(unsigned int argc, char *argv[]) {
@@ -90,7 +90,7 @@ static void SetCommand(unsigned int argc, char *argv[]) {
             return;
         }
     }
-    LogWarn("invalid SET command, %s!\n", cmd);
+    LogWarn("Invalid SET command, %s!\n", cmd);
 
 #if 0
     for(unsigned int i = 1; i < argc; ++i) {
