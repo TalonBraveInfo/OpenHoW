@@ -18,6 +18,7 @@
 #include "engine.h"
 #include "audio.h"
 #include "frontend.h"
+#include "model.h"
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -476,6 +477,34 @@ void AudioManager::FreeSamples(bool force) {
                 ++sample;
             }
         }
+    }
+}
+
+/** Debug function for drawing audio sources
+ *
+ */
+void AudioManager::DrawSources() {
+    if(!cv_graphics_draw_audio_sources->b_value) {
+        return;
+    }
+
+    PLModel* sprite = Model_GetDefaultModel();
+    PLMesh* mesh = sprite->levels[0].meshes[0];
+    plSetMeshUniformColour(mesh, PLColour(0, 255, 255, 255));
+    for(auto source : sources_) {
+        if(!source->IsPlaying() || source->IsPaused()) {
+            continue;
+        }
+
+        sprite->model_matrix = plTranslateMatrix(source->GetPosition());
+        plDrawModel(sprite);
+    }
+    plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+}
+
+extern "C" {
+    void DrawAudioSources(void) {
+        AudioManager::GetInstance()->DrawSources();
     }
 }
 

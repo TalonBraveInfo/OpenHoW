@@ -169,7 +169,7 @@ void RegisterModelLoaders(void);
 PLModel *Model_LoadFile(const char *path, bool abort_on_fail);
 void Model_DestroyHandle(PLModel* model);
 
-const PLModel* Model_GetDefaultModel(void);
+PLModel* Model_GetDefaultModel(void);
 
 void Display_ClearTextureIndex(unsigned int id);
 

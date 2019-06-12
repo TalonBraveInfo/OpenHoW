@@ -803,6 +803,8 @@ void Display_SetupDraw(double delta) {
 
 void DrawActors(void); /* declared in engine.cpp */
 void DrawMap(void); /* declared in engine.cpp */
+void DrawAudioSources(void); /* declared in audio.cpp */
+
 void Display_DrawScene(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
 
@@ -810,6 +812,8 @@ void Display_DrawScene(void) {
     DrawActors();
     DrawParticles(cur_delta);
 
+    /* debug methods */
+    DrawAudioSources();
     DEBUGDrawModel();
 }
 

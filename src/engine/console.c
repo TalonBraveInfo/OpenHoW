@@ -283,6 +283,7 @@ PLConsoleVariable *cv_display_ui_scale = NULL;
 
 PLConsoleVariable *cv_graphics_cull = NULL;
 PLConsoleVariable *cv_graphics_draw_world = NULL;
+PLConsoleVariable *cv_graphics_draw_audio_sources = NULL;
 
 PLConsoleVariable *cv_audio_volume = NULL;
 PLConsoleVariable *cv_audio_volume_sfx = NULL;
@@ -345,6 +346,7 @@ void Console_Initialize(void) {
 
     rvar(cv_graphics_cull, false, "true", pl_bool_var, NULL, "toggles culling of visible objects");
     rvar(cv_graphics_draw_world, false, "true", pl_bool_var, NULL, "toggles rendering of world");
+    rvar(cv_graphics_draw_audio_sources, false, "false", pl_bool_var, NULL, "toggles rendering of audio sources");
 
     rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
     rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
