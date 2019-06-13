@@ -89,7 +89,7 @@ void Engine_Initialize(void) {
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
-        // otherwise default to Hogs of War's campaign
+        // otherwise default to base campaign
         var = "how";
     }
 

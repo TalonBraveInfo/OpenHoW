@@ -502,10 +502,9 @@ void AudioManager::DrawSources() {
     plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 }
 
-extern "C" {
-    void DrawAudioSources(void) {
-        AudioManager::GetInstance()->DrawSources();
-    }
+// Temporary interface, since graphics sub-system is written in C :^)
+extern "C" void DrawAudioSources(void) {
+    AudioManager::GetInstance()->DrawSources();
 }
 
 /************************************************************/
