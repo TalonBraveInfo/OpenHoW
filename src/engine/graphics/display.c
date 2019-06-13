@@ -580,15 +580,15 @@ void Display_Initialize(void) {
         Display_ClearTextureIndex(i);
     }
 
-    Display_CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
-    Display_CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
-    Display_CacheTextureIndex("/chars/french/", "french.index", TEXTURE_INDEX_FRENCH);
-    Display_CacheTextureIndex("/chars/german/", "german.index", TEXTURE_INDEX_GERMAN);
-    Display_CacheTextureIndex("/chars/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
-    Display_CacheTextureIndex("/chars/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
-    Display_CacheTextureIndex("/chars/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
+    Display_CacheTextureIndex("chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
+    Display_CacheTextureIndex("chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
+    Display_CacheTextureIndex("chars/french/", "french.index", TEXTURE_INDEX_FRENCH);
+    Display_CacheTextureIndex("chars/german/", "german.index", TEXTURE_INDEX_GERMAN);
+    Display_CacheTextureIndex("chars/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
+    Display_CacheTextureIndex("chars/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
+    Display_CacheTextureIndex("chars/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
 
-    Display_CacheTextureIndex("/chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
+    Display_CacheTextureIndex("chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 }
@@ -803,6 +803,8 @@ void Display_SetupDraw(double delta) {
 
 void DrawActors(void); /* declared in engine.cpp */
 void DrawMap(void); /* declared in engine.cpp */
+void DrawAudioSources(void); /* declared in audio.cpp */
+
 void Display_DrawScene(void) {
     plSetShaderProgram(programs[SHADER_DEFAULT]);
 
@@ -810,6 +812,8 @@ void Display_DrawScene(void) {
     DrawActors();
     DrawParticles(cur_delta);
 
+    /* debug methods */
+    DrawAudioSources();
     DEBUGDrawModel();
 }
 

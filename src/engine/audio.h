@@ -103,6 +103,8 @@ public:
     void FreeSources();
     void FreeSamples(bool force = false);
 
+    void DrawSources();
+
     typedef enum ExtensionType {
         AUDIO_EXT_EFX,
         AUDIO_EXT_SOFT_BUFFER_SAMPLES,
