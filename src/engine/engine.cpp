@@ -26,6 +26,7 @@
 #include "input.h"
 #include "frontend.h"
 #include "audio.h"
+#include "MapManager.h"
 
 #include "game/SPGameMode.h"
 #include "script/script.h"
@@ -101,6 +102,7 @@ void Engine_Initialize(void) {
     AudioManager::GetInstance();
     GameManager::GetInstance();
     FE_Initialize();
+    MapManager::GetInstance();
 
     CacheModelData();
 
@@ -178,3 +180,4 @@ extern "C" void DrawMap(void) {
 
     map->Draw();
 }
+
