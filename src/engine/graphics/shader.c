@@ -151,8 +151,6 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
 
     plLinkShaderProgram(program);
 
-    plRegisterShaderProgramUniforms(program);
-
     return program;
 }
 
@@ -184,6 +182,6 @@ void Shaders_Shutdown(void) {
         if(programs[i] == NULL) {
             continue;
         }
-        plDeleteShaderProgram(programs[i], true);
+        plDestroyShaderProgram(programs[i], true);
     }
 }

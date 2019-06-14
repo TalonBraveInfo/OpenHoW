@@ -558,7 +558,7 @@ void Display_Initialize(void) {
      * one fails to load */
 
     PLColour pbuffer[]={{ 255, 255, 0  , 255 }, { 0  , 255, 255, 255 }, { 0  , 255, 255, 255 }, { 255, 255, 0  , 255 }};
-    PLImage* image = plNewImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
+    PLImage* image = plCreateImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
     if(image != NULL) {
         default_texture = plCreateTexture();
         default_texture->flags &= PL_TEXTURE_FLAG_NOMIPS;

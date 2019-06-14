@@ -241,7 +241,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
 
     PLMesh** model_meshes = u_alloc(1, sizeof(PLMesh*), true);
     model_meshes[0] = mesh;
-    PLModel *model = plNewSkeletalModel(
+    PLModel *model = plCreateSkeletalModel(
             &(PLModelLod){model_meshes, 1}, 1,
             skeleton, model_cache.pig_skeleton->num_bones, BONE_INDEX_PELVIS);
     if(model == NULL) {
@@ -504,7 +504,7 @@ void CacheModelData(void) {
     plSetMeshUniformColour(default_mesh, PLColour(255, 0, 0, 255));
     plSetMeshShaderProgram(default_mesh, programs[SHADER_UNTEXTURED]);
     plUploadMesh(default_mesh);
-    default_model = plNewBasicStaticModel(default_mesh);
+    default_model = plCreateBasicStaticModel(default_mesh);
 
     model_cache.pigs[PIG_CLASS_ACE]         = Model_LoadFile("chars/pigs/ac_hi", true);
     model_cache.pigs[PIG_CLASS_COMMANDO]    = Model_LoadFile("chars/pigs/sb_hi", true);

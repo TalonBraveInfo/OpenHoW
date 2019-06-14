@@ -488,7 +488,7 @@ void Map::LoadTiles(const std::string &path) {
             chunk_mesh->texture = Display_GetCachedTexture(TEXTURE_INDEX_MAP);
 
             // attach the mesh to our model
-            current_chunk.model = plNewBasicStaticModel(chunk_mesh);
+            current_chunk.model = plCreateBasicStaticModel(chunk_mesh);
             if(current_chunk.model == nullptr) {
                 Error("Failed to create map model (%s), aborting!\n", plGetError());
             }
