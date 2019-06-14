@@ -338,7 +338,7 @@ static void ExtractMADPackage(const char *input_path, const char *output_path) {
     FILE *out = NULL;
     unsigned int lowest_offset = UINT32_MAX;
     unsigned int cur_index = 0;
-    long position;
+    unsigned long position;
     do {
         MADIndex index; cur_index++;
         if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
