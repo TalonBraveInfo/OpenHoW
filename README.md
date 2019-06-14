@@ -69,7 +69,7 @@ CMakeLists found under the root OpenHoW directory and compile the rest of the pr
 
 #### Windows
 
-On Windows, the project has been successfully compiled against MinGW 64-bit. One additional step
+On Windows, the project has been successfully compiled against [MinGW 64-bit](https://mingw-w64.org/doku.php/download/mingw-builds). One additional step
 you may need to perform is to download a copy of the [SDL2 development libraries](https://www.libsdl.org/release/SDL2-devel-2.0.9-mingw.tar.gz)
 for MinGW 64-bit.
 
