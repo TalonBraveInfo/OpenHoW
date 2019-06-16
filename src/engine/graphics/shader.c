@@ -22,7 +22,6 @@
 #include "shader.h"
 
 #define GLSL(...) #__VA_ARGS__
-#define GLSL_DEFAULT_VS_UNIFORMS "in vec3 pos;in vec3 norm;in vec2 UV;in vec4 col;"
 #define GLSL_DEFAULT_PS_UNIFORMS "uniform sampler2D diffuse;"
 
 static const char *fragment_water =
@@ -34,7 +33,6 @@ static const char *fragment_water =
         );
 
 static const char *vertex_water =
-        GLSL_DEFAULT_VS_UNIFORMS
         GLSL(
                 attribute vec2 position;
 
@@ -86,25 +84,23 @@ static const char *fragment_alpha_test_texture =
         );
 
 static const char *vertex_default =
-        GLSL_DEFAULT_VS_UNIFORMS
         GLSL(
                 out vec3 interp_normal;
                 out vec2 interp_UV;
                 out vec4 interp_colour;
 
                 void main() {
-                    gl_Position = pl_proj * pl_view * pl_model * vec4(pos, 1.0f);
-                    interp_normal = norm;
-                    interp_UV = UV;
-                    interp_colour = col;
+                    gl_Position = pl_proj * pl_view * pl_model * vec4(pl_vposition, 1.0f);
+                    interp_normal = pl_vnormal;
+                    interp_UV = pl_vuv;
+                    interp_colour = pl_vcolour;
                 }
         );
 
 static const char *vertex_debug_test =
-        GLSL_DEFAULT_VS_UNIFORMS
         GLSL(
                 void main() {
-                    gl_Position = pl_proj * pl_view * pl_model * vec4(pos, 1.0f);
+                    gl_Position = pl_proj * pl_view * pl_model * vec4(pl_vposition, 1.0f);
                 }
         );
 

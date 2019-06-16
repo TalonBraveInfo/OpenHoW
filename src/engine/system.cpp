@@ -95,7 +95,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-#if 0
+#if 1
     if(SDL_GL_SetSwapInterval(-1) != 0) {
         SDL_GL_SetSwapInterval(1);
     }
