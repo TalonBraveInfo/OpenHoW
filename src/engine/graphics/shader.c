@@ -118,7 +118,7 @@ static const char *fragment_debug_test =
 
 PLShaderProgram *programs[MAX_SHADERS];
 
-static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *fragment, size_t fl) {
+static PLShaderProgram *CreateShaderProgram(const char *vertex, const char *fragment) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
         Error("Invalid stage for shader program, aborting!\n");
     }
@@ -140,11 +140,11 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
         Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
     }
 #else
-    if(!plRegisterShaderStageFromMemory(program, vertex, vl, PL_SHADER_TYPE_VERTEX)) {
+    if(!plRegisterShaderStageFromMemory(program, vertex, strlen(vertex), PL_SHADER_TYPE_VERTEX)) {
         Error("Failed to register vertex stage, \"%s\", aborting!\n", plGetError());
     }
 
-    if(!plRegisterShaderStageFromMemory(program, fragment, fl, PL_SHADER_TYPE_FRAGMENT)) {
+    if(!plRegisterShaderStageFromMemory(program, fragment, strlen(fragment), PL_SHADER_TYPE_FRAGMENT)) {
         Error("Failed to register fragment stage, \"%s\", aborting!\n", plGetError());
     }
 #endif
@@ -156,13 +156,11 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
 
 void Shaders_Initialize(void) {
     memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
-    programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_texture, strlen(fragment_texture));
-    programs[SHADER_UNTEXTURED] = CreateShaderProgram(
-            vertex_default, strlen(vertex_default),
-            fragment_colour, strlen(fragment_colour));
-    programs[SHADER_WATER]      = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_water, strlen(fragment_water));
-    programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_alpha_test_texture, strlen(fragment_alpha_test_texture));
-    programs[SHADER_DEBUG_TEST] = CreateShaderProgram(vertex_debug_test, strlen(vertex_debug_test), fragment_debug_test, strlen(fragment_debug_test));
+    programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, fragment_texture);
+    programs[SHADER_UNTEXTURED] = CreateShaderProgram(vertex_default, fragment_colour);
+    programs[SHADER_WATER]      = CreateShaderProgram(vertex_default, fragment_water);
+    programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, fragment_alpha_test_texture);
+    programs[SHADER_DEBUG_TEST] = CreateShaderProgram(vertex_debug_test, fragment_debug_test);
 
     /* set defaults */
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {

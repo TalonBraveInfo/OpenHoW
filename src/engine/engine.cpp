@@ -57,7 +57,18 @@ void Engine_Initialize(void) {
             ENGINE_MINOR_VERSION,
             ENGINE_PATCH_VERSION);
 
-    memset(&g_state, 0, sizeof(EngineState));
+    g_state.draw_ticks = 0;
+    g_state.is_host = true;
+
+    g_state.last_draw_ms = 0;
+    g_state.last_sys_tick = 0;
+    g_state.sim_ticks = 0;
+    g_state.sys_ticks = 0;
+
+    g_state.gfx.clear_colour = { 0, 0, 0, 255 };
+    g_state.gfx.num_actors_drawn = 0;
+    g_state.gfx.num_chunks_drawn = 0;
+    g_state.gfx.num_triangles_total = 0;
 
     Console_Initialize();
 
