@@ -24,10 +24,26 @@
 #include "Actor.h"
 #include "GameManager.h"
 
-Actor::Actor() = default;
 Actor::~Actor() = default;
 
-Actor::Actor(const std::string &name) {
+Actor::Actor():
+    position_(*this, "position", ActorProperty::DEFAULT, PLVector3(0, 0, 0)),
+    move_forward(*this, "move_forward", ActorProperty::INPUT, false),
+    move_backward(*this, "move_backward", ActorProperty::INPUT, false),
+    move_up(*this, "move_up", ActorProperty::INPUT, false),
+    move_down(*this, "move_down", ActorProperty::INPUT, false),
+    turn_left(*this, "turn_left", ActorProperty::INPUT, false),
+    turn_right(*this, "turn_right", ActorProperty::INPUT, false) {}
+
+Actor::Actor(const std::string &name):
+    position_(*this, "position", ActorProperty::DEFAULT, PLVector3(0, 0, 0)),
+    move_forward(*this, "move_forward", ActorProperty::INPUT, false),
+    move_backward(*this, "move_backward", ActorProperty::INPUT, false),
+    move_up(*this, "move_up", ActorProperty::INPUT, false),
+    move_down(*this, "move_down", ActorProperty::INPUT, false),
+    turn_left(*this, "turn_left", ActorProperty::INPUT, false),
+    turn_right(*this, "turn_right", ActorProperty::INPUT, false)
+{
     spawn_name = name;
 }
 
@@ -47,32 +63,39 @@ void Actor::HandleInput() {
         forward_speed = -100.0f;
     }
 
-    position_.x += forward_speed * g_state.camera->forward.x;
-    position_.y += forward_speed * g_state.camera->forward.y;
-    position_.z += forward_speed * g_state.camera->forward.z;
+    move_forward = forward_speed > 0.0f;
+    move_backward = forward_speed < 0.0f;
+    
+    turn_left = false;
+    turn_right = false;
 
     if(Input_GetActionState(player->input_slot, ACTION_SELECT)) {
-        if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-            position_.x += 100.f;
-        } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-            position_.x -= 100.f;
-        }
+//         if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
+//             position_.x += 100.f;
+//         } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
+//             position_.x -= 100.f;
+//         }
     } else {
         if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-            angles_.y -= 2.f;
+//             angles_.y -= 2.f;
+            turn_left = true;
         } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-            angles_.y += 2.f;
+//             angles_.y += 2.f;
+            turn_right = true;
         } else {
-            angles_.y += cr.x / 50.f;
-            angles_.x -= cr.y / 50.f;
+//             angles_.y += cr.x / 50.f;
+//             angles_.x -= cr.y / 50.f;
         }
     }
 
+    move_up = false;
+    move_down = false;
+
     if( Input_GetActionState(player->input_slot, ACTION_JUMP) ||
         Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
-        position_.y += 100.f;
+        move_up = true;
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
-        position_.y -= 100.f;
+        move_down = true;
     }
 
     // Clamp height based on current tile pos
@@ -88,8 +111,94 @@ void Actor::HandleInput() {
     VecAngleClamp(&angles_);
 }
 
+void Actor::Tick()
+{
+    PLVector3 forward = plVector3Normalize(PLVector3(
+            cosf(plToRadians(angles_.y)) * cosf(plToRadians(angles_.x)),
+            sinf(plToRadians(angles_.x)),
+            sinf(plToRadians(angles_.y)) * cosf(plToRadians(angles_.x))
+    ));
+
+    if(move_forward)
+    {
+        position_.x += 100.0f * forward.x;
+        position_.y += 100.0f * forward.y;
+        position_.z += 100.0f * forward.z;
+    }
+    else if(move_backward)
+    {
+        position_.x -= 100.0f * forward.x;
+        position_.y -= 100.0f * forward.y;
+        position_.z -= 100.0f * forward.z;
+    }
+
+    if(move_up)
+    {
+        position_.y += 100.0f;
+    }
+    else if(move_down)
+    {
+        position_.y -= 100.0f;
+    }
+
+    if(turn_left)
+    {
+        angles_.y -= 2.0f;
+    }
+    else if(turn_right)
+    {
+        angles_.y += 2.0f;
+    }
+}
+
 void Actor::SetAngles(PLVector3 angles) {
     VecAngleClamp(&angles);
     angles_ = angles;
     /* todo: limit angles... */
+}
+
+ActorProperty::ActorProperty(Actor &actor, const std::string &name, Flags flags):
+	flags(flags),
+	name(name),
+	actor(actor),
+	dirty(false)
+{
+	auto x = actor.properties_.insert(std::make_pair(name, this));
+	assert(x.second);
+}
+
+ActorProperty::~ActorProperty()
+{
+	actor.properties_.erase(name);
+}
+
+void ActorProperty::mark_dirty()
+{
+    if(!dirty)
+    {
+        dirty_tick = g_state.sim_ticks;
+        dirty = true;
+    }
+}
+
+void ActorProperty::mark_clean()
+{
+    dirty = false;
+}
+
+bool ActorProperty::is_dirty() const
+{
+    return dirty;
+}
+
+unsigned int ActorProperty::dirty_ticks() const
+{
+    if(dirty)
+    {
+        assert(g_state.sim_ticks >= dirty_tick);
+        return g_state.sim_ticks - dirty_tick;
+    }
+    else{
+        return 0;
+    }
 }
