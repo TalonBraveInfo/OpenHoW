@@ -549,7 +549,7 @@ void System_PollEvents() {
             } break;
 
             case SDL_QUIT: {
-                Engine_Shutdown();
+                System_Shutdown();
             } break;
 
             case SDL_WINDOWEVENT: {
