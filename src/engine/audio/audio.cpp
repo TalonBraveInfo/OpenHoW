@@ -360,42 +360,20 @@ const AudioSample* AudioManager::CacheSample(const std::string &path, bool prese
 
         freq = spec.freq;
     } else if(pl_strcasecmp(ext, "ogg") == 0) {
-        char fpath[PL_SYSTEM_MAX_PATH];
-        snprintf(fpath, sizeof(fpath), "%s", u_find(path.c_str()));
-        length = plGetFileSize(fpath);
-        if(length == 0) {
-            LogWarn("Invalid size for \"%s\", probably failed to load!\n", fpath);
-            return nullptr;
-        }
-
-        std::ifstream ifs(fpath, std::ios_base::in | std::ios_base::binary);
-        if(!ifs.is_open()) {
-            LogWarn("Failed to open audio data \"%s\"!\n", fpath);
-            return nullptr;
-        }
-
-        buffer = new uint8_t[length];
-        try {
-            ifs.read(reinterpret_cast<char *>(buffer), length);
-        } catch(const std::ifstream::failure &err) {
-            LogWarn("Failed to read audio data, \"%s\"!\n", fpath);
-        }
-
-        ifs.close();
-
         int vchan;
-        short *out;
-        int samples = stb_vorbis_decode_memory(buffer, length, &vchan, &freq, &out);
-        delete buffer;
-
+        int samples = stb_vorbis_decode_filename(u_find(path.c_str()), &vchan, &freq,
+                                                 reinterpret_cast<short **>(&buffer));
         if(samples == -1) {
-            LogWarn("Failed to decode ogg audio data, \"%s\"!\n", fpath);
+            LogWarn("Failed to decode ogg audio data, \"%s\"!\n", path.c_str());
             return nullptr;
         }
 
-        buffer = reinterpret_cast<uint8_t *>(out);
-        length = samples * 4;
-        format = AL_FORMAT_STEREO16;
+        length = samples * vchan * sizeof(int16_t);
+        if(vchan == 2) {
+            format = AL_FORMAT_STEREO16;
+        } else {
+            format = AL_FORMAT_MONO16;
+        }
     }
 
     auto sample = samples_.emplace(
