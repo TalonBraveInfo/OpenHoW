@@ -278,6 +278,9 @@ typedef PODActorProperty<bool> BooleanActorProperty;
 
 class Actor {
 friend ActorProperty;
+private:
+    std::map<std::string, ActorProperty*> properties_;
+
 public:
 
     Actor();
@@ -320,8 +323,6 @@ private:
 
     Actor* parent_{nullptr};
     Actor* child_{nullptr};
-    
-    std::map<std::string, ActorProperty*> properties_;
 
     /* todo: collision sys */
 };
