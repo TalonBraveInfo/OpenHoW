@@ -31,8 +31,10 @@
 #include <PL/platform_graphics_camera.h>
 
 #include <list>
+#include <PL/platform_filesystem.h>
 
-/* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL?? */
+/* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL??
+ * todo: stream music and large samples */
 
 static void OALCheckErrors() {
     ALenum err = alGetError();
@@ -247,7 +249,7 @@ AudioManager::AudioManager() {
 
     ALCcontext *context = alcCreateContext(device, nullptr);
     if(context == nullptr || !alcMakeContextCurrent(context)) {
-        Error("failed to create audio context, aborting audio initialisation!\n");
+        Error("Failed to create audio context, aborting audio initialisation!\n");
     }
 
     if(alIsExtensionPresent("AL_SOFT_buffer_samples")) {
@@ -280,13 +282,10 @@ AudioManager::AudioManager() {
         alGenAuxiliaryEffectSlots(1, &reverb_sound_slot);
         alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
     }
-
-    // Setup our global music source
-    music_source_ = new AudioSource(nullptr, 1.0f, 1.0f, false);
 }
 
 AudioManager::~AudioManager() {
-    LogInfo("shutting down audio sub-system...\n");
+    LogInfo("Shutting down audio sub-system...\n");
 
     FreeSources();
 
@@ -315,47 +314,95 @@ const AudioSample* AudioManager::CacheSample(const std::string &path, bool prese
         return &(i->second);
     }
 
-    SDL_AudioSpec spec;
+    const char *ext = plGetFileExtension(path.c_str());
+    if(ext == nullptr) {
+        LogWarn("Unable to identify audio format, \"%s\"!\n", path.c_str());
+        return nullptr;
+    }
+
+    unsigned int format = 0;
+    int freq = 0;
     uint32_t length;
     uint8_t *buffer;
-    if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
-        LogWarn("Failed to load \"%s\"!\n", path.c_str());
-        return nullptr;
-    }
+    if(pl_strcasecmp(ext, "wav") == 0) {
+        SDL_AudioSpec spec;
+        if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
+            LogWarn("Failed to load \"%s\"!\n", path.c_str());
+            return nullptr;
+        }
 
-    /* translate the spec over to oal
-     * todo: conversion... https://github.com/solemnwarning/armageddon-recorder/blob/master/src/resample.hpp#L42
-     * */
-    unsigned int format = 0;
-    switch(spec.format) {
-        case AUDIO_U8:
-            if(spec.channels == 1) {
-                format = AL_FORMAT_MONO8;
-            } else if(spec.channels == 2) {
-                format = AL_FORMAT_STEREO8;
-            }
-            break;
-        case AUDIO_S16:
-            if(spec.channels == 1) {
-                format = AL_FORMAT_MONO16;
-            } else if(spec.channels == 2) {
-                format = AL_FORMAT_STEREO16;
-            }
-            break;
-        default:break;
-    }
+        /* translate the spec over to oal
+         * todo: conversion... https://github.com/solemnwarning/armageddon-recorder/blob/master/src/resample.hpp#L42
+         * */
+        switch(spec.format) {
+            case AUDIO_U8:
+                if(spec.channels == 1) {
+                    format = AL_FORMAT_MONO8;
+                } else if(spec.channels == 2) {
+                    format = AL_FORMAT_STEREO8;
+                }
+                break;
+            case AUDIO_S16:
+                if(spec.channels == 1) {
+                    format = AL_FORMAT_MONO16;
+                } else if(spec.channels == 2) {
+                    format = AL_FORMAT_STEREO16;
+                }
+                break;
+            default:break;
+        }
 
-    if(format == 0) {
-        LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
-        SDL_FreeWAV(buffer);
-        return nullptr;
+        if(format == 0) {
+            LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
+            SDL_FreeWAV(buffer);
+            return nullptr;
+        }
+
+        freq = spec.freq;
+    } else if(pl_strcasecmp(ext, "ogg") == 0) {
+        char fpath[PL_SYSTEM_MAX_PATH];
+        snprintf(fpath, sizeof(fpath), "%s", u_find(path.c_str()));
+        length = plGetFileSize(fpath);
+        if(length == 0) {
+            LogWarn("Invalid size for \"%s\", probably failed to load!\n", fpath);
+            return nullptr;
+        }
+
+        std::ifstream ifs(fpath, std::ios_base::in | std::ios_base::binary);
+        if(!ifs.is_open()) {
+            LogWarn("Failed to open audio data \"%s\"!\n", fpath);
+            return nullptr;
+        }
+
+        buffer = new uint8_t[length];
+        try {
+            ifs.read(reinterpret_cast<char *>(buffer), length);
+        } catch(const std::ifstream::failure &err) {
+            LogWarn("Failed to read audio data, \"%s\"!\n", fpath);
+        }
+
+        ifs.close();
+
+        int vchan;
+        short *out;
+        int samples = stb_vorbis_decode_memory(buffer, length, &vchan, &freq, &out);
+        delete buffer;
+
+        if(samples == -1) {
+            LogWarn("Failed to decode ogg audio data, \"%s\"!\n", fpath);
+            return nullptr;
+        }
+
+        buffer = reinterpret_cast<uint8_t *>(out);
+        length = samples * 4;
+        format = AL_FORMAT_STEREO16;
     }
 
     auto sample = samples_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(path),
-            std::forward_as_tuple(buffer, spec.freq, format, length, preserve)
-            );
+            std::forward_as_tuple(buffer, freq, format, length, preserve)
+    );
 
     return &(sample.first->second);
 }
@@ -516,6 +563,11 @@ void AudioManager::DrawSources() {
 }
 
 void AudioManager::PlayMusic(const std::string &path) {
+    if(music_source_ == nullptr) {
+        // Setup our global music source
+        music_source_ = new AudioSource(nullptr, 1.0f, 1.0f, false);
+    }
+
     music_source_->StopPlaying();
     // todo: maybe fade out before swapping?
     music_source_->SetSample(CacheSample(path));
@@ -523,7 +575,19 @@ void AudioManager::PlayMusic(const std::string &path) {
 }
 
 void AudioManager::PauseMusic() {
+    if(music_source_ == nullptr) {
+        return;
+    }
+
     music_source_->Pause();
+}
+
+void AudioManager::StopMusic() {
+    if(music_source_ == nullptr) {
+        return;
+    }
+
+    music_source_->StopPlaying();
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)
