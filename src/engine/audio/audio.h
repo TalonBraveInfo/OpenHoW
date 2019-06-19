@@ -52,14 +52,14 @@ typedef enum {
 
 class AudioSource;
 
-typedef struct AudioSample {
+struct AudioSample {
     AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve);
     ~AudioSample();
 
     unsigned int    al_buffer_id_{0};
     uint8_t         *data_{nullptr};
     bool            preserve_{false};
-} AudioSample;
+};
 
 class AudioManager {
     friend class AudioSource;
@@ -105,13 +105,13 @@ public:
 
     void DrawSources();
 
-    typedef enum ExtensionType {
+    enum ExtensionType {
         AUDIO_EXT_EFX,
         AUDIO_EXT_SOFT_BUFFER_SAMPLES,
 
         MAX_AUDIO_EXT_SLOTS
-    } ExtType;
-    inline bool SupportsExtension(ExtType extension) {
+    };
+    inline bool SupportsExtension(ExtensionType extension) {
         return al_extensions_[extension];
     }
 

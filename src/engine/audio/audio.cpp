@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "../engine.h"
+#include "../frontend.h"
+#include "../model.h"
+
 #include "audio.h"
-#include "frontend.h"
-#include "model.h"
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -31,7 +32,6 @@
 #include <list>
 
 /* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL?? */
-/* todo: get this working on macOS */
 
 static void OALCheckErrors() {
     ALenum err = alGetError();
@@ -80,7 +80,7 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
     alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
     OALCheckErrors();
 
-    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtType::AUDIO_EXT_EFX)) {
+    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtensionType ::AUDIO_EXT_EFX)) {
         alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
         OALCheckErrors();
     }

@@ -22,7 +22,7 @@
 #include "imgui_layer.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 #include "MapManager.h"
-#include "audio.h"
+#include "audio/audio.h"
 
 #include "graphics/display.h"
 

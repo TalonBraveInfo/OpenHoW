@@ -21,7 +21,7 @@
 #include "engine.h"
 #include "input.h"
 #include "client.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "imgui_layer.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"

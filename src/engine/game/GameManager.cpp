@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-#include "../audio.h"
+#include "../audio/audio.h"
 #include "../Map.h"
 
 #include "GameManager.h"
