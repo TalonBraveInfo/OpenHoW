@@ -98,6 +98,10 @@ public:
     void PlayLocalSound(const AudioSample* sample, PLVector3 pos, PLVector3 vel = {0, 0, 0}, bool reverb = false,
             float gain = 1.0f, float pitch = 1.0f);
 
+    void PlayMusic(const std::string &path);
+    void PauseMusic();
+    void StopMusic();
+
     void SilenceSources();
 
     void FreeSources();
@@ -125,6 +129,8 @@ private:
     std::set<AudioSource*> sources_;
     std::set<AudioSource*> temp_sources_;
 
+    AudioSource *music_source_{nullptr};
+
     static AudioManager *instance_;
 };
 
@@ -147,6 +153,7 @@ public:
 
     void StartPlaying();
     void StopPlaying();
+    void Pause();
 
     bool IsPlaying();
     bool IsPaused();

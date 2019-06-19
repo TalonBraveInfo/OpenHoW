@@ -20,6 +20,7 @@
 #include "../model.h"
 
 #include "audio.h"
+#include "stb_vorbis.c"
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -181,6 +182,15 @@ bool AudioSource::IsPaused() {
     return (state == AL_PAUSED);
 }
 
+void AudioSource::Pause() {
+    if(!IsPlaying()) {
+        // nothing to pause
+        return;
+    }
+
+    alSourcePause(al_source_id_);
+}
+
 /************************************************************/
 
 static LPALGENEFFECTS alGenEffects;
@@ -270,6 +280,9 @@ AudioManager::AudioManager() {
         alGenAuxiliaryEffectSlots(1, &reverb_sound_slot);
         alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
     }
+
+    // Setup our global music source
+    music_source_ = new AudioSource(nullptr, 1.0f, 1.0f, false);
 }
 
 AudioManager::~AudioManager() {
@@ -500,6 +513,17 @@ void AudioManager::DrawSources() {
         plDrawModel(sprite);
     }
     plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+}
+
+void AudioManager::PlayMusic(const std::string &path) {
+    music_source_->StopPlaying();
+    // todo: maybe fade out before swapping?
+    music_source_->SetSample(CacheSample(path));
+    music_source_->StartPlaying();
+}
+
+void AudioManager::PauseMusic() {
+    music_source_->Pause();
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)
