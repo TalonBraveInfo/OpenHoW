@@ -581,6 +581,10 @@ void AudioManager::StopMusic() {
 }
 
 void AudioManager::SetMusicVolume(float gain) {
+    if(music_source_ == nullptr) {
+        return;
+    }
+
     music_source_->SetGain(gain);
 }
 
