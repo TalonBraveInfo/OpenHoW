@@ -15,14 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef WIN32
+#include <winsock2.h>
+#define close(x) closesocket(x)
+#else
 #include <arpa/inet.h>
-#include <assert.h>
 #include <fcntl.h>
 #include <netinet/in.h>
-#include <PL/platform_graphics_camera.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#endif
+
+#include <assert.h>
+#include <PL/platform_graphics_camera.h>
 
 #include "../engine.h"
 #include "../frontend.h"
@@ -44,7 +50,13 @@ SPGameMode::SPGameMode(): listener_fd(-1), server_fd(-1), server_buf_len(0) {
         addr.sin_port = htons(1235);
 
         assert(connect(server_fd, (struct sockaddr*)(&addr), sizeof(addr)) == 0);
+
+        #ifdef WIN32
+        u_long mode = 1;
+        ioctlsocket(server_fd, FIONBIO, &mode);
+        #else
         assert(fcntl(server_fd, F_SETFL, O_NONBLOCK) == 0);
+        #endif
     }
     else{
         listener_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -57,7 +69,13 @@ SPGameMode::SPGameMode(): listener_fd(-1), server_fd(-1), server_buf_len(0) {
 
         assert(bind(listener_fd, (struct sockaddr*)(&addr), sizeof(addr)) == 0);
         assert(listen(listener_fd, 8) == 0);
+
+        #ifdef WIN32
+        u_long mode = 1;
+        ioctlsocket(listener_fd, FIONBIO, &mode);
+        #else
         assert(fcntl(listener_fd, F_SETFL, O_NONBLOCK) == 0);
+        #endif
     }
 
     players_.resize(4);
@@ -115,7 +133,13 @@ void SPGameMode::Tick() {
     {
         for(int newfd; (newfd = accept(listener_fd, NULL, 0)) != -1;)
         {
+            #ifdef WIN32
+            u_long mode = 1;
+            ioctlsocket(newfd, FIONBIO, &mode);
+            #else
             assert(fcntl(newfd, F_SETFL, O_NONBLOCK) == 0);
+            #endif
+
             client_fds.insert(newfd);
         }
     }

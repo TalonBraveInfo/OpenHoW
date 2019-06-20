@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
 
@@ -577,6 +581,11 @@ static void *u_calloc(size_t num, size_t size) {
 int main(int argc, char **argv) {
     pl_malloc = u_malloc;
     pl_calloc = u_calloc;
+
+    #ifdef WIN32
+    WSADATA wsadata;
+    assert(WSAStartup(MAKEWORD(1,1), &wsadata) == 0);
+    #endif
 
     plInitialize(argc, argv);
 
