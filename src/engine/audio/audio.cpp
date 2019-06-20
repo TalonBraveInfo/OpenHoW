@@ -83,7 +83,7 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
     alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
     OALCheckErrors();
 
-    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtensionType ::AUDIO_EXT_EFX)) {
+    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
         alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
         OALCheckErrors();
     }
@@ -282,6 +282,8 @@ AudioManager::AudioManager() {
         alGenAuxiliaryEffectSlots(1, &reverb_sound_slot);
         alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
     }
+
+    plRegisterConsoleVariable("audio_volume_music", "1", pl_float_var, SetMusicVolumeCommand, "set music volume");
 }
 
 AudioManager::~AudioManager() {
@@ -360,6 +362,7 @@ const AudioSample* AudioManager::CacheSample(const std::string &path, bool prese
 
         freq = spec.freq;
     } else if(pl_strcasecmp(ext, "ogg") == 0) {
+        // todo: stream me...
         int vchan;
         int samples = stb_vorbis_decode_filename(u_find(path.c_str()), &vchan, &freq,
                                                  reinterpret_cast<short **>(&buffer));
@@ -488,9 +491,8 @@ void AudioManager::SilenceSources() {
 void AudioManager::FreeSources() {
     LogInfo("Freeing all audio sources...\n");
 
-    SilenceSources();
-
     for(auto source : sources_) {
+        source->StopPlaying();
         delete source;
     }
 
@@ -541,14 +543,24 @@ void AudioManager::DrawSources() {
 }
 
 void AudioManager::PlayMusic(const std::string &path) {
-    if(music_source_ == nullptr) {
-        // Setup our global music source
-        music_source_ = new AudioSource(nullptr, 1.0f, 1.0f, false);
+    const AudioSample *sample = CacheSample(path);
+    if(sample == nullptr) {
+        return;
     }
 
-    music_source_->StopPlaying();
-    // todo: maybe fade out before swapping?
-    music_source_->SetSample(CacheSample(path));
+    if(music_source_ == nullptr) {
+        // Setup our global music source
+        const PLConsoleVariable *volume_var = plGetConsoleVariable("audio_volume_music");
+        // todo: this should never happen, instead plGetConsoleVariable should support defaults...
+        if(volume_var == nullptr) {
+            Error("Failed to get \"audio_music_volume\" runtime variable, aborting!\n");
+        }
+        music_source_ = new AudioSource(sample, volume_var->f_value, 1.0f, false);
+    } else {
+        music_source_->StopPlaying();
+        music_source_->SetSample(sample);
+    }
+
     music_source_->StartPlaying();
 }
 
@@ -566,6 +578,14 @@ void AudioManager::StopMusic() {
     }
 
     music_source_->StopPlaying();
+}
+
+void AudioManager::SetMusicVolume(float gain) {
+    music_source_->SetGain(gain);
+}
+
+void AudioManager::SetMusicVolumeCommand(const PLConsoleVariable *var) {
+    AudioManager::GetInstance()->SetMusicVolume(var->f_value);
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)

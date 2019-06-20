@@ -52,6 +52,9 @@ typedef enum {
 
 class AudioSource;
 
+#define AUDIO_MUSIC_MENU    "music/track02.ogg"
+#define AUDIO_MUSIC_VICTORY "music/track31.ogg"
+
 struct AudioSample {
     AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve);
     ~AudioSample();
@@ -101,6 +104,7 @@ public:
     void PlayMusic(const std::string &path);
     void PauseMusic();
     void StopMusic();
+    void SetMusicVolume(float gain);
 
     void SilenceSources();
 
@@ -124,6 +128,8 @@ private:
     bool al_extensions_[MAX_AUDIO_EXT_SLOTS]{
         false, false
     };
+
+    static void SetMusicVolumeCommand(const PLConsoleVariable *var);
 
     std::map<std::string, AudioSample> samples_;
     std::set<AudioSource*> sources_;

@@ -420,7 +420,7 @@ void FrontEnd_SetState(unsigned int state) {
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
 
             // start playing the default theme
-            AudioManager::GetInstance()->PlayMusic("music/track02.ogg");
+            AudioManager::GetInstance()->PlayMusic(AUDIO_MUSIC_MENU);
         } break;
 
         case FE_MODE_START: break;

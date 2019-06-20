@@ -43,6 +43,9 @@ void SPGameMode::StartRound() {
     SpawnActors();
 
     round_started_ = true;
+
+    // Play the deployment music
+    AudioManager::GetInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 }
 
 void SPGameMode::RestartRound() {
