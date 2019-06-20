@@ -138,10 +138,9 @@ void SPGameMode::Tick() {
 
         for(auto p = actor->properties_.begin(); p != actor->properties_.end(); ++p)
         {
-            if((p->second->flags & ActorProperty::INPUT) && p->second->is_dirty())
+            if(((p->second->flags & ActorProperty::INPUT) && p->second->is_dirty())
+                || p->second->dirty_ticks() > 250)
             {
-                printf("Sending update for %u/%s\n", (unsigned)(i), p->second->name.c_str());
-
                 NetMessage msg;
                 msg.type = NetMessage::SET_PROPERTY;
                 msg.actor_idx = i;
@@ -169,8 +168,6 @@ void SPGameMode::Tick() {
         server_buf_len += r;
         if(server_buf_len == sizeof(server_buf))
         {
-            printf("Received update for %u/%s\n", server_buf.actor_idx, server_buf.property_name);
-
             Actor *actor = ActorManager::GetInstance()->actors_[server_buf.actor_idx];
             ActorProperty *property = actor->properties_[server_buf.property_name];
             property->from_msg(&server_buf);

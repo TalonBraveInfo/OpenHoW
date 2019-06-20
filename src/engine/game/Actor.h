@@ -244,6 +244,14 @@ public:
     virtual void from_msg(const NetMessage *msg) override
     {
         float *data = (float*)(msg->property_value);
+
+        if(value.x != data[0] || value.y != data[1] || value.z != data[2])
+        {
+            printf("Vector3ActorProperty %s adjustment: %f,%f,%f\n",
+                   name.c_str(),
+                   (double)(value.x - data[0]), (double)(value.y - data[1]), (double)(value.z - data[2]));
+        }
+
         value.x = data[0];
         value.y = data[1];
         value.z = data[2];
