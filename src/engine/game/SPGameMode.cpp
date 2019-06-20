@@ -74,7 +74,9 @@ void SPGameMode::Tick() {
 
 void SPGameMode::SpawnActors() {
     Map* map = GameManager::GetInstance()->GetCurrentMap();
-    u_assert(map != nullptr);
+    if(map == nullptr) {
+        Error("Attempted to spawn actors without having loaded a map!\n");
+    }
 
     std::vector<MapSpawn> spawns = map->GetSpawns();
     for(auto spawn : spawns) {
@@ -84,7 +86,7 @@ void SPGameMode::SpawnActors() {
         }
 
         actor->SetPosition(PLVector3(spawn.position[0], spawn.position[1], spawn.position[2]));
-        actor->SetAngles(PLVector3(spawn.angles[0] / 360, spawn.angles[1] / 360, spawn.angles[2] / 360));
+        actor->SetAngles(PLVector3(spawn.angles[0] / 360.f, spawn.angles[1] / 360.f, spawn.angles[2] / 360.f));
 
         // todo: assign player pigs etc., temp hack
         if(strcmp(spawn.name, "GR_ME") == 0) {
