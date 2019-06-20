@@ -25,7 +25,7 @@
 #include "config.h"
 #include "input.h"
 #include "frontend.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "MapManager.h"
 
 #include "game/SPGameMode.h"

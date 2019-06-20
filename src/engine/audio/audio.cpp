@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "../engine.h"
+#include "../frontend.h"
+#include "../model.h"
+
 #include "audio.h"
-#include "frontend.h"
-#include "model.h"
+#include "stb_vorbis.c"
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -29,9 +31,10 @@
 #include <PL/platform_graphics_camera.h>
 
 #include <list>
+#include <PL/platform_filesystem.h>
 
-/* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL?? */
-/* todo: get this working on macOS */
+/* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL??
+ * todo: stream music and large samples */
 
 static void OALCheckErrors() {
     ALenum err = alGetError();
@@ -80,7 +83,7 @@ AudioSource::AudioSource(const AudioSample* sample, PLVector3 pos, PLVector3 vel
     alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
     OALCheckErrors();
 
-    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtType::AUDIO_EXT_EFX)) {
+    if(reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
         alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
         OALCheckErrors();
     }
@@ -181,6 +184,15 @@ bool AudioSource::IsPaused() {
     return (state == AL_PAUSED);
 }
 
+void AudioSource::Pause() {
+    if(!IsPlaying()) {
+        // nothing to pause
+        return;
+    }
+
+    alSourcePause(al_source_id_);
+}
+
 /************************************************************/
 
 static LPALGENEFFECTS alGenEffects;
@@ -237,7 +249,7 @@ AudioManager::AudioManager() {
 
     ALCcontext *context = alcCreateContext(device, nullptr);
     if(context == nullptr || !alcMakeContextCurrent(context)) {
-        Error("failed to create audio context, aborting audio initialisation!\n");
+        Error("Failed to create audio context, aborting audio initialisation!\n");
     }
 
     if(alIsExtensionPresent("AL_SOFT_buffer_samples")) {
@@ -270,10 +282,12 @@ AudioManager::AudioManager() {
         alGenAuxiliaryEffectSlots(1, &reverb_sound_slot);
         alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
     }
+
+    plRegisterConsoleVariable("audio_volume_music", "1", pl_float_var, SetMusicVolumeCommand, "set music volume");
 }
 
 AudioManager::~AudioManager() {
-    LogInfo("shutting down audio sub-system...\n");
+    LogInfo("Shutting down audio sub-system...\n");
 
     FreeSources();
 
@@ -302,47 +316,74 @@ const AudioSample* AudioManager::CacheSample(const std::string &path, bool prese
         return &(i->second);
     }
 
-    SDL_AudioSpec spec;
+    const char *ext = plGetFileExtension(path.c_str());
+    if(ext == nullptr) {
+        LogWarn("Unable to identify audio format, \"%s\"!\n", path.c_str());
+        return nullptr;
+    }
+
+    unsigned int format = 0;
+    int freq = 0;
     uint32_t length;
     uint8_t *buffer;
-    if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
-        LogWarn("Failed to load \"%s\"!\n", path.c_str());
-        return nullptr;
-    }
+    if(pl_strcasecmp(ext, "wav") == 0) {
+        SDL_AudioSpec spec;
+        if(SDL_LoadWAV(u_find(path.c_str()), &spec, &buffer, &length) == nullptr) {
+            LogWarn("Failed to load \"%s\"!\n", path.c_str());
+            return nullptr;
+        }
 
-    /* translate the spec over to oal
-     * todo: conversion... https://github.com/solemnwarning/armageddon-recorder/blob/master/src/resample.hpp#L42
-     * */
-    unsigned int format = 0;
-    switch(spec.format) {
-        case AUDIO_U8:
-            if(spec.channels == 1) {
-                format = AL_FORMAT_MONO8;
-            } else if(spec.channels == 2) {
-                format = AL_FORMAT_STEREO8;
-            }
-            break;
-        case AUDIO_S16:
-            if(spec.channels == 1) {
-                format = AL_FORMAT_MONO16;
-            } else if(spec.channels == 2) {
-                format = AL_FORMAT_STEREO16;
-            }
-            break;
-        default:break;
-    }
+        /* translate the spec over to oal
+         * todo: conversion... https://github.com/solemnwarning/armageddon-recorder/blob/master/src/resample.hpp#L42
+         * */
+        switch(spec.format) {
+            case AUDIO_U8:
+                if(spec.channels == 1) {
+                    format = AL_FORMAT_MONO8;
+                } else if(spec.channels == 2) {
+                    format = AL_FORMAT_STEREO8;
+                }
+                break;
+            case AUDIO_S16:
+                if(spec.channels == 1) {
+                    format = AL_FORMAT_MONO16;
+                } else if(spec.channels == 2) {
+                    format = AL_FORMAT_STEREO16;
+                }
+                break;
+            default:break;
+        }
 
-    if(format == 0) {
-        LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
-        SDL_FreeWAV(buffer);
-        return nullptr;
+        if(format == 0) {
+            LogWarn("Invalid audio format for \"%s\"!\n", path.c_str());
+            SDL_FreeWAV(buffer);
+            return nullptr;
+        }
+
+        freq = spec.freq;
+    } else if(pl_strcasecmp(ext, "ogg") == 0) {
+        // todo: stream me...
+        int vchan;
+        int samples = stb_vorbis_decode_filename(u_find(path.c_str()), &vchan, &freq,
+                                                 reinterpret_cast<short **>(&buffer));
+        if(samples == -1) {
+            LogWarn("Failed to decode ogg audio data, \"%s\"!\n", path.c_str());
+            return nullptr;
+        }
+
+        length = samples * vchan * sizeof(int16_t);
+        if(vchan == 2) {
+            format = AL_FORMAT_STEREO16;
+        } else {
+            format = AL_FORMAT_MONO16;
+        }
     }
 
     auto sample = samples_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(path),
-            std::forward_as_tuple(buffer, spec.freq, format, length, preserve)
-            );
+            std::forward_as_tuple(buffer, freq, format, length, preserve)
+    );
 
     return &(sample.first->second);
 }
@@ -450,9 +491,8 @@ void AudioManager::SilenceSources() {
 void AudioManager::FreeSources() {
     LogInfo("Freeing all audio sources...\n");
 
-    SilenceSources();
-
     for(auto source : sources_) {
+        source->StopPlaying();
         delete source;
     }
 
@@ -500,6 +540,56 @@ void AudioManager::DrawSources() {
         plDrawModel(sprite);
     }
     plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+}
+
+void AudioManager::PlayMusic(const std::string &path) {
+    const AudioSample *sample = CacheSample(path);
+    if(sample == nullptr) {
+        return;
+    }
+
+    if(music_source_ == nullptr) {
+        // Setup our global music source
+        const PLConsoleVariable *volume_var = plGetConsoleVariable("audio_volume_music");
+        // todo: this should never happen, instead plGetConsoleVariable should support defaults...
+        if(volume_var == nullptr) {
+            Error("Failed to get \"audio_music_volume\" runtime variable, aborting!\n");
+        }
+        music_source_ = new AudioSource(sample, volume_var->f_value, 1.0f, false);
+    } else {
+        music_source_->StopPlaying();
+        music_source_->SetSample(sample);
+    }
+
+    music_source_->StartPlaying();
+}
+
+void AudioManager::PauseMusic() {
+    if(music_source_ == nullptr) {
+        return;
+    }
+
+    music_source_->Pause();
+}
+
+void AudioManager::StopMusic() {
+    if(music_source_ == nullptr) {
+        return;
+    }
+
+    music_source_->StopPlaying();
+}
+
+void AudioManager::SetMusicVolume(float gain) {
+    if(music_source_ == nullptr) {
+        return;
+    }
+
+    music_source_->SetGain(gain);
+}
+
+void AudioManager::SetMusicVolumeCommand(const PLConsoleVariable *var) {
+    AudioManager::GetInstance()->SetMusicVolume(var->f_value);
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)

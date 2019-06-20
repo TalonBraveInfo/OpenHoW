@@ -30,6 +30,7 @@
 #include "graphics/font.h"
 #include "graphics/display.h"
 #include "graphics/video.h"
+#include "audio/audio.h"
 
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = (unsigned int) -1;
@@ -417,24 +418,26 @@ void FrontEnd_SetState(unsigned int state) {
             plDestroyTexture(fe_key, true);
             plDestroyTexture(fe_background, true);
             fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
+
+            // start playing the default theme
+            AudioManager::GetInstance()->PlayMusic(AUDIO_MUSIC_MENU);
         } break;
 
-        case FE_MODE_START: {
-
-        } break;
+        case FE_MODE_START: break;
 
         case FE_MODE_GAME: {
-
+            // game mode handles music from here?
         } break;
 
         case FE_MODE_LOADING: {
+            // stop the music as soon as we switch to a loading screen...
+            AudioManager::GetInstance()->StopMusic();
+
             loading_description[0] = '\0';
             loading_progress = 0;
         } break;
 
-        case FE_MODE_EDITOR: {
-
-        } break;
+        case FE_MODE_EDITOR: break;
     }
     old_frontend_state = frontend_state;
     frontend_state = state;
