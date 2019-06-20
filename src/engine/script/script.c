@@ -32,13 +32,13 @@ duk_context *scr_context = NULL;    /* server context */
 
 #define CheckContext(A, B) if((A) != (B)) { LogWarn("invalid context, ignoring script function!\n"); return -1; }
 
-static duk_ret_t SC_LoadScript(duk_context *context) {
+static duk_ret_t SFunc_loadScript(duk_context *context) {
     // todo!!!
 
     return 0;
 }
 
-static duk_ret_t SC_GetCampaignName(duk_context *context) {
+static duk_ret_t SFunc_getCampaignName(duk_context *context) {
 #if 0
     ModManifest *cur = Mod_GetCurrentCampaign();
     if(cur == NULL) {
@@ -51,17 +51,17 @@ static duk_ret_t SC_GetCampaignName(duk_context *context) {
     return 0;
 }
 
-static duk_ret_t SC_GetCurrentMapName(duk_context *context) {
+static duk_ret_t SFunc_getCurrentMapName(duk_context *context) {
     //duk_push_string(context, Map_GetCurrentName());
     return 0;
 }
 
-static duk_ret_t SC_GetCurrentMapDescription(duk_context *context) {
+static duk_ret_t SFunc_getCurrentMapDescription(duk_context *context) {
     //duk_push_string(context, Map_GetCurrentDescription());
     return 0;
 }
 
-static duk_ret_t SC_LogInfo(duk_context *context) {
+static duk_ret_t SFunc_logInfo(duk_context *context) {
     duk_push_string(context, " ");
     duk_insert(context, 0);
     duk_join(context, duk_get_top(context) - 1);
@@ -69,7 +69,7 @@ static duk_ret_t SC_LogInfo(duk_context *context) {
     return 0;
 }
 
-static duk_ret_t SC_LogWarn(duk_context *context) {
+static duk_ret_t SFunc_logWarn(duk_context *context) {
     duk_push_string(context, " ");
     duk_insert(context, 0);
     duk_join(context, duk_get_top(context) - 1);
@@ -77,7 +77,7 @@ static duk_ret_t SC_LogWarn(duk_context *context) {
     return 0;
 }
 
-static duk_ret_t SC_LogDebug(duk_context *context) {
+static duk_ret_t SFunc_logDebug(duk_context *context) {
     duk_push_string(context, " ");
     duk_insert(context, 0);
     duk_join(context, duk_get_top(context) - 1);
@@ -85,7 +85,7 @@ static duk_ret_t SC_LogDebug(duk_context *context) {
     return 0;
 }
 
-static duk_ret_t SC_Error(duk_context *context) {
+static duk_ret_t SFunc_error(duk_context *context) {
     duk_push_string(context, " ");
     duk_insert(context, 0);
     duk_join(context, duk_get_top(context) - 1);
@@ -100,7 +100,7 @@ static duk_ret_t SC_Error(duk_context *context) {
     }
 
 void CS_InitGame(void) {
-    duk_get_prop_string(scr_context, -1, "InitGame");
+    duk_get_prop_string(scr_context, -1, "initGame");
 #if 0
     duk_push_int(scr_context, 10);
     duk_push_int(scr_context, 20);
@@ -112,31 +112,31 @@ void CS_InitGame(void) {
 /************************************************************/
 
 void LoadScript(duk_context *context, const char *path) {
-    LogInfo("loading \"%s\"...\n", path);
+    LogInfo("Loading \"%s\"...\n", path);
 
     size_t length = plGetFileSize(path);
     if(length == 0) {
-        LogWarn("empty script, \"%s\"!\n", path);
+        LogWarn("Empty script, \"%s\"!\n", path);
         return;
     }
 
     FILE *fs = fopen(path, "rb");
     if(fs == NULL) {
-        LogWarn("failed to load script, \"%s\"!\n", path);
+        LogWarn("Failed to load script, \"%s\"!\n", path);
         return;
     }
 
     char buf[length];
     if(fread(buf, sizeof(char), length, fs) != length) {
-        LogWarn("failed to read complete script!\n");
+        LogWarn("Failed to read complete script!\n");
     }
     fclose(fs);
 
     duk_push_lstring(context, buf, length);
     if(duk_peval(context) != 0) {
-        LogWarn("failed to compile \"%s\"!\n %s\n", duk_safe_to_string(context, -1));
+        LogWarn("Failed to compile \"%s\"!\n %s\n", duk_safe_to_string(context, -1));
     } else {
-        LogInfo("script compiled successfully\n");
+        LogInfo("Script compiled successfully\n");
     }
     duk_pop(context);
 
@@ -146,14 +146,14 @@ void LoadScript(duk_context *context, const char *path) {
 static void DeclareGlobalString(duk_context *context, const char *name, const char *value) {
     duk_push_string(context, value);
     if(!duk_put_global_string(context, name)) {
-        Error("failed to declare global string, \"%s\", aborting!\n", name);
+        Error("Failed to declare global string, \"%s\", aborting!\n", name);
     }
 }
 
 static void DeclareGlobalInteger(duk_context *context, const char *name, int value) {
     duk_push_int(context, value);
     if(!duk_put_global_string(context, name)) {
-        Error("failed to declare global integer, \"%s\", aborting!\n", name);
+        Error("Failed to declare global integer, \"%s\", aborting!\n", name);
     }
 }
 
@@ -170,17 +170,17 @@ typedef struct ScriptFunction {
 } ScriptFunction;
 
 #define _d(value, args) \
-    {#value, (args), SC_##value},
+    {#value, (args), SFunc_##value},
 
 ScriptFunction scr_builtins[]= {
-        _d(LogInfo, DUK_VARARGS)
-        _d(LogWarn, DUK_VARARGS)
-        _d(LogDebug, DUK_VARARGS)
-        _d(Error, DUK_VARARGS)
+        _d(logInfo, DUK_VARARGS)
+        _d(logWarn, DUK_VARARGS)
+        _d(logDebug, DUK_VARARGS)
+        _d(error, DUK_VARARGS)
 
-        _d(GetCampaignName, 0)
-        _d(GetCurrentMapName, 0)
-        _d(GetCurrentMapDescription, 0)
+        _d(getCampaignName, 0)
+        _d(getCurrentMapName, 0)
+        _d(getCurrentMapDescription, 0)
 };
 
 void Script_Initialize(void) {
@@ -188,7 +188,7 @@ void Script_Initialize(void) {
 
     scr_context = duk_create_heap_default();
     if(scr_context == NULL) {
-        Error("failed to create heap for default context, aborting!\n");
+        Error("Failed to create heap for default context, aborting!\n");
     }
 
     for(unsigned int i = 0; i < plArrayElements(scr_builtins); ++i) {
@@ -208,6 +208,14 @@ void Script_Initialize(void) {
     DeclareUniversalGlobalInteger(PIG_CLASS_SABOTEUR);
     DeclareUniversalGlobalInteger(PIG_CLASS_HEAVY);
     DeclareUniversalGlobalInteger(PIG_CLASS_GRUNT);
+
+    DeclareUniversalGlobalInteger(TEAM_AMERICAN);
+    DeclareUniversalGlobalInteger(TEAM_BRITISH);
+    DeclareUniversalGlobalInteger(TEAM_FRENCH);
+    DeclareUniversalGlobalInteger(TEAM_GERMAN);
+    DeclareUniversalGlobalInteger(TEAM_JAPAN);
+    DeclareUniversalGlobalInteger(TEAM_LARD);
+    DeclareUniversalGlobalInteger(TEAM_RUSSIAN);
 
     /* controller vars */
     DeclareUniversalGlobalInteger(PORK_BUTTON_CROSS);
@@ -242,6 +250,14 @@ void Script_Initialize(void) {
 
     //duk_eval_string(scr_context, "LogInfo('Hello world!');");
     //printf("1+2=%d\n", (int)duk_get_int(scr_context, -1));
+}
+
+void Script_EvaluateString(const char *str) {
+    if(str == NULL) {
+        return;
+    }
+
+    duk_eval_string(scr_context, str);
 }
 
 void Script_Shutdown(void) {

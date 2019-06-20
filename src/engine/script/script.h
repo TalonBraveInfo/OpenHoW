@@ -20,34 +20,8 @@
 PL_EXTERN_C
 
 void Script_Initialize(void);
+void Script_EvaluateString(const char *str);
 void Script_Shutdown(void);
-
-/************************************************************/
-
-#if 0
-typedef void ScriptContext;
-
-typedef struct ScriptArray {
-    struct {
-        char data[64];
-    } *strings;
-    unsigned int num_strings;
-} ScriptArray;
-
-ScriptContext *Script_CreateContext(void);
-void Script_DestroyContext(ScriptContext *ctx);
-
-void Script_ParseBuffer(ScriptContext *ctx, const char *buf);
-void Script_FlushJSON(ScriptContext *ctx);
-
-unsigned int Script_GetArrayLength(ScriptContext *ctx, const char *property);
-ScriptArray *Script_GetArrayStrings(ScriptContext *ctx, const char *property);
-void Script_DestroyArrayStrings(ScriptArray *array);
-const char *Script_GetArrayObjectString(ScriptContext *ctx, const char *property, uint id, const char *key, const char *def);
-
-const char *Script_GetStringProperty(ScriptContext *ctx, const char *property, const char *def);
-int Script_GetIntegerProperty(ScriptContext *ctx, const char *property, int def);
-#endif
 
 /************************************************************/
 /* CallScript Functions */

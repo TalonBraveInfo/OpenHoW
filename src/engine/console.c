@@ -27,6 +27,7 @@
 #include "graphics/display.h"
 #include "graphics/font.h"
 #include "config.h"
+#include "script/script.h"
 
 /************************************************************/
 
@@ -424,7 +425,7 @@ static void DrawInputPane(void) {
 
 static void DrawOutputPane(void) {
     //unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
-    unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+    //unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
 
     BitmapFont* font = g_fonts[FONT_CHARS2];
     for (size_t i = 0, cur_line = 0; i < console_state.out_buffer_pos;) {
@@ -481,7 +482,11 @@ static void ConsoleInputCallback(int key, bool pressed) {
     }
 
     if(key == '\r' && console_state.in_buffer[0] != '\0') {
-        plParseConsoleString(console_state.in_buffer);
+        if(console_state.in_buffer[0] == '/') {
+            Script_EvaluateString(&console_state.in_buffer[1]);
+        } else {
+            plParseConsoleString(console_state.in_buffer);
+        }
         ResetInputBuffer();
         return;
     }
