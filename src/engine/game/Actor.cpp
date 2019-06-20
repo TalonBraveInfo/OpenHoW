@@ -97,18 +97,6 @@ void Actor::HandleInput() {
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
         move_down = true;
     }
-
-    // Clamp height based on current tile pos
-    Map* map = GameManager::GetInstance()->GetCurrentMap();
-    float height = map->GetHeight(PLVector2(position_.x, position_.z));
-    if((position_.y - 32.f) < height) {
-        position_.y = height + 32.f;
-    }
-
-    if(angles_.x < -70) angles_.x = -70;
-    if(angles_.x > 70) angles_.x = 70;
-
-    VecAngleClamp(&angles_);
 }
 
 void Actor::Tick()
@@ -149,6 +137,18 @@ void Actor::Tick()
     {
         angles_.y += 2.0f;
     }
+
+    // Clamp height based on current tile pos
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
+    float height = map->GetHeight(PLVector2(position_.x, position_.z));
+    if((position_.y - 32.f) < height) {
+        position_.y = height + 32.f;
+    }
+
+    if(angles_.x < -70) angles_.x = -70;
+    if(angles_.x > 70) angles_.x = 70;
+
+    VecAngleClamp(&angles_);
 }
 
 void Actor::SetAngles(PLVector3 angles) {

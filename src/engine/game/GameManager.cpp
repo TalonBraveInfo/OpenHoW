@@ -200,7 +200,6 @@ void GameManager::Run() {
         {
             if(server_buf.type == NetMessage::SET_PROPERTY)
             {
-                printf("Updating property %u/%s\n", (unsigned)(server_buf.actor_idx), server_buf.property_name);
                 Actor *actor = ActorManager::GetInstance()->actors_[server_buf.actor_idx];
                 ActorProperty *property = actor->properties_[server_buf.property_name];
                 property->from_msg(&server_buf);
