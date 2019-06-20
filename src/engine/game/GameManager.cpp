@@ -15,46 +15,208 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+#include <assert.h>
+
 #include "../engine.h"
 #include "../frontend.h"
 #include "../audio.h"
 #include "../Map.h"
 
+#include "ActorManager.h"
 #include "GameManager.h"
 #include "SPGameMode.h"
 
 GameManager *GameManager::instance_ = nullptr;
 
-GameManager::GameManager() {
+GameManager::GameManager(): listener_fd(-1), server_fd(-1), server_buf_len(0) {
+    char *server_ip = getenv("SERVER_IP");
+    if(server_ip != NULL)
+    {
+        server_fd = socket(AF_INET, SOCK_STREAM, 0);
+        assert(server_fd != -1);
 
+        struct sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = inet_addr(server_ip);
+        addr.sin_port = htons(1236);
+
+        assert(connect(server_fd, (struct sockaddr*)(&addr), sizeof(addr)) == 0);
+
+        #ifdef WIN32
+        u_long mode = 1;
+        ioctlsocket(server_fd, FIONBIO, &mode);
+        #else
+        assert(fcntl(server_fd, F_SETFL, O_NONBLOCK) == 0);
+        #endif
+    }
+    else{
+        listener_fd = socket(AF_INET, SOCK_STREAM, 0);
+        assert(listener_fd != -1);
+
+        struct sockaddr_in addr;
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = htonl(INADDR_ANY);
+        addr.sin_port = htons(1236);
+
+        assert(bind(listener_fd, (struct sockaddr*)(&addr), sizeof(addr)) == 0);
+        assert(listen(listener_fd, 8) == 0);
+
+        #ifdef WIN32
+        u_long mode = 1;
+        ioctlsocket(listener_fd, FIONBIO, &mode);
+        #else
+        assert(fcntl(listener_fd, F_SETFL, O_NONBLOCK) == 0);
+        #endif
+    }
 }
 
 GameManager::~GameManager() {
+    if(server_fd != -1)
+    {
+        close(server_fd);
+    }
+    
+    while(!client_fds.empty())
+    {
+        close(*(client_fds.begin()));
+        client_fds.erase(client_fds.begin());
+    }
 
+    if(listener_fd != -1)
+    {
+        close(listener_fd);
+    }
 }
 
-void GameManager::Tick() {
+void GameManager::Run() {
     FrontEnd_Tick();
 
     if(active_mode_ == nullptr) {
         return;
     }
 
-    if(ambient_emit_delay_ < g_state.sim_ticks) {
-        const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
-        if(sample != nullptr) {
-            PLVector3 position = {
-                    plGenerateRandomf(MAP_PIXEL_WIDTH),
-                    active_map_->GetMaxHeight(),
-                    plGenerateRandomf(MAP_PIXEL_WIDTH)
-            };
-            AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, 0.5f);
-        }
+    if(listener_fd != -1)
+    {
+        for(int newfd; (newfd = accept(listener_fd, NULL, 0)) != -1;)
+        {
+            #ifdef WIN32
+            u_long mode = 1;
+            ioctlsocket(newfd, FIONBIO, &mode);
+            #else
+            assert(fcntl(newfd, F_SETFL, O_NONBLOCK) == 0);
+            #endif
 
-        ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
+            client_fds.insert(newfd);
+        }
+        
+        for(size_t i = 0; i < ActorManager::GetInstance()->actors_.size(); ++i)
+        {
+            const Actor *actor = ActorManager::GetInstance()->actors_[i];
+
+            for(auto p = actor->properties_.begin(); p != actor->properties_.end(); ++p)
+            {
+                if(((p->second->flags & ActorProperty::INPUT) && p->second->is_dirty())
+                    || p->second->dirty_ticks() > 250)
+                {
+                    NetMessage msg;
+                    msg.type = NetMessage::SET_PROPERTY;
+                    msg.actor_idx = i;
+                    strcpy(msg.property_name, p->second->name.c_str());
+                    p->second->to_msg(&msg);
+
+                    for(auto c = client_fds.begin(); c != client_fds.end(); ++c)
+                    {
+                        assert(send(*c, &msg, sizeof(msg), 0) == sizeof(msg));
+                    }
+
+                    p->second->commit();
+                }
+            }
+        }
     }
 
-    active_mode_->Tick();
+    static unsigned int next_tick = 0;
+    if(next_tick == 0)
+    {
+        next_tick = System_GetTicks();
+    }
+    
+    auto tick = [&]()
+    {
+        if(ambient_emit_delay_ < g_state.sim_ticks) {
+            const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
+            if(sample != nullptr) {
+                PLVector3 position = {
+                        plGenerateRandomf(MAP_PIXEL_WIDTH),
+                        active_map_->GetMaxHeight(),
+                        plGenerateRandomf(MAP_PIXEL_WIDTH)
+                };
+                AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, 0.5f);
+            }
+
+            ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
+        }
+
+        active_mode_->Tick();
+    };
+
+    while(server_fd == -1 && System_GetTicks() > next_tick)
+    {
+        ++g_state.sim_ticks;
+        tick();
+        next_tick += SKIP_TICKS;
+        
+        NetMessage msg;
+        msg.type = NetMessage::SET_TICK;
+        msg.tick_count = g_state.sim_ticks;
+
+        for(auto c = client_fds.begin(); c != client_fds.end(); ++c)
+        {
+            assert(send(*c, &msg, sizeof(msg), 0) == sizeof(msg));
+        }
+    }
+
+    while(server_fd != -1)
+    {
+        int r = recv(server_fd, ((unsigned char*)(&server_buf)) + server_buf_len, sizeof(server_buf) - server_buf_len, 0);
+        if(r <= 0)
+        {
+            break;
+        }
+
+        server_buf_len += r;
+        if(server_buf_len == sizeof(server_buf))
+        {
+            if(server_buf.type == NetMessage::SET_PROPERTY)
+            {
+                printf("Updating property %u/%s\n", (unsigned)(server_buf.actor_idx), server_buf.property_name);
+                Actor *actor = ActorManager::GetInstance()->actors_[server_buf.actor_idx];
+                ActorProperty *property = actor->properties_[server_buf.property_name];
+                property->from_msg(&server_buf);
+            }
+            else if(server_buf.type == NetMessage::SET_TICK)
+            {
+                while(g_state.sim_ticks < server_buf.tick_count)
+                {
+                    ++g_state.sim_ticks;
+                    tick();
+                }
+            }
+
+            server_buf_len = 0;
+        }
+    }
 }
 
 void GameManager::LoadMap(const std::string &name) {

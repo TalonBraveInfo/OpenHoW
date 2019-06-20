@@ -17,10 +17,7 @@
 
 #pragma once
 
-#include <set>
-
 #include "GameMode.h"
-#include "msg.h"
 
 class SPGameMode : public IGameMode {
 public:
@@ -48,11 +45,4 @@ protected:
 
     void SpawnActors() override;
     void DestroyActors() override;
-
-private:
-    int listener_fd, server_fd;
-    std::set<int> client_fds;
-
-    NetMessage server_buf;
-    int server_buf_len;
 };

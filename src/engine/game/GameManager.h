@@ -17,8 +17,11 @@
 
 #pragma once
 
+#include <set>
+
 #include "TempGame.h"
 #include "Actor.h"
+#include "msg.h"
 
 struct Player {
     std::string     name;
@@ -32,6 +35,12 @@ class Map;
 class GameManager {
 private:
     static GameManager* instance_;
+
+    int listener_fd, server_fd;
+    std::set<int> client_fds;
+
+    NetMessage server_buf;
+    int server_buf_len;
 
 public:
     static GameManager* GetInstance() {
@@ -52,7 +61,7 @@ public:
     GameManager();
     ~GameManager();
 
-    void Tick();
+    void Run();
 
     void LoadMap(const std::string &name);
     void UnloadMap();

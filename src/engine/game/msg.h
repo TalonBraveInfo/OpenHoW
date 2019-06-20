@@ -6,4 +6,5 @@ struct NetMessage
 	unsigned int actor_idx;
 	char property_name[32];
 	unsigned char property_value[16];
+	unsigned int tick_count;
 };

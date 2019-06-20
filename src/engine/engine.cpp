@@ -132,6 +132,7 @@ bool Engine_IsRunning(void) {
         next_tick = System_GetTicks();
     }
 
+#if 0
     unsigned int loops = 0;
     while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
         g_state.sys_ticks = System_GetTicks();
@@ -146,6 +147,14 @@ bool Engine_IsRunning(void) {
         next_tick += SKIP_TICKS;
         loops++;
     }
+#endif
+
+    g_state.sys_ticks = System_GetTicks();
+    Client_ProcessInput(); // todo: kill this
+
+    GameManager::GetInstance()->Run();
+
+    AudioManager::GetInstance()->Tick();
 
     ImGuiImpl_SetupFrame();
 
