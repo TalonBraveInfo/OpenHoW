@@ -49,7 +49,7 @@ public:
         ~ActorClassRegistration();
     };
 
-private:
+public:
     static std::vector<Actor*> actors_;
 };
 

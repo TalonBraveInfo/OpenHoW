@@ -21,6 +21,8 @@
 #include <map>
 #include <string>
 
+#include "msg.h"
+
 class Actor;
 
 enum ActorFlag {
@@ -103,10 +105,10 @@ public:
         OUTPUT = (1 << 2),
     };
 
+    const std::string name;
     const Flags flags;
 
 private:
-    const std::string name;
     Actor &actor;
 
     bool dirty;
@@ -134,6 +136,9 @@ public:
 
     /* Rollback to the last clean value. Makes DIRTY. */
     virtual void rollback() = 0;
+
+    virtual void to_msg(NetMessage *msg) const = 0;
+    virtual void from_msg(const NetMessage *msg) = 0;
 
     bool is_dirty() const;            /* Is the property presently dirty? */
     unsigned int dirty_ticks() const; /* Number of ticks the property has been dirty for. */
@@ -202,7 +207,7 @@ public:
         return value;
     }
 
-    Vector3ActorProperty operator=(const PLVector3 &rhs)
+    Vector3ActorProperty &operator=(const PLVector3 &rhs)
     {
         value = rhs;
         mark_dirty();
@@ -226,6 +231,22 @@ public:
     {
         value = clean_value;
         mark_clean();
+    }
+
+    virtual void to_msg(NetMessage *msg) const override
+    {
+        float *data = (float*)(msg->property_value);
+        data[0] = value.x;
+        data[1] = value.y;
+        data[2] = value.z;
+    }
+    
+    virtual void from_msg(const NetMessage *msg) override
+    {
+        float *data = (float*)(msg->property_value);
+        value.x = data[0];
+        value.y = data[1];
+        value.z = data[2];
     }
 };
 
@@ -247,8 +268,13 @@ public:
         return value;
     }
 
-    PODActorProperty operator=(const T &rhs)
+    PODActorProperty &operator=(const T &rhs)
     {
+        if(rhs == value)
+        {
+            return *this;
+        }
+
         value = rhs;
         mark_dirty();
 
@@ -272,13 +298,23 @@ public:
         value = clean_value;
         mark_clean();
     }
+
+    virtual void to_msg(NetMessage *msg) const override
+    {
+        memcpy(msg->property_value, &value, sizeof(value));
+    }
+
+    virtual void from_msg(const NetMessage *msg) override
+    {
+        memcpy(&value, msg->property_value, sizeof(value));
+    }
 };
 
 typedef PODActorProperty<bool> BooleanActorProperty;
 
 class Actor {
 friend ActorProperty;
-private:
+public:
     std::map<std::string, ActorProperty*> properties_;
 
 public:
