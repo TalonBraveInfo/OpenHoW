@@ -15,24 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+out vec3 interp_normal;
+out vec2 interp_UV;
+out vec4 interp_colour;
 
-typedef enum ShaderProgram {
-    SHADER_GenericTextured,
-    SHADER_GenericUntextured,
-    SHADER_GenericTexturedLit,
-    SHADER_AlphaTest,
-    SHADER_Water,
-    SHADER_DebugTest,
-
-    MAX_SHADERS
-} ShaderProgram;
-
-PL_EXTERN_C
-
-void Shaders_Initialize(void);
-void Shaders_SetProgram(ShaderProgram program);
-PLShaderProgram *Shaders_GetProgram(ShaderProgram program);
-void Shaders_Shutdown(void);
-
-PL_EXTERN_C_END
+void main() {
+    gl_Position = pl_proj * pl_view * pl_model * vec4(pl_vposition, 1.0f);
+    interp_normal = pl_vnormal;
+    interp_UV = pl_vuv;
+    interp_colour = pl_vcolour;
+}

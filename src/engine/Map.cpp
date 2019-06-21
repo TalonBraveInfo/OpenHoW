@@ -272,7 +272,7 @@ void Map::LoadSky() {
         Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
     }
 
-    plSetMeshShaderProgram(mesh, programs[SHADER_UNTEXTURED]);
+    plSetMeshShaderProgram(mesh, Shaders_GetProgram(SHADER_GenericUntextured));
 
     ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
 }
@@ -309,6 +309,15 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
 
     // gross GROSS; ensures that the dome transitions out nicely
     g_state.gfx.clear_colour = bottom;
+
+    PLShaderProgram *program = Shaders_GetProgram(SHADER_GenericTexturedLit);
+    if(program == nullptr) {
+        return;
+    }
+
+    plSetNamedShaderUniformVector4(program, "fog_colour", manifest_->fog_colour.ToVec4());
+    plSetNamedShaderUniformFloat(program, "fog_near", manifest_->fog_near);
+    plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_far);
 }
 
 void Map::LoadSpawns(const std::string &path) {
@@ -572,9 +581,13 @@ void Map::GenerateOverview() {
 void Map::Draw() {
     plDrawModel(sky_model_);
 
+    Shaders_SetProgram(SHADER_GenericTexturedLit);
+
     g_state.gfx.num_chunks_drawn = 0;
     for(auto chunk : chunks_) {
         g_state.gfx.num_chunks_drawn++;
         plDrawModel(chunk.model);
     }
+
+    Shaders_SetProgram(SHADER_GenericTextured);
 }

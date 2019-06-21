@@ -56,6 +56,11 @@ void MapManager::RegisterManifest(const std::string &path) {
         manifest.sun_pitch          = config.GetFloatProperty("sunPitch", manifest.sun_pitch);
         manifest.temperature        = config.GetStringProperty("temperature", manifest.temperature);
         manifest.time               = config.GetStringProperty("time", manifest.time);
+
+        // Fog
+        manifest.fog_colour         = config.GetColourProperty("fogColour", manifest.fog_colour);
+        manifest.fog_near           = config.GetFloatProperty("fogNear", manifest.fog_near);
+        manifest.fog_far            = config.GetFloatProperty("fogFar", manifest.fog_far);
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }

@@ -15,24 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+uniform sampler2D diffuse;
 
-typedef enum ShaderProgram {
-    SHADER_GenericTextured,
-    SHADER_GenericUntextured,
-    SHADER_GenericTexturedLit,
-    SHADER_AlphaTest,
-    SHADER_Water,
-    SHADER_DebugTest,
+uniform float fog_far = 0;
+uniform float fog_near = 0;
+uniform vec4 fog_colour = vec4(1.0, 1.0, 1.0, 0.05);
 
-    MAX_SHADERS
-} ShaderProgram;
+in vec3 interp_normal;
+in vec2 interp_UV;
+in vec4 interp_colour;
 
-PL_EXTERN_C
+void main() {
+    vec4 diffuse = interp_colour * texture(diffuse, interp_UV);
 
-void Shaders_Initialize(void);
-void Shaders_SetProgram(ShaderProgram program);
-PLShaderProgram *Shaders_GetProgram(ShaderProgram program);
-void Shaders_Shutdown(void);
+    float fog_distance = gl_FragCoord.z / gl_FragCoord.w;
+    float fog_amount = 1.0 - clamp(exp(-fog_colour.w * fog_distance), 0.0, 1.0);
 
-PL_EXTERN_C_END
+    pl_frag = diffuse * fog_amount * fog_colour;
+}
