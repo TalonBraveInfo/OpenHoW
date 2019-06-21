@@ -191,7 +191,7 @@ void GameManager::Run() {
 
     while(server_fd != -1)
     {
-        int r = recv(server_fd, ((unsigned char*)(&server_buf)) + server_buf_len, sizeof(server_buf) - server_buf_len, 0);
+        int r = recv(server_fd, ((char*)(&server_buf)) + server_buf_len, sizeof(server_buf) - server_buf_len, 0);
         if(r <= 0)
         {
             break;
