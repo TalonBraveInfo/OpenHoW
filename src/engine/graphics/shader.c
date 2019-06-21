@@ -25,6 +25,7 @@
 #define GLSL_DEFAULT_PS_UNIFORMS "uniform sampler2D diffuse;"
 
 static PLShaderProgram *programs[MAX_SHADERS];
+static ShaderProgram last_program = SHADER_GenericUntextured;  /* for resetting following rebuild */
 
 static PLShaderProgram *CreateShaderProgram(const char *vertex, const char *fragment) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
@@ -84,17 +85,24 @@ static void RebuildShaders(void) {
             plSetShaderUniformInt(programs[i], slot, 0);
         }
     }
+
+    /* switch back to the previous shader program */
+    Shaders_SetProgram(last_program);
+}
+
+static void RebuildShadersCommand(unsigned int argc, char *argv[]) {
+    RebuildShaders();
 }
 
 void Shaders_Initialize(void) {
     memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
     RebuildShaders();
 
-    /* enable the default shader program */
-    Shaders_SetProgram(SHADER_GenericUntextured);
+    plRegisterConsoleCommand("rebuildShaders", RebuildShadersCommand, "Rebuild all shaders");
 }
 
 void Shaders_SetProgram(ShaderProgram program) {
+    last_program = program;
     plSetShaderProgram(programs[program]);
 }
 

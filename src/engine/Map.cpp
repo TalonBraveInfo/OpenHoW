@@ -272,8 +272,6 @@ void Map::LoadSky() {
         Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
     }
 
-    plSetMeshShaderProgram(mesh, Shaders_GetProgram(SHADER_GenericUntextured));
-
     ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
 }
 
@@ -579,6 +577,8 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
+    Shaders_SetProgram(SHADER_GenericUntextured);
+
     plDrawModel(sky_model_);
 
     Shaders_SetProgram(SHADER_GenericTexturedLit);
@@ -588,6 +588,4 @@ void Map::Draw() {
         g_state.gfx.num_chunks_drawn++;
         plDrawModel(chunk.model);
     }
-
-    Shaders_SetProgram(SHADER_GenericTextured);
 }
