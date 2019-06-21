@@ -352,7 +352,7 @@ protected:
 
     Vector3ActorProperty position_;           // x, y, z
     PLVector3 fallback_position_{0, 0, 0};
-    PLVector3 angles_{0, 0, 0};             // p, y, r
+    Vector3ActorProperty angles_;             // p, y, r
     PLVector3 bounds_{0, 0, 0};
 
     BooleanActorProperty move_forward, move_backward, move_up, move_down, turn_left, turn_right;
