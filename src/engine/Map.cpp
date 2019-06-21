@@ -291,14 +291,21 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
     const unsigned int solid_steps = 3;
     const unsigned int grad_steps = 6;
     PLColour colour = top;
-    PLColour step = (bottom - top) / (uint8_t)(grad_steps);
+    int stepr = ((int)(bottom.r) - (int)(top.r)) / (int)(grad_steps);
+    int stepg = ((int)(bottom.g) - (int)(top.g)) / (int)(grad_steps);
+    int stepb = ((int)(bottom.b) - (int)(top.b)) / (int)(grad_steps);
+
+    if(stepr < 0) { stepr += 255; }
+    if(stepg < 0) { stepg += 255; }
+    if(stepb < 0) { stepb += 255; }
 
     PLMesh* mesh = lod->meshes[0];
     for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
         if (j == 32) {
             if(++s >= solid_steps) {
-                colour += step;
-                colour.a = 255;
+                colour.r += stepr;
+                colour.g += stepg;
+                colour.b += stepb;
             } j = 0;
         }
 

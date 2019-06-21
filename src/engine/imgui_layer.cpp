@@ -184,7 +184,7 @@ void MapConfigEditor::Display() {
     rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
     rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
     if(ImGui::ColorPicker3("Sky Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
     }
     manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
     manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
@@ -194,7 +194,7 @@ void MapConfigEditor::Display() {
     rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
     rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
     if(ImGui::ColorPicker3("Sky Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
     }
     manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
     manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
