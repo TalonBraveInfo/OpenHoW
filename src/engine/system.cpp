@@ -17,6 +17,8 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+#undef far
+#undef near
 #endif
 
 #include <PL/platform_filesystem.h>

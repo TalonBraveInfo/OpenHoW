@@ -17,6 +17,8 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+#undef far
+#undef near
 #else
 #include <arpa/inet.h>
 #include <fcntl.h>
