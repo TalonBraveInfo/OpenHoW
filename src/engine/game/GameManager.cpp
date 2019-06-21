@@ -121,31 +121,6 @@ void GameManager::Run() {
 
             client_fds.insert(newfd);
         }
-        
-        for(size_t i = 0; i < ActorManager::GetInstance()->actors_.size(); ++i)
-        {
-            const Actor *actor = ActorManager::GetInstance()->actors_[i];
-
-            for(auto p = actor->properties_.begin(); p != actor->properties_.end(); ++p)
-            {
-                if(((p->second->flags & ActorProperty::INPUT) && p->second->is_dirty())
-                    || p->second->dirty_ticks() > 250)
-                {
-                    NetMessage msg;
-                    msg.type = NetMessage::SET_PROPERTY;
-                    msg.actor_idx = i;
-                    strcpy(msg.property_name, p->second->name.c_str());
-                    p->second->to_msg(&msg);
-
-                    for(auto c = client_fds.begin(); c != client_fds.end(); ++c)
-                    {
-                        assert(send(*c, &msg, sizeof(msg), 0) == sizeof(msg));
-                    }
-
-                    p->second->commit();
-                }
-            }
-        }
     }
 
     static unsigned int next_tick = 0;
@@ -186,6 +161,31 @@ void GameManager::Run() {
         for(auto c = client_fds.begin(); c != client_fds.end(); ++c)
         {
             assert(send(*c, &msg, sizeof(msg), 0) == sizeof(msg));
+        }
+
+        for(size_t i = 0; i < ActorManager::GetInstance()->actors_.size(); ++i)
+        {
+            const Actor *actor = ActorManager::GetInstance()->actors_[i];
+
+            for(auto p = actor->properties_.begin(); p != actor->properties_.end(); ++p)
+            {
+                if(((p->second->flags & ActorProperty::INPUT) && p->second->is_dirty())
+                    || p->second->dirty_ticks() > 250)
+                {
+                    NetMessage msg;
+                    msg.type = NetMessage::SET_PROPERTY;
+                    msg.actor_idx = i;
+                    strcpy(msg.property_name, p->second->name.c_str());
+                    p->second->to_msg(&msg);
+
+                    for(auto c = client_fds.begin(); c != client_fds.end(); ++c)
+                    {
+                        assert(send(*c, &msg, sizeof(msg), 0) == sizeof(msg));
+                    }
+
+                    p->second->commit();
+                }
+            }
         }
     }
 
