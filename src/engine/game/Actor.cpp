@@ -28,6 +28,7 @@ Actor::~Actor() = default;
 
 Actor::Actor():
     position_(*this, "position", ActorProperty::DEFAULT, PLVector3(0, 0, 0)),
+    angles_(*this, "angles", ActorProperty::DEFAULT, PLVector3(0, 0, 0)),
     move_forward(*this, "move_forward", ActorProperty::INPUT, false),
     move_backward(*this, "move_backward", ActorProperty::INPUT, false),
     move_up(*this, "move_up", ActorProperty::INPUT, false),
@@ -37,6 +38,7 @@ Actor::Actor():
 
 Actor::Actor(const std::string &name):
     position_(*this, "position", ActorProperty::DEFAULT, PLVector3(0, 0, 0)),
+    angles_(*this, "angles", ActorProperty::DEFAULT, PLVector3(0, 0, 0)),
     move_forward(*this, "move_forward", ActorProperty::INPUT, false),
     move_backward(*this, "move_backward", ActorProperty::INPUT, false),
     move_up(*this, "move_up", ActorProperty::INPUT, false),
@@ -148,7 +150,9 @@ void Actor::Tick()
     if(angles_.x < -70) angles_.x = -70;
     if(angles_.x > 70) angles_.x = 70;
 
-    VecAngleClamp(&angles_);
+    PLVector3 a = angles_;
+    VecAngleClamp(&a);
+    angles_ = a;
 }
 
 void Actor::SetAngles(PLVector3 angles) {
