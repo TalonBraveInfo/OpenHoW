@@ -15,12 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PL/platform_graphics_camera.h>
+
 #include "../engine.h"
 #include "../input.h"
 
 #include "ActorManager.h"
 #include "ModelActor.h"
 #include "AnimatedModelActor.h"
+#include "GameManager.h"
 
 class PigActor : public AnimatedModelActor {
 public:
@@ -28,8 +31,13 @@ public:
     ~PigActor() override;
 
     void HandleInput() override;
+    void Tick() override;
 
 protected:
+    float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
+    float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
+    float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
+
 private:
     enum {
         EYES_OPEN,
@@ -61,6 +69,56 @@ PigActor::PigActor(const std::string& name) : AnimatedModelActor(name) {}
 PigActor::~PigActor() = default;
 
 void PigActor::HandleInput() {
-    // todo: implement...
-    Actor::HandleInput();
+    Player* player = GameManager::GetInstance()->GetCurrentPlayer();
+    if(player == nullptr) {
+        return;
+    }
+
+    PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
+    PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
+
+    if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
+        input_forward = 1.0;
+    } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
+        input_forward = -1.0;
+    } else {
+        input_forward = -cl.y;
+    }
+
+    if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
+        input_yaw = -1.0;
+    } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
+        input_yaw = 1.0;
+    } else {
+        input_yaw = cr.x / 100.0;
+    }
+
+    if(Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
+        input_pitch = 1.0;
+    } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
+        input_pitch = -1.0;
+    } else {
+        input_pitch = cr.y / 100.0;
+    }
+}
+
+void PigActor::Tick() {
+    position_.x += input_forward * 100.0 * g_state.camera->forward.x;
+    position_.y += input_forward * 100.0 * g_state.camera->forward.y;
+    position_.z += input_forward * 100.0 * g_state.camera->forward.z;
+
+    angles_.x += input_pitch * 2.0;
+    angles_.y += input_yaw * 2.0;
+
+    // Clamp height based on current tile pos
+    Map* map = GameManager::GetInstance()->GetCurrentMap();
+    float height = map->GetHeight(PLVector2(position_.x, position_.z));
+    if((position_.y - 32.f) < height) {
+        position_.y = height + 32.f;
+    }
+
+    if(angles_.x < -70) angles_.x = -70;
+    if(angles_.x > 70) angles_.x = 70;
+
+    VecAngleClamp(&angles_);
 }

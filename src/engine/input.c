@@ -54,6 +54,8 @@ void Input_Initialize(void) {
     input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = PORK_KEY_DOWN;
     input_state.keyboard.bindings[ACTION_TURN_LEFT]     = PORK_KEY_LEFT;
     input_state.keyboard.bindings[ACTION_TURN_RIGHT]    = PORK_KEY_RIGHT;
+    input_state.keyboard.bindings[ACTION_AIM_UP]        = 'a';
+    input_state.keyboard.bindings[ACTION_AIM_DOWN]      = 'z';
 
     /* ask sdl how many joysticks / controllers we have */
     int num_joysticks = SDL_NumJoysticks();
