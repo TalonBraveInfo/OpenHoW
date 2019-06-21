@@ -19,7 +19,7 @@ uniform sampler2D diffuse;
 
 uniform float fog_far = 0;
 uniform float fog_near = 0;
-uniform vec4 fog_colour = vec4(1.0, 1.0, 1.0, 0.05);
+uniform vec4 fog_colour = vec4(1.0, 1.0, 1.0, 1.0);
 
 in vec3 interp_normal;
 in vec2 interp_UV;
@@ -28,8 +28,9 @@ in vec4 interp_colour;
 void main() {
     vec4 diffuse = interp_colour * texture(diffuse, interp_UV);
 
-    float fog_distance = gl_FragCoord.z / gl_FragCoord.w;
-    float fog_amount = 1.0 - clamp(exp(-fog_colour.w * fog_distance), 0.0, 1.0);
+    float fog_distance = (gl_FragCoord.z / gl_FragCoord.w) / (fog_far * 100.0);
+    float fog_amount = 1.0 - fog_distance;
+    fog_amount *= -(fog_near / 100.0);
 
-    pl_frag = diffuse * fog_amount * fog_colour;
+    pl_frag = mix(diffuse, fog_colour, clamp(fog_amount, 0.0, 1.0));
 }
