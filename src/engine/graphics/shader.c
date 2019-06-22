@@ -21,8 +21,7 @@
 #include "../engine.h"
 #include "shader.h"
 
-#define GLSL(...) #__VA_ARGS__
-#define GLSL_DEFAULT_PS_UNIFORMS "uniform sampler2D diffuse;"
+//#define GLSL(...) #__VA_ARGS__
 
 static PLShaderProgram *programs[MAX_SHADERS];
 static ShaderProgram last_program = SHADER_GenericUntextured;  /* for resetting following rebuild */
