@@ -173,7 +173,9 @@ void MapConfigEditor::Display() {
     rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
     rgb[1] = plByteToFloat(manifest_->ambient_colour.g);
     rgb[2] = plByteToFloat(manifest_->ambient_colour.b);
-    ImGui::ColorPicker3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB);
+    if(ImGui::ColorPicker3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+    }
     manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
     manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
     manifest_->ambient_colour.b = plFloatToByte(rgb[2]);

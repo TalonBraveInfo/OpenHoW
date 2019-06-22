@@ -21,12 +21,14 @@ uniform float fog_far = 0;
 uniform float fog_near = 0;
 uniform vec4 fog_colour = vec4(1.0, 1.0, 1.0, 1.0);
 
+uniform vec4 ambient_colour = vec4(1.0, 1.0, 1.0, 1.0);
+
 in vec3 interp_normal;
 in vec2 interp_UV;
 in vec4 interp_colour;
 
 void main() {
-    vec4 diffuse = interp_colour * texture(diffuse, interp_UV);
+    vec4 diffuse = (ambient_colour * interp_colour) * texture(diffuse, interp_UV);
 
     float fog_distance = (gl_FragCoord.z / gl_FragCoord.w) / (fog_far * 100.0);
     float fog_amount = 1.0 - fog_distance;

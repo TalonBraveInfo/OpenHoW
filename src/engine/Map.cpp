@@ -323,6 +323,8 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
     plSetNamedShaderUniformVector4(program, "fog_colour", manifest_->fog_colour.ToVec4());
     plSetNamedShaderUniformFloat(program, "fog_near", manifest_->fog_near);
     plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_far);
+
+    plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
 }
 
 void Map::LoadSpawns(const std::string &path) {
@@ -492,9 +494,9 @@ void Map::LoadTiles(const std::string &path) {
                         plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
                         plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
                         plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(
-                                manifest_->ambient_colour.r * current_tile->shading[i] / 255,
-                                manifest_->ambient_colour.g * current_tile->shading[i] / 255,
-                                manifest_->ambient_colour.b * current_tile->shading[i] / 255));
+                                current_tile->shading[i],
+                                current_tile->shading[i],
+                                current_tile->shading[i]));
                     }
                 }
             }
@@ -508,11 +510,9 @@ void Map::LoadTiles(const std::string &path) {
             }
 
             snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
-            current_chunk.model->model_matrix = plTranslateMatrix(
-                    PLVector3(
-                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH)/* - (MAP_PIXEL_WIDTH / 2)*/,
-                            0.0f,
-                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)/* - (MAP_PIXEL_WIDTH / 2)*/) );
+            current_chunk.model->model_matrix = plTranslateMatrix(PLVector3(
+                    (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH), 0.0f,
+                    (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)));
         }
     }
 
