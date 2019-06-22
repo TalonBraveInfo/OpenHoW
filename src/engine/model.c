@@ -502,7 +502,7 @@ void CacheModelData(void) {
     plSetMeshVertexPosition(default_mesh, 4, PLVector3(0, 0, 20));
     plSetMeshVertexPosition(default_mesh, 5, PLVector3(0, 0, -20));
     plSetMeshUniformColour(default_mesh, PLColour(255, 0, 0, 255));
-    plSetMeshShaderProgram(default_mesh, programs[SHADER_UNTEXTURED]);
+    plSetMeshShaderProgram(default_mesh, Shaders_GetProgram(SHADER_GenericUntextured));
     plUploadMesh(default_mesh);
     default_model = plCreateBasicStaticModel(default_mesh);
 

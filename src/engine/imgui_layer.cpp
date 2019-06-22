@@ -202,6 +202,28 @@ void MapConfigEditor::Display() {
 
     ImGui::Separator();
 
+    ImGui::Text("Fog Settings");
+
+    rgb[0] = plByteToFloat(manifest_->fog_colour.r);
+    rgb[1] = plByteToFloat(manifest_->fog_colour.g);
+    rgb[2] = plByteToFloat(manifest_->fog_colour.b);
+    if(ImGui::ColorPicker3("Fog Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+    manifest_->fog_colour.r = plFloatToByte(rgb[0]);
+    manifest_->fog_colour.g = plFloatToByte(rgb[1]);
+    manifest_->fog_colour.b = plFloatToByte(rgb[2]);
+
+    if(ImGui::DragFloat("Fog Near", &manifest_->fog_near)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+
+    if(ImGui::DragFloat("Fog Far", &manifest_->fog_far)) {
+        map_->ApplySkyColours(manifest_->sky_colour_top, manifest_->sky_colour_bottom);
+    }
+
+    ImGui::Separator();
+
     const char *temperatures[]={ "hot", "cold" };
 
     //ImGui::ListBox("Temperature", temperatures, , );
@@ -268,7 +290,16 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     output << R"("sunYaw":")" + std::to_string(manifest_->sun_yaw) + "\",";
     output << R"("sunPitch":")" + std::to_string(manifest_->sun_pitch) + "\",";
     output << R"("temperature":")" + manifest_->temperature + "\",";
-    output << R"("time":")" + manifest_->time + "\"";
+    output << R"("time":")" + manifest_->time + "\",";
+
+    // Fog
+    output << R"("fogColour":")" +
+    std::to_string(manifest_->fog_colour.r) + " " +
+    std::to_string(manifest_->fog_colour.g) + " " +
+    std::to_string(manifest_->fog_colour.b) + "\",";
+    output << R"("fogNear":")" + std::to_string(manifest_->fog_near) + "\",";
+    output << R"("fogFar":")" + std::to_string(manifest_->fog_far) + "\"";
+
     output << "}\n";
 
     LogInfo("Wrote \"%s\"!\n", path.c_str());

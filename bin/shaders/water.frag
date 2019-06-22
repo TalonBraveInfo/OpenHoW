@@ -15,24 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-typedef enum ShaderProgram {
-    SHADER_GenericTextured,
-    SHADER_GenericUntextured,
-    SHADER_GenericTexturedLit,
-    SHADER_AlphaTest,
-    SHADER_Water,
-    SHADER_DebugTest,
-
-    MAX_SHADERS
-} ShaderProgram;
-
-PL_EXTERN_C
-
-void Shaders_Initialize(void);
-void Shaders_SetProgram(ShaderProgram program);
-PLShaderProgram *Shaders_GetProgram(ShaderProgram program);
-void Shaders_Shutdown(void);
-
-PL_EXTERN_C_END
+void main() {
+    pl_frag = vec4(0.0, 0.0, 1.0, 1.0);
+}

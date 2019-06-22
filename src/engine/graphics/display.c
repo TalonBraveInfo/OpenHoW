@@ -806,7 +806,7 @@ void DrawMap(void); /* declared in engine.cpp */
 void DrawAudioSources(void); /* declared in audio.cpp */
 
 void Display_DrawScene(void) {
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    Shaders_SetProgram(SHADER_GenericTextured);
 
     DrawMap();
     DrawActors();
@@ -818,7 +818,7 @@ void Display_DrawScene(void) {
 }
 
 void Display_DrawInterface(void) {
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    Shaders_SetProgram(SHADER_GenericTextured);
     plSetupCamera(g_state.ui_camera);
     plSetDepthBufferMode(PL_DEPTHBUFFER_DISABLE);
     FE_Draw();
@@ -829,7 +829,7 @@ void Display_DrawDebug(void) {
     bool fs;
     System_GetWindowDrawableSize(&window_draw_w, &window_draw_h, &fs);
 
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    Shaders_SetProgram(SHADER_GenericTextured);
     plSetupCamera(g_state.ui_camera);
 
     DrawDebugOverlay();

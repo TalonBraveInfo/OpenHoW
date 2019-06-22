@@ -15,24 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+uniform sampler2D diffuse;
 
-typedef enum ShaderProgram {
-    SHADER_GenericTextured,
-    SHADER_GenericUntextured,
-    SHADER_GenericTexturedLit,
-    SHADER_AlphaTest,
-    SHADER_Water,
-    SHADER_DebugTest,
+in vec2 interp_UV;
+in vec4 interp_colour;
 
-    MAX_SHADERS
-} ShaderProgram;
-
-PL_EXTERN_C
-
-void Shaders_Initialize(void);
-void Shaders_SetProgram(ShaderProgram program);
-PLShaderProgram *Shaders_GetProgram(ShaderProgram program);
-void Shaders_Shutdown(void);
-
-PL_EXTERN_C_END
+void main() {
+    pl_frag = interp_colour * texture(diffuse, interp_UV);
+}
