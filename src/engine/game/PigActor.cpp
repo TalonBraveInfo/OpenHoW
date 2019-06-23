@@ -82,7 +82,7 @@ void PigActor::HandleInput() {
     } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
         input_forward = -1.0;
     } else {
-        input_forward = -cl.y;
+        input_forward = -cl.y / 327.0;
     }
 
     if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
@@ -90,7 +90,7 @@ void PigActor::HandleInput() {
     } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
         input_yaw = 1.0;
     } else {
-        input_yaw = cr.x / 100.0;
+        input_yaw = cr.x / 327.0;
     }
 
     if(Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
@@ -98,7 +98,7 @@ void PigActor::HandleInput() {
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
         input_pitch = -1.0;
     } else {
-        input_pitch = cr.y / 100.0;
+        input_pitch = -cr.y / 327.0;
     }
 }
 
