@@ -225,11 +225,11 @@ void MapConfigEditor::Display() {
                 map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
             }
 
-            if (ImGui::DragFloat("Fog Intensity", &manifest_->fog_intensity)) {
+            if (ImGui::SliderFloat("Fog Intensity", &manifest_->fog_intensity, -100.0f, 100.0f, "%.0f")) {
                 map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
             }
 
-            if (ImGui::DragFloat("Fog Distance", &manifest_->fog_distance)) {
+            if (ImGui::SliderFloat("Fog Distance", &manifest_->fog_distance, 0, 300.0f, "%.0f")) {
                 map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
             }
         }

@@ -32,9 +32,9 @@ struct MapManifest {
     PLColour                    sun_colour{255, 255, 255};      // directional colour
     float                       sun_yaw{0}, sun_pitch{0};       // light direction (yaw/angle)
     // Fog
-    PLColour                    fog_colour{255, 255, 255, 255};
-    float                       fog_intensity{0};
-    float                       fog_distance{0};
+    PLColour                    fog_colour{223, 255, 255, 255};
+    float                       fog_intensity{30.0f};
+    float                       fog_distance{100.0f};
     // Misc
     std::string                 temperature{"hot"};     // can be hot/cold
     std::string                 time{"day"};            // can be day/night
