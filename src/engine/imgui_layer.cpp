@@ -69,15 +69,15 @@ static bool show_console            = false;
 static bool show_settings           = false;
 
 static unsigned int windows_id_counter = 0;
-class DebugWindow {
+class EdWindow {
 public:
-    explicit DebugWindow(DebugWindow *parent = nullptr, bool status = true) {
+    explicit EdWindow(EdWindow *parent = nullptr, bool status = true) {
         id_     = windows_id_counter++;
         status_ = status;
         parent_ = parent;
     }
 
-    virtual ~DebugWindow() = default;
+    virtual ~EdWindow() = default;
 
     virtual void Display() = 0;
 
@@ -92,14 +92,14 @@ protected:
     bool status_;
     unsigned int id_;
 
-    DebugWindow *parent_{nullptr};
+    EdWindow *parent_{nullptr};
 };
 
 #define dname(a)  std::string(a "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()
 
 static const unsigned int default_flags = ImGuiWindowFlags_NoSavedSettings;
 
-static std::vector<DebugWindow*> windows;
+static std::vector<EdWindow*> windows;
 
 /************************************************************/
 /* Map Config Editor */
@@ -108,7 +108,7 @@ static std::vector<DebugWindow*> windows;
 
 #include "game/GameManager.h"
 
-class MapConfigEditor : public DebugWindow {
+class MapConfigEditor : public EdWindow {
 public:
     MapConfigEditor();
     ~MapConfigEditor() override;
@@ -145,92 +145,124 @@ MapConfigEditor::MapConfigEditor() {
 MapConfigEditor::~MapConfigEditor() = default;
 
 void MapConfigEditor::Display() {
-    ImGui::SetNextWindowSize(ImVec2(256, 512), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(310, 512), ImGuiCond_Once);
+    if(ImGui::Begin(dname("Map Config Editor"), &status_, default_flags)) {
+        ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
+        ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
 
-    ImGui::Begin(dname("Map Config Editor"), &status_, default_flags);
+        // todo: mode selection - need to query wherever this ends up being implemented...
 
-    ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
-    ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
+        ImGui::Separator();
 
-    // todo: mode selection - need to query wherever this ends up being implemented...
+        ImGui::Text("Sky");
 
-    ImGui::Separator();
+        ImGui::InputText("Texture", sky_buffer, sizeof(sky_buffer));
 
-    ImGui::InputText("Sky", sky_buffer, sizeof(sky_buffer));
+        float rgb[3];
+        rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
+        rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
+        rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
+        if (ImGui::ColorEdit3("Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+            manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
+            manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
+            manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
 
-    ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr);
-    ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr);
+            map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+        }
 
-    float rgb[3];
-    rgb[0] = plByteToFloat(manifest_->sun_colour.r);
-    rgb[1] = plByteToFloat(manifest_->sun_colour.g);
-    rgb[2] = plByteToFloat(manifest_->sun_colour.b);
-    ImGui::ColorPicker3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB);
-    manifest_->sun_colour.r = plFloatToByte(rgb[0]);
-    manifest_->sun_colour.g = plFloatToByte(rgb[1]);
-    manifest_->sun_colour.b = plFloatToByte(rgb[2]);
+        rgb[0] = plByteToFloat(manifest_->sky_colour_bottom.r);
+        rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
+        rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
+        if (ImGui::ColorEdit3("Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+            manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
+            manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
+            manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
 
-    rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
-    rgb[1] = plByteToFloat(manifest_->ambient_colour.g);
-    rgb[2] = plByteToFloat(manifest_->ambient_colour.b);
-    if(ImGui::ColorPicker3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+            map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+        }
+
+        ImGui::Separator();
+
+        ImGui::Text("Lighting");
+
+        ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr);
+        ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr);
+
+        rgb[0] = plByteToFloat(manifest_->sun_colour.r);
+        rgb[1] = plByteToFloat(manifest_->sun_colour.g);
+        rgb[2] = plByteToFloat(manifest_->sun_colour.b);
+        if (ImGui::ColorEdit3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+            manifest_->sun_colour.r = plFloatToByte(rgb[0]);
+            manifest_->sun_colour.g = plFloatToByte(rgb[1]);
+            manifest_->sun_colour.b = plFloatToByte(rgb[2]);
+        }
+
+        rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
+        rgb[1] = plByteToFloat(manifest_->ambient_colour.g);
+        rgb[2] = plByteToFloat(manifest_->ambient_colour.b);
+        if (ImGui::ColorEdit3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+            manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
+            manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
+            manifest_->ambient_colour.b = plFloatToByte(rgb[2]);
+
+            map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+        }
+
+        ImGui::Separator();
+
+        // Fog
+        {
+            ImGui::Text("Fog");
+
+            rgb[0] = plByteToFloat(manifest_->fog_colour.r);
+            rgb[1] = plByteToFloat(manifest_->fog_colour.g);
+            rgb[2] = plByteToFloat(manifest_->fog_colour.b);
+            if (ImGui::ColorEdit3("Fog Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+                manifest_->fog_colour.r = plFloatToByte(rgb[0]);
+                manifest_->fog_colour.g = plFloatToByte(rgb[1]);
+                manifest_->fog_colour.b = plFloatToByte(rgb[2]);
+
+                map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+            }
+
+            if (ImGui::DragFloat("Fog Intensity", &manifest_->fog_intensity)) {
+                map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+            }
+
+            if (ImGui::DragFloat("Fog Distance", &manifest_->fog_distance)) {
+                map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+            }
+        }
+
+        ImGui::Separator();
+
+        // Temperature
+        {
+            enum {
+                TEMP_HOT, TEMP_COLD,
+                MAX_TEMP
+            };
+            const char *temperatures[MAX_TEMP] = {"Hot", "Cold"};
+            static int temperature_index = -1;
+            if (temperature_index == -1) {
+                if(manifest_->temperature == "cold") {
+                    temperature_index = TEMP_COLD;
+                } else {
+                    temperature_index = TEMP_HOT;
+                }
+            }
+
+            if (ImGui::ListBox("Temperature", &temperature_index, temperatures, MAX_TEMP)) {
+                if(temperature_index == TEMP_COLD) {
+                    manifest_->temperature = "cold";
+                } else {
+                    manifest_->temperature = "hot";
+                }
+            }
+        }
+
+        ImGui::End();
     }
-    manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
-    manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
-    manifest_->ambient_colour.b = plFloatToByte(rgb[2]);
-
-    ImGui::Separator();
-
-    rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
-    rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
-    rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
-    if(ImGui::ColorPicker3("Sky Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-    }
-    manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
-    manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
-    manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
-
-    rgb[0] = plByteToFloat(manifest_->sky_colour_bottom.r);
-    rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
-    rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
-    if(ImGui::ColorPicker3("Sky Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-    }
-    manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
-    manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
-    manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
-
-    ImGui::Separator();
-
-    ImGui::Text("Fog Settings");
-
-    rgb[0] = plByteToFloat(manifest_->fog_colour.r);
-    rgb[1] = plByteToFloat(manifest_->fog_colour.g);
-    rgb[2] = plByteToFloat(manifest_->fog_colour.b);
-    if(ImGui::ColorPicker3("Fog Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-    }
-    manifest_->fog_colour.r = plFloatToByte(rgb[0]);
-    manifest_->fog_colour.g = plFloatToByte(rgb[1]);
-    manifest_->fog_colour.b = plFloatToByte(rgb[2]);
-
-    if(ImGui::DragFloat("Fog Near", &manifest_->fog_near)) {
-        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-    }
-
-    if(ImGui::DragFloat("Fog Far", &manifest_->fog_far)) {
-        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-    }
-
-    ImGui::Separator();
-
-    const char *temperatures[]={ "hot", "cold" };
-
-    //ImGui::ListBox("Temperature", temperatures, , );
-
-    ImGui::End();
 
     if(save_dialog) {
         ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
@@ -299,8 +331,8 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     std::to_string(manifest_->fog_colour.r) + " " +
     std::to_string(manifest_->fog_colour.g) + " " +
     std::to_string(manifest_->fog_colour.b) + "\",";
-    output << R"("fogNear":")" + std::to_string(manifest_->fog_near) + "\",";
-    output << R"("fogFar":")" + std::to_string(manifest_->fog_far) + "\"";
+    output << R"("fogIntensity":")" + std::to_string(manifest_->fog_intensity) + "\",";
+    output << R"("fogDistance":")" + std::to_string(manifest_->fog_distance) + "\"";
 
     output << "}\n";
 
@@ -322,7 +354,7 @@ void UI_DisplaySettings() {
     }
 
     ImGui::Begin("Settings", &show_settings);
-    
+
     static int item_current = 0;
     bool display_changed = false;
     const VideoPreset* mode = Display_GetVideoPreset(item_current);
@@ -384,7 +416,7 @@ void UI_DisplaySettings() {
     if(ui_scale_changed) {
         plSetConsoleVariable(cv_display_ui_scale, pl_itoa(ui_scale_opt, buf, 16, 10));
     }
-    
+
     if(ImGui::Button("Cancel")) {
         show_settings = false;
     }
@@ -591,7 +623,7 @@ void UI_DisplayFileBox() {
     ImGui::End();
 }
 
-class QuitWindow : public DebugWindow {
+class QuitWindow : public EdWindow {
 public:
     void Display() override {
         ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
@@ -619,7 +651,7 @@ protected:
 private:
 };
 
-class ConsoleWindow : public DebugWindow {
+class ConsoleWindow : public EdWindow {
 public:
     void SendCommand() {
         plParseConsoleString(input_buf_);
@@ -664,77 +696,87 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
-        if(ImGui::BeginMenu("Debug")) {
-            if(ImGui::MenuItem("Show Console", "`")) {
-                windows.push_back(new ConsoleWindow());
-            }
-
-            static int tc = 0;
-            if(ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
-                char buf[4];
-                plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
-            }
-
-            if(ImGui::IsItemHovered() && tc > 0) {
-                const PLTexture *texture = Display_GetCachedTexture((unsigned int) cv_display_texture_cache->i_value);
-                if(texture != nullptr) {
-                    ImGui::BeginTooltip();
-                    ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id), ImVec2(texture->w, texture->h));
-                    ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
-                    ImGui::EndTooltip();
+        if(cv_debug_mode->i_value > 1) {
+            if (ImGui::BeginMenu("Debug")) {
+                if (ImGui::MenuItem("Show Console", "`")) {
+                    windows.push_back(new ConsoleWindow());
                 }
-            }
 
-            static int im = 0;
-            if(ImGui::SliderInt("Show Input States", &im, 0, 2)) {
-                char buf[4];
-                plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
-            }
+                static int tc = 0;
+                if (ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
+                    char buf[4];
+                    plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
+                }
 
-            ImGui::Separator();
-
-            if(ImGui::BeginMenu("Console Variables")) {
-                size_t num_c;
-                PLConsoleVariable **vars;
-                plGetConsoleVariables(&vars, &num_c);
-
-                for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
-                    switch ((*var)->type) {
-                        case pl_float_var:
-                            if(ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
-                                    ImGuiInputTextFlags_EnterReturnsTrue)) {
-                                plSetConsoleVariable((*var), std::to_string((*var)->f_value).c_str());
-                            }
-                            break;
-                        case pl_int_var:
-                            if (ImGui::InputInt((*var)->var, &(*var)->i_value, 1, 10,
-                                                ImGuiInputTextFlags_EnterReturnsTrue)) {
-                                plSetConsoleVariable((*var), std::to_string((*var)->i_value).c_str());
-                            }
-                            break;
-                        case pl_string_var:
-                            // read-only for now
-                            ImGui::LabelText((*var)->var, "%s", (*var)->s_value);
-                            break;
-                        case pl_bool_var:
-                            bool b = (*var)->b_value;
-                            if (ImGui::Checkbox((*var)->var, &b)) {
-                                plSetConsoleVariable((*var), b ? "true" : "false");
-                            }
-                            break;
-                    }
-
-                    if (ImGui::IsItemHovered()) {
+                if (ImGui::IsItemHovered() && tc > 0) {
+                    const PLTexture *texture = Display_GetCachedTexture(
+                            (unsigned int) cv_display_texture_cache->i_value);
+                    if (texture != nullptr) {
                         ImGui::BeginTooltip();
-                        ImGui::TextUnformatted((*var)->description);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id),
+                                     ImVec2(texture->w, texture->h));
+                        ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
                         ImGui::EndTooltip();
                     }
                 }
 
+                static int im = 0;
+                if (ImGui::SliderInt("Show Input States", &im, 0, 2)) {
+                    char buf[4];
+                    plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
+                }
+
+                ImGui::Separator();
+
+                if (ImGui::BeginMenu("Console Variables")) {
+                    size_t num_c;
+                    PLConsoleVariable **vars;
+                    plGetConsoleVariables(&vars, &num_c);
+
+                    for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
+                        switch ((*var)->type) {
+                            case pl_float_var:
+                                if (ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
+                                                      ImGuiInputTextFlags_EnterReturnsTrue)) {
+                                    plSetConsoleVariable((*var), std::to_string((*var)->f_value).c_str());
+                                }
+                                break;
+                            case pl_int_var:
+                                if (ImGui::InputInt((*var)->var, &(*var)->i_value, 1, 10,
+                                                    ImGuiInputTextFlags_EnterReturnsTrue)) {
+                                    plSetConsoleVariable((*var), std::to_string((*var)->i_value).c_str());
+                                }
+                                break;
+                            case pl_string_var:
+                                // read-only for now
+                                ImGui::LabelText((*var)->var, "%s", (*var)->s_value);
+                                break;
+                            case pl_bool_var:
+                                bool b = (*var)->b_value;
+                                if (ImGui::Checkbox((*var)->var, &b)) {
+                                    plSetConsoleVariable((*var), b ? "true" : "false");
+                                }
+                                break;
+                        }
+
+                        if (ImGui::IsItemHovered()) {
+                            ImGui::BeginTooltip();
+                            ImGui::TextUnformatted((*var)->description);
+                            ImGui::EndTooltip();
+                        }
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+
+                if(ImGui::MenuItem("Rebuild Shaders")) {
+                    plParseConsoleString("rebuildShaders");
+                }
+
                 ImGui::EndMenu();
             }
-
-            ImGui::EndMenu();
         }
 
         if(GameManager::GetInstance()->GetCurrentMap() != nullptr) {
@@ -748,6 +790,10 @@ void UI_DisplayDebugMenu(void) {
 
         if(ImGui::BeginMenu("Tools")) {
             if (ImGui::MenuItem("Particle Editor...")) {}
+            ImGui::Separator();
+            if (ImGui::MenuItem("Map Config Editor...")) {
+                windows.push_back(new MapConfigEditor());
+            }
             ImGui::EndMenu();
         }
 
@@ -756,6 +802,7 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
+#if 0 // pointless
         ImGui::Separator();
 
         unsigned int fps, ms;
@@ -764,6 +811,7 @@ void UI_DisplayDebugMenu(void) {
         ImGui::PushItemWidth(64);
         ImGui::Text("FPS %d (%dms)", fps, ms);
         ImGui::PopItemWidth();
+#endif
 
         ImGui::EndMainMenuBar();
     }

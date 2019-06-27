@@ -59,8 +59,8 @@ void MapManager::RegisterManifest(const std::string &path) {
 
         // Fog
         manifest.fog_colour         = config.GetColourProperty("fogColour", manifest.fog_colour);
-        manifest.fog_near           = config.GetFloatProperty("fogNear", manifest.fog_near);
-        manifest.fog_far            = config.GetFloatProperty("fogFar", manifest.fog_far);
+        manifest.fog_intensity      = config.GetFloatProperty("fogIntensity", manifest.fog_intensity);
+        manifest.fog_distance            = config.GetFloatProperty("fogDistance", manifest.fog_distance);
     } catch(const std::exception &e) {
         LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
     }

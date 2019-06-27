@@ -83,6 +83,9 @@ static CopyPath pc_package_paths[] = {
         {"/Chars/JAPANESE.MTD", "/chars/pigs/japanese/"},
         {"/Chars/RUSSIAN.MTD", "/chars/pigs/russian/"},
         {"/Chars/TEAMLARD.MTD", "/chars/pigs/teamlard/"},
+        {"/Chars/BRITHATS.MAD", "/chars/pigs/hats/"},
+        {"/Chars/FHATS.MAD", "/chars/pigs/hats/"},
+
         /* weapons */
         {"/Chars/WEAPONS.MAD", "/chars/weapons/"},
         {"/Chars/WEAPONS.MTD", "/chars/weapons/"},
@@ -631,7 +634,6 @@ static void MergeTextureTargets(void) {
 
 enum {
     VERSION_UNKNOWN,
-
     VERSION_ENG_PSX,        /* English PSX version */
     VERSION_ENG_PC,         /* English PC version */
     VERSION_ENG_PC_DIGITAL, /* English PC/Digital version */
