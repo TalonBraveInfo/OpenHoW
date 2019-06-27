@@ -70,7 +70,7 @@ const char *u_scan(const char *path, const char **preference) {
     return "";
 }
 
-const char *u_find2(const char *path, const char **preference) {
+const char *u_find2(const char *path, const char **preference, bool abort_on_fail) {
     static char out[PL_SYSTEM_MAX_PATH];
     memset(out, 0, sizeof(out));
 
@@ -87,7 +87,12 @@ const char *u_find2(const char *path, const char **preference) {
     snprintf(base_path, sizeof(base_path), "%s/%s", GetBasePath(), path);
     strncpy(out, u_scan(base_path, preference), sizeof(out));
     if(plIsEmptyString(out)) {
-        Error("Failed to find \"%s\"!\n", path);
+        if(abort_on_fail) {
+            Error("Failed to find \"%s\"!\n", path);
+        }
+
+        LogWarn("Failed to find \"%s\"!\n", path);
+        return NULL;
     }
 
     //LogDebug("Found \"%s\"\n", out);
@@ -100,9 +105,9 @@ FILE* u_open(const char* path, const char* mode, bool abort_on_fail) {
         /* todo: provide more detail! */
         if(abort_on_fail) {
             Error("Failed to open file at \"%s\"!\n", path);
-        } else {
-            LogWarn("Failed to open file at \"%s\"!\n", path);
         }
+
+        LogWarn("Failed to open file at \"%s\"!\n", path);
         return NULL;
     }
 

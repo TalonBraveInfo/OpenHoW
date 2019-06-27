@@ -282,21 +282,21 @@ PLModel* Model_LoadMinFile(const char *path) {
 /* like plLoadModel, only prefixes with base path
  * and can abort on error */
 PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
-    char model_path[PL_SYSTEM_MAX_PATH];
-    snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
-    if(!plFileExists(model_path)) {
-        snprintf(model_path, sizeof(model_path), "%s.min", u_find(path));
+    const char *fp = u_find2(path, supported_model_formats, abort_on_fail);
+    if(fp == NULL) {
+        return default_model;
     }
 
-    PLModel* model = plLoadModel(model_path);
+    PLModel* model = plLoadModel(fp);
     if(model == NULL) {
         if(abort_on_fail) {
-            Error("Failed to load model, \"%s\", aborting (%s)!\n", model_path, plGetError());
+            Error("Failed to load model, \"%s\", aborting (%s)!\n", fp, plGetError());
         }
 
-        LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
-        model = default_model;
+        LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
+        return default_model;
     }
+
     return model;
 }
 

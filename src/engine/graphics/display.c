@@ -217,7 +217,7 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
 
             char texture_path[PL_SYSTEM_MAX_PATH];
             snprintf(tmp, sizeof(tmp), "%s%s", path, line);
-            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats));
+            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats, true));
 
             if(index->num_textures >= MAX_TEXTURES_PER_INDEX) {
                 Error("hit max index (%u) for texture sheet, aborting!\n", MAX_TEXTURES_PER_INDEX);
@@ -323,22 +323,21 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
     u_fclose(file);
 }
 
-//const char *supported_model_formats[]={"vtx", NULL};
+/* todo: platform library should pass this information back */
+const char *supported_model_formats[]={"obj", "vtx", "min", NULL};
 const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
 //const char *supported_audio_formats[]={"wav", NULL};
 //const char *supported_video_formats[]={"bik", NULL};
 
 PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
-    char n_path[PL_SYSTEM_MAX_PATH];
     const char* ext = plGetFileExtension(path);
     if(plIsEmptyString(ext)) {
-        strncpy(n_path, u_find2(path, supported_image_formats), sizeof(n_path));
-        if(plIsEmptyString(n_path)) {
-            LogWarn("Failed to find texture, \"%s\"!\n", path);
+        const char *fp = u_find2(path, supported_image_formats, false);
+        if(fp == NULL) {
             return default_texture;
         }
 
-        PLTexture* texture = plLoadTextureImage(n_path, filter);
+        PLTexture* texture = plLoadTextureImage(fp, filter);
         if(texture == NULL) {
             LogWarn("%s, aborting!\n", plGetError());
             return default_texture;
@@ -348,8 +347,8 @@ PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
     }
 
     PLImage img;
-    strncpy(n_path, u_find(path), sizeof(n_path));
-    if(plLoadImage(n_path, &img)) {
+    const char *fp = u_find(path);
+    if(plLoadImage(fp, &img)) {
         /* pixel format of TIM will be changed before uploading */
         if(pl_strncasecmp(ext, "tim", 3) == 0) {
             plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
@@ -365,7 +364,7 @@ PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
         plDestroyTexture(texture, true);
     }
 
-    LogWarn("Failed to load texture, \"%s\" (%s)!\n", n_path, plGetError());
+    LogWarn("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
     plFreeImage(&img);
     return default_texture;
 }
