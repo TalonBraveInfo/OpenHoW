@@ -123,9 +123,7 @@ public:
     float GetMaxHeight() { return max_height_; }
     float GetMinHeight() { return min_height_; }
 
-    const std::string &GetName() { return manifest_->name; }
     const std::string &GetId() { return id_name_; }
-    const std::string &GetDescription() { return manifest_->description; }
     MapManifest* GetManifest() { return manifest_; }
 
     MapChunk* GetChunk(const PLVector2 &pos);
