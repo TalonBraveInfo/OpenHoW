@@ -115,16 +115,13 @@ public:
 
     void Display() override;
 
-    void SyncManifest();
-    void CloseManifest();
     void SaveManifest(const std::string &path);
 
 protected:
 private:
+    MapManifest  backup_;
     MapManifest* manifest_;
     Map* map_{nullptr};
-
-    bool save_dialog{false};
 
     char name_buffer[32]{'\0'};
     char author_buffer[32]{'\0'};
@@ -139,156 +136,150 @@ MapConfigEditor::MapConfigEditor() {
     }
 
     manifest_ = map_->GetManifest();
-    SyncManifest();
+    backup_ = *manifest_;
+    strncpy(name_buffer, manifest_->name.c_str(), sizeof(name_buffer));
+    strncpy(author_buffer, manifest_->author.c_str(), sizeof(author_buffer));
+    strncpy(sky_buffer, manifest_->sky.c_str(), sizeof(sky_buffer));
 }
 
 MapConfigEditor::~MapConfigEditor() = default;
 
 void MapConfigEditor::Display() {
     ImGui::SetNextWindowSize(ImVec2(310, 512), ImGuiCond_Once);
-    if(ImGui::Begin(dname("Map Config Editor"), &status_, default_flags)) {
-        ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
-        ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
+    ImGui::Begin(dname("Map Config Editor"), &status_, default_flags);
+    ImGui::InputText("Name", name_buffer, sizeof(name_buffer));
+    ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
 
-        // todo: mode selection - need to query wherever this ends up being implemented...
+    // todo: mode selection - need to query wherever this ends up being implemented...
 
-        ImGui::Separator();
+    ImGui::Separator();
 
-        ImGui::Text("Sky");
+    ImGui::Text("Sky Settings");
 
-        ImGui::InputText("Texture", sky_buffer, sizeof(sky_buffer));
+    ImGui::InputText("Texture", sky_buffer, sizeof(sky_buffer));
 
-        float rgb[3];
-        rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
-        rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
-        rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
-        if (ImGui::ColorEdit3("Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-            manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
-            manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
-            manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
+    float rgb[3];
+    rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
+    rgb[1] = plByteToFloat(manifest_->sky_colour_top.g);
+    rgb[2] = plByteToFloat(manifest_->sky_colour_top.b);
+    if (ImGui::ColorEdit3("Top Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
+        manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
+        manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
+
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+    }
+
+    rgb[0] = plByteToFloat(manifest_->sky_colour_bottom.r);
+    rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
+    rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
+    if (ImGui::ColorEdit3("Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
+        manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
+        manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
+
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+    }
+
+    ImGui::Separator();
+
+    ImGui::Text("Lighting Settings");
+
+    ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr);
+    ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr);
+
+    rgb[0] = plByteToFloat(manifest_->sun_colour.r);
+    rgb[1] = plByteToFloat(manifest_->sun_colour.g);
+    rgb[2] = plByteToFloat(manifest_->sun_colour.b);
+    if (ImGui::ColorEdit3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        manifest_->sun_colour.r = plFloatToByte(rgb[0]);
+        manifest_->sun_colour.g = plFloatToByte(rgb[1]);
+        manifest_->sun_colour.b = plFloatToByte(rgb[2]);
+    }
+
+    rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
+    rgb[1] = plByteToFloat(manifest_->ambient_colour.g);
+    rgb[2] = plByteToFloat(manifest_->ambient_colour.b);
+    if (ImGui::ColorEdit3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+        manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
+        manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
+        manifest_->ambient_colour.b = plFloatToByte(rgb[2]);
+
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+    }
+
+    ImGui::Separator();
+
+    // Fog
+    {
+        ImGui::Text("Fog Settings");
+
+        rgb[0] = plByteToFloat(manifest_->fog_colour.r);
+        rgb[1] = plByteToFloat(manifest_->fog_colour.g);
+        rgb[2] = plByteToFloat(manifest_->fog_colour.b);
+        if (ImGui::ColorEdit3("Fog Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
+            manifest_->fog_colour.r = plFloatToByte(rgb[0]);
+            manifest_->fog_colour.g = plFloatToByte(rgb[1]);
+            manifest_->fog_colour.b = plFloatToByte(rgb[2]);
 
             map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
         }
 
-        rgb[0] = plByteToFloat(manifest_->sky_colour_bottom.r);
-        rgb[1] = plByteToFloat(manifest_->sky_colour_bottom.g);
-        rgb[2] = plByteToFloat(manifest_->sky_colour_bottom.b);
-        if (ImGui::ColorEdit3("Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-            manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
-            manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
-            manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
-
+        if (ImGui::SliderFloat("Fog Intensity", &manifest_->fog_intensity, -100.0f, 100.0f, "%.0f")) {
             map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
         }
 
-        ImGui::Separator();
-
-        ImGui::Text("Lighting");
-
-        ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr);
-        ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr);
-
-        rgb[0] = plByteToFloat(manifest_->sun_colour.r);
-        rgb[1] = plByteToFloat(manifest_->sun_colour.g);
-        rgb[2] = plByteToFloat(manifest_->sun_colour.b);
-        if (ImGui::ColorEdit3("Sun Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-            manifest_->sun_colour.r = plFloatToByte(rgb[0]);
-            manifest_->sun_colour.g = plFloatToByte(rgb[1]);
-            manifest_->sun_colour.b = plFloatToByte(rgb[2]);
-        }
-
-        rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
-        rgb[1] = plByteToFloat(manifest_->ambient_colour.g);
-        rgb[2] = plByteToFloat(manifest_->ambient_colour.b);
-        if (ImGui::ColorEdit3("Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-            manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
-            manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
-            manifest_->ambient_colour.b = plFloatToByte(rgb[2]);
-
+        if (ImGui::SliderFloat("Fog Distance", &manifest_->fog_distance, 0, 300.0f, "%.0f")) {
             map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
         }
+    }
 
-        ImGui::Separator();
+    ImGui::Separator();
 
-        // Fog
-        {
-            ImGui::Text("Fog");
-
-            rgb[0] = plByteToFloat(manifest_->fog_colour.r);
-            rgb[1] = plByteToFloat(manifest_->fog_colour.g);
-            rgb[2] = plByteToFloat(manifest_->fog_colour.b);
-            if (ImGui::ColorEdit3("Fog Colour", rgb, ImGuiColorEditFlags_InputRGB)) {
-                manifest_->fog_colour.r = plFloatToByte(rgb[0]);
-                manifest_->fog_colour.g = plFloatToByte(rgb[1]);
-                manifest_->fog_colour.b = plFloatToByte(rgb[2]);
-
-                map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-            }
-
-            if (ImGui::SliderFloat("Fog Intensity", &manifest_->fog_intensity, -100.0f, 100.0f, "%.0f")) {
-                map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
-            }
-
-            if (ImGui::SliderFloat("Fog Distance", &manifest_->fog_distance, 0, 300.0f, "%.0f")) {
-                map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+    // Temperature
+    {
+        enum {
+            TEMP_HOT, TEMP_COLD, MAX_TEMP
+        };
+        static const char *temperatures[MAX_TEMP] = {"Hot", "Cold"};
+        static int temperature_index = -1;
+        if (temperature_index == -1) {
+            if (manifest_->temperature == "cold") {
+                temperature_index = TEMP_COLD;
+            } else {
+                temperature_index = TEMP_HOT;
             }
         }
 
-        ImGui::Separator();
-
-        // Temperature
-        {
-            enum {
-                TEMP_HOT, TEMP_COLD,
-                MAX_TEMP
-            };
-            const char *temperatures[MAX_TEMP] = {"Hot", "Cold"};
-            static int temperature_index = -1;
-            if (temperature_index == -1) {
-                if(manifest_->temperature == "cold") {
-                    temperature_index = TEMP_COLD;
-                } else {
-                    temperature_index = TEMP_HOT;
+        if (ImGui::BeginCombo("Temperature", temperatures[temperature_index])) {
+            for (int i = 0; i < MAX_TEMP; ++i) {
+                if (ImGui::Selectable(temperatures[i], (temperature_index == i))) {
+                    ImGui::SetItemDefaultFocus();
+                    temperature_index = i;
                 }
             }
 
-            if (ImGui::ListBox("Temperature", &temperature_index, temperatures, MAX_TEMP)) {
-                if(temperature_index == TEMP_COLD) {
-                    manifest_->temperature = "cold";
-                } else {
-                    manifest_->temperature = "hot";
-                }
-            }
+            ImGui::EndCombo();
         }
-
-        ImGui::End();
     }
 
-    if(save_dialog) {
-        ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
-        ImGui::Begin(dname("Map Config Editor / Save"), &save_dialog, default_flags);
-        ImGui::InputText("Name", filename_buffer, sizeof(filename_buffer));
-        ImGui::Separator();
-        if(ImGui::Button("Save")) {
-            SaveManifest(std::string(GetFullCampaignPath()) + "/maps/" + filename_buffer + ".map");
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Cancel")) {
-            save_dialog = false;
-        }
-        ImGui::End();
+    ImGui::Separator();
+
+    if (ImGui::Button("Save")) {
+        std::string dir_name = map_->GetId();
+        SaveManifest(std::string(GetFullCampaignPath()) + "/maps/" + dir_name + ".map");
     }
-}
 
-void MapConfigEditor::CloseManifest() {
-    //manifest_ = MapManifest();
-    SyncManifest();
-}
+    ImGui::SameLine();
 
-void MapConfigEditor::SyncManifest() {
-    strncpy(name_buffer, manifest_->name.c_str(), sizeof(name_buffer));
-    strncpy(author_buffer, manifest_->author.c_str(), sizeof(author_buffer));
-    strncpy(sky_buffer, manifest_->sky.c_str(), sizeof(sky_buffer));
+    if (ImGui::Button("Cancel")) {
+        *manifest_ = backup_;
+        map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+        SetStatus(false);
+    }
+
+
+    ImGui::End();
 }
 
 void MapConfigEditor::SaveManifest(const std::string &path) {
@@ -337,6 +328,7 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     output << "}\n";
 
     LogInfo("Wrote \"%s\"!\n", path.c_str());
+    backup_ = *manifest_;
 }
 
 /************************************************************/
@@ -693,6 +685,7 @@ void UI_DisplayDebugMenu(void) {
             if(ImGui::MenuItem("Quit")) {
                 windows.push_back(new QuitWindow());
             }
+
             ImGui::EndMenu();
         }
 
@@ -779,20 +772,14 @@ void UI_DisplayDebugMenu(void) {
             }
         }
 
-        if(GameManager::GetInstance()->GetCurrentMap() != nullptr) {
-            if (ImGui::BeginMenu("Map Tools")) {
-                if (ImGui::MenuItem("Config Editor...")) {
-                    windows.push_back(new MapConfigEditor());
-                }
-                ImGui::EndMenu();
-            }
-        }
-
+        // todo: eventually this will be moved into a dedicated toolbar
         if(ImGui::BeginMenu("Tools")) {
             if (ImGui::MenuItem("Particle Editor...")) {}
-            ImGui::Separator();
-            if (ImGui::MenuItem("Map Config Editor...")) {
-                windows.push_back(new MapConfigEditor());
+            if(GameManager::GetInstance()->GetCurrentMap() != nullptr) {
+                ImGui::Separator();
+                if (ImGui::MenuItem("Map Config Editor...")) {
+                    windows.push_back(new MapConfigEditor());
+                }
             }
             ImGui::EndMenu();
         }
