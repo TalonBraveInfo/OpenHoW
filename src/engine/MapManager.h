@@ -18,19 +18,23 @@
 #pragma once
 
 struct MapManifest {
-    std::string                 path;                           // path to manifest
-    std::string                 name{"none"};                   // 'BOOT CAMP'
-    std::string                 author{"none"};                 // creator of the map
-    std::string                 description{"none"};            //
-    std::string                 sky{"sunny"};                   // sky texture group (skys/sunny/sunny1 etc.)
-    std::vector<std::string>    modes;                          // supported gameplay types
-    PLColour                    ambient_colour{255, 255, 255};  // ambient colour
+    std::string                 path;                               // path to manifest
+    std::string                 name{"none"};                       // 'BOOT CAMP'
+    std::string                 author{"none"};                     // creator of the map
+    std::string                 description{"none"};                //
+    std::string                 sky{"sunny"};                       // sky texture group (skys/sunny/sunny1 etc.)
+    std::vector<std::string>    modes;                              // supported gameplay types
+    PLColour                    ambient_colour{255, 255, 255, 255}; // ambient colour
     // Sky gradient
     PLColour                    sky_colour_top{0, 104, 156};
     PLColour                    sky_colour_bottom{223, 255, 255};
     // Sun/lighting properties
     PLColour                    sun_colour{255, 255, 255};      // directional colour
     float                       sun_yaw{0}, sun_pitch{0};       // light direction (yaw/angle)
+    // Fog
+    PLColour                    fog_colour{223, 255, 255, 255};
+    float                       fog_intensity{30.0f};
+    float                       fog_distance{100.0f};
     // Misc
     std::string                 temperature{"hot"};     // can be hot/cold
     std::string                 time{"day"};            // can be day/night

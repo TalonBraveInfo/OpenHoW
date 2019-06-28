@@ -58,13 +58,15 @@ ScriptConfig::~ScriptConfig() {
     }
 }
 
-std::string ScriptConfig::GetStringProperty(const std::string &property, const std::string &def) {
+std::string ScriptConfig::GetStringProperty(const std::string &property, const std::string &def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
     const char *p = property.c_str();
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
-        LogMissingProperty(p);
+        if(!silent) {
+            LogMissingProperty(p);
+        }
         return def;
     }
 
@@ -74,13 +76,15 @@ std::string ScriptConfig::GetStringProperty(const std::string &property, const s
     return str;
 }
 
-int ScriptConfig::GetIntegerProperty(const std::string &property, int def) {
+int ScriptConfig::GetIntegerProperty(const std::string &property, int def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
     const char *p = property.c_str();
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
-        LogMissingProperty(p);
+        if(!silent) {
+            LogMissingProperty(p);
+        }
         return def;
     }
 
@@ -90,13 +94,15 @@ int ScriptConfig::GetIntegerProperty(const std::string &property, int def) {
     return var;
 }
 
-bool ScriptConfig::GetBooleanProperty(const std::string &property, bool def) {
+bool ScriptConfig::GetBooleanProperty(const std::string &property, bool def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
     const char *p = property.c_str();
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
-        LogMissingProperty(p);
+        if(!silent) {
+            LogMissingProperty(p);
+        }
         return def;
     }
 
@@ -106,13 +112,15 @@ bool ScriptConfig::GetBooleanProperty(const std::string &property, bool def) {
     return var;
 }
 
-float ScriptConfig::GetFloatProperty(const std::string &property, float def) {
+float ScriptConfig::GetFloatProperty(const std::string &property, float def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
     const char *p = property.c_str();
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
-        LogMissingProperty(p);
+        if(!silent) {
+            LogMissingProperty(p);
+        }
         return def;
     }
 
@@ -122,13 +130,15 @@ float ScriptConfig::GetFloatProperty(const std::string &property, float def) {
     return var;
 }
 
-PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour def) {
+PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
     const char *p = property.c_str();
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
-        LogMissingProperty(p);
+        if(!silent) {
+            LogMissingProperty(p);
+        }
         return def;
     }
 
@@ -144,13 +154,15 @@ PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour d
     return out;
 }
 
-PLVector3 ScriptConfig::GetVector3Property(const std::string &property, PLVector3 def) {
+PLVector3 ScriptConfig::GetVector3Property(const std::string &property, PLVector3 def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
     const char *p = property.c_str();
     if(!duk_get_prop_string(context, -1, p)) {
         duk_pop(context);
-        LogMissingProperty(p);
+        if(!silent) {
+            LogMissingProperty(p);
+        }
         return def;
     }
 

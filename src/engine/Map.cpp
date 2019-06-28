@@ -272,8 +272,6 @@ void Map::LoadSky() {
         Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
     }
 
-    plSetMeshShaderProgram(mesh, programs[SHADER_UNTEXTURED]);
-
     ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
 }
 
@@ -291,14 +289,21 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
     const unsigned int solid_steps = 3;
     const unsigned int grad_steps = 6;
     PLColour colour = top;
-    PLColour step = (bottom - top) / (uint8_t)(grad_steps);
+    int stepr = ((int)(bottom.r) - (int)(top.r)) / (int)(grad_steps);
+    int stepg = ((int)(bottom.g) - (int)(top.g)) / (int)(grad_steps);
+    int stepb = ((int)(bottom.b) - (int)(top.b)) / (int)(grad_steps);
+
+    if(stepr < 0) { stepr += 255; }
+    if(stepg < 0) { stepg += 255; }
+    if(stepb < 0) { stepb += 255; }
 
     PLMesh* mesh = lod->meshes[0];
     for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
         if (j == 32) {
             if(++s >= solid_steps) {
-                colour += step;
-                colour.a = 255;
+                colour.r += stepr;
+                colour.g += stepg;
+                colour.b += stepb;
             } j = 0;
         }
 
@@ -309,6 +314,17 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
 
     // gross GROSS; ensures that the dome transitions out nicely
     g_state.gfx.clear_colour = bottom;
+
+    PLShaderProgram *program = Shaders_GetProgram(SHADER_GenericTexturedLit);
+    if(program == nullptr) {
+        return;
+    }
+
+    plSetNamedShaderUniformVector4(program, "fog_colour", manifest_->fog_colour.ToVec4());
+    plSetNamedShaderUniformFloat(program, "fog_near", manifest_->fog_intensity);
+    plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_distance);
+
+    plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
 }
 
 void Map::LoadSpawns(const std::string &path) {
@@ -478,9 +494,9 @@ void Map::LoadTiles(const std::string &path) {
                         plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
                         plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
                         plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(
-                                manifest_->ambient_colour.r * current_tile->shading[i] / 255,
-                                manifest_->ambient_colour.g * current_tile->shading[i] / 255,
-                                manifest_->ambient_colour.b * current_tile->shading[i] / 255));
+                                current_tile->shading[i],
+                                current_tile->shading[i],
+                                current_tile->shading[i]));
                     }
                 }
             }
@@ -488,17 +504,15 @@ void Map::LoadTiles(const std::string &path) {
             chunk_mesh->texture = Display_GetCachedTexture(TEXTURE_INDEX_MAP);
 
             // attach the mesh to our model
-            current_chunk.model = plNewBasicStaticModel(chunk_mesh);
+            current_chunk.model = plCreateBasicStaticModel(chunk_mesh);
             if(current_chunk.model == nullptr) {
                 Error("Failed to create map model (%s), aborting!\n", plGetError());
             }
 
             snprintf(current_chunk.model->name, sizeof(current_chunk.model->name), "map_chunk_%d_%d", chunk_x, chunk_y);
-            current_chunk.model->model_matrix = plTranslateMatrix(
-                    PLVector3(
-                            (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH)/* - (MAP_PIXEL_WIDTH / 2)*/,
-                            0.0f,
-                            (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)/* - (MAP_PIXEL_WIDTH / 2)*/) );
+            current_chunk.model->model_matrix = plTranslateMatrix(PLVector3(
+                    (float)(chunk_x * MAP_CHUNK_PIXEL_WIDTH), 0.0f,
+                    (float)(chunk_y * MAP_CHUNK_PIXEL_WIDTH)));
         }
     }
 
@@ -570,7 +584,11 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
+    Shaders_SetProgram(SHADER_GenericUntextured);
+
     plDrawModel(sky_model_);
+
+    Shaders_SetProgram(SHADER_GenericTexturedLit);
 
     g_state.gfx.num_chunks_drawn = 0;
     for(auto chunk : chunks_) {

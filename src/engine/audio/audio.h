@@ -52,14 +52,17 @@ typedef enum {
 
 class AudioSource;
 
-typedef struct AudioSample {
+#define AUDIO_MUSIC_MENU    "music/track02.ogg"
+#define AUDIO_MUSIC_VICTORY "music/track31.ogg"
+
+struct AudioSample {
     AudioSample(uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve);
     ~AudioSample();
 
     unsigned int    al_buffer_id_{0};
     uint8_t         *data_{nullptr};
     bool            preserve_{false};
-} AudioSample;
+};
 
 class AudioManager {
     friend class AudioSource;
@@ -98,18 +101,25 @@ public:
     void PlayLocalSound(const AudioSample* sample, PLVector3 pos, PLVector3 vel = {0, 0, 0}, bool reverb = false,
             float gain = 1.0f, float pitch = 1.0f);
 
+    void PlayMusic(const std::string &path);
+    void PauseMusic();
+    void StopMusic();
+    void SetMusicVolume(float gain);
+
     void SilenceSources();
 
     void FreeSources();
     void FreeSamples(bool force = false);
 
-    typedef enum ExtensionType {
+    void DrawSources();
+
+    enum ExtensionType {
         AUDIO_EXT_EFX,
         AUDIO_EXT_SOFT_BUFFER_SAMPLES,
 
         MAX_AUDIO_EXT_SLOTS
-    } ExtType;
-    inline bool SupportsExtension(ExtType extension) {
+    };
+    inline bool SupportsExtension(ExtensionType extension) {
         return al_extensions_[extension];
     }
 
@@ -119,9 +129,13 @@ private:
         false, false
     };
 
+    static void SetMusicVolumeCommand(const PLConsoleVariable *var);
+
     std::map<std::string, AudioSample> samples_;
     std::set<AudioSource*> sources_;
     std::set<AudioSource*> temp_sources_;
+
+    AudioSource *music_source_{nullptr};
 
     static AudioManager *instance_;
 };
@@ -145,6 +159,7 @@ public:
 
     void StartPlaying();
     void StopPlaying();
+    void Pause();
 
     bool IsPlaying();
     bool IsPaused();

@@ -76,6 +76,7 @@ PLTexture* Display_GetCachedTexture(unsigned int id);
 PLTexture* Display_GetDefaultTexture(void);
 PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter);
 
+extern const char *supported_model_formats[];
 extern const char *supported_image_formats[];
 
 PL_EXTERN_C_END

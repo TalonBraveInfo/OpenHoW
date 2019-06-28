@@ -27,7 +27,7 @@ PL_EXTERN_C
 void *u_alloc(size_t num, size_t size, bool abort_on_fail);
 
 const char *u_find(const char *path);
-const char *u_find2(const char *path, const char **preference);
+const char *u_find2(const char *path, const char **preference, bool abort_on_fail);
 
 FILE* u_open(const char *path, const char *mode, bool abort_on_fail);
 

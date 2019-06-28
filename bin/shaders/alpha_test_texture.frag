@@ -15,17 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+uniform sampler2D diffuse;
 
-PL_EXTERN_C
+in vec2 interp_UV;
+in vec4 interp_colour;
 
-void Script_Initialize(void);
-void Script_EvaluateString(const char *str);
-void Script_Shutdown(void);
+void main() {
+    vec4 samp = texture(diffuse, interp_UV);
+    if(samp.a < 0.1) {
+        discard;
+    }
 
-/************************************************************/
-/* CallScript Functions */
-
-void CS_InitGame(void);
-
-PL_EXTERN_C_END
+    pl_frag = interp_colour * samp;
+}

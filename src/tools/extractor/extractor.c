@@ -73,25 +73,43 @@ static CopyPath pc_copy_paths[] = {
 };
 
 static CopyPath pc_package_paths[] = {
-        {"/Chars/british.mad",          "/chars/pigs/"},    /* actually contains all the pig models */
-        {"/Chars/FACES.MTD",            "/chars/faces/"},   /* contains all the face textures       */
+        /* pigs */
+        {"/Chars/british.mad", "/chars/pigs/"},        /* actually contains all the pig models */
+        {"/Chars/FACES.MTD", "/chars/pigs/faces/"},  /* contains all the face textures       */
+        {"/Chars/AMERICAN.MTD", "/chars/pigs/american/"},
+        {"/Chars/british.mtd", "/chars/pigs/british/"},
+        {"/Chars/FRENCH.MTD", "/chars/pigs/french/"},
+        {"/Chars/GERMAN.MTD", "/chars/pigs/german/"},
+        {"/Chars/JAPANESE.MTD", "/chars/pigs/japanese/"},
+        {"/Chars/RUSSIAN.MTD", "/chars/pigs/russian/"},
+        {"/Chars/TEAMLARD.MTD", "/chars/pigs/teamlard/"},
+        {"/Chars/BRITHATS.MAD", "/chars/pigs/hats/"},
+        {"/Chars/FHATS.MAD", "/chars/pigs/hats/"},
 
         /* weapons */
-        {"/Chars/WEAPONS.MAD",          "/chars/weapons/"},
-        {"/Chars/WEAPONS.MTD",          "/chars/weapons/"},
-
+        {"/Chars/WEAPONS.MAD", "/chars/weapons/"},
+        {"/Chars/WEAPONS.MTD", "/chars/weapons/"},
+        /* */
+        {"/Chars/TOP.MAD", "/chars/top/"},
+        {"/Chars/TOP.MTD", "/chars/top/"},
+        /* zoom sights */
+        {"/Chars/SIGHT.MAD", "/chars/sight/"},
+        {"/Chars/SIGHT.MTD", "/chars/sight/"},
+        /* promotion point */
+        {"/Chars/PROPOINT.MAD", "/chars/propoint/"},
+        {"/Chars/propoint.mtd", "/chars/propoint/"},
         /* sky */
-        {"/Chars/SKYDOME.MAD",          "/skys/"},
+        {"/Chars/SKYDOME.MAD", "/skys/"},
         //{"/Chars/SKYDOME.MTD", "/chars/sky/"},    /* unused ?? */
-        {"/Chars/TOY.MAD",              "/skys/toy/"},
-        {"/Chars/SPACE.MAD",            "/skys/space/"},
-        {"/Chars/SUNSET.MAD",           "/skys/sunset/"},
-        {"/Chars/SUNRISE.MAD",          "/skys/sunrise/"},
-        {"/Chars/SUNNY.MAD",            "/skys/sunny/"},
-        {"/Chars/OMINOUS.MAD",          "/skys/ominous/"},
-        {"/Chars/DESERT.MAD",           "/skys/desert/"},
-        {"/Chars/COLDSKY.MAD",          "/skys/coldsky/"},
-        {"/Chars/NIGHT1.MAD",           "/skys/night1/"},
+        {"/Chars/TOY.MAD", "/skys/toy/"},
+        {"/Chars/SPACE.MAD", "/skys/space/"},
+        {"/Chars/SUNSET.MAD", "/skys/sunset/"},
+        {"/Chars/SUNRISE.MAD", "/skys/sunrise/"},
+        {"/Chars/SUNNY.MAD", "/skys/sunny/"},
+        {"/Chars/OMINOUS.MAD", "/skys/ominous/"},
+        {"/Chars/DESERT.MAD", "/skys/desert/"},
+        {"/Chars/COLDSKY.MAD", "/skys/coldsky/"},
+        {"/Chars/NIGHT1.MAD", "/skys/night1/"},
 
         /* frontend */
         {"/FEBmps/FEBMP.MAD",           "/fe/bitmaps/"},
@@ -204,7 +222,8 @@ static CopyPath pc_package_paths[] = {
         {"/Maps/HILLBASE.PTG",   "/campaigns/how/maps/hillbase/tiles/"},
         {"/Maps/LIBERATE.PTG",   "/campaigns/how/maps/liberate/tiles/"},
 
-        {"/Skys/COLD/COLD1.PTG", "/skys/cold/"},
+        {"/Skys/COLD/COLD1.PTG", "/skys/cold1/"},
+        //{"/Skys/DESERT/DESERT1.PTG", "/skys/desert1/"},
 #endif
 };
 
@@ -322,7 +341,7 @@ static void ExtractMADPackage(const char *input_path, const char *output_path) {
     FILE *out = NULL;
     unsigned int lowest_offset = UINT32_MAX;
     unsigned int cur_index = 0;
-    long position;
+    unsigned long position;
     do {
         MADIndex index; cur_index++;
         if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
@@ -423,14 +442,14 @@ static void ConvertImageToPNG(const char *path) {
     plStripExtension(out_path, sizeof(out_path), path);
     strcat(out_path, ".png");
     if(plFileExists(out_path)) {
-        LogInfo("tim already converted, deleting original\n");
+        //LogInfo("Tim already converted, deleting original\n");
         plDeleteFile(path);
         return;
     }
 
     PLImage image;
     if(!plLoadImage(path, &image)) {
-        LogInfo("failed to load \"%s\", %s, aborting!\n", path, plGetError());
+        LogInfo("Failed to load \"%s\", %s, aborting!\n", path, plGetError());
         return;
     }
 
@@ -438,12 +457,12 @@ static void ConvertImageToPNG(const char *path) {
     if(ext != NULL && ext[0] != '\0' && strcmp(ext, "tim") == 0) {
         // ensure that it's a format we're able to convert from
         if (image.format != PL_IMAGEFORMAT_RGB5A1) {
-            LogInfo("unexpected pixel format in \"%s\", aborting!\n", path);
+            LogWarn("Unexpected pixel format in \"%s\", aborting!\n", path);
             goto ABORT;
         }
 
         if (!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
-            LogInfo("failed to convert \"%s\", %s, aborting!\n", path, plGetError());
+            LogWarn("Failed to convert \"%s\", %s, aborting!\n", path, plGetError());
             goto ABORT;
         }
     }
@@ -574,24 +593,24 @@ static void MergeTextureTargets(void) {
         output.size             = plGetImageSize(output.format, output.width, output.height);
 
         if((output.data = calloc(output.levels, sizeof(uint8_t*))) == NULL) {
-            Error("failed to allocate data handle!\n");
+            Error("Failed to allocate data handle!\n");
         }
 
         if((output.data[0] = calloc(output.size, sizeof(uint8_t))) == NULL) {
-            Error("failed to allocate data handle!\n");
+            Error("Failed to allocate data handle!\n");
         }
 
         for(unsigned int j = 0; j < merge->num_textures; ++j) {
             PLImage image;
             const char *path = merge->targets[j].path;
             if(!plLoadImage(path, &image)) {
-                LogWarn("failed to find image, \"%s\", for merge!\n", merge->targets[j].path);
+                LogWarn("Failed to find image, \"%s\", for merge!\n", merge->targets[j].path);
                 continue;
             }
 
             plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8);
 
-            LogInfo("writing %s into %s\n", merge->targets[j].path, merge->output);
+            LogInfo("Writing %s into %s\n", merge->targets[j].path, merge->output);
 
             uint8_t *pos = output.data[0] + ((merge->targets[j].y * output.width) + merge->targets[j].x) * 4;
             uint8_t *src = image.data[0];
@@ -605,7 +624,7 @@ static void MergeTextureTargets(void) {
             plDeleteFile(path);
         }
 
-        LogInfo("writing %s\n", merge->output);
+        LogInfo("Writing %s\n", merge->output);
         plWriteImage(&output, merge->output);
         plFreeImage(&output);
     }
@@ -615,7 +634,6 @@ static void MergeTextureTargets(void) {
 
 enum {
     VERSION_UNKNOWN,
-
     VERSION_ENG_PSX,        /* English PSX version */
     VERSION_ENG_PC,         /* English PC version */
     VERSION_ENG_PC_DIGITAL, /* English PC/Digital version */
@@ -678,7 +696,7 @@ static void ProcessPackagePaths(const char *in, const char *out, const CopyPath 
 
         char input_path[PL_SYSTEM_MAX_PATH];
         snprintf(input_path, sizeof(input_path), "%s%s", in, paths[i].input);
-        LogInfo("copying %s to %s\n", input_path, output_path);
+        LogInfo("Copying %s to %s\n", input_path, output_path);
         const char *ext = plGetFileExtension(input_path);
         if(pl_strncasecmp(ext, "PTG", 3) == 0) {
             ExtractPTGPackage(input_path, output_path);
@@ -702,14 +720,14 @@ static void ProcessCopyPaths(const char *in, const char *out, const CopyPath *pa
 
         char input_path[PL_SYSTEM_MAX_PATH];
         snprintf(input_path, sizeof(input_path), "%s%s", in, paths[i].input);
-        LogInfo("copying %s to %s\n", input_path, output_path);
+        LogInfo("Copying %s to %s\n", input_path, output_path);
         plCopyFile(input_path, output_path);
     }
 }
 
 int main(int argc, char **argv) {
     if(argc == 1) {
-        printf("invalid number of arguments ...\n"
+        printf("Invalid number of arguments ...\n"
                "  extractor <game_path> -<out_path>\n");
         return EXIT_SUCCESS;
     }
@@ -771,7 +789,7 @@ int main(int argc, char **argv) {
     switch(version) {
         default:
         case VERSION_UNKNOWN: {
-            Error("unknown game version, aborting!\n");
+            Error("Unknown game version, aborting!\n");
             return EXIT_FAILURE;
         }
 
@@ -799,6 +817,6 @@ int main(int argc, char **argv) {
     /* convert the remaining TIM textures to PNG */
     plScanDirectory(output_path, "tim", ConvertImageToPNG, true);
 
-    LogInfo("complete\n");
+    LogInfo("Complete!\n");
     return EXIT_SUCCESS;
 }

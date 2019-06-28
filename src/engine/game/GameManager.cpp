@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-#include "../audio.h"
+#include "../audio/audio.h"
 #include "../Map.h"
 
 #include "GameManager.h"
@@ -42,16 +42,15 @@ void GameManager::Tick() {
 
     if(ambient_emit_delay_ < g_state.sim_ticks) {
         const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
-        u_assert(sample != nullptr, "Audio sample was unexpectedly freed!\n");
+        if(sample != nullptr) {
+            PLVector3 position = {
+                    plGenerateRandomf(MAP_PIXEL_WIDTH),
+                    active_map_->GetMaxHeight(),
+                    plGenerateRandomf(MAP_PIXEL_WIDTH)
+            };
+            AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, 0.5f);
+        }
 
-        float volume = 0.5f + (rand() % 10 / 1.0f);
-        LogDebug("Volume: %f\n", volume);
-        PLVector3 position = {
-                static_cast<float>(rand() % MAP_PIXEL_WIDTH), 0,
-                static_cast<float>(rand() % MAP_PIXEL_WIDTH)
-        };
-
-        AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, volume);
         ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
     }
 
@@ -80,10 +79,10 @@ void GameManager::LoadMap(const std::string &name) {
     for(unsigned int i = 1, idx = 0; i < 4; ++i) {
         if(i < 3) {
             ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample(
-                    "/audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
+                    "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
         }
-        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_s" + std::to_string(i) + ".wav", false);
-        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("/audio/batt_l" + std::to_string(i) + ".wav", false);
+        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
+        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
     }
 
     ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;

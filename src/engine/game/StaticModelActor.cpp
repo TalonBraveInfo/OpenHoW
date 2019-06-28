@@ -58,7 +58,7 @@ register_actor(STW07PWW, StaticModelActor);
 register_actor(SHELTER, StaticModelActor);
 
 StaticModelActor::StaticModelActor(const std::string &name) : ModelActor(name) {
-    SetModel("/scenery/" + spawn_name);
+    SetModel("scenery/" + spawn_name);
 }
 
 StaticModelActor::~StaticModelActor() = default;

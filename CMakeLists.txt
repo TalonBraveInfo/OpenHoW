@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 cmake_minimum_required(VERSION 3.5.1)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set all of our output directories.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")

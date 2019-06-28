@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class TextureViewer : public DebugWindow {
+class TextureViewer : public EdWindow {
 public:
     explicit TextureViewer(const std::string &path, PLTexture *texture) {
         texture_ = texture;

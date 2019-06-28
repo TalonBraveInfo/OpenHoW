@@ -20,7 +20,7 @@
 #include "engine.h"
 #include "input.h"
 #include "client.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "frontend.h"
 
 #include "script/script.h"

@@ -21,7 +21,7 @@
 #include "engine.h"
 #include "input.h"
 #include "client.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "imgui_layer.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
@@ -84,16 +84,18 @@ void System_SetClipboardText(void*, const char *text) {
 void System_DisplayWindow(bool fullscreen, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 #ifdef _DEBUG
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+#else
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #endif
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-#if 0
+#if 1
     if(SDL_GL_SetSwapInterval(-1) != 0) {
         SDL_GL_SetSwapInterval(1);
     }
@@ -547,7 +549,7 @@ void System_PollEvents() {
             } break;
 
             case SDL_QUIT: {
-                Engine_Shutdown();
+                System_Shutdown();
             } break;
 
             case SDL_WINDOWEVENT: {

@@ -15,17 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-PL_EXTERN_C
-
-void Script_Initialize(void);
-void Script_EvaluateString(const char *str);
-void Script_Shutdown(void);
-
-/************************************************************/
-/* CallScript Functions */
-
-void CS_InitGame(void);
-
-PL_EXTERN_C_END
+void main() {
+    pl_frag = vec4(0.0, 0.0, 1.0, 1.0);
+}

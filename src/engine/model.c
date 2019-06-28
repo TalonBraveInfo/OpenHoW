@@ -241,7 +241,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
 
     PLMesh** model_meshes = u_alloc(1, sizeof(PLMesh*), true);
     model_meshes[0] = mesh;
-    PLModel *model = plNewSkeletalModel(
+    PLModel *model = plCreateSkeletalModel(
             &(PLModelLod){model_meshes, 1}, 1,
             skeleton, model_cache.pig_skeleton->num_bones, BONE_INDEX_PELVIS);
     if(model == NULL) {
@@ -282,21 +282,21 @@ PLModel* Model_LoadMinFile(const char *path) {
 /* like plLoadModel, only prefixes with base path
  * and can abort on error */
 PLModel* Model_LoadFile(const char *path, bool abort_on_fail) {
-    char model_path[PL_SYSTEM_MAX_PATH];
-    snprintf(model_path, sizeof(model_path), "%s.vtx", u_find(path));
-    if(!plFileExists(model_path)) {
-        snprintf(model_path, sizeof(model_path), "%s.min", u_find(path));
+    const char *fp = u_find2(path, supported_model_formats, abort_on_fail);
+    if(fp == NULL) {
+        return default_model;
     }
 
-    PLModel* model = plLoadModel(model_path);
+    PLModel* model = plLoadModel(fp);
     if(model == NULL) {
         if(abort_on_fail) {
-            Error("Failed to load model, \"%s\", aborting (%s)!\n", model_path, plGetError());
+            Error("Failed to load model, \"%s\", aborting (%s)!\n", fp, plGetError());
         }
 
-        LogWarn("Failed to load model, \"%s\" (%s)!\n", model_path, plGetError());
-        model = default_model;
+        LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
+        return default_model;
     }
+
     return model;
 }
 
@@ -313,7 +313,7 @@ Animation* LoadAnimations(const char *path, bool abort_on_fail) {
     return NULL;
 }
 
-const PLModel* Model_GetDefaultModel(void) {
+PLModel* Model_GetDefaultModel(void) {
     return default_model;
 }
 
@@ -324,7 +324,7 @@ const PLModel* Model_GetDefaultModel(void) {
 void CacheModelData(void) {
     memset(&model_cache, 0, sizeof(model_cache));
 
-    model_cache.pig_skeleton = Hir_LoadFile(u_find("/chars/pig.hir"));
+    model_cache.pig_skeleton = Hir_LoadFile(u_find("chars/pig.hir"));
     if(model_cache.pig_skeleton == NULL) {
         Error("Failed to load skeleton, aborting!\n");
     }
@@ -334,7 +334,7 @@ void CacheModelData(void) {
     LogInfo("Caching mcap.mad\n");
 
     char mcap_path[PL_SYSTEM_MAX_PATH];
-    strncpy(mcap_path, u_find("/chars/mcap.mad"), sizeof(mcap_path));
+    strncpy(mcap_path, u_find("chars/mcap.mad"), sizeof(mcap_path));
 
     // check the number of bytes making up the mcap; we'll use this
     // to determine the length of animations later
@@ -502,9 +502,9 @@ void CacheModelData(void) {
     plSetMeshVertexPosition(default_mesh, 4, PLVector3(0, 0, 20));
     plSetMeshVertexPosition(default_mesh, 5, PLVector3(0, 0, -20));
     plSetMeshUniformColour(default_mesh, PLColour(255, 0, 0, 255));
-    plSetMeshShaderProgram(default_mesh, programs[SHADER_UNTEXTURED]);
+    plSetMeshShaderProgram(default_mesh, Shaders_GetProgram(SHADER_GenericUntextured));
     plUploadMesh(default_mesh);
-    default_model = plNewBasicStaticModel(default_mesh);
+    default_model = plCreateBasicStaticModel(default_mesh);
 
     model_cache.pigs[PIG_CLASS_ACE]         = Model_LoadFile("chars/pigs/ac_hi", true);
     model_cache.pigs[PIG_CLASS_COMMANDO]    = Model_LoadFile("chars/pigs/sb_hi", true);

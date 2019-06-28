@@ -21,104 +21,12 @@
 #include "../engine.h"
 #include "shader.h"
 
-#define GLSL(...) #__VA_ARGS__
-#define GLSL_DEFAULT_VS_UNIFORMS "in vec3 pos;in vec3 norm;in vec2 UV;in vec4 col;"
-#define GLSL_DEFAULT_PS_UNIFORMS "uniform sampler2D diffuse;"
+//#define GLSL(...) #__VA_ARGS__
 
-static const char *fragment_water =
-        GLSL_DEFAULT_PS_UNIFORMS
-        GLSL(
-                void main() {
-                    pl_frag = vec4(0.0, 0.0, 1.0, 1.0);
-                }
-        );
+static PLShaderProgram *programs[MAX_SHADERS];
+static ShaderProgram last_program = SHADER_GenericUntextured;  /* for resetting following rebuild */
 
-static const char *vertex_water =
-        GLSL_DEFAULT_VS_UNIFORMS
-        GLSL(
-                attribute vec2 position;
-
-                void main() {
-                    gl_TexCoord[0] = gl_MultiTexCoord0;
-                    gl_Position = ftransform();
-                }
-        );
-
-static const char *fragment_colour =
-        GLSL_DEFAULT_PS_UNIFORMS
-        GLSL(
-                in vec3 interp_normal;
-                in vec2 interp_UV;
-                in vec4 interp_colour;
-
-                void main() {
-                    pl_frag = interp_colour;
-                }
-        );
-
-static const char *fragment_texture =
-        GLSL_DEFAULT_PS_UNIFORMS
-        GLSL(
-                in vec3 interp_normal;
-                in vec2 interp_UV;
-                in vec4 interp_colour;
-
-                void main() {
-                    pl_frag = interp_colour * texture(diffuse, interp_UV);
-                }
-        );
-
-static const char *fragment_alpha_test_texture =
-        GLSL_DEFAULT_PS_UNIFORMS
-        GLSL(
-                in vec3 interp_normal;
-                in vec2 interp_UV;
-                in vec4 interp_colour;
-
-                void main() {
-                    vec4 sample = texture(diffuse, interp_UV);
-                    if(sample.a < 0.1) {
-                        discard;
-                    }
-
-                    pl_frag = interp_colour * sample;
-                }
-        );
-
-static const char *vertex_default =
-        GLSL_DEFAULT_VS_UNIFORMS
-        GLSL(
-                out vec3 interp_normal;
-                out vec2 interp_UV;
-                out vec4 interp_colour;
-
-                void main() {
-                    gl_Position = pl_proj * pl_view * pl_model * vec4(pos, 1.0f);
-                    interp_normal = norm;
-                    interp_UV = UV;
-                    interp_colour = col;
-                }
-        );
-
-static const char *vertex_debug_test =
-        GLSL_DEFAULT_VS_UNIFORMS
-        GLSL(
-                void main() {
-                    gl_Position = pl_proj * pl_view * pl_model * vec4(pos, 1.0f);
-                }
-        );
-
-static const char *fragment_debug_test =
-        GLSL_DEFAULT_PS_UNIFORMS
-        GLSL(
-                void main() {
-                    pl_frag = vec4(1.0f, 0.0f, 1.0f, 1.0f);
-                }
-        );
-
-PLShaderProgram *programs[MAX_SHADERS];
-
-static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const char *fragment, size_t fl) {
+static PLShaderProgram *CreateShaderProgram(const char *vertex, const char *fragment) {
     if(plIsEmptyString(vertex) || plIsEmptyString(fragment)) {
         Error("Invalid stage for shader program, aborting!\n");
     }
@@ -128,43 +36,42 @@ static PLShaderProgram *CreateShaderProgram(const char *vertex, size_t vl, const
         Error("Failed to create shader program, aborting!\n%s", plGetError());
     }
 
-#if 0
     char path[PL_SYSTEM_MAX_PATH];
     snprintf(path, sizeof(path), "shaders/%s.vert", vertex);
-    if(!plRegisterShaderStageFromDisk(program, pork_find(path), PL_SHADER_TYPE_VERTEX)) {
-        Error("failed to register vertex stage, \"%s\", aborting!\n", vertex);
+    if(!plRegisterShaderStageFromDisk(program, u_find(path), PL_SHADER_TYPE_VERTEX)) {
+        LogWarn("Failed to register vertex stage, \"%s\"!\n", vertex);
+        plDestroyShaderProgram(program, true);
+        return NULL;
     }
 
     snprintf(path, sizeof(path), "shaders/%s.frag", fragment);
-    if(!plRegisterShaderStageFromDisk(program, pork_find(path), PL_SHADER_TYPE_FRAGMENT)) {
-        Error("failed to register fragment stage, \"%s\", aborting!\n", fragment);
+    if(!plRegisterShaderStageFromDisk(program, u_find(path), PL_SHADER_TYPE_FRAGMENT)) {
+        LogWarn("Failed to register fragment stage, \"%s\"!\n", fragment);
+        plDestroyShaderProgram(program, true);
+        return NULL;
     }
-#else
-    if(!plRegisterShaderStageFromMemory(program, vertex, vl, PL_SHADER_TYPE_VERTEX)) {
-        Error("Failed to register vertex stage, \"%s\", aborting!\n", plGetError());
-    }
-
-    if(!plRegisterShaderStageFromMemory(program, fragment, fl, PL_SHADER_TYPE_FRAGMENT)) {
-        Error("Failed to register fragment stage, \"%s\", aborting!\n", plGetError());
-    }
-#endif
 
     plLinkShaderProgram(program);
-
-    plRegisterShaderProgramUniforms(program);
 
     return program;
 }
 
-void Shaders_Initialize(void) {
-    memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
-    programs[SHADER_DEFAULT]    = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_texture, strlen(fragment_texture));
-    programs[SHADER_UNTEXTURED] = CreateShaderProgram(
-            vertex_default, strlen(vertex_default),
-            fragment_colour, strlen(fragment_colour));
-    programs[SHADER_WATER]      = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_water, strlen(fragment_water));
-    programs[SHADER_ALPHA_TEST] = CreateShaderProgram(vertex_default, strlen(vertex_default), fragment_alpha_test_texture, strlen(fragment_alpha_test_texture));
-    programs[SHADER_DEBUG_TEST] = CreateShaderProgram(vertex_debug_test, strlen(vertex_debug_test), fragment_debug_test, strlen(fragment_debug_test));
+/**
+ * @brief Destroy and rebuild shaders; for modifying in real-time
+ */
+static void RebuildShaders(void) {
+    for(unsigned int i = 0; i < MAX_SHADERS; ++i) {
+        if(programs[i] != NULL) {
+            plDestroyShaderProgram(programs[i], true);
+        }
+    }
+
+    programs[SHADER_GenericTextured]    = CreateShaderProgram("generic", "texture");
+    programs[SHADER_GenericTexturedLit] = CreateShaderProgram("generic", "lit_texture");
+    programs[SHADER_GenericUntextured]  = CreateShaderProgram("generic", "vertex_colour");
+    programs[SHADER_Water]              = CreateShaderProgram("generic", "water");
+    programs[SHADER_AlphaTest]          = CreateShaderProgram("generic", "alpha_test_texture");
+    programs[SHADER_DebugTest]          = CreateShaderProgram("generic", "debug");
 
     /* set defaults */
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {
@@ -172,11 +79,34 @@ void Shaders_Initialize(void) {
             continue;
         }
 
-        plSetNamedShaderUniformInt(programs[i], "diffuse", 0);
+        int slot = plGetShaderUniformSlot(programs[i], "diffuse");
+        if(slot != -1) {
+            plSetShaderUniformInt(programs[i], slot, 0);
+        }
     }
 
-    /* enable the default shader program */
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    /* switch back to the previous shader program */
+    Shaders_SetProgram(last_program);
+}
+
+static void RebuildShadersCommand(unsigned int argc, char *argv[]) {
+    RebuildShaders();
+}
+
+void Shaders_Initialize(void) {
+    memset(programs, 0, sizeof(PLShaderProgram*) * MAX_SHADERS);
+    RebuildShaders();
+
+    plRegisterConsoleCommand("rebuildShaders", RebuildShadersCommand, "Rebuild all shaders");
+}
+
+void Shaders_SetProgram(ShaderProgram program) {
+    last_program = program;
+    plSetShaderProgram(programs[program]);
+}
+
+PLShaderProgram *Shaders_GetProgram(ShaderProgram program) {
+    return programs[program];
 }
 
 void Shaders_Shutdown(void) {
@@ -184,6 +114,6 @@ void Shaders_Shutdown(void) {
         if(programs[i] == NULL) {
             continue;
         }
-        plDeleteShaderProgram(programs[i], true);
+        plDestroyShaderProgram(programs[i], true);
     }
 }

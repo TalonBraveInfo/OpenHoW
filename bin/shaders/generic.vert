@@ -15,17 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+out vec3 interp_normal;
+out vec2 interp_UV;
+out vec4 interp_colour;
 
-PL_EXTERN_C
-
-void Script_Initialize(void);
-void Script_EvaluateString(const char *str);
-void Script_Shutdown(void);
-
-/************************************************************/
-/* CallScript Functions */
-
-void CS_InitGame(void);
-
-PL_EXTERN_C_END
+void main() {
+    gl_Position = pl_proj * pl_view * pl_model * vec4(pl_vposition, 1.0f);
+    interp_normal = pl_vnormal;
+    interp_UV = pl_vuv;
+    interp_colour = pl_vcolour;
+}

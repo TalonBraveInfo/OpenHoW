@@ -25,7 +25,8 @@
 #include "config.h"
 #include "input.h"
 #include "frontend.h"
-#include "audio.h"
+#include "audio/audio.h"
+#include "MapManager.h"
 
 #include "game/SPGameMode.h"
 #include "script/script.h"
@@ -56,7 +57,18 @@ void Engine_Initialize(void) {
             ENGINE_MINOR_VERSION,
             ENGINE_PATCH_VERSION);
 
-    memset(&g_state, 0, sizeof(EngineState));
+    g_state.draw_ticks = 0;
+    g_state.is_host = true;
+
+    g_state.last_draw_ms = 0;
+    g_state.last_sys_tick = 0;
+    g_state.sim_ticks = 0;
+    g_state.sys_ticks = 0;
+
+    g_state.gfx.clear_colour = { 0, 0, 0, 255 };
+    g_state.gfx.num_actors_drawn = 0;
+    g_state.gfx.num_chunks_drawn = 0;
+    g_state.gfx.num_triangles_total = 0;
 
     Console_Initialize();
 
@@ -88,7 +100,7 @@ void Engine_Initialize(void) {
 
     if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
        (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
-        // otherwise default to Hogs of War's campaign
+        // otherwise default to base campaign
         var = "how";
     }
 
@@ -101,6 +113,7 @@ void Engine_Initialize(void) {
     AudioManager::GetInstance();
     GameManager::GetInstance();
     FE_Initialize();
+    MapManager::GetInstance();
 
     CacheModelData();
 
@@ -178,3 +191,4 @@ extern "C" void DrawMap(void) {
 
     map->Draw();
 }
+

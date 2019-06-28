@@ -217,7 +217,7 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
 
             char texture_path[PL_SYSTEM_MAX_PATH];
             snprintf(tmp, sizeof(tmp), "%s%s", path, line);
-            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats));
+            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats, true));
 
             if(index->num_textures >= MAX_TEXTURES_PER_INDEX) {
                 Error("hit max index (%u) for texture sheet, aborting!\n", MAX_TEXTURES_PER_INDEX);
@@ -323,22 +323,21 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
     u_fclose(file);
 }
 
-//const char *supported_model_formats[]={"vtx", NULL};
+/* todo: platform library should pass this information back */
+const char *supported_model_formats[]={"obj", "vtx", "min", NULL};
 const char *supported_image_formats[]={"png", "tga", "bmp", "tim", NULL};
 //const char *supported_audio_formats[]={"wav", NULL};
 //const char *supported_video_formats[]={"bik", NULL};
 
 PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
-    char n_path[PL_SYSTEM_MAX_PATH];
     const char* ext = plGetFileExtension(path);
     if(plIsEmptyString(ext)) {
-        strncpy(n_path, u_find2(path, supported_image_formats), sizeof(n_path));
-        if(plIsEmptyString(n_path)) {
-            LogWarn("Failed to find texture, \"%s\"!\n", path);
+        const char *fp = u_find2(path, supported_image_formats, false);
+        if(fp == NULL) {
             return default_texture;
         }
 
-        PLTexture* texture = plLoadTextureImage(n_path, filter);
+        PLTexture* texture = plLoadTextureImage(fp, filter);
         if(texture == NULL) {
             LogWarn("%s, aborting!\n", plGetError());
             return default_texture;
@@ -348,8 +347,8 @@ PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
     }
 
     PLImage img;
-    strncpy(n_path, u_find(path), sizeof(n_path));
-    if(plLoadImage(n_path, &img)) {
+    const char *fp = u_find(path);
+    if(plLoadImage(fp, &img)) {
         /* pixel format of TIM will be changed before uploading */
         if(pl_strncasecmp(ext, "tim", 3) == 0) {
             plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
@@ -365,7 +364,7 @@ PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter) {
         plDestroyTexture(texture, true);
     }
 
-    LogWarn("Failed to load texture, \"%s\" (%s)!\n", n_path, plGetError());
+    LogWarn("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
     plFreeImage(&img);
     return default_texture;
 }
@@ -558,7 +557,7 @@ void Display_Initialize(void) {
      * one fails to load */
 
     PLColour pbuffer[]={{ 255, 255, 0  , 255 }, { 0  , 255, 255, 255 }, { 0  , 255, 255, 255 }, { 255, 255, 0  , 255 }};
-    PLImage* image = plNewImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
+    PLImage* image = plCreateImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
     if(image != NULL) {
         default_texture = plCreateTexture();
         default_texture->flags &= PL_TEXTURE_FLAG_NOMIPS;
@@ -580,15 +579,15 @@ void Display_Initialize(void) {
         Display_ClearTextureIndex(i);
     }
 
-    Display_CacheTextureIndex("/chars/american/", "american.index", TEXTURE_INDEX_AMERICAN);
-    Display_CacheTextureIndex("/chars/british/", "british.index", TEXTURE_INDEX_BRITISH);
-    Display_CacheTextureIndex("/chars/french/", "french.index", TEXTURE_INDEX_FRENCH);
-    Display_CacheTextureIndex("/chars/german/", "german.index", TEXTURE_INDEX_GERMAN);
-    Display_CacheTextureIndex("/chars/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
-    Display_CacheTextureIndex("/chars/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
-    Display_CacheTextureIndex("/chars/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
+    Display_CacheTextureIndex("chars/pigs/american/", "american.index", TEXTURE_INDEX_AMERICAN);
+    Display_CacheTextureIndex("chars/pigs/british/", "british.index", TEXTURE_INDEX_BRITISH);
+    Display_CacheTextureIndex("chars/pigs/french/", "french.index", TEXTURE_INDEX_FRENCH);
+    Display_CacheTextureIndex("chars/pigs/german/", "german.index", TEXTURE_INDEX_GERMAN);
+    Display_CacheTextureIndex("chars/pigs/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
+    Display_CacheTextureIndex("chars/pigs/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
+    Display_CacheTextureIndex("chars/pigs/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
 
-    Display_CacheTextureIndex("/chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
+    Display_CacheTextureIndex("chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 }
@@ -803,18 +802,22 @@ void Display_SetupDraw(double delta) {
 
 void DrawActors(void); /* declared in engine.cpp */
 void DrawMap(void); /* declared in engine.cpp */
+void DrawAudioSources(void); /* declared in audio.cpp */
+
 void Display_DrawScene(void) {
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    Shaders_SetProgram(SHADER_GenericTextured);
 
     DrawMap();
     DrawActors();
     DrawParticles(cur_delta);
 
+    /* debug methods */
+    DrawAudioSources();
     DEBUGDrawModel();
 }
 
 void Display_DrawInterface(void) {
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    Shaders_SetProgram(SHADER_GenericTextured);
     plSetupCamera(g_state.ui_camera);
     plSetDepthBufferMode(PL_DEPTHBUFFER_DISABLE);
     FE_Draw();
@@ -825,7 +828,7 @@ void Display_DrawDebug(void) {
     bool fs;
     System_GetWindowDrawableSize(&window_draw_w, &window_draw_h, &fs);
 
-    plSetShaderProgram(programs[SHADER_DEFAULT]);
+    Shaders_SetProgram(SHADER_GenericTextured);
     plSetupCamera(g_state.ui_camera);
 
     DrawDebugOverlay();
