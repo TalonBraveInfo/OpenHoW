@@ -146,13 +146,11 @@ const static uint16_t chunkIndices[96] = {
 Map::Map(const std::string& name) {
     LogDebug("Loading map, %s...\n", name.c_str());
 
+    id_name_ = name;
+
     manifest_ = MapManager::GetInstance()->GetManifest(name);
     if(manifest_ == nullptr) {
-#if 0
-        throw std::runtime_error("Failed to get map descriptor, \"" + name + "\"\n");
-#else
         LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
-#endif
     }
 
 #if 0
@@ -536,23 +534,10 @@ void Map::GenerateOverview() {
     };
 
     // Create our storage
-    // todo: use plNewImage here instead!
-
-    PLImage image;
-    memset(&image, 0, sizeof(PLImage));
-    image.width         = 64;
-    image.height        = 64;
-    image.format        = PL_IMAGEFORMAT_RGB8;
-    image.colour_format = PL_COLOURFORMAT_RGB;
-    image.size          = plGetImageSize(image.format, image.width, image.height);
-    image.levels        = 1;
-
-    image.data = static_cast<uint8_t **>(u_alloc(image.levels, sizeof(uint8_t *), true));
-    image.data[0] = static_cast<uint8_t *>(u_alloc(1, image.size, true));
+    PLImage *image = plCreateImage(nullptr, 64, 64, PL_COLOURFORMAT_RGB, PL_IMAGEFORMAT_RGB8);
 
     // Now write into the image buffer
-
-    uint8_t *buf = image.data[0];
+    uint8_t *buf = image->data[0];
     for(uint8_t y = 0; y < 64; ++y) {
         for(uint8_t x = 0; x < 64; ++x) {
             PLVector2 position(x * (MAP_PIXEL_WIDTH / 64), y * (MAP_PIXEL_WIDTH / 64));
@@ -575,12 +560,15 @@ void Map::GenerateOverview() {
         }
     }
 
+    // Allow rebuilding overview texture
+    plDestroyTexture(overview_, true);
+
     if((overview_ = plCreateTexture()) == nullptr) {
         Error("Failed to generate overview texture slot!\n%s\n", plGetError());
     }
 
-    plUploadTextureImage(overview_, &image);
-    plFreeImage(&image);
+    plUploadTextureImage(overview_, image);
+    plDestroyImage(image);
 }
 
 void Map::Draw() {
