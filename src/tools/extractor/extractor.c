@@ -28,7 +28,7 @@
 #undef Error
 #define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
 #define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
-#define Error(...)    plLogMessage(2, __VA_ARGS__)
+#define Error(...)    plLogMessage(2, __VA_ARGS__); exit(EXIT_FAILURE)
 
 typedef struct CopyPath {
     const char *input, *output;
@@ -227,6 +227,84 @@ static CopyPath pc_package_paths[] = {
 #endif
 };
 
+/////////////////////////////////////////////////////////////
+
+typedef enum ERegion {
+    REGION_UNKNOWN = -1,
+
+    REGION_ENG,
+    REGION_FRE,
+    REGION_GER,
+    REGION_ITA,
+    REGION_RUS,
+    REGION_SPA,
+
+    MAX_REGIONS
+} ERegion;
+const char *region_idents[MAX_REGIONS]={
+        "eng", "fre", "ger", "ita", "rus", "spa"
+};
+
+typedef enum EPlatform {
+    PLATFORM_UNKNOWN = -1,
+
+    PLATFORM_PSX,               /* PSX version */
+    PLATFORM_PC,                /* PC version */
+    PLATFORM_PC_DIGITAL,        /* PC/Digital version */
+} EPlatform;
+
+typedef struct VersionInfo {
+    ERegion   region;
+    EPlatform platform;
+} VersionInfo;
+
+VersionInfo version_info = {
+        .platform = PLATFORM_UNKNOWN,
+        .region = REGION_UNKNOWN
+};
+
+static void CheckGameVersion(const char *path) {
+    LogInfo("checking game version...\n");
+
+    char fcheck[PL_SYSTEM_MAX_PATH];
+    snprintf(fcheck, sizeof(fcheck), "%s/system.cnf", path);
+    if(plFileExists(fcheck)) {
+        LogInfo("Detected system.cnf, assuming PSX version\n");
+        version_info.platform = PLATFORM_PSX;
+        // todo: determine region for PSX ver (probably easier than on PC)
+        return;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/Data/foxscale.d3d", path);
+    if(!plFileExists(fcheck)) {
+        LogWarn("Failed to find foxscale.d3d, unable to determine platform!\n");
+        return;
+    }
+
+    LogInfo("Detected Data/foxscale.d3d, assuming PC version\n");
+    version_info.platform = PLATFORM_PC;
+
+    /* todo: need better method to determine this */
+    snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/fetext.bin", path);
+    unsigned int fetext_size = plGetFileSize(fcheck);
+    snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/gtext.bin", path);
+    unsigned int gtext_size = plGetFileSize(fcheck);
+    if(fetext_size == 9216 && gtext_size == 4608) {
+        version_info.region = REGION_GER;
+    } else if(fetext_size == 8102 && gtext_size == 4112) {
+        version_info.region = REGION_ENG;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/MUSIC/Track02.ogg", path);
+    if(plFileExists(fcheck)) {
+        LogInfo("Detected MUSIC/Track02.ogg, assuming GOG version\n");
+        version_info.platform = PLATFORM_PC_DIGITAL;
+    }
+
+    LogInfo("platform=%d, region=%d\n", version_info.platform, version_info.region);
+}
+
+/////////////////////////////////////////////////////////////
 /* Extraction process for initial setup */
 
 static void ExtractPTGPackage(const char *input_path, const char *output_path) {
@@ -632,59 +710,6 @@ static void MergeTextureTargets(void) {
 
 /************************************************************/
 
-enum {
-    VERSION_UNKNOWN,
-    VERSION_ENG_PSX,        /* English PSX version */
-    VERSION_ENG_PC,         /* English PC version */
-    VERSION_ENG_PC_DIGITAL, /* English PC/Digital version */
-    VERSION_GER_PC,         /* German PC version */
-};
-
-enum {
-    REGION_ENG,
-    REGION_GER,
-};
-
-static unsigned int CheckGameVersion(const char *path) {
-    unsigned int region = REGION_ENG;
-    bool is_digital = false;
-
-    char fcheck[PL_SYSTEM_MAX_PATH];
-    snprintf(fcheck, sizeof(fcheck), "%s/system.cnf", path);
-    if(plFileExists(fcheck)) {
-        LogInfo("Detected system.cnf, assuming PSX version\n");
-        return VERSION_ENG_PSX;
-    }
-
-    snprintf(fcheck, sizeof(fcheck), "%s/Data/foxscale.d3d", path);
-    if(plFileExists(fcheck)) {
-        LogInfo("Detected Data/foxscale.d3d, assuming PC version\n");
-
-        /* todo: need better method to determine this */
-        snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/fetext.bin", path);
-        unsigned int fetext_size = plGetFileSize(fcheck);
-        snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/gtext.bin", path);
-        unsigned int gtext_size = plGetFileSize(fcheck);
-        if(fetext_size == 9216 && gtext_size == 4608) {
-            region = REGION_GER;
-        }
-
-        snprintf(fcheck, sizeof(fcheck), "%s/MUSIC/Track02.ogg", path);
-        if(plFileExists(fcheck)) {
-            LogInfo("Detected MUSIC/Track02.ogg, assuming GOG version\n");
-            return VERSION_ENG_PC_DIGITAL;
-        } else {
-            if(region == REGION_GER) {
-                return VERSION_GER_PC;
-            } else {
-                return VERSION_ENG_PC;
-            }
-        }
-    }
-
-    return VERSION_UNKNOWN;
-}
-
 static void ProcessPackagePaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
     for (unsigned int i = 0; i < length; ++i) {
         char output_path[PL_SYSTEM_MAX_PATH];
@@ -710,6 +735,14 @@ static void ProcessCopyPaths(const char *in, const char *out, const CopyPath *pa
     for (unsigned int i = 0; i < length; ++i) {
         char output_path[PL_SYSTEM_MAX_PATH];
         snprintf(output_path, sizeof(output_path), "%s%s", out, paths[i].output);
+
+        // Fudge the path if it's one of the audio tracks
+        char *p = strstr(output_path, "sku1/");
+        if(p != NULL) {
+            strncpy(p, region_idents[version_info.region], 3);
+            memmove(p + 3, p + 4, strlen(p + 4) + 1);
+        }
+
         if (!plCreatePath(output_path)) {
             LogWarn("%s\n", plGetError());
             continue;
@@ -731,6 +764,8 @@ int main(int argc, char **argv) {
                "  extractor <game_path> -<out_path>\n");
         return EXIT_SUCCESS;
     }
+
+    plInitialize(argc, argv);
 
     char app_dir[PL_SYSTEM_MAX_PATH];
     plGetApplicationDataDirectory(ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
@@ -784,32 +819,23 @@ int main(int argc, char **argv) {
      * provide OGG audio.
      *
      * PSX is a totally different story, with it's own fun adventure. */
-    LogInfo("checking game version...\n");
-    unsigned int version = CheckGameVersion(input_path);
-    switch(version) {
-        default:
-        case VERSION_UNKNOWN: {
-            Error("Unknown game version, aborting!\n");
-            return EXIT_FAILURE;
-        }
+    CheckGameVersion(input_path);
+    if(version_info.region == REGION_UNKNOWN || version_info.platform == PLATFORM_UNKNOWN) {
+        Error("Unknown game version, aborting!\n");
+    } else if(version_info.platform == PLATFORM_PSX) {
+        Error("Unsupported platform!\n");
+    }
 
-        case VERSION_ENG_PSX: {
-            u_assert(0, "Unsupported");
-            return EXIT_FAILURE;
-        }
+    if(version_info.platform == PLATFORM_PC || version_info.platform == PLATFORM_PC_DIGITAL) {
+        ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
+        ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
 
-        case VERSION_GER_PC:
-        case VERSION_ENG_PC: {
-            ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
-            ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
-            // todo: rip music from CD
-        } break;
-
-        case VERSION_ENG_PC_DIGITAL: {
-            ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
-            ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
+        if(version_info.platform == PLATFORM_PC_DIGITAL) {
+            // They've done us the honors for the digital version
             ProcessCopyPaths(input_path, output_path, pc_music_paths, plArrayElements(pc_music_paths));
-        } break;
+        } else {
+            // todo: rip the disc...
+        }
     }
 
     MergeTextureTargets();
