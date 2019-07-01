@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class TextureViewer : public EdWindow {
+#include "BaseWindow.h"
+
+class TextureViewer : public BaseWindow {
 public:
     explicit TextureViewer(const std::string &path, PLTexture *texture) {
         texture_ = texture;
@@ -27,7 +29,7 @@ public:
     }
 
     void ReloadTexture(PLTextureFilter filter_mode) {
-        if(filter_mode == filter_mode_) {
+        if (filter_mode == filter_mode_) {
             return;
         }
 
@@ -42,22 +44,22 @@ public:
                      ImGuiWindowFlags_MenuBar |
                      ImGuiWindowFlags_HorizontalScrollbar |
                      ImGuiWindowFlags_NoSavedSettings
-                     );
+        );
 
-        if(ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("File")) {
-                if(ImGui::MenuItem("Open...")) {
-                    show_file = true;
+                if (ImGui::MenuItem("Open...")) {
+                    //show_file = true;
                 }
                 ImGui::EndMenu();
             }
-            if(ImGui::BeginMenu("View")) {
+            if (ImGui::BeginMenu("View")) {
                 ImGui::SliderInt("Scale", &scale_, 1, 8);
-                if(ImGui::BeginMenu("Filter Mode")) {
-                    if(ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
+                if (ImGui::BeginMenu("Filter Mode")) {
+                    if (ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
                         ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
                     }
-                    if(ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
+                    if (ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
                         ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
                     }
                     ImGui::EndMenu();
@@ -72,7 +74,8 @@ public:
         ImGui::Separator();
         ImGui::Text("Path: %s", texture_path.c_str());
         ImGui::Text("%dx%d", texture_->w, texture_->h);
-        ImGui::Text("Size: %ukB (%luB)", (unsigned int)plBytesToKilobytes(texture_->size), (long unsigned) texture_->size);
+        ImGui::Text("Size: %ukB (%luB)", (unsigned int) plBytesToKilobytes(texture_->size),
+                    (long unsigned) texture_->size);
 
         ImGui::End();
     }
