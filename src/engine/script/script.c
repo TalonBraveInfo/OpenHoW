@@ -218,30 +218,30 @@ void Script_Initialize(void) {
     DeclareUniversalGlobalInteger(TEAM_RUSSIAN);
 
     /* controller vars */
-    DeclareUniversalGlobalInteger(PORK_BUTTON_CROSS);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_CIRCLE);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_TRIANGLE);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_SQUARE);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_R1);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_R2);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_R3);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_L1);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_L2);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_L3);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_UP);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_DOWN);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_LEFT);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_RIGHT);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_START);
-    DeclareUniversalGlobalInteger(PORK_BUTTON_SELECT);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_CROSS);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_CIRCLE);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_TRIANGLE);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_SQUARE);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_R1);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_R2);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_R3);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_L1);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_L2);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_L3);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_UP);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_DOWN);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_LEFT);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_RIGHT);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_START);
+    DeclareUniversalGlobalInteger(INPUT_BUTTON_SELECT);
 
-    DeclareUniversalGlobalInteger(PORK_MAX_BUTTONS);
+    DeclareUniversalGlobalInteger(INPUT_MAX_BUTTONS);
     DeclareUniversalGlobalInteger(INPUT_MAX_CONTROLLERS);
 
     /* mouse vars */
-    DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_LEFT);
-    DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_RIGHT);
-    DeclareUniversalGlobalInteger(PORK_MOUSE_BUTTON_MIDDLE);
+    DeclareUniversalGlobalInteger(INPUT_MOUSE_BUTTON_LEFT);
+    DeclareUniversalGlobalInteger(INPUT_MOUSE_BUTTON_RIGHT);
+    DeclareUniversalGlobalInteger(INPUT_MOUSE_BUTTON_MIDDLE);
     DeclareUniversalGlobalInteger(INPUT_MAX_MOUSE_BUTTONS);
 
     /* now init our scripts! */

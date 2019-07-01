@@ -368,37 +368,37 @@ static int TranslateSDLKey(int key) {
     }
 
     switch(key) {
-        case SDLK_F1: return PORK_KEY_F1;
-        case SDLK_F2: return PORK_KEY_F2;
-        case SDLK_F3: return PORK_KEY_F3;
-        case SDLK_F4: return PORK_KEY_F4;
-        case SDLK_F5: return PORK_KEY_F5;
-        case SDLK_F6: return PORK_KEY_F6;
-        case SDLK_F7: return PORK_KEY_F7;
-        case SDLK_F8: return PORK_KEY_F8;
-        case SDLK_F9: return PORK_KEY_F9;
-        case SDLK_F10: return PORK_KEY_F10;
-        case SDLK_F11: return PORK_KEY_F11;
-        case SDLK_F12: return PORK_KEY_F12;
+        case SDLK_F1: return INPUT_KEY_F1;
+        case SDLK_F2: return INPUT_KEY_F2;
+        case SDLK_F3: return INPUT_KEY_F3;
+        case SDLK_F4: return INPUT_KEY_F4;
+        case SDLK_F5: return INPUT_KEY_F5;
+        case SDLK_F6: return INPUT_KEY_F6;
+        case SDLK_F7: return INPUT_KEY_F7;
+        case SDLK_F8: return INPUT_KEY_F8;
+        case SDLK_F9: return INPUT_KEY_F9;
+        case SDLK_F10: return INPUT_KEY_F10;
+        case SDLK_F11: return INPUT_KEY_F11;
+        case SDLK_F12: return INPUT_KEY_F12;
 
-        case SDLK_ESCAPE: return PORK_KEY_ESCAPE;
+        case SDLK_ESCAPE: return INPUT_KEY_ESCAPE;
 
-        case SDLK_PAUSE: return PORK_KEY_PAUSE;
-        case SDLK_INSERT: return PORK_KEY_INSERT;
-        case SDLK_HOME: return PORK_KEY_HOME;
+        case SDLK_PAUSE: return INPUT_KEY_PAUSE;
+        case SDLK_INSERT: return INPUT_KEY_INSERT;
+        case SDLK_HOME: return INPUT_KEY_HOME;
 
-        case SDLK_UP: return PORK_KEY_UP;
-        case SDLK_DOWN: return PORK_KEY_DOWN;
-        case SDLK_LEFT: return PORK_KEY_LEFT;
-        case SDLK_RIGHT: return PORK_KEY_RIGHT;
+        case SDLK_UP: return INPUT_KEY_UP;
+        case SDLK_DOWN: return INPUT_KEY_DOWN;
+        case SDLK_LEFT: return INPUT_KEY_LEFT;
+        case SDLK_RIGHT: return INPUT_KEY_RIGHT;
 
-        case SDLK_SPACE: return PORK_KEY_SPACE;
+        case SDLK_SPACE: return INPUT_KEY_SPACE;
 
-        case SDLK_LSHIFT: return PORK_KEY_LSHIFT;
-        case SDLK_RSHIFT: return PORK_KEY_RSHIFT;
+        case SDLK_LSHIFT: return INPUT_KEY_LSHIFT;
+        case SDLK_RSHIFT: return INPUT_KEY_RSHIFT;
 
-        case SDLK_PAGEUP: return PORK_KEY_PAGEUP;
-        case SDLK_PAGEDOWN: return PORK_KEY_PAGEDOWN;
+        case SDLK_PAGEUP: return INPUT_KEY_PAGEUP;
+        case SDLK_PAGEDOWN: return INPUT_KEY_PAGEDOWN;
 
         default: return -1;
     }
@@ -406,32 +406,32 @@ static int TranslateSDLKey(int key) {
 
 static int TranslateSDLMouseButton(int button) {
     switch(button) {
-        case SDL_BUTTON_LEFT: return PORK_MOUSE_BUTTON_LEFT;
-        case SDL_BUTTON_RIGHT: return PORK_MOUSE_BUTTON_RIGHT;
-        case SDL_BUTTON_MIDDLE: return PORK_MOUSE_BUTTON_MIDDLE;
+        case SDL_BUTTON_LEFT: return INPUT_MOUSE_BUTTON_LEFT;
+        case SDL_BUTTON_RIGHT: return INPUT_MOUSE_BUTTON_RIGHT;
+        case SDL_BUTTON_MIDDLE: return INPUT_MOUSE_BUTTON_MIDDLE;
         default: return -1;
     }
 }
 
 static int TranslateSDLButton(int button) {
     switch(button) {
-        case SDL_CONTROLLER_BUTTON_A: return PORK_BUTTON_CROSS;
-        case SDL_CONTROLLER_BUTTON_B: return PORK_BUTTON_CIRCLE;
-        case SDL_CONTROLLER_BUTTON_X: return PORK_BUTTON_SQUARE;
-        case SDL_CONTROLLER_BUTTON_Y: return PORK_BUTTON_TRIANGLE;
+        case SDL_CONTROLLER_BUTTON_A: return INPUT_BUTTON_CROSS;
+        case SDL_CONTROLLER_BUTTON_B: return INPUT_BUTTON_CIRCLE;
+        case SDL_CONTROLLER_BUTTON_X: return INPUT_BUTTON_SQUARE;
+        case SDL_CONTROLLER_BUTTON_Y: return INPUT_BUTTON_TRIANGLE;
 
-        case SDL_CONTROLLER_BUTTON_BACK: return PORK_BUTTON_SELECT;
-        case SDL_CONTROLLER_BUTTON_START: return PORK_BUTTON_START;
+        case SDL_CONTROLLER_BUTTON_BACK: return INPUT_BUTTON_SELECT;
+        case SDL_CONTROLLER_BUTTON_START: return INPUT_BUTTON_START;
 
-        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: return PORK_BUTTON_L1;
-        case SDL_CONTROLLER_BUTTON_LEFTSTICK: return PORK_BUTTON_L3;
-        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: return PORK_BUTTON_R1;
-        case SDL_CONTROLLER_BUTTON_RIGHTSTICK: return PORK_BUTTON_R3;
+        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: return INPUT_BUTTON_L1;
+        case SDL_CONTROLLER_BUTTON_LEFTSTICK: return INPUT_BUTTON_L3;
+        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: return INPUT_BUTTON_R1;
+        case SDL_CONTROLLER_BUTTON_RIGHTSTICK: return INPUT_BUTTON_R3;
 
-        case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return PORK_BUTTON_DOWN;
-        case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return PORK_BUTTON_LEFT;
-        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return PORK_BUTTON_RIGHT;
-        case SDL_CONTROLLER_BUTTON_DPAD_UP: return PORK_BUTTON_UP;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return INPUT_BUTTON_DOWN;
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return INPUT_BUTTON_LEFT;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return INPUT_BUTTON_RIGHT;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP: return INPUT_BUTTON_UP;
 
         default: return -1;
     }
@@ -534,15 +534,15 @@ void System_PollEvents() {
 
             case SDL_CONTROLLERAXISMOTION: {
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000) {
-                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_L2, true);
+                    Input_SetButtonState((unsigned int) event.caxis.which, INPUT_BUTTON_L2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000) {
-                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_L2, false);
+                    Input_SetButtonState((unsigned int) event.caxis.which, INPUT_BUTTON_L2, false);
                 }
 
                 if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value > 1000) {
-                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_R2, true);
+                    Input_SetButtonState((unsigned int) event.caxis.which, INPUT_BUTTON_R2, true);
                 } else if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value <= 1000){
-                    Input_SetButtonState((unsigned int) event.caxis.which, PORK_BUTTON_R2, false);
+                    Input_SetButtonState((unsigned int) event.caxis.which, INPUT_BUTTON_R2, false);
                 }
 
                 Input_SetAxisState(event.caxis.which, event.caxis.axis, event.caxis.value);

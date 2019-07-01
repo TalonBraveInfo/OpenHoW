@@ -151,7 +151,7 @@ void FE_ProcessInput(void) {
         } break;
 
         case FE_MODE_VIDEO: {
-            if(Input_GetKeyState(PORK_KEY_SPACE) || Input_GetKeyState(PORK_KEY_ESCAPE)) {
+            if(Input_GetKeyState(INPUT_KEY_SPACE) || Input_GetKeyState(INPUT_KEY_ESCAPE)) {
                 Video_SkipCurrent();
             }
         } break;

@@ -50,10 +50,10 @@ void Input_Initialize(void) {
     memset(&input_state, 0, sizeof(input_state));
 
     /* setup the default keyboard bindings */
-    input_state.keyboard.bindings[ACTION_MOVE_FORWARD]  = PORK_KEY_UP;
-    input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = PORK_KEY_DOWN;
-    input_state.keyboard.bindings[ACTION_TURN_LEFT]     = PORK_KEY_LEFT;
-    input_state.keyboard.bindings[ACTION_TURN_RIGHT]    = PORK_KEY_RIGHT;
+    input_state.keyboard.bindings[ACTION_MOVE_FORWARD]  = INPUT_KEY_UP;
+    input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = INPUT_KEY_DOWN;
+    input_state.keyboard.bindings[ACTION_TURN_LEFT]     = INPUT_KEY_LEFT;
+    input_state.keyboard.bindings[ACTION_TURN_RIGHT]    = INPUT_KEY_RIGHT;
     input_state.keyboard.bindings[ACTION_AIM_UP]        = 'a';
     input_state.keyboard.bindings[ACTION_AIM_DOWN]      = 'z';
 
@@ -92,19 +92,19 @@ void Input_Initialize(void) {
 
     /* setup the default controller bindings */
     for(unsigned int i = 0; i < INPUT_MAX_CONTROLLERS; ++i) {
-        input_state.controllers[i].bindings[ACTION_MOVE_FORWARD]    = PORK_BUTTON_UP;
-        input_state.controllers[i].bindings[ACTION_MOVE_BACKWARD]   = PORK_BUTTON_DOWN;
-        input_state.controllers[i].bindings[ACTION_TURN_LEFT]       = PORK_BUTTON_LEFT;
-        input_state.controllers[i].bindings[ACTION_TURN_RIGHT]      = PORK_BUTTON_RIGHT;
+        input_state.controllers[i].bindings[ACTION_MOVE_FORWARD]    = INPUT_BUTTON_UP;
+        input_state.controllers[i].bindings[ACTION_MOVE_BACKWARD]   = INPUT_BUTTON_DOWN;
+        input_state.controllers[i].bindings[ACTION_TURN_LEFT]       = INPUT_BUTTON_LEFT;
+        input_state.controllers[i].bindings[ACTION_TURN_RIGHT]      = INPUT_BUTTON_RIGHT;
 
-        input_state.controllers[i].bindings[ACTION_AIM]         = PORK_BUTTON_L1;
-        input_state.controllers[i].bindings[ACTION_AIM_UP]      = PORK_BUTTON_R1;
-        input_state.controllers[i].bindings[ACTION_AIM_DOWN]    = PORK_BUTTON_R2;
+        input_state.controllers[i].bindings[ACTION_AIM]         = INPUT_BUTTON_L1;
+        input_state.controllers[i].bindings[ACTION_AIM_UP]      = INPUT_BUTTON_R1;
+        input_state.controllers[i].bindings[ACTION_AIM_DOWN]    = INPUT_BUTTON_R2;
 
-        input_state.controllers[i].bindings[ACTION_PAUSE]   = PORK_BUTTON_START;
+        input_state.controllers[i].bindings[ACTION_PAUSE]   = INPUT_BUTTON_START;
 
-        input_state.controllers[i].bindings[ACTION_FIRE]    = PORK_BUTTON_CROSS;
-        input_state.controllers[i].bindings[ACTION_JUMP]    = PORK_BUTTON_SQUARE;
+        input_state.controllers[i].bindings[ACTION_FIRE]    = INPUT_BUTTON_CROSS;
+        input_state.controllers[i].bindings[ACTION_JUMP]    = INPUT_BUTTON_SQUARE;
     }
 
     /* todo, cv_input_kb_config, 'KEY_UP;KEY_DOWN;KEY_LEFT;KEY_RIGHT' follows
@@ -163,7 +163,7 @@ bool Input_GetKeyState(int key) {
 }
 
 bool Input_GetButtonState(unsigned int controller, int button) {
-    u_assert(controller < INPUT_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
+    u_assert(controller < INPUT_MAX_CONTROLLERS && button < INPUT_MAX_BUTTONS);
     return input_state.controllers[controller].button_states[button];
 }
 
@@ -181,7 +181,7 @@ void Input_SetAxisState(unsigned int controller, unsigned int axis, int status) 
 }
 
 void Input_SetButtonState(unsigned int controller, int button, bool status) {
-    u_assert(controller < INPUT_MAX_CONTROLLERS && button < PORK_MAX_BUTTONS);
+    u_assert(controller < INPUT_MAX_CONTROLLERS && button < INPUT_MAX_BUTTONS);
     input_state.controllers[controller].button_states[button] = status;
 }
 
