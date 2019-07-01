@@ -447,7 +447,9 @@ void System_PollEvents() {
 
             case SDL_KEYUP:
             case SDL_KEYDOWN: {
-                if(io.WantCaptureKeyboard) {
+                // Always update if key-up; see
+                // https://github.com/TalonBraveInfo/OpenHoW/issues/70#issuecomment-507377604
+                if(io.WantCaptureKeyboard || event.type == SDL_KEYUP) {
                     int key = event.key.keysym.scancode;
                     IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
                     io.KeysDown[key] = (event.type == SDL_KEYDOWN);
