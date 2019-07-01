@@ -449,7 +449,7 @@ void System_PollEvents() {
             case SDL_KEYDOWN: {
                 // Always update if key-up; see
                 // https://github.com/TalonBraveInfo/OpenHoW/issues/70#issuecomment-507377604
-                if(io.WantCaptureKeyboard || event.type == SDL_KEYUP) {
+                if(event.type == SDL_KEYUP || io.WantCaptureKeyboard) {
                     int key = event.key.keysym.scancode;
                     IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
                     io.KeysDown[key] = (event.type == SDL_KEYDOWN);
@@ -457,7 +457,7 @@ void System_PollEvents() {
                     io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
                     io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
                     io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-                    break;
+                    if (event.type != SDL_KEYUP) break;
                 }
 
                 int key = TranslateSDLKey(event.key.keysym.sym);

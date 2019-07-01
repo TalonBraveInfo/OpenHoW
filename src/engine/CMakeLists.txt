@@ -39,6 +39,7 @@ file(
         script/duktape-2.2.0/*.h
 
         audio/audio.cpp
+        editor/*.*
         graphics/*.*
         script/*.*
         game/*.*
