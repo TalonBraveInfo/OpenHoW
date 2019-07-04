@@ -289,7 +289,7 @@ static void CheckGameVersion(const char *path) {
     unsigned int fetext_size = plGetFileSize(fcheck);
     snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/gtext.bin", path);
     unsigned int gtext_size = plGetFileSize(fcheck);
-    if(fetext_size == 9216 && gtext_size == 4608) {
+    if(fetext_size == 8997 && gtext_size == 4518) {
         version_info.region = REGION_GER;
     } else if(fetext_size == 8102 && gtext_size == 4112) {
         version_info.region = REGION_ENG;
