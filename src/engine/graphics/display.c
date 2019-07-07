@@ -662,9 +662,9 @@ static void DrawCameraInfoOverlay(void) {
     Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
     unsigned int y = 50;
     char cam_pos[32];
-    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position));
+    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position, pl_float_var));
     Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
-    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles));
+    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles, pl_float_var));
     Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 }
 

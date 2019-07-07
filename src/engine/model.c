@@ -526,7 +526,9 @@ void CacheModelData(void) {
 #endif
 }
 
+PLModel *LoadObjModel(const char *path); /* see loaders/obj.cpp */
 void RegisterModelLoaders(void) {
+    plRegisterModelLoader("obj", LoadObjModel);
     plRegisterModelLoader("vtx", Model_LoadVtxFile);
     plRegisterModelLoader("min", Model_LoadMinFile);
 }
