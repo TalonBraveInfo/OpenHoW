@@ -679,9 +679,10 @@ static void DrawDebugOverlay(void) {
         return;
     }
 
-    DrawDisplayInfo();
+    //DrawDisplayInfo();
     //DrawCameraInfoOverlay();
 
+#if 0
     Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS");
     unsigned int y = 50;
     char cam_pos[32];
@@ -689,6 +690,7 @@ static void DrawDebugOverlay(void) {
     Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
     snprintf(cam_pos, sizeof(cam_pos), "ACTORS DRAWN : %d", g_state.gfx.num_actors_drawn);
     Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
+#endif
 
     if (cv_debug_input->i_value > 0) {
         switch (cv_debug_input->i_value) {
