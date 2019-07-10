@@ -61,4 +61,6 @@ MinHandle* Min_LoadFile(const char* path) {
         LogWarn("Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path);
         return NULL;
     }
+    // todo
+    return NULL;
 }

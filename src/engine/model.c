@@ -207,15 +207,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
                         vtx->vertices[j].position.y * -1,
                         vtx->vertices[j].position.z * -1));
         plSetMeshVertexST(mesh, j, 0, 0);
-
-#if 1 /* debug */
-        uint8_t r = (uint8_t)(rand() % 255);
-        uint8_t g = (uint8_t)(rand() % 255);
-        uint8_t b = (uint8_t)(rand() % 255);
-        plSetMeshVertexColour(mesh, j, PLColour(r, g, b, 255));
-#else
         plSetMeshVertexColour(mesh, j, PLColour(255, 255, 255, 255));
-#endif
 
         mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
         mesh->vertices[j].bone_weight = 1.f;
@@ -526,7 +518,9 @@ void CacheModelData(void) {
 #endif
 }
 
+PLModel *LoadObjModel(const char *path); /* see loaders/obj.cpp */
 void RegisterModelLoaders(void) {
+    plRegisterModelLoader("obj", LoadObjModel);
     plRegisterModelLoader("vtx", Model_LoadVtxFile);
     plRegisterModelLoader("min", Model_LoadMinFile);
 }

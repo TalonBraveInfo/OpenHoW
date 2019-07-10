@@ -633,7 +633,7 @@ static TMerge texture_targets[]={
         },
 
         {
-            "fe/dash/pause.png", 8, 64, 64, {{
+            "fe/dash/pause.png", 8, 48, 48, {{
                 "fe/dash/pause1.tim", 0, 0
             }, {
                 "fe/dash/pause2.tim", 16, 0

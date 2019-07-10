@@ -292,6 +292,11 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
 		}
 #endif
     }
+
+    io.Fonts->Clear();
+    if(io.Fonts->AddFontFromFileTTF("fonts/OpenSans-SemiBold.ttf", 16.f, nullptr, nullptr) == nullptr) {
+      io.Fonts->AddFontDefault();
+    }
 }
 
 void System_SetWindowTitle(const char *title) {

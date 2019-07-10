@@ -21,6 +21,7 @@
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
+#include <PL/platform_package.h>
 
 // remove this once everything is C++'fied
 #ifdef __cplusplus

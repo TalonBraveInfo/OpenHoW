@@ -124,7 +124,7 @@ MapManifest map_descriptors[]={
 
 //Precalculated vertices for chunk rendering
 //TODO: Share one index buffer instance between all chunks
-const static uint16_t chunkIndices[96] = {
+const static unsigned int chunkIndices[96] = {
         0, 2, 1, 1, 2, 3,
         4, 6, 5, 5, 6, 7,
         8, 10, 9, 9, 10, 11,
