@@ -425,88 +425,86 @@ void UI_DisplayDebugMenu(void) {
             ImGui::EndMenu();
         }
 
-        if(cv_debug_mode->i_value > 1) {
-            if (ImGui::BeginMenu("Debug")) {
-                if (ImGui::MenuItem("Show Console", "`")) {
-                    windows.push_back(new ConsoleWindow());
-                }
-
-                static int tc = 0;
-                if (ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
-                    char buf[4];
-                    plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
-                }
-
-                if (ImGui::IsItemHovered() && tc > 0) {
-                    const PLTexture *texture = Display_GetCachedTexture(
-                            (unsigned int) cv_display_texture_cache->i_value);
-                    if (texture != nullptr) {
-                        ImGui::BeginTooltip();
-                        ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id),
-                                     ImVec2(texture->w, texture->h));
-                        ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
-                        ImGui::EndTooltip();
-                    }
-                }
-
-                static int im = 0;
-                if (ImGui::SliderInt("Show Input States", &im, 0, 2)) {
-                    char buf[4];
-                    plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
-                }
-
-                ImGui::Separator();
-
-                if (ImGui::BeginMenu("Console Variables")) {
-                    size_t num_c;
-                    PLConsoleVariable **vars;
-                    plGetConsoleVariables(&vars, &num_c);
-
-                    for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
-                        switch ((*var)->type) {
-                            case pl_float_var:
-                                if (ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
-                                                      ImGuiInputTextFlags_EnterReturnsTrue)) {
-                                    plSetConsoleVariable((*var), std::to_string((*var)->f_value).c_str());
-                                }
-                                break;
-                            case pl_int_var:
-                                if (ImGui::InputInt((*var)->var, &(*var)->i_value, 1, 10,
-                                                    ImGuiInputTextFlags_EnterReturnsTrue)) {
-                                    plSetConsoleVariable((*var), std::to_string((*var)->i_value).c_str());
-                                }
-                                break;
-                            case pl_string_var:
-                                // read-only for now
-                                ImGui::LabelText((*var)->var, "%s", (*var)->s_value);
-                                break;
-                            case pl_bool_var:
-                                bool b = (*var)->b_value;
-                                if (ImGui::Checkbox((*var)->var, &b)) {
-                                    plSetConsoleVariable((*var), b ? "true" : "false");
-                                }
-                                break;
-                        }
-
-                        if (ImGui::IsItemHovered()) {
-                            ImGui::BeginTooltip();
-                            ImGui::TextUnformatted((*var)->description);
-                            ImGui::EndTooltip();
-                        }
-                    }
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::Separator();
-
-                if(ImGui::MenuItem("Rebuild Shaders")) {
-                    plParseConsoleString("rebuildShaders");
-                }
-
-                ImGui::EndMenu();
-            }
+      if (ImGui::BeginMenu("Debug")) {
+        if (ImGui::MenuItem("Show Console", "`")) {
+          windows.push_back(new ConsoleWindow());
         }
+
+        static int tc = 0;
+        if (ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
+          char buf[4];
+          plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
+        }
+
+        if (ImGui::IsItemHovered() && tc > 0) {
+          const PLTexture *texture = Display_GetCachedTexture(
+              (unsigned int) cv_display_texture_cache->i_value);
+          if (texture != nullptr) {
+            ImGui::BeginTooltip();
+            ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id),
+                         ImVec2(texture->w, texture->h));
+            ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
+            ImGui::EndTooltip();
+          }
+        }
+
+        static int im = 0;
+        if (ImGui::SliderInt("Show Input States", &im, 0, 2)) {
+          char buf[4];
+          plSetConsoleVariable(cv_debug_input, pl_itoa(im, buf, 4, 10));
+        }
+
+        ImGui::Separator();
+
+        if (ImGui::BeginMenu("Console Variables")) {
+          size_t num_c;
+          PLConsoleVariable **vars;
+          plGetConsoleVariables(&vars, &num_c);
+
+          for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
+            switch ((*var)->type) {
+              case pl_float_var:
+                if (ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
+                                      ImGuiInputTextFlags_EnterReturnsTrue)) {
+                  plSetConsoleVariable((*var), std::to_string((*var)->f_value).c_str());
+                }
+                break;
+              case pl_int_var:
+                if (ImGui::InputInt((*var)->var, &(*var)->i_value, 1, 10,
+                                    ImGuiInputTextFlags_EnterReturnsTrue)) {
+                  plSetConsoleVariable((*var), std::to_string((*var)->i_value).c_str());
+                }
+                break;
+              case pl_string_var:
+                // read-only for now
+                ImGui::LabelText((*var)->var, "%s", (*var)->s_value);
+                break;
+              case pl_bool_var:
+                bool b = (*var)->b_value;
+                if (ImGui::Checkbox((*var)->var, &b)) {
+                  plSetConsoleVariable((*var), b ? "true" : "false");
+                }
+                break;
+            }
+
+            if (ImGui::IsItemHovered()) {
+              ImGui::BeginTooltip();
+              ImGui::TextUnformatted((*var)->description);
+              ImGui::EndTooltip();
+            }
+          }
+
+          ImGui::EndMenu();
+        }
+
+        ImGui::Separator();
+
+        if(ImGui::MenuItem("Rebuild Shaders")) {
+          plParseConsoleString("rebuildShaders");
+        }
+
+        ImGui::EndMenu();
+      }
 
         // todo: eventually this will be moved into a dedicated toolbar
         if(ImGui::BeginMenu("Tools")) {

@@ -83,6 +83,8 @@ enum {
 };
 
 enum {
+    INPUT_KEY_TAB = 9,
+
     INPUT_KEY_F1 = 128,
     INPUT_KEY_F2,
     INPUT_KEY_F3,

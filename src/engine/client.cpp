@@ -41,7 +41,7 @@ void Client_ProcessInput() {
     if(input_delay < g_state.sys_ticks) {
         input_delay = g_state.sys_ticks + 10;
 
-        if (Input_GetKeyState('`')) {
+        if (Input_GetKeyState(INPUT_KEY_TAB) && Input_GetKeyState(INPUT_KEY_LSHIFT)) {
             Console_Toggle();
             return;
         }
