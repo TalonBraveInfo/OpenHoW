@@ -18,12 +18,12 @@
 #pragma once
 
 typedef enum ShaderProgram {
+    SHADER_DebugTest,
     SHADER_GenericTextured,
     SHADER_GenericUntextured,
     SHADER_GenericTexturedLit,
     SHADER_AlphaTest,
     SHADER_Water,
-    SHADER_DebugTest,
 
     MAX_SHADERS
 } ShaderProgram;

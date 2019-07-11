@@ -101,6 +101,10 @@ void Shaders_Initialize(void) {
 }
 
 void Shaders_SetProgram(ShaderProgram program) {
+    if(cv_debug_shaders->i_value > -1) {
+      program = cv_debug_shaders->i_value;
+    }
+
     last_program = program;
     plSetShaderProgram(programs[program]);
 }

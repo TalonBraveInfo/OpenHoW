@@ -24,6 +24,7 @@ extern PLConsoleVariable *cv_debug_fps;
 extern PLConsoleVariable *cv_debug_skeleton;
 extern PLConsoleVariable *cv_debug_input;
 extern PLConsoleVariable *cv_debug_cache;
+extern PLConsoleVariable *cv_debug_shaders;
 
 extern PLConsoleVariable *cv_camera_mode;
 extern PLConsoleVariable *cv_camera_fov;

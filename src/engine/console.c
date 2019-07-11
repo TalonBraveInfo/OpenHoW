@@ -266,6 +266,7 @@ PLConsoleVariable *cv_debug_fps = NULL;
 PLConsoleVariable *cv_debug_skeleton = NULL;
 PLConsoleVariable *cv_debug_input = NULL;
 PLConsoleVariable *cv_debug_cache = NULL;
+PLConsoleVariable *cv_debug_shaders = NULL;
 
 PLConsoleVariable *cv_camera_mode = NULL;
 PLConsoleVariable *cv_camera_fov = NULL;
@@ -329,6 +330,7 @@ void Console_Initialize(void) {
                           "1: keyboard states\n2: controller states"
     );
     rvar(cv_debug_cache, false, "0", pl_bool_var, NULL, "display memory and other info");
+    rvar(cv_debug_shaders, false, "-1", pl_int_var, NULL, "Forces specified GLSL shader on all draw calls.");
 
     rvar(cv_base_path, true, ".", pl_string_var, NULL, "");
     rvar(cv_campaign_path, false, "", pl_string_var, NULL, "");
