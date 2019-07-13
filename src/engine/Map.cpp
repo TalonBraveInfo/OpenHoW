@@ -30,6 +30,7 @@
 
 #include "graphics/display.h"
 #include "graphics/shader.h"
+#include "graphics/texture_atlas.h"
 
 #if 0
 /* for now these are hard-coded, but
@@ -182,12 +183,7 @@ Map::Map(const std::string& name) {
 }
 
 Map::~Map() {
-    if(!tile_textures_.empty()) {
-        LogDebug("Freeing %u textures...\n", tile_textures_.size());
-        for(auto texture : tile_textures_) {
-            plDestroyTexture(texture, true);
-        }
-    }
+    delete texture_atlas_;
 
     plDestroyTexture(overview_, true);
 

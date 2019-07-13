@@ -113,6 +113,8 @@ struct MapManifest;
 
 /* end format data */
 
+class TextureAtlas;
+
 class Map {
 public:
     explicit Map(const std::string &name);
@@ -156,8 +158,7 @@ private:
     std::string id_name_;
 
     PLTexture *overview_{nullptr};
-
-    std::vector<PLTexture*> tile_textures_;
+    TextureAtlas* texture_atlas_{nullptr};
 
     PLModel *sky_model_{nullptr};
     PLTexture *sky_textures_[4]{nullptr, nullptr, nullptr, nullptr};
