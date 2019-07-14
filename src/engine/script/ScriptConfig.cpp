@@ -17,6 +17,7 @@
 
 #include <PL/platform_filesystem.h>
 #include <duktape.h>
+#include <sstream>
 
 #include "../engine.h"
 #include "ScriptConfig.h"
@@ -70,7 +71,7 @@ std::string ScriptConfig::GetStringProperty(const std::string &property, const s
         return def;
     }
 
-    const char *str = duk_safe_to_string(context, -1);
+    std::string str = duk_safe_to_string(context, -1);
     duk_pop(context);
 
     return str;
@@ -130,6 +131,17 @@ float ScriptConfig::GetFloatProperty(const std::string &property, float def, boo
     return var;
 }
 
+// https://stackoverflow.com/a/23305012
+template<char C>
+std::istream &expect(std::istream &in) {
+    if ((in >> std::ws).peek() == C) {
+        in.ignore();
+    } else {
+        in.setstate(std::ios_base::failbit);
+    }
+    return in;
+}
+
 PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour def, bool silent) {
     auto *context = static_cast<duk_context *>(ctx_);
 
@@ -142,12 +154,19 @@ PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour d
         return def;
     }
 
-    const char *str = duk_safe_to_string(context, -1);
+    std::string str = duk_safe_to_string(context, -1);
     duk_pop(context);
 
-    PLColour out(255, 255, 255, 255);
-    if(std::sscanf(str, "%hhu %hhu %hhu %hhu", &out.r, &out.g, &out.b, &out.a) < 3) {
-        // can still ignore alpha channel
+    PLColour out;
+    std::stringstream stream(str);
+    stream >> out.r >> expect<' '> >> out.g >> expect<' '> >> out.b;
+    if(!(stream.rdstate() & std::stringstream::failbit)) {
+        stream >> expect<' '> >> out.a;
+        if(stream.rdstate() & std::stringstream::failbit) {
+            // can still ignore alpha channel
+            out.a = 255;
+        }
+    } else {
         throw std::runtime_error("Failed to parse entirety of colour from JSON property, \"" + property + "\"!\n");
     }
 
@@ -166,11 +185,13 @@ PLVector3 ScriptConfig::GetVector3Property(const std::string &property, PLVector
         return def;
     }
 
-    const char *str = duk_safe_to_string(context, -1);
+    std::string str = duk_safe_to_string(context, -1);
     duk_pop(context);
 
     PLVector3 out;
-    if(std::sscanf(str, "%f %f %f", &out.x, &out.y, &out.z) < 3) {
+    std::stringstream stream(str);
+    stream >> out.x >> expect<' '> >> out.y >> expect<' '> >> out.z;
+    if(stream.rdstate() & std::stringstream::failbit) {
         throw std::runtime_error("Failed to parse entirety of vector from JSON property, \"" + property + "\"!\n");
     }
 
