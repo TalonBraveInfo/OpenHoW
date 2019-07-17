@@ -117,7 +117,10 @@ class TextureAtlas;
 
 class Map {
 public:
+
     explicit Map(const std::string &name);
+
+    Map();
     ~Map();
 
     void Draw();

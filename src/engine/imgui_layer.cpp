@@ -30,6 +30,7 @@
 #include "editor/BaseWindow.h"
 #include "editor/MapConfigEditor.h"
 #include "editor/TextureViewer.h"
+#include "editor/NewMapWindow.h"
 
 static bool show_quit               = false;
 static bool show_file               = false;
@@ -412,6 +413,12 @@ void UI_DisplayDebugMenu(void) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
                 show_new_game = true;
+            }
+            if(ImGui::MenuItem("New Map...")) {
+              static NewMapWindow* popup = nullptr;
+              if(popup == nullptr) {
+                windows.push_back((popup = new NewMapWindow()));
+              }
             }
             ImGui::Separator();
             if(ImGui::MenuItem("Open...")) { show_file = true; }
