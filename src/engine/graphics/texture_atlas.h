@@ -19,21 +19,30 @@
 
 class TextureAtlas {
  public:
-  explicit TextureAtlas(const std::vector<std::string> &textures);
+  TextureAtlas();
   ~TextureAtlas();
+
+  void AddImage(const std::string &path);
+  void AddImages(const std::vector<std::string> &textures);
+
+  void Finalize();
+
+  size_t GetSize();
 
   struct Index {
     unsigned int x, y, w, h;
   };
-  const Index* GetIndex(unsigned int i);
-  const Index* GetIndex(const std::string &name);
+  const Index *GetIndex(const std::string &name);
+  void GetIndexCoords(const Index *index, float *x, float *y, float *w, float *h);
 
-  PLVector4 GetCoords(const Index* index);
+  PLTexture *GetTexture() { return texture_; }
 
  protected:
  private:
   std::map<std::string, Index> indices_;
+  std::vector<PLImage *> images_;
 
   unsigned int num_textures_{0};
-  PLTexture* texture_{nullptr};
+  PLTexture *texture_{nullptr};
+
 };

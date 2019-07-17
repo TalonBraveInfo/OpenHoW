@@ -172,6 +172,27 @@ static int CompareImageHeight(const void *a, const void *b) {
     return 0;
 }
 
+#if 0 /* experimental palette changer thing... */
+PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255));
+    plReplaceImageColour(&cache, PLColourRGB(90, 82, 8), main_channel);
+
+    PLColour dark_channel = main_channel;
+    if(dark_channel.r > 16) dark_channel.r -= 16;
+    if(dark_channel.g > 25) dark_channel.g -= 25;
+    if(dark_channel.b > 8)  dark_channel.b -= 8;
+    plReplaceImageColour(&cache, PLColourRGB(74, 57, 0), dark_channel);
+
+    PLColour light_channel = main_channel;
+    if(light_channel.r < 206) light_channel.r += 49;
+    if(light_channel.g < 197) light_channel.g += 58;
+    if(light_channel.b < 214) light_channel.b += 41;
+    plReplaceImageColour(&cache, PLColourRGB(139, 115, 49), light_channel);
+
+    PLColour mid_channel = main_channel;
+    /* this one still needs doing... */
+    plReplaceImageColour(&cache, PLColourRGB(115, 98, 24), mid_channel);
+#endif
+
 /* loads texture set into memory */
 void Display_CacheTextureIndex(const char* path, const char* index_name, unsigned int id) {
     u_assert(id < MAX_TEXTURE_INDEX);
@@ -203,7 +224,7 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
 
     PLImage images[MAX_TEXTURES_PER_INDEX];
 
-    unsigned int w = 256;
+    unsigned int w = 512;
     unsigned int h = 8;
     unsigned int max_h = 0;
     int cur_y = 0;
@@ -257,7 +278,7 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
         /* todo, perhaps, if the texture sheet is too large we should create another sheet?
          * rather than producing one mega texture */
         while(cur_y + img->height > h) {
-            h *= 2;
+            h += img->height;
         }
 
         index->offsets[i].x = cur_x;
@@ -290,25 +311,14 @@ void Display_CacheTextureIndex(const char* path, const char* index_name, unsigne
         plFreeImage(&images[i]);
     }
 
-#if 0 /* experimental palette changer thing... */
-    PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255));
-    plReplaceImageColour(&cache, PLColourRGB(90, 82, 8), main_channel);
-
-    PLColour dark_channel = main_channel;
-    if(dark_channel.r > 16) dark_channel.r -= 16;
-    if(dark_channel.g > 25) dark_channel.g -= 25;
-    if(dark_channel.b > 8)  dark_channel.b -= 8;
-    plReplaceImageColour(&cache, PLColourRGB(74, 57, 0), dark_channel);
-
-    PLColour light_channel = main_channel;
-    if(light_channel.r < 206) light_channel.r += 49;
-    if(light_channel.g < 197) light_channel.g += 58;
-    if(light_channel.b < 214) light_channel.b += 41;
-    plReplaceImageColour(&cache, PLColourRGB(139, 115, 49), light_channel);
-
-    PLColour mid_channel = main_channel;
-    /* this one still needs doing... */
-    plReplaceImageColour(&cache, PLColourRGB(115, 98, 24), mid_channel);
+#if 1
+  {
+    if(plCreatePath("./debug/atlas_data/")) {
+      char buf[PL_SYSTEM_MAX_PATH];
+      snprintf(buf, sizeof(buf) - 1, "./debug/atlas_data/%s.png", index_name);
+      plWriteImage(&cache, buf);
+    }
+  }
 #endif
 
     if((index->texture = plCreateTexture()) == NULL) {
