@@ -22,7 +22,7 @@
 
 ModelActor::ModelActor(const std::string& name) : Actor(name) {}
 ModelActor::~ModelActor() {
-    Model_DestroyHandle(model_);
+    //ModelManager::GetInstance()->UnloadModel(model_);
 }
 
 void ModelActor::Draw() {
@@ -35,5 +35,5 @@ void ModelActor::Draw() {
 }
 
 void ModelActor::SetModel(const std::string &path) {
-    model_ = Model_LoadFile(std::string("chars/" + path).c_str(), false);
+    model_ = ModelManager::GetInstance()->LoadModel("chars/" + path, false);
 }

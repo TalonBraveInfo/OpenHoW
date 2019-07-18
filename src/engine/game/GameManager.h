@@ -68,5 +68,5 @@ private:
 
 #define MAX_AMBIENT_SAMPLES 8
     double                      ambient_emit_delay_{0};
-    const struct AudioSample*   ambient_samples_[MAX_AMBIENT_SAMPLES];
+    const struct AudioSample*   ambient_samples_[MAX_AMBIENT_SAMPLES]{};
 };

@@ -147,11 +147,6 @@ void TextureAtlas::Finalize() {
   plFreeImage(cache);
 }
 
-size_t TextureAtlas::GetSize() {
-  u_assert(texture_ != nullptr, "Invalid texture!");
-  return plGetImageSize(texture_->format, texture_->w, texture_->h);
-}
-
 void TextureAtlas::GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h) {
   auto index = textures_.find(name);
   if(index == textures_.end()) {

@@ -70,7 +70,6 @@ void Display_DrawDebug(void);
 void Display_Flush(void);
 
 void Display_ClearTextureIndex(unsigned int id);
-void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h);
 
 PLTexture* Display_GetCachedTexture(unsigned int id);

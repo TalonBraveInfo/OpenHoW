@@ -108,15 +108,10 @@ void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing,
 BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
   char buf[PL_SYSTEM_MAX_PATH];
   snprintf(buf, sizeof(buf) - 1, "frontend/text/%s.tab", tab_name);
-  char tab_path[PL_SYSTEM_MAX_PATH];
-  snprintf(tab_path, sizeof(tab_path) - 1, "%s", u_find(buf));
+  const char *tab_path = u_find(buf);
   if (!plFileExists(tab_path)) {
     Error("Failed to load tab for \"%s\", aborting!\n", name);
   }
-
-  snprintf(buf, sizeof(buf) - 1, "frontend/text/%s", name);
-  char tex_path[PL_SYSTEM_MAX_PATH];
-  snprintf(tex_path, sizeof(tex_path) - 1, "%s", u_find2(buf, supported_image_formats, true));
 
   FILE *tab_file = fopen(tab_path, "rb");
   if (tab_file == NULL) {
@@ -140,6 +135,8 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
 
   // todo, load in the image
 
+  snprintf(buf, sizeof(buf) - 1, "frontend/text/%s", name);
+  const char *tex_path = u_find2(buf, supported_image_formats, true);
   PLImage image;
   if (!plLoadImage(tex_path, &image)) {
     Error("Failed to load in image, %s, aborting!\n", plGetError());

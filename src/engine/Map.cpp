@@ -197,7 +197,7 @@ Map::~Map() {
         plDestroyModel(chunk.model);
     }
 
-    plDestroyModel(sky_model_);
+    ModelManager::GetInstance()->UnloadModel(sky_model_);
 
     // gross GROSS; change the clear colour back!
     g_state.gfx.clear_colour = {0, 0, 0, 255};
@@ -252,7 +252,7 @@ float Map::GetHeight(const PLVector2 &pos) {
 }
 
 void Map::LoadSky() {
-    sky_model_ = Model_LoadFile("skys/skydome", true);
+    sky_model_ = ModelManager::GetInstance()->LoadModel("skys/skydome", true);
     sky_model_->model_matrix = plTranslateMatrix(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
     // Default skydome is smaller than the map, so we'll scale it
     plScaleMatrix(&sky_model_->model_matrix, PLVector3(2, 2, 2));

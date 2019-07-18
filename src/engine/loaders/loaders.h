@@ -67,7 +67,7 @@ typedef struct VtxHandle {
 VtxHandle* Vtx_LoadFile(const char* path);
 void Vtx_DestroyHandle(VtxHandle* handle);
 
-VtxHandle* No2_LoadFile(const char *path, VtxHandle* vertex_data);;
+VtxHandle* No2_LoadFile(const char *path, VtxHandle* vertex_data);
 
 typedef struct HirHandle {
     PLModelBone*    bones;

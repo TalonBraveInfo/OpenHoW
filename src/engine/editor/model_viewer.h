@@ -15,20 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
+#include <PL/platform_model.h>
 
-#include "NewMapWindow.h"
+#include "base_window.h"
 
-void NewMapWindow::Display() {
-  ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
-  ImGui::Begin("New Map", &status_, ED_DEFAULT_WINDOW_FLAGS);
-  ImGui::InputText("Name", name_buffer_, sizeof(name_buffer_));
-  ImGui::InputText("Author", author_buffer_, sizeof(author_buffer_));
-  ImGui::Separator();
-  if(ImGui::Button("Create")) {}
-  ImGui::SameLine();
-  if(ImGui::Button("Cancel")) {
-    SetStatus(false);
-  }
-  ImGui::End();
-}
+class ModelViewer : public BaseWindow {
+ public:
+  explicit ModelViewer(const std::string &path);
+  ~ModelViewer() override;
+
+  void Display() override;
+
+ protected:
+ private:
+  PLModel       *model_;
+  std::string   model_path_;
+};

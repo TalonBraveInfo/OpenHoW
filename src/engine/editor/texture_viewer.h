@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BaseWindow.h"
+#include "base_window.h"
 
 class TextureViewer : public BaseWindow {
 public:
@@ -47,12 +47,6 @@ public:
         );
 
         if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Open...")) {
-                    //show_file = true;
-                }
-                ImGui::EndMenu();
-            }
             if (ImGui::BeginMenu("View")) {
                 ImGui::SliderInt("Scale", &scale_, 1, 8);
                 if (ImGui::BeginMenu("Filter Mode")) {

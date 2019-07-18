@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "BaseWindow.h"
+#include "base_window.h"
 
 class NewMapWindow : public BaseWindow {
  public:

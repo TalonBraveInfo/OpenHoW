@@ -160,18 +160,6 @@ void Display_ClearTextureIndex(unsigned int id) {
     index->texture = default_texture;
 }
 
-static int CompareImageHeight(const void *a, const void *b) {
-    const PLImage *img_a = (const PLImage*)a;
-    const PLImage *img_b = (const PLImage*)b;
-    if(img_a->height < img_b->height) {
-        return 1;
-    } else if(img_a->height > img_b->height) {
-        return -1;
-    }
-
-    return 0;
-}
-
 #if 0 /* experimental palette changer thing... */
 PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255));
     plReplaceImageColour(&cache, PLColourRGB(90, 82, 8), main_channel);
@@ -192,146 +180,6 @@ PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() 
     /* this one still needs doing... */
     plReplaceImageColour(&cache, PLColourRGB(115, 98, 24), mid_channel);
 #endif
-
-/* loads texture set into memory */
-void Display_CacheTextureIndex(const char* path, const char* index_name, unsigned int id) {
-    u_assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex* index = &texture_cache[id];
-    if(index->num_textures > 0) {
-        Display_ClearTextureIndex(id);
-    }
-
-    char tmp[PL_SYSTEM_MAX_PATH];
-    snprintf(tmp, sizeof(tmp), "%s%s", path, index_name);
-
-    char texture_index_path[PL_SYSTEM_MAX_PATH];
-    snprintf(texture_index_path, sizeof(texture_index_path), "%s", u_find(tmp));
-
-    if(!plFileExists(texture_index_path)) {
-        LogWarn("Failed to find index at \"%s\" (%s)!\n", texture_index_path, plGetError());
-        return;
-    }
-
-    FILE *file = fopen(texture_index_path, "r");
-    if(file == NULL) {
-        LogWarn("Failed to open texture index at \"%s\"!\n", texture_index_path);
-        return;
-    }
-
-    LogInfo("Parsing \"%s\"\n", texture_index_path);
-
-    /* todo, move all textures into a texture sheet on upload */
-
-    PLImage images[MAX_TEXTURES_PER_INDEX];
-
-    unsigned int w = 512;
-    unsigned int h = 8;
-    unsigned int max_h = 0;
-    int cur_y = 0;
-    int cur_x = 0;
-
-    char line[32];
-    while(!feof(file)) {
-        if(fgets(line, sizeof(line), file) != NULL) {
-            line[strcspn(line, "\r\n")] = '\0';
-            //LogDebug("  %s\n", line);
-
-            char texture_path[PL_SYSTEM_MAX_PATH];
-            snprintf(tmp, sizeof(tmp), "%s%s", path, line);
-            snprintf(texture_path, sizeof(texture_index_path), "%s", u_find2(tmp, supported_image_formats, true));
-
-            if(index->num_textures >= MAX_TEXTURES_PER_INDEX) {
-                Error("hit max index (%u) for texture sheet, aborting!\n", MAX_TEXTURES_PER_INDEX);
-            }
-
-            PLImage *img = &images[index->num_textures];
-            if(!plLoadImage(texture_path, img)) {
-                Error("%s, aborting!\n", plGetError());
-            }
-
-            plConvertPixelFormat(img, PL_IMAGEFORMAT_RGBA8);
-
-            index->num_textures++;
-        }
-    }
-
-    qsort(images, index->num_textures, sizeof(PLImage), &CompareImageHeight);
-
-    /* copy the information into our index list, so we can easily
-     * grab it later */
-
-    for(unsigned int i = 0; i < index->num_textures; ++i) {
-        PLImage *img = &images[i];
-
-        if(img->height > max_h) {
-            max_h = img->height;
-        }
-
-        if(cur_x == 0 && img->width > w) {
-            w = img->width;
-        } else if(cur_x + img->width > w) {
-            cur_y += max_h;
-            cur_x = 0;
-            max_h = 0;
-        }
-
-        /* todo, perhaps, if the texture sheet is too large we should create another sheet?
-         * rather than producing one mega texture */
-        while(cur_y + img->height > h) {
-            h += img->height;
-        }
-
-        index->offsets[i].x = cur_x;
-        index->offsets[i].y = cur_y;
-        index->offsets[i].w = img->width;
-        index->offsets[i].h = img->height;
-        cur_x += img->width;
-    }
-
-    PLImage cache;
-    memset(&cache, 0, sizeof(PLImage));
-    cache.width           = w;
-    cache.height          = h;
-    cache.format          = PL_IMAGEFORMAT_RGBA8;
-    cache.colour_format   = PL_COLOURFORMAT_RGBA;
-    cache.levels          = 1;
-    cache.size            = plGetImageSize(cache.format, cache.width, cache.height);
-
-    cache.data = (uint8_t**)u_alloc(cache.levels, sizeof(uint8_t *), true);
-    cache.data[0] = (uint8_t*)u_alloc(cache.size, sizeof(uint8_t), true);
-    for(unsigned int i = 0; i < index->num_textures; ++i) {
-        uint8_t *pos = cache.data[0] + ((index->offsets[i].y * cache.width) + index->offsets[i].x) * 4;
-        uint8_t *src = images[i].data[0];
-        for(unsigned int y = 0; y < index->offsets[i].h; ++y) {
-            memcpy(pos, src, (index->offsets[i].w * 4));
-            src += index->offsets[i].w * 4;
-            pos += cache.width * 4;
-        }
-
-        plFreeImage(&images[i]);
-    }
-
-#if 1
-  {
-    if(plCreatePath("./debug/atlas_data/")) {
-      char buf[PL_SYSTEM_MAX_PATH];
-      snprintf(buf, sizeof(buf) - 1, "./debug/atlas_data/%s.png", index_name);
-      plWriteImage(&cache, buf);
-    }
-  }
-#endif
-
-    if((index->texture = plCreateTexture()) == NULL) {
-        Error("%s, aborting!\n", plGetError());
-    }
-
-    index->texture->filter = PL_TEXTURE_FILTER_NEAREST;
-    if(!plUploadTextureImage(index->texture, &cache)) {
-        Error("%s, aborting!\n", plGetError());
-    }
-
-    u_fclose(file);
-}
 
 /* todo: platform library should pass this information back */
 const char *supported_model_formats[]={"obj", "vtx", "min", NULL};
@@ -830,7 +678,6 @@ void Display_DrawScene(void) {
 
     /* debug methods */
     DrawAudioSources();
-    DEBUGDrawModel();
 }
 
 void Display_DrawInterface(void) {
