@@ -22,27 +22,27 @@ class TextureAtlas {
   TextureAtlas();
   ~TextureAtlas();
 
+  size_t GetSize();
+
+  void GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h);
+
   void AddImage(const std::string &path);
   void AddImages(const std::vector<std::string> &textures);
 
   void Finalize();
 
-  size_t GetSize();
-
-  struct Index {
-    unsigned int x, y, w, h;
-  };
-  const Index *GetIndex(const std::string &name);
-  void GetIndexCoords(const Index *index, float *x, float *y, float *w, float *h);
-
   PLTexture *GetTexture() { return texture_; }
 
  protected:
  private:
-  std::map<std::string, Index> indices_;
-  std::vector<PLImage *> images_;
+  struct Index {
+    unsigned int x, y, w, h;
+    PLImage *image;
+  };
 
-  unsigned int num_textures_{0};
+  std::map<std::string, Index> textures_;
+  std::map<std::string, PLImage *> images_by_name_;
+  std::multimap<unsigned int, PLImage *> images_by_height_;
+
   PLTexture *texture_{nullptr};
-
 };

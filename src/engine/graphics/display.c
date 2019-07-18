@@ -567,7 +567,9 @@ void Display_Initialize(void) {
     /* go ahead and create our placeholder texture, used if
      * one fails to load */
 
-    PLColour pbuffer[]={{ 255, 255, 0  , 255 }, { 0  , 255, 255, 255 }, { 0  , 255, 255, 255 }, { 255, 255, 0  , 255 }};
+    PLColour pbuffer[]={
+        { 255, 255, 0  , 255 }, { 0  , 255, 255, 255 },
+        { 0  , 255, 255, 255 }, { 255, 255, 0  , 255 }};
     PLImage* image = plCreateImage((uint8_t *)pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
     if(image != NULL) {
         default_texture = plCreateTexture();
@@ -590,6 +592,7 @@ void Display_Initialize(void) {
         Display_ClearTextureIndex(i);
     }
 
+#if 0
     Display_CacheTextureIndex("chars/pigs/american/", "american.index", TEXTURE_INDEX_AMERICAN);
     Display_CacheTextureIndex("chars/pigs/british/", "british.index", TEXTURE_INDEX_BRITISH);
     Display_CacheTextureIndex("chars/pigs/french/", "french.index", TEXTURE_INDEX_FRENCH);
@@ -599,6 +602,7 @@ void Display_Initialize(void) {
     Display_CacheTextureIndex("chars/pigs/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
 
     Display_CacheTextureIndex("chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
+#endif
 
     PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 }

@@ -19,6 +19,8 @@
 
 #include "MapManager.h"
 
+#include "graphics/texture_atlas.h"
+
 #define MAP_CHUNK_ROW           16
 #define MAP_CHUNKS              (MAP_CHUNK_ROW * MAP_CHUNK_ROW)
 #define MAP_CHUNK_ROW_TILES     4
@@ -96,7 +98,7 @@ struct MapTile {
     unsigned int slip{0};   /* e.g. full, bottom or left? */
 
     /* texture */
-    unsigned int tex{0};
+    std::string texture;
     unsigned int flip{0};
 
     float       height[4]{0, 0, 0, 0};
@@ -112,8 +114,6 @@ struct MapChunk {
 struct MapManifest;
 
 /* end format data */
-
-class TextureAtlas;
 
 class Map {
 public:
@@ -139,6 +139,9 @@ public:
 
     void ApplySkyColours(PLColour bottom, PLColour top);
 
+    void GenerateModels();
+    void GenerateModel(MapChunk *chunk);
+
 protected:
 private:
     void LoadSpawns(const std::string &path);
@@ -158,7 +161,7 @@ private:
     std::string id_name_;
 
     PLTexture *overview_{nullptr};
-    TextureAtlas* texture_atlas_{nullptr};
+    TextureAtlas *texture_atlas_{nullptr};
 
     PLModel *sky_model_{nullptr};
     PLTexture *sky_textures_[4]{nullptr, nullptr, nullptr, nullptr};
