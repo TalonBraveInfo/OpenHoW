@@ -77,3 +77,8 @@ After you've downloaded these files, place the 'include' and 'lib' directories u
 in a new 'SDL2' directory under 'src/3rdparty'.
 
 This will be changing at a later point to make things a little easier.
+
+#### C/C++ Style Guide
+
+Please try to follow the [Google C++ guidelines](https://google.github.io/styleguide/cppguide.html), if possible.
+Otherwise please follow the style already used in the code you're editing and this will be sufficient.
