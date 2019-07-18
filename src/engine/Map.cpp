@@ -24,8 +24,8 @@
 #include "ModSupport.h"
 #include "frontend.h"
 #include "script/script.h"
-#include "game/ActorManager.h"
 #include "script/ScriptConfig.h"
+#include "game/ActorManager.h"
 #include "MapManager.h"
 
 #include "graphics/display.h"
@@ -144,7 +144,7 @@ const static unsigned int chunkIndices[96] = {
         60, 62, 61, 61, 62, 63,
 };
 
-Map::Map(const std::string& name) {
+Map::Map(const std::string& name) : Map() {
     LogDebug("Loading map, %s...\n", name.c_str());
 
     id_name_ = name;
@@ -178,6 +178,10 @@ Map::Map(const std::string& name) {
     LoadSky();
 
     GenerateOverview();
+}
+
+Map::Map() {
+  chunks_.resize(MAP_CHUNKS);
 }
 
 Map::~Map() {
