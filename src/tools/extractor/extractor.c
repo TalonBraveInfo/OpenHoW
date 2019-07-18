@@ -35,37 +35,37 @@ typedef struct CopyPath {
 } CopyPath;
 
 static CopyPath pc_music_paths[]={
-        {"/MUSIC/Track02.ogg", "/music/"},
-        {"/MUSIC/Track03.ogg", "/music/"},
-        {"/MUSIC/Track04.ogg", "/music/"},
-        {"/MUSIC/Track05.ogg", "/music/"},
-        {"/MUSIC/Track06.ogg", "/music/"},
-        {"/MUSIC/Track07.ogg", "/music/"},
-        {"/MUSIC/Track08.ogg", "/music/"},
-        {"/MUSIC/Track09.ogg", "/music/"},
-        {"/MUSIC/Track10.ogg", "/music/"},
-        {"/MUSIC/Track11.ogg", "/music/"},
-        {"/MUSIC/Track12.ogg", "/music/"},
-        {"/MUSIC/Track13.ogg", "/music/"},
-        {"/MUSIC/Track14.ogg", "/music/"},
-        {"/MUSIC/Track15.ogg", "/music/"},
-        {"/MUSIC/Track16.ogg", "/music/"},
-        {"/MUSIC/Track17.ogg", "/music/"},
-        {"/MUSIC/Track18.ogg", "/music/"},
-        {"/MUSIC/Track19.ogg", "/music/"},
-        {"/MUSIC/Track20.ogg", "/music/"},
-        {"/MUSIC/Track21.ogg", "/music/"},
-        {"/MUSIC/Track22.ogg", "/music/"},
-        {"/MUSIC/Track23.ogg", "/music/"},
-        {"/MUSIC/Track24.ogg", "/music/"},
-        {"/MUSIC/Track25.ogg", "/music/"},
-        {"/MUSIC/Track26.ogg", "/music/"},
-        {"/MUSIC/Track27.ogg", "/music/"},
-        {"/MUSIC/Track28.ogg", "/music/"},
-        {"/MUSIC/Track29.ogg", "/music/"},
-        {"/MUSIC/Track30.ogg", "/music/"},
-        {"/MUSIC/Track31.ogg", "/music/"},
-        {"/MUSIC/Track32.ogg", "/music/"},
+        {"/MUSIC/Track02.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track03.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track04.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track05.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track06.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track07.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track08.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track09.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track10.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track11.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track12.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track13.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track14.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track15.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track16.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track17.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track18.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track19.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track20.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track21.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track22.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track23.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track24.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track25.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track26.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track27.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track28.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track29.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track30.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track31.ogg", "/campaigns/how/music/"},
+        {"/MUSIC/Track32.ogg", "/campaigns/how/music/"},
 };
 
 static CopyPath pc_copy_paths[] = {
@@ -74,91 +74,91 @@ static CopyPath pc_copy_paths[] = {
 
 static CopyPath pc_package_paths[] = {
         /* pigs */
-        {"/Chars/british.mad", "/chars/pigs/"},        /* actually contains all the pig models */
-        {"/Chars/FACES.MTD", "/chars/pigs/faces/"},  /* contains all the face textures       */
-        {"/Chars/AMERICAN.MTD", "/chars/pigs/american/"},
-        {"/Chars/british.mtd", "/chars/pigs/british/"},
-        {"/Chars/FRENCH.MTD", "/chars/pigs/french/"},
-        {"/Chars/GERMAN.MTD", "/chars/pigs/german/"},
-        {"/Chars/JAPANESE.MTD", "/chars/pigs/japanese/"},
-        {"/Chars/RUSSIAN.MTD", "/chars/pigs/russian/"},
-        {"/Chars/TEAMLARD.MTD", "/chars/pigs/teamlard/"},
-        {"/Chars/BRITHATS.MAD", "/chars/pigs/hats/"},
-        {"/Chars/FHATS.MAD", "/chars/pigs/hats/"},
+        {"/Chars/british.mad", "/campaigns/how/chars/pigs/"},        /* actually contains all the pig models */
+        {"/Chars/FACES.MTD", "/campaigns/how/chars/pigs/faces/"},  /* contains all the face textures       */
+        {"/Chars/AMERICAN.MTD", "/campaigns/how/chars/pigs/american/"},
+        {"/Chars/british.mtd", "/campaigns/how/chars/pigs/british/"},
+        {"/Chars/FRENCH.MTD", "/campaigns/how/chars/pigs/french/"},
+        {"/Chars/GERMAN.MTD", "/campaigns/how/chars/pigs/german/"},
+        {"/Chars/JAPANESE.MTD", "/campaigns/how/chars/pigs/japanese/"},
+        {"/Chars/RUSSIAN.MTD", "/campaigns/how/chars/pigs/russian/"},
+        {"/Chars/TEAMLARD.MTD", "/campaigns/how/chars/pigs/teamlard/"},
+        {"/Chars/BRITHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
+        {"/Chars/FHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
 
         /* weapons */
-        {"/Chars/WEAPONS.MAD", "/chars/weapons/"},
-        {"/Chars/WEAPONS.MTD", "/chars/weapons/"},
+        {"/Chars/WEAPONS.MAD", "/campaigns/how/chars/weapons/"},
+        {"/Chars/WEAPONS.MTD", "/campaigns/how/chars/weapons/"},
         /* */
-        {"/Chars/TOP.MAD", "/chars/top/"},
-        {"/Chars/TOP.MTD", "/chars/top/"},
+        {"/Chars/TOP.MAD", "/campaigns/how/chars/top/"},
+        {"/Chars/TOP.MTD", "/campaigns/how/chars/top/"},
         /* zoom sights */
-        {"/Chars/SIGHT.MAD", "/chars/sight/"},
-        {"/Chars/SIGHT.MTD", "/chars/sight/"},
+        {"/Chars/SIGHT.MAD", "/campaigns/how/chars/sight/"},
+        {"/Chars/SIGHT.MTD", "/campaigns/how/chars/sight/"},
         /* promotion point */
-        {"/Chars/PROPOINT.MAD", "/chars/propoint/"},
-        {"/Chars/propoint.mtd", "/chars/propoint/"},
+        {"/Chars/PROPOINT.MAD", "/campaigns/how/chars/propoint/"},
+        {"/Chars/propoint.mtd", "/campaigns/how/chars/propoint/"},
         /* sky */
-        {"/Chars/SKYDOME.MAD", "/skys/"},
-        //{"/Chars/SKYDOME.MTD", "/chars/sky/"},    /* unused ?? */
-        {"/Chars/TOY.MAD", "/skys/toy/"},
-        {"/Chars/SPACE.MAD", "/skys/space/"},
-        {"/Chars/SUNSET.MAD", "/skys/sunset/"},
-        {"/Chars/SUNRISE.MAD", "/skys/sunrise/"},
-        {"/Chars/SUNNY.MAD", "/skys/sunny/"},
-        {"/Chars/OMINOUS.MAD", "/skys/ominous/"},
-        {"/Chars/DESERT.MAD", "/skys/desert/"},
-        {"/Chars/COLDSKY.MAD", "/skys/coldsky/"},
-        {"/Chars/NIGHT1.MAD", "/skys/night1/"},
+        {"/Chars/SKYDOME.MAD", "/campaigns/how/skys/"},
+        //{"/Chars/SKYDOME.MTD", "/campaigns/how/chars/sky/"},    /* unused ?? */
+        {"/Chars/TOY.MAD", "/campaigns/how/skys/toy/"},
+        {"/Chars/SPACE.MAD", "/campaigns/how/skys/space/"},
+        {"/Chars/SUNSET.MAD", "/campaigns/how/skys/sunset/"},
+        {"/Chars/SUNRISE.MAD", "/campaigns/how/skys/sunrise/"},
+        {"/Chars/SUNNY.MAD", "/campaigns/how/skys/sunny/"},
+        {"/Chars/OMINOUS.MAD", "/campaigns/how/skys/ominous/"},
+        {"/Chars/DESERT.MAD", "/campaigns/how/skys/desert/"},
+        {"/Chars/COLDSKY.MAD", "/campaigns/how/skys/coldsky/"},
+        {"/Chars/NIGHT1.MAD", "/campaigns/how/skys/night1/"},
 
         /* frontend */
-        {"/FEBmps/FEBMP.MAD",           "/fe/bitmaps/"},
-        {"/Language/Tims/FEFXTIMS.MTD", "/fe/fx/"},
-        {"/Language/Tims/EXPLTIMS.MAD", "/fe/expl/"},
-        {"/Language/Tims/FACETIMS.MAD", "/fe/dash/"},
-        {"/Language/Tims/FLAGTIMS.MAD", "/fe/dash/"},
-        {"/Language/Tims/dashtims.mad", "/fe/dash/"},
-        {"/Language/Tims/MAPICONS.MTD", "/fe/map/"},
-        {"/Language/Tims/MENUTIMS.MAD", "/fe/dash/menu/"},
-        {"/Language/Tims/TBOXTIMS.MAD", "/fe/dash/"},
+        {"/FEBmps/FEBMP.MAD",           "/campaigns/how/frontend/bitmaps/"},
+        {"/Language/Tims/FEFXTIMS.MTD", "/campaigns/how/frontend/fx/"},
+        {"/Language/Tims/EXPLTIMS.MAD", "/campaigns/how/frontend/expl/"},
+        {"/Language/Tims/FACETIMS.MAD", "/campaigns/how/frontend/dash/"},
+        {"/Language/Tims/FLAGTIMS.MAD", "/campaigns/how/frontend/dash/"},
+        {"/Language/Tims/dashtims.mad", "/campaigns/how/frontend/dash/"},
+        {"/Language/Tims/MAPICONS.MTD", "/campaigns/how/frontend/map/"},
+        {"/Language/Tims/MENUTIMS.MAD", "/campaigns/how/frontend/dash/menu/"},
+        {"/Language/Tims/TBOXTIMS.MAD", "/campaigns/how/frontend/dash/"},
 
-        {"/Maps/BAY.MAD", "/chars/scenery/"},
-        {"/Maps/bay.mtd", "/chars/scenery/"},
-        {"/Maps/ICE.MAD", "/chars/scenery/"},
-        {"/Maps/ice.mtd", "/chars/scenery/"},
-        {"/Maps/BOOM.MAD", "/chars/scenery/"},
-        {"/Maps/boom.mtd", "/chars/scenery/"},
-        {"/Maps/BUTE.MAD", "/chars/scenery/"},
-        {"/Maps/bute.mtd", "/chars/scenery/"},
-        {"/Maps/CAMP.MAD", "/chars/scenery/"},
-        {"/Maps/camp.mtd", "/chars/scenery/"},
-        {"/Maps/DEMO.MAD", "/chars/scenery/"},
-        {"/Maps/demo.mtd", "/chars/scenery/"},
-        {"/Maps/DEVI.MAD", "/chars/scenery/"},
-        {"/Maps/devi.mtd", "/chars/scenery/"},
-        {"/Maps/DVAL.MAD", "/chars/scenery/"},
-        {"/Maps/dval.mtd", "/chars/scenery/"},
-        {"/Maps/EASY.MAD", "/chars/scenery/"},
-        {"/Maps/easy.mtd", "/chars/scenery/"},
-        {"/Maps/ESTU.MAD", "/chars/scenery/"},
-        {"/Maps/estu.mtd", "/chars/scenery/"},
-        {"/Maps/FOOT.MAD", "/chars/scenery/"},
-        {"/Maps/foot.mtd", "/chars/scenery/"},
-        {"/Maps/GUNS.MAD", "/chars/scenery/"},
-        {"/Maps/guns.mtd", "/chars/scenery/"},
-        {"/Maps/HELL2.MAD", "/chars/scenery/"},
-        {"/Maps/hell2.mtd", "/chars/scenery/"},
-        {"/Maps/HELL3.MAD", "/chars/scenery/"},
-        {"/Maps/hell3.mtd", "/chars/scenery/"},
-        {"/Maps/HILLBASE.MAD", "/chars/scenery/"},
-        {"/Maps/hillbase.mtd", "/chars/scenery/"},
-        {"/Maps/ICEFLOW.MAD", "/chars/scenery/"},
-        {"/Maps/iceflow.mtd", "/chars/scenery/"},
-        {"/Maps/ICE.MAD", "/chars/scenery/"},
-        {"/Maps/ice.mtd", "/chars/scenery/"},
+        {"/Maps/BAY.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/bay.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/ICE.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/BOOM.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/boom.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/BUTE.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/bute.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/CAMP.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/camp.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/DEMO.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/demo.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/DEVI.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/devi.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/DVAL.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/dval.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/EASY.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/easy.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/ESTU.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/estu.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/FOOT.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/foot.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/GUNS.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/guns.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/HELL2.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/hell2.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/HELL3.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/hell3.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/HILLBASE.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/hillbase.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/ICEFLOW.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/iceflow.mtd", "/campaigns/how/chars/scenery/"},
+        {"/Maps/ICE.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
 
-        {"/Maps/ZULUS.MAD", "/chars/scenery/"},
-        {"/Maps/zulus.mtd", "/chars/scenery/"},
+        {"/Maps/ZULUS.MAD", "/campaigns/how/chars/scenery/"},
+        {"/Maps/zulus.mtd", "/campaigns/how/chars/scenery/"},
 
 #if 1
         {"/Maps/BAY.PTG",        "/campaigns/how/maps/bay/tiles/"},
@@ -222,8 +222,8 @@ static CopyPath pc_package_paths[] = {
         {"/Maps/HILLBASE.PTG",   "/campaigns/how/maps/hillbase/tiles/"},
         {"/Maps/LIBERATE.PTG",   "/campaigns/how/maps/liberate/tiles/"},
 
-        {"/Skys/COLD/COLD1.PTG", "/skys/cold1/"},
-        //{"/Skys/DESERT/DESERT1.PTG", "/skys/desert1/"},
+        {"/Skys/COLD/COLD1.PTG", "/campaigns/how/skys/cold1/"},
+        //{"/Skys/DESERT/DESERT1.PTG", "/campaigns/how/skys/desert1/"},
 #endif
 };
 
@@ -583,72 +583,72 @@ typedef struct TMerge {
 
 static TMerge texture_targets[]={
         {
-            "fe/dash/ang.png", 5, 152, 121, {{
-                "fe/dash/ang1.tim", 0, 0
+            "/campaigns/how/frontend/dash/ang.png", 5, 152, 121, {{
+                "/campaigns/how/frontend/dash/ang1.tim", 0, 0
             }, {
-                "fe/dash/ang2.tim", 64, 22
+                "/campaigns/how/frontend/dash/ang2.tim", 64, 22
             }, {
-                "fe/dash/ang3.tim", 0, 64
+                "/campaigns/how/frontend/dash/ang3.tim", 0, 64
             }, {
-                "fe/dash/ang4.tim", 64, 64
+                "/campaigns/how/frontend/dash/ang4.tim", 64, 64
             }, {
-                "fe/dash/ang5.tim", 128, 31
+                "/campaigns/how/frontend/dash/ang5.tim", 128, 31
             }}
         },
 
         {
-            "fe/dash/clock.png", 4, 128, 96, {{
-                "fe/dash/clock01.tim", 0, 0
+            "/campaigns/how/frontend/dash/clock.png", 4, 128, 96, {{
+                "/campaigns/how/frontend/dash/clock01.tim", 0, 0
             }, {
-                "fe/dash/clock02.tim", 64, 0
+                "/campaigns/how/frontend/dash/clock02.tim", 64, 0
             }, {
-                "fe/dash/clock03.tim", 0, 28
+                "/campaigns/how/frontend/dash/clock03.tim", 0, 28
             }, {
-                "fe/dash/clock04.tim", 64, 28
+                "/campaigns/how/frontend/dash/clock04.tim", 64, 28
             }}
         },
 
         {
-            "fe/dash/timer.png", 10, 256, 32, {{
-                "fe/dash/timer0.tim", 0, 0
+            "/campaigns/how/frontend/dash/timer.png", 10, 256, 32, {{
+                "/campaigns/how/frontend/dash/timer0.tim", 0, 0
             }, {
-                "fe/dash/timer1.tim", 24, 0
+                "/campaigns/how/frontend/dash/timer1.tim", 24, 0
             }, {
-                "fe/dash/timer2.tim", 48, 0
+                "/campaigns/how/frontend/dash/timer2.tim", 48, 0
             }, {
-                "fe/dash/timer3.tim", 72, 0
+                "/campaigns/how/frontend/dash/timer3.tim", 72, 0
             }, {
-                "fe/dash/timer4.tim", 96, 0
+                "/campaigns/how/frontend/dash/timer4.tim", 96, 0
             }, {
-                "fe/dash/timer5.tim", 120, 0
+                "/campaigns/how/frontend/dash/timer5.tim", 120, 0
             }, {
-                "fe/dash/timer6.tim", 144, 0
+                "/campaigns/how/frontend/dash/timer6.tim", 144, 0
             }, {
-                "fe/dash/timer7.tim", 168, 0
+                "/campaigns/how/frontend/dash/timer7.tim", 168, 0
             }, {
-                "fe/dash/timer8.tim", 192, 0
+                "/campaigns/how/frontend/dash/timer8.tim", 192, 0
             }, {
-                "fe/dash/timer9.tim", 216, 0
+                "/campaigns/how/frontend/dash/timer9.tim", 216, 0
             }}
         },
 
         {
-            "fe/dash/pause.png", 8, 48, 48, {{
-                "fe/dash/pause1.tim", 0, 0
+            "/campaigns/how/frontend/dash/pause.png", 8, 48, 48, {{
+                "/campaigns/how/frontend/dash/pause1.tim", 0, 0
             }, {
-                "fe/dash/pause2.tim", 16, 0
+                "/campaigns/how/frontend/dash/pause2.tim", 16, 0
             }, {
-                "fe/dash/pause3.tim", 32, 0
+                "/campaigns/how/frontend/dash/pause3.tim", 32, 0
             }, {
-                "fe/dash/pause4.tim", 0, 16
+                "/campaigns/how/frontend/dash/pause4.tim", 0, 16
             }, {
-                "fe/dash/pause5.tim", 32, 16
+                "/campaigns/how/frontend/dash/pause5.tim", 32, 16
             }, {
-                "fe/dash/pause6.tim", 0, 32
+                "/campaigns/how/frontend/dash/pause6.tim", 0, 32
             }, {
-                "fe/dash/pause7.tim", 16, 32
+                "/campaigns/how/frontend/dash/pause7.tim", 16, 32
             }, {
-                "fe/dash/pause8.tim", 32, 32
+                "/campaigns/how/frontend/dash/pause8.tim", 32, 32
             }}
         }
 };

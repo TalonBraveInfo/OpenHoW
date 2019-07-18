@@ -41,13 +41,13 @@ static unsigned int old_frontend_state = (unsigned int) -1;
  */
 
 static const char *papers_teams_paths[MAX_TEAMS]={
-        "fe/papers/british.bmp",
-        "fe/papers/american.bmp",
-        "fe/papers/french.bmp",
-        "fe/papers/german.bmp",
-        "fe/papers/russian.bmp",
-        "fe/papers/japan.bmp",
-        "fe/papers/teamlard.bmp"
+        "frontend/papers/british.bmp",
+        "frontend/papers/american.bmp",
+        "frontend/papers/french.bmp",
+        "frontend/papers/german.bmp",
+        "frontend/papers/russian.bmp",
+        "frontend/papers/japan.bmp",
+        "frontend/papers/teamlard.bmp"
 };
 
 /* texture assets, these are loaded and free'd at runtime */
@@ -96,17 +96,17 @@ static void FrontendInputCallback(int key, bool is_pressed) {
 
 static void CacheFEGameData(void) {
 #if 1
-    fe_tx_game_textures[FE_TEXTURE_ANG] = Display_LoadTexture("fe/dash/ang", PL_TEXTURE_FILTER_LINEAR);
-    fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = Display_LoadTexture("fe/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_ANG] = Display_LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = Display_LoadTexture("frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
 
-    fe_tx_game_textures[FE_TEXTURE_CLOCK] = Display_LoadTexture("fe/dash/clock", PL_TEXTURE_FILTER_LINEAR);
-    fe_tx_game_textures[FE_TEXTURE_CLIGHT] = Display_LoadTexture("fe/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR);
-    fe_tx_game_textures[FE_TEXTURE_TIMER] = Display_LoadTexture("fe/dash/timer", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_CLOCK] = Display_LoadTexture("frontend/dash/clock", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_CLIGHT] = Display_LoadTexture("frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR);
+    fe_tx_game_textures[FE_TEXTURE_TIMER] = Display_LoadTexture("frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR);
 #endif
 }
 
 static void CacheFEMenuData(void) {
-    fe_background = Display_LoadTexture("fe/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+    fe_background = Display_LoadTexture("frontend/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
     for(unsigned int i = 0; i < MAX_TEAMS; ++i) {
         fe_papers_teams[i] = Display_LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
     }
@@ -172,10 +172,10 @@ void FrontEnd_Tick(void) {
 
                 /* load in some of the assets we'll be using on the
                  * next screen before proceeding... */
-                fe_press = Display_LoadTexture("fe/title/press", PL_TEXTURE_FILTER_LINEAR);
-                fe_any = Display_LoadTexture("fe/title/any", PL_TEXTURE_FILTER_LINEAR);
-                fe_key = Display_LoadTexture("fe/title/key", PL_TEXTURE_FILTER_LINEAR);
-                fe_background = Display_LoadTexture("fe/title/title", PL_TEXTURE_FILTER_LINEAR);
+                fe_press = Display_LoadTexture("frontend/title/press", PL_TEXTURE_FILTER_LINEAR);
+                fe_any = Display_LoadTexture("frontend/title/any", PL_TEXTURE_FILTER_LINEAR);
+                fe_key = Display_LoadTexture("frontend/title/key", PL_TEXTURE_FILTER_LINEAR);
+                fe_background = Display_LoadTexture("frontend/title/title", PL_TEXTURE_FILTER_LINEAR);
                 break;
             }
 
@@ -197,9 +197,9 @@ void FE_SetLoadingBackground(const char *name) {
     }
 
     char screen_path[PL_SYSTEM_MAX_PATH];
-    snprintf(screen_path, sizeof(screen_path), "fe/briefing/%s", name);
+    snprintf(screen_path, sizeof(screen_path), "frontend/briefing/%s", name);
     if(!plFileExists(screen_path)) {
-        snprintf(screen_path, sizeof(screen_path), "fe/briefing/loadmult");
+        snprintf(screen_path, sizeof(screen_path), "frontend/briefing/loadmult");
     }
 
     fe_background = Display_LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
@@ -417,7 +417,7 @@ void FrontEnd_SetState(unsigned int state) {
             plDestroyTexture(fe_any, true);
             plDestroyTexture(fe_key, true);
             plDestroyTexture(fe_background, true);
-            fe_background = Display_LoadTexture("fe/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
+            fe_background = Display_LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
 
             // start playing the default theme
             AudioManager::GetInstance()->PlayMusic(AUDIO_MUSIC_MENU);
