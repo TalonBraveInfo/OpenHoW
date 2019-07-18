@@ -18,12 +18,12 @@
 #pragma once
 
 struct ModManifest {
-    std::string                 manifest_path;
-    std::string                 base_directory;
-    // Modification Details
-    std::string                 name{"Unknown"};
-    std::string                 version{"Unknown"};
-    std::string                 author{"Unknown"};
+  std::string manifest_path;
+  std::string base_directory;
+  // Modification Details
+  std::string name{"Unknown"};
+  std::string version{"Unknown"};
+  std::string author{"Unknown"};
 };
 
 PL_EXTERN_C

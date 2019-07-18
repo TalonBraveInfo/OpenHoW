@@ -542,7 +542,7 @@ ModelManager::~ModelManager() {
 }
 
 void ModelManager::ClearModelCache() {
-  for(const auto& i : cached_models_) {
+  for (const auto &i : cached_models_) {
     plDestroyModel(i.second);
   }
   cached_models_.clear();
@@ -554,8 +554,8 @@ void ModelManager::UnloadModel(PLModel *model) {
     return;
   }
 
-  for(const auto& i : cached_models_) {
-    if(i.second == model) {
+  for (const auto &i : cached_models_) {
+    if (i.second == model) {
       plDestroyModel(i.second);
       cached_models_.erase(i.first);
       return;
@@ -565,7 +565,7 @@ void ModelManager::UnloadModel(PLModel *model) {
 
 PLModel *ModelManager::LoadModel(const std::string &path, bool abort_on_fail) {
   auto i = cached_models_.find(path);
-  if(i != cached_models_.end()) {
+  if (i != cached_models_.end()) {
     return i->second;
   }
 

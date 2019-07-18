@@ -18,11 +18,11 @@
 #pragma once
 
 enum { // supported languages
-    LANG_ENGLISH,
-    LANG_FRENCH,
-    LANG_GERMAN,
-    LANG_ITALIAN,
-    LANG_SPANISH,
+  LANG_ENGLISH,
+  LANG_FRENCH,
+  LANG_GERMAN,
+  LANG_ITALIAN,
+  LANG_SPANISH,
 };
 
 PL_EXTERN_C

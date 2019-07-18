@@ -18,68 +18,68 @@
 #include "base_window.h"
 
 class TextureViewer : public BaseWindow {
-public:
-    explicit TextureViewer(const std::string &path, PLTexture *texture) {
-        texture_ = texture;
-        texture_path = path;
+ public:
+  explicit TextureViewer(const std::string &path, PLTexture *texture) {
+    texture_ = texture;
+    texture_path = path;
+  }
+
+  ~TextureViewer() override {
+    plDestroyTexture(texture_, true);
+  }
+
+  void ReloadTexture(PLTextureFilter filter_mode) {
+    if (filter_mode == filter_mode_) {
+      return;
     }
 
-    ~TextureViewer() override {
-        plDestroyTexture(texture_, true);
-    }
+    plDestroyTexture(texture_, true);
+    texture_ = Display_LoadTexture(texture_path.c_str(), filter_mode);
+    filter_mode_ = filter_mode;
+  }
 
-    void ReloadTexture(PLTextureFilter filter_mode) {
-        if (filter_mode == filter_mode_) {
-            return;
-        }
-
-        plDestroyTexture(texture_, true);
-        texture_ = Display_LoadTexture(texture_path.c_str(), filter_mode);
-        filter_mode_ = filter_mode;
-    }
-
-    void Display() override {
-        ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
-        ImGui::Begin(dname("Texture Viewer"), &status_,
-                     ImGuiWindowFlags_MenuBar |
+  void Display() override {
+    ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
+    ImGui::Begin(dname("Texture Viewer"), &status_,
+                 ImGuiWindowFlags_MenuBar |
                      ImGuiWindowFlags_HorizontalScrollbar |
                      ImGuiWindowFlags_NoSavedSettings
-        );
+    );
 
-        if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("View")) {
-                ImGui::SliderInt("Scale", &scale_, 1, 8);
-                if (ImGui::BeginMenu("Filter Mode")) {
-                    if (ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
-                        ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
-                    }
-                    if (ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
-                        ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::BeginMenu("View")) {
+        ImGui::SliderInt("Scale", &scale_, 1, 8);
+        if (ImGui::BeginMenu("Filter Mode")) {
+          if (ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
+            ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
+          }
+          if (ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
+            ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
+          }
+          ImGui::EndMenu();
         }
-
-        ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
-                texture_->w * scale_, texture_->h * scale_));
-        ImGui::Separator();
-        ImGui::Text("Path: %s", texture_path.c_str());
-        ImGui::Text("%dx%d", texture_->w, texture_->h);
-        ImGui::Text("Size: %ukB (%luB)", (unsigned int) plBytesToKilobytes(texture_->size),
-                    (long unsigned) texture_->size);
-
-        ImGui::End();
+        ImGui::EndMenu();
+      }
+      ImGui::EndMenuBar();
     }
 
-protected:
-private:
-    PLTexture *texture_{nullptr};
-    std::string texture_path;
+    ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
+        texture_->w * scale_, texture_->h * scale_));
+    ImGui::Separator();
+    ImGui::Text("Path: %s", texture_path.c_str());
+    ImGui::Text("%dx%d", texture_->w, texture_->h);
+    ImGui::Text("Size: %ukB (%luB)", (unsigned int) plBytesToKilobytes(texture_->size),
+                (long unsigned) texture_->size);
 
-    PLTextureFilter filter_mode_{PL_TEXTURE_FILTER_LINEAR};
+    ImGui::End();
+  }
 
-    int scale_{1};
+ protected:
+ private:
+  PLTexture *texture_{nullptr};
+  std::string texture_path;
+
+  PLTextureFilter filter_mode_{PL_TEXTURE_FILTER_LINEAR};
+
+  int scale_{1};
 };

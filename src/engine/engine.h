@@ -45,16 +45,16 @@
 #define MAX_FRAMESKIP       5
 
 static inline const char *GetVersionString(void) {
-    /* this is here for when we start generating additional
-     * versioning information (such as git version) */
-    static char version[12] = { '\0' };
-    if(version[0] == '\0') {
-        snprintf(version, sizeof(version), "%d.%d.%d",
-                 ENGINE_MAJOR_VERSION,
-                 ENGINE_MINOR_VERSION,
-                 ENGINE_PATCH_VERSION);
-    }
-    return &version[0];
+  /* this is here for when we start generating additional
+   * versioning information (such as git version) */
+  static char version[12] = {'\0'};
+  if (version[0] == '\0') {
+    snprintf(version, sizeof(version), "%d.%d.%d",
+             ENGINE_MAJOR_VERSION,
+             ENGINE_MINOR_VERSION,
+             ENGINE_PATCH_VERSION);
+  }
+  return &version[0];
 }
 
 #ifdef __cplusplus
@@ -64,27 +64,27 @@ typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
 
 typedef struct EngineState {
-    struct PLCamera *camera;       // camera used for general gameplay
-    struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
+  struct PLCamera *camera;       // camera used for general gameplay
+  struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
-    /* server / client logic */
-    bool is_host;
+  /* server / client logic */
+  bool is_host;
 
-    unsigned int sys_ticks;
-    unsigned int last_sys_tick;
+  unsigned int sys_ticks;
+  unsigned int last_sys_tick;
 
-    unsigned int sim_ticks;
+  unsigned int sim_ticks;
 
-    unsigned int draw_ticks;
-    unsigned int last_draw_ms;
+  unsigned int draw_ticks;
+  unsigned int last_draw_ms;
 
-    struct {
-        unsigned int num_chunks_drawn;
-        unsigned int num_actors_drawn;
-        unsigned int num_triangles_total;
+  struct {
+    unsigned int num_chunks_drawn;
+    unsigned int num_actors_drawn;
+    unsigned int num_triangles_total;
 
-        PLColour clear_colour;
-    } gfx;
+    PLColour clear_colour;
+  } gfx;
 } EngineState;
 extern EngineState g_state;
 
@@ -107,16 +107,16 @@ const char *GetFullCampaignPath(void);
 /************************************************************/
 
 enum LogLevel {
-    LOG_LEVEL_DEFAULT,
-    LOG_LEVEL_WARNING,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_DEBUG,
+  LOG_LEVEL_DEFAULT,
+  LOG_LEVEL_WARNING,
+  LOG_LEVEL_ERROR,
+  LOG_LEVEL_DEBUG,
 };
 
 enum PromptLevel {
-    PROMPT_LEVEL_DEFAULT,
-    PROMPT_LEVEL_WARNING,
-    PROMPT_LEVEL_ERROR,
+  PROMPT_LEVEL_DEFAULT,
+  PROMPT_LEVEL_WARNING,
+  PROMPT_LEVEL_ERROR,
 };
 
 typedef unsigned int uint;
@@ -154,13 +154,13 @@ PL_EXTERN_C_END
 #define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
 #define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
 #ifdef _DEBUG
-    #define Error(...) {                                            \
+#define Error(...) {                                            \
         _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
         u_assert(0, __VA_ARGS__);                                   \
         exit(EXIT_FAILURE);                                         \
     }
 #else
-    #define Error(...) {                                            \
+#define Error(...) {                                            \
         _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
         exit(EXIT_FAILURE);                                         \

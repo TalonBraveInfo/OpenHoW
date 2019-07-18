@@ -18,7 +18,7 @@
 #pragma once
 
 #include "base_window.h"
-#include "../MapManager.h"
+#include "../map_manager.h"
 #include "../Map.h"
 
 class MapConfigEditor : public BaseWindow {
