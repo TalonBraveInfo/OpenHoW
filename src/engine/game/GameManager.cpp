@@ -21,6 +21,7 @@
 #include "../Map.h"
 
 #include "GameManager.h"
+#include "ActorManager.h"
 #include "SPGameMode.h"
 #include "../model.h"
 
@@ -60,10 +61,12 @@ void GameManager::LoadMap(const std::string &name) {
   try {
     map = new Map(name);
   } catch (const std::runtime_error &e) {
-    Error("Failed to load map, aborting!\n%s\n", e.what());
+    LogWarn("Failed to load map, aborting!\n%s\n", e.what());
+    return;
   }
 
   if (active_map_ != nullptr) {
+    ActorManager::GetInstance()->DestroyActors();
     ModelManager::GetInstance()->ClearModelCache();
     delete active_map_;
   }
