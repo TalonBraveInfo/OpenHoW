@@ -590,6 +590,15 @@ void Map::GenerateOverview() {
         }
     }
 
+#ifdef _DEBUG
+  if(plCreatePath("./debug/generated/")) {
+    char buf[PL_SYSTEM_MAX_PATH];
+    snprintf(buf, sizeof(buf) - 1, "./debug/generated/%dx%d_%s.png",
+             image->width, image->height, id_name_.c_str());
+    plWriteImage(image, buf);
+  }
+#endif
+
     // Allow rebuilding overview texture
     plDestroyTexture(overview_, true);
 

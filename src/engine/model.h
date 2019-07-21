@@ -171,8 +171,6 @@ void Model_DestroyHandle(PLModel* model);
 
 PLModel* Model_GetDefaultModel(void);
 
-void Display_ClearTextureIndex(unsigned int id);
-
 void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
 void CacheModelData(void);
 

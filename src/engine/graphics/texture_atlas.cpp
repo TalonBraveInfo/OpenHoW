@@ -123,15 +123,13 @@ void TextureAtlas::Finalize() {
     texture->image = nullptr;
   }
 
-#if 0
-  {
-    static unsigned int gen_id = 0;
-    if(plCreatePath("./debug/atlas_data/")) {
-      char buf[PL_SYSTEM_MAX_PATH];
-      snprintf(buf, sizeof(buf) - 1, "./debug/atlas_data/%dx%d_%d.png",
-               cache->width, cache->height, gen_id++);
-      plWriteImage(cache, buf);
-    }
+#ifdef _DEBUG
+  static unsigned int gen_id = 0;
+  if(plCreatePath("./debug/generated/")) {
+    char buf[PL_SYSTEM_MAX_PATH];
+    snprintf(buf, sizeof(buf) - 1, "./debug/generated/%dx%d_%d.png",
+             cache->width, cache->height, gen_id++);
+    plWriteImage(cache, buf);
   }
 #endif
 
