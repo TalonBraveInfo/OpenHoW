@@ -20,7 +20,7 @@
 
 #include "WaveFrontReader.h"
 
-extern "C" PLModel *LoadObjModel(const char *path) {
+PLModel *LoadObjModel(const char *path) {
     WaveFrontReader obj;
     if(!obj.Load(path, false)) {
         return nullptr;

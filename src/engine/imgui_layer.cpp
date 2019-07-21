@@ -21,15 +21,17 @@
 #include "engine.h"
 #include "imgui_layer.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
-#include "MapManager.h"
+#include "map_manager.h"
 #include "audio/audio.h"
 #include "graphics/display.h"
 
 #include "game/GameManager.h"
 
-#include "editor/BaseWindow.h"
-#include "editor/MapConfigEditor.h"
-#include "editor/TextureViewer.h"
+#include "editor/base_window.h"
+#include "editor/map_config_editor.h"
+#include "editor/texture_viewer.h"
+#include "editor/new_map_window.h"
+#include "editor/model_viewer.h"
 
 static bool show_quit               = false;
 static bool show_file               = false;
@@ -207,8 +209,13 @@ void UI_DisplayNewGame() {
     }
 #else
 
+    if(ImGui::Button("Cancel")) {
+      show_new_game = false;
+    }
+    ImGui::SameLine();
     if(ImGui::Button("Start Game!")) {
-
+      GameManager::GetInstance()->LoadMap("camp");
+      show_new_game = false;
     }
 
 #endif
@@ -412,6 +419,12 @@ void UI_DisplayDebugMenu(void) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("New Game...")) {
                 show_new_game = true;
+            }
+            if(ImGui::MenuItem("New Map...")) {
+              static NewMapWindow* popup = nullptr;
+              if(popup == nullptr) {
+                windows.push_back((popup = new NewMapWindow()));
+              }
             }
             ImGui::Separator();
             if(ImGui::MenuItem("Open...")) { show_file = true; }

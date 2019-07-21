@@ -27,13 +27,13 @@ HirHandle* Hir_LoadFile(const char* path) {
     size_t hir_size = plGetFileSize(path);
     if(hir_size == 0) {
         LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
-        return NULL;
+        return nullptr;
     }
 
     FILE *file = fopen(path, "rb");
-    if(file == NULL) {
+    if(file == nullptr) {
         LogWarn("Failed to load \"%s\", aborting!\n", path);
-        return NULL;
+        return nullptr;
     }
 
     typedef struct __attribute__((packed)) HirBone {
@@ -42,14 +42,14 @@ HirHandle* Hir_LoadFile(const char* path) {
         int8_t  unknown[10];
     } HirBone;
 
-    unsigned int num_bones = (unsigned int)(hir_size / sizeof(HirBone));
+    auto num_bones = (unsigned int)(hir_size / sizeof(HirBone));
     HirBone bones[num_bones];
     unsigned int rnum_bones = fread(bones, sizeof(HirBone), num_bones, file);
-    u_fclose(file);
+    u_fclose(file)
 
     if(rnum_bones != num_bones) {
         LogWarn("Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones);
-        return NULL;
+        return nullptr;
     }
 
     /* for debugging */
@@ -67,11 +67,11 @@ HirHandle* Hir_LoadFile(const char* path) {
      * to include the names of each bone (.skeleton format?) */
     if(num_bones > MAX_BONE_INDICES) {
         LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
-        return NULL;
+        return nullptr;
     }
 
-    HirHandle* handle = u_alloc(1, sizeof(HirHandle), true);
-    handle->bones = u_alloc(num_bones, sizeof(PLModelBone), true);
+    auto* handle = static_cast<HirHandle *>(u_alloc(1, sizeof(HirHandle), true));
+    handle->bones = static_cast<PLModelBone *>(u_alloc(num_bones, sizeof(PLModelBone), true));
     for(unsigned int i = 0; i < num_bones; ++i) {
         handle->bones[i].position = PLVector3(bones[i].coords[0], bones[i].coords[1], bones[i].coords[2]);
         handle->bones[i].parent = bones[i].parent;
@@ -81,7 +81,7 @@ HirHandle* Hir_LoadFile(const char* path) {
 }
 
 void Hir_DestroyHandle(HirHandle* handle) {
-    if(handle == NULL) {
+    if(handle == nullptr) {
         return;
     }
 

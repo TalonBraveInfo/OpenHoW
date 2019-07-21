@@ -20,13 +20,13 @@
 #include "engine.h"
 #include "language.h"
 #include "model.h"
-#include "ModSupport.h"
+#include "mod_support.h"
 #include "client.h"
 #include "config.h"
 #include "input.h"
 #include "frontend.h"
 #include "audio/audio.h"
-#include "MapManager.h"
+#include "map_manager.h"
 
 #include "game/SPGameMode.h"
 #include "script/script.h"
@@ -91,7 +91,6 @@ void Engine_Initialize(void) {
     Config_Load(Config_GetUserConfigPath());
 
     RegisterPackageLoaders();
-    RegisterModelLoaders();
 
     // load in the manifests
 
@@ -114,8 +113,7 @@ void Engine_Initialize(void) {
     GameManager::GetInstance();
     FE_Initialize();
     MapManager::GetInstance();
-
-    CacheModelData();
+    ModelManager::GetInstance();
 
     LogInfo("Base path:         \"%s\"\n", GetBasePath());
     LogInfo("Campaign path:     \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());

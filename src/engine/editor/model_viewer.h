@@ -15,23 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include <PL/platform_model.h>
 
-struct ModManifest {
-    std::string                 manifest_path;
-    std::string                 base_directory;
-    // Modification Details
-    std::string                 name{"Unknown"};
-    std::string                 version{"Unknown"};
-    std::string                 author{"Unknown"};
+#include "base_window.h"
+
+class ModelViewer : public BaseWindow {
+ public:
+  explicit ModelViewer(const std::string &path);
+  ~ModelViewer() override;
+
+  void Display() override;
+
+ protected:
+ private:
+  PLModel       *model_;
+  std::string   model_path_;
 };
-
-PL_EXTERN_C
-
-ModManifest *Mod_GetCurrentCampaign(void);
-
-void Mod_RegisterCampaigns(void);
-void Mod_RegisterCampaign(const char *path);
-void Mod_SetCampaign(const char *dir);
-
-PL_EXTERN_C_END

@@ -21,95 +21,100 @@
 #include "../Map.h"
 
 #include "GameManager.h"
+#include "ActorManager.h"
 #include "SPGameMode.h"
+#include "../model.h"
 
 GameManager *GameManager::instance_ = nullptr;
 
-GameManager::GameManager() {
-
-}
-
-GameManager::~GameManager() {
-
-}
+GameManager::GameManager() = default;
+GameManager::~GameManager() = default;
 
 void GameManager::Tick() {
-    FrontEnd_Tick();
+  FrontEnd_Tick();
 
-    if(active_mode_ == nullptr) {
-        return;
+  if (active_mode_ == nullptr) {
+    return;
+  }
+
+  if (ambient_emit_delay_ < g_state.sim_ticks) {
+    const AudioSample *sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
+    if (sample != nullptr) {
+      PLVector3 position = {
+          plGenerateRandomf(MAP_PIXEL_WIDTH),
+          active_map_->GetMaxHeight(),
+          plGenerateRandomf(MAP_PIXEL_WIDTH)
+      };
+      AudioManager::GetInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
     }
 
-    if(ambient_emit_delay_ < g_state.sim_ticks) {
-        const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
-        if(sample != nullptr) {
-            PLVector3 position = {
-                    plGenerateRandomf(MAP_PIXEL_WIDTH),
-                    active_map_->GetMaxHeight(),
-                    plGenerateRandomf(MAP_PIXEL_WIDTH)
-            };
-            AudioManager::GetInstance()->PlayLocalSound(sample, position, { 0, 0, 0 }, true, 0.5f);
-        }
+    ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
+  }
 
-        ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
-    }
-
-    active_mode_->Tick();
+  active_mode_->Tick();
 }
 
 void GameManager::LoadMap(const std::string &name) {
-    FrontEnd_SetState(FE_MODE_LOADING);
+  //FrontEnd_SetState(FE_MODE_LOADING);
 
-    if(active_map_ != nullptr) {
+  Map *map;
+  try {
+    map = new Map(name);
+  } catch (const std::runtime_error &e) {
+    LogWarn("Failed to load map, aborting!\n%s\n", e.what());
+    return;
+  }
 
+  if (active_map_ != nullptr) {
+    ActorManager::GetInstance()->DestroyActors();
+    ModelManager::GetInstance()->ClearModelCache();
+    delete active_map_;
+  }
+
+  active_map_ = map;
+
+  MapManifest *manifest = MapManager::GetInstance()->GetManifest(name);
+  std::string sample_ext = "d";
+  if (manifest->time != "day") {
+    sample_ext = "n";
+  }
+
+  for (unsigned int i = 1, idx = 0; i < 4; ++i) {
+    if (i < 3) {
+      ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample(
+          "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
     }
+    ambient_samples_[idx++] =
+        AudioManager::GetInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
+    ambient_samples_[idx++] =
+        AudioManager::GetInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
+  }
 
-    try {
-        active_map_ = new Map(name);
-    } catch(const std::runtime_error &e) {
-        Error("Failed to load map, aborting!\n%s\n", e.what());
-    }
+  ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
 
-    MapManifest* manifest = MapManager::GetInstance()->GetManifest(name);
-    std::string sample_ext = "d";
-    if(manifest->time != "day") {
-        sample_ext = "n";
-    }
+  active_mode_ = new SPGameMode();
+  // call StartRound; deals with spawning everything in and other mode specific logic
+  active_mode_->StartRound();
 
-    for(unsigned int i = 1, idx = 0; i < 4; ++i) {
-        if(i < 3) {
-            ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample(
-                    "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
-        }
-        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
-        ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
-    }
-
-    ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
-
-    active_mode_ = new SPGameMode();
-    // call StartRound; deals with spawning everything in and other mode specific logic
-    active_mode_->StartRound();
-
-    /* todo: we should actually pause here and wait for user input
-     *       otherwise players won't have time to read the loading screen */
-    FrontEnd_SetState(FE_MODE_GAME);
+  /* todo: we should actually pause here and wait for user input
+   *       otherwise players won't have time to read the loading screen */
+  FrontEnd_SetState(FE_MODE_GAME);
 }
 
 void GameManager::UnloadMap() {
-    for(auto & ambient_sample : ambient_samples_) {
-        delete ambient_sample;
-    }
+  for (auto &ambient_sample : ambient_samples_) {
+    delete ambient_sample;
+  }
 
-    delete active_mode_;
-    delete active_map_;
+  delete active_mode_;
+  delete active_map_;
 }
 
-Player* GameManager::GetCurrentPlayer() {
-    if(active_mode_ == nullptr) {
-        // todo: return local player... ?
-        return nullptr;
-    }
+Player *GameManager::GetCurrentPlayer() {
+  if (active_mode_ == nullptr) {
+    // todo: return local player... ?
+    return nullptr;
+  }
 
-    return active_mode_->GetCurrentPlayer();
+  return active_mode_->GetCurrentPlayer();
 }

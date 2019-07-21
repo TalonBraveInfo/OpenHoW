@@ -18,7 +18,7 @@
 #include "../engine.h"
 #include "../game/GameManager.h"
 
-#include "MapConfigEditor.h"
+#include "map_config_editor.h"
 
 MapConfigEditor::MapConfigEditor() {
     map_ = GameManager::GetInstance()->GetCurrentMap();

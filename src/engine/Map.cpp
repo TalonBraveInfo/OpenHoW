@@ -21,12 +21,12 @@
 #include "engine.h"
 #include "Map.h"
 #include "model.h"
-#include "ModSupport.h"
+#include "mod_support.h"
 #include "frontend.h"
 #include "script/script.h"
-#include "game/ActorManager.h"
 #include "script/ScriptConfig.h"
-#include "MapManager.h"
+#include "game/ActorManager.h"
+#include "map_manager.h"
 
 #include "graphics/display.h"
 #include "graphics/shader.h"
@@ -144,7 +144,7 @@ const static unsigned int chunkIndices[96] = {
         60, 62, 61, 61, 62, 63,
 };
 
-Map::Map(const std::string& name) {
+Map::Map(const std::string& name) : Map() {
     LogDebug("Loading map, %s...\n", name.c_str());
 
     id_name_ = name;
@@ -180,6 +180,10 @@ Map::Map(const std::string& name) {
     GenerateOverview();
 }
 
+Map::Map() {
+  chunks_.resize(MAP_CHUNKS);
+}
+
 Map::~Map() {
     delete texture_atlas_;
 
@@ -193,7 +197,7 @@ Map::~Map() {
         plDestroyModel(chunk.model);
     }
 
-    plDestroyModel(sky_model_);
+    ModelManager::GetInstance()->UnloadModel(sky_model_);
 
     // gross GROSS; change the clear colour back!
     g_state.gfx.clear_colour = {0, 0, 0, 255};
@@ -248,7 +252,7 @@ float Map::GetHeight(const PLVector2 &pos) {
 }
 
 void Map::LoadSky() {
-    sky_model_ = Model_LoadFile("skys/skydome", true);
+    sky_model_ = ModelManager::GetInstance()->LoadModel("skys/skydome", true);
     sky_model_->model_matrix = plTranslateMatrix(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
     // Default skydome is smaller than the map, so we'll scale it
     plScaleMatrix(&sky_model_->model_matrix, PLVector3(2, 2, 2));

@@ -17,30 +17,27 @@
 
 #pragma once
 
-class TextureAtlas {
+#include "base_window.h"
+#include "../map_manager.h"
+#include "../Map.h"
+
+class MapConfigEditor : public BaseWindow {
  public:
-  TextureAtlas();
-  ~TextureAtlas();
+  MapConfigEditor();
+  ~MapConfigEditor() override;
 
-  void GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h);
-
-  void AddImage(const std::string &path);
-  void AddImages(const std::vector<std::string> &textures);
-
-  void Finalize();
-
-  PLTexture *GetTexture() { return texture_; }
+  void Display() override;
+  void SaveManifest(const std::string &path);
+  void RestoreManifest();
 
  protected:
  private:
-  struct Index {
-    unsigned int x, y, w, h;
-    PLImage *image;
-  };
+  MapManifest  backup_;
+  MapManifest* manifest_;
+  Map* map_{nullptr};
 
-  std::map<std::string, Index> textures_;
-  std::map<std::string, PLImage *> images_by_name_;
-  std::multimap<unsigned int, PLImage *> images_by_height_;
-
-  PLTexture *texture_{nullptr};
+  char name_buffer[32]{'\0'};
+  char author_buffer[32]{'\0'};
+  char sky_buffer[32]{'\0'};
+  char filename_buffer[32]{'\0'};
 };

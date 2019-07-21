@@ -25,91 +25,92 @@
 /* Memory */
 
 unsigned long u_unmangle(void *source, void *destination) {
-    /* todo */
+  /* todo */
 
-    return 0;
+  return 0;
 }
 
 void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
-    void *mem = calloc(num, size);
-    if(mem == NULL && abort_on_fail) {
-        Error("Failed to allocate %u bytes!\n", size * num);
-    }
-    return mem;
+  void *mem = calloc(num, size);
+  if (mem == NULL && abort_on_fail) {
+    Error("Failed to allocate %u bytes!\n", size * num);
+  }
+  return mem;
 }
 
 /****************************************************/
 /* Filesystem */
 
 const char *u_find(const char *path) {
-    static char n_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetCampaignPath())) {
-        snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
-        if(plFileExists(n_path)) {
-            //LogDebug("Found \"%s\"\n", n_path);
-            return n_path;
-        }
+  static char n_path[PL_SYSTEM_MAX_PATH];
+  if (!plIsEmptyString(GetCampaignPath())) {
+    snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
+    if (plFileExists(n_path)) {
+      //LogDebug("Found \"%s\"\n", n_path);
+      return n_path;
     }
+  }
 
-    snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
-    //LogDebug("Found \"%s\"\n", n_path);
-    return n_path;
+  snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
+  //LogDebug("Found \"%s\"\n", n_path);
+  return n_path;
 }
 
 const char *u_scan(const char *path, const char **preference) {
-    static char find[PL_SYSTEM_MAX_PATH];
-    while(*preference != NULL) {
-        snprintf(find, sizeof(find), "%s.%s", path, *preference);
-        if(plFileExists(find)) {
-            //LogDebug("Found \"%s\"\n", find);
-            return find;
-        } preference++;
+  static char find[PL_SYSTEM_MAX_PATH];
+  while (*preference != NULL) {
+    snprintf(find, sizeof(find), "%s.%s", path, *preference);
+    if (plFileExists(find)) {
+      //LogDebug("Found \"%s\"\n", find);
+      return find;
     }
+    preference++;
+  }
 
-    //LogDebug("Failed to find \"%s\"\n", path);
-    return "";
+  //LogDebug("Failed to find \"%s\"\n", path);
+  return "";
 }
 
 const char *u_find2(const char *path, const char **preference, bool abort_on_fail) {
-    static char out[PL_SYSTEM_MAX_PATH];
-    memset(out, 0, sizeof(out));
+  static char out[PL_SYSTEM_MAX_PATH];
+  memset(out, 0, sizeof(out));
 
-    char base_path[PL_SYSTEM_MAX_PATH];
-    if(!plIsEmptyString(GetCampaignPath())) {
-        snprintf(base_path, sizeof(base_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
-        strncpy(out, u_scan(base_path, preference), sizeof(out));
-        if(!plIsEmptyString(out)) {
-            //LogDebug("Found \"%s\"\n", out);
-            return out;
-        }
-    }
-
-    snprintf(base_path, sizeof(base_path), "%s/%s", GetBasePath(), path);
+  char base_path[PL_SYSTEM_MAX_PATH];
+  if (!plIsEmptyString(GetCampaignPath())) {
+    snprintf(base_path, sizeof(base_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
     strncpy(out, u_scan(base_path, preference), sizeof(out));
-    if(plIsEmptyString(out)) {
-        if(abort_on_fail) {
-            Error("Failed to find \"%s\"!\n", path);
-        }
+    if (!plIsEmptyString(out)) {
+      //LogDebug("Found \"%s\"\n", out);
+      return out;
+    }
+  }
 
-        LogWarn("Failed to find \"%s\"!\n", path);
-        return NULL;
+  snprintf(base_path, sizeof(base_path), "%s/%s", GetBasePath(), path);
+  strncpy(out, u_scan(base_path, preference), sizeof(out));
+  if (plIsEmptyString(out)) {
+    if (abort_on_fail) {
+      Error("Failed to find \"%s\"!\n", path);
     }
 
-    //LogDebug("Found \"%s\"\n", out);
-    return out;
+    LogWarn("Failed to find \"%s\"!\n", path);
+    return NULL;
+  }
+
+  //LogDebug("Found \"%s\"\n", out);
+  return out;
 }
 
-FILE* u_open(const char* path, const char* mode, bool abort_on_fail) {
-    FILE* fp = fopen(u_find(path), mode);
-    if(fp == NULL) {
-        /* todo: provide more detail! */
-        if(abort_on_fail) {
-            Error("Failed to open file at \"%s\"!\n", path);
-        }
-
-        LogWarn("Failed to open file at \"%s\"!\n", path);
-        return NULL;
+FILE *u_open(const char *path, const char *mode, bool abort_on_fail) {
+  FILE *fp = fopen(u_find(path), mode);
+  if (fp == NULL) {
+    /* todo: provide more detail! */
+    if (abort_on_fail) {
+      Error("Failed to open file at \"%s\"!\n", path);
     }
 
-    return fp;
+    LogWarn("Failed to open file at \"%s\"!\n", path);
+    return NULL;
+  }
+
+  return fp;
 }

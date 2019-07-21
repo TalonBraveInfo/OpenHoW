@@ -17,30 +17,21 @@
 
 #pragma once
 
-class TextureAtlas {
- public:
-  TextureAtlas();
-  ~TextureAtlas();
-
-  void GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h);
-
-  void AddImage(const std::string &path);
-  void AddImages(const std::vector<std::string> &textures);
-
-  void Finalize();
-
-  PLTexture *GetTexture() { return texture_; }
-
- protected:
- private:
-  struct Index {
-    unsigned int x, y, w, h;
-    PLImage *image;
-  };
-
-  std::map<std::string, Index> textures_;
-  std::map<std::string, PLImage *> images_by_name_;
-  std::multimap<unsigned int, PLImage *> images_by_height_;
-
-  PLTexture *texture_{nullptr};
+struct ModManifest {
+  std::string manifest_path;
+  std::string base_directory;
+  // Modification Details
+  std::string name{"Unknown"};
+  std::string version{"Unknown"};
+  std::string author{"Unknown"};
 };
+
+PL_EXTERN_C
+
+ModManifest *Mod_GetCurrentCampaign(void);
+
+void Mod_RegisterCampaigns(void);
+void Mod_RegisterCampaign(const char *path);
+void Mod_SetCampaign(const char *dir);
+
+PL_EXTERN_C_END

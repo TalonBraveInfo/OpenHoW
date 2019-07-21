@@ -30,58 +30,59 @@
 /************************************************************/
 
 enum {
-    CAMERA_MODE_DEFAULT,
-    CAMERA_MODE_FREE,
+  CAMERA_MODE_DEFAULT,
+  CAMERA_MODE_FREE,
 
-    MAX_CAMERA_MODES
+  MAX_CAMERA_MODES
 };
 
 void Client_ProcessInput() {
-    static double input_delay = 0;
-    if(input_delay < g_state.sys_ticks) {
-        input_delay = g_state.sys_ticks + 10;
+  static double input_delay = 0;
+  if (input_delay < g_state.sys_ticks) {
+    input_delay = g_state.sys_ticks + 10;
 
-        if (Input_GetKeyState(INPUT_KEY_TAB) && Input_GetKeyState(INPUT_KEY_LSHIFT)) {
-            Console_Toggle();
-            return;
-        }
+    if (Input_GetKeyState(INPUT_KEY_TAB) && Input_GetKeyState(INPUT_KEY_LSHIFT)) {
+      Console_Toggle();
+      return;
     }
+  }
 
-    FE_ProcessInput();
+  FE_ProcessInput();
 
-    switch(cv_camera_mode->i_value) {
-        default:break;
+  switch (cv_camera_mode->i_value) {
+    default:break;
 
-        case CAMERA_MODE_DEFAULT: {
-            /* follow currently selected pig */
-        } break;
+    case CAMERA_MODE_DEFAULT: {
+      /* follow currently selected pig */
+    }
+      break;
 
 #if 0
-        case CAMERA_MODE_FREE: {
-            if(Input_GetActionState(0, ACTION_MOVE_FORWARD)) {
-                g_state.camera->position.x += 4.f;
-            } else if(Input_GetActionState(0, ACTION_MOVE_BACKWARD)) {
-                g_state.camera->position.x -= 4.f;
-            }
+    case CAMERA_MODE_FREE: {
+        if(Input_GetActionState(0, ACTION_MOVE_FORWARD)) {
+            g_state.camera->position.x += 4.f;
+        } else if(Input_GetActionState(0, ACTION_MOVE_BACKWARD)) {
+            g_state.camera->position.x -= 4.f;
+        }
 
-            if(Input_GetButtonState(0, PORK_BUTTON_L1)) {
-                g_state.camera->position.y += 4.f;
-            } else if(Input_GetButtonState(0, PORK_BUTTON_R1)) {
-                g_state.camera->position.y -= 4.f;
-            }
+        if(Input_GetButtonState(0, PORK_BUTTON_L1)) {
+            g_state.camera->position.y += 4.f;
+        } else if(Input_GetButtonState(0, PORK_BUTTON_R1)) {
+            g_state.camera->position.y -= 4.f;
+        }
 
-            if(Input_GetButtonState(0, PORK_BUTTON_L2)) {
-                g_state.camera->position.z += 4.f;
-            } else if(Input_GetButtonState(0, PORK_BUTTON_R2)) {
-                g_state.camera->position.z -= 4.f;
-            }
+        if(Input_GetButtonState(0, PORK_BUTTON_L2)) {
+            g_state.camera->position.z += 4.f;
+        } else if(Input_GetButtonState(0, PORK_BUTTON_R2)) {
+            g_state.camera->position.z -= 4.f;
+        }
 
-            if(Input_GetActionState(0, ACTION_TURN_LEFT)) {
-                g_state.camera->angles.z += 4.f;
-            } else if(Input_GetActionState(0, ACTION_TURN_RIGHT)) {
-                g_state.camera->angles.z -= 4.f;
-            }
-        } break;
+        if(Input_GetActionState(0, ACTION_TURN_LEFT)) {
+            g_state.camera->angles.z += 4.f;
+        } else if(Input_GetActionState(0, ACTION_TURN_RIGHT)) {
+            g_state.camera->angles.z -= 4.f;
+        }
+    } break;
 #endif
-    }
+  }
 }

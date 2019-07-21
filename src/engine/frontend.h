@@ -32,35 +32,35 @@
  */
 
 enum {
-    FE_MODE_INIT,       /* menu shown during initialization */
-    FE_MODE_START,      /* start screen, e.g. press any key */
-    FE_MODE_LOADING,
+  FE_MODE_INIT,       /* menu shown during initialization */
+  FE_MODE_START,      /* start screen, e.g. press any key */
+  FE_MODE_LOADING,
 
-    FE_MODE_MAIN_MENU,
+  FE_MODE_MAIN_MENU,
 
-    /* Main Menu */
-    FE_MODE_ONE_PLAYER,
-    FE_MODE_MULTI_PLAYER,
-    FE_MODE_OPTIONS,
-    FE_MODE_CONTROLS,
+  /* Main Menu */
+      FE_MODE_ONE_PLAYER,
+  FE_MODE_MULTI_PLAYER,
+  FE_MODE_OPTIONS,
+  FE_MODE_CONTROLS,
 
-    /* One Player */
-    FE_MODE_NEW_GAME,
-    FE_MODE_LOAD_GAME,
+  /* One Player */
+      FE_MODE_NEW_GAME,
+  FE_MODE_LOAD_GAME,
 
-    /* Multi-player */
-    /* todo */
+  /* Multi-player */
+  /* todo */
 
-    /* Options */
-    /* todo */
+  /* Options */
+  /* todo */
 
-    FE_MODE_SELECT_TEAM,
+      FE_MODE_SELECT_TEAM,
 
-    FE_MODE_EDITOR, /* editor mode - either embedded or standalone */
-    FE_MODE_VIDEO,  /* playing a video - pressing escape will skip */
-    FE_MODE_GAME,   /* in-game menu... probably cut this down? */
+  FE_MODE_EDITOR, /* editor mode - either embedded or standalone */
+  FE_MODE_VIDEO,  /* playing a video - pressing escape will skip */
+  FE_MODE_GAME,   /* in-game menu... probably cut this down? */
 
-    MAX_FE_MODES
+  MAX_FE_MODES
 };
 
 PL_EXTERN_C

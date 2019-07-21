@@ -623,7 +623,6 @@ void Display_DrawScene(void) {
 
     /* debug methods */
     DrawAudioSources();
-    DEBUGDrawModel();
 }
 
 void Display_DrawInterface(void) {

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "MapManager.h"
+#include "map_manager.h"
 
 #include "graphics/texture_atlas.h"
 
@@ -117,7 +117,10 @@ struct MapManifest;
 
 class Map {
 public:
+
     explicit Map(const std::string &name);
+
+    Map();
     ~Map();
 
     void Draw();
