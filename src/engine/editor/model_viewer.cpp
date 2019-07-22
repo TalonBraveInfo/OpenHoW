@@ -22,7 +22,7 @@
 ModelViewer::ModelViewer(const std::string &path) {
   model_ = plLoadModel(path.c_str());
   if(model_ == nullptr) {
-    throw std::runtime_error("Failed to load model, \"" + path + "\"!\n");
+    throw std::runtime_error("Failed to load model, \"" + path + "\"!");
   }
   
   model_->model_matrix = plMatrix4x4Identity();
@@ -45,6 +45,9 @@ void ModelViewer::Display() {
     }
     ImGui::EndMenuBar();
   }
+
+  float w = ImGui::GetWindowWidth() - 10;
+  ImGui::Image(0, ImVec2(w, w / 2));
   
   ImGui::Text("Path: %s", model_path_.c_str());
   ImGui::End();

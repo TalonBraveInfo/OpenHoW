@@ -19,8 +19,12 @@
 
 class TextureViewer : public BaseWindow {
  public:
-  explicit TextureViewer(const std::string &path, PLTexture *texture) {
-    texture_ = texture;
+  explicit TextureViewer(const std::string &path) {
+    texture_ = Display_LoadTexture(path.c_str(), PL_TEXTURE_FILTER_LINEAR);
+    if (texture_ == nullptr) {
+      throw std::runtime_error("Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!");
+    }
+
     texture_path = path;
   }
 
