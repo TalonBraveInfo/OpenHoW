@@ -69,28 +69,6 @@ size_t GetTextureCacheSize(void) {
     return size;
 }
 
-void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h) {
-    u_assert(id < MAX_TEXTURE_INDEX && tex_id < MAX_TEXTURES_PER_INDEX);
-    TextureIndex* index = &texture_cache[id];
-    if(index->texture == default_texture) {
-        *x = 0; *y = 0; *w = 1.0f; *h = 1.0f;
-        return;
-    }
-    *x = (float)index->offsets[tex_id].x / index->texture->w;
-    *y = (float)index->offsets[tex_id].y / index->texture->h;
-    *w = (float)index->offsets[tex_id].w / index->texture->w;
-    *h = (float)index->offsets[tex_id].h / index->texture->h;
-}
-
-PLTexture* Display_GetCachedTexture(unsigned int id) {
-    u_assert(id < MAX_TEXTURE_INDEX);
-    if(texture_cache[id].texture == NULL) {
-        return default_texture;
-    }
-
-    return texture_cache[id].texture;
-}
-
 void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
     size_t cache_size = GetTextureCacheSize();
     const char *str = "total texture cache: ";
@@ -147,17 +125,6 @@ void DrawTextureCache(unsigned int id) {
     } else {
         Font_DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, "NO DATA CACHED!");
     }
-}
-
-/* unloads texture set from memory */
-void Display_ClearTextureIndex(unsigned int id) {
-    u_assert(id < MAX_TEXTURE_INDEX);
-    TextureIndex* index = &texture_cache[id];
-    if(index->texture != default_texture) {
-        plDestroyTexture(index->texture, true);
-    }
-    memset(index, 0, sizeof(TextureIndex));
-    index->texture = default_texture;
 }
 
 #if 0 /* experimental palette changer thing... */
@@ -431,28 +398,6 @@ void Display_Initialize(void) {
     } else {
         Error("Failed to generate default texture (%s)!\n", plGetError());
     }
-
-    /* initialize the texture cache */
-
-    LogInfo("Caching texture groups...\n");
-
-    for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
-        Display_ClearTextureIndex(i);
-    }
-
-#if 0
-    Display_CacheTextureIndex("chars/pigs/american/", "american.index", TEXTURE_INDEX_AMERICAN);
-    Display_CacheTextureIndex("chars/pigs/british/", "british.index", TEXTURE_INDEX_BRITISH);
-    Display_CacheTextureIndex("chars/pigs/french/", "french.index", TEXTURE_INDEX_FRENCH);
-    Display_CacheTextureIndex("chars/pigs/german/", "german.index", TEXTURE_INDEX_GERMAN);
-    Display_CacheTextureIndex("chars/pigs/japanese/", "japanese.index", TEXTURE_INDEX_JAPANESE);
-    Display_CacheTextureIndex("chars/pigs/russian/", "russian.index", TEXTURE_INDEX_RUSSIAN);
-    Display_CacheTextureIndex("chars/pigs/teamlard/", "teamlard.index", TEXTURE_INDEX_TEAMLARD);
-
-    Display_CacheTextureIndex("chars/weapons/", "weapons.index", TEXTURE_INDEX_WEAPONS);
-#endif
-
-    PrintTextureCacheSizeCommand(2, (char*[]){"", "MB"});
 }
 
 void Display_Shutdown(void) {

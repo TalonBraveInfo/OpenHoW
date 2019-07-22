@@ -69,10 +69,6 @@ void Display_DrawInterface(void);
 void Display_DrawDebug(void);
 void Display_Flush(void);
 
-void Display_ClearTextureIndex(unsigned int id);
-void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h);
-
-PLTexture* Display_GetCachedTexture(unsigned int id);
 PLTexture* Display_GetDefaultTexture(void);
 PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter);
 
