@@ -35,5 +35,5 @@ void ModelActor::Draw() {
 }
 
 void ModelActor::SetModel(const std::string &path) {
-    model_ = ModelManager::GetInstance()->LoadModel("chars/" + path, false);
+    model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
 }
