@@ -467,6 +467,7 @@ void UI_DisplayDebugMenu(void) {
         windows.push_back(new ConsoleWindow());
       }
 
+      #if 0
       static int tc = 0;
       if (ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
         char buf[4];
@@ -484,6 +485,7 @@ void UI_DisplayDebugMenu(void) {
           ImGui::EndTooltip();
         }
       }
+      #endif
 
       static int im = 0;
       if (ImGui::SliderInt("Show Input States", &im, 0, 2)) {
