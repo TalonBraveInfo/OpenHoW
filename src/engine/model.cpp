@@ -564,13 +564,18 @@ void ModelManager::UnloadModel(PLModel *model) {
 }
 
 PLModel *ModelManager::LoadModel(const std::string &path, bool abort_on_fail) {
-  PLModel *model = plLoadModel(path.c_str());
+  const char *fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
+  if (fp == nullptr) {
+    return fallback_;
+  }
+
+  PLModel *model = plLoadModel(fp);
   if (model == nullptr) {
     if (abort_on_fail) {
-      Error("Failed to load model, \"%s\", aborting (%s)!\n", path.c_str(), plGetError())
+      Error("Failed to load model, \"%s\", aborting (%s)!\n", fp, plGetError())
     }
 
-    LogWarn("Failed to load model, \"%s\" (%s)!\n", path.c_str(), plGetError());
+    LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
     return fallback_;
   }
 
@@ -583,12 +588,7 @@ PLModel *ModelManager::LoadCachedModel(const std::string &path, bool abort_on_fa
     return i->second;
   }
 
-  const char *fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
-  if (fp == nullptr) {
-    return fallback_;
-  }
-
-  PLModel *model = LoadModel(fp, abort_on_fail);
+  PLModel *model = LoadModel(path, abort_on_fail);
   cached_models_.emplace(path, model);
   return model;
 }
