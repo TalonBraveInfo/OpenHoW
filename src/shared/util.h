@@ -20,15 +20,35 @@
 #include <PL/platform.h>
 #include <PL/platform_console.h>
 
-#if !defined(COMPILE_ENGINE)
-# undef LogInfo
-# undef LogWarn
-# undef Error
-# define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
-# define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
-# define Error(...)    plLogMessage(2, __VA_ARGS__); exit(EXIT_FAILURE)
+enum LogLevel {
+  LOG_LEVEL_DEFAULT,
+  LOG_LEVEL_WARNING,
+  LOG_LEVEL_ERROR,
+  LOG_LEVEL_DEBUG,
+};
+
+#define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
+
+#ifdef _DEBUG
+#   define LogDebug(...) _print_w_function(LOG_LEVEL_DEBUG, __VA_ARGS__)
 #else
-# include "../engine/console.h"
+#   define LogDebug(...) ()
+#endif
+
+#define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
+#define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
+#if !defined(COMPILE_ENGINE)
+#define Error(...) {                                            \
+        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        u_assert(0, __VA_ARGS__);                                   \
+        exit(EXIT_FAILURE);                                         \
+    }
+#else
+#define Error(...) {                                            \
+        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
+        exit(EXIT_FAILURE);                                         \
+    }
 #endif
 
 typedef unsigned int uint;
@@ -39,6 +59,7 @@ typedef unsigned char uchar, byte;
 
 PL_EXTERN_C
 
+void u_init_logs(const char *log_path);
 void *u_alloc(size_t num, size_t size, bool abort_on_fail);
 
 #if defined(COMPILE_ENGINE)

@@ -607,18 +607,7 @@ int main(int argc, char **argv) {
   }
 
   std::string log_path = std::string(app_dir) + "/" + ENGINE_LOG;
-  plSetupLogOutput(log_path.c_str());
-
-  plSetupLogLevel(LOG_LEVEL_DEFAULT, "info", PLColour(0, 255, 0, 255), true);
-  plSetupLogLevel(LOG_LEVEL_WARNING, "warning", PLColour(255, 255, 0, 255), true);
-  plSetupLogLevel(LOG_LEVEL_ERROR, "error", PLColour(255, 0, 0, 255), true);
-  plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255),
-#ifdef _DEBUG
-                  true
-#else
-      false
-#endif
-  );
+  u_init_logs(log_path.c_str());
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     System_DisplayMessageBox(PROMPT_LEVEL_ERROR, "Failed to initialize SDL2!\n%s", SDL_GetError());

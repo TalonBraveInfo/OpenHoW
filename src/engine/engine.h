@@ -28,9 +28,10 @@
 #include <string>
 #endif
 
+#include "../shared/util.h"
+
 #include "pork_math.h"
 #include "console.h"
-#include "../shared/util.h"
 
 #define ENGINE_TITLE        "OpenHoW"
 #define ENGINE_APP_NAME     "OpenHoW"
@@ -103,6 +104,12 @@ const char *GetFullCampaignPath(void);
 /* System */
 
 unsigned int System_GetTicks(void);
+
+enum PromptLevel {
+  PROMPT_LEVEL_DEFAULT,
+  PROMPT_LEVEL_WARNING,
+  PROMPT_LEVEL_ERROR,
+};
 
 void System_DisplayMessageBox(unsigned int level, const char *msg, ...);
 void System_DisplayWindow(bool fullscreen, int width, int height);

@@ -20,8 +20,6 @@
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
-#include "../../engine/engine.h"
-
 #include "../../shared/util.h"
 #include "../../shared/vtx.h"
 #include "../../shared/fac.h"
@@ -766,21 +764,15 @@ int main(int argc, char **argv) {
   plInitialize(argc, argv);
 
   char app_dir[PL_SYSTEM_MAX_PATH];
-  plGetApplicationDataDirectory(ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
+  plGetApplicationDataDirectory("OpenHoW", app_dir, PL_SYSTEM_MAX_PATH);
 
   if (!plCreatePath(app_dir)) {
     LogWarn("Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError());
   }
 
   char log_path[PL_SYSTEM_MAX_PATH];
-  snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/extraction", app_dir);
-  plSetupLogOutput(log_path);
-
-  /* set our logs up */
-
-  plSetupLogLevel(0, "info", PLColour(0, 255, 0, 255), true);
-  plSetupLogLevel(1, "warning", PLColour(255, 255, 0, 255), true);
-  plSetupLogLevel(2, "error", PLColour(255, 0, 0, 255), true);
+  snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/extractor", app_dir);
+  u_init_logs(log_path);
 
   /* now deal with any arguments */
 

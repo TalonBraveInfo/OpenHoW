@@ -24,6 +24,26 @@
 #endif
 
 /****************************************************/
+/* Logs */
+
+void u_init_logs(const char *log_path) {
+  plSetupLogOutput(log_path);
+
+  /* set our logs up */
+
+  plSetupLogLevel(LOG_LEVEL_DEFAULT, "info", PLColour(0, 255, 0, 255), true);
+  plSetupLogLevel(LOG_LEVEL_WARNING, "warning", PLColour(255, 255, 0, 255), true);
+  plSetupLogLevel(LOG_LEVEL_ERROR, "error", PLColour(255, 0, 0, 255), true);
+  plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255),
+#ifdef _DEBUG
+    true
+#else
+    false
+#endif
+  );
+}
+
+/****************************************************/
 /* Memory */
 
 unsigned long u_unmangle(void *source, void *destination) {
