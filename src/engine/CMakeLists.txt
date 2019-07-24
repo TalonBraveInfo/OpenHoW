@@ -27,13 +27,21 @@ For more information, please refer to <http://unlicense.org>
 
 project(OpenHoW)
 
-#Required for OpenGL3.x imgui setup
-add_definitions("-DIMGUI_IMPL_OPENGL_LOADER_GLEW")
+add_definitions(
+        "-DIMGUI_IMPL_OPENGL_LOADER_GLEW"   # Required for OpenGL3.x imgui setup
+        "-DCOMPILE_ENGINE"
+)
 
 file(
         GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
         *.h
+
+        ../shared/util.c
+        ../shared/fac.c
+        ../shared/min.c
+        ../shared/no2.c
+        ../shared/vtx.c
 
         script/duktape-2.2.0/*.c
         script/duktape-2.2.0/*.h

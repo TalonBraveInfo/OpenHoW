@@ -16,8 +16,11 @@
  */
 
 #include <PL/platform_filesystem.h>
-#include "../engine.h"
-#include "loaders.h"
+#include <PL/platform_mesh.h>
+
+#include "util.h"
+#include "vtx.h"
+#include "no2.h"
 
 /************************************************************/
 /* No2 Normals Format */

@@ -17,14 +17,23 @@
 
 #pragma once
 
+#define FAC_MAX_TRIANGLES 8192
+
 PL_EXTERN_C
 
-typedef struct VtxHandle {
-  struct PLVertex *vertices;
-  unsigned int num_vertices;
-} VtxHandle;
+typedef struct FacTriangle {
+  float uv_coords[3][2];
+  uint16_t vertex_indices[3];
+  uint16_t normal_indices[3];
+  uint32_t texture_index;
+} FacTriangle;
 
-VtxHandle *Vtx_LoadFile(const char *path);
-void Vtx_DestroyHandle(VtxHandle *handle);
+typedef struct FacHandle {
+  FacTriangle *triangles;
+  unsigned int num_triangles;
+} FacHandle;
+
+FacHandle *Fac_LoadFile(const char *path);
+void Fac_DestroyHandle(FacHandle *handle);
 
 PL_EXTERN_C_END

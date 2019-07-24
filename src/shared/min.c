@@ -17,8 +17,8 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "../engine.h"
-#include "loaders.h"
+#include "../engine/engine.h"
+#include "../engine/loaders/loaders.h"
 
 /************************************************************/
 /* PSX Min Model Format */
@@ -37,9 +37,9 @@ MinHandle *Min_LoadFile(const char *path) {
     LogWarn("Failed to get number of triangles, \"%s\"!\n", path);
   }
 
-  if (num_triangles == 0 || num_triangles >= MAX_MODEL_TRIANGLES) {
+  if (num_triangles == 0 || num_triangles >= FAC_MAX_TRIANGLES) {
     u_fclose(fp);
-    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
+    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
     return NULL;
   }
 

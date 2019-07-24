@@ -16,8 +16,10 @@
  */
 
 #include <PL/platform_filesystem.h>
-#include "../engine.h"
-#include "loaders.h"
+#include <PL/platform_mesh.h>
+
+#include "util.h"
+#include "vtx.h"
 
 /************************************************************/
 /* Vtx Vertex Format */
@@ -36,9 +38,9 @@ VtxHandle *Vtx_LoadFile(const char *path) {
     uint16_t bone_index;
   } VtxCoord;
   unsigned int num_vertices = (unsigned int) (plGetFileSize(path) / sizeof(VtxCoord));
-  if (num_vertices >= MAX_MODEL_VERTICES) {
+  if (num_vertices >= VTX_MAX_VERTICES) {
     u_fclose(vtx_file);
-    LogWarn("Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, MAX_MODEL_VERTICES);
+    LogWarn("Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, VTX_MAX_VERTICES);
     return NULL;
   }
 

@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-
 #include <PL/platform_filesystem.h>
 
-#include "engine.h"
+#include "util.h"
+
+#if defined(COMPILE_ENGINE)
+# include "../engine/engine.h"
+#endif
 
 /****************************************************/
 /* Memory */
@@ -41,21 +43,6 @@ void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
 /****************************************************/
 /* Filesystem */
 
-const char *u_find(const char *path) {
-  static char n_path[PL_SYSTEM_MAX_PATH];
-  if (!plIsEmptyString(GetCampaignPath())) {
-    snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
-    if (plFileExists(n_path)) {
-      //LogDebug("Found \"%s\"\n", n_path);
-      return n_path;
-    }
-  }
-
-  snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
-  //LogDebug("Found \"%s\"\n", n_path);
-  return n_path;
-}
-
 const char *u_scan(const char *path, const char **preference) {
   static char find[PL_SYSTEM_MAX_PATH];
   while (*preference != NULL) {
@@ -69,6 +56,22 @@ const char *u_scan(const char *path, const char **preference) {
 
   //LogDebug("Failed to find \"%s\"\n", path);
   return "";
+}
+
+#if defined(COMPILE_ENGINE)
+const char *u_find(const char *path) {
+  static char n_path[PL_SYSTEM_MAX_PATH];
+  if (!plIsEmptyString(GetCampaignPath())) {
+    snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
+    if (plFileExists(n_path)) {
+      //LogDebug("Found \"%s\"\n", n_path);
+      return n_path;
+    }
+  }
+
+  snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
+  //LogDebug("Found \"%s\"\n", n_path);
+  return n_path;
 }
 
 const char *u_find2(const char *path, const char **preference, bool abort_on_fail) {
@@ -114,3 +117,4 @@ FILE *u_open(const char *path, const char *mode, bool abort_on_fail) {
 
   return fp;
 }
+#endif

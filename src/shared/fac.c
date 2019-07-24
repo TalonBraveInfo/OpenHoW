@@ -16,9 +16,10 @@
  */
 
 #include <PL/platform_filesystem.h>
+#include <PL/platform_mesh.h>
 
-#include "../engine.h"
-#include "loaders.h"
+#include "util.h"
+#include "fac.h"
 
 /************************************************************/
 /* Fac Triangle/Quad Faces Format */
@@ -39,9 +40,9 @@ FacHandle *Fac_LoadFile(const char *path) {
   }
 
   /* some models can have 0 triangles, as they'll use quads instead */
-  if (num_triangles >= MAX_MODEL_TRIANGLES) {
+  if (num_triangles >= FAC_MAX_TRIANGLES) {
     u_fclose(fac_file);
-    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
+    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
     return NULL;
   }
 
@@ -66,9 +67,9 @@ FacHandle *Fac_LoadFile(const char *path) {
     return NULL;
   }
 
-  if (num_quads >= MAX_MODEL_TRIANGLES) {
+  if (num_quads >= FAC_MAX_TRIANGLES) {
     u_fclose(fac_file);
-    LogWarn("Invalid number of quads in \"%s\" (%d/%d)!\n", path, num_quads, MAX_MODEL_TRIANGLES);
+    LogWarn("Invalid number of quads in \"%s\" (%d/%d)!\n", path, num_quads, FAC_MAX_TRIANGLES);
     return NULL;
   }
 
@@ -86,9 +87,9 @@ FacHandle *Fac_LoadFile(const char *path) {
   }
 
   unsigned int total_triangles = num_triangles + (num_quads * 2);
-  if (total_triangles == 0 || total_triangles >= MAX_MODEL_TRIANGLES) {
+  if (total_triangles == 0 || total_triangles >= FAC_MAX_TRIANGLES) {
     u_fclose(fac_file);
-    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, MAX_MODEL_TRIANGLES);
+    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
     return NULL;
   }
 

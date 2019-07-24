@@ -41,12 +41,9 @@
  * OFF : File offset sizes                  (done)
  */
 
-#define MAX_MODEL_VERTICES  4096
-#define MAX_MODEL_TRIANGLES 8192
-
-#include "fac.h"
-#include "vtx.h"
-#include "no2.h"
+#include "../../shared/fac.h"
+#include "../../shared/vtx.h"
+#include "../../shared/no2.h"
 
 PL_EXTERN_C
 

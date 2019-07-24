@@ -27,7 +27,15 @@ For more information, please refer to <http://unlicense.org>
 
 project(extractor)
 
-add_executable(extractor extractor.c)
+add_executable(extractor
+        ../../shared/util.c
+        ../../shared/fac.c
+        ../../shared/min.c
+        ../../shared/no2.c
+        ../../shared/vtx.c
+
+        extractor.c
+        )
 
 target_include_directories(extractor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(extractor platform)

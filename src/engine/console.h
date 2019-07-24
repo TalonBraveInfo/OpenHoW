@@ -57,3 +57,40 @@ void Console_Toggle(void);
 void Console_Draw(void);
 
 PL_EXTERN_C_END
+
+enum LogLevel {
+  LOG_LEVEL_DEFAULT,
+  LOG_LEVEL_WARNING,
+  LOG_LEVEL_ERROR,
+  LOG_LEVEL_DEBUG,
+};
+
+enum PromptLevel {
+  PROMPT_LEVEL_DEFAULT,
+  PROMPT_LEVEL_WARNING,
+  PROMPT_LEVEL_ERROR,
+};
+
+#define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
+
+#ifdef _DEBUG
+#   define LogDebug(...) _print_w_function(LOG_LEVEL_DEBUG, __VA_ARGS__)
+#else
+#   define LogDebug(...) ()
+#endif
+
+#define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
+#define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
+#ifdef _DEBUG
+#define Error(...) {                                            \
+        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        u_assert(0, __VA_ARGS__);                                   \
+        exit(EXIT_FAILURE);                                         \
+    }
+#else
+#define Error(...) {                                            \
+        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
+        exit(EXIT_FAILURE);                                         \
+    }
+#endif

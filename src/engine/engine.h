@@ -28,9 +28,9 @@
 #include <string>
 #endif
 
-#include "util.h"
 #include "pork_math.h"
 #include "console.h"
+#include "../shared/util.h"
 
 #define ENGINE_TITLE        "OpenHoW"
 #define ENGINE_APP_NAME     "OpenHoW"
@@ -88,9 +88,6 @@ typedef struct EngineState {
 } EngineState;
 extern EngineState g_state;
 
-#define GetUIViewportWidth()    640
-#define GetUIViewportHeight()   480
-
 PL_EXTERN_C
 
 void Engine_Initialize(void);
@@ -98,37 +95,9 @@ void Engine_Shutdown(void);
 
 bool Engine_IsRunning(void);
 
-void Engine_Simulate();
-
 const char *GetBasePath(void);
 const char *GetCampaignPath(void);
 const char *GetFullCampaignPath(void);
-
-/************************************************************/
-
-enum LogLevel {
-  LOG_LEVEL_DEFAULT,
-  LOG_LEVEL_WARNING,
-  LOG_LEVEL_ERROR,
-  LOG_LEVEL_DEBUG,
-};
-
-enum PromptLevel {
-  PROMPT_LEVEL_DEFAULT,
-  PROMPT_LEVEL_WARNING,
-  PROMPT_LEVEL_ERROR,
-};
-
-typedef unsigned int uint;
-typedef unsigned char uchar, byte;
-
-#define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
-
-#ifdef _DEBUG
-#   define LogDebug(...) _print_w_function(LOG_LEVEL_DEBUG, __VA_ARGS__)
-#else
-#   define LogDebug(...) ()
-#endif
 
 /************************************************************/
 /* System */
@@ -150,19 +119,3 @@ void System_PollEvents();
 void System_Shutdown(void);
 
 PL_EXTERN_C_END
-
-#define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
-#define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
-#ifdef _DEBUG
-#define Error(...) {                                            \
-        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
-        u_assert(0, __VA_ARGS__);                                   \
-        exit(EXIT_FAILURE);                                         \
-    }
-#else
-#define Error(...) {                                            \
-        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
-        System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
-        exit(EXIT_FAILURE);                                         \
-    }
-#endif
