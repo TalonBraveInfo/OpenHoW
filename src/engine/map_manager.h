@@ -22,9 +22,9 @@ struct MapManifest {
   std::string name{"none"};                       // 'BOOT CAMP'
   std::string author{"none"};                     // creator of the map
   std::string description{"none"};                //
-  std::string sky{"sunny"};                       // sky texture group (skys/sunny/sunny1 etc.)
-  std::vector<std::string> modes;                              // supported gameplay types
-  PLColour ambient_colour{255, 255, 255, 255}; // ambient colour
+  std::string sky_texture;                        // sky texture group (space/earth etc.)
+  std::vector<std::string> modes;                 // supported gameplay types
+  PLColour ambient_colour{255, 255, 255, 255};    // ambient colour
   // Sky gradient
   PLColour sky_colour_top{0, 104, 156};
   PLColour sky_colour_bottom{223, 255, 255};
