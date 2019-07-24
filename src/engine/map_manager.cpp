@@ -46,7 +46,6 @@ void MapManager::RegisterManifest(const std::string &path) {
     manifest.name = config.GetStringProperty("name", manifest.name);
     manifest.author = config.GetStringProperty("author", manifest.author);
     manifest.description = config.GetStringProperty("description", manifest.description);
-    manifest.sky_texture = config.GetStringProperty("skyTexture", manifest.sky_texture);
     manifest.modes = config.GetArrayStrings("modes");
     manifest.ambient_colour = config.GetColourProperty("ambientColour", manifest.ambient_colour);
     manifest.sky_colour_top = config.GetColourProperty("skyColourTop", manifest.sky_colour_top);

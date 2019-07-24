@@ -31,7 +31,6 @@ MapConfigEditor::MapConfigEditor() {
 
     strncpy(name_buffer, manifest_->name.c_str(), sizeof(name_buffer));
     strncpy(author_buffer, manifest_->author.c_str(), sizeof(author_buffer));
-    strncpy(sky_buffer, manifest_->sky_texture.c_str(), sizeof(sky_buffer));
 }
 
 MapConfigEditor::~MapConfigEditor() {
@@ -49,8 +48,6 @@ void MapConfigEditor::Display() {
     ImGui::Separator();
 
     ImGui::Text("Sky Settings");
-
-    ImGui::InputText("Texture", sky_buffer, sizeof(sky_buffer));
 
     float rgb[3];
     rgb[0] = plByteToFloat(manifest_->sky_colour_top.r);
@@ -187,10 +184,9 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     output << R"("name":")" + manifest_->name + "\",";
     output << R"("author":")" + manifest_->author + "\",";
     output << R"("description":")" + manifest_->description + "\",";
-    output << R"("skyTexture":")" + manifest_->sky_texture + "\",";
     if (!manifest_->modes.empty()) {
         output << R"("modes":[)";
-        for (unsigned int i = 0; i < manifest_->modes.size(); ++i) {
+        for (size_t i = 0; i < manifest_->modes.size(); ++i) {
             output << "\"" + manifest_->modes[i] + "\"";
             if (i != manifest_->modes.size()) {
                 output << ",";

@@ -167,5 +167,4 @@ private:
     TextureAtlas *texture_atlas_{nullptr};
 
     PLModel *sky_model_{nullptr};
-    PLTexture *sky_textures_[4]{nullptr, nullptr, nullptr, nullptr};
 };

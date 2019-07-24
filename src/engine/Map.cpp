@@ -189,10 +189,6 @@ Map::~Map() {
 
     plDestroyTexture(overview_, true);
 
-    for (auto &sky_texture : sky_textures_) {
-        plDestroyTexture(sky_texture, true);
-    }
-
     for(auto & chunk : chunks_) {
         plDestroyModel(chunk.model);
     }
@@ -284,54 +280,28 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
 
     PLMesh *mesh = lod->meshes[0];
     // Below is a PSX-style gradient sky implementation
-    if(manifest_->sky_texture.empty()) {
-      const unsigned int solid_steps = 3;
-      const unsigned int grad_steps = 6;
-      PLColour colour = top;
-      int stepr = ((int) (bottom.r) - (int) (top.r)) / (int) (grad_steps);
-      int stepg = ((int) (bottom.g) - (int) (top.g)) / (int) (grad_steps);
-      int stepb = ((int) (bottom.b) - (int) (top.b)) / (int) (grad_steps);
+    const unsigned int solid_steps = 3;
+    const unsigned int grad_steps = 6;
+    PLColour colour = top;
+    int stepr = ((int) (bottom.r) - (int) (top.r)) / (int) (grad_steps);
+    int stepg = ((int) (bottom.g) - (int) (top.g)) / (int) (grad_steps);
+    int stepb = ((int) (bottom.b) - (int) (top.b)) / (int) (grad_steps);
 
-      if (stepr < 0) { stepr += 255; }
-      if (stepg < 0) { stepg += 255; }
-      if (stepb < 0) { stepb += 255; }
+    if (stepr < 0) { stepr += 255; }
+    if (stepg < 0) { stepg += 255; }
+    if (stepb < 0) { stepb += 255; }
 
-      for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
-        if (j == 32) {
-          if (++s >= solid_steps) {
-            colour.r += stepr;
-            colour.g += stepg;
-            colour.b += stepb;
-          }
-          j = 0;
+    for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
+      if (j == 32) {
+        if (++s >= solid_steps) {
+          colour.r += stepr;
+          colour.g += stepg;
+          colour.b += stepb;
         }
-
-        mesh->vertices[i].colour = colour;
+        j = 0;
       }
-    } else {
-      plSetMeshUniformColour(mesh, PLColour(255, 255, 255));
-      // Attempt to reload map textures
-      if(sky_textures_[0] == nullptr || strcmp(manifest_->sky_texture.c_str(), sky_textures_[0]->name) == 0) {
-        for (unsigned int i = 0; i < 4; i++) {
-          plDestroyTexture(sky_textures_[i], true);
-          sky_textures_[i] = nullptr;
 
-          std::string spath = "skys/" + manifest_->sky_texture + std::to_string(i);
-          const char *p = u_find2(spath.c_str(), supported_image_formats, false);
-          if(p != nullptr) {
-            sky_textures_[i] = Display_LoadTexture(p, PL_TEXTURE_FILTER_MIPMAP_LINEAR);
-            if(sky_textures_[i] != nullptr) {
-              strncpy(sky_textures_[i]->name, manifest_->sky_texture.c_str(), sizeof(sky_textures_[i]->name) - 1);
-            }
-          }
-
-          if(sky_textures_[i] == nullptr) {
-            sky_textures_[i] = Display_GetDefaultTexture();
-          }
-        }
-
-        // todo: apply textures to mesh...
-      }
+      mesh->vertices[i].colour = colour;
     }
 
     plUploadMesh(mesh);
