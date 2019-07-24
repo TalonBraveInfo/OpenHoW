@@ -31,7 +31,7 @@ MapConfigEditor::MapConfigEditor() {
 
     strncpy(name_buffer, manifest_->name.c_str(), sizeof(name_buffer));
     strncpy(author_buffer, manifest_->author.c_str(), sizeof(author_buffer));
-    strncpy(sky_buffer, manifest_->sky.c_str(), sizeof(sky_buffer));
+    strncpy(sky_buffer, manifest_->sky_texture.c_str(), sizeof(sky_buffer));
 }
 
 MapConfigEditor::~MapConfigEditor() {
@@ -187,7 +187,7 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     output << R"("name":")" + manifest_->name + "\",";
     output << R"("author":")" + manifest_->author + "\",";
     output << R"("description":")" + manifest_->description + "\",";
-    output << R"("sky":")" + manifest_->sky + "\",";
+    output << R"("skyTexture":")" + manifest_->sky_texture + "\",";
     if (!manifest_->modes.empty()) {
         output << R"("modes":[)";
         for (unsigned int i = 0; i < manifest_->modes.size(); ++i) {
