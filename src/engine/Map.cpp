@@ -202,7 +202,6 @@ Map::~Map() {
 MapChunk *Map::GetChunk(const PLVector2 &pos) {
     if( pos.x < 0 || std::floor(pos.x) >= MAP_PIXEL_WIDTH ||
         pos.y < 0 || std::floor(pos.y) >= MAP_PIXEL_WIDTH) {
-        LogWarn("Invalid width / height range (%fx%f) vs (%dx%d)!\n", pos.x, pos.y, MAP_PIXEL_WIDTH, MAP_PIXEL_WIDTH);
         return nullptr;
     }
 
@@ -224,7 +223,7 @@ MapTile *Map::GetTile(const PLVector2 &pos) {
     uint idx = (((uint)(pos.x) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) +
                ((((uint)(pos.y) / MAP_TILE_PIXEL_WIDTH) % MAP_CHUNK_ROW_TILES) * MAP_CHUNK_ROW_TILES);
     if(idx >= MAP_CHUNK_TILES) {
-        LogWarn("attempted to get an out of bounds tile index!\n");
+        LogWarn("Attempted to get an out of bounds tile index!\n");
         return nullptr;
     }
 
