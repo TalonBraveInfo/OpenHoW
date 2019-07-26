@@ -179,8 +179,8 @@ class ModelManager {
 
   PLModel *LoadModel(const std::string &path, bool abort_on_fail = false);
   PLModel *LoadCachedModel(const std::string &path, bool abort_on_fail = false);
-  void UnloadModel(PLModel *model);
-  void ClearModelCache();
+  void DestroyModel(PLModel *model);
+  void DestroyModels();
 
   PLModel *GetFallbackModel() {
     return fallback_;

@@ -67,7 +67,7 @@ void GameManager::LoadMap(const std::string &name) {
 
   if (active_map_ != nullptr) {
     ActorManager::GetInstance()->DestroyActors();
-    ModelManager::GetInstance()->ClearModelCache();
+    ModelManager::GetInstance()->DestroyModels();
     delete active_map_;
   }
 

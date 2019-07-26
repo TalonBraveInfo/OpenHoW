@@ -193,7 +193,7 @@ Map::~Map() {
         plDestroyModel(chunk.model);
     }
 
-    ModelManager::GetInstance()->UnloadModel(sky_model_);
+  ModelManager::GetInstance()->DestroyModel(sky_model_);
 
     // gross GROSS; change the clear colour back!
     g_state.gfx.clear_colour = {0, 0, 0, 255};

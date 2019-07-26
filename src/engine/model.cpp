@@ -536,19 +536,19 @@ ModelManager::ModelManager() {
 }
 
 ModelManager::~ModelManager() {
-  ClearModelCache();
+  DestroyModels();
 
   plDestroyModel(fallback_);
 }
 
-void ModelManager::ClearModelCache() {
+void ModelManager::DestroyModels(){
   for (const auto &i : cached_models_) {
     plDestroyModel(i.second);
   }
   cached_models_.clear();
 }
 
-void ModelManager::UnloadModel(PLModel *model) {
+void ModelManager::DestroyModel(PLModel *model) {
   // Never EVER delete the default model!
   if (model == fallback_) {
     return;
