@@ -96,10 +96,6 @@ void Engine_Shutdown(void);
 
 bool Engine_IsRunning(void);
 
-const char *GetBasePath(void);
-const char *GetCampaignPath(void);
-const char *GetFullCampaignPath(void);
-
 /************************************************************/
 /* System */
 

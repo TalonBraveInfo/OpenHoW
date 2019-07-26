@@ -776,6 +776,8 @@ int main(int argc, char **argv) {
 
   /* now deal with any arguments */
 
+  u_init_paths();
+
   char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
   char output_path[PL_SYSTEM_MAX_PATH];
 #if 0

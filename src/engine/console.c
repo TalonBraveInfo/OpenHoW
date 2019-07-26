@@ -275,9 +275,6 @@ PLConsoleVariable *cv_camera_fov = NULL;
 PLConsoleVariable *cv_camera_near = NULL;
 PLConsoleVariable *cv_camera_far = NULL;
 
-PLConsoleVariable *cv_base_path = NULL;
-PLConsoleVariable *cv_campaign_path = NULL;
-
 PLConsoleVariable *cv_display_texture_cache = NULL;
 PLConsoleVariable *cv_display_width = NULL;
 PLConsoleVariable *cv_display_height = NULL;
@@ -335,9 +332,6 @@ void Console_Initialize(void) {
   );
   rvar(cv_debug_cache, false, "0", pl_bool_var, NULL, "display memory and other info");
   rvar(cv_debug_shaders, false, "-1", pl_int_var, NULL, "Forces specified GLSL shader on all draw calls.");
-
-  rvar(cv_base_path, true, ".", pl_string_var, NULL, "");
-  rvar(cv_campaign_path, false, "", pl_string_var, NULL, "");
 
   rvar(cv_camera_mode, false, "0", pl_int_var, NULL, "0 = default, 1 = debug");
   rvar(cv_camera_fov, true, "75", pl_float_var, NULL, "field of view");

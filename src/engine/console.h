@@ -31,9 +31,6 @@ extern PLConsoleVariable *cv_camera_fov;
 extern PLConsoleVariable *cv_camera_near;
 extern PLConsoleVariable *cv_camera_far;
 
-extern PLConsoleVariable *cv_base_path;
-extern PLConsoleVariable *cv_campaign_path;
-
 extern PLConsoleVariable *cv_display_texture_cache;
 extern PLConsoleVariable *cv_display_width;
 extern PLConsoleVariable *cv_display_height;

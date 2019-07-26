@@ -62,12 +62,18 @@ PL_EXTERN_C
 void u_init_logs(const char *log_path);
 void *u_alloc(size_t num, size_t size, bool abort_on_fail);
 
-#if defined(COMPILE_ENGINE)
+void u_init_paths(void);
+const char *u_get_base_path(void);
+const char *u_get_mod_path(void);
+void u_set_base_path(const char *path);
+void u_set_mod_path(const char *path);
+const char *u_get_full_path(void);
+
+const char *u_scan(const char *path, const char **preference);
 const char *u_find(const char *path);
 const char *u_find2(const char *path, const char **preference, bool abort_on_fail);
 
 FILE *u_open(const char *path, const char *mode, bool abort_on_fail);
-#endif
 
 PL_EXTERN_C_END
 

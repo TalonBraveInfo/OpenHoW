@@ -63,6 +63,32 @@ void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
 /****************************************************/
 /* Filesystem */
 
+PLConsoleVariable *cv_path_base = NULL;
+PLConsoleVariable *cv_path_mod = NULL;
+
+void u_init_paths(void) {
+#define rvar(var, arc, ...) \
+    { \
+        const char *str_##var = plStringify(var); \
+        (var) = plRegisterConsoleVariable(&str_##var[3], __VA_ARGS__); \
+        (var)->archive = (arc); \
+    }
+    
+  rvar(cv_path_base, true, ".", pl_string_var, NULL, "");
+  rvar(cv_path_mod, false, "", pl_string_var, NULL, "");
+}
+
+const char *u_get_base_path(void) { u_assert(cv_path_base); return cv_path_base->s_value; }
+const char *u_get_mod_path(void) { u_assert(cv_path_mod); return cv_path_mod->s_value; }
+void u_set_base_path(const char *path) { plSetConsoleVariable(cv_path_base, path); }
+void u_set_mod_path(const char *path) { plSetConsoleVariable(cv_path_mod, path); }
+
+const char *u_get_full_path(void) {
+  static char path[PL_SYSTEM_MAX_PATH];
+  snprintf(path, sizeof(path), "%s/campaigns/%s", u_get_base_path(), u_get_mod_path());
+  return path;
+}
+
 const char *u_scan(const char *path, const char **preference) {
   static char find[PL_SYSTEM_MAX_PATH];
   while (*preference != NULL) {
@@ -78,18 +104,17 @@ const char *u_scan(const char *path, const char **preference) {
   return "";
 }
 
-#if defined(COMPILE_ENGINE)
 const char *u_find(const char *path) {
   static char n_path[PL_SYSTEM_MAX_PATH];
-  if (!plIsEmptyString(GetCampaignPath())) {
-    snprintf(n_path, sizeof(n_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
+  if (!plIsEmptyString(u_get_mod_path())) {
+    snprintf(n_path, sizeof(n_path), "%s/%s", u_get_full_path(), path);
     if (plFileExists(n_path)) {
       //LogDebug("Found \"%s\"\n", n_path);
       return n_path;
     }
   }
 
-  snprintf(n_path, sizeof(n_path), "%s/%s", GetBasePath(), path);
+  snprintf(n_path, sizeof(n_path), "%s/%s", u_get_base_path(), path);
   //LogDebug("Found \"%s\"\n", n_path);
   return n_path;
 }
@@ -99,8 +124,8 @@ const char *u_find2(const char *path, const char **preference, bool abort_on_fai
   memset(out, 0, sizeof(out));
 
   char base_path[PL_SYSTEM_MAX_PATH];
-  if (!plIsEmptyString(GetCampaignPath())) {
-    snprintf(base_path, sizeof(base_path), "%s/campaigns/%s/%s", GetBasePath(), GetCampaignPath(), path);
+  if (!plIsEmptyString(u_get_mod_path())) {
+    snprintf(base_path, sizeof(base_path), "%s/campaigns/%s/%s", u_get_base_path(), u_get_mod_path(), path);
     strncpy(out, u_scan(base_path, preference), sizeof(out));
     if (!plIsEmptyString(out)) {
       //LogDebug("Found \"%s\"\n", out);
@@ -108,7 +133,7 @@ const char *u_find2(const char *path, const char **preference, bool abort_on_fai
     }
   }
 
-  snprintf(base_path, sizeof(base_path), "%s/%s", GetBasePath(), path);
+  snprintf(base_path, sizeof(base_path), "%s/%s", u_get_base_path(), path);
   strncpy(out, u_scan(base_path, preference), sizeof(out));
   if (plIsEmptyString(out)) {
     if (abort_on_fail) {
@@ -137,4 +162,3 @@ FILE *u_open(const char *path, const char *mode, bool abort_on_fail) {
 
   return fp;
 }
-#endif

@@ -97,7 +97,7 @@ void Mod_RegisterCampaign(const char *path) {
  */
 void Mod_RegisterCampaigns(void) {
   char path[PL_SYSTEM_MAX_PATH];
-  snprintf(path, sizeof(path), "%s/campaigns/", GetBasePath());
+  snprintf(path, sizeof(path), "%s/campaigns/", u_get_base_path());
   plScanDirectory(path, "campaign", Mod_RegisterCampaign, false);
 }
 
@@ -115,7 +115,7 @@ void Mod_SetCampaign(const char *dir) {
     LogInfo("Campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
 
     char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", GetBasePath(), dir);
+    snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", u_get_base_path(), dir);
     if (plFileExists(path)) {
       Mod_RegisterCampaign(path);
       campaign = GetModManifestByDirectory(dir);
@@ -127,7 +127,7 @@ void Mod_SetCampaign(const char *dir) {
     }
   }
 
-  plSetConsoleVariable(cv_campaign_path, campaign->base_directory.c_str());
+  u_set_mod_path(campaign->base_directory.c_str());
 
   LogInfo("Campaign has been set to \"%s\" successfully!\n", campaign->name.c_str());
 

@@ -35,22 +35,6 @@
 
 EngineState g_state;
 
-const char *GetBasePath(void) {
-    u_assert(cv_base_path);
-    return cv_base_path->s_value;
-}
-
-const char *GetCampaignPath(void) {
-    u_assert(cv_campaign_path);
-    return cv_campaign_path->s_value;
-}
-
-const char *GetFullCampaignPath(void) {
-    static char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%s/campaigns/%s", cv_base_path->s_value, cv_campaign_path->s_value);
-    return path;
-}
-
 void Engine_Initialize(void) {
     LogInfo("initializing engine (%d.%d.%d)...\n",
             ENGINE_MAJOR_VERSION,
@@ -70,6 +54,8 @@ void Engine_Initialize(void) {
     g_state.gfx.num_chunks_drawn = 0;
     g_state.gfx.num_triangles_total = 0;
 
+    u_init_paths();
+
     Console_Initialize();
 
     // check for any command line arguments
@@ -80,7 +66,7 @@ void Engine_Initialize(void) {
             LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
         }
 
-        plSetConsoleVariable(cv_base_path, var);
+        u_set_base_path(var);
     }
 
     Script_Initialize();
@@ -115,8 +101,8 @@ void Engine_Initialize(void) {
     MapManager::GetInstance();
     ModelManager::GetInstance();
 
-    LogInfo("Base path:         \"%s\"\n", GetBasePath());
-    LogInfo("Campaign path:     \"%s/campaigns/%s\"\n", GetBasePath(), GetCampaignPath());
+    LogInfo("Base path:         \"%s\"\n", u_get_base_path());
+    LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
     LogInfo("Working directory: \"%s\"\n", plGetWorkingDirectory());
 }
 

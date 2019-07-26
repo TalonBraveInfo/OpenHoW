@@ -292,7 +292,7 @@ void AddFilePath(const char *path) {
 
 void ScanDirectories() {
   file_list.clear();
-  plScanDirectory(GetBasePath(), nullptr, AddFilePath, true);
+  plScanDirectory(u_get_base_path(), nullptr, AddFilePath, true);
 }
 
 void UI_DisplayFileBox() {
@@ -310,8 +310,9 @@ void UI_DisplayFileBox() {
   ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_Once);
   ImGui::Begin("Open File", &show_file);
 
-  static ImGuiTextFilter filter;
-  filter.Draw();
+    static ImGuiTextFilter filter;
+    filter.Draw();
+    ImGui::SameLine();
 
   if (ImGui::Button("Rescan", ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
     ScanDirectories();

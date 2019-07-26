@@ -77,7 +77,7 @@ static void RegisterManifestInterface(const char *path) {
 void MapManager::RegisterManifests() {
   manifests_.clear();
 
-  std::string scan_path = std::string(GetBasePath()) + "/campaigns/" + GetCampaignPath() + "/maps";
+  std::string scan_path = std::string(u_get_base_path()) + "/campaigns/" + u_get_mod_path() + "/maps";
   plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 

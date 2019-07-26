@@ -158,7 +158,7 @@ void MapConfigEditor::Display() {
 
     if (ImGui::Button("Save")) {
         std::string dir_name = map_->GetId();
-        SaveManifest(std::string(GetFullCampaignPath()) + "/maps/" + dir_name + ".map");
+        SaveManifest(std::string(u_get_full_path()) + "/maps/" + dir_name + ".map");
     }
 
     ImGui::SameLine();
