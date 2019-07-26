@@ -833,7 +833,7 @@ int main(int argc, char **argv) {
   MergeTextureTargets();
 
   /* convert the remaining TIM textures to PNG */
-  //plScanDirectory(output_path, "tim", ConvertImageToPNG, true);
+  plScanDirectory(output_path, "tim", ConvertImageToPNG, true);
 
   LogInfo("Complete!\n");
   return EXIT_SUCCESS;
