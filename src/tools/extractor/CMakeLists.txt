@@ -35,6 +35,7 @@ add_executable(extractor
         ../../shared/vtx.c
 
         extractor.c
+        version.c
         )
 
 target_include_directories(extractor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})

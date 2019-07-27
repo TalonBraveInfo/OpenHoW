@@ -16,287 +16,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_image.h>
-#include <PL/platform_console.h>
+#include <PL/platform_package.h>
 
-#include "../../shared/util.h"
-#include "../../shared/vtx.h"
-#include "../../shared/fac.h"
-#include "../../shared/no2.h"
+#include "extractor.h"
 
-typedef struct CopyPath {
-  const char *input, *output;
-} CopyPath;
+/************************************************************/
+/* Data Conversion */
 
-static CopyPath pc_music_paths[] = {
-    {"/MUSIC/Track02.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track03.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track04.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track05.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track06.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track07.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track08.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track09.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track10.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track11.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track12.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track13.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track14.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track15.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track16.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track17.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track18.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track19.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track20.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track21.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track22.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track23.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track24.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track25.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track26.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track27.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track28.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track29.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track30.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track31.ogg", "/campaigns/how/music/"},
-    {"/MUSIC/Track32.ogg", "/campaigns/how/music/"},
+typedef struct ModelConversionData {
+  const char *mad;
+  const char *mtd;
+  const char *out;
+} ModelConversionData;
+static ModelConversionData pc_scenery_data[] = {
+    {"/Maps/BAY.MAD", "/Maps/bay.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ICE.MAD", "/Maps/ice.mtd","/campaigns/how/chars/scenery/"},
+    {"/Maps/BOOM.MAD", "/Maps/boom.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/BUTE.MAD", "/Maps/bute.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/CAMP.MAD", "/Maps/camp.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/DEMO.MAD", "/Maps/demo.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/DEVI.MAD", "/Maps/devi.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/DVAL.MAD", "/Maps/dval.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/EASY.MAD", "/Maps/easy.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ESTU.MAD", "/Maps/estu.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/FOOT.MAD", "/Maps/foot.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/GUNS.MAD", "/Maps/guns.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/HELL2.MAD", "/Maps/hell2.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/HELL3.MAD", "/Maps/hell3.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ICE.MAD", "/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "/campaigns/how/chars/scenery/"},
 };
 
-static CopyPath pc_copy_paths[] = {
-#include "pc_copy_paths.h"
-};
-
-static CopyPath pc_package_paths[] = {
-    /* pigs */
-    {"/Chars/british.mad", "/campaigns/how/chars/pigs/"},        /* actually contains all the pig models */
-    {"/Chars/FACES.MTD", "/campaigns/how/chars/pigs/faces/"},  /* contains all the face textures       */
-    {"/Chars/AMERICAN.MTD", "/campaigns/how/chars/pigs/american/"},
-    {"/Chars/british.mtd", "/campaigns/how/chars/pigs/british/"},
-    {"/Chars/FRENCH.MTD", "/campaigns/how/chars/pigs/french/"},
-    {"/Chars/GERMAN.MTD", "/campaigns/how/chars/pigs/german/"},
-    {"/Chars/JAPANESE.MTD", "/campaigns/how/chars/pigs/japanese/"},
-    {"/Chars/RUSSIAN.MTD", "/campaigns/how/chars/pigs/russian/"},
-    {"/Chars/TEAMLARD.MTD", "/campaigns/how/chars/pigs/teamlard/"},
-    {"/Chars/BRITHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
-    {"/Chars/FHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
-
-    /* weapons */
-    {"/Chars/WEAPONS.MAD", "/campaigns/how/chars/weapons/"},
-    {"/Chars/WEAPONS.MTD", "/campaigns/how/chars/weapons/"},
-    /* */
-    {"/Chars/TOP.MAD", "/campaigns/how/chars/top/"},
-    {"/Chars/TOP.MTD", "/campaigns/how/chars/top/"},
-    /* zoom sights */
-    {"/Chars/SIGHT.MAD", "/campaigns/how/chars/sight/"},
-    {"/Chars/SIGHT.MTD", "/campaigns/how/chars/sight/"},
-    /* promotion point */
-    {"/Chars/PROPOINT.MAD", "/campaigns/how/chars/propoint/"},
-    {"/Chars/propoint.mtd", "/campaigns/how/chars/propoint/"},
-    /* sky */
-    {"/Chars/SKYDOME.MAD", "/campaigns/how/skys/"},
-    //{"/Chars/SKYDOME.MTD", "/campaigns/how/chars/sky/"},    /* unused ?? */
-    {"/Chars/TOY.MAD", "/campaigns/how/skys/toy/"},
-    {"/Chars/SPACE.MAD", "/campaigns/how/skys/space/"},
-    {"/Chars/SUNSET.MAD", "/campaigns/how/skys/sunset/"},
-    {"/Chars/SUNRISE.MAD", "/campaigns/how/skys/sunrise/"},
-    {"/Chars/SUNNY.MAD", "/campaigns/how/skys/sunny/"},
-    {"/Chars/OMINOUS.MAD", "/campaigns/how/skys/ominous/"},
-    {"/Chars/DESERT.MAD", "/campaigns/how/skys/desert/"},
-    {"/Chars/COLDSKY.MAD", "/campaigns/how/skys/coldsky/"},
-    {"/Chars/NIGHT1.MAD", "/campaigns/how/skys/night1/"},
-
-    /* frontend */
-    {"/FEBmps/FEBMP.MAD", "/campaigns/how/frontend/bitmaps/"},
-    {"/Language/Tims/FEFXTIMS.MTD", "/campaigns/how/frontend/fx/"},
-    {"/Language/Tims/EXPLTIMS.MAD", "/campaigns/how/frontend/expl/"},
-    {"/Language/Tims/FACETIMS.MAD", "/campaigns/how/frontend/dash/"},
-    {"/Language/Tims/FLAGTIMS.MAD", "/campaigns/how/frontend/dash/"},
-    {"/Language/Tims/dashtims.mad", "/campaigns/how/frontend/dash/"},
-    {"/Language/Tims/MAPICONS.MTD", "/campaigns/how/frontend/map/"},
-    {"/Language/Tims/MENUTIMS.MAD", "/campaigns/how/frontend/dash/menu/"},
-    {"/Language/Tims/TBOXTIMS.MAD", "/campaigns/how/frontend/dash/"},
-
-    {"/Maps/BAY.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/bay.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICE.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/BOOM.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/boom.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/BUTE.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/bute.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/CAMP.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/camp.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DEMO.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/demo.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DEVI.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/devi.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DVAL.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/dval.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/EASY.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/easy.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ESTU.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/estu.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/FOOT.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/foot.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/GUNS.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/guns.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HELL2.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/hell2.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HELL3.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/hell3.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HILLBASE.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/hillbase.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICEFLOW.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/iceflow.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICE.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
-
-    {"/Maps/ZULUS.MAD", "/campaigns/how/chars/scenery/"},
-    {"/Maps/zulus.mtd", "/campaigns/how/chars/scenery/"},
-
-#if 1
-    {"/Maps/BAY.PTG", "/campaigns/how/maps/bay/tiles/"},
-    {"/Maps/ICE.PTG", "/campaigns/how/maps/ice/tiles/"},
-    {"/Maps/BOOM.PTG", "/campaigns/how/maps/boom/tiles/"},
-    {"/Maps/BUTE.PTG", "/campaigns/how/maps/bute/tiles/"},
-    {"/Maps/CAMP.PTG", "/campaigns/how/maps/camp/tiles/"},
-    {"/Maps/DEMO.PTG", "/campaigns/how/maps/demo/tiles/"},
-    {"/Maps/DEVI.PTG", "/campaigns/how/maps/devi/tiles/"},
-    {"/Maps/DVAL.PTG", "/campaigns/how/maps/dval/tiles/"},
-    {"/Maps/EASY.PTG", "/campaigns/how/maps/easy/tiles/"},
-    {"/Maps/ESTU.PTG", "/campaigns/how/maps/estu/tiles/"},
-    {"/Maps/FOOT.PTG", "/campaigns/how/maps/foot/tiles/"},
-    {"/Maps/GUNS.PTG", "/campaigns/how/maps/guns/tiles/"},
-    {"/Maps/KEEP.PTG", "/campaigns/how/maps/keep/tiles/"},
-    {"/Maps/LAKE.PTG", "/campaigns/how/maps/lake/tiles/"},
-    {"/Maps/MAZE.PTG", "/campaigns/how/maps/maze/tiles/"},
-    {"/Maps/ROAD.PTG", "/campaigns/how/maps/road/tiles/"},
-    {"/Maps/TWIN.PTG", "/campaigns/how/maps/twin/tiles/"},
-    {"/Maps/ARCHI.PTG", "/campaigns/how/maps/archi/tiles/"},
-    {"/Maps/BHILL.PTG", "/campaigns/how/maps/bhill/tiles/"},
-    {"/Maps/CMASS.PTG", "/campaigns/how/maps/cmass/tiles/"},
-    {"/Maps/DBOWL.PTG", "/campaigns/how/maps/dbowl/tiles/"},
-    {"/Maps/DEMO2.PTG", "/campaigns/how/maps/demo2/tiles/"},
-    {"/Maps/DVAL2.PTG", "/campaigns/how/maps/dval2/tiles/"},
-    {"/Maps/EYRIE.PTG", "/campaigns/how/maps/eyrie/tiles/"},
-    {"/Maps/FINAL.PTG", "/campaigns/how/maps/final/tiles/"},
-    {"/Maps/HELL2.PTG", "/campaigns/how/maps/hell2/tiles/"},
-    {"/Maps/HELL3.PTG", "/campaigns/how/maps/hell3/tiles/"},
-    {"/Maps/MEDIX.PTG", "/campaigns/how/maps/medix/tiles/"},
-    {"/Maps/MLAKE.PTG", "/campaigns/how/maps/mlake/tiles/"},
-    {"/Maps/OASIS.PTG", "/campaigns/how/maps/oasis/tiles/"},
-    {"/Maps/PLAY1.PTG", "/campaigns/how/maps/play1/tiles/"},
-    {"/Maps/PLAY2.PTG", "/campaigns/how/maps/play2/tiles/"},
-    {"/Maps/RIDGE.PTG", "/campaigns/how/maps/ridge/tiles/"},
-    {"/Maps/SNAKE.PTG", "/campaigns/how/maps/snake/tiles/"},
-    {"/Maps/ZULUS.PTG", "/campaigns/how/maps/zulus/tiles/"},
-    {"/Maps/ARTGUN.PTG", "/campaigns/how/maps/artgun/tiles/"},
-    {"/Maps/BRIDGE.PTG", "/campaigns/how/maps/bridge/tiles/"},
-    {"/Maps/DESVAL.PTG", "/campaigns/how/maps/desval/tiles/"},
-    {"/Maps/FJORDS.PTG", "/campaigns/how/maps/fjords/tiles/"},
-    {"/Maps/GENMUD.PTG", "/campaigns/how/maps/genmud/tiles/"},
-    {"/Maps/ISLAND.PTG", "/campaigns/how/maps/island/tiles/"},
-    {"/Maps/LUNAR1.PTG", "/campaigns/how/maps/lunar1/tiles/"},
-    {"/Maps/MASHED.PTG", "/campaigns/how/maps/mashed/tiles/"},
-    {"/Maps/ONEWAY.PTG", "/campaigns/how/maps/oneway/tiles/"},
-    {"/Maps/RUMBLE.PTG", "/campaigns/how/maps/rumble/tiles/"},
-    {"/Maps/SEPIA1.PTG", "/campaigns/how/maps/sepia1/tiles/"},
-    {"/Maps/SNIPER.PTG", "/campaigns/how/maps/sniper/tiles/"},
-    {"/Maps/TRENCH.PTG", "/campaigns/how/maps/trench/tiles/"},
-    {"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy/tiles/"},
-    {"/Maps/EMPLACE.PTG", "/campaigns/how/maps/emplace/tiles/"},
-    {"/Maps/GENLAVA.PTG", "/campaigns/how/maps/genlava/tiles/"},
-    {"/Maps/GENSNOW.PTG", "/campaigns/how/maps/gensnow/tiles/"},
-    {"/Maps/ICEFLOW.PTG", "/campaigns/how/maps/iceflow/tiles/"},
-    {"/Maps/LECPROD.PTG", "/campaigns/how/maps/lecprod/tiles/"},
-    {"/Maps/SUPLINE.PTG", "/campaigns/how/maps/supline/tiles/"},
-    {"/Maps/genbrack.ptg", "/campaigns/how/maps/genbrack/tiles/"},
-    {"/Maps/GENCHALK.PTG", "/campaigns/how/maps/genchalk/tiles/"},
-    {"/Maps/GENDESRT.PTG", "/campaigns/how/maps/gendesrt/tiles/"},
-    {"/Maps/HILLBASE.PTG", "/campaigns/how/maps/hillbase/tiles/"},
-    {"/Maps/LIBERATE.PTG", "/campaigns/how/maps/liberate/tiles/"},
-
-    {"/Skys/COLD/COLD1.PTG", "/campaigns/how/skys/cold1/"},
-    //{"/Skys/DESERT/DESERT1.PTG", "/campaigns/how/skys/desert1/"},
-#endif
-};
-
-/////////////////////////////////////////////////////////////
-
-typedef enum ERegion {
-  REGION_UNKNOWN = -1,
-
-  REGION_ENG,
-  REGION_FRE,
-  REGION_GER,
-  REGION_ITA,
-  REGION_RUS,
-  REGION_SPA,
-
-  MAX_REGIONS
-} ERegion;
-const char *region_idents[MAX_REGIONS] = {
-    "eng", "fre", "ger", "ita", "rus", "spa"
-};
-
-typedef enum EPlatform {
-  PLATFORM_UNKNOWN = -1,
-
-  PLATFORM_PSX,               /* PSX version */
-  PLATFORM_PC,                /* PC version */
-  PLATFORM_PC_DIGITAL,        /* PC/Digital version */
-} EPlatform;
-
-typedef struct VersionInfo {
-  ERegion region;
-  EPlatform platform;
-} VersionInfo;
-
-VersionInfo version_info = {
-    .platform = PLATFORM_UNKNOWN,
-    .region = REGION_UNKNOWN
-};
-
-static void CheckGameVersion(const char *path) {
-  LogInfo("checking game version...\n");
-
-  char fcheck[PL_SYSTEM_MAX_PATH];
-  snprintf(fcheck, sizeof(fcheck), "%s/system.cnf", path);
-  if (plFileExists(fcheck)) {
-    LogInfo("Detected system.cnf, assuming PSX version\n");
-    version_info.platform = PLATFORM_PSX;
-    // todo: determine region for PSX ver (probably easier than on PC)
-    return;
+static void ConvertModelData(void) {
+  for(unsigned int i = 0; i < plArrayElements(pc_scenery_data); ++i) {
+    PLPackage *package = plLoadPackage(pc_scenery_data[i].mad, false);
+    if(package == NULL) {
+      continue;
+    }
   }
-
-  snprintf(fcheck, sizeof(fcheck), "%s/Data/foxscale.d3d", path);
-  if (!plFileExists(fcheck)) {
-    LogWarn("Failed to find foxscale.d3d, unable to determine platform!\n");
-    return;
-  }
-
-  LogInfo("Detected Data/foxscale.d3d, assuming PC version\n");
-  version_info.platform = PLATFORM_PC;
-
-  /* todo: need better method to determine this */
-  snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/fetext.bin", path);
-  unsigned int fetext_size = plGetFileSize(fcheck);
-  snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/gtext.bin", path);
-  unsigned int gtext_size = plGetFileSize(fcheck);
-  if (fetext_size == 8997 && gtext_size == 4518) {
-    version_info.region = REGION_GER;
-  } else if (fetext_size == 8102 && gtext_size == 4112) {
-    version_info.region = REGION_ENG;
-  }
-
-  snprintf(fcheck, sizeof(fcheck), "%s/MUSIC/Track02.ogg", path);
-  if (plFileExists(fcheck)) {
-    LogInfo("Detected MUSIC/Track02.ogg, assuming GOG version\n");
-    version_info.platform = PLATFORM_PC_DIGITAL;
-  }
-
-  LogInfo("platform=%d, region=%d\n", version_info.platform, version_info.region);
 }
 
 /////////////////////////////////////////////////////////////
@@ -706,7 +465,23 @@ static void MergeTextureTargets(void) {
 
 /************************************************************/
 
-static void ProcessPackagePaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
+typedef struct IOPath {
+  const char *input, *output;
+} IOPath;
+
+static IOPath pc_music_paths[] = {
+#include "pc_music_paths.h"
+};
+
+static IOPath pc_copy_paths[] = {
+#include "pc_copy_paths.h"
+};
+
+static IOPath pc_package_paths[] = {
+#include "pc_package_paths.h"
+};
+
+static void ProcessPackagePaths(const char *in, const char *out, const IOPath *paths, unsigned int length) {
   for (unsigned int i = 0; i < length; ++i) {
     char output_path[PL_SYSTEM_MAX_PATH];
     snprintf(output_path, sizeof(output_path), "%s%s", out, paths[i].output);
@@ -727,7 +502,7 @@ static void ProcessPackagePaths(const char *in, const char *out, const CopyPath 
   }
 }
 
-static void ProcessCopyPaths(const char *in, const char *out, const CopyPath *paths, unsigned int length) {
+static void ProcessCopyPaths(const char *in, const char *out, const IOPath *paths, unsigned int length) {
   for (unsigned int i = 0; i < length; ++i) {
     char output_path[PL_SYSTEM_MAX_PATH];
     snprintf(output_path, sizeof(output_path), "%s%s", out, paths[i].output);
