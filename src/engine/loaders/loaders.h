@@ -59,6 +59,4 @@ typedef struct MinHandle {
 } MinHandle;
 MinHandle *Min_LoadFile(const char *path);
 
-void RegisterPackageLoaders(void);
-
 PL_EXTERN_C_END

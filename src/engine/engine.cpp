@@ -76,7 +76,7 @@ void Engine_Initialize(void) {
      * vars will not be loaded/saved! */
     Config_Load(Config_GetUserConfigPath());
 
-    RegisterPackageLoaders();
+    plRegisterStandardPackageLoaders();
 
     // load in the manifests
 
