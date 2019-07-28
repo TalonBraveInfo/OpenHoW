@@ -152,7 +152,7 @@ static void ConvertModelData(void) {
 
 static void ExtractPtgPackage(const char *input_path, const char *output_path) {
   if (!plCreatePath(output_path)) {
-    LogWarn("Failed to create path %s, aborting!\n", output_path);
+    LogWarn("Failed to create path, \"%s\" (%s)!\n", output_path, plGetError());
     return;
   }
 
@@ -425,6 +425,8 @@ int main(int argc, char **argv) {
   }
 
   plInitialize(argc, argv);
+
+  plRegisterStandardPackageLoaders();
 
   char app_dir[PL_SYSTEM_MAX_PATH];
   plGetApplicationDataDirectory("OpenHoW", app_dir, PL_SYSTEM_MAX_PATH);
