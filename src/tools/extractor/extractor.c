@@ -212,19 +212,16 @@ static void ExtractMadPackage(const char *input_path, const char *output_path) {
 /************************************************************/
 /* Texture Merger */
 
-typedef struct TMergeTarget {
-  const char *path;
-  unsigned int x, y;
-} TMergeTarget;
-
-typedef struct TMerge {
+typedef struct TextureMerge {
   const char *output;
   unsigned int num_textures;
   unsigned int width, height;
-  TMergeTarget targets[10];
-} TMerge;
-
-static TMerge texture_targets[] = {
+  struct {
+    const char *path;
+    unsigned int x, y;
+  } targets[10];
+} TextureMerge;
+static TextureMerge texture_targets[] = {
     {
         "/campaigns/how/frontend/dash/ang.png", 5, 152, 121, {{
                                                                   "/campaigns/how/frontend/dash/ang1.tim", 0, 0
@@ -300,25 +297,12 @@ static void MergeTextureTargets(void) {
   unsigned int num_texture_targets = plArrayElements(texture_targets);
   LogInfo("Merging %d texture targets...\n", num_texture_targets);
   for (unsigned int i = 0; i < num_texture_targets; ++i) {
-    TMerge *merge = &texture_targets[i];
-
+    TextureMerge *merge = &texture_targets[i];
     LogInfo("Generating %s\n", merge->output);
-
-    PLImage output;
-    memset(&output, 0, sizeof(PLImage));
-    output.width = merge->width;
-    output.height = merge->height;
-    output.format = PL_IMAGEFORMAT_RGBA8;
-    output.colour_format = PL_COLOURFORMAT_RGBA;
-    output.levels = 1;
-    output.size = plGetImageSize(output.format, output.width, output.height);
-
-    if ((output.data = calloc(output.levels, sizeof(uint8_t *))) == NULL) {
-      Error("Failed to allocate data handle!\n");
-    }
-
-    if ((output.data[0] = calloc(output.size, sizeof(uint8_t))) == NULL) {
-      Error("Failed to allocate data handle!\n");
+    PLImage *output = plCreateImage(NULL, merge->width, merge->height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
+    if(output == NULL) {
+      LogWarn("Failed to generate texture target (%s)!\n", plGetError());
+      continue;
     }
 
     for (unsigned int j = 0; j < merge->num_textures; ++j) {
@@ -333,12 +317,12 @@ static void MergeTextureTargets(void) {
 
       LogInfo("Writing %s into %s\n", merge->targets[j].path, merge->output);
 
-      uint8_t *pos = output.data[0] + ((merge->targets[j].y * output.width) + merge->targets[j].x) * 4;
+      uint8_t *pos = output->data[0] + ((merge->targets[j].y * output->width) + merge->targets[j].x) * 4;
       uint8_t *src = image.data[0];
       for (unsigned int y = 0; y < image.height; ++y) {
         memcpy(pos, src, (image.width * 4));
         src += image.width * 4;
-        pos += output.width * 4;
+        pos += output->width * 4;
       }
 
       plFreeImage(&image);
@@ -346,8 +330,8 @@ static void MergeTextureTargets(void) {
     }
 
     LogInfo("Writing %s\n", merge->output);
-    plWriteImage(&output, merge->output);
-    plFreeImage(&output);
+    plWriteImage(output, merge->output);
+    plDestroyImage(output);
   }
 }
 
@@ -430,7 +414,6 @@ int main(int argc, char **argv) {
 
   char app_dir[PL_SYSTEM_MAX_PATH];
   plGetApplicationDataDirectory("OpenHoW", app_dir, PL_SYSTEM_MAX_PATH);
-
   if (!plCreatePath(app_dir)) {
     LogWarn("Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError());
   }
@@ -463,8 +446,7 @@ int main(int argc, char **argv) {
   }
 
   if (plIsEmptyString(input_path)) {
-    Error("invalid game path, aborting!\n");
-    return EXIT_FAILURE;
+    Error("Empty game path, aborting!\n");
   }
 
   LogInfo("\n"
