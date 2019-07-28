@@ -29,21 +29,7 @@
 {"/Chars/BRITHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
 {"/Chars/FHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
 
-/* weapons */
-{"/Chars/WEAPONS.MAD", "/campaigns/how/chars/weapons/"},
-{"/Chars/WEAPONS.MTD", "/campaigns/how/chars/weapons/"},
-/* */
-{"/Chars/TOP.MAD", "/campaigns/how/chars/top/"},
-{"/Chars/TOP.MTD", "/campaigns/how/chars/top/"},
-/* zoom sights */
-{"/Chars/SIGHT.MAD", "/campaigns/how/chars/sight/"},
-{"/Chars/SIGHT.MTD", "/campaigns/how/chars/sight/"},
-/* promotion point */
-{"/Chars/PROPOINT.MAD", "/campaigns/how/chars/propoint/"},
-{"/Chars/propoint.mtd", "/campaigns/how/chars/propoint/"},
 /* sky */
-{"/Chars/SKYDOME.MAD", "/campaigns/how/skys/"},
-//{"/Chars/SKYDOME.MTD", "/campaigns/how/chars/sky/"},    /* unused ?? */
 {"/Chars/TOY.MAD", "/campaigns/how/skys/toy/"},
 {"/Chars/SPACE.MAD", "/campaigns/how/skys/space/"},
 {"/Chars/SUNSET.MAD", "/campaigns/how/skys/sunset/"},

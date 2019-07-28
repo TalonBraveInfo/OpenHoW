@@ -20,254 +20,13 @@
 
 #include "extractor.h"
 
+#include "../../shared/fac.h"
+
 /************************************************************/
 /* Data Conversion */
 
-typedef struct ModelConversionData {
-  const char *mad;
-  const char *mtd;
-  const char *out;
-} ModelConversionData;
-static ModelConversionData pc_scenery_data[] = {
-    {"/Maps/BAY.MAD", "/Maps/bay.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICE.MAD", "/Maps/ice.mtd","/campaigns/how/chars/scenery/"},
-    {"/Maps/BOOM.MAD", "/Maps/boom.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/BUTE.MAD", "/Maps/bute.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/CAMP.MAD", "/Maps/camp.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DEMO.MAD", "/Maps/demo.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DEVI.MAD", "/Maps/devi.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DVAL.MAD", "/Maps/dval.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/EASY.MAD", "/Maps/easy.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ESTU.MAD", "/Maps/estu.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/FOOT.MAD", "/Maps/foot.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/GUNS.MAD", "/Maps/guns.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HELL2.MAD", "/Maps/hell2.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HELL3.MAD", "/Maps/hell3.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICE.MAD", "/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "/campaigns/how/chars/scenery/"},
-};
-
-static void ConvertModelData(void) {
-  for(unsigned int i = 0; i < plArrayElements(pc_scenery_data); ++i) {
-    PLPackage *package = plLoadPackage(pc_scenery_data[i].mad, false);
-    if(package == NULL) {
-      continue;
-    }
-  }
-}
-
-/////////////////////////////////////////////////////////////
-/* Extraction process for initial setup */
-
-static void ExtractPTGPackage(const char *input_path, const char *output_path) {
-  u_assert(input_path != NULL && input_path[0] != '\0', "encountered invalid path for PTG!\n");
-  char ptg_name[PL_SYSTEM_MAX_PATH] = {'\0'};
-  plStripExtension(ptg_name, sizeof(ptg_name), plGetFileName(input_path));
-  pl_strtolower(ptg_name);
-
-  if (!plCreatePath(output_path)) {
-    LogInfo("failed to create path %s, aborting!\n", output_path);
-    return;
-  }
-
-  FILE *file = fopen(input_path, "rb");
-  if (file == NULL) {
-    LogInfo("failed to load %s, aborting!\n", input_path);
-    return;
-  }
-
-  FILE *out = NULL;
-  FILE *out_index = NULL;
-
-  char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-  snprintf(index_path, sizeof(index_path), "%s/%s.index", output_path, ptg_name);
-  out_index = fopen(index_path, "w");
-  if (out_index == NULL) {
-    LogWarn("failed to open %s for writing!\n", index_path);
-    goto ABORT_PTG;
-  }
-
-  uint32_t num_textures;
-  if (fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
-    LogInfo("invalid PTG file, failed to get number of textures!\n");
-    goto ABORT_PTG;
-  }
-
-  size_t tim_size = (plGetFileSize(input_path) - sizeof(num_textures)) / num_textures;
-  for (unsigned int i = 0; i < num_textures; ++i) {
-    uint8_t tim[tim_size];
-    if (fread(tim, tim_size, 1, file) != 1) {
-      LogInfo("failed to read tim, aborting!\n");
-      goto ABORT_PTG;
-    }
-
-    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(out_path, "%s/%d.tim", output_path, i);
-    out = fopen(out_path, "wb");
-    if (out == NULL) {
-      LogInfo("Failed to open %s for writing, aborting!\n", out_path);
-      goto ABORT_PTG;
-    }
-
-    //print(" %s\n", out_path);
-    if (fwrite(tim, tim_size, 1, out) != 1) {
-      LogInfo("Failed to write %s, aborting!\n", out_path);
-      goto ABORT_PTG;
-    }
-
-    fprintf(out_index, "%d\n", i);
-
-    u_fclose(out);
-  }
-
-  ABORT_PTG:
-  u_fclose(out);
-  u_fclose(out_index);
-  u_fclose(file);
-}
-
-static void ExtractMADPackage(const char *input_path, const char *output_path) {
-  u_assert(input_path != NULL && input_path[0] != '\0', "encountered invalid path for MAD!\n");
-  char package_name[PL_SYSTEM_MAX_PATH] = {'\0'};
-  plStripExtension(package_name, sizeof(package_name), plGetFileName(input_path));
-  pl_strtolower(package_name);
-
-  if (!plCreatePath(output_path)) {
-    LogInfo("failed to create input_path %s, aborting!\n", output_path);
-    return;
-  }
-
-  FILE *file = fopen(input_path, "rb");
-  if (file == NULL) {
-    LogInfo("failed to load %s, aborting!\n", input_path);
-    return;
-  }
-
-  char package_extension[4] = {'\0'};
-  snprintf(package_extension, sizeof(package_extension), "%s", plGetFileExtension(input_path));
-  pl_strtolower(package_extension);
-
-  FILE *out_index = NULL;
-  // check if it's necessary for us to produce an index file
-  // since models expect each texture to have a particular
-  // position within the MTD package - yay...
-  if (strcmp(package_extension, "mtd") == 0) {
-    char index_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    snprintf(index_path, sizeof(index_path), "%s/%s.index", output_path, package_name);
-    out_index = fopen(index_path, "w");
-    if (out_index == NULL) {
-      printf("failed to open %s for writing!\n", index_path);
-    }
-  }
-
-  typedef struct __attribute__((packed)) MADIndex {
-    char file[16];
-
-    uint32_t offset;
-    uint32_t length;
-  } MADIndex;
-
-  uint8_t *data = NULL;
-  FILE *out = NULL;
-  unsigned int lowest_offset = UINT32_MAX;
-  unsigned int cur_index = 0;
-  unsigned long position;
-  do {
-    MADIndex index;
-    cur_index++;
-    if (fread(&index, sizeof(MADIndex), 1, file) != 1) {
-      LogInfo("invalid index size for %s, aborting!\n", package_name);
-      goto ABORT_MAD;
-    }
-
-    position = ftell(file);
-    if (lowest_offset > index.offset) {
-      lowest_offset = index.offset;
-    }
-
-    // this is where the fun begins...
-
-    // how uses mixed case file-names, to make things
-    // easier for linux/macos support we'll just output_path
-    // everything as lowercase
-    pl_strtolower(index.file);
-
-    char file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-    sprintf(file_path, "%s/%s", output_path, index.file);
-
-    // then check if we need to amend our index file
-    if (out_index != NULL) {
-      // remove the extension, since we're going to support
-      // multiple formats for texture loading, and it's
-      // unnecessary to read it in later when we're determining
-      // what texture to load :)
-      char index_file_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-      plStripExtension(index_file_path, sizeof(index_file_path), index.file);
-      fprintf(out_index, "%s\n", index_file_path);
-    }
-
-    CHECK_AGAIN:
-    // check if we're throwing out any duplicates when copying
-    // everything over. technically this shouldn't occur but
-    // is primarily being left here for now just for debugging
-    // purposes - eventually once we're settled with both the
-    // PC and PSX content, we can probably remove it
-    if (plFileExists(file_path)) {
-      size_t size = plGetFileSize(file_path);
-      if (size == index.length) {
-        //LogInfo("duplicate file found for %s at %s, skipping!\n", index.file, file_path);
-        continue;
-      }
-
-      // this part should never happen, but we'll check for it anyway, call me paranoid!
-      LogInfo("duplicate file found for %s at %s with differing size (%d vs %zu), renaming!\n",
-              index.file, file_path, index.length, size);
-      strcat(file_path, "_");
-      goto CHECK_AGAIN;
-    }
-
-    if ((data = calloc(index.length, sizeof(uint8_t))) == NULL) {
-      Error("failed to allocate data handle!\n");
-    }
-
-    // go and grab the data so we can export!
-    fseek(file, index.offset, SEEK_SET);
-    if (fread(data, sizeof(uint8_t), index.length, file) != index.length) {
-      LogInfo("failed to read %s in %s, aborting!\n", index.file, package_name);
-      goto ABORT_MAD;
-    }
-
-    out = fopen(file_path, "wb");
-    if (out == NULL) {
-      LogInfo("failed to open %s for writing, aborting!\n", file_path);
-      goto ABORT_MAD;
-    }
-
-    //print(" %s\n", file_path);
-    if (fwrite(data, sizeof(uint8_t), index.length, out) != index.length) {
-      LogInfo("failed to write %s!\n", file_path);
-      goto ABORT_MAD;
-    }
-
-    u_fclose(out);
-    u_free(data);
-
-    // return us to where we were in the file
-    fseek(file, position, SEEK_SET);
-  } while (position < lowest_offset);
-
-  ABORT_MAD:
-u_free(data);
-
-  u_fclose(out_index);
-  u_fclose(out);
-  u_fclose(file);
-}
-
-static void ConvertImageToPNG(const char *path) {
-  LogInfo("converting %s...\n", path);
+static void ConvertImageToPng(const char *path) {
+  LogInfo("Converting %s...\n", path);
 
   // figure out if the file already exists before
   // we even start trying to convert this thing
@@ -289,7 +48,7 @@ static void ConvertImageToPNG(const char *path) {
   const char *ext = plGetFileExtension(path);
   if (ext != NULL && ext[0] != '\0' && strcmp(ext, "tim") == 0) {
     // ensure that it's a format we're able to convert from
-    if (image.format != PL_IMAGEFORMAT_RGB5A1) {
+    if (image.format == PL_IMAGEFORMAT_RGB5A1) {
       LogWarn("Unexpected pixel format in \"%s\", aborting!\n", path);
       goto ABORT;
     }
@@ -298,19 +57,12 @@ static void ConvertImageToPNG(const char *path) {
       LogWarn("Failed to convert \"%s\", %s, aborting!\n", path, plGetError());
       goto ABORT;
     }
+  } else {
+    plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
   }
-
-  plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
-
-#if 0
-  if(!plFlipImageVertical(&image)) {
-      LogInfo("failed to flip \"%s\", %s, aborting!\n", path, plGetError());
-      goto ABORT;
-  }
-#endif
 
   if (!plWriteImage(&image, out_path)) {
-    LogInfo("failed to write png \"%s\", %s, aborting!\n", out_path, plGetError());
+    LogInfo("Failed to write PNG \"%s\", %s, aborting!\n", out_path, plGetError());
     goto ABORT;
   }
 
@@ -319,6 +71,142 @@ static void ConvertImageToPNG(const char *path) {
 
   ABORT:
   plFreeImage(&image);
+}
+
+typedef struct ModelConversionData {
+  const char *mad;
+  const char *mtd;
+  const char *out;
+} ModelConversionData;
+static ModelConversionData pc_conversion_data[] = {
+    {"/Maps/BAY.MAD", "/Maps/bay.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ICE.MAD", "/Maps/ice.mtd","/campaigns/how/chars/scenery/"},
+    {"/Maps/BOOM.MAD", "/Maps/boom.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/BUTE.MAD", "/Maps/bute.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/CAMP.MAD", "/Maps/camp.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/DEMO.MAD", "/Maps/demo.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/DEVI.MAD", "/Maps/devi.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/DVAL.MAD", "/Maps/dval.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/EASY.MAD", "/Maps/easy.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ESTU.MAD", "/Maps/estu.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/FOOT.MAD", "/Maps/foot.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/GUNS.MAD", "/Maps/guns.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/HELL2.MAD", "/Maps/hell2.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/HELL3.MAD", "/Maps/hell3.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ICE.MAD", "/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "/campaigns/how/chars/scenery/"},
+
+    {"/Chars/WEAPONS.MAD", "/Chars/WEAPONS.MTD", "/campaigns/how/chars/weapons/"},
+    {"/Chars/PROPOINT.MAD", "/Chars/propoint.mtd", "/campaigns/how/chars/propoint/"},
+    {"/Chars/TOP.MAD", "/Chars/TOP.MTD", "/campaigns/how/chars/top/"},
+    {"/Chars/SIGHT.MAD", "/Chars/SIGHT.MTD", "/campaigns/how/chars/sight/"},
+
+    {"/Chars/SKYDOME.MAD", NULL, "/campaigns/how/skys/"},
+};
+
+static void ConvertModelData(void) {
+  for(unsigned long i = 0; i < plArrayElements(pc_conversion_data); ++i) {
+    PLPackage *mad = plLoadPackage(pc_conversion_data[i].mad, true);
+    if(mad == NULL) {
+      LogWarn("Failed to load MAD package, \"%s\" (%s)!\n", pc_conversion_data[i].mad, plGetError());
+      continue;
+    }
+
+    /* Write the files out to the destination. I'm lazy and we'll delete it once we're done anyway. */
+    char model_paths[mad->table_size][PL_SYSTEM_MAX_PATH];
+    unsigned int num_models = 0;
+    for(unsigned int j = 0; j < mad->table_size; ++j) {
+      char out[PL_SYSTEM_MAX_PATH];
+      snprintf(out, sizeof(out) - 1, "%s%s", pc_conversion_data[i].out, pl_strtolower(mad->table[j].file.name));
+      plWriteFile(out, mad->table[j].file.data, mad->table[j].file.size);
+      const char *ext = plGetFileExtension(mad->table[j].file.name);
+      if (pl_strcasecmp(ext, "fac") == 0) {
+        plStripExtension(model_paths[++num_models], PL_SYSTEM_MAX_PATH - 1, out);
+      }
+    }
+
+    plDestroyPackage(mad);
+
+    /* Now we need to load each fac, fetch each index for each texture and figure out
+     * the true name for that texture by comparing against the mtd. */
+
+    PLPackage *mtd = NULL;
+    if(pc_conversion_data[i].mtd != NULL) {
+      mtd = plLoadPackage(pc_conversion_data[i].mtd, true);
+      if(mtd == NULL) {
+        LogWarn("Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[i].mtd, plGetError());
+      }
+    }
+
+    /* and now we go through again, converting everything as we do so */
+    for(unsigned int j = 0; j < num_models; ++j) {
+
+    }
+  }
+}
+
+/////////////////////////////////////////////////////////////
+/* Extraction process for initial setup */
+
+static void ExtractPtgPackage(const char *input_path, const char *output_path) {
+  if (!plCreatePath(output_path)) {
+    LogWarn("Failed to create path %s, aborting!\n", output_path);
+    return;
+  }
+
+  FILE *file = fopen(input_path, "rb");
+  if (file == NULL) {
+    LogWarn("Failed to load PTG package, \"%s\"!\n", input_path);
+    return;
+  }
+
+  uint32_t num_textures = 0;
+  if (fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
+    LogWarn("Invalid PTG file, failed to get number of textures!\n");
+  }
+
+  size_t tim_size = (plGetFileSize(input_path) - sizeof(num_textures)) / num_textures;
+  for (unsigned int i = 0; i < num_textures; ++i) {
+    uint8_t tim[tim_size];
+    if (fread(tim, tim_size, 1, file) != 1) {
+      LogInfo("Failed to read Tim, \"%d\"!\n", i);
+      continue;
+    }
+
+    char out_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    sprintf(out_path, "%s%d.tim", output_path, i);
+    if(!plWriteFile(out_path, tim, tim_size)) {
+      LogWarn("Failed to write file, \"%s\" (%s)!\n", out_path, plGetError());
+    }
+    ConvertImageToPng(out_path);
+  }
+
+  u_fclose(file);
+}
+
+static void ExtractMadPackage(const char *input_path, const char *output_path) {
+  if (!plCreatePath(output_path)) {
+    LogInfo("Failed to create output directory,  \"%s\"!\n", output_path);
+    return;
+  }
+
+  PLPackage *package = plLoadPackage(input_path, true);
+  if(package == NULL) {
+    LogInfo("Failed to load %s, aborting!\n", input_path);
+    return;
+  }
+
+  for(unsigned int i = 0; i < package->table_size; i++) {
+    char out[PL_SYSTEM_MAX_PATH];
+    snprintf(out, sizeof(out) - 1, "%s%s", output_path, pl_strtolower(package->table[i].file.name));
+    if(!plWriteFile(out, package->table[i].file.data, package->table[i].file.size)) {
+      LogWarn("Failed to write file, \"%s\" (%s)!\n", out, plGetError());
+    }
+  }
+
+  plDestroyPackage(package);
 }
 
 /************************************************************/
@@ -410,11 +298,11 @@ static TMerge texture_targets[] = {
 
 static void MergeTextureTargets(void) {
   unsigned int num_texture_targets = plArrayElements(texture_targets);
-  LogInfo("merging %d texture targets...\n", num_texture_targets);
+  LogInfo("Merging %d texture targets...\n", num_texture_targets);
   for (unsigned int i = 0; i < num_texture_targets; ++i) {
     TMerge *merge = &texture_targets[i];
 
-    LogInfo("generating %s\n", merge->output);
+    LogInfo("Generating %s\n", merge->output);
 
     PLImage output;
     memset(&output, 0, sizeof(PLImage));
@@ -495,9 +383,9 @@ static void ProcessPackagePaths(const char *in, const char *out, const IOPath *p
     LogInfo("Copying %s to %s\n", input_path, output_path);
     const char *ext = plGetFileExtension(input_path);
     if (pl_strncasecmp(ext, "PTG", 3) == 0) {
-      ExtractPTGPackage(input_path, output_path);
+      ExtractPtgPackage(input_path, output_path);
     } else {
-      ExtractMADPackage(input_path, output_path);
+      ExtractMadPackage(input_path, output_path);
     }
   }
 }
@@ -515,7 +403,7 @@ static void ProcessCopyPaths(const char *in, const char *out, const IOPath *path
     }
 
     if (!plCreatePath(output_path)) {
-      LogWarn("%s\n", plGetError());
+      LogWarn("Failed to create path, \"%s\" (%s)!\n", output_path, plGetError());
       continue;
     }
 
@@ -552,6 +440,7 @@ int main(int argc, char **argv) {
   /* now deal with any arguments */
 
   u_init_paths();
+  u_set_mod_path("how");
 
   char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
   char output_path[PL_SYSTEM_MAX_PATH];
@@ -607,8 +496,7 @@ int main(int argc, char **argv) {
 
   MergeTextureTargets();
 
-  /* convert the remaining TIM textures to PNG */
-  plScanDirectory(output_path, "tim", ConvertImageToPNG, true);
+  ConvertModelData();
 
   LogInfo("Complete!\n");
   return EXIT_SUCCESS;
