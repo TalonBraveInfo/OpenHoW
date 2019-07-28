@@ -34,14 +34,14 @@ static void ConvertImageToPng(const char *path) {
   plStripExtension(out_path, sizeof(out_path), path);
   strcat(out_path, ".png");
   if (plFileExists(out_path)) {
-    //LogInfo("Tim already converted, deleting original\n");
+    LogInfo("Tim already converted, deleting \"%s\"\n", path);
     plDeleteFile(path);
     return;
   }
 
   PLImage image;
   if (!plLoadImage(path, &image)) {
-    LogInfo("Failed to load \"%s\", %s, aborting!\n", path, plGetError());
+    LogWarn("Failed to load image, \"%s\" (%s)!\n", path, plGetError());
     return;
   }
 
@@ -49,27 +49,23 @@ static void ConvertImageToPng(const char *path) {
   if (ext != NULL && ext[0] != '\0' && strcmp(ext, "tim") == 0) {
     // ensure that it's a format we're able to convert from
     if (image.format == PL_IMAGEFORMAT_RGB5A1) {
+      if (plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
+        plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
+        if (!plWriteImage(&image, out_path)) {
+          LogWarn("Failed to write PNG, \"%s\" (%s)!\n", out_path, plGetError());
+        }
+      } else {
+        LogWarn("Failed to convert \"%s\", %s, aborting!\n", path, plGetError());
+      }
+    } else {
       LogWarn("Unexpected pixel format in \"%s\", aborting!\n", path);
-      goto ABORT;
     }
-
-    if (!plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8)) {
-      LogWarn("Failed to convert \"%s\", %s, aborting!\n", path, plGetError());
-      goto ABORT;
-    }
-  } else {
-    plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
   }
 
-  if (!plWriteImage(&image, out_path)) {
-    LogInfo("Failed to write PNG \"%s\", %s, aborting!\n", out_path, plGetError());
-    goto ABORT;
+  if (plFileExists(out_path)) {
+    plDeleteFile(path);
   }
 
-  plFreeImage(&image);
-  plDeleteFile(path);
-
-  ABORT:
   plFreeImage(&image);
 }
 
