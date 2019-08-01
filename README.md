@@ -24,11 +24,11 @@ Consider this more of a wish-list at this  point in time ;)
 * Enhanced graphics over the original game
 
 ## Status :mag:
-![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
+![Screenshot](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
 
-As of May 2019, the project is still in a very early phase of development, however we're now at a point
-in which models and levels can be loaded in. As we shift onto our next milestone (0.3.0)
-a lot of work will begin on actually getting the game into a basic playable form.
+As of August 1st, 2019, the project is still in a very early phase of development.
+As we shift onto our next milestone (0.4.0) a lot of work will begin on actually getting
+the game into a basic playable form.
 
 The current goal is to have the game in a rough playable state by the end of the year.
 
