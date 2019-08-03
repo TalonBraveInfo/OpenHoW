@@ -24,6 +24,9 @@
 #include "../../shared/vtx.h"
 #include "../../shared/no2.h"
 
+static char g_input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+static char g_output_path[PL_SYSTEM_MAX_PATH];
+
 /************************************************************/
 /* Data Conversion */
 
@@ -36,7 +39,6 @@ static void ConvertImageToPng(const char *path) {
   plStripExtension(out_path, sizeof(out_path), path);
   strcat(out_path, ".png");
   if (plFileExists(out_path)) {
-    LogInfo("Tim already converted, deleting \"%s\"\n", path);
     plDeleteFile(path);
     return;
   }
@@ -77,31 +79,31 @@ typedef struct ModelConversionData {
   const char *out;
 } ModelConversionData;
 static ModelConversionData pc_conversion_data[] = {
-    {"/Maps/BAY.MAD", "/Maps/bay.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICE.MAD", "/Maps/ice.mtd","/campaigns/how/chars/scenery/"},
-    {"/Maps/BOOM.MAD", "/Maps/boom.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/BUTE.MAD", "/Maps/bute.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/CAMP.MAD", "/Maps/camp.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DEMO.MAD", "/Maps/demo.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DEVI.MAD", "/Maps/devi.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/DVAL.MAD", "/Maps/dval.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/EASY.MAD", "/Maps/easy.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ESTU.MAD", "/Maps/estu.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/FOOT.MAD", "/Maps/foot.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/GUNS.MAD", "/Maps/guns.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HELL2.MAD", "/Maps/hell2.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HELL3.MAD", "/Maps/hell3.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ICE.MAD", "/Maps/ice.mtd", "/campaigns/how/chars/scenery/"},
-    {"/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "/campaigns/how/chars/scenery/"},
+    {"/Maps/BAY.MAD", "/Maps/bay.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/ICE.MAD", "/Maps/ice.mtd","campaigns/how/chars/scenery/"},
+    {"/Maps/BOOM.MAD", "/Maps/boom.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/BUTE.MAD", "/Maps/bute.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/CAMP.MAD", "/Maps/camp.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/DEMO.MAD", "/Maps/demo.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/DEVI.MAD", "/Maps/devi.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/DVAL.MAD", "/Maps/dval.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/EASY.MAD", "/Maps/easy.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/ESTU.MAD", "/Maps/estu.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/FOOT.MAD", "/Maps/foot.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/GUNS.MAD", "/Maps/guns.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/HELL2.MAD", "/Maps/hell2.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/HELL3.MAD", "/Maps/hell3.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/ICE.MAD", "/Maps/ice.mtd", "campaigns/how/chars/scenery/"},
+    {"/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "campaigns/how/chars/scenery/"},
 
-    {"/Chars/WEAPONS.MAD", "/Chars/WEAPONS.MTD", "/campaigns/how/chars/weapons/"},
-    {"/Chars/PROPOINT.MAD", "/Chars/propoint.mtd", "/campaigns/how/chars/propoint/"},
-    {"/Chars/TOP.MAD", "/Chars/TOP.MTD", "/campaigns/how/chars/top/"},
-    {"/Chars/SIGHT.MAD", "/Chars/SIGHT.MTD", "/campaigns/how/chars/sight/"},
+    {"/Chars/WEAPONS.MAD", "/Chars/WEAPONS.MTD", "campaigns/how/chars/weapons/"},
+    {"/Chars/PROPOINT.MAD", "/Chars/propoint.mtd", "campaigns/how/chars/propoint/"},
+    {"/Chars/TOP.MAD", "/Chars/TOP.MTD", "campaigns/how/chars/top/"},
+    {"/Chars/SIGHT.MAD", "/Chars/SIGHT.MTD", "campaigns/how/chars/sight/"},
 
-    {"/Chars/SKYDOME.MAD", NULL, "/campaigns/how/skys/"},
+    {"/Chars/SKYDOME.MAD", NULL, "campaigns/how/skys/"},
 };
 
 static void ConvertModelToObj(const char *fac_path, const char *vtx_path, const char *no2_path) {
@@ -110,9 +112,11 @@ static void ConvertModelToObj(const char *fac_path, const char *vtx_path, const 
 
 static void ConvertModelData(void) {
   for(unsigned long i = 0; i < plArrayElements(pc_conversion_data); ++i) {
-    PLPackage *package = plLoadPackage(pc_conversion_data[i].mad, true);
+    char path[PL_SYSTEM_MAX_PATH];
+    snprintf(path, sizeof(path), "%s%s", g_input_path, pc_conversion_data[i].mad);
+    PLPackage *package = plLoadPackage(path, true);
     if(package == NULL) {
-      LogWarn("Failed to load MAD package, \"%s\" (%s)!\n", pc_conversion_data[i].mad, plGetError());
+      LogWarn("Failed to load MAD package, \"%s\" (%s)!\n", path, plGetError());
       continue;
     }
 
@@ -122,10 +126,22 @@ static void ConvertModelData(void) {
     for(unsigned int j = 0; j < package->table_size; ++j) {
       char out[PL_SYSTEM_MAX_PATH];
       snprintf(out, sizeof(out), "%s%s", pc_conversion_data[i].out, pl_strtolower(package->table[j].file.name));
-      plWriteFile(out, package->table[j].file.data, package->table[j].file.size);
+
+      char dir[PL_SYSTEM_MAX_PATH];
+      const char *filename = plGetFileName(out);
+      strncpy(dir, out, strlen(out) - strlen(filename));
+      dir[strlen(out) - strlen(filename)] = '\0';
+      if(plCreatePath(dir)) {
+        if (!plWriteFile(out, package->table[j].file.data, package->table[j].file.size)) {
+          LogWarn("Failed to write model, \"%s\" (%s)!\n", out, plGetError());
+        }
+      } else {
+        LogWarn("Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError());
+      }
+
       const char *ext = plGetFileExtension(package->table[j].file.name);
       if (pl_strcasecmp(ext, "fac") == 0) {
-        plStripExtension(model_paths[++num_models], PL_SYSTEM_MAX_PATH - 1, out);
+        plStripExtension(model_paths[num_models++], PL_SYSTEM_MAX_PATH - 1, out);
       }
     }
 
@@ -135,7 +151,8 @@ static void ConvertModelData(void) {
      * the true name for that texture by comparing against the mtd. */
 
     if(pc_conversion_data[i].mtd != NULL) {
-      package = plLoadPackage(pc_conversion_data[i].mtd, true);
+      snprintf(path, sizeof(path), "%s%s", g_input_path, pc_conversion_data[i].mtd);
+      package = plLoadPackage(path, true);
       if(package == NULL) {
         LogWarn("Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[i].mtd, plGetError());
       }
@@ -175,8 +192,6 @@ static void ConvertModelData(void) {
 
       }
     }
-
-    plDestroyPackage(package);
   }
 }
 
@@ -237,6 +252,11 @@ static void ExtractMadPackage(const char *input_path, const char *output_path) {
     if(!plWriteFile(out, package->table[i].file.data, package->table[i].file.size)) {
       LogWarn("Failed to write file, \"%s\" (%s)!\n", out, plGetError());
     }
+
+    const char *ext = plGetFileExtension(out);
+    if(strcmp(ext, "tim") == 0) {
+      ConvertImageToPng(out);
+    }
   }
 
   plDestroyPackage(package);
@@ -257,71 +277,71 @@ typedef struct TextureMerge {
 static TextureMerge texture_targets[] = {
     {
         "/campaigns/how/frontend/dash/ang.png", 5, 152, 121, {{
-                                                                  "/campaigns/how/frontend/dash/ang1.tim", 0, 0
+                                                                  "/campaigns/how/frontend/dash/ang1.png", 0, 0
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/ang2.tim", 64, 22
+                                                                  "/campaigns/how/frontend/dash/ang2.png", 64, 22
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/ang3.tim", 0, 64
+                                                                  "/campaigns/how/frontend/dash/ang3.png", 0, 64
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/ang4.tim", 64, 64
+                                                                  "/campaigns/how/frontend/dash/ang4.png", 64, 64
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/ang5.tim", 128, 31
+                                                                  "/campaigns/how/frontend/dash/ang5.png", 128, 31
                                                               }}
     },
 
     {
         "/campaigns/how/frontend/dash/clock.png", 4, 128, 96, {{
-                                                                   "/campaigns/how/frontend/dash/clock01.tim", 0, 0
+                                                                   "/campaigns/how/frontend/dash/clock01.png", 0, 0
                                                                }, {
-                                                                   "/campaigns/how/frontend/dash/clock02.tim", 64, 0
+                                                                   "/campaigns/how/frontend/dash/clock02.png", 64, 0
                                                                }, {
-                                                                   "/campaigns/how/frontend/dash/clock03.tim", 0, 28
+                                                                   "/campaigns/how/frontend/dash/clock03.png", 0, 28
                                                                }, {
-                                                                   "/campaigns/how/frontend/dash/clock04.tim", 64, 28
+                                                                   "/campaigns/how/frontend/dash/clock04.png", 64, 28
                                                                }}
     },
 
     {
         "/campaigns/how/frontend/dash/timer.png", 10, 256, 32, {{
-                                                                    "/campaigns/how/frontend/dash/timer0.tim", 0, 0
+                                                                    "/campaigns/how/frontend/dash/timer0.png", 0, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer1.tim", 24, 0
+                                                                    "/campaigns/how/frontend/dash/timer1.png", 24, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer2.tim", 48, 0
+                                                                    "/campaigns/how/frontend/dash/timer2.png", 48, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer3.tim", 72, 0
+                                                                    "/campaigns/how/frontend/dash/timer3.png", 72, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer4.tim", 96, 0
+                                                                    "/campaigns/how/frontend/dash/timer4.png", 96, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer5.tim", 120, 0
+                                                                    "/campaigns/how/frontend/dash/timer5.png", 120, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer6.tim", 144, 0
+                                                                    "/campaigns/how/frontend/dash/timer6.png", 144, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer7.tim", 168, 0
+                                                                    "/campaigns/how/frontend/dash/timer7.png", 168, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer8.tim", 192, 0
+                                                                    "/campaigns/how/frontend/dash/timer8.png", 192, 0
                                                                 }, {
-                                                                    "/campaigns/how/frontend/dash/timer9.tim", 216, 0
+                                                                    "/campaigns/how/frontend/dash/timer9.png", 216, 0
                                                                 }}
     },
 
     {
         "/campaigns/how/frontend/dash/pause.png", 8, 48, 48, {{
-                                                                  "/campaigns/how/frontend/dash/pause1.tim", 0, 0
+                                                                  "/campaigns/how/frontend/dash/pause1.png", 0, 0
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause2.tim", 16, 0
+                                                                  "/campaigns/how/frontend/dash/pause2.png", 16, 0
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause3.tim", 32, 0
+                                                                  "/campaigns/how/frontend/dash/pause3.png", 32, 0
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause4.tim", 0, 16
+                                                                  "/campaigns/how/frontend/dash/pause4.png", 0, 16
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause5.tim", 32, 16
+                                                                  "/campaigns/how/frontend/dash/pause5.png", 32, 16
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause6.tim", 0, 32
+                                                                  "/campaigns/how/frontend/dash/pause6.png", 0, 32
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause7.tim", 16, 32
+                                                                  "/campaigns/how/frontend/dash/pause7.png", 16, 32
                                                               }, {
-                                                                  "/campaigns/how/frontend/dash/pause8.tim", 32, 32
+                                                                  "/campaigns/how/frontend/dash/pause8.png", 32, 32
                                                               }}
     }
 };
@@ -345,8 +365,6 @@ static void MergeTextureTargets(void) {
         LogWarn("Failed to find image, \"%s\", for merge!\n", merge->targets[j].path);
         continue;
       }
-
-      plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8);
 
       LogInfo("Writing %s into %s\n", merge->targets[j].path, merge->output);
 
@@ -460,39 +478,37 @@ int main(int argc, char **argv) {
   u_init_paths();
   u_set_mod_path("how");
 
-  char input_path[PL_SYSTEM_MAX_PATH] = {'\0'};
-  char output_path[PL_SYSTEM_MAX_PATH];
 #if 0
   if(getcwd(output_path, sizeof(output_path) - 1) == NULL) {
       strcpy(output_path, "./");
   }
 #else
-  strcpy(output_path, "./");
+  strcpy(g_output_path, "./");
 #endif
 
   for (int i = 1; i < argc; ++i) {
     if (argv[i][0] == '-') {
-      strncpy(output_path, argv[i] + 1, sizeof(output_path));
+      strncpy(g_output_path, argv[i] + 1, sizeof(g_output_path));
     } else {
-      strncpy(input_path, argv[i], sizeof(input_path));
+      strncpy(g_input_path, argv[i], sizeof(g_input_path));
     }
   }
 
-  if (plIsEmptyString(input_path)) {
+  if (plIsEmptyString(g_input_path)) {
     Error("Empty game path, aborting!\n");
   }
 
   LogInfo("\n"
           "output path: %s\n"
           "input path:  %s\n",
-          output_path, input_path);
+          g_output_path, g_input_path);
 
   /* ensure it's a valid version - original CD version requires
    * us to extract audio from the CD while GOG and Steam versions
    * provide OGG audio.
    *
    * PSX is a totally different story, with it's own fun adventure. */
-  CheckGameVersion(input_path);
+  CheckGameVersion(g_input_path);
   if (version_info.region == REGION_UNKNOWN || version_info.platform == PLATFORM_UNKNOWN) {
     Error("Unknown game version, aborting!\n");
   } else if (version_info.platform == PLATFORM_PSX) {
@@ -500,12 +516,12 @@ int main(int argc, char **argv) {
   }
 
   if (version_info.platform == PLATFORM_PC || version_info.platform == PLATFORM_PC_DIGITAL) {
-    ProcessPackagePaths(input_path, output_path, pc_package_paths, plArrayElements(pc_package_paths));
-    ProcessCopyPaths(input_path, output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
+    ProcessPackagePaths(g_input_path, g_output_path, pc_package_paths, plArrayElements(pc_package_paths));
+    ProcessCopyPaths(g_input_path, g_output_path, pc_copy_paths, plArrayElements(pc_copy_paths));
 
     if (version_info.platform == PLATFORM_PC_DIGITAL) {
       // They've done us the honors for the digital version
-      ProcessCopyPaths(input_path, output_path, pc_music_paths, plArrayElements(pc_music_paths));
+      ProcessCopyPaths(g_input_path, g_output_path, pc_music_paths, plArrayElements(pc_music_paths));
     } else {
       // todo: rip the disc...
     }

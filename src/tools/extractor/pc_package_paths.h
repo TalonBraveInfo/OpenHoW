@@ -116,26 +116,3 @@
 {"/Skys/COLD/COLD1.PTG", "/campaigns/how/skys/cold1/"},
 //{"/Skys/DESERT/DESERT1.PTG", "/campaigns/how/skys/desert1/"},
 #endif
-
-#if 1 // todo: remove once conversion is done...
-{"/Maps/BAY.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/ICE.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/BOOM.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/BUTE.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/CAMP.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/DEMO.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/DEVI.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/DVAL.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/EASY.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/ESTU.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/FOOT.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/GUNS.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/HELL2.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/HELL3.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/HILLBASE.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/ICEFLOW.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/ICE.MAD", "/campaigns/how/chars/scenery/"},
-{"/Maps/ZULUS.MAD", "/campaigns/how/chars/scenery/"},
-
-{"/Chars/SKYDOME.MAD", "/campaigns/how/skys/"},
-#endif
