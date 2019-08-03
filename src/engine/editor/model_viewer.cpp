@@ -25,7 +25,7 @@ ModelViewer::ModelViewer(const std::string &path) {
     throw std::runtime_error("Failed to load model, \"" + path + "\"!");
   }
   
-  model_->model_matrix = plMatrix4x4Identity();
+  model_->model_matrix = plMatrix4Identity();
 }
 
 ModelViewer::~ModelViewer() {

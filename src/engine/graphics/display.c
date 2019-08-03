@@ -334,7 +334,7 @@ void Display_Initialize(void) {
 
     // platform library graphics subsystem can init now...
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
-    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
+    plSetGraphicsMode(PL_GFX_MODE_OPENGL_CORE);
 
     //Create the render textures
     game_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
@@ -462,16 +462,24 @@ static void DrawFPSOverlay(void) {
         colour = PL_COLOUR_GREEN;
     }
 
-    Font_DrawBitmapString(font, w - str_w, h - (font->chars[0].h * 2), 0, 1.f, colour, ms_count);
+    int x = w - str_w;
+    int y = h - (font->chars[0].h * 2);
+    plDrawFilledRectangle(plCreateRectangle(
+        PLVector2(x, y),
+        PLVector2(str_w, font->chars[0].h),
+        PL_COLOUR_BLACK, PL_COLOUR_BLACK,
+        PL_COLOUR_BLACK, PL_COLOUR_BLACK
+        ));
+    Font_DrawBitmapString(font, x, y, 0, 1.f, colour, ms_count);
 }
 
 static void DrawCameraInfoOverlay(void) {
     Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA");
-    unsigned int y = 50;
+    int y = 50;
     char cam_pos[32];
-    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(g_state.camera->position, pl_float_var));
+    snprintf(cam_pos, sizeof(cam_pos), "POSITION : %s", plPrintVector3(&g_state.camera->position, pl_float_var));
     Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
-    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(g_state.camera->angles, pl_float_var));
+    snprintf(cam_pos, sizeof(cam_pos), "ANGLES   : %s", plPrintVector3(&g_state.camera->angles, pl_float_var));
     Font_DrawBitmapString(g_fonts[FONT_SMALL], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos);
 }
 

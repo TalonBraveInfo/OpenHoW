@@ -20,20 +20,25 @@
 
 #include "ModelActor.h"
 
-ModelActor::ModelActor(const std::string& name) : Actor(name) {}
-ModelActor::~ModelActor() {
-    //ModelManager::GetInstance()->UnloadModel(model_);
-}
+ModelActor::ModelActor(const std::string &name) : Actor(name) {}
+ModelActor::~ModelActor() = default;
 
 void ModelActor::Draw() {
-    if(model_ != nullptr) {
-        model_->model_matrix = plTranslateMatrix(position_);
-        plDrawModel(model_);
-    }
+  if (model_ != nullptr) {
+    // todo: ++'ify... and should actors use degrees by defacto?
 
-    Actor::Draw();
+    PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
+    mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.y, PLVector3(0, 1, 0)));
+    mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
+
+    model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
+
+    plDrawModel(model_);
+  }
+
+  Actor::Draw();
 }
 
 void ModelActor::SetModel(const std::string &path) {
-    model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
+  model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
 }

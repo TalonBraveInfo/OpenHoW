@@ -88,8 +88,20 @@ void SPGameMode::SpawnActors() {
             continue;
         }
 
+        // todo: do this when converting POG to JSON
+
+        PLVector3 angles = PLVector3(
+            plDegreesToRadians((float)(spawn.angles[0]) * (360.f / 4096.f)),
+            plDegreesToRadians((float)(spawn.angles[1]) * (360.f / 4096.f) - 90.f),
+            plDegreesToRadians((float)(spawn.angles[2]) * (360.f / 4096.f))
+            );
+
+        if(pl_strcasecmp(spawn.name, "BRID2_S") == 0) {
+          angles.z = plDegreesToRadians(-45.f);
+        }
+
         actor->SetPosition(PLVector3(spawn.position[0], spawn.position[1], spawn.position[2]));
-        actor->SetAngles(PLVector3(spawn.angles[0] / 360.f, spawn.angles[1] / 360.f, spawn.angles[2] / 360.f));
+        actor->SetAngles(angles);
 
         // todo: assign player pigs etc., temp hack
         if(strcmp(spawn.name, "GR_ME") == 0) {

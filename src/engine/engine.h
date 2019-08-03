@@ -38,7 +38,7 @@
 #define ENGINE_LOG          "debug"
 
 #define ENGINE_MAJOR_VERSION    0
-#define ENGINE_MINOR_VERSION    2
+#define ENGINE_MINOR_VERSION    4
 #define ENGINE_PATCH_VERSION    0
 
 #define TICKS_PER_SECOND    25

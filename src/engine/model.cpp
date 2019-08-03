@@ -197,13 +197,13 @@ static PLModel *Model_LoadVtxFile(const char *path) {
   }
 
   for (unsigned int j = 0; j < vtx->num_vertices; ++j) {
-    plSetMeshVertexPosition(mesh, j,
-                            PLVector3(
-                                vtx->vertices[j].position.x * -1,
-                                vtx->vertices[j].position.y * -1,
-                                vtx->vertices[j].position.z * -1));
+    for(unsigned int k = 0; k < 3; ++k) {
+      vtx->vertices[j].position[k] *= -1 * .5f;
+    }
+
+    plSetMeshVertexColour(mesh, j, PL_COLOUR_WHITE);
+    plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
     plSetMeshVertexST(mesh, j, 0, 0);
-    plSetMeshVertexColour(mesh, j, PLColour(255, 255, 255, 255));
 
     mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
     mesh->vertices[j].bone_weight = 1.f;
@@ -483,7 +483,7 @@ void DEBUGDrawSkeleton() {
     plSetMeshVertexColour(skeleton_mesh, vert + 1, PLColour(0, 255, 0, 255));
   }
 
-  plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+  plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
   plUploadMesh(skeleton_mesh);
   plDrawMesh(skeleton_mesh);
 

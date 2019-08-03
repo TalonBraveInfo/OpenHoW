@@ -66,7 +66,7 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
   plSetMeshVertexST(font_mesh, 2, tx + tw, ty);
   plSetMeshVertexST(font_mesh, 3, tx + tw, ty + th);
 
-  plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+  plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
   plUploadMesh(font_mesh);
   plDrawMesh(font_mesh);
 }

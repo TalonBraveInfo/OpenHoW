@@ -35,25 +35,3 @@ inline static void VecAngleClamp(PLVector3 *vector) {
 }
 
 #endif
-
-inline static void Mat4Multiply(PLMatrix4x4 in1, PLMatrix4x4 in2, PLMatrix4x4 *out) {
-  out->m[0] = in1.m[0] * in2.m[0] + in1.m[4] * in2.m[1] + in1.m[8] * in2.m[2] + in1.m[12] * in2.m[3];
-  out->m[1] = in1.m[1] * in2.m[0] + in1.m[5] * in2.m[1] + in1.m[9] * in2.m[2] + in1.m[13] * in2.m[3];
-  out->m[2] = in1.m[2] * in2.m[0] + in1.m[6] * in2.m[1] + in1.m[10] * in2.m[2] + in1.m[14] * in2.m[3];
-  out->m[3] = in1.m[3] * in2.m[0] + in1.m[7] * in2.m[1] + in1.m[11] * in2.m[2] + in1.m[15] * in2.m[3];
-
-  out->m[4] = in1.m[0] * in2.m[4] + in1.m[4] * in2.m[5] + in1.m[8] * in2.m[6] + in1.m[12] * in2.m[7];
-  out->m[5] = in1.m[1] * in2.m[4] + in1.m[5] * in2.m[5] + in1.m[9] * in2.m[6] + in1.m[13] * in2.m[7];
-  out->m[6] = in1.m[2] * in2.m[4] + in1.m[6] * in2.m[5] + in1.m[10] * in2.m[6] + in1.m[14] * in2.m[7];
-  out->m[7] = in1.m[3] * in2.m[4] + in1.m[7] * in2.m[5] + in1.m[11] * in2.m[6] + in1.m[15] * in2.m[7];
-
-  out->m[8] = in1.m[0] * in2.m[8] + in1.m[4] * in2.m[9] + in1.m[8] * in2.m[10] + in1.m[12] * in2.m[11];
-  out->m[9] = in1.m[1] * in2.m[8] + in1.m[5] * in2.m[9] + in1.m[9] * in2.m[10] + in1.m[13] * in2.m[11];
-  out->m[10] = in1.m[2] * in2.m[8] + in1.m[6] * in2.m[9] + in1.m[10] * in2.m[10] + in1.m[14] * in2.m[11];
-  out->m[11] = in1.m[3] * in2.m[8] + in1.m[7] * in2.m[9] + in1.m[11] * in2.m[10] + in1.m[15] * in2.m[11];
-
-  out->m[12] = in1.m[0] * in2.m[12] + in1.m[4] * in2.m[13] + in1.m[8] * in2.m[14] + in1.m[12] * in2.m[15];
-  out->m[13] = in1.m[1] * in2.m[12] + in1.m[5] * in2.m[13] + in1.m[9] * in2.m[14] + in1.m[13] * in2.m[15];
-  out->m[14] = in1.m[2] * in2.m[12] + in1.m[6] * in2.m[13] + in1.m[10] * in2.m[14] + in1.m[14] * in2.m[15];
-  out->m[15] = in1.m[3] * in2.m[12] + in1.m[7] * in2.m[13] + in1.m[11] * in2.m[14] + in1.m[15] * in2.m[15];
-}

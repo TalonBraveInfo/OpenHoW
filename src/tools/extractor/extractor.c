@@ -21,6 +21,8 @@
 #include "extractor.h"
 
 #include "../../shared/fac.h"
+#include "../../shared/vtx.h"
+#include "../../shared/no2.h"
 
 /************************************************************/
 /* Data Conversion */
@@ -102,44 +104,79 @@ static ModelConversionData pc_conversion_data[] = {
     {"/Chars/SKYDOME.MAD", NULL, "/campaigns/how/skys/"},
 };
 
+static void ConvertModelToObj(const char *fac_path, const char *vtx_path, const char *no2_path) {
+
+}
+
 static void ConvertModelData(void) {
   for(unsigned long i = 0; i < plArrayElements(pc_conversion_data); ++i) {
-    PLPackage *mad = plLoadPackage(pc_conversion_data[i].mad, true);
-    if(mad == NULL) {
+    PLPackage *package = plLoadPackage(pc_conversion_data[i].mad, true);
+    if(package == NULL) {
       LogWarn("Failed to load MAD package, \"%s\" (%s)!\n", pc_conversion_data[i].mad, plGetError());
       continue;
     }
 
     /* Write the files out to the destination. I'm lazy and we'll delete it once we're done anyway. */
-    char model_paths[mad->table_size][PL_SYSTEM_MAX_PATH];
+    char model_paths[package->table_size][PL_SYSTEM_MAX_PATH];
     unsigned int num_models = 0;
-    for(unsigned int j = 0; j < mad->table_size; ++j) {
+    for(unsigned int j = 0; j < package->table_size; ++j) {
       char out[PL_SYSTEM_MAX_PATH];
-      snprintf(out, sizeof(out) - 1, "%s%s", pc_conversion_data[i].out, pl_strtolower(mad->table[j].file.name));
-      plWriteFile(out, mad->table[j].file.data, mad->table[j].file.size);
-      const char *ext = plGetFileExtension(mad->table[j].file.name);
+      snprintf(out, sizeof(out), "%s%s", pc_conversion_data[i].out, pl_strtolower(package->table[j].file.name));
+      plWriteFile(out, package->table[j].file.data, package->table[j].file.size);
+      const char *ext = plGetFileExtension(package->table[j].file.name);
       if (pl_strcasecmp(ext, "fac") == 0) {
         plStripExtension(model_paths[++num_models], PL_SYSTEM_MAX_PATH - 1, out);
       }
     }
 
-    plDestroyPackage(mad);
+    plDestroyPackage(package);
 
     /* Now we need to load each fac, fetch each index for each texture and figure out
      * the true name for that texture by comparing against the mtd. */
 
-    PLPackage *mtd = NULL;
     if(pc_conversion_data[i].mtd != NULL) {
-      mtd = plLoadPackage(pc_conversion_data[i].mtd, true);
-      if(mtd == NULL) {
+      package = plLoadPackage(pc_conversion_data[i].mtd, true);
+      if(package == NULL) {
         LogWarn("Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[i].mtd, plGetError());
       }
     }
 
     /* and now we go through again, converting everything as we do so */
     for(unsigned int j = 0; j < num_models; ++j) {
+      char fac_path[PL_SYSTEM_MAX_PATH];
+      snprintf(fac_path, PL_SYSTEM_MAX_PATH, "%s.fac", model_paths[j]);
+      if(!plFileExists(fac_path)) {
+        LogWarn("Failed to find FAC file, \"%s\"!\n", fac_path);
+        continue;
+      }
 
+      char vtx_path[PL_SYSTEM_MAX_PATH];
+      snprintf(vtx_path, PL_SYSTEM_MAX_PATH, "%s.vtx", model_paths[j]);
+      if(!plFileExists(vtx_path)) {
+        LogWarn("Failed to find VTX file, \"%s\"!\n", vtx_path);
+        continue;
+      }
+
+      char no2_path[PL_SYSTEM_MAX_PATH];
+      snprintf(no2_path, PL_SYSTEM_MAX_PATH, "%s.no2", model_paths[j]);
+      if(!plFileExists(no2_path)) {
+        LogWarn("Failed to find NO2 file, \"%s\"!\n", no2_path);
+        continue;
+      }
+
+      bool generate_normals = false;
+      VtxHandle *vtx = Vtx_LoadFile(vtx_path);
+      if(No2_LoadFile(no2_path, vtx) == NULL) {
+        generate_normals = true;
+      }
+
+      FacHandle *fac = Fac_LoadFile(fac_path);
+      for(unsigned int k = 0; k < fac->num_triangles; ++k) {
+
+      }
     }
+
+    plDestroyPackage(package);
   }
 }
 

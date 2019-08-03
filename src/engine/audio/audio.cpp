@@ -539,7 +539,7 @@ void AudioManager::DrawSources() {
       continue;
     }
 
-    sprite->model_matrix = plTranslateMatrix(source->GetPosition());
+    sprite->model_matrix = plTranslateMatrix4(source->GetPosition());
     plDrawModel(sprite);
   }
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));

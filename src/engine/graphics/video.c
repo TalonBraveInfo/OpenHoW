@@ -248,6 +248,6 @@ void Video_Draw(void) {
     Shaders_SetProgram(SHADER_GenericTextured);
 
     /* todo pass correct texture */
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plDrawMesh(mesh);
 }
