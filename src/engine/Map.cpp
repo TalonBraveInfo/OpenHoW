@@ -252,7 +252,7 @@ void Map::LoadSky() {
     sky_model_->model_matrix =
         plTranslateMatrix4(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
     // Default skydome is smaller than the map, so we'll scale it
-    sky_model_->model_matrix = plScaleMatrix4(sky_model_->model_matrix, PLVector3(2, 2, 2));
+    sky_model_->model_matrix = plScaleMatrix4(sky_model_->model_matrix, PLVector3(5, 5, 5));
 
     PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
     if (lod == nullptr) {
