@@ -517,6 +517,8 @@ void Map::GenerateModel(MapChunk *chunk) {
     }
   }
 
+  plGenerateMeshNormals(chunk_mesh);
+
   chunk_mesh->texture = texture_atlas_->GetTexture();
 
   // attach the mesh to our model
