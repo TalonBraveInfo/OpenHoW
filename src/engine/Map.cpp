@@ -317,6 +317,11 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   plSetNamedShaderUniformVector4(program, "fog_colour", manifest_->fog_colour.ToVec4());
   plSetNamedShaderUniformFloat(program, "fog_near", manifest_->fog_intensity);
   plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_distance);
+
+  plSetNamedShaderUniformVector4(program, "sun_colour", manifest_->sun_colour.ToVec4());
+  plSetNamedShaderUniformFloat(program, "sun_yaw", plDegreesToRadians(manifest_->sun_yaw));
+  plSetNamedShaderUniformFloat(program, "sun_pitch", plDegreesToRadians(manifest_->sun_pitch));
+
   plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
 }
 

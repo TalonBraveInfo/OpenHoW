@@ -203,7 +203,10 @@ static PLModel *Model_LoadVtxFile(const char *path) {
 
     plSetMeshVertexColour(mesh, j, PL_COLOUR_WHITE);
     plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
-    plSetMeshVertexST(mesh, j, 0, 0);
+    plSetMeshVertexST(mesh, j, -1.0f, 1.0f);
+    if(!gen_normals) {
+     // plSetMeshVertexNormal(mesh, j, vtx->vertices[j].normal);
+    }
 
     mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
     mesh->vertices[j].bone_weight = 1.f;
@@ -220,9 +223,9 @@ static PLModel *Model_LoadVtxFile(const char *path) {
     );
   }
 
-  if (gen_normals) {
+ // if (gen_normals) {
     plGenerateMeshNormals(mesh);
-  }
+  //}
 
   auto *skeleton =
       static_cast<PLModelBone *>(u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true));

@@ -24,6 +24,10 @@ ModelActor::ModelActor(const std::string &name) : Actor(name) {}
 ModelActor::~ModelActor() = default;
 
 void ModelActor::Draw() {
+  if(spawn_name == "dummy") {
+    angles_.y += TICKS_PER_SECOND / 1000.f;
+  }
+
   if (model_ != nullptr) {
     // todo: ++'ify... and should actors use degrees by defacto?
 

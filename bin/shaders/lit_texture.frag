@@ -21,14 +21,28 @@ uniform float fog_far = 0;
 uniform float fog_near = 0;
 uniform vec4 fog_colour = vec4(1.0, 1.0, 1.0, 1.0);
 
+uniform vec4 sun_colour = vec4(1.0, 1.0, 1.0, 1.0);
+uniform float sun_yaw = 0;
+uniform float sun_pitch = 0;
+
 uniform vec4 ambient_colour = vec4(1.0, 1.0, 1.0, 1.0);
 
 in vec3 interp_normal;
 in vec2 interp_UV;
 in vec4 interp_colour;
 
+in vec3 frag_pos;
+
 void main() {
     vec4 diffuse = (ambient_colour * interp_colour) * texture(diffuse, interp_UV);
+
+    vec3 normal = interp_normal;
+
+    // todo: these are hardcoded for now, just for testing
+    vec3 light_direction = normalize(vec3(2.0 * sin(sun_pitch), sun_yaw, 0)); //normalize(light_position - frag_pos);
+    diffuse += (max(dot(normal, light_direction), 0.0)) * sun_colour;
+    // uncomment to check normals...
+    //diffuse = vec4(normal, 1.0);
 
     float fog_distance = (gl_FragCoord.z / gl_FragCoord.w) / (fog_far * 100.0);
     float fog_amount = 1.0 - fog_distance;
