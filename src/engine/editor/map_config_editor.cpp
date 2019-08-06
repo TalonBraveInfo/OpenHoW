@@ -135,7 +135,7 @@ void MapConfigEditor::Display() {
         static const char *temperatures[MAX_TEMP] = {"Hot", "Cold"};
         static int temperature_index = -1;
         if (temperature_index == -1) {
-            if (manifest_->temperature == "cold") {
+            if (manifest_->temperature == "cold" || manifest_->temperature == "Cold") {
                 temperature_index = TEMP_COLD;
             } else {
                 temperature_index = TEMP_HOT;
@@ -147,6 +147,9 @@ void MapConfigEditor::Display() {
                 if (ImGui::Selectable(temperatures[i], (temperature_index == i))) {
                     ImGui::SetItemDefaultFocus();
                     temperature_index = i;
+
+                    // TODO: convert to lower case
+                    manifest_->temperature = std::string(temperatures[temperature_index]);
                 }
             }
 
@@ -188,7 +191,7 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
         output << R"("modes":[)";
         for (size_t i = 0; i < manifest_->modes.size(); ++i) {
             output << "\"" + manifest_->modes[i] + "\"";
-            if (i != manifest_->modes.size()) {
+            if (i != manifest_->modes.size() - 1) {
                 output << ",";
             }
         }
