@@ -27,6 +27,8 @@ enum LogLevel {
   LOG_LEVEL_DEBUG,
 };
 
+#define u_unused(a) (void)((a))
+
 #define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
 
 #ifdef _DEBUG

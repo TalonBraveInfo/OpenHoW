@@ -284,6 +284,7 @@ AudioManager::AudioManager() {
   }
 
   plRegisterConsoleVariable("audio_volume_music", "1", pl_float_var, SetMusicVolumeCommand, "set music volume");
+  plRegisterConsoleCommand("stopMusic", StopMusicCommand, "Stops the current music track.");
 }
 
 AudioManager::~AudioManager() {
@@ -593,6 +594,13 @@ void AudioManager::SetMusicVolume(float gain) {
 
 void AudioManager::SetMusicVolumeCommand(const PLConsoleVariable *var) {
   AudioManager::GetInstance()->SetMusicVolume(var->f_value);
+}
+
+void AudioManager::StopMusicCommand(unsigned int argc, char *argv[]) {
+  u_unused(argc);
+  u_unused(argv);
+
+  AudioManager::GetInstance()->StopMusic();
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)
