@@ -29,6 +29,7 @@
 #include "map_manager.h"
 
 #include "graphics/display.h"
+#include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/texture_atlas.h"
 
@@ -522,7 +523,7 @@ void Map::GenerateModel(MapChunk *chunk) {
     }
   }
 
-  plGenerateMeshNormals(chunk_mesh);
+  Mesh_GenerateFragmentedMeshNormals(chunk_mesh);
 
   chunk_mesh->texture = texture_atlas_->GetTexture();
 
