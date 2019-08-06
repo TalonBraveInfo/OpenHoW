@@ -135,7 +135,7 @@ void MapConfigEditor::Display() {
         static const char *temperatures[MAX_TEMP] = {"Hot", "Cold"};
         static int temperature_index = -1;
         if (temperature_index == -1) {
-            if (manifest_->temperature == "cold" || manifest_->temperature == "Cold") {
+            if (pl_strcasecmp(manifest_->temperature.c_str(), "Cold")) {
                 temperature_index = TEMP_COLD;
             } else {
                 temperature_index = TEMP_HOT;
@@ -150,6 +150,40 @@ void MapConfigEditor::Display() {
 
                     // TODO: convert to lower case
                     manifest_->temperature = std::string(temperatures[temperature_index]);
+                }
+            }
+
+            ImGui::EndCombo();
+        }
+    }
+
+    // Weather
+    {
+        enum {
+            WEATHER_NONE, WEATHER_RAIN, WEATHER_SNOW, MAX_WEATHER
+        };
+        static const char *weatherTypes[MAX_WEATHER] = {"None", "Rain", "Snow"};
+        static int weather_index = -1;
+        if (weather_index == -1) {
+            if (pl_strcasecmp(manifest_->weather.c_str(), "Rain")) {
+                weather_index = WEATHER_RAIN;
+            }
+            else if (pl_strcasecmp(manifest_->weather.c_str(), "Snow")) {
+                weather_index = WEATHER_SNOW;
+            }
+            else {
+                weather_index = WEATHER_NONE;
+            }
+        }
+
+        if (ImGui::BeginCombo("Weather", weatherTypes[weather_index])) {
+            for (int i = 0; i < MAX_WEATHER; ++i) {
+                if (ImGui::Selectable(weatherTypes[i], (weather_index == i))) {
+                    ImGui::SetItemDefaultFocus();
+                    weather_index = i;
+
+                    // TODO: convert to lower case
+                    manifest_->weather = std::string(weatherTypes[weather_index]);
                 }
             }
 
@@ -184,8 +218,13 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     }
 
     output << "{";
+
+    manifest_->name = name_buffer;
     output << R"("name":")" + manifest_->name + "\",";
+
+    manifest_->name = author_buffer;
     output << R"("author":")" + manifest_->author + "\",";
+
     output << R"("description":")" + manifest_->description + "\",";
     if (!manifest_->modes.empty()) {
         output << R"("modes":[)";
@@ -208,6 +247,7 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     output << R"("sunYaw":")" + std::to_string(manifest_->sun_yaw) + "\",";
     output << R"("sunPitch":")" + std::to_string(manifest_->sun_pitch) + "\",";
     output << R"("temperature":")" + manifest_->temperature + "\",";
+    output << R"("weather":")" + manifest_->weather + "\",";
     output << R"("time":")" + manifest_->time + "\",";
 
     // Fog

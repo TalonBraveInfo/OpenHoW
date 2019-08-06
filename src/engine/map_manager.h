@@ -37,6 +37,7 @@ struct MapManifest {
   // Misc
   std::string temperature{"hot"};     // can be hot/cold
   std::string time{"day"};            // can be day/night
+  std::string weather{"none"};        // can be none/rain/snow
 };
 
 class MapManager {
