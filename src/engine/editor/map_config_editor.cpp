@@ -37,6 +37,103 @@ MapConfigEditor::~MapConfigEditor() {
     RestoreManifest();
 }
 
+void MapConfigEditor::DisplayTemperature() 
+{
+    enum {
+        TEMP_NORMAL, TEMP_HOT, TEMP_COLD, MAX_TEMP
+    };
+    static const char *temperatures[MAX_TEMP] = {"Normal", "Hot", "Cold"};
+    static int temperature_index = -1;
+    if (temperature_index == -1) {
+        if (pl_strcasecmp(manifest_->temperature.c_str(), "Hot") == 0) {
+            temperature_index = TEMP_HOT;
+        } else  if (pl_strcasecmp(manifest_->temperature.c_str(), "Cold") == 0) {
+            temperature_index = TEMP_COLD;
+        } else {
+            temperature_index = TEMP_NORMAL;
+        }
+    }
+
+    if (ImGui::BeginCombo("Temperature", temperatures[temperature_index])) {
+        for (int i = 0; i < MAX_TEMP; ++i) {
+            if (ImGui::Selectable(temperatures[i], (temperature_index == i))) {
+                ImGui::SetItemDefaultFocus();
+                temperature_index = i;
+
+                // TODO: convert to lower case
+                manifest_->temperature = std::string(temperatures[temperature_index]);
+            }
+        }
+
+        ImGui::EndCombo();
+    }
+}
+
+void MapConfigEditor::DisplayWeather()
+{
+    enum {
+        WEATHER_CLEAR, WEATHER_RAIN, WEATHER_SNOW, MAX_WEATHER
+    };
+    static const char *weatherTypes[MAX_WEATHER] = {"Clear", "Rain", "Snow"};
+    static int weather_index = -1;
+    if (weather_index == -1) {
+        if (pl_strcasecmp(manifest_->weather.c_str(), "Rain") == 0) {
+            weather_index = WEATHER_RAIN;
+        }
+        else if (pl_strcasecmp(manifest_->weather.c_str(), "Snow") == 0) {
+            weather_index = WEATHER_SNOW;
+        }
+        else {
+            weather_index = WEATHER_CLEAR;
+        }
+    }
+
+    if (ImGui::BeginCombo("Weather", weatherTypes[weather_index])) {
+        for (int i = 0; i < MAX_WEATHER; ++i) {
+            if (ImGui::Selectable(weatherTypes[i], (weather_index == i))) {
+                ImGui::SetItemDefaultFocus();
+                weather_index = i;
+
+                // TODO: convert to lower case
+                manifest_->weather = std::string(weatherTypes[weather_index]);
+            }
+        }
+
+        ImGui::EndCombo();
+    }
+}
+
+void MapConfigEditor::DisplayTime()
+{
+    enum {
+        TIME_DAY, TIME_NIGHT, MAX_TIME
+    };
+    static const char *times[MAX_TIME] = {"Day", "Night"};
+    static int time_index = -1;
+    if (time_index == -1) {
+        if (pl_strcasecmp(manifest_->time.c_str(), "Day") == 0) {
+            time_index = TIME_DAY;
+        }    
+        else {
+            time_index = TIME_NIGHT;
+        }
+    }
+
+    if (ImGui::BeginCombo("Time", times[time_index])) {
+        for (int i = 0; i < MAX_TIME; ++i) {
+            if (ImGui::Selectable(times[i], (time_index == i))) {
+                ImGui::SetItemDefaultFocus();
+                time_index = i;
+
+                // TODO: convert to lower case
+                manifest_->time = std::string(times[time_index]);
+            }
+        }
+
+        ImGui::EndCombo();
+    }
+}
+
 void MapConfigEditor::Display() {
     ImGui::SetNextWindowSize(ImVec2(310, 512), ImGuiCond_Once);
     ImGui::Begin(dname("Map Config Editor"), &status_, ED_DEFAULT_WINDOW_FLAGS);
@@ -44,6 +141,12 @@ void MapConfigEditor::Display() {
     ImGui::InputText("Author", author_buffer, sizeof(author_buffer));
 
     // todo: mode selection - need to query wherever this ends up being implemented...
+
+    ImGui::Separator();
+
+    this->DisplayTemperature();
+    this->DisplayWeather();
+    this->DisplayTime();   
 
     ImGui::Separator();
 
@@ -127,72 +230,6 @@ void MapConfigEditor::Display() {
 
     ImGui::Separator();
 
-    // Temperature
-    {
-        enum {
-            TEMP_HOT, TEMP_COLD, MAX_TEMP
-        };
-        static const char *temperatures[MAX_TEMP] = {"Hot", "Cold"};
-        static int temperature_index = -1;
-        if (temperature_index == -1) {
-            if (pl_strcasecmp(manifest_->temperature.c_str(), "Cold")) {
-                temperature_index = TEMP_COLD;
-            } else {
-                temperature_index = TEMP_HOT;
-            }
-        }
-
-        if (ImGui::BeginCombo("Temperature", temperatures[temperature_index])) {
-            for (int i = 0; i < MAX_TEMP; ++i) {
-                if (ImGui::Selectable(temperatures[i], (temperature_index == i))) {
-                    ImGui::SetItemDefaultFocus();
-                    temperature_index = i;
-
-                    // TODO: convert to lower case
-                    manifest_->temperature = std::string(temperatures[temperature_index]);
-                }
-            }
-
-            ImGui::EndCombo();
-        }
-    }
-
-    // Weather
-    {
-        enum {
-            WEATHER_NONE, WEATHER_RAIN, WEATHER_SNOW, MAX_WEATHER
-        };
-        static const char *weatherTypes[MAX_WEATHER] = {"None", "Rain", "Snow"};
-        static int weather_index = -1;
-        if (weather_index == -1) {
-            if (pl_strcasecmp(manifest_->weather.c_str(), "Rain")) {
-                weather_index = WEATHER_RAIN;
-            }
-            else if (pl_strcasecmp(manifest_->weather.c_str(), "Snow")) {
-                weather_index = WEATHER_SNOW;
-            }
-            else {
-                weather_index = WEATHER_NONE;
-            }
-        }
-
-        if (ImGui::BeginCombo("Weather", weatherTypes[weather_index])) {
-            for (int i = 0; i < MAX_WEATHER; ++i) {
-                if (ImGui::Selectable(weatherTypes[i], (weather_index == i))) {
-                    ImGui::SetItemDefaultFocus();
-                    weather_index = i;
-
-                    // TODO: convert to lower case
-                    manifest_->weather = std::string(weatherTypes[weather_index]);
-                }
-            }
-
-            ImGui::EndCombo();
-        }
-    }
-
-    ImGui::Separator();
-
     if (ImGui::Button("Save")) {
         std::string dir_name = map_->GetId();
         SaveManifest(std::string(u_get_full_path()) + "/maps/" + dir_name + ".map");
@@ -236,10 +273,19 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
         }
         output << "],";
     }
+
     output << R"("ambientColour":")" +
               std::to_string(manifest_->ambient_colour.r) + " " +
               std::to_string(manifest_->ambient_colour.g) + " " +
               std::to_string(manifest_->ambient_colour.b) + "\",";
+    output << R"("skyColourTop":")" +
+              std::to_string(manifest_->sky_colour_top.r) + " " +
+              std::to_string(manifest_->sky_colour_top.g) + " " +
+              std::to_string(manifest_->sky_colour_top.b) + "\",";
+    output << R"("skyColourBottom":")" +
+              std::to_string(manifest_->sky_colour_bottom.r) + " " +
+              std::to_string(manifest_->sky_colour_bottom.g) + " " +
+              std::to_string(manifest_->sky_colour_bottom.b) + "\",";
     output << R"("sunColour":")" +
               std::to_string(manifest_->sun_colour.r) + " " +
               std::to_string(manifest_->sun_colour.g) + " " +
