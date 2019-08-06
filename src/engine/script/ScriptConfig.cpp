@@ -134,7 +134,7 @@ float ScriptConfig::GetFloatProperty(const std::string &property, float def, boo
 // https://stackoverflow.com/a/23305012
 template<char C>
 std::istream &expect(std::istream &in) {
-    if ((in >> std::ws).peek() == C) {
+    if (in.peek() == C) {
         in.ignore();
     } else {
         in.setstate(std::ios_base::failbit);
@@ -157,20 +157,20 @@ PLColour ScriptConfig::GetColourProperty(const std::string &property, PLColour d
     std::string str = duk_safe_to_string(context, -1);
     duk_pop(context);
 
-    PLColour out;
     std::stringstream stream(str);
-    stream >> out.r >> expect<' '> >> out.g >> expect<' '> >> out.b;
+    int r, g, b, a;
+    stream >> r >> expect<' '> >> g >> expect<' '> >> b;
     if(!(stream.rdstate() & std::stringstream::failbit)) {
-        stream >> expect<' '> >> out.a;
+        stream >> expect<' '> >> a;
         if(stream.rdstate() & std::stringstream::failbit) {
             // can still ignore alpha channel
-            out.a = 255;
+            a = 255;
         }
     } else {
         throw std::runtime_error("Failed to parse entirety of colour from JSON property, \"" + property + "\"!\n");
     }
 
-    return out;
+    return {r, g, b, a};
 }
 
 PLVector3 ScriptConfig::GetVector3Property(const std::string &property, PLVector3 def, bool silent) {
@@ -249,7 +249,6 @@ std::string ScriptConfig::GetArrayStringProperty(const std::string &property, un
 
     return str;
 }
-
 
 std::vector<std::string> ScriptConfig::GetArrayStrings(const std::string &property) {
     auto *context = static_cast<duk_context *>(ctx_);
