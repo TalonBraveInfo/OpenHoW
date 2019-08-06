@@ -15,28 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
 #include <map>
 #include <set>
 
 #include <PL/platform_mesh.h>
 #include <PL/pl_math_vector.h>
 
-void Mesh_GenerateFragmentedMeshNormals(PLMesh *mesh) {
-    plAssert(mesh);
+void Mesh_GenerateFragmentedMeshNormals(std::list<PLMesh*> meshes) {
+    struct Position {
+        PLVector3 sum_normals;
+        std::set<PLVertex*> vertices;
+        unsigned int num_faces;
 
-    struct Foo {
-        PLVector3 normal;
-        std::set<unsigned int> vertex_indices;
-
-        Foo(const PLVector3 &normal, unsigned int vertex_index):
-            normal(normal) {
-            vertex_indices.insert(vertex_index);
+        Position(const PLVector3 &normal, PLVertex *output):
+            sum_normals(normal), num_faces(1) {
+          vertices.insert(output);
         }
     };
 
-    std::map<PLVector3, Foo> normals;
+    std::map<PLVector3, Position> positions;
 
-    for (unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3) {
+    for (auto & mesh : meshes) {
+      for (unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3) {
         unsigned int a = mesh->indices[idx];
         unsigned int b = mesh->indices[idx + 1];
         unsigned int c = mesh->indices[idx + 2];
@@ -47,26 +48,32 @@ void Mesh_GenerateFragmentedMeshNormals(PLMesh *mesh) {
             mesh->vertices[c].position
         );
 
-        for(unsigned int j = 0; j < 3; ++j) {
-            unsigned int vi = mesh->indices[idx + j];
+        for (unsigned int j = 0; j < 3; ++j) {
+          unsigned int vi = mesh->indices[idx + j];
 
-            auto ni = normals.find(mesh->vertices[vi].position);
-            if(ni != normals.end()) {
-                ni->second.normal = plAddVector3(ni->second.normal, normal);
-                ni->second.vertex_indices.insert(vi);
-            } else {
-                normals.insert(std::make_pair(mesh->vertices[vi].position, Foo(normal, vi)));
-            }
+          PLVertex *vertex = &(mesh->vertices[vi]);
+
+          auto ni = positions.find(vertex->position);
+          if (ni != positions.end()) {
+            ni->second.sum_normals += normal;
+            ni->second.vertices.insert(vertex);
+            ++(ni->second.num_faces);
+          } else {
+            positions.insert(std::make_pair(vertex->position, Position(normal, vertex)));
+          }
+        }
+      }
+    }
+
+    for(auto &position : positions) {
+        for(PLVertex *vertex : position.second.vertices) {
+          // vertex->normal = (position.second.sum_normals / position.second.num_faces).Normalize();
+          // vertex->normal = position.second.sum_normals / position.second.num_faces;
+          vertex->normal = position.second.sum_normals.Normalize();
         }
     }
 
-    for(auto ni = normals.begin(); ni != normals.end(); ++ni) {
-        for(auto vii = ni->second.vertex_indices.begin(); vii != ni->second.vertex_indices.end(); ++vii) {
-        mesh->vertices[*vii].normal = ni->second.normal;
-        }
-    }
-
-    for(unsigned int i = 0; i < mesh->num_verts; ++i) {
-        mesh->vertices[i].normal = plNormalizeVector3(mesh->vertices[i].normal);
-    }
+    //for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+        // mesh->vertices[i].normal = mesh->vertices[i].normal.Normalize();
+    //}
 }

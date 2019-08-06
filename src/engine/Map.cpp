@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
 
@@ -456,6 +457,14 @@ void Map::GenerateModels() {
   for (auto &chunk : chunks_) {
     GenerateModel(&chunk);
   }
+
+  std::list<PLMesh*> meshes;
+  for (auto &chunk : chunks_) {
+    PLModelLod *lod = plGetModelLodLevel(chunk.model, 0);
+    meshes.push_back(lod->meshes[0]);
+  }
+
+  Mesh_GenerateFragmentedMeshNormals(meshes);
 }
 
 void Map::GenerateModel(MapChunk *chunk) {
@@ -511,8 +520,8 @@ void Map::GenerateModel(MapChunk *chunk) {
       /* MAP_FLIP_FLAG_ROTATE_270 is implemented by ORing 90 and 180 together. */
 
       for (int i = 0; i < 4; ++i, ++cm_idx) {
-        float x = (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
-        float z = (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
+        float x = (chunk->offset.x * MAP_CHUNK_PIXEL_WIDTH) + (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
+        float z = (chunk->offset.y * MAP_CHUNK_PIXEL_WIDTH) + (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
         plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
         plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
         plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(
@@ -523,8 +532,6 @@ void Map::GenerateModel(MapChunk *chunk) {
     }
   }
 
-  Mesh_GenerateFragmentedMeshNormals(chunk_mesh);
-
   chunk_mesh->texture = texture_atlas_->GetTexture();
 
   // attach the mesh to our model
@@ -534,11 +541,8 @@ void Map::GenerateModel(MapChunk *chunk) {
   }
 
   snprintf(model->name, sizeof(model->name), "map_chunk_%d_%d",
-           static_cast<int>(chunk->offset.x),
-           static_cast<int>(chunk->offset.y));
-  model->model_matrix = plTranslateMatrix4(PLVector3(
-      (float) (chunk->offset.x * MAP_CHUNK_PIXEL_WIDTH), 0.0f,
-      (float) (chunk->offset.y * MAP_CHUNK_PIXEL_WIDTH)));
+      static_cast<int>(chunk->offset.x),
+      static_cast<int>(chunk->offset.y));
 
   chunk->model = model;
 }

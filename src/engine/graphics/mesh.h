@@ -17,4 +17,7 @@
 
 #pragma once
 
-void Mesh_GenerateFragmentedMeshNormals(PLMesh *mesh);
+#include <list>
+#include <PL/platform_mesh.h>
+
+void Mesh_GenerateFragmentedMeshNormals(std::list<PLMesh*> meshes);
