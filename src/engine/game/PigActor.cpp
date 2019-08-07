@@ -78,37 +78,37 @@ void PigActor::HandleInput() {
     PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
 
     if(Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-        input_forward = 1.0;
+        input_forward = 1.0f;
     } else if(Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-        input_forward = -1.0;
+        input_forward = -1.0f;
     } else {
-        input_forward = -cl.y / 327.0;
+        input_forward = -cl.y / 327.0f;
     }
 
     if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-        input_yaw = -1.0;
+        input_yaw = -1.0f;
     } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-        input_yaw = 1.0;
+        input_yaw = 1.0f;
     } else {
-        input_yaw = cr.x / 327.0;
+        input_yaw = cr.x / 327.0f;
     }
 
     if(Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
-        input_pitch = 1.0;
+        input_pitch = 1.0f;
     } else if(Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
-        input_pitch = -1.0;
+        input_pitch = -1.0f;
     } else {
-        input_pitch = -cr.y / 327.0;
+        input_pitch = -cr.y / 327.0f;
     }
 }
 
 void PigActor::Tick() {
-    position_.x += input_forward * 100.0 * g_state.camera->forward.x;
-    position_.y += input_forward * 100.0 * g_state.camera->forward.y;
-    position_.z += input_forward * 100.0 * g_state.camera->forward.z;
+    position_.x += input_forward * 100.0f * g_state.camera->forward.x;
+    position_.y += input_forward * 100.0f * g_state.camera->forward.y;
+    position_.z += input_forward * 100.0f * g_state.camera->forward.z;
 
-    angles_.x += input_pitch * 2.0;
-    angles_.y += input_yaw * 2.0;
+    angles_.x += input_pitch * 2.0f;
+    angles_.y += input_yaw * 2.0f;
 
     // Clamp height based on current tile pos
     Map* map = GameManager::GetInstance()->GetCurrentMap();
@@ -117,8 +117,9 @@ void PigActor::Tick() {
         position_.y = height + 32.f;
     }
 
-    if(angles_.x < -70) angles_.x = -70;
-    if(angles_.x > 70) angles_.x = 70;
+#define MAX_PITCH 89.f
+    if(angles_.x < -MAX_PITCH) angles_.x = -MAX_PITCH;
+    if(angles_.x > MAX_PITCH) angles_.x = MAX_PITCH;
 
     VecAngleClamp(&angles_);
 }

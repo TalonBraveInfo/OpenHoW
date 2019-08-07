@@ -130,6 +130,7 @@ class AudioManager {
   };
 
   static void SetMusicVolumeCommand(const PLConsoleVariable *var);
+  static void StopMusicCommand(unsigned int argc, char *argv[]);
 
   std::map<std::string, AudioSample> samples_;
   std::set<AudioSource *> sources_;
