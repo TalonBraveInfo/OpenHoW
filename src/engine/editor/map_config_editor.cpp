@@ -148,7 +148,6 @@ void MapConfigEditor::Display() {
     manifest_->sky_colour_top.r = plFloatToByte(rgb[0]);
     manifest_->sky_colour_top.g = plFloatToByte(rgb[1]);
     manifest_->sky_colour_top.b = plFloatToByte(rgb[2]);
-
     map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
   }
 
@@ -159,7 +158,6 @@ void MapConfigEditor::Display() {
     manifest_->sky_colour_bottom.r = plFloatToByte(rgb[0]);
     manifest_->sky_colour_bottom.g = plFloatToByte(rgb[1]);
     manifest_->sky_colour_bottom.b = plFloatToByte(rgb[2]);
-
     map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
   }
 
@@ -167,8 +165,12 @@ void MapConfigEditor::Display() {
 
   ImGui::Text("Lighting Settings");
 
-  ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr);
-  ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr);
+  if(ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 90, nullptr)) {
+    map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+  }
+  if(ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr)) {
+    map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+  }
 
   rgb[0] = plByteToFloat(manifest_->sun_colour.r);
   rgb[1] = plByteToFloat(manifest_->sun_colour.g);
@@ -177,6 +179,7 @@ void MapConfigEditor::Display() {
     manifest_->sun_colour.r = plFloatToByte(rgb[0]);
     manifest_->sun_colour.g = plFloatToByte(rgb[1]);
     manifest_->sun_colour.b = plFloatToByte(rgb[2]);
+    map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
   }
 
   rgb[0] = plByteToFloat(manifest_->ambient_colour.r);
@@ -186,7 +189,6 @@ void MapConfigEditor::Display() {
     manifest_->ambient_colour.r = plFloatToByte(rgb[0]);
     manifest_->ambient_colour.g = plFloatToByte(rgb[1]);
     manifest_->ambient_colour.b = plFloatToByte(rgb[2]);
-
     map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
   }
 
