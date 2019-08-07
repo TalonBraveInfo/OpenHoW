@@ -8,9 +8,9 @@
     "sunColour": "255 255 255",
     "sunYaw": "0.000000",
     "sunPitch": "0.000000",
-    "temperature": "Cold",
-    "weather": "Snow",
-    "time": "Day",
+    "temperature": "cold",
+    "weather": "snow",
+    "time": "day",
     "fogColour": "223 255 255",
     "fogIntensity": "30.000000",
     "fogDistance": "100.000000"

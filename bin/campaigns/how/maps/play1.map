@@ -8,7 +8,7 @@
     "sunColour": "255 255 255",
     "sunYaw": "0.000000",
     "sunPitch": "0.000000",
-    "temperature": "Normal",
+    "temperature": "normal",
     "weather": "clear",
     "time": "day",
     "fogColour": "223 255 255",

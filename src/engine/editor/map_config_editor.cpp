@@ -45,9 +45,9 @@ void MapConfigEditor::DisplayTemperature()
     static const char *temperatures[MAX_TEMP] = {"Normal", "Hot", "Cold"};
     static int temperature_index = -1;
     if (temperature_index == -1) {
-        if (pl_strcasecmp(manifest_->temperature.c_str(), "Hot") == 0) {
+        if (pl_strcasecmp(manifest_->temperature.c_str(), "hot") == 0) {
             temperature_index = TEMP_HOT;
-        } else  if (pl_strcasecmp(manifest_->temperature.c_str(), "Cold") == 0) {
+        } else if (pl_strcasecmp(manifest_->temperature.c_str(), "cold") == 0) {
             temperature_index = TEMP_COLD;
         } else {
             temperature_index = TEMP_NORMAL;
@@ -60,8 +60,8 @@ void MapConfigEditor::DisplayTemperature()
                 ImGui::SetItemDefaultFocus();
                 temperature_index = i;
 
-                // TODO: convert to lower case
-                manifest_->temperature = std::string(temperatures[temperature_index]);
+                manifest_->temperature = temperatures[temperature_index];
+                str_tolower(&manifest_->temperature);
             }
         }
 
@@ -69,32 +69,35 @@ void MapConfigEditor::DisplayTemperature()
     }
 }
 
+
+
+
 void MapConfigEditor::DisplayWeather()
 {
     enum {
         WEATHER_CLEAR, WEATHER_RAIN, WEATHER_SNOW, MAX_WEATHER
     };
-    static const char *weatherTypes[MAX_WEATHER] = {"Clear", "Rain", "Snow"};
+    static const char *weather_labels[MAX_WEATHER] = {"Clear", "Rain", "Snow"};
     static int weather_index = -1;
     if (weather_index == -1) {
-        if (pl_strcasecmp(manifest_->weather.c_str(), "Rain") == 0) {
+        if (pl_strcasecmp(manifest_->weather.c_str(), "rain") == 0) {
             weather_index = WEATHER_RAIN;
         }
-        else if (pl_strcasecmp(manifest_->weather.c_str(), "Snow") == 0) {
+        else if (pl_strcasecmp(manifest_->weather.c_str(), "snow") == 0) {
             weather_index = WEATHER_SNOW;
         } else {
             weather_index = WEATHER_CLEAR;
         }
     }
 
-    if (ImGui::BeginCombo("Weather", weatherTypes[weather_index])) {
+    if (ImGui::BeginCombo("Weather", weather_labels[weather_index])) {
         for (int i = 0; i < MAX_WEATHER; ++i) {
-            if (ImGui::Selectable(weatherTypes[i], (weather_index == i))) {
+            if (ImGui::Selectable(weather_labels[i], (weather_index == i))) {
                 ImGui::SetItemDefaultFocus();
                 weather_index = i;
 
-                // TODO: convert to lower case
-                manifest_->weather = std::string(weatherTypes[weather_index]);
+                manifest_->weather = weather_labels[weather_index];
+                str_tolower(&manifest_->weather);
             }
         }
 
@@ -110,7 +113,7 @@ void MapConfigEditor::DisplayTime()
     static const char *times[MAX_TIME] = {"Day", "Night"};
     static int time_index = -1;
     if (time_index == -1) {
-        if (pl_strcasecmp(manifest_->time.c_str(), "Day") == 0) {
+        if (pl_strcasecmp(manifest_->time.c_str(), "day") == 0) {
             time_index = TIME_DAY;
         } else {
             time_index = TIME_NIGHT;
@@ -122,9 +125,9 @@ void MapConfigEditor::DisplayTime()
             if (ImGui::Selectable(times[i], (time_index == i))) {
                 ImGui::SetItemDefaultFocus();
                 time_index = i;
-
-                // TODO: convert to lower case
-                manifest_->time = std::string(times[time_index]);
+                
+                manifest_->time = times[time_index];
+                str_tolower(&manifest_->time);
             }
         }
 
@@ -142,9 +145,9 @@ void MapConfigEditor::Display() {
 
     ImGui::Separator();
 
-    this->DisplayTemperature();
-    this->DisplayWeather();
-    this->DisplayTime();   
+    DisplayTemperature();
+    DisplayWeather();
+    DisplayTime();   
 
     ImGui::Separator();
 

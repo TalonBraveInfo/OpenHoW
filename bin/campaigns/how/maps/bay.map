@@ -8,9 +8,9 @@
     "sunColour": "255 255 255",
     "sunYaw": "0.000000",
     "sunPitch": "0.000000",
-    "temperature": "Cold",
-    "weather": "Clear",
-    "time": "Night",
+    "temperature": "cold",
+    "weather": "clear",
+    "time": "night",
     "fogColour": "223 255 255",
     "fogIntensity": "30.000000",
     "fogDistance": "100.000000"

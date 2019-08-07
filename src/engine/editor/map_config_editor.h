@@ -21,6 +21,8 @@
 #include "../map_manager.h"
 #include "../Map.h"
 
+#include <algorithm>
+
 class MapConfigEditor : public BaseWindow {
  public:
   MapConfigEditor();
@@ -43,4 +45,10 @@ class MapConfigEditor : public BaseWindow {
   void DisplayWeather();
   void DisplayTemperature();
   void DisplayTime();
+
+  // TODO: Move to a better place
+  void str_tolower(std::string* s)
+  {
+      std::transform(s->begin(), s->end(), s->begin(), ::tolower);
+  }  
 };
