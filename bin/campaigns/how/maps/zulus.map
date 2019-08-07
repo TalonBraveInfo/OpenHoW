@@ -1,10 +1,10 @@
 {
-    "name": "$map_how_archi",
+    "name": "$map_how_zulus",
     "author": "none",
     "description": "none",
     "ambientColour": "255 255 255",
-    "skyColourTop": "11 10 92",
-    "skyColourBottom": "186 123 61",
+    "skyColourTop": "128 175 247",
+    "skyColourBottom": "209 194 104",
     "sunColour": "255 255 255",
     "sunYaw": "0.000000",
     "sunPitch": "0.000000",

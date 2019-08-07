@@ -59,6 +59,13 @@ typedef unsigned char uchar, byte;
 #define u_fclose(FILE)  if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
 #define u_free(DATA)    free((DATA)); (DATA) = NULL
 
+#ifdef __cplusplus
+static inline std::string u_stringtolower(std::string s) {
+  std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+  return s;
+}
+#endif
+
 PL_EXTERN_C
 
 void u_init_logs(const char *log_path);
