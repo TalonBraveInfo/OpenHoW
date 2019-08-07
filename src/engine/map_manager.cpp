@@ -54,6 +54,7 @@ void MapManager::RegisterManifest(const std::string &path) {
     manifest.sun_yaw = config.GetFloatProperty("sunYaw", manifest.sun_yaw);
     manifest.sun_pitch = config.GetFloatProperty("sunPitch", manifest.sun_pitch);
     manifest.temperature = config.GetStringProperty("temperature", manifest.temperature);
+    manifest.weather = config.GetStringProperty("weather", manifest.weather);
     manifest.time = config.GetStringProperty("time", manifest.time);
 
     // Fog

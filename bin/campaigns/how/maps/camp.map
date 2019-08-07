@@ -1,11 +1,20 @@
 {
-  "name":"$map_how_camp",
-  "author":"Unknown",
-  "ambientColour":"88 88 96",
-  "skyColourTop":"0 104 156",
-  "skyColourBottom":"223 255 255",
-  "sky":"coldsky",
-  "modes":[
-    "training"
-  ]
+    "name": "$map_how_camp",
+    "author": "none",
+    "description": "none",
+    "modes": [
+        "training"
+    ],
+    "ambientColour": "255 255 255",
+    "skyColourTop": "0 104 156",
+    "skyColourBottom": "223 255 255",
+    "sunColour": "255 255 255",
+    "sunYaw": "0.000000",
+    "sunPitch": "0.000000",
+    "temperature": "cold",
+    "weather": "snow",
+    "time": "day",
+    "fogColour": "223 255 255",
+    "fogIntensity": "30.000000",
+    "fogDistance": "100.000000"
 }
