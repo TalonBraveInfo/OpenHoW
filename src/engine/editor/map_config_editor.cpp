@@ -76,7 +76,7 @@ void MapConfigEditor::Display() {
 
     ImGui::Text("Lighting Settings");
 
-    if(ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 180, nullptr)) {
+    if(ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, 0, 360, nullptr)) {
       map_->ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
     }
     if(ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, 0, 360, nullptr)) {

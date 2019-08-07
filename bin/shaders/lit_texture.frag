@@ -36,9 +36,9 @@ in vec3 frag_pos;
 void main() {
     vec3 normal = normalize(interp_normal);
 
-    vec3 light_direction = -normalize(vec3(sun_pitch, sun_yaw, 0));
-    vec4 sun_term = (max(dot(normal, light_direction), 0.0)) * sun_colour;
-    vec4 diffuse_colour = (sun_term + ambient_colour) * interp_colour * texture(diffuse, interp_UV);
+    vec3 light_direction = normalize(-vec3(sun_pitch, sun_yaw, 0));
+    vec4 sun_term = (max(dot(normal, light_direction), 0.0)) * sun_colour + ambient_colour;
+    vec4 diffuse_colour = sun_term * interp_colour * texture(diffuse, interp_UV);
     // uncomment to check normals...
     //diffuse_colour = vec4(normal, 1.0);
 
