@@ -321,8 +321,18 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_distance);
 
   plSetNamedShaderUniformVector4(program, "sun_colour", manifest_->sun_colour.ToVec4());
-  plSetNamedShaderUniformFloat(program, "sun_yaw", plDegreesToRadians(manifest_->sun_yaw));
-  plSetNamedShaderUniformFloat(program, "sun_pitch", plDegreesToRadians(manifest_->sun_pitch));
+
+  PLVector3 sun_position(1.0f, -manifest_->sun_pitch, 0);
+  PLMatrix4 sun_matrix =
+      plMultiplyMatrix4(
+          plTranslateMatrix4(sun_position),
+          plRotateMatrix4(manifest_->sun_yaw, PLVector3(0, 1.0f, 0)));
+  sun_position.x = sun_matrix.m[0];
+  sun_position.z = sun_matrix.m[8];
+#if 0
+  debug_sun_position = sun_position;
+#endif
+  plSetNamedShaderUniformVector3(program, "sun_position", sun_position);
 
   plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
 }
@@ -620,4 +630,17 @@ void Map::Draw() {
     g_state.gfx.num_chunks_drawn++;
     plDrawModel(chunk.model);
   }
+
+#if 0 // debug sun position
+  Shaders_SetProgram(SHADER_GenericUntextured);
+  PLModel *sprite = ModelManager::GetInstance()->GetFallbackModel();
+  PLMesh *mesh = sprite->levels[0].meshes[0];
+  plSetMeshUniformColour(mesh, PLColour(0, 255, 0, 255));
+  sprite->model_matrix = plTranslateMatrix4(debug_sun_position);
+  plDrawModel(sprite);
+  plSetMeshUniformColour(mesh, PLColour(255, 255, 0, 255));
+  sprite->model_matrix = plTranslateMatrix4(PLVector3(0, 0, 0));
+  plDrawModel(sprite);
+  plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+#endif
 }

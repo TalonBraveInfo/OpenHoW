@@ -22,8 +22,7 @@ uniform float fog_near = 0;
 uniform vec4 fog_colour = vec4(1.0, 1.0, 1.0, 1.0);
 
 uniform vec4 sun_colour = vec4(1.0, 1.0, 1.0, 1.0);
-uniform float sun_yaw = 0;
-uniform float sun_pitch = 0;
+uniform vec3 sun_position = vec3(0.0, 0.0, 0.0);
 
 uniform vec4 ambient_colour = vec4(1.0, 1.0, 1.0, 1.0);
 
@@ -35,8 +34,7 @@ in vec3 frag_pos;
 
 void main() {
     vec3 normal = normalize(interp_normal);
-
-    vec3 light_direction = normalize(-vec3(sun_pitch, sun_yaw, 0));
+    vec3 light_direction = normalize(-sun_position);
     vec4 sun_term = (max(dot(normal, light_direction), 0.0)) * sun_colour + ambient_colour;
     vec4 diffuse_colour = sun_term * interp_colour * texture(diffuse, interp_UV);
     // uncomment to check normals...
