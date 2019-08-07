@@ -1,9 +1,17 @@
 {
-  "name":"$map_how_archi",
-  "sky": "sunny/sunny",
-  "flags": 0,
-  "modes":[
-    "survival-expert",
-    "deathmatch"
-  ]
+    "name": "$map_how_archi",
+    "author": "none",
+    "description": "none",
+    "ambientColour": "255 255 255",
+    "skyColourTop": "11 10 92",
+    "skyColourBottom": "186 123 61",
+    "sunColour": "255 255 255",
+    "sunYaw": "0.000000",
+    "sunPitch": "0.000000",
+    "temperature": "Hot",
+    "weather": "Clear",
+    "time": "day",
+    "fogColour": "223 255 255",
+    "fogIntensity": "30.000000",
+    "fogDistance": "100.000000"
 }

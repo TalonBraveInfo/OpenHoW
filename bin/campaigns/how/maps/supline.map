@@ -1,19 +1,16 @@
 {
-    "name": "$map_how_camp",
+    "name": "$map_how_supline",
     "author": "none",
     "description": "none",
-    "modes": [
-        "training"
-    ],
     "ambientColour": "255 255 255",
-    "skyColourTop": "0 104 156",
-    "skyColourBottom": "223 255 255",
+    "skyColourTop": "21 51 192",
+    "skyColourBottom": "87 201 255",
     "sunColour": "255 255 255",
     "sunYaw": "0.000000",
     "sunPitch": "0.000000",
-    "temperature": "Cold",
-    "weather": "Snow",
-    "time": "Day",
+    "temperature": "Normal",
+    "weather": "clear",
+    "time": "day",
     "fogColour": "223 255 255",
     "fogIntensity": "30.000000",
     "fogDistance": "100.000000"

@@ -1,10 +1,7 @@
 {
-    "name": "$map_how_camp",
+    "name": "$map_how_keep",
     "author": "none",
     "description": "none",
-    "modes": [
-        "training"
-    ],
     "ambientColour": "255 255 255",
     "skyColourTop": "0 104 156",
     "skyColourBottom": "223 255 255",

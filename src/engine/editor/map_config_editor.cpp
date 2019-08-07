@@ -82,8 +82,7 @@ void MapConfigEditor::DisplayWeather()
         }
         else if (pl_strcasecmp(manifest_->weather.c_str(), "Snow") == 0) {
             weather_index = WEATHER_SNOW;
-        }
-        else {
+        } else {
             weather_index = WEATHER_CLEAR;
         }
     }
@@ -113,8 +112,7 @@ void MapConfigEditor::DisplayTime()
     if (time_index == -1) {
         if (pl_strcasecmp(manifest_->time.c_str(), "Day") == 0) {
             time_index = TIME_DAY;
-        }    
-        else {
+        } else {
             time_index = TIME_NIGHT;
         }
     }

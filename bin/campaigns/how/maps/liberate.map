@@ -1,18 +1,15 @@
 {
-    "name": "$map_how_camp",
+    "name": "$map_how_liberate",
     "author": "none",
     "description": "none",
-    "modes": [
-        "training"
-    ],
     "ambientColour": "255 255 255",
-    "skyColourTop": "0 104 156",
-    "skyColourBottom": "223 255 255",
+    "skyColourTop": "128 175 247",
+    "skyColourBottom": "209 194 104",
     "sunColour": "255 255 255",
     "sunYaw": "0.000000",
     "sunPitch": "0.000000",
-    "temperature": "Cold",
-    "weather": "Snow",
+    "temperature": "Normal",
+    "weather": "Clear",
     "time": "Day",
     "fogColour": "223 255 255",
     "fogIntensity": "30.000000",

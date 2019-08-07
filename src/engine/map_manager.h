@@ -35,7 +35,7 @@ struct MapManifest {
   float fog_intensity{30.0f};
   float fog_distance{100.0f};
   // Misc
-  std::string temperature{"hot"};       // Determines idle animation set. Can be normal/hot/cold
+  std::string temperature{"normal"};       // Determines idle animation set. Can be normal/hot/cold
   std::string time{"day"};              // Determines ambient sound set. Can be day/night
   std::string weather{"clear"};         // Determines weather particles. Can be clear/rain/snow
 };
