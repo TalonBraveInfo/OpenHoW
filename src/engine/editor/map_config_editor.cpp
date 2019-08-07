@@ -58,9 +58,7 @@ void MapConfigEditor::DisplayTemperature() {
       if (ImGui::Selectable(temperatures[i], (temperature_index == i))) {
         ImGui::SetItemDefaultFocus();
         temperature_index = i;
-
-        manifest_->temperature = temperatures[temperature_index];
-        str_tolower(&manifest_->temperature);
+        manifest_->temperature = u_stringtolower(temperatures[temperature_index]);
       }
     }
 
@@ -89,9 +87,7 @@ void MapConfigEditor::DisplayWeather() {
       if (ImGui::Selectable(weather_labels[i], (weather_index == i))) {
         ImGui::SetItemDefaultFocus();
         weather_index = i;
-
-        manifest_->weather = weather_labels[weather_index];
-        str_tolower(&manifest_->weather);
+        manifest_->weather = u_stringtolower(weather_labels[weather_index]);
       }
     }
 
@@ -118,9 +114,7 @@ void MapConfigEditor::DisplayTime() {
       if (ImGui::Selectable(times[i], (time_index == i))) {
         ImGui::SetItemDefaultFocus();
         time_index = i;
-
-        manifest_->time = times[time_index];
-        str_tolower(&manifest_->time);
+        manifest_->time = u_stringtolower(times[time_index]);
       }
     }
 
