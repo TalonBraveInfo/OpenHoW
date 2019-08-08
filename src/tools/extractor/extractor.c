@@ -187,10 +187,41 @@ static void ConvertModelData(void) {
         generate_normals = true;
       }
 
+      // we'll resize this later...
+      FacTextureIndex *table = u_alloc(package->table_size, sizeof(FacTextureIndex), true);
+      unsigned int table_length = 0;
+
       FacHandle *fac = Fac_LoadFile(fac_path);
       for(unsigned int k = 0; k < fac->num_triangles; ++k) {
+        uint32_t texture_index = fac->triangles[k].texture_index;
+        if(texture_index >= package->table_size) {
+          LogWarn("Out of bounds texture index for \"%s\"!\n", fac_path);
+          continue;
+        }
 
+        // attempt to add it to the table
+        char texture_name[16];
+        snprintf(texture_name, sizeof(texture_name), package->table[texture_index].file.name);
+        pl_strtolower(texture_name);
+        unsigned int l;
+        for(l = 0; l < package->table_size; ++l, ++table_length) {
+          if(table[texture_index].name[0] == ' ') {
+            strncpy(table[l].name, texture_name, sizeof(table[l].name));
+            break;
+          } else if(strncmp(table[l].name, texture_name, sizeof(table[l].name)) == 0) {
+            break;
+          }
+        }
+
+        if(table_length >= package->table_size) {
+          Error("Invalid")
+        }
+
+        // replace the original id so it matches with the index in our table
+        fac->triangles[k].texture_index = l;
       }
+
+      // todo: reshuffle the table
     }
   }
 }

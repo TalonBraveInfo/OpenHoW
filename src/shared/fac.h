@@ -28,11 +28,19 @@ typedef struct FacTriangle {
   uint32_t texture_index;
 } FacTriangle;
 
+typedef struct FacTextureIndex {
+  char name[16];
+} FacTextureIndex;
+
 typedef struct FacHandle {
   FacTriangle *triangles;
   unsigned int num_triangles;
+
+  struct FacTextureIndex *texture_table;
+  unsigned int texture_table_length;
 } FacHandle;
 
+FacHandle *Fac_SerializeModel(const char *path, struct PLModel *model);
 FacHandle *Fac_LoadFile(const char *path);
 void Fac_DestroyHandle(FacHandle *handle);
 
