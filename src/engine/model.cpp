@@ -47,18 +47,6 @@ static PLModel *Model_LoadVtxFile(const char *path) {
     return nullptr;
   }
 
-  /* attempt to load the normals */
-  char no2_path[PL_SYSTEM_MAX_PATH];
-  strncpy(no2_path, path, strlen(path) - 3);
-  no2_path[strlen(path) - 3] = '\0';
-  strcat(no2_path, "no2");
-  bool gen_normals = false;
-  if (No2_LoadFile(no2_path, vtx) == nullptr) {
-    LogWarn("Failed to load normals, \"%s\"!\n", no2_path);
-    /* in this case, we'll just generate them later */
-    gen_normals = true;
-  }
-
   /* now we load in all the faces */
   char fac_path[PL_SYSTEM_MAX_PATH];
   strncpy(fac_path, path, strlen(path) - 3);
@@ -203,7 +191,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
 
     plSetMeshVertexColour(mesh, j, PL_COLOUR_WHITE);
     plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
-    plSetMeshVertexST(mesh, j, 0, 0);
+    plSetMeshVertexST(mesh, j, -1.0f, 1.0f);
 
     mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
     mesh->vertices[j].bone_weight = 1.f;
@@ -220,9 +208,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
     );
   }
 
-  if (gen_normals) {
-    plGenerateMeshNormals(mesh);
-  }
+  plGenerateMeshNormals(mesh);
 
   auto *skeleton =
       static_cast<PLModelBone *>(u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true));

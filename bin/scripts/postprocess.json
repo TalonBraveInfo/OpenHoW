@@ -1,0 +1,30 @@
+{
+  "effects": [
+    {
+      "name": "effect_base",
+      "frag": "shaders/texture.frag",
+      "properties": []
+    },
+    {
+      "name": "effect_bloom",
+      "frag": "shaders/bloom.frag",
+      "properties": [
+        {
+          "name": "Intensity",
+          "description": "",
+          "type": "float",
+          "uniform": "intensity"
+        },
+        {
+          "name": "Texture",
+          "type": "texture2d",
+          "uniform": "overlay"
+        }
+      ]
+    }
+  ],
+  "passes": [
+    "effect_base",
+    "effect_bloom"
+  ]
+}

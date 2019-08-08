@@ -140,7 +140,8 @@ public:
 
     const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
 
-    void ApplySkyColours(PLColour bottom, PLColour top);
+    void UpdateSky();
+    void UpdateLighting();
 
     void GenerateModels();
     void GenerateModel(MapChunk *chunk);

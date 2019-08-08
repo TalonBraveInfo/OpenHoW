@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics_camera.h>
 
@@ -29,6 +30,7 @@
 #include "map_manager.h"
 
 #include "graphics/display.h"
+#include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/texture_atlas.h"
 
@@ -266,10 +268,10 @@ void Map::LoadSky() {
     }
   }
 
-  ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+  UpdateSky();
 }
 
-void Map::ApplySkyColours(PLColour bottom, PLColour top) {
+void Map::UpdateSky() {
   u_assert(sky_model_ != nullptr, "attempted to apply sky colours prior to loading sky dome");
 
   PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
@@ -282,7 +284,8 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   // Below is a PSX-style gradient sky implementation
   const unsigned int solid_steps = 3;
   const unsigned int grad_steps = 6;
-  PLColour colour = top;
+  PLColour top = manifest_->sky_colour_top;
+  PLColour bottom = manifest_->sky_colour_bottom;
   int stepr = ((int) (bottom.r) - (int) (top.r)) / (int) (grad_steps);
   int stepg = ((int) (bottom.g) - (int) (top.g)) / (int) (grad_steps);
   int stepb = ((int) (bottom.b) - (int) (top.b)) / (int) (grad_steps);
@@ -291,6 +294,7 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   if (stepg < 0) { stepg += 255; }
   if (stepb < 0) { stepb += 255; }
 
+  PLColour colour = top;
   for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
     if (j == 32) {
       if (++s >= solid_steps) {
@@ -308,7 +312,9 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
 
   // gross GROSS; ensures that the dome transitions out nicely
   g_state.gfx.clear_colour = bottom;
+}
 
+void Map::UpdateLighting() {
   PLShaderProgram *program = Shaders_GetProgram(SHADER_GenericTexturedLit);
   if (program == nullptr) {
     return;
@@ -317,6 +323,20 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   plSetNamedShaderUniformVector4(program, "fog_colour", manifest_->fog_colour.ToVec4());
   plSetNamedShaderUniformFloat(program, "fog_near", manifest_->fog_intensity);
   plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_distance);
+
+  PLVector3 sun_position(1.0f, -manifest_->sun_pitch, 0);
+  PLMatrix4 sun_matrix =
+      plMultiplyMatrix4(
+          plTranslateMatrix4(sun_position),
+          plRotateMatrix4(manifest_->sun_yaw, PLVector3(0, 1.0f, 0)));
+  sun_position.x = sun_matrix.m[0];
+  sun_position.z = sun_matrix.m[8];
+#if 0
+  debug_sun_position = sun_position;
+#endif
+  plSetNamedShaderUniformVector3(program, "sun_position", sun_position);
+  plSetNamedShaderUniformVector4(program, "sun_colour", manifest_->sun_colour.ToVec4());
+
   plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
 }
 
@@ -450,6 +470,14 @@ void Map::GenerateModels() {
   for (auto &chunk : chunks_) {
     GenerateModel(&chunk);
   }
+
+  std::list<PLMesh*> meshes;
+  for (auto &chunk : chunks_) {
+    PLModelLod *lod = plGetModelLodLevel(chunk.model, 0);
+    meshes.push_back(lod->meshes[0]);
+  }
+
+  Mesh_GenerateFragmentedMeshNormals(meshes);
 }
 
 void Map::GenerateModel(MapChunk *chunk) {
@@ -505,8 +533,8 @@ void Map::GenerateModel(MapChunk *chunk) {
       /* MAP_FLIP_FLAG_ROTATE_270 is implemented by ORing 90 and 180 together. */
 
       for (int i = 0; i < 4; ++i, ++cm_idx) {
-        float x = (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
-        float z = (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
+        float x = (chunk->offset.x * MAP_CHUNK_PIXEL_WIDTH) + (tile_x + (i % 2)) * MAP_TILE_PIXEL_WIDTH;
+        float z = (chunk->offset.y * MAP_CHUNK_PIXEL_WIDTH) + (tile_y + (i / 2)) * MAP_TILE_PIXEL_WIDTH;
         plSetMeshVertexST(chunk_mesh, cm_idx, tx_Ax[i], tx_Ay[i]);
         plSetMeshVertexPosition(chunk_mesh, cm_idx, PLVector3(x, current_tile->height[i], z));
         plSetMeshVertexColour(chunk_mesh, cm_idx, PLColour(
@@ -517,8 +545,6 @@ void Map::GenerateModel(MapChunk *chunk) {
     }
   }
 
-  plGenerateMeshNormals(chunk_mesh);
-
   chunk_mesh->texture = texture_atlas_->GetTexture();
 
   // attach the mesh to our model
@@ -528,11 +554,8 @@ void Map::GenerateModel(MapChunk *chunk) {
   }
 
   snprintf(model->name, sizeof(model->name), "map_chunk_%d_%d",
-           static_cast<int>(chunk->offset.x),
-           static_cast<int>(chunk->offset.y));
-  model->model_matrix = plTranslateMatrix4(PLVector3(
-      (float) (chunk->offset.x * MAP_CHUNK_PIXEL_WIDTH), 0.0f,
-      (float) (chunk->offset.y * MAP_CHUNK_PIXEL_WIDTH)));
+      static_cast<int>(chunk->offset.x),
+      static_cast<int>(chunk->offset.y));
 
   chunk->model = model;
 }
@@ -610,4 +633,17 @@ void Map::Draw() {
     g_state.gfx.num_chunks_drawn++;
     plDrawModel(chunk.model);
   }
+
+#if 0 // debug sun position
+  Shaders_SetProgram(SHADER_GenericUntextured);
+  PLModel *sprite = ModelManager::GetInstance()->GetFallbackModel();
+  PLMesh *mesh = sprite->levels[0].meshes[0];
+  plSetMeshUniformColour(mesh, PLColour(0, 255, 0, 255));
+  sprite->model_matrix = plTranslateMatrix4(debug_sun_position);
+  plDrawModel(sprite);
+  plSetMeshUniformColour(mesh, PLColour(255, 255, 0, 255));
+  sprite->model_matrix = plTranslateMatrix4(PLVector3(0, 0, 0));
+  plDrawModel(sprite);
+  plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+#endif
 }

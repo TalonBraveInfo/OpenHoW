@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2019 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,17 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-out vec3 interp_normal;
-out vec2 interp_UV;
-out vec4 interp_colour;
+#pragma once
 
-out vec3 frag_pos;
+#include <list>
+#include <PL/platform_mesh.h>
 
-void main() {
-    gl_Position = pl_proj * pl_view * pl_model * vec4(pl_vposition, 1.0f);
-    interp_normal = mat3(transpose(inverse(pl_model))) * pl_vnormal;
-    interp_UV = pl_vuv;
-    interp_colour = pl_vcolour;
-
-    frag_pos = vec3(pl_model * vec4(pl_vposition, 1.0));
-}
+void Mesh_GenerateFragmentedMeshNormals(std::list<PLMesh*> meshes);
