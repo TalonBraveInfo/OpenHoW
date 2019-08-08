@@ -179,6 +179,8 @@ Map::Map(const std::string &name) : Map() {
 
   LoadSky();
 
+  UpdateLighting();
+
   GenerateOverview();
 }
 
