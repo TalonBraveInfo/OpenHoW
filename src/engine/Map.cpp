@@ -179,6 +179,7 @@ Map::Map(const std::string &name) : Map() {
 
   LoadSky();
 
+  UpdateSky();
   UpdateLighting();
 
   GenerateOverview();
@@ -269,8 +270,6 @@ void Map::LoadSky() {
       Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
     }
   }
-
-  UpdateSky();
 }
 
 void Map::UpdateSky() {
