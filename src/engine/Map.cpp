@@ -268,10 +268,10 @@ void Map::LoadSky() {
     }
   }
 
-  ApplySkyColours(manifest_->sky_colour_bottom, manifest_->sky_colour_top);
+  UpdateSky();
 }
 
-void Map::ApplySkyColours(PLColour bottom, PLColour top) {
+void Map::UpdateSky() {
   u_assert(sky_model_ != nullptr, "attempted to apply sky colours prior to loading sky dome");
 
   PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
@@ -284,7 +284,8 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   // Below is a PSX-style gradient sky implementation
   const unsigned int solid_steps = 3;
   const unsigned int grad_steps = 6;
-  PLColour colour = top;
+  PLColour top = manifest_->sky_colour_top;
+  PLColour bottom = manifest_->sky_colour_bottom;
   int stepr = ((int) (bottom.r) - (int) (top.r)) / (int) (grad_steps);
   int stepg = ((int) (bottom.g) - (int) (top.g)) / (int) (grad_steps);
   int stepb = ((int) (bottom.b) - (int) (top.b)) / (int) (grad_steps);
@@ -293,6 +294,7 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   if (stepg < 0) { stepg += 255; }
   if (stepb < 0) { stepb += 255; }
 
+  PLColour colour = top;
   for (unsigned int i = 0, j = 31, s = 0; i < mesh->num_verts; ++i, ++j) {
     if (j == 32) {
       if (++s >= solid_steps) {
@@ -310,7 +312,9 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
 
   // gross GROSS; ensures that the dome transitions out nicely
   g_state.gfx.clear_colour = bottom;
+}
 
+void Map::UpdateLighting() {
   PLShaderProgram *program = Shaders_GetProgram(SHADER_GenericTexturedLit);
   if (program == nullptr) {
     return;
@@ -319,8 +323,6 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   plSetNamedShaderUniformVector4(program, "fog_colour", manifest_->fog_colour.ToVec4());
   plSetNamedShaderUniformFloat(program, "fog_near", manifest_->fog_intensity);
   plSetNamedShaderUniformFloat(program, "fog_far", manifest_->fog_distance);
-
-  plSetNamedShaderUniformVector4(program, "sun_colour", manifest_->sun_colour.ToVec4());
 
   PLVector3 sun_position(1.0f, -manifest_->sun_pitch, 0);
   PLMatrix4 sun_matrix =
@@ -333,6 +335,7 @@ void Map::ApplySkyColours(PLColour bottom, PLColour top) {
   debug_sun_position = sun_position;
 #endif
   plSetNamedShaderUniformVector3(program, "sun_position", sun_position);
+  plSetNamedShaderUniformVector4(program, "sun_colour", manifest_->sun_colour.ToVec4());
 
   plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
 }
