@@ -86,9 +86,20 @@ FacHandle *Fac_LoadFile(const char *path) {
     return NULL;
   }
 
+  // check for textures table
+  uint8_t num_textures;
+  FacTextureIndex *texture_table = NULL;
+  if(fread(&num_textures, sizeof(uint8_t), 1, fac_file) == 1 && num_textures > 0) {
+    texture_table = u_alloc(num_textures, sizeof(FacTextureIndex), true);
+    for(unsigned int i = 0; i < num_textures; ++i) {
+      fread(texture_table->name, 1, sizeof(texture_table->name), fac_file);
+    }
+  }
+
+  u_fclose(fac_file);
+
   unsigned int total_triangles = num_triangles + (num_quads * 2);
   if (total_triangles == 0 || total_triangles >= FAC_MAX_TRIANGLES) {
-    u_fclose(fac_file);
     LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
     return NULL;
   }
@@ -101,8 +112,9 @@ FacHandle *Fac_LoadFile(const char *path) {
     for (unsigned int j = 0, coord = 0; j < 3; j++) {
       handle->triangles[i].vertex_indices[j] = triangles[i].vertex_indices[j];
       handle->triangles[i].normal_indices[j] = triangles[i].normal_indices[j];
-      handle->triangles[i].uv_coords[j][0] = plByteToFloat(triangles[i].uv_coords[j + (coord++)]);
-      handle->triangles[i].uv_coords[j][1] = plByteToFloat(triangles[i].uv_coords[j + (coord++)]);
+      // todo
+      //handle->triangles[i].uv_coords[j][0] = plByteToFloat(triangles[i].uv_coords[j + (coord++)]);
+      //handle->triangles[i].uv_coords[j][1] = plByteToFloat(triangles[i].uv_coords[j + (coord++)]);
     }
   }
   for (unsigned int i = 0, tri = num_triangles; i < num_quads; ++i) {
@@ -110,21 +122,74 @@ FacHandle *Fac_LoadFile(const char *path) {
     for (unsigned int j = 0; j < 3; j++) {
       handle->triangles[tri].vertex_indices[j] = quads[i].vertex_indices[j];
       handle->triangles[tri].normal_indices[j] = quads[i].normal_indices[j];
-      handle->triangles[tri].uv_coords[j][0] = 0;
-      handle->triangles[tri].uv_coords[j][1] = 0;
+      // todo
+      //handle->triangles[tri].uv_coords[j][0] = 0;
+      //handle->triangles[tri].uv_coords[j][1] = 0;
     }
     tri++;
     uint8_t order[] = {3, 0, 2};
     for (unsigned int j = 0; j < 3; j++) {
       handle->triangles[tri].vertex_indices[j] = quads[i].vertex_indices[order[j]];
       handle->triangles[tri].normal_indices[j] = quads[i].normal_indices[order[j]];
-      handle->triangles[tri].uv_coords[j][0] = 0;
-      handle->triangles[tri].uv_coords[j][1] = 0;
+      // todo
+      //handle->triangles[tri].uv_coords[j][0] = 0;
+      //handle->triangles[tri].uv_coords[j][1] = 0;
     }
     tri++;
   }
 
+  if(texture_table != NULL) {
+    handle->texture_table = texture_table;
+    handle->texture_table_length = num_textures;
+  }
+
   return handle;
+}
+
+void Fac_WriteFile(FacHandle *handle, const char *path) {
+  FILE *fp = fopen(path, "wb");
+  if(fp == NULL) {
+    LogWarn("Failed to open, \"%s\"!\n");
+    return;
+  }
+
+  // 16 bytes of unknown data, just skip it for now
+  fseek(fp, 16, SEEK_CUR);
+
+  // write out the triangle data
+  fwrite(&handle->num_triangles, sizeof(handle->num_triangles), 1, fp);
+  struct __attribute__((packed)) {
+    int8_t uv_coords[6];
+    uint16_t vertex_indices[3];
+    uint16_t normal_indices[3];
+    uint16_t unknown0;
+    uint32_t texture_index;
+    uint16_t unknown1[4];
+  } triangles[handle->num_triangles];
+  for(unsigned int i = 0; i < handle->num_triangles; ++i) {
+    triangles[i].texture_index = handle->triangles[i].texture_index;
+    triangles[i].unknown0 = 0;
+    for(unsigned int j = 0; j < 4; ++j) {
+      triangles[i].unknown1[j] = 0;
+    }
+    for(unsigned int j = 0 ; j < 3; ++j) {
+      triangles[i].vertex_indices[j] = handle->triangles[i].vertex_indices[j];
+      triangles[i].normal_indices[j] = handle->triangles[i].normal_indices[j];
+    }
+    for(unsigned int j = 0; j < 8; ++j) {
+      triangles[i].uv_coords[j] = handle->triangles[i].uv_coords[j];
+    }
+  }
+  fwrite(triangles, sizeof(*triangles), handle->num_triangles, fp);
+
+  // now write the string table
+  fwrite(&handle->texture_table_length, sizeof(uint8_t), 1, fp);
+  for(unsigned int i = 0; i < handle->texture_table_length; ++i) {
+    fwrite(handle->texture_table[i].name, 1, sizeof(handle->texture_table[i].name), fp);
+  }
+
+  // Done!
+  u_fclose(fp);
 }
 
 void Fac_DestroyHandle(FacHandle *handle) {
