@@ -378,7 +378,7 @@ void Map::LoadTiles(const std::string &path) {
   chunks_.resize(MAP_CHUNKS);
 
   // todo: move into map constructor (see map-edit branch)
-  texture_atlas_ = new TextureAtlas();
+  texture_atlas_ = new TextureAtlas(512, 8);
 
   for (unsigned int chunk_y = 0; chunk_y < MAP_CHUNK_ROW; ++chunk_y) {
     for (unsigned int chunk_x = 0; chunk_x < MAP_CHUNK_ROW; ++chunk_x) {

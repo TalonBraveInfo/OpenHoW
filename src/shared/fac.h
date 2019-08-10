@@ -22,7 +22,7 @@
 PL_EXTERN_C
 
 typedef struct FacTriangle {
-  int8_t uv_coords[8];
+  int8_t uv_coords[6];
   uint16_t vertex_indices[3];
   uint16_t normal_indices[3];
   uint32_t texture_index;
@@ -37,7 +37,7 @@ typedef struct FacHandle {
   unsigned int num_triangles;
 
   struct FacTextureIndex *texture_table;
-  unsigned int texture_table_length;
+  unsigned int texture_table_size;
 } FacHandle;
 
 FacHandle *Fac_LoadFile(const char *path);
