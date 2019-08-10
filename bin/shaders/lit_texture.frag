@@ -33,15 +33,15 @@ in vec4 interp_colour;
 in vec3 frag_pos;
 
 void main() {
-    vec4 samp = texture(diffuse, interp_UV);
-    if(samp.a < 0.1) {
+    vec4 dsample = texture(diffuse, interp_UV);
+    if(dsample.a < 0.1) {
         discard;
     }
 
     vec3 normal = normalize(interp_normal);
     vec3 light_direction = normalize(-sun_position);
     vec4 sun_term = (max(dot(normal, light_direction), 0.0)) * sun_colour + ambient_colour;
-    vec4 diffuse_colour = sun_term * interp_colour * texture(diffuse, interp_UV);
+    vec4 diffuse_colour = sun_term * interp_colour * dsample;
     // uncomment to check normals...
     //diffuse_colour = vec4(normal, 1.0);
 
