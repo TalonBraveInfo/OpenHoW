@@ -5,18 +5,23 @@
 ```c
 foreach(keyframe) //sizeof = 272
 {
-    2   ushort  unkUShort0
-    foreach(boneTransform) //per bone branch? (none-leaf-bone) = 10
-    {
-        //Vector3
-        1   char   transform.X
-        1   char   transform.Y
-        1   char   transform.Z
-    }
+    // World space transform
+    // Transform32    
+    4   int rootTransform.X
+    4   int rootTransform.Y
+    4   int rootTransform.Z
+    4   int rootTransform.W   // unused 
+    
+    // Object space transform
+    // Transform32
+    4   int objectTransform.X
+    4   int objectTransform.Y
+    4   int objectTransform.Z
+    4   int objectTransform.W   // unused
     
     foreach(boneRotation) //sizeof = 15
     {        
-        //Quaternion
+        //Rotation32 (Quaternion)
         4   float   rotation.X
         4   float   rotation.Y
         4   float   rotation.Z

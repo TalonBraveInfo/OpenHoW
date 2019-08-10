@@ -6,10 +6,18 @@ Skeleton used for pigs
 foreach(bone) //sizeof = 20
 {
     4   int     bone.ParentIndex
-    2   short   bone.XOffset
-    2   short   bone.YOffset
-    2   short   bone.ZOffset
-    10  char[]  bone.reserved   //0 -> rotation?
+
+    //Transform16
+    2   short   bone.Transform.X
+    2   short   bone.Transform.Y
+    2   short   bone.Transform.Z
+    2   short   bone.Transform.W    //unused
+
+    //Rotation16
+    2   short   bone.Rotation.X
+    2   short   bone.Rotation.Y
+    2   short   bone.Rotation.Z
+    2   short   bone.Rotation.W
 }
 // EOF
 ```
