@@ -20,7 +20,10 @@
 #include "display.h"
 #include "texture_atlas.h"
 
-TextureAtlas::TextureAtlas() = default;
+TextureAtlas::TextureAtlas(int w, int h) : width_(w), height_(h) {
+  texture_ = Display_GetDefaultTexture();
+}
+
 TextureAtlas::~TextureAtlas() {
   for(auto& id : images_by_name_) {
     PLImage *image = id.second;
@@ -28,7 +31,7 @@ TextureAtlas::~TextureAtlas() {
     id.second = nullptr;
   }
 
-  plDestroyTexture(texture_, true);
+  //plDestroyTexture(texture_, true);
 }
 
 void TextureAtlas::AddImage(const std::string &path) {
@@ -38,7 +41,7 @@ void TextureAtlas::AddImage(const std::string &path) {
   }
 
   char full_path[PL_SYSTEM_MAX_PATH];
-  snprintf(full_path, sizeof(full_path) - 1, "%s", u_find2(path.c_str(), supported_image_formats, true));
+  snprintf(full_path, sizeof(full_path) - 1, "%s", u_find2(path.c_str(), supported_image_formats, false));
   auto* img = static_cast<PLImage *>(u_alloc(1, sizeof(PLImage), true));
   if(!plLoadImage(full_path, img)) {
     Error("Failed to load image (%s)!\n", plGetError());
@@ -57,7 +60,7 @@ void TextureAtlas::AddImages(const std::vector<std::string> &textures) {
 
 void TextureAtlas::Finalize() {
     // Figure out how we'll organise the atlas
-  unsigned int w = 512, h = 8;
+  unsigned int w = width_, h = height_;
   unsigned int max_h = 0;
   unsigned int cur_y = 0, cur_x = 0;
   for(auto i = images_by_height_.rbegin(); i != images_by_height_.rend(); ++i) {
@@ -157,4 +160,13 @@ void TextureAtlas::GetTextureCoords(const std::string &name, float *x, float *y,
   *y = static_cast<float>(index->second.y) / static_cast<float>(texture_->h);
   *w = static_cast<float>(index->second.w) / static_cast<float>(texture_->w);
   *h = static_cast<float>(index->second.h) / static_cast<float>(texture_->h);
+}
+
+std::pair<unsigned int, unsigned int> TextureAtlas::GetTextureSize(const std::string &name) {
+  auto index = textures_.find(name);
+  if(index == textures_.end()) {
+    return std::make_pair(texture_->w, texture_->h);
+  }
+
+  return std::make_pair(index->second.w, index->second.h);
 }

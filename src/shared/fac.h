@@ -22,18 +22,26 @@
 PL_EXTERN_C
 
 typedef struct FacTriangle {
-  float uv_coords[3][2];
+  int8_t uv_coords[6];
   uint16_t vertex_indices[3];
   uint16_t normal_indices[3];
   uint32_t texture_index;
 } FacTriangle;
 
+typedef struct FacTextureIndex {
+  char name[16];
+} FacTextureIndex;
+
 typedef struct FacHandle {
   FacTriangle *triangles;
   unsigned int num_triangles;
+
+  struct FacTextureIndex *texture_table;
+  unsigned int texture_table_size;
 } FacHandle;
 
 FacHandle *Fac_LoadFile(const char *path);
+void Fac_WriteFile(FacHandle *handle, const char *path);
 void Fac_DestroyHandle(FacHandle *handle);
 
 PL_EXTERN_C_END

@@ -22,13 +22,11 @@
 #include "engine.h"
 #include "model.h"
 #include "loaders/loaders.h"
-#include "game/TempGame.h"
 
 #include "graphics/display.h"
 #include "graphics/shader.h"
-
-/************************************************************/
-// todo: legacy!!!
+#include "graphics/texture_atlas.h"
+#include "graphics/mesh.h"
 
 struct {
   HirHandle *pig_skeleton;
@@ -36,9 +34,6 @@ struct {
   Animation animations[MAX_ANIMATIONS];
   unsigned int num_animations;
 } model_cache;
-
-#define PIG_EYES_INDEX  118
-#define PIG_GOBS_INDEX  119
 
 static PLModel *Model_LoadVtxFile(const char *path) {
   VtxHandle *vtx = Vtx_LoadFile(path);
@@ -59,124 +54,57 @@ static PLModel *Model_LoadVtxFile(const char *path) {
     return nullptr;
   }
 
-#if 0 /* dumped! */
-  /* figure out how many textures we have for this model
-   * so that we can generate a mesh for each later */
+  const char *filename = plGetFileName(path);
+  // skydome is a special case, since we don't care about textures...
+  if (pl_strcasecmp(filename, "skydome.vtx") == 0) {
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, fac->num_triangles, vtx->num_vertices);
+    if (mesh == nullptr) {
+      Vtx_DestroyHandle(vtx);
+      Fac_DestroyHandle(fac);
+      LogWarn("Failed to create mesh (%s)!\n", plGetError());
+      return nullptr;
+    }
 
-#define MAX_TEXTURE_INDICES 32
-  unsigned int texture_indices[MAX_TEXTURE_INDICES];
-  unsigned int num_texture_indices = 0;
-  memset(texture_indices, -1, sizeof(unsigned int) * MAX_TEXTURE_INDICES);
+    for (unsigned int j = 0; j < vtx->num_vertices; ++j) {
+      plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position * -1 * .5f);
+    }
 
-  for(unsigned int i = 0; i < num_quads; ++i) {
-      for(unsigned int j = 0; j < num_texture_indices; ++j) {
-          if(quads[i].texture_index == texture_indices[j]) {
-              goto NEXT_QUAD;
-          }
-      }
+    unsigned int cur_index = 0;
+    for (unsigned int j = 0; j < fac->num_triangles; ++j) {
+      plSetMeshTrianglePosition(mesh, &cur_index,
+                                fac->triangles[j].vertex_indices[0],
+                                fac->triangles[j].vertex_indices[1],
+                                fac->triangles[j].vertex_indices[2]
+      );
+    }
 
-      u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
-      texture_indices[num_texture_indices++] = quads[i].texture_index;
+    Vtx_DestroyHandle(vtx);
+    Fac_DestroyHandle(fac);
 
-      NEXT_QUAD:;
+    mesh->texture = Display_GetDefaultTexture();
+
+    PLModel *model = plCreateBasicStaticModel(mesh);
+    if (model == nullptr) {
+      LogWarn("Failed to create model (%s)!\n", plGetError());
+      return nullptr;
+    }
+
+    return model;
   }
 
-  for(unsigned int i = 0; i < num_triangles; ++i) {
-      for(unsigned int j = 0; j < num_texture_indices; ++j) {
-          if(triangles[i].texture_index == texture_indices[j]) {
-              goto NEXT_TRIANGLE;
-          }
+  TextureAtlas atlas(128, 8);
+  if (fac->texture_table_size > 0) {
+    for (unsigned int i = 0; i < fac->texture_table_size; ++i) {
+      if (fac->texture_table[i].name[0] == '\0') {
+        LogWarn("Invalid texture name in table, skipping (%d)!\n", i);
+        continue;
       }
-
-      u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
-      texture_indices[num_texture_indices++] = triangles[i].texture_index;
-
-      NEXT_TRIANGLE:;
+      atlas.AddImage(std::string("chars/scenery/") + fac->texture_table[i].name);
+    }
+    atlas.Finalize();
   }
 
-  /* now group together all our "meshes" */
-
-  struct {
-      struct {
-          int8_t uv_a[2];
-          int8_t uv_b[2];
-          int8_t uv_c[2];
-
-          uint16_t vertex_indices[3];
-          uint16_t normal_indices[3];
-
-          uint32_t texture_index;
-      } triangles[4096]; /* temporary until I can be assed */
-      unsigned int num_triangles;
-  } meshes[num_texture_indices];
-
-  for(unsigned int i = 0; i < num_texture_indices; ++i) {
-      for(unsigned int j = 0; j < num_quads; ++j) {
-          /* todo */
-      }
-
-      for(unsigned int j = 0; j < num_triangles; ++j) {
-          if(texture_indices[i] != triangles[j].texture_index) {
-              continue;
-          }
-
-          meshes[i].triangles[meshes[i].num_triangles].texture_index = triangles[j].texture_index;
-
-          /* copy vertex coordinates into our group */
-          for(unsigned int k = 0; k < 3; ++k) {
-              meshes[i].triangles[meshes[i].num_triangles].vertex_indices[k] = triangles[j].vertex_indices[k];
-              meshes[i].triangles[meshes[i].num_triangles].normal_indices[k] = triangles[j].normal_indices[k];
-          }
-
-          /* copy uv coordinates into our group */
-          for(unsigned int k = 0; k < 2; ++k) {
-              meshes[i].triangles[meshes[i].num_triangles].uv_a[k] = triangles[j].uv_a[k];
-              meshes[i].triangles[meshes[i].num_triangles].uv_b[k] = triangles[j].uv_b[k];
-              meshes[i].triangles[meshes[i].num_triangles].uv_c[k] = triangles[j].uv_c[k];
-          }
-
-          meshes[i].num_triangles++;
-          u_assert(meshes[i].num_triangles < 4096);
-      }
-  }
-
-  /* and allocate all of our meshes */
-
-  PLMesh **model_meshes = u_alloc(1, sizeof(PLMesh*), true);
-  for(unsigned int i = 0; i < num_texture_indices; ++i) {
-      model_meshes[i] = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, meshes[i].num_triangles, vtx->num_vertices);
-      if(model_meshes[i] == NULL) {
-          Error("Failed to allocate mesh for %s, aborting (%s)!\n", path, plGetError());
-      }
-
-      for(unsigned int j = 0; j < vtx->num_vertices; ++j) {
-          plSetMeshVertexPosition(model_meshes[i], j, vtx->vertices[j].position);
-
-#if 1 /* debug */
-          uint8_t r = (uint8_t)(rand() % 255);
-          uint8_t g = (uint8_t)(rand() % 255);
-          uint8_t b = (uint8_t)(rand() % 255);
-          plSetMeshVertexColour(model_meshes[i], j, PLColour(r, g, b, 255));
-#else
-          plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
-#endif
-
-          model_meshes[i]->vertices[i].bone_index = vtx->vertices[i].bone_index;
-          model_meshes[i]->vertices[i].bone_weight = 1.f;
-      }
-
-      unsigned int cur_index = 0;
-      for(unsigned int j = 0; j < meshes[i].num_triangles; ++j) {
-          plSetMeshTrianglePosition(model_meshes[i], &cur_index,
-                                    meshes[i].triangles[j].vertex_indices[0],
-                                    meshes[i].triangles[j].vertex_indices[1],
-                                    meshes[i].triangles[j].vertex_indices[2]
-          );
-      }
-  }
-#endif
-
-  PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, vtx->num_vertices);
+  PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, fac->num_triangles * 3);
   if (mesh == nullptr) {
     Vtx_DestroyHandle(vtx);
     Fac_DestroyHandle(fac);
@@ -185,30 +113,59 @@ static PLModel *Model_LoadVtxFile(const char *path) {
   }
 
   for (unsigned int j = 0; j < vtx->num_vertices; ++j) {
-    for(unsigned int k = 0; k < 3; ++k) {
-      vtx->vertices[j].position[k] *= -1 * .5f;
-    }
-
-    plSetMeshVertexColour(mesh, j, PL_COLOUR_WHITE);
-    plSetMeshVertexPosition(mesh, j, vtx->vertices[j].position);
-    plSetMeshVertexST(mesh, j, -1.0f, 1.0f);
-
-    mesh->vertices[j].bone_index = vtx->vertices[j].bone_index;
-    mesh->vertices[j].bone_weight = 1.f;
+    vtx->vertices[j].position *= .5f;
+    vtx->vertices[j].position.y *= -1;
+    vtx->vertices[j].position.z *= -1;
   }
 
-  mesh->texture = Display_GetDefaultTexture();
+  // automatically returns default if failed
+  mesh->texture = atlas.GetTexture();
 
   unsigned int cur_index = 0;
-  for (unsigned int j = 0; j < fac->num_triangles; ++j) {
+  for (unsigned int j = 0, next_vtx_i = 0; j < fac->num_triangles; ++j) {
+    for (unsigned int tri_vtx_i = 0; tri_vtx_i < 3; ++tri_vtx_i, ++next_vtx_i) {
+      unsigned int tri_vtx = fac->triangles[j].vertex_indices[tri_vtx_i];
+
+      plSetMeshVertexColour(mesh, next_vtx_i, PL_COLOUR_WHITE);
+      plSetMeshVertexPosition(mesh, next_vtx_i, vtx->vertices[tri_vtx].position);
+
+#if 0 // todo: only necessary for pigs?
+      mesh->vertices[next_vtx_i].bone_index = vtx->vertices[tri_vtx].bone_index;
+      mesh->vertices[next_vtx_i].bone_weight = 1.f;
+#endif
+    }
+
     plSetMeshTrianglePosition(mesh, &cur_index,
-                              fac->triangles[j].vertex_indices[0],
-                              fac->triangles[j].vertex_indices[1],
-                              fac->triangles[j].vertex_indices[2]
+                              next_vtx_i - 1,
+                              next_vtx_i - 2,
+                              next_vtx_i - 3
+
+                              /*
+                              next_vtx_i - 3,
+                              next_vtx_i - 2,
+                              next_vtx_i - 1
+                               */
     );
+
+    if (fac->texture_table != nullptr) {
+      float tx_x, tx_y, tx_w, tx_h;
+      atlas.GetTextureCoords(fac->texture_table[fac->triangles[j].texture_index].name, &tx_x, &tx_y, &tx_w, &tx_h);
+
+      std::pair<unsigned int, unsigned int>
+          texture_size = atlas.GetTextureSize(fac->texture_table[fac->triangles[j].texture_index].name);
+
+      for (unsigned int k = 0, u = 0; k < 3; ++k, u += 2) {
+        plSetMeshVertexST(mesh, next_vtx_i - (3 - k),
+                          tx_x + (tx_w * (1.0f / (float) (texture_size.first))
+                              * (float) (fac->triangles[j].uv_coords[u])),
+                          tx_y + (tx_h * (1.0f / (float) (texture_size.second))
+                              * (float) (fac->triangles[j].uv_coords[u + 1])));
+      }
+    }
   }
 
-  plGenerateMeshNormals(mesh);
+  std::list<PLMesh *> meshes(&mesh, &mesh + 1);
+  Mesh_GenerateFragmentedMeshNormals(meshes);
 
   auto *skeleton =
       static_cast<PLModelBone *>(u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true));
@@ -527,7 +484,7 @@ ModelManager::~ModelManager() {
   plDestroyModel(fallback_);
 }
 
-void ModelManager::DestroyModels(){
+void ModelManager::DestroyModels() {
   for (const auto &i : cached_models_) {
     plDestroyModel(i.second);
   }

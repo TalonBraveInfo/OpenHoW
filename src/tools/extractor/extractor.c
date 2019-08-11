@@ -106,7 +106,7 @@ static ModelConversionData pc_conversion_data[] = {
     {"/Chars/SKYDOME.MAD", NULL, "campaigns/how/skys/"},
 };
 
-static void ConvertModelToObj(const char *fac_path, const char *vtx_path, const char *no2_path) {
+static void ConvertModelToObj(VtxHandle *vtx, FacHandle *fac) {
 
 }
 
@@ -124,6 +124,12 @@ static void ConvertModelData(void) {
     char model_paths[package->table_size][PL_SYSTEM_MAX_PATH];
     unsigned int num_models = 0;
     for(unsigned int j = 0; j < package->table_size; ++j) {
+      const char *ext = plGetFileExtension(package->table[j].file.name);
+      if(pl_strcasecmp(ext, "no2") == 0) {
+        // skip normals, since they suck!
+        continue;
+      }
+
       char out[PL_SYSTEM_MAX_PATH];
       snprintf(out, sizeof(out), "%s%s", pc_conversion_data[i].out, pl_strtolower(package->table[j].file.name));
 
@@ -139,7 +145,11 @@ static void ConvertModelData(void) {
         LogWarn("Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError());
       }
 
-      const char *ext = plGetFileExtension(package->table[j].file.name);
+      // skydome is a special case
+      if(pl_strcasecmp(filename, "skydomeu.fac") == 0 || pl_strcasecmp(filename, "skydome.fac") == 0) {
+        continue;
+      }
+
       if (pl_strcasecmp(ext, "fac") == 0) {
         plStripExtension(model_paths[num_models++], PL_SYSTEM_MAX_PATH - 1, out);
       }
@@ -156,6 +166,49 @@ static void ConvertModelData(void) {
       if(package == NULL) {
         LogWarn("Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[i].mtd, plGetError());
       }
+
+      // write all the textures out
+      for(unsigned int j = 0; j < package->table_size; ++j) {
+        char out[PL_SYSTEM_MAX_PATH];
+        snprintf(out, sizeof(out), "%s%s", pc_conversion_data[i].out, pl_strtolower(package->table[j].file.name));
+        char dir[PL_SYSTEM_MAX_PATH];
+        const char *filename = plGetFileName(out);
+        strncpy(dir, out, strlen(out) - strlen(filename));
+        dir[strlen(out) - strlen(filename)] = '\0';
+
+#if 0 // paranoid check, doesn't happen...
+        if(plFileExists(out)) {
+          LogInfo("The file \"%s\" already exists, comparing...\n", out);
+
+          size_t size = plGetFileSize(out);
+          FILE *fp = fopen(out, "rb");
+          char *data = u_alloc(size, 1, true);
+          fread(data, 1, size, fp);
+          fclose(fp);
+
+          uint32_t crc_a;
+          pl_crc32(package->table[j].file.data, package->table[j].file.size, &crc_a);
+          uint32_t crc_b;
+          pl_crc32(data, size, &crc_b);
+          if(crc_a != crc_b) {
+            LogWarn("Files are different, renaming second file!\n");
+            while(plFileExists(out)) {
+              strcat(out, "_");
+            }
+          }
+        }
+#endif
+
+        if(plCreatePath(dir)) {
+          if (!plWriteFile(out, package->table[j].file.data, package->table[j].file.size)) {
+            LogWarn("Failed to write model, \"%s\" (%s)!\n", out, plGetError());
+          }
+        } else {
+          LogWarn("Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError());
+        }
+
+        ConvertImageToPng(out);
+      }
     }
 
     /* and now we go through again, converting everything as we do so */
@@ -167,6 +220,7 @@ static void ConvertModelData(void) {
         continue;
       }
 
+#if 0 // todo: always generate normals...
       char vtx_path[PL_SYSTEM_MAX_PATH];
       snprintf(vtx_path, PL_SYSTEM_MAX_PATH, "%s.vtx", model_paths[j]);
       if(!plFileExists(vtx_path)) {
@@ -186,11 +240,53 @@ static void ConvertModelData(void) {
       if(No2_LoadFile(no2_path, vtx) == NULL) {
         generate_normals = true;
       }
+#endif
+
+      // we'll resize this later...
+      FacTextureIndex *table = u_alloc(package->table_size, sizeof(FacTextureIndex), true);
+      unsigned int table_size = 0;
 
       FacHandle *fac = Fac_LoadFile(fac_path);
       for(unsigned int k = 0; k < fac->num_triangles; ++k) {
+        uint32_t texture_index = fac->triangles[k].texture_index;
+        if(texture_index >= package->table_size) {
+          LogWarn("Out of bounds texture index, \"%s\"!\n", fac_path);
+          continue;
+        }
 
+        // attempt to add it to the table
+        char texture_name[16];
+        strncpy(texture_name, package->table[texture_index].file.name,
+            strlen(package->table[texture_index].file.name) - 4);
+        texture_name[strlen(package->table[texture_index].file.name) - 4] = '\0';
+        pl_strtolower(texture_name);
+        unsigned int l;
+        for(l = 0; l < package->table_size; ++l) {
+          if(table[l].name[0] == '\0') {
+            strncpy(table[l].name, texture_name, sizeof(table[l].name));
+            table_size++;
+            break;
+          } else if(strncmp(table[l].name, texture_name, sizeof(table[l].name)) == 0) {
+            break;
+          }
+        }
+
+        if(table_size > package->table_size) {
+          Error("Invalid");
+        }
+
+        // replace the original id so it matches with the index in our table
+        fac->triangles[k].texture_index = l;
       }
+
+      fac->texture_table = u_alloc(table_size, sizeof(FacTextureIndex), true);
+      fac->texture_table_size = table_size;
+      memcpy(fac->texture_table, table, sizeof(FacTextureIndex) * table_size);
+      u_free(table);
+
+      // write out the fac and replace it (we'll append the table to the end)
+      snprintf(fac_path, PL_SYSTEM_MAX_PATH, "%s.fac", model_paths[j]);
+      Fac_WriteFile(fac, fac_path);
     }
   }
 }

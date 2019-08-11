@@ -19,10 +19,11 @@
 
 class TextureAtlas {
  public:
-  TextureAtlas();
+  TextureAtlas(int w, int h);
   ~TextureAtlas();
 
   void GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h);
+  std::pair<unsigned int, unsigned int> GetTextureSize(const std::string &name);
 
   void AddImage(const std::string &path);
   void AddImages(const std::vector<std::string> &textures);
@@ -37,6 +38,9 @@ class TextureAtlas {
     unsigned int x, y, w, h;
     PLImage *image;
   };
+
+  int width_{512};
+  int height_{8};
 
   std::map<std::string, Index> textures_;
   std::map<std::string, PLImage *> images_by_name_;
