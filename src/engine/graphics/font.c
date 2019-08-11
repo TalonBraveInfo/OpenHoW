@@ -27,7 +27,13 @@ BitmapFont *g_fonts[NUM_FONTS];
 PLMesh *font_mesh = NULL;
 
 void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character) {
-  if (scale == 0) {
+  if(font == NULL || scale == 0) {
+    return;
+  }
+
+  int dw = g_state.ui_camera->viewport.w;
+  int dh = g_state.ui_camera->viewport.h;
+  if(x > dw || y > dh) {
     return;
   }
 
@@ -73,6 +79,10 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
 
 void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
                            const char *msg) {
+  if(font == NULL) {
+    return;
+  }
+
   if (scale == 0) {
     return;
   }
@@ -110,12 +120,14 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
   snprintf(buf, sizeof(buf) - 1, "frontend/text/%s.tab", tab_name);
   const char *tab_path = u_find(buf);
   if (!plFileExists(tab_path)) {
-    Error("Failed to load tab for \"%s\", aborting!\n", name);
+    LogWarn("Failed to load tab for \"%s\", aborting!\n", name);
+    return NULL;
   }
 
   FILE *tab_file = fopen(tab_path, "rb");
   if (tab_file == NULL) {
-    Error("Failed to load tab \"%s\", aborting!\n", tab_path);
+    LogWarn("Failed to load tab \"%s\", aborting!\n", tab_path);
+    return NULL;
   }
 
   fseek(tab_file, 16, SEEK_CUR);

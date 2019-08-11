@@ -59,123 +59,6 @@ static PLModel *Model_LoadVtxFile(const char *path) {
     return nullptr;
   }
 
-#if 0 /* dumped! */
-  /* figure out how many textures we have for this model
-   * so that we can generate a mesh for each later */
-
-#define MAX_TEXTURE_INDICES 32
-  unsigned int texture_indices[MAX_TEXTURE_INDICES];
-  unsigned int num_texture_indices = 0;
-  memset(texture_indices, -1, sizeof(unsigned int) * MAX_TEXTURE_INDICES);
-
-  for(unsigned int i = 0; i < num_quads; ++i) {
-      for(unsigned int j = 0; j < num_texture_indices; ++j) {
-          if(quads[i].texture_index == texture_indices[j]) {
-              goto NEXT_QUAD;
-          }
-      }
-
-      u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
-      texture_indices[num_texture_indices++] = quads[i].texture_index;
-
-      NEXT_QUAD:;
-  }
-
-  for(unsigned int i = 0; i < num_triangles; ++i) {
-      for(unsigned int j = 0; j < num_texture_indices; ++j) {
-          if(triangles[i].texture_index == texture_indices[j]) {
-              goto NEXT_TRIANGLE;
-          }
-      }
-
-      u_assert(num_texture_indices < MAX_TEXTURE_INDICES);
-      texture_indices[num_texture_indices++] = triangles[i].texture_index;
-
-      NEXT_TRIANGLE:;
-  }
-
-  /* now group together all our "meshes" */
-
-  struct {
-      struct {
-          int8_t uv_a[2];
-          int8_t uv_b[2];
-          int8_t uv_c[2];
-
-          uint16_t vertex_indices[3];
-          uint16_t normal_indices[3];
-
-          uint32_t texture_index;
-      } triangles[4096]; /* temporary until I can be assed */
-      unsigned int num_triangles;
-  } meshes[num_texture_indices];
-
-  for(unsigned int i = 0; i < num_texture_indices; ++i) {
-      for(unsigned int j = 0; j < num_quads; ++j) {
-          /* todo */
-      }
-
-      for(unsigned int j = 0; j < num_triangles; ++j) {
-          if(texture_indices[i] != triangles[j].texture_index) {
-              continue;
-          }
-
-          meshes[i].triangles[meshes[i].num_triangles].texture_index = triangles[j].texture_index;
-
-          /* copy vertex coordinates into our group */
-          for(unsigned int k = 0; k < 3; ++k) {
-              meshes[i].triangles[meshes[i].num_triangles].vertex_indices[k] = triangles[j].vertex_indices[k];
-              meshes[i].triangles[meshes[i].num_triangles].normal_indices[k] = triangles[j].normal_indices[k];
-          }
-
-          /* copy uv coordinates into our group */
-          for(unsigned int k = 0; k < 2; ++k) {
-              meshes[i].triangles[meshes[i].num_triangles].uv_a[k] = triangles[j].uv_a[k];
-              meshes[i].triangles[meshes[i].num_triangles].uv_b[k] = triangles[j].uv_b[k];
-              meshes[i].triangles[meshes[i].num_triangles].uv_c[k] = triangles[j].uv_c[k];
-          }
-
-          meshes[i].num_triangles++;
-          u_assert(meshes[i].num_triangles < 4096);
-      }
-  }
-
-  /* and allocate all of our meshes */
-
-  PLMesh **model_meshes = u_alloc(1, sizeof(PLMesh*), true);
-  for(unsigned int i = 0; i < num_texture_indices; ++i) {
-      model_meshes[i] = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, meshes[i].num_triangles, vtx->num_vertices);
-      if(model_meshes[i] == NULL) {
-          Error("Failed to allocate mesh for %s, aborting (%s)!\n", path, plGetError());
-      }
-
-      for(unsigned int j = 0; j < vtx->num_vertices; ++j) {
-          plSetMeshVertexPosition(model_meshes[i], j, vtx->vertices[j].position);
-
-#if 1 /* debug */
-          uint8_t r = (uint8_t)(rand() % 255);
-          uint8_t g = (uint8_t)(rand() % 255);
-          uint8_t b = (uint8_t)(rand() % 255);
-          plSetMeshVertexColour(model_meshes[i], j, PLColour(r, g, b, 255));
-#else
-          plSetMeshVertexColour(cur_mesh, j, PLColour(255, 255, 255, 255));
-#endif
-
-          model_meshes[i]->vertices[i].bone_index = vtx->vertices[i].bone_index;
-          model_meshes[i]->vertices[i].bone_weight = 1.f;
-      }
-
-      unsigned int cur_index = 0;
-      for(unsigned int j = 0; j < meshes[i].num_triangles; ++j) {
-          plSetMeshTrianglePosition(model_meshes[i], &cur_index,
-                                    meshes[i].triangles[j].vertex_indices[0],
-                                    meshes[i].triangles[j].vertex_indices[1],
-                                    meshes[i].triangles[j].vertex_indices[2]
-          );
-      }
-  }
-#endif
-
   PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, vtx->num_vertices);
   if (mesh == nullptr) {
     Vtx_DestroyHandle(vtx);
@@ -210,35 +93,20 @@ static PLModel *Model_LoadVtxFile(const char *path) {
 
   plGenerateMeshNormals(mesh);
 
+#if 0
   auto *skeleton =
       static_cast<PLModelBone *>(u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true));
   memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
-
   PLModel *model = plCreateBasicSkeletalModel(mesh, skeleton, model_cache.pig_skeleton->num_bones, BONE_INDEX_PELVIS);
+#else
+  PLModel *model = plCreateBasicStaticModel(mesh);
+#endif
   if (model == nullptr) {
     LogWarn("Failed to create model (%s)!\n", plGetError());
     return nullptr;
   }
 
   plGenerateModelBounds(model);
-
-#if 0 /* don't bother for now... */
-  /* check if it's a LOD model, these are appended with '_hi' */
-  char file_name[16];
-  snprintf(file_name, sizeof(file_name), plGetFileName(path));
-  if(file_name[0] != '\0' && strstr(file_name, "_hi") != 0) {
-      char lod_path[PL_SYSTEM_MAX_PATH];
-      strncpy(lod_path, path, strlen(path) - 7);  /* _hi.vtx */
-      lod_path[strlen(path) - 7] = '\0';          /* _hi.vtx */
-      strcat(lod_path, "_med.vtx");
-      if(plFileExists(lod_path)) {
-          LogDebug("found lod, \"%s\", adding to model\n", lod_path);
-          model->num_lods += 1;
-      } else {
-          LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
-      }
-  }
-#endif
 
   return model;
 }
@@ -255,6 +123,7 @@ PLModel *Model_LoadMinFile(const char *path) {
 void CacheModelData() {
   memset(&model_cache, 0, sizeof(model_cache));
 
+#if 0
   model_cache.pig_skeleton = Hir_LoadFile(u_find("chars/pig.hir"));
   if (model_cache.pig_skeleton == nullptr) {
     Error("Failed to load skeleton, aborting!\n")
@@ -421,6 +290,7 @@ void CacheModelData() {
           );
       }
   }
+#endif
 #endif
 }
 
