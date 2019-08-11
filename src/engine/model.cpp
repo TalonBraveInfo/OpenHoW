@@ -167,35 +167,20 @@ static PLModel *Model_LoadVtxFile(const char *path) {
   std::list<PLMesh *> meshes(&mesh, &mesh + 1);
   Mesh_GenerateFragmentedMeshNormals(meshes);
 
+#if 0
   auto *skeleton =
       static_cast<PLModelBone *>(u_alloc(model_cache.pig_skeleton->num_bones, sizeof(PLModelBone), true));
   memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
-
   PLModel *model = plCreateBasicSkeletalModel(mesh, skeleton, model_cache.pig_skeleton->num_bones, BONE_INDEX_PELVIS);
+#else
+  PLModel *model = plCreateBasicStaticModel(mesh);
+#endif
   if (model == nullptr) {
     LogWarn("Failed to create model (%s)!\n", plGetError());
     return nullptr;
   }
 
   plGenerateModelBounds(model);
-
-#if 0 /* don't bother for now... */
-  /* check if it's a LOD model, these are appended with '_hi' */
-  char file_name[16];
-  snprintf(file_name, sizeof(file_name), plGetFileName(path));
-  if(file_name[0] != '\0' && strstr(file_name, "_hi") != 0) {
-      char lod_path[PL_SYSTEM_MAX_PATH];
-      strncpy(lod_path, path, strlen(path) - 7);  /* _hi.vtx */
-      lod_path[strlen(path) - 7] = '\0';          /* _hi.vtx */
-      strcat(lod_path, "_med.vtx");
-      if(plFileExists(lod_path)) {
-          LogDebug("found lod, \"%s\", adding to model\n", lod_path);
-          model->num_lods += 1;
-      } else {
-          LogWarn("model name ends with \"_hi\" but no other LOD found with name \"%s\", ignoring!\n", lod_path);
-      }
-  }
-#endif
 
   return model;
 }
@@ -212,6 +197,7 @@ PLModel *Model_LoadMinFile(const char *path) {
 void CacheModelData() {
   memset(&model_cache, 0, sizeof(model_cache));
 
+#if 0
   model_cache.pig_skeleton = Hir_LoadFile(u_find("chars/pig.hir"));
   if (model_cache.pig_skeleton == nullptr) {
     Error("Failed to load skeleton, aborting!\n")
@@ -378,6 +364,7 @@ void CacheModelData() {
           );
       }
   }
+#endif
 #endif
 }
 

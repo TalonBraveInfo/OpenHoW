@@ -448,6 +448,9 @@ static void DrawFPSOverlay(void) {
     int h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
 
     BitmapFont* font = g_fonts[FONT_SMALL];
+    if(font == NULL) {
+      return;
+    }
 
     char ms_count[32];
     sprintf(ms_count, "FPS %d/S (%d/MS)", fps, ms);
