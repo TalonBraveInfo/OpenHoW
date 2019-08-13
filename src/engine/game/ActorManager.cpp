@@ -21,7 +21,7 @@
 #include "ActorManager.h"
 
 #include "actors/actor.h"
-#include "actors/StaticModelActor.h"
+#include "actors/actor_static_model.h"
 
 /************************************************************/
 
@@ -39,7 +39,7 @@ Actor* ActorManager::SpawnMapActor(const std::string &name) {
 
     Actor* actor;
     if(i == actor_classes_.end()) {
-        actor = new StaticModelActor(lcname);
+        actor = new AStaticModel(lcname);
     } else {
         actor = i->second(lcname);
     }

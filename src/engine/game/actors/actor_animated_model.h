@@ -18,18 +18,13 @@
 #pragma once
 
 #include "actor.h"
+#include "actor_model.h"
 
-class ModelActor : public Actor {
-public:
-    ModelActor(const std::string& name);
-    ~ModelActor() override;
+class AAnimatedModel : public AModel {
+ public:
+  explicit AAnimatedModel(const std::string &name);
+  ~AAnimatedModel() override;
 
-    void Draw() override;
-
-    virtual void SetModel(const std::string &path);
-
-protected:
-    PLModel* model_{nullptr};
-
-private:
+ protected:
+ private:
 };

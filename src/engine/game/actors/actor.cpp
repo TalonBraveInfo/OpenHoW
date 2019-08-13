@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_graphics_camera.h>
-
 #include "../../engine.h"
 
 #include "actor.h"
@@ -25,13 +23,13 @@ Actor::Actor() = default;
 Actor::~Actor() = default;
 
 Actor::Actor(const std::string &name) {
-    spawn_name = name;
+  spawn_name = name;
 }
 
 void Actor::HandleInput() {}
 
 void Actor::SetAngles(PLVector3 angles) {
-    VecAngleClamp(&angles);
-    angles_ = angles;
-    /* todo: limit angles... */
+  VecAngleClamp(&angles);
+  angles_ = angles;
+  /* todo: limit angles... */
 }

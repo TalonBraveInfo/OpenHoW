@@ -18,13 +18,13 @@
 #include "../../engine.h"
 #include "../../model.h"
 
-#include "ModelActor.h"
+#include "actor_model.h"
 
-ModelActor::ModelActor(const std::string &name) : Actor(name) {}
-ModelActor::~ModelActor() = default;
+AModel::AModel(const std::string &name) : Actor(name) {}
+AModel::~AModel() = default;
 
-void ModelActor::Draw() {
-  if(spawn_name == "dummy") {
+void AModel::Draw() {
+  if (spawn_name == "dummy") {
     angles_.y += TICKS_PER_SECOND / 1000.f;
   }
 
@@ -43,6 +43,6 @@ void ModelActor::Draw() {
   Actor::Draw();
 }
 
-void ModelActor::SetModel(const std::string &path) {
+void AModel::SetModel(const std::string &path) {
   model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
 }

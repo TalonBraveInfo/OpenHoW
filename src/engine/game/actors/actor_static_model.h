@@ -18,13 +18,13 @@
 #pragma once
 
 #include "actor.h"
-#include "ModelActor.h"
+#include "actor_model.h"
 
-class AnimatedModelActor : public ModelActor {
-public:
-    explicit AnimatedModelActor(const std::string& name);
-    ~AnimatedModelActor() override;
+class AStaticModel : public AModel {
+ public:
+  explicit AStaticModel(const std::string &name);
+  ~AStaticModel() override;
 
-protected:
-private:
+ protected:
+ private:
 };

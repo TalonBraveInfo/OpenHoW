@@ -17,10 +17,10 @@
 
 #include "../../engine.h"
 
-#include "AnimatedModelActor.h"
+#include "actor_animated_model.h"
 
-AnimatedModelActor::AnimatedModelActor(const std::string& name) : ModelActor(name) {
+AAnimatedModel::AAnimatedModel(const std::string &name) : AModel(name) {
 
 }
 
-AnimatedModelActor::~AnimatedModelActor() = default;
+AAnimatedModel::~AAnimatedModel() = default;
