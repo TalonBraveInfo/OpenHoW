@@ -36,10 +36,11 @@
 EngineState g_state;
 
 void Engine_Initialize(void) {
-    LogInfo("initializing engine (%d.%d.%d)...\n",
+    LogInfo("initializing engine (v%d.%d.%d-%s:%s-%s)...\n",
             ENGINE_MAJOR_VERSION,
             ENGINE_MINOR_VERSION,
-            ENGINE_PATCH_VERSION);
+            ENGINE_PATCH_VERSION,
+            GIT_BRANCH, GIT_COMMIT_HASH, GIT_COMMIT_COUNT);
 
     g_state.draw_ticks = 0;
     g_state.is_host = true;
