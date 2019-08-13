@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Actor.h"
+#include "actor.h"
 #include "ModelActor.h"
 
 class AnimatedModelActor : public ModelActor {

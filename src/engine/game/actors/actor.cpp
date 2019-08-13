@@ -15,21 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include <PL/platform_graphics_camera.h>
 
-#include "Actor.h"
+#include "../../engine.h"
 
-class ModelActor : public Actor {
-public:
-    ModelActor(const std::string& name);
-    ~ModelActor() override;
+#include "actor.h"
 
-    void Draw() override;
+Actor::Actor() = default;
+Actor::~Actor() = default;
 
-    virtual void SetModel(const std::string &path);
+Actor::Actor(const std::string &name) {
+    spawn_name = name;
+}
 
-protected:
-    PLModel* model_{nullptr};
+void Actor::HandleInput() {}
 
-private:
-};
+void Actor::SetAngles(PLVector3 angles) {
+    VecAngleClamp(&angles);
+    angles_ = angles;
+    /* todo: limit angles... */
+}

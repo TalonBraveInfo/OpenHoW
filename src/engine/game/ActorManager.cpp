@@ -19,8 +19,9 @@
 #include "../frontend.h"
 
 #include "ActorManager.h"
-#include "Actor.h"
-#include "StaticModelActor.h"
+
+#include "actors/actor.h"
+#include "actors/StaticModelActor.h"
 
 /************************************************************/
 

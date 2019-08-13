@@ -15,11 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "AnimatedModelActor.h"
+#pragma once
 
-AnimatedModelActor::AnimatedModelActor(const std::string& name) : ModelActor(name) {
+#include "actor.h"
+#include "ModelActor.h"
 
-}
+class StaticModelActor : public ModelActor {
+public:
+    explicit StaticModelActor(const std::string& name);
+    ~StaticModelActor() override;
 
-AnimatedModelActor::~AnimatedModelActor() = default;
+protected:
+private:
+};

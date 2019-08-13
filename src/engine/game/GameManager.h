@@ -18,7 +18,7 @@
 #pragma once
 
 #include "TempGame.h"
-#include "Actor.h"
+#include "actors/actor.h"
 
 struct Player {
     std::string     name;

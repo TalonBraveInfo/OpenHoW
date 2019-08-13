@@ -18,7 +18,8 @@
 #pragma once
 
 #include "../Map.h"
-#include "Actor.h"
+
+#include "actors/actor.h"
 
 class ActorManager {
 protected:

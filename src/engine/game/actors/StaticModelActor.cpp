@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../model.h"
+#include "../../engine.h"
+#include "../../model.h"
 
-#include "ActorManager.h"
+#include "../ActorManager.h"
+
 #include "StaticModelActor.h"
 
 register_actor(DUMMY, StaticModelActor); // todo: needs special logic

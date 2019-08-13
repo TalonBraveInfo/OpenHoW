@@ -17,13 +17,14 @@
 
 #include <PL/platform_graphics_camera.h>
 
-#include "../engine.h"
-#include "../input.h"
+#include "../../engine.h"
+#include "../../input.h"
 
-#include "ActorManager.h"
+#include "../ActorManager.h"
+#include "../GameManager.h"
+
 #include "ModelActor.h"
 #include "AnimatedModelActor.h"
-#include "GameManager.h"
 
 class PigActor : public AnimatedModelActor {
 public:
