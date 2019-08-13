@@ -165,7 +165,7 @@ void MapConfigEditor::Display() {
 
   ImGui::Text("Lighting Settings");
 
-  if(ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, -180, 180, nullptr)) {
+  if(ImGui::SliderAngle("Sun Pitch", &manifest_->sun_pitch, -90, 90, nullptr)) {
     map_->UpdateLighting();
   }
   if(ImGui::SliderAngle("Sun Yaw", &manifest_->sun_yaw, -180, 180, nullptr)) {
