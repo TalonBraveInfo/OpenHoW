@@ -11,7 +11,7 @@ foreach(bone) //sizeof = 20
     2   short   bone.Transform.X
     2   short   bone.Transform.Y
     2   short   bone.Transform.Z
-    2   short   bone.Transform.W    //unused
+    2   short   bone.Transform.W    //padding
 
     //Rotation16
     2   short   bone.Rotation.X

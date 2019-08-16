@@ -6,22 +6,23 @@
 foreach(keyframe) //sizeof = 272
 {
     // World space transform
-    // Transform32    
+    // Transform32 (PSX uses Transform16)
     4   int rootTransform.X
     4   int rootTransform.Y
     4   int rootTransform.Z
-    4   int rootTransform.W   // unused 
+    4   int rootTransform.W   // padding 
     
     // Object space transform
-    // Transform32
+    // Transform32 (PSX uses Transform16)
     4   int objectTransform.X
     4   int objectTransform.Y
     4   int objectTransform.Z
-    4   int objectTransform.W   // unused
+    4   int objectTransform.W   // padding
     
     foreach(boneRotation) //sizeof = 15
     {        
-        //Rotation32 (Quaternion)
+        // Bone quaterion rotation
+        //Rotation32 (PSX uses Rotation16)
         4   float   rotation.X
         4   float   rotation.Y
         4   float   rotation.Z
