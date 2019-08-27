@@ -110,6 +110,7 @@ enum PromptLevel {
 void System_DisplayMessageBox(unsigned int level, const char *msg, ...);
 void System_DisplayWindow(bool fullscreen, int width, int height);
 
+int System_SetSwapInterval(int interval);
 void System_SwapDisplay(void);
 
 void System_SetWindowTitle(const char *title);

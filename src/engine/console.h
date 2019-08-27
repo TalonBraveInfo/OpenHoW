@@ -37,6 +37,7 @@ extern PLConsoleVariable *cv_display_height;
 extern PLConsoleVariable *cv_display_fullscreen;
 extern PLConsoleVariable *cv_display_use_window_aspect;
 extern PLConsoleVariable *cv_display_ui_scale;
+extern PLConsoleVariable *cv_display_vsync;
 
 extern PLConsoleVariable *cv_graphics_cull;
 extern PLConsoleVariable *cv_graphics_draw_world;

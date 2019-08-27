@@ -112,6 +112,13 @@ void UI_DisplaySettings() {
   bool fs_changed = false;
   fs_changed |= ImGui::Checkbox("Fullscreen", &fs);
 
+  ImGui::SameLine();
+
+  bool vsync = cv_display_vsync->b_value;
+  if(ImGui::Checkbox("Vsync", &vsync) && vsync != cv_display_vsync->b_value) {
+    plSetConsoleVariable(cv_display_vsync, vsync ? "true" : "false");
+  }
+
   static int aspect_opt = 0;
   bool aspect_changed = false;
   ImGui::Text("Aspect ratio:");

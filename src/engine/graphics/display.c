@@ -46,29 +46,7 @@ PLTexture* Display_GetDefaultTexture(void) {
     return default_texture;
 }
 
-typedef struct TextureIndex {
-    struct {
-        int x, y;
-        unsigned int w, h;
-    } offsets[MAX_TEXTURES_PER_INDEX];
-    unsigned int num_textures;
-
-    PLTexture* texture;
-} TextureIndex;
-TextureIndex texture_cache[MAX_TEXTURE_INDEX];
-
-size_t GetTextureCacheSize(void) {
-    size_t size = 0;
-    for(unsigned int i = 0; i < MAX_TEXTURE_INDEX; ++i) {
-        TextureIndex *index = &texture_cache[i];
-        if(index->texture == NULL) {
-            continue;
-        }
-        size += plGetImageSize(index->texture->format, index->texture->w, index->texture->h);
-    }
-    return size;
-}
-
+#if 0
 void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
     size_t cache_size = GetTextureCacheSize();
     const char *str = "total texture cache: ";
@@ -126,6 +104,7 @@ void DrawTextureCache(unsigned int id) {
         Font_DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, "NO DATA CACHED!");
     }
 }
+#endif
 
 #if 0 /* experimental palette changer thing... */
 PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255));
@@ -325,6 +304,8 @@ void Display_Initialize(void) {
 
     // now create the window and update the display
     System_DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
+
+    System_SetSwapInterval(cv_display_vsync->b_value ? 1 : 0);
 
     char win_title[32];
     snprintf(win_title, sizeof(win_title), ENGINE_TITLE " (%s)", GetVersionString());

@@ -248,6 +248,10 @@ static void DebugModeCallback(const PLConsoleVariable *variable) {
   plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
 }
 
+static void GraphicsVsyncCallback(const PLConsoleVariable *var) {
+  System_SetSwapInterval(var->b_value ? 1 : 0);
+}
+
 /************************************************************/
 
 #define MAX_INPUT_BUFFER_SIZE 256
@@ -281,6 +285,7 @@ PLConsoleVariable *cv_display_height = NULL;
 PLConsoleVariable *cv_display_fullscreen = NULL;
 PLConsoleVariable *cv_display_use_window_aspect = NULL;
 PLConsoleVariable *cv_display_ui_scale = NULL;
+PLConsoleVariable *cv_display_vsync = NULL;
 
 PLConsoleVariable *cv_graphics_cull = NULL;
 PLConsoleVariable *cv_graphics_draw_world = NULL;
@@ -310,8 +315,8 @@ static void ConsoleBufferUpdate(int level, const char *msg) {
 }
 
 static void ClearConsoleOutputBuffer(unsigned int argc, char **argv) {
-  (void) argc;
-  (void) argv;
+  u_unused(argc);
+  u_unused(argv);
   console_state.out_buffer_pos = 0;
 }
 
@@ -344,6 +349,7 @@ void Console_Initialize(void) {
   rvar(cv_display_fullscreen, true, "false", pl_bool_var, NULL, "");
   rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, NULL, "");
   rvar(cv_display_ui_scale, true, "1", pl_int_var, NULL, "0 = automatic scale");
+  rvar(cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable verticle sync");
 
   rvar(cv_graphics_cull, false, "false", pl_bool_var, NULL, "toggles culling of visible objects");
   rvar(cv_graphics_draw_world, false, "true", pl_bool_var, NULL, "toggles rendering of world");
@@ -357,9 +363,7 @@ void Console_Initialize(void) {
   plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 
   void ConvertImageCallback(unsigned int argc, char *argv[]);
-  void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]);
 
-  plRegisterConsoleCommand("printtcache", PrintTextureCacheSizeCommand, "displays current texture memory usage");
   plRegisterConsoleCommand("set", SetCommand, "Sets state for given target");
   plRegisterConsoleCommand("get", GetCommand, "Gets state for given target");
   plRegisterConsoleCommand("add", AddCommand, "Adds the given target");
@@ -369,7 +373,7 @@ void Console_Initialize(void) {
   plRegisterConsoleCommand("loadConfig", LoadConfigCommand, "Loads the specified config");
   plRegisterConsoleCommand("saveConfig", SaveConfigCommand, "Save current config");
   plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
-  plRegisterConsoleCommand("display_update", UpdateDisplayCommand, "Updates the display to match current settings");
+  plRegisterConsoleCommand("displayUpdate", UpdateDisplayCommand, "Updates the display to match current settings");
   plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
   plRegisterConsoleCommand("clear", ClearConsoleOutputBuffer, "Clears the console output buffer");
   plRegisterConsoleCommand("cls", ClearConsoleOutputBuffer, "Clears the console output buffer");

@@ -84,6 +84,14 @@ void System_SetClipboardText(void *, const char *text) {
   SDL_SetClipboardText(text);
 }
 
+int System_SetSwapInterval(int interval) {
+  if(SDL_GL_SetSwapInterval(interval) != 0) {
+    LogWarn("Failed to set desired swap interval (%d)!\n", interval);
+  }
+
+  return SDL_GL_GetSwapInterval();
+}
+
 void System_DisplayWindow(bool fullscreen, int width, int height) {
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -97,14 +105,6 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-#if 1
-  if (SDL_GL_SetSwapInterval(-1) != 0) {
-    SDL_GL_SetSwapInterval(1);
-  }
-#else
-  SDL_GL_SetSwapInterval(0);
-#endif
 
   unsigned int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
   if (fullscreen) {
