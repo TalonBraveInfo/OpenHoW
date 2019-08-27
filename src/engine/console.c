@@ -349,7 +349,7 @@ void Console_Initialize(void) {
   rvar(cv_display_fullscreen, true, "false", pl_bool_var, NULL, "");
   rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, NULL, "");
   rvar(cv_display_ui_scale, true, "1", pl_int_var, NULL, "0 = automatic scale");
-  rvar(cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable verticle sync");
+  rvar(cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync");
 
   rvar(cv_graphics_cull, false, "false", pl_bool_var, NULL, "toggles culling of visible objects");
   rvar(cv_graphics_draw_world, false, "true", pl_bool_var, NULL, "toggles rendering of world");
