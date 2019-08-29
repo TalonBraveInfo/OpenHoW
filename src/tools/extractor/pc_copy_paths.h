@@ -202,6 +202,7 @@
 {"/Maps/GENDESRT.PMG", "/campaigns/how/maps/gendesrt/"},
 {"/Maps/HILLBASE.PMG", "/campaigns/how/maps/hillbase/"},
 {"/Maps/LIBERATE.PMG", "/campaigns/how/maps/liberate/"},
+{"/Maps/TESTER.PMG", "/campaigns/how/maps/tester/"},
 #if 0
 {"/Maps/BAY.PTG", "/campaigns/how/maps/bay/"},
 {"/Maps/ICE.PTG", "/campaigns/how/maps/ice/"},
@@ -263,6 +264,7 @@
 {"/Maps/GENDESRT.PTG", "/campaigns/how/maps/gendesrt/"},
 {"/Maps/HILLBASE.PTG", "/campaigns/how/maps/hillbase/"},
 {"/Maps/LIBERATE.PTG", "/campaigns/how/maps/liberate/"},
+{"/Maps/TESTER.PTG", "/campaigns/how/maps/tester/"},
 #endif
 {"/Maps/BAY.POG", "/campaigns/how/maps/bay/"},
 {"/Maps/ICE.POG", "/campaigns/how/maps/ice/"},
@@ -324,6 +326,7 @@
 {"/Maps/GENDESRT.POG", "/campaigns/how/maps/gendesrt/"},
 {"/Maps/HILLBASE.POG", "/campaigns/how/maps/hillbase/"},
 {"/Maps/LIBERATE.POG", "/campaigns/how/maps/liberate/"},
+{"/Maps/TESTER.POG", "/campaigns/how/maps/tester/"},
 
 /* chars */
 {"/Chars/pig.HIR", "/campaigns/how/chars/"},

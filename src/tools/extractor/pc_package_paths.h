@@ -112,6 +112,7 @@
 {"/Maps/GENDESRT.PTG", "/campaigns/how/maps/gendesrt/tiles/"},
 {"/Maps/HILLBASE.PTG", "/campaigns/how/maps/hillbase/tiles/"},
 {"/Maps/LIBERATE.PTG", "/campaigns/how/maps/liberate/tiles/"},
+{"/Maps/TESTER.PTG", "/campaigns/how/maps/tester/tiles/"},
 
 {"/Skys/COLD/COLD1.PTG", "/campaigns/how/skys/cold1/"},
 //{"/Skys/DESERT/DESERT1.PTG", "/campaigns/how/skys/desert1/"},
