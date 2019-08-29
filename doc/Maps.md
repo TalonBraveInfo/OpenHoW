@@ -67,3 +67,26 @@
 | 06  | ARTGUN   | DOOMED                  | SUNNY    | SUNNY1    | -
 | 07  | DVAL     | DEATH VALLEY            | SUNNY    | SUNNY1    | -
 | 08  | DVAL2    | DEATH VALLEY 2          | SUNNY    | SUNNY1    | -
+
+## Unused (PC)
+| Idx | File     | Name                    | Sky (PC) | Sky (PSX) | Weather
+| --- | ----     | ----------------------- | -------- | --------- | -------
+| 00  | DEMO     | -                       | DESERT   | DESERT1   | -
+| 01  | DEMO2    | -                       | COLDSKY  | COLD1     | SNOW
+| 02  | EASY     | -                       | -        | -         | -
+| 03  | HILLBASE | -                       | COLDSKY  | COLD1     | SNOW
+
+## Unused (PSX)
+| Idx | File     | Name                    | Sky (PC) | Sky (PSX) | Weather
+| --- | ----     | ----------------------- | -------- | --------- | -------
+| 00  | AIRAID   | -                       | -        | -         | -
+| 01  | CANAL    | -                       | -        | -         | -
+| 02  | CLIMB    | -                       | -        | -         | -
+| 03  | FACEOFF  | -                       | -        | -         | -
+| 04  | HELL1    | -                       | -        | -         | -
+| 05  | HIROAD   | -                       | -        | -         | -
+| 06  | HWD      | -                       | -        | -         | -
+| 07  | NEWSNU   | -                       | -        | -         | -
+| 08  | PDRAG    | -                       | -        | -         | -
+| 09  | QUACK    | -                       | -        | -         | -
+| 10  | TDD      | -                       | -        | -         | -
