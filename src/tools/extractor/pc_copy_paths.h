@@ -190,7 +190,7 @@
 {"/Maps/SEPIA1.PMG", "/campaigns/how/maps/sepia1/"},
 {"/Maps/SNIPER.PMG", "/campaigns/how/maps/sniper/"},
 {"/Maps/TRENCH.PMG", "/campaigns/how/maps/trench/"},
-{"/Maps/CREEPY2.PMG", "/campaigns/how/maps/creepy/"},
+{"/Maps/CREEPY2.PMG", "/campaigns/how/maps/creepy2/"},
 {"/Maps/EMPLACE.PMG", "/campaigns/how/maps/emplace/"},
 {"/Maps/GENLAVA.PMG", "/campaigns/how/maps/genlava/"},
 {"/Maps/GENSNOW.PMG", "/campaigns/how/maps/gensnow/"},
@@ -202,6 +202,7 @@
 {"/Maps/GENDESRT.PMG", "/campaigns/how/maps/gendesrt/"},
 {"/Maps/HILLBASE.PMG", "/campaigns/how/maps/hillbase/"},
 {"/Maps/LIBERATE.PMG", "/campaigns/how/maps/liberate/"},
+{"/Maps/TESTER.PMG", "/campaigns/how/maps/tester/"},
 #if 0
 {"/Maps/BAY.PTG", "/campaigns/how/maps/bay/"},
 {"/Maps/ICE.PTG", "/campaigns/how/maps/ice/"},
@@ -251,7 +252,7 @@
 {"/Maps/SEPIA1.PTG", "/campaigns/how/maps/sepia1/"},
 {"/Maps/SNIPER.PTG", "/campaigns/how/maps/sniper/"},
 {"/Maps/TRENCH.PTG", "/campaigns/how/maps/trench/"},
-{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy/"},
+{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy2/"},
 {"/Maps/EMPLACE.PTG", "/campaigns/how/maps/emplace/"},
 {"/Maps/GENLAVA.PTG", "/campaigns/how/maps/genlava/"},
 {"/Maps/GENSNOW.PTG", "/campaigns/how/maps/gensnow/"},
@@ -263,6 +264,7 @@
 {"/Maps/GENDESRT.PTG", "/campaigns/how/maps/gendesrt/"},
 {"/Maps/HILLBASE.PTG", "/campaigns/how/maps/hillbase/"},
 {"/Maps/LIBERATE.PTG", "/campaigns/how/maps/liberate/"},
+{"/Maps/TESTER.PTG", "/campaigns/how/maps/tester/"},
 #endif
 {"/Maps/BAY.POG", "/campaigns/how/maps/bay/"},
 {"/Maps/ICE.POG", "/campaigns/how/maps/ice/"},
@@ -312,7 +314,7 @@
 {"/Maps/SEPIA1.POG", "/campaigns/how/maps/sepia1/"},
 {"/Maps/SNIPER.POG", "/campaigns/how/maps/sniper/"},
 {"/Maps/TRENCH.POG", "/campaigns/how/maps/trench/"},
-{"/Maps/CREEPY2.POG", "/campaigns/how/maps/creepy/"},
+{"/Maps/CREEPY2.POG", "/campaigns/how/maps/creepy2/"},
 {"/Maps/EMPLACE.POG", "/campaigns/how/maps/emplace/"},
 {"/Maps/GENLAVA.POG", "/campaigns/how/maps/genlava/"},
 {"/Maps/GENSNOW.POG", "/campaigns/how/maps/gensnow/"},
@@ -324,6 +326,7 @@
 {"/Maps/GENDESRT.POG", "/campaigns/how/maps/gendesrt/"},
 {"/Maps/HILLBASE.POG", "/campaigns/how/maps/hillbase/"},
 {"/Maps/LIBERATE.POG", "/campaigns/how/maps/liberate/"},
+{"/Maps/TESTER.POG", "/campaigns/how/maps/tester/"},
 
 /* chars */
 {"/Chars/pig.HIR", "/campaigns/how/chars/"},

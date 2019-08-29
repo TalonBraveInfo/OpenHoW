@@ -100,7 +100,7 @@
 {"/Maps/SEPIA1.PTG", "/campaigns/how/maps/sepia1/tiles/"},
 {"/Maps/SNIPER.PTG", "/campaigns/how/maps/sniper/tiles/"},
 {"/Maps/TRENCH.PTG", "/campaigns/how/maps/trench/tiles/"},
-{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy/tiles/"},
+{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy2/tiles/"},
 {"/Maps/EMPLACE.PTG", "/campaigns/how/maps/emplace/tiles/"},
 {"/Maps/GENLAVA.PTG", "/campaigns/how/maps/genlava/tiles/"},
 {"/Maps/GENSNOW.PTG", "/campaigns/how/maps/gensnow/tiles/"},
@@ -112,6 +112,7 @@
 {"/Maps/GENDESRT.PTG", "/campaigns/how/maps/gendesrt/tiles/"},
 {"/Maps/HILLBASE.PTG", "/campaigns/how/maps/hillbase/tiles/"},
 {"/Maps/LIBERATE.PTG", "/campaigns/how/maps/liberate/tiles/"},
+{"/Maps/TESTER.PTG", "/campaigns/how/maps/tester/tiles/"},
 
 {"/Skys/COLD/COLD1.PTG", "/campaigns/how/skys/cold1/"},
 //{"/Skys/DESERT/DESERT1.PTG", "/campaigns/how/skys/desert1/"},
