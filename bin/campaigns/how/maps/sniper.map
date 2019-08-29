@@ -2,16 +2,16 @@
     "name": "$map_how_sniper",
     "author": "none",
     "description": "none",
-    "ambientColour": "255 255 255",
+    "ambientColour": "146 143 150",
     "skyColourTop": "11 10 92",
     "skyColourBottom": "186 123 61",
-    "sunColour": "255 255 255",
-    "sunYaw": "0.000000",
-    "sunPitch": "0.000000",
+    "sunColour": "223 133 56",
+    "sunYaw": "0.523599",
+    "sunPitch": "0.523599",
     "temperature": "hot",
     "weather": "clear",
     "time": "day",
-    "fogColour": "223 255 255",
+    "fogColour": "186 123 61",
     "fogIntensity": "30.000000",
-    "fogDistance": "100.000000"
+    "fogDistance": "75.000000"
 }

@@ -1,5 +1,5 @@
 {
-    "name": "$map_how_lake",
+    "name": "$map_how_",
     "author": "none",
     "description": "none",
     "ambientColour": "206 206 206",
@@ -8,7 +8,7 @@
     "sunColour": "243 157 43",
     "sunYaw": "0.523599",
     "sunPitch": "0.523599",
-    "temperature": "hot",
+    "temperature": "normal",
     "weather": "clear",
     "time": "day",
     "fogColour": "209 194 104",
