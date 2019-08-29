@@ -100,7 +100,7 @@
 {"/Maps/SEPIA1.PTG", "/campaigns/how/maps/sepia1/tiles/"},
 {"/Maps/SNIPER.PTG", "/campaigns/how/maps/sniper/tiles/"},
 {"/Maps/TRENCH.PTG", "/campaigns/how/maps/trench/tiles/"},
-{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy/tiles/"},
+{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy2/tiles/"},
 {"/Maps/EMPLACE.PTG", "/campaigns/how/maps/emplace/tiles/"},
 {"/Maps/GENLAVA.PTG", "/campaigns/how/maps/genlava/tiles/"},
 {"/Maps/GENSNOW.PTG", "/campaigns/how/maps/gensnow/tiles/"},
