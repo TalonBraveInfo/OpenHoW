@@ -113,7 +113,7 @@ void APig::Tick() {
 
   // Clamp height based on current tile pos
   Map *map = GameManager::GetInstance()->GetCurrentMap();
-  float height = map->GetHeight(PLVector2(position_.x, position_.z));
+  float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
   }

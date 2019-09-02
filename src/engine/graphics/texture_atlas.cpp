@@ -59,7 +59,7 @@ void TextureAtlas::AddImages(const std::vector<std::string> &textures) {
 }
 
 void TextureAtlas::Finalize() {
-    // Figure out how we'll organise the atlas
+  // Figure out how we'll organise the atlas
   unsigned int w = width_, h = height_;
   unsigned int max_h = 0;
   unsigned int cur_y = 0, cur_x = 0;

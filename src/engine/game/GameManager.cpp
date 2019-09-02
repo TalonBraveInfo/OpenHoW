@@ -41,9 +41,9 @@ void GameManager::Tick() {
     const AudioSample *sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
     if (sample != nullptr) {
       PLVector3 position = {
-          plGenerateRandomf(MAP_PIXEL_WIDTH),
-          active_map_->GetMaxHeight(),
-          plGenerateRandomf(MAP_PIXEL_WIDTH)
+          plGenerateRandomf(TERRAIN_PIXEL_WIDTH),
+          active_map_->GetTerrain()->GetMaxHeight(),
+          plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
       };
       AudioManager::GetInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
     }

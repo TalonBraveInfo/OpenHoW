@@ -257,7 +257,7 @@ static void DrawMinimap() {
 #else
   /* for debugging... */
   unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
-  plDrawTexturedRectangle(0, scr_h - 128, 128, 128, map->GetOverviewTexture());
+  plDrawTexturedRectangle(0, scr_h - 128, 128, 128, map->GetTerrain()->GetOverview());
 #endif
 }
 

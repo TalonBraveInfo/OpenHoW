@@ -198,25 +198,6 @@ void Script_Initialize(void) {
 
     duk_module_duktape_init(scr_context);
 
-    /* pig classes */
-    DeclareUniversalGlobalInteger(PIG_CLASS_ACE);
-    DeclareUniversalGlobalInteger(PIG_CLASS_LEGEND);
-    DeclareUniversalGlobalInteger(PIG_CLASS_MEDIC);
-    DeclareUniversalGlobalInteger(PIG_CLASS_COMMANDO);
-    DeclareUniversalGlobalInteger(PIG_CLASS_SPY);
-    DeclareUniversalGlobalInteger(PIG_CLASS_SNIPER);
-    DeclareUniversalGlobalInteger(PIG_CLASS_SABOTEUR);
-    DeclareUniversalGlobalInteger(PIG_CLASS_HEAVY);
-    DeclareUniversalGlobalInteger(PIG_CLASS_GRUNT);
-
-    DeclareUniversalGlobalInteger(TEAM_AMERICAN);
-    DeclareUniversalGlobalInteger(TEAM_BRITISH);
-    DeclareUniversalGlobalInteger(TEAM_FRENCH);
-    DeclareUniversalGlobalInteger(TEAM_GERMAN);
-    DeclareUniversalGlobalInteger(TEAM_JAPAN);
-    DeclareUniversalGlobalInteger(TEAM_LARD);
-    DeclareUniversalGlobalInteger(TEAM_RUSSIAN);
-
     /* controller vars */
     DeclareUniversalGlobalInteger(INPUT_BUTTON_CROSS);
     DeclareUniversalGlobalInteger(INPUT_BUTTON_CIRCLE);
