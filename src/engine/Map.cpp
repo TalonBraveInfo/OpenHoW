@@ -178,7 +178,6 @@ Map::Map(const std::string &name) : Map() {
   }
 
   LoadSky();
-
   UpdateSky();
   UpdateLighting();
 
@@ -198,7 +197,8 @@ Map::~Map() {
     plDestroyModel(chunk.model);
   }
 
-  ModelManager::GetInstance()->DestroyModel(sky_model_);
+  ModelManager::GetInstance()->DestroyModel(sky_model_top_);
+  ModelManager::GetInstance()->DestroyModel(sky_model_bottom_);
 
   // gross GROSS; change the clear colour back!
   g_state.gfx.clear_colour = {0, 0, 0, 255};
@@ -252,30 +252,45 @@ float Map::GetHeight(const PLVector2 &pos) {
 }
 
 void Map::LoadSky() {
-  if (sky_model_ == nullptr) {
-    sky_model_ = ModelManager::GetInstance()->LoadModel("skys/skydome", true);
-    sky_model_->model_matrix =
-        plTranslateMatrix4(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
-    // Default skydome is smaller than the map, so we'll scale it
-    sky_model_->model_matrix = plScaleMatrix4(sky_model_->model_matrix, PLVector3(5, 5, 5));
+  if(sky_model_top_ == nullptr) {
+    sky_model_top_ = LoadSkyModel("skys/skydome");
+  }
 
-    PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
-    if (lod == nullptr) {
-      Error("Failed to get first lod for sky mesh!\n");
-    }
-
-    PLMesh *mesh = lod->meshes[0];
-    // This is a really crap hardcoded limit, just to ensure it's what we're expecting
-    if (mesh->num_verts != 257) {
-      Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
-    }
+   if(sky_model_bottom_ == nullptr) {
+    sky_model_bottom_ = LoadSkyModel("skys/skydomeu");
   }
 }
 
-void Map::UpdateSky() {
-  u_assert(sky_model_ != nullptr, "attempted to apply sky colours prior to loading sky dome");
+PLModel* Map::LoadSkyModel(const std::string &path) {    
+  PLModel* model = ModelManager::GetInstance()->LoadModel(path, true);
+  model->model_matrix = plTranslateMatrix4(PLVector3(MAP_PIXEL_WIDTH / 2, 0, MAP_PIXEL_WIDTH / 2));
+  // Default skydome is smaller than the map, so we'll scale it
+  model->model_matrix = plScaleMatrix4(model->model_matrix, PLVector3(5, 5, 5));
 
-  PLModelLod *lod = plGetModelLodLevel(sky_model_, 0);
+  PLModelLod *lod = plGetModelLodLevel(model, 0);
+  if (lod == nullptr) {
+    Error("Failed to get first lod for sky mesh!\n");
+  }
+
+  PLMesh *mesh = lod->meshes[0];
+  // This is a really crap hardcoded limit, just to ensure it's what we're expecting
+  if (mesh->num_verts != 257) {
+    Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
+  }
+
+  return model;
+}
+
+void Map::UpdateSky() {
+
+  UpdateSkyModel(sky_model_top_);
+  UpdateSkyModel(sky_model_bottom_);
+}
+
+void Map::UpdateSkyModel(PLModel *model) {
+  u_assert(model != nullptr, "attempted to apply sky colours prior to loading sky dome");
+
+  PLModelLod *lod = plGetModelLodLevel(model, 0);
   if (lod == nullptr) {
     LogWarn("Failed to get first lod for sky mesh!\n");
     return;
@@ -310,9 +325,6 @@ void Map::UpdateSky() {
   }
 
   plUploadMesh(mesh);
-
-  // gross GROSS; ensures that the dome transitions out nicely
-  g_state.gfx.clear_colour = bottom;
 }
 
 void Map::UpdateLighting() {
@@ -625,8 +637,9 @@ void Map::GenerateOverview() {
 }
 
 void Map::Draw() {
-  Shaders_SetProgram(SHADER_GenericUntextured);
-  plDrawModel(sky_model_);
+  Shaders_SetProgram(SHADER_GenericUntextured);  
+  plDrawModel(sky_model_top_);
+  plDrawModel(sky_model_bottom_);
 
   Shaders_SetProgram(SHADER_GenericTexturedLit);
   g_state.gfx.num_chunks_drawn = 0;

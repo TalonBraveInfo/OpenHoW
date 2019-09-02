@@ -56,7 +56,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
 
   const char *filename = plGetFileName(path);
   // skydome is a special case, since we don't care about textures...
-  if (pl_strcasecmp(filename, "skydome.vtx") == 0) {
+  if (pl_strcasecmp(filename, "skydome.vtx") == 0 || pl_strcasecmp(filename, "skydomeu.vtx") == 0) {
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, fac->num_triangles, vtx->num_vertices);
     if (mesh == nullptr) {
       Vtx_DestroyHandle(vtx);

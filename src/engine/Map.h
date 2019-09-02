@@ -140,7 +140,8 @@ public:
 
     const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
 
-    void UpdateSky();
+    void UpdateSky();    
+
     void UpdateLighting();
 
     void GenerateModels();
@@ -151,6 +152,9 @@ private:
     void LoadSpawns(const std::string &path);
     void LoadTiles(const std::string &path);
     void LoadSky();
+    PLModel* LoadSkyModel(const std::string &path);
+
+    void UpdateSkyModel(PLModel *model);
 
     void GenerateOverview();
 
@@ -167,5 +171,6 @@ private:
     PLTexture *overview_{nullptr};
     TextureAtlas *texture_atlas_{nullptr};
 
-    PLModel *sky_model_{nullptr};
+    PLModel *sky_model_top_{nullptr};
+    PLModel *sky_model_bottom_{nullptr};
 };
