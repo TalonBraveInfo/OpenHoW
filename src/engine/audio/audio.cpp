@@ -283,7 +283,6 @@ AudioManager::AudioManager() {
     alAuxiliaryEffectSloti(reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot);
   }
 
-  plRegisterConsoleVariable("audio_volume_music", "1", pl_float_var, SetMusicVolumeCommand, "set music volume");
   plRegisterConsoleCommand("stopMusic", StopMusicCommand, "Stops the current music track.");
 }
 
@@ -554,12 +553,7 @@ void AudioManager::PlayMusic(const std::string &path) {
 
   if (music_source_ == nullptr) {
     // Setup our global music source
-    const PLConsoleVariable *volume_var = plGetConsoleVariable("audio_volume_music");
-    // todo: this should never happen, instead plGetConsoleVariable should support defaults...
-    if (volume_var == nullptr) {
-      Error("Failed to get \"audio_music_volume\" runtime variable, aborting!\n");
-    }
-    music_source_ = new AudioSource(sample, volume_var->f_value, 1.0f, false);
+    music_source_ = new AudioSource(sample, cv_audio_volume_music->f_value, 1.0f, false);
   } else {
     music_source_->StopPlaying();
     music_source_->SetSample(sample);

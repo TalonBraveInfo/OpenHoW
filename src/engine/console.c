@@ -293,6 +293,7 @@ PLConsoleVariable *cv_graphics_draw_audio_sources = NULL;
 
 PLConsoleVariable *cv_audio_volume = NULL;
 PLConsoleVariable *cv_audio_volume_sfx = NULL;
+PLConsoleVariable *cv_audio_volume_music = NULL;
 PLConsoleVariable *cv_audio_voices = NULL;
 PLConsoleVariable *cv_audio_mode = NULL;
 
@@ -357,6 +358,7 @@ void Console_Initialize(void) {
 
   rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
   rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
+  rvar(cv_audio_volume_music, true, "1", pl_float_var, NULL, "Set the music audio volume");
   rvar(cv_audio_mode, true, "1", pl_int_var, NULL, "0 = mono, 1 = stereo");
   rvar(cv_audio_voices, true, "true", pl_bool_var, NULL, "enable/disable pig voices");
 

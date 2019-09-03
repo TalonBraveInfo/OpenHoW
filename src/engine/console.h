@@ -45,6 +45,7 @@ extern PLConsoleVariable *cv_graphics_draw_audio_sources;
 
 extern PLConsoleVariable *cv_audio_volume;
 extern PLConsoleVariable *cv_audio_volume_sfx;
+extern PLConsoleVariable *cv_audio_volume_music;
 extern PLConsoleVariable *cv_audio_voices;
 extern PLConsoleVariable *cv_audio_mode;
 
