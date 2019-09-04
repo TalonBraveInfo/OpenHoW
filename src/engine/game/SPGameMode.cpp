@@ -92,8 +92,8 @@ void SPGameMode::SpawnActors() {
 
         PLVector3 angles = PLVector3(
             plDegreesToRadians((float)(spawn.angles[0]) * (360.f / 4096.f)),
-            plDegreesToRadians((float)(spawn.angles[1]) * (360.f / 4096.f) - 90.f),
-            plDegreesToRadians((float)(spawn.angles[2]) * (360.f / 4096.f))
+            plDegreesToRadians((float)(spawn.angles[1]) * (360.f / 4096.f) + 90.f),
+            plDegreesToRadians((float)(spawn.angles[2]) * (360.f / 4096.f) - 180.f)
             );
 
         if(pl_strcasecmp(spawn.name, "BRID2_S") == 0) {

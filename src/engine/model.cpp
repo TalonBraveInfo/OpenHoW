@@ -114,8 +114,6 @@ static PLModel *Model_LoadVtxFile(const char *path) {
 
   for (unsigned int j = 0; j < vtx->num_vertices; ++j) {
     vtx->vertices[j].position *= .5f;
-    vtx->vertices[j].position.y *= -1;
-    vtx->vertices[j].position.z *= -1;
   }
 
   // automatically returns default if failed
