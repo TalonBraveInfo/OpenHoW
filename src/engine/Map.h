@@ -20,37 +20,29 @@
 #include "map_manager.h"
 #include "terrain.h"
 
-/* format data */
-
 struct MapSpawn {
-    char        name[16];               // class name
-    char        unused0[16];
+  std::string class_name;
+  PLVector3 position; // position in the world
+  uint16_t index;                  // todo
+  PLVector3 angles; // angles in the world
+  uint16_t type;                   // todo
 
-    int16_t     position[3];            // position in the world
-    uint16_t    index;                  // todo
-    int16_t     angles[3];              // angles in the world
-    uint16_t    type;                   // todo
+  int16_t bounds[3]; // collision bounds
+  uint16_t bounds_type; // box, prism, sphere and none
 
-    int16_t     bounds[3];              // collision bounds
-    uint16_t    bounds_type;            // box, prism, sphere and none
+  int16_t energy;
+  uint8_t appearance;
+  uint8_t team; // uk, usa, german, french, japanese, soviet
 
-    int16_t     energy;
-    uint8_t     appearance;
-    uint8_t     team;                   // uk, usa, german, french, japanese, soviet
+  uint16_t objective;
+  uint8_t objective_actor_id;
+  uint8_t objective_extra[2];
 
-    uint16_t    objective;
-    uint8_t     objective_actor_id;
-    uint8_t     objective_extra[2];
+  PLVector3 fallback_position;
 
-    uint8_t     unused1;
-    uint16_t    unused2[8];
-
-    int16_t     fallback_position[3];
-    int16_t     extra;
-    int16_t     attached_actor_num;
-    int16_t     unused3;
+  int16_t extra;
+  MapSpawn *attachment;
 };
-static_assert(sizeof(MapSpawn) == 94, "Invalid size for MapSpawn, should be 94 bytes!");
 
 struct MapManifest;
 

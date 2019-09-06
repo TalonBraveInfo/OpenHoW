@@ -23,39 +23,7 @@
 #include "../ActorManager.h"
 #include "../GameManager.h"
 
-#include "actor_model.h"
-#include "actor_animated_model.h"
-
-class APig : public AAnimatedModel {
- public:
-  explicit APig(const std::string &name);
-  ~APig() override;
-
-  void HandleInput() override;
-  void Tick() override;
-
- protected:
-  float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
-  float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
-  float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
-
- private:
-  enum {
-    EYES_OPEN,
-    EYES_CLOSED,
-    EYES_SAD,
-    EYES_SURPRISED,
-    EYES_ANGRY,
-  } upper_face_frame_{EYES_OPEN};
-
-  enum {
-    MOUTH_OPEN,
-    MOUTH_CLOSED,
-    MOUTH_SAD,
-    MOUTH_SURPRISED,
-    MOUTH_ANGRY,
-  } lower_face_frame_{MOUTH_OPEN};
-};
+#include "actor_pig.h"
 
 register_actor(AC_ME, APig);    // Ace
 register_actor(LE_ME, APig);    // Legend
@@ -123,4 +91,7 @@ void APig::Tick() {
   if (angles_.x > MAX_PITCH) angles_.x = MAX_PITCH;
 
   VecAngleClamp(&angles_);
+}
+
+void APig::SetClass(int pclass) {
 }

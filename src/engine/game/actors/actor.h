@@ -18,8 +18,7 @@
 #pragma once
 
 enum ActorFlag {
-  /* ...original... */
-      ACTOR_FLAG_PLAYABLE = 1,
+  ACTOR_FLAG_PLAYABLE = 1,
   ACTOR_FLAG_SCRIPTED = 16,
   ACTOR_FLAG_INSIDE = 32,
   ACTOR_FLAG_DELAYED = 64,
@@ -27,16 +26,15 @@ enum ActorFlag {
 };
 
 enum ActorEvent {
-  /* ...original... */
-      ACTOR_EVENT_NONE,                       // does nothing!
+  ACTOR_EVENT_NONE,                       // does nothing!
   ACTOR_EVENT_ITEM,                       // spawns an item on destruction
   ACTOR_EVENT_PROMOTION,                  // spawns a promotion point on destruction
-  ACTOR_EVENT_PROTECT = 4,    // spawns a promotion point if the object is not destroyed
-  ACTOR_EVENT_AIRDROP_ITEM = 7,    // spawns item airdrop on destruction
+  ACTOR_EVENT_PROTECT = 4,                // spawns a promotion point if the object is not destroyed
+  ACTOR_EVENT_AIRDROP_ITEM = 7,           // spawns item airdrop on destruction
   ACTOR_EVENT_AIRDROP_PROMOTION,          // spawns promotion point on destruction
-  ACTOR_EVENT_GROUP_ITEM = 13,   // spawns item when group is destroyed
+  ACTOR_EVENT_GROUP_ITEM = 13,            // spawns item when group is destroyed
   ACTOR_EVENT_GROUP_PROMOTION,            // spawns promotion point when group is destroyed
-  ACTOR_EVENT_REWARD = 19,   // returns specified item on destruction to destructor
+  ACTOR_EVENT_REWARD = 19,                // returns specified item on destruction to destructor
   ACTOR_EVENT_GROUP_SPAWN,                // spawns group on destruction
   ACTOR_EVENT_VICTORY,                    // triggers victory on destruction
   ACTOR_EVENT_BURST,                      // spawns group upon destruction by TNT

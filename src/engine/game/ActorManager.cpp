@@ -29,7 +29,7 @@ std::vector<Actor*> ActorManager::actors_;
 std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
-Actor* ActorManager::SpawnMapActor(const std::string &name) {
+Actor* ActorManager::CreateActor(const std::string &name) {
     auto i = actor_classes_.find(name);
 
     // name passed into actor is lowercase for

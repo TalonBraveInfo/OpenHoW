@@ -263,6 +263,30 @@ void Map::UpdateLighting() {
 }
 
 void Map::LoadSpawns(const std::string &path) {
+  struct PogIndex {
+    char        name[16];               // class name
+    char        unused0[16];
+    int16_t     position[3];            // position in the world
+    uint16_t    index;                  // todo
+    int16_t     angles[3];              // angles in the world
+    uint16_t    type;                   // todo
+    int16_t     bounds[3];              // collision bounds
+    uint16_t    bounds_type;            // box, prism, sphere and none
+    int16_t     energy;
+    uint8_t     appearance;
+    uint8_t     team;                   // uk, usa, german, french, japanese, soviet
+    uint16_t    objective;
+    uint8_t     objective_actor_id;
+    uint8_t     objective_extra[2];
+    uint8_t     unused1;
+    uint16_t    unused2[8];
+    int16_t     fallback_position[3];
+    int16_t     extra;
+    int16_t     attached_actor_num;
+    int16_t     unused3;
+  };
+  static_assert(sizeof(PogIndex) == 94, "Invalid size for MapSpawn, should be 94 bytes!");
+
   std::ifstream ifs(path, std::ios_base::in | std::ios_base::binary);
   if (!ifs.is_open()) {
     Error("Failed to open actor data, \"%s\", aborting!\n", path.c_str());
@@ -275,19 +299,41 @@ void Map::LoadSpawns(const std::string &path) {
     Error("Failed to read POG indices count, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
   }
 
-  spawns_.resize(num_indices);
+  std::vector<PogIndex> spawns(num_indices);
 
   try {
-    ifs.read(reinterpret_cast<char *>(spawns_.data()), sizeof(MapSpawn) * num_indices);
+    ifs.read(reinterpret_cast<char *>(spawns.data()), sizeof(MapSpawn) * num_indices);
   } catch (const std::ifstream::failure &err) {
     Error("Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
   }
 
-  /* now we'll bump the coords here, to make life easy */
-  for (auto &spawn : spawns_) {
-    spawn.position[0] += (TERRAIN_PIXEL_WIDTH / 2);
-    spawn.position[2] *= -1;
-    spawn.position[2] += (TERRAIN_PIXEL_WIDTH / 2);
+  spawns_.resize(num_indices);
+
+  for(unsigned int i = 0; i < num_indices; ++i) {
+    spawns_[i].position.x = (spawns[i].position[0] += (TERRAIN_PIXEL_WIDTH / 2));
+    spawns_[i].position.y = (spawns[i].position[1]);
+    spawns_[i].position.z = (spawns[i].position[2] += (TERRAIN_PIXEL_WIDTH / 2) * -1);
+
+    spawns_[i].fallback_position.x = (spawns[i].fallback_position[0] += (TERRAIN_PIXEL_WIDTH / 2));
+    spawns_[i].fallback_position.y = (spawns[i].fallback_position[1]);
+    spawns_[i].fallback_position.z = (spawns[i].fallback_position[2] += (TERRAIN_PIXEL_WIDTH / 2) * -1);
+
+    spawns_[i].angles.x = plDegreesToRadians((float)(spawns[i].angles[0]) * (360.f / 4096.f));
+    spawns_[i].angles.y = plDegreesToRadians((float)(spawns[i].angles[1]) * (360.f / 4096.f) + 90.f);
+    spawns_[i].angles.z = plDegreesToRadians((float)(spawns[i].angles[2]) * (360.f / 4096.f) - 180.f);
+
+    spawns_[i].class_name = spawns[i].name;
+    spawns_[i].appearance = spawns[i].appearance;
+    spawns_[i].attachment = &spawns_[spawns[i].attached_actor_num];
+
+    spawns_[i].energy = spawns[i].energy;
+    spawns_[i].index = spawns[i].index;
+
+    // todo: retain or set on per-actor basis?
+    for(unsigned int j = 0; j < 3; ++j) {
+      spawns_[i].bounds[j] = spawns[i].bounds[j];
+    }
+    spawns_[i].bounds_type = spawns[i].bounds_type;
   }
 }
 
