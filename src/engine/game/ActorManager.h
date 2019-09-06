@@ -52,7 +52,7 @@ class ActorManager {
    public:
     const std::string name_;
 
-    ActorClassRegistration(std::string name, actor_ctor_func ctor_func, actor_ctor_func_spawn ctor_func_spawn);
+    ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func, actor_ctor_func_spawn ctor_func_spawn);
     ~ActorClassRegistration();
   };
 

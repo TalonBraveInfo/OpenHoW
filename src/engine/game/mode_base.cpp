@@ -23,117 +23,124 @@
 
 #include "mode_base.h"
 #include "ActorManager.h"
+#include "actors/actor_pig.h"
 
 BaseGameMode::BaseGameMode() {
-    players_.resize(4);
+  players_.resize(4);
 }
 
 BaseGameMode::~BaseGameMode() {
-    AudioManager::GetInstance()->FreeSources();
-    AudioManager::GetInstance()->FreeSamples();
+  AudioManager::GetInstance()->FreeSources();
+  AudioManager::GetInstance()->FreeSamples();
 
-    DestroyActors();
+  DestroyActors();
 }
 
 void BaseGameMode::StartRound() {
-    if(HasRoundStarted()) {
-        Error("Attempted to change map in the middle of a round, aborting!\n");
-    }
+  if (HasRoundStarted()) {
+    Error("Attempted to change map in the middle of a round, aborting!\n");
+  }
 
-    SpawnActors();
+  SpawnActors();
 
-    round_started_ = true;
+  round_started_ = true;
 
-    // Play the deployment music
-    AudioManager::GetInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+  // Play the deployment music
+  AudioManager::GetInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 }
 
 void BaseGameMode::RestartRound() {
-    DestroyActors();
-    SpawnActors();
+  DestroyActors();
+  SpawnActors();
 }
 
 void BaseGameMode::EndRound() {
-    DestroyActors();
+  DestroyActors();
 }
 
 void BaseGameMode::Tick() {
-    if(!HasRoundStarted()) {
-        // still setting the game up...
-        return;
-    }
+  if (!HasRoundStarted()) {
+    // still setting the game up...
+    return;
+  }
 
-    Actor* slave = GetCurrentPlayer()->input_target;
-    if(slave != nullptr) {
-        slave->HandleInput();
+  Actor* slave = GetCurrentPlayer()->input_target;
+  if (slave != nullptr) {
+    slave->HandleInput();
 
-        // temp: force the camera at the actor pos
-        g_state.camera->position = slave->GetPosition();
-        g_state.camera->angles = slave->GetAngles();
-    }
+    // temp: force the camera at the actor pos
+    g_state.camera->position = slave->GetPosition();
+    g_state.camera->angles = slave->GetAngles();
+  }
 
-    ActorManager::GetInstance()->TickActors();
+  ActorManager::GetInstance()->TickActors();
 }
 
 void BaseGameMode::SpawnActors() {
-    Map* map = GameManager::GetInstance()->GetCurrentMap();
-    if(map == nullptr) {
-        Error("Attempted to spawn actors without having loaded a map!\n");
+  Map* map = GameManager::GetInstance()->GetCurrentMap();
+  if (map == nullptr) {
+    Error("Attempted to spawn actors without having loaded a map!\n");
+  }
+
+  std::vector<ActorSpawn> spawns = map->GetSpawns();
+  for (const auto& spawn : spawns) {
+    LogInfo("Spawn: %s\n", spawn.class_name.c_str());
+
+    Actor* actor = ActorManager::GetInstance()->CreateActor(spawn);
+    if (actor == nullptr) {
+      continue;
     }
 
-    std::vector<ActorSpawn> spawns = map->GetSpawns();
-    for(const auto& spawn : spawns) {
-        Actor* actor = ActorManager::GetInstance()->CreateActor(spawn);
-        if(actor == nullptr) {
-            continue;
-        }
-
-        if(spawn.class_name == "GR_ME") {
-            players_[0].input_target = actor;
-        }
+    // Pigs are a special case, for obvious reasons
+    APig* pig = dynamic_cast<APig*>(actor);
+    if (pig == nullptr) {
+      continue;
     }
+
+    players_[0].input_target = actor;
+  }
 }
 
 void BaseGameMode::DestroyActors() {
-    ActorManager::GetInstance()->DestroyActors();
+  ActorManager::GetInstance()->DestroyActors();
 }
 
 void BaseGameMode::StartTurn() {
-    Player *player = GetCurrentPlayer();
-    if(player->input_target == nullptr) {
-        LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
-        EndTurn();
-        return;
-    }
+  Player* player = GetCurrentPlayer();
+  if (player->input_target == nullptr) {
+    LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
+    EndTurn();
+    return;
+  }
 }
 
 void BaseGameMode::EndTurn() {
-    // move onto the next player
-    if(++current_player_ >= players_.size()) {
-        current_player_ = 0;
-    }
+  // move onto the next player
+  if (++current_player_ >= players_.size()) {
+    current_player_ = 0;
+  }
 }
 
-void BaseGameMode::PlayerJoined(Player *player) {
+void BaseGameMode::PlayerJoined(Player* player) {
 
 }
 
-void BaseGameMode::PlayerLeft(Player *player) {
+void BaseGameMode::PlayerLeft(Player* player) {
 
 }
 
 unsigned int BaseGameMode::GetMaxSpectators() const {
-    return 0;
+  return 0;
 }
 
-void BaseGameMode::SpectatorJoined(Player *player) {
+void BaseGameMode::SpectatorJoined(Player* player) {
 
 }
 
-void BaseGameMode::SpectatorLeft(Player *player) {
+void BaseGameMode::SpectatorLeft(Player* player) {
 
 }
 
 unsigned int BaseGameMode::GetMaxPlayers() const {
-    return 0;
+  return 0;
 }

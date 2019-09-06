@@ -20,28 +20,29 @@
 #include "TempGame.h"
 #include "actors/actor.h"
 
-struct Team {
-  std::string name; // Name of the team
-  unsigned int identity; // Identity of the team (e.g. Tommy etc.)
-  std::vector<Actor *> items; // List of spawnables in the team
-};
-
-struct Player {
-  std::string name; // Name of the player (only useful for online play)
-  Actor *input_target{nullptr}; // Actor that the player is possessing
-  unsigned int input_slot{0}; // Controll slot
-  unsigned int team_slot{0}; // Team that the player is part of
-};
-
 class IGameMode;
 class Map;
 
+struct Player {
+  std::string name; // Name of the player (only useful for online play)
+  Actor* input_target{nullptr}; // Actor that the player is possessing
+  unsigned int input_slot{0}; // Controll slot
+};
+
+struct Team {
+  std::string name; // Name of the team
+  unsigned int identity; // Identity of the team (e.g. Tommy etc.)
+  std::vector<Actor*> children; // List of spawnables in the team
+  std::vector<Player> players;  // list of all the players attributed to this team
+  unsigned int last_player; // last player that controlled a pig for this team
+};
+
 class GameManager {
  private:
-  static GameManager *instance_;
+  static GameManager* instance_;
 
  public:
-  static GameManager *GetInstance() {
+  static GameManager* GetInstance() {
     if (instance_ == nullptr) {
       instance_ = new GameManager();
     }
@@ -61,19 +62,21 @@ class GameManager {
 
   void Tick();
 
-  void LoadMap(const std::string &name);
+  void LoadMap(const std::string& name);
   void UnloadMap();
 
-  Map *GetCurrentMap() { return active_map_; }
+  Map* GetCurrentMap() { return active_map_; }
 
-  Player *GetCurrentPlayer();
+  Player* GetCurrentPlayer();
 
  protected:
  private:
-  IGameMode *active_mode_{nullptr};
-  Map *active_map_{nullptr};
+  IGameMode* active_mode_{nullptr};
+  Map* active_map_{nullptr};
+
+  std::vector<Team> teams_;
 
 #define MAX_AMBIENT_SAMPLES 8
   double ambient_emit_delay_{0};
-  const struct AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
+  const struct AudioSample* ambient_samples_[MAX_AMBIENT_SAMPLES]{};
 };

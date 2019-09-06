@@ -88,10 +88,10 @@ void ActorManager::DestroyActors() {
   actors_.clear();
 }
 
-ActorManager::ActorClassRegistration::ActorClassRegistration(std::string name,
+ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string& name,
                                                              actor_ctor_func ctor_func,
                                                              actor_ctor_func_spawn ctor_func_spawn)
-    : name_(std::move(name)) {
+    : name_(name) {
   auto &i = ActorManager::actor_classes_[name];
   i.ctor = ctor_func;
   i.ctor_spawn = ctor_func_spawn;

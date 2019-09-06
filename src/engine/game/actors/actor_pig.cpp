@@ -25,14 +25,14 @@
 
 #include "actor_pig.h"
 
-register_actor(AC_ME, APig);    // Ace
-register_actor(LE_ME, APig);    // Legend
-register_actor(ME_ME, APig);    // Medic
-register_actor(SB_ME, APig);    // Commando
-register_actor(SP_ME, APig);    // Spy
-register_actor(SN_ME, APig);    // Sniper
-register_actor(SA_ME, APig);    // Saboteur
-register_actor(GR_ME, APig);    // Grunt
+register_actor(ac_me, APig);    // Ace
+register_actor(le_me, APig);    // Legend
+register_actor(me_me, APig);    // Medic
+register_actor(sb_me, APig);    // Commando
+register_actor(sp_me, APig);    // Spy
+register_actor(sn_me, APig);    // Sniper
+register_actor(sa_me, APig);    // Saboteur
+register_actor(gr_me, APig);    // Grunt
 
 APig::APig(const ActorSpawn& spawn) : AAnimatedModel(spawn) {}
 
