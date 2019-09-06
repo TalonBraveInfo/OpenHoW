@@ -20,8 +20,7 @@
 
 AAnimatedModel::AAnimatedModel(const ActorSpawn& spawn) : AModel(spawn) {
 }
-AAnimatedModel::AAnimatedModel() {
-
+AAnimatedModel::AAnimatedModel() : AModel() {
 }
 
 AAnimatedModel::~AAnimatedModel() = default;

@@ -35,11 +35,12 @@ register_actor(SA_ME, APig);    // Saboteur
 register_actor(GR_ME, APig);    // Grunt
 
 APig::APig(const ActorSpawn& spawn) : AAnimatedModel(spawn) {}
+
 APig::APig() : AAnimatedModel() {}
 APig::~APig() = default;
 
 void APig::HandleInput() {
-  Player *player = GameManager::GetInstance()->GetCurrentPlayer();
+  Player* player = GameManager::GetInstance()->GetCurrentPlayer();
   if (player == nullptr) {
     return;
   }
@@ -81,7 +82,7 @@ void APig::Tick() {
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map *map = GameManager::GetInstance()->GetCurrentMap();
+  Map* map = GameManager::GetInstance()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;

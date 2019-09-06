@@ -23,7 +23,7 @@
 #include "script/ScriptConfig.h"
 
 #include "game/GameManager.h"
-#include "game/SPGameMode.h"
+#include "game/mode_base.h"
 
 MapManager *MapManager::instance_ = nullptr;
 

@@ -59,7 +59,7 @@ static inline const char *GetVersionString(void) {
 }
 
 #ifdef __cplusplus
-class SPGameMode;
+class BaseGameMode;
 #else
 typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++

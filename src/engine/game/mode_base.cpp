@@ -21,21 +21,21 @@
 #include "../frontend.h"
 #include "../audio/audio.h"
 
-#include "SPGameMode.h"
+#include "mode_base.h"
 #include "ActorManager.h"
 
-SPGameMode::SPGameMode() {
+BaseGameMode::BaseGameMode() {
     players_.resize(4);
 }
 
-SPGameMode::~SPGameMode() {
+BaseGameMode::~BaseGameMode() {
     AudioManager::GetInstance()->FreeSources();
     AudioManager::GetInstance()->FreeSamples();
 
     DestroyActors();
 }
 
-void SPGameMode::StartRound() {
+void BaseGameMode::StartRound() {
     if(HasRoundStarted()) {
         Error("Attempted to change map in the middle of a round, aborting!\n");
     }
@@ -48,16 +48,16 @@ void SPGameMode::StartRound() {
     AudioManager::GetInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 }
 
-void SPGameMode::RestartRound() {
+void BaseGameMode::RestartRound() {
     DestroyActors();
     SpawnActors();
 }
 
-void SPGameMode::EndRound() {
+void BaseGameMode::EndRound() {
     DestroyActors();
 }
 
-void SPGameMode::Tick() {
+void BaseGameMode::Tick() {
     if(!HasRoundStarted()) {
         // still setting the game up...
         return;
@@ -75,7 +75,7 @@ void SPGameMode::Tick() {
     ActorManager::GetInstance()->TickActors();
 }
 
-void SPGameMode::SpawnActors() {
+void BaseGameMode::SpawnActors() {
     Map* map = GameManager::GetInstance()->GetCurrentMap();
     if(map == nullptr) {
         Error("Attempted to spawn actors without having loaded a map!\n");
@@ -94,11 +94,11 @@ void SPGameMode::SpawnActors() {
     }
 }
 
-void SPGameMode::DestroyActors() {
+void BaseGameMode::DestroyActors() {
     ActorManager::GetInstance()->DestroyActors();
 }
 
-void SPGameMode::StartTurn() {
+void BaseGameMode::StartTurn() {
     Player *player = GetCurrentPlayer();
     if(player->input_target == nullptr) {
         LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
@@ -107,33 +107,33 @@ void SPGameMode::StartTurn() {
     }
 }
 
-void SPGameMode::EndTurn() {
+void BaseGameMode::EndTurn() {
     // move onto the next player
     if(++current_player_ >= players_.size()) {
         current_player_ = 0;
     }
 }
 
-void SPGameMode::PlayerJoined(Player *player) {
+void BaseGameMode::PlayerJoined(Player *player) {
 
 }
 
-void SPGameMode::PlayerLeft(Player *player) {
+void BaseGameMode::PlayerLeft(Player *player) {
 
 }
 
-unsigned int SPGameMode::GetMaxSpectators() const {
+unsigned int BaseGameMode::GetMaxSpectators() const {
     return 0;
 }
 
-void SPGameMode::SpectatorJoined(Player *player) {
+void BaseGameMode::SpectatorJoined(Player *player) {
 
 }
 
-void SPGameMode::SpectatorLeft(Player *player) {
+void BaseGameMode::SpectatorLeft(Player *player) {
 
 }
 
-unsigned int SPGameMode::GetMaxPlayers() const {
+unsigned int BaseGameMode::GetMaxPlayers() const {
     return 0;
 }

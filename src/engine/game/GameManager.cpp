@@ -22,7 +22,7 @@
 
 #include "GameManager.h"
 #include "ActorManager.h"
-#include "SPGameMode.h"
+#include "mode_base.h"
 #include "../model.h"
 
 GameManager *GameManager::instance_ = nullptr;
@@ -92,7 +92,7 @@ void GameManager::LoadMap(const std::string &name) {
 
   ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
 
-  active_mode_ = new SPGameMode();
+  active_mode_ = new BaseGameMode();
   // call StartRound; deals with spawning everything in and other mode specific logic
   active_mode_->StartRound();
 
