@@ -22,7 +22,8 @@
 
 class APig : public AAnimatedModel {
  public:
-  explicit APig(const std::string &name);
+  explicit APig(const ActorSpawn& spawn);
+  APig();
   ~APig() override;
 
   void HandleInput() override;

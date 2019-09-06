@@ -22,7 +22,8 @@
 
 class AStaticModel : public AModel {
  public:
-  explicit AStaticModel(const std::string &name);
+  explicit AStaticModel(const ActorSpawn& spawn);
+  AStaticModel();
   ~AStaticModel() override;
 
  protected:

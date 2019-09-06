@@ -20,76 +20,83 @@
 
 #include "ActorManager.h"
 
+#include <utility>
+
 #include "actors/actor.h"
 #include "actors/actor_static_model.h"
 
 /************************************************************/
 
 std::vector<Actor*> ActorManager::actors_;
-std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
+std::map<std::string, ActorManager::GeneratorFunc> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
-Actor* ActorManager::CreateActor(const std::string &name) {
-    auto i = actor_classes_.find(name);
+Actor* ActorManager::CreateActor(const ActorSpawn& spawn) {
+  auto i = actor_classes_.find(spawn.class_name);
+  Actor* actor;
+  if (i == actor_classes_.end()) {
+    actor = new AStaticModel(spawn);
+  } else {
+    actor = i->second.ctor_spawn(spawn);
+  }
 
-    // name passed into actor is lowercase for
-    // convenience sake (e.g. loading models)
-    std::string lcname = name;
-    std::transform(lcname.begin(), lcname.end(), lcname.begin(), [](unsigned char c){ return std::tolower(c); });
+  actors_.push_back(actor);
+  return actor;
+}
 
-    Actor* actor;
-    if(i == actor_classes_.end()) {
-        actor = new AStaticModel(lcname);
-    } else {
-        actor = i->second(lcname);
-    }
-
-    actors_.push_back(actor);
-    return actor;
+Actor* ActorManager::CreateActor(const std::string& class_name) {
+  auto i = actor_classes_.find(class_name);
+  Actor* actor = i->second.ctor();
+  actors_.push_back(actor);
+  return actor;
 }
 
 void ActorManager::DestroyActor(Actor* actor) {
-    u_assert(actor != nullptr, "attempted to delete a null actor!\n");
-    actors_.erase(std::remove(actors_.begin(), actors_.end(), actor), actors_.end());
-    delete actor;
+  u_assert(actor != nullptr, "attempted to delete a null actor!\n");
+  actors_.erase(std::remove(actors_.begin(), actors_.end(), actor), actors_.end());
+  delete actor;
 }
 
 void ActorManager::TickActors() {
-    for(auto const& actor: actors_) {
-        actor->Tick();
-    }
+  for (auto const &actor: actors_) {
+    actor->Tick();
+  }
 }
 
 void ActorManager::DrawActors() {
-    if(FrontEnd_GetState() == FE_MODE_LOADING) {
-        return;
+  if (FrontEnd_GetState() == FE_MODE_LOADING) {
+    return;
+  }
+
+  g_state.gfx.num_actors_drawn = 0;
+  for (auto const &actor: actors_) {
+    if (cv_graphics_cull->b_value && !actor->IsVisible()) {
+      continue;
     }
 
-    g_state.gfx.num_actors_drawn = 0;
-    for(auto const& actor: actors_) {
-        if(cv_graphics_cull->b_value && !actor->IsVisible()) {
-            continue;
-        }
+    g_state.gfx.num_actors_drawn++;
 
-        g_state.gfx.num_actors_drawn++;
-
-        actor->Draw();
-    }
+    actor->Draw();
+  }
 }
 
 void ActorManager::DestroyActors() {
-    for(auto &actor: actors_) {
-        delete actor;
-    }
+  for (auto &actor: actors_) {
+    delete actor;
+  }
 
-    actors_.clear();
+  actors_.clear();
 }
 
-ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string &name, actor_ctor_func ctor_func)
-    : name_(name) {
-    ActorManager::actor_classes_[name] = ctor_func;
+ActorManager::ActorClassRegistration::ActorClassRegistration(std::string name,
+                                                             actor_ctor_func ctor_func,
+                                                             actor_ctor_func_spawn ctor_func_spawn)
+    : name_(std::move(name)) {
+  auto &i = ActorManager::actor_classes_[name];
+  i.ctor = ctor_func;
+  i.ctor_spawn = ctor_func_spawn;
 }
 
 ActorManager::ActorClassRegistration::~ActorClassRegistration() {
-    ActorManager::actor_classes_.erase(name_);
+  ActorManager::actor_classes_.erase(name_);
 }

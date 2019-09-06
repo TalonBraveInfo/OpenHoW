@@ -45,4 +45,6 @@ protected:
 
     void SpawnActors() override;
     void DestroyActors() override;
+
+ private:
 };

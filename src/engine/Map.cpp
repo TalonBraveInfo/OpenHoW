@@ -162,11 +162,11 @@ Map::~Map() {
 }
 
 void Map::LoadSky() {
-  if(sky_model_top_ == nullptr) {
+  if (sky_model_top_ == nullptr) {
     sky_model_top_ = LoadSkyModel("skys/skydome");
   }
 
-   if(sky_model_bottom_ == nullptr) {
+  if (sky_model_bottom_ == nullptr) {
     sky_model_bottom_ = LoadSkyModel("skys/skydomeu");
   }
 }
@@ -177,12 +177,12 @@ PLModel* Map::LoadSkyModel(const std::string &path) {
   // Default skydome is smaller than the map, so we'll scale it
   model->model_matrix = plScaleMatrix4(model->model_matrix, PLVector3(5, 5, 5));
 
-  PLModelLod *lod = plGetModelLodLevel(model, 0);
+  PLModelLod* lod = plGetModelLodLevel(model, 0);
   if (lod == nullptr) {
     Error("Failed to get first lod for sky mesh!\n");
   }
 
-  PLMesh *mesh = lod->meshes[0];
+  PLMesh* mesh = lod->meshes[0];
   // This is a really crap hardcoded limit, just to ensure it's what we're expecting
   if (mesh->num_verts != 257) {
     Error("Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts);
@@ -196,16 +196,16 @@ void Map::UpdateSky() {
   UpdateSkyModel(sky_model_bottom_);
 }
 
-void Map::UpdateSkyModel(PLModel *model) {
+void Map::UpdateSkyModel(PLModel* model) {
   u_assert(model != nullptr, "attempted to apply sky colours prior to loading sky dome");
 
-  PLModelLod *lod = plGetModelLodLevel(model, 0);
+  PLModelLod* lod = plGetModelLodLevel(model, 0);
   if (lod == nullptr) {
     LogWarn("Failed to get first lod for sky mesh!\n");
     return;
   }
 
-  PLMesh *mesh = lod->meshes[0];
+  PLMesh* mesh = lod->meshes[0];
   // Below is a PSX-style gradient sky implementation
   const unsigned int solid_steps = 3;
   const unsigned int grad_steps = 6;
@@ -237,7 +237,7 @@ void Map::UpdateSkyModel(PLModel *model) {
 }
 
 void Map::UpdateLighting() {
-  PLShaderProgram *program = Shaders_GetProgram(SHADER_GenericTexturedLit);
+  PLShaderProgram* program = Shaders_GetProgram(SHADER_GenericTexturedLit);
   if (program == nullptr) {
     return;
   }
@@ -264,28 +264,28 @@ void Map::UpdateLighting() {
 
 void Map::LoadSpawns(const std::string &path) {
   struct PogIndex {
-    char        name[16];               // class name
-    char        unused0[16];
-    int16_t     position[3];            // position in the world
-    uint16_t    index;                  // todo
-    int16_t     angles[3];              // angles in the world
-    uint16_t    type;                   // todo
-    int16_t     bounds[3];              // collision bounds
-    uint16_t    bounds_type;            // box, prism, sphere and none
-    int16_t     energy;
-    uint8_t     appearance;
-    uint8_t     team;                   // uk, usa, german, french, japanese, soviet
-    uint16_t    objective;
-    uint8_t     objective_actor_id;
-    uint8_t     objective_extra[2];
-    uint8_t     unused1;
-    uint16_t    unused2[8];
-    int16_t     fallback_position[3];
-    int16_t     extra;
-    int16_t     attached_actor_num;
-    int16_t     unused3;
+    char name[16];               // class name
+    char unused0[16];
+    int16_t position[3];            // position in the world
+    uint16_t index;                  // todo
+    int16_t angles[3];              // angles in the world
+    uint16_t type;                   // todo
+    int16_t bounds[3];              // collision bounds
+    uint16_t bounds_type;            // box, prism, sphere and none
+    int16_t energy;
+    uint8_t appearance;
+    uint8_t team;                   // uk, usa, german, french, japanese, soviet
+    uint16_t objective;
+    uint8_t objective_actor_id;
+    uint8_t objective_extra[2];
+    uint8_t unused1;
+    uint16_t unused2[8];
+    int16_t fallback_position[3];
+    int16_t extra;
+    int16_t attached_actor_num;
+    int16_t unused3;
   };
-  static_assert(sizeof(PogIndex) == 94, "Invalid size for MapSpawn, should be 94 bytes!");
+  static_assert(sizeof(PogIndex) == 94, "Invalid size for PogIndex, should be 94 bytes!");
 
   std::ifstream ifs(path, std::ios_base::in | std::ios_base::binary);
   if (!ifs.is_open()) {
@@ -294,7 +294,7 @@ void Map::LoadSpawns(const std::string &path) {
 
   uint16_t num_indices;
   try {
-    ifs.read(reinterpret_cast<char *>(&num_indices), sizeof(uint16_t));
+    ifs.read(reinterpret_cast<char*>(&num_indices), sizeof(uint16_t));
   } catch (const std::ifstream::failure &err) {
     Error("Failed to read POG indices count, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
   }
@@ -302,27 +302,33 @@ void Map::LoadSpawns(const std::string &path) {
   std::vector<PogIndex> spawns(num_indices);
 
   try {
-    ifs.read(reinterpret_cast<char *>(spawns.data()), sizeof(MapSpawn) * num_indices);
+    ifs.read(reinterpret_cast<char*>(spawns.data()), sizeof(PogIndex) * num_indices);
   } catch (const std::ifstream::failure &err) {
     Error("Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value());
   }
 
   spawns_.resize(num_indices);
 
-  for(unsigned int i = 0; i < num_indices; ++i) {
-    spawns_[i].position.x = (spawns[i].position[0] += (TERRAIN_PIXEL_WIDTH / 2));
-    spawns_[i].position.y = (spawns[i].position[1]);
-    spawns_[i].position.z = (spawns[i].position[2] += (TERRAIN_PIXEL_WIDTH / 2) * -1);
+  for (unsigned int i = 0; i < num_indices; ++i) {
+    spawns_[i].position.x = static_cast<float>(spawns[i].position[0] + (TERRAIN_PIXEL_WIDTH / 2));
+    spawns_[i].position.y = static_cast<float>(spawns[i].position[1]);
+    spawns_[i].position.z = static_cast<float>((spawns[i].position[2] * -1) + (TERRAIN_PIXEL_WIDTH / 2));
 
     spawns_[i].fallback_position.x = (spawns[i].fallback_position[0] += (TERRAIN_PIXEL_WIDTH / 2));
     spawns_[i].fallback_position.y = (spawns[i].fallback_position[1]);
     spawns_[i].fallback_position.z = (spawns[i].fallback_position[2] += (TERRAIN_PIXEL_WIDTH / 2) * -1);
 
-    spawns_[i].angles.x = plDegreesToRadians((float)(spawns[i].angles[0]) * (360.f / 4096.f));
-    spawns_[i].angles.y = plDegreesToRadians((float)(spawns[i].angles[1]) * (360.f / 4096.f) + 90.f);
-    spawns_[i].angles.z = plDegreesToRadians((float)(spawns[i].angles[2]) * (360.f / 4096.f) - 180.f);
+    spawns_[i].angles.x = plDegreesToRadians((float) (spawns[i].angles[0]) * (360.f / 4096.f));
+    spawns_[i].angles.y = plDegreesToRadians((float) (spawns[i].angles[1]) * (360.f / 4096.f) + 90.f);
+    spawns_[i].angles.z = plDegreesToRadians((float) (spawns[i].angles[2]) * (360.f / 4096.f) - 180.f);
 
     spawns_[i].class_name = spawns[i].name;
+    std::transform(
+        spawns_[i].class_name.begin(),
+        spawns_[i].class_name.end(),
+        spawns_[i].class_name.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    
     spawns_[i].appearance = spawns[i].appearance;
     spawns_[i].attachment = &spawns_[spawns[i].attached_actor_num];
 
@@ -330,7 +336,7 @@ void Map::LoadSpawns(const std::string &path) {
     spawns_[i].index = spawns[i].index;
 
     // todo: retain or set on per-actor basis?
-    for(unsigned int j = 0; j < 3; ++j) {
+    for (unsigned int j = 0; j < 3; ++j) {
       spawns_[i].bounds[j] = spawns[i].bounds[j];
     }
     spawns_[i].bounds_type = spawns[i].bounds_type;

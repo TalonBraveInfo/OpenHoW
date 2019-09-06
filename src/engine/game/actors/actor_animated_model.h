@@ -22,7 +22,8 @@
 
 class AAnimatedModel : public AModel {
  public:
-  explicit AAnimatedModel(const std::string &name);
+  explicit AAnimatedModel(const ActorSpawn& spawn);
+  AAnimatedModel();
   ~AAnimatedModel() override;
 
  protected:

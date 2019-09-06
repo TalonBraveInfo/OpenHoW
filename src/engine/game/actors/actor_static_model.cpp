@@ -16,10 +16,7 @@
  */
 
 #include "../../engine.h"
-#include "../../model.h"
-
 #include "../ActorManager.h"
-
 #include "actor_static_model.h"
 
 register_actor(DUMMY, AStaticModel); // todo: needs special logic
@@ -58,8 +55,14 @@ register_actor(STW07PWW, AStaticModel);
 // Buildings
 register_actor(SHELTER, AStaticModel);
 
-AStaticModel::AStaticModel(const std::string &name) : AModel(name) {
-  SetModel("scenery/" + spawn_name);
+AStaticModel::AStaticModel(const ActorSpawn& spawn) : AModel(spawn) {
+  SetModel("scenery/" + spawn.class_name);
+
+  if(spawn.class_name == "brid2_s") {
+    angles_.z = plDegreesToRadians(-45.f);
+  }
 }
 
+AStaticModel::AStaticModel() : AModel() {}
 AStaticModel::~AStaticModel() = default;
+

@@ -81,20 +81,12 @@ void SPGameMode::SpawnActors() {
         Error("Attempted to spawn actors without having loaded a map!\n");
     }
 
-    std::vector<MapSpawn> spawns = map->GetSpawns();
-    for(auto spawn : spawns) {
-        Actor* actor = ActorManager::GetInstance()->CreateActor(spawn.class_name);
+    std::vector<ActorSpawn> spawns = map->GetSpawns();
+    for(const auto& spawn : spawns) {
+        Actor* actor = ActorManager::GetInstance()->CreateActor(spawn);
         if(actor == nullptr) {
             continue;
         }
-
-        PLVector3 angles = spawn.angles;
-        if(spawn.class_name == "BRID2_S") {
-          angles.z = plDegreesToRadians(-45.f);
-        }
-
-        actor->SetPosition(PLVector3(spawn.position[0], spawn.position[1], spawn.position[2]));
-        actor->SetAngles(angles);
 
         if(spawn.class_name == "GR_ME") {
             players_[0].input_target = actor;

@@ -61,5 +61,7 @@ protected:
     std::vector<Player> players_;
     std::vector<Player> spectators_;
 
+    std::vector<Team> teams_;
+
     unsigned int current_player_{0};
 };

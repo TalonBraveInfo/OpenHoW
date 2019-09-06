@@ -20,7 +20,7 @@
 #include "map_manager.h"
 #include "terrain.h"
 
-struct MapSpawn {
+struct ActorSpawn {
   std::string class_name;
   PLVector3 position; // position in the world
   uint16_t index;                  // todo
@@ -41,7 +41,7 @@ struct MapSpawn {
   PLVector3 fallback_position;
 
   int16_t extra;
-  MapSpawn *attachment;
+  ActorSpawn *attachment;
 };
 
 struct MapManifest;
@@ -59,7 +59,7 @@ public:
     MapManifest* GetManifest() { return manifest_; }
     Terrain * GetTerrain() { return terrain_; }
 
-    const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
+    const std::vector<ActorSpawn> &GetSpawns() { return spawns_; }
 
     void UpdateSky();
 
@@ -75,7 +75,7 @@ private:
 
     MapManifest *manifest_{nullptr};
 
-    std::vector<MapSpawn> spawns_;
+    std::vector<ActorSpawn> spawns_;
 
     std::string id_name_;
 

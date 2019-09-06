@@ -34,7 +34,8 @@ register_actor(SN_ME, APig);    // Sniper
 register_actor(SA_ME, APig);    // Saboteur
 register_actor(GR_ME, APig);    // Grunt
 
-APig::APig(const std::string &name) : AAnimatedModel(name) {}
+APig::APig(const ActorSpawn& spawn) : AAnimatedModel(spawn) {}
+APig::APig() : AAnimatedModel() {}
 APig::~APig() = default;
 
 void APig::HandleInput() {

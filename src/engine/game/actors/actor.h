@@ -46,7 +46,7 @@ class Actor {
  public:
 
   Actor();
-  explicit Actor(const std::string &name);
+  explicit Actor(const struct ActorSpawn& spawn);
   virtual ~Actor();
 
   virtual void Tick() {}  // simulation tick, called per-frame
@@ -63,7 +63,7 @@ class Actor {
   virtual PLVector3 GetAngles() { return angles_; }
   virtual void SetAngles(PLVector3 angles);
 
-  virtual void HandleInput();   // handle any player input, if applicable
+  virtual void HandleInput() {}   // handle any player input, if applicable
 
  protected:
   bool is_visible_{false};
@@ -73,7 +73,7 @@ class Actor {
   PLVector3 angles_{0, 0, 0};             // p, y, r
   PLVector3 bounds_{0, 0, 0};
 
-  std::string spawn_name{"none"};
+  std::string class_name_{"none"};
 
  private:
   uint16_t flags_{0};
