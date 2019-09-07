@@ -28,7 +28,7 @@
 #include "frontend.h"
 #include "map_manager.h"
 
-#include "game/SPGameMode.h"
+#include "game/mode_base.h"
 
 /* Mod Management
  *

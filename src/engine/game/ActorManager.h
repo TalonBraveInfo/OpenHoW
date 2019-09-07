@@ -22,38 +22,47 @@
 #include "actors/actor.h"
 
 class ActorManager {
-protected:
-    typedef Actor* (*actor_ctor_func)(const std::string& name);
-    static std::map<std::string, actor_ctor_func> actor_classes_;
+ protected:
+  typedef Actor* (* actor_ctor_func_spawn)(const struct ActorSpawn& spawn);
+  typedef Actor* (* actor_ctor_func)();
+  struct GeneratorFunc {
+    actor_ctor_func ctor;
+    actor_ctor_func_spawn ctor_spawn;
+  };
+  static std::map<std::string, GeneratorFunc> actor_classes_;
 
-public:
-    static ActorManager* GetInstance() {
-        static ActorManager* instance = nullptr;
-        if(instance == nullptr) {
-            instance = new ActorManager();
-        }
-        return instance;
+ public:
+  static ActorManager* GetInstance() {
+    static ActorManager* instance = nullptr;
+    if (instance == nullptr) {
+      instance = new ActorManager();
     }
+    return instance;
+  }
 
-    Actor* SpawnMapActor(const std::string &name);
-    void DestroyActor(Actor* actor);
+  Actor* CreateActor(const struct ActorSpawn& spawn);
+  Actor* CreateActor(const std::string& class_name);
+  void DestroyActor(Actor* actor);
 
-    void TickActors();
-    void DrawActors();
-    void DestroyActors();
+  void TickActors();
+  void DrawActors();
+  void DestroyActors();
 
-    class ActorClassRegistration {
-    public:
-        const std::string name_;
+  class ActorClassRegistration {
+   public:
+    const std::string name_;
 
-        ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func);
-        ~ActorClassRegistration();
-    };
+    ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func, actor_ctor_func_spawn ctor_func_spawn);
+    ~ActorClassRegistration();
+  };
 
-private:
-    static std::vector<Actor*> actors_;
+ private:
+  static std::set<Actor*> actors_;
 };
 
 #define register_actor(NAME, CLASS) \
-    static Actor * NAME ## _make(const std::string& name) { return new CLASS (name); } \
-    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make)
+    static Actor * NAME ## _make_spawn(const struct ActorSpawn& spawn) \
+    { return new CLASS (spawn); } \
+    static Actor * NAME ## _make() \
+    { return new CLASS (); } \
+    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make, NAME ## _make_spawn)

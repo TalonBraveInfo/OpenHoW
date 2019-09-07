@@ -20,75 +20,67 @@
 #include "map_manager.h"
 #include "terrain.h"
 
-/* format data */
+struct ActorSpawn {
+  std::string class_name;
+  PLVector3 position; // position in the world
+  uint16_t index;                  // todo
+  PLVector3 angles; // angles in the world
+  uint16_t type;                   // todo
 
-struct MapSpawn {
-    char        name[16];               // class name
-    char        unused0[16];
+  int16_t bounds[3]; // collision bounds
+  uint16_t bounds_type; // box, prism, sphere and none
 
-    int16_t     position[3];            // position in the world
-    uint16_t    index;                  // todo
-    int16_t     angles[3];              // angles in the world
-    uint16_t    type;                   // todo
+  int16_t energy;
+  uint8_t appearance;
+  uint8_t team; // uk, usa, german, french, japanese, soviet
 
-    int16_t     bounds[3];              // collision bounds
-    uint16_t    bounds_type;            // box, prism, sphere and none
+  uint16_t objective;
+  uint8_t objective_actor_id;
+  uint8_t objective_extra[2];
 
-    int16_t     energy;
-    uint8_t     appearance;
-    uint8_t     team;                   // uk, usa, german, french, japanese, soviet
+  PLVector3 fallback_position;
 
-    uint16_t    objective;
-    uint8_t     objective_actor_id;
-    uint8_t     objective_extra[2];
-
-    uint8_t     unused1;
-    uint16_t    unused2[8];
-
-    int16_t     fallback_position[3];
-    int16_t     extra;
-    int16_t     attached_actor_num;
-    int16_t     unused3;
+  int16_t extra;
+  ActorSpawn* attachment{nullptr};
 };
-static_assert(sizeof(MapSpawn) == 94, "Invalid size for MapSpawn, should be 94 bytes!");
 
 struct MapManifest;
 
 /* end format data */
 
 class Map {
-public:
-    explicit Map(const std::string &name);
-    ~Map();
+ public:
+  explicit Map(const std::string& name);
+  ~Map();
 
-    void Draw();
+  void Draw();
 
-    const std::string &GetId() { return id_name_; }
-    MapManifest* GetManifest() { return manifest_; }
-    Terrain * GetTerrain() { return terrain_; }
+  const std::string& GetId() { return id_name_; }
+  MapManifest* GetManifest() { return manifest_; }
+  Terrain* GetTerrain() { return terrain_; }
 
-    const std::vector<MapSpawn> &GetSpawns() { return spawns_; }
+  const std::vector<ActorSpawn>& GetSpawns() { return spawns_; }
 
-    void UpdateSky();
+  void UpdateSky();
 
-    void UpdateLighting();
+  void UpdateLighting();
 
-protected:
-private:
-    void LoadSpawns(const std::string &path);
-    void LoadSky();
-    static PLModel* LoadSkyModel(const std::string &path);
+ protected:
+ private:
+  void LoadSpawns(const std::string& path);
+  void LoadSky();
+  static PLModel* LoadSkyModel(const std::string& path);
 
-    void UpdateSkyModel(PLModel *model);
+  void UpdateSkyModel(PLModel* model);
 
-    MapManifest *manifest_{nullptr};
+  MapManifest* manifest_{nullptr};
 
-    std::vector<MapSpawn> spawns_;
+  std::vector<ActorSpawn> spawns_;
 
-    std::string id_name_;
+  std::string id_name_;
 
-    PLModel *sky_model_top_{nullptr};
-    PLModel *sky_model_bottom_{nullptr};
+  PLModel* sky_model_top_{nullptr};
+  PLModel* sky_model_bottom_{nullptr};
 
-    Terrain *terrain_{nullptr};
+  Terrain* terrain_{nullptr};
 };

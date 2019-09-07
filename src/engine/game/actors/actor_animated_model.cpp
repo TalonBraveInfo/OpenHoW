@@ -16,11 +16,11 @@
  */
 
 #include "../../engine.h"
-
 #include "actor_animated_model.h"
 
-AAnimatedModel::AAnimatedModel(const std::string &name) : AModel(name) {
-
+AAnimatedModel::AAnimatedModel(const ActorSpawn& spawn) : AModel(spawn) {
+}
+AAnimatedModel::AAnimatedModel() : AModel() {
 }
 
 AAnimatedModel::~AAnimatedModel() = default;

@@ -21,7 +21,8 @@
 
 class AModel : public Actor {
  public:
-  explicit AModel(const std::string &name);
+  explicit AModel(const ActorSpawn& spawn);
+  AModel();
   ~AModel() override;
 
   void Draw() override;

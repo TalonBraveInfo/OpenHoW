@@ -19,10 +19,10 @@
 
 #include "GameMode.h"
 
-class SPGameMode : public IGameMode {
+class BaseGameMode : public IGameMode {
 public:
-    SPGameMode();
-    ~SPGameMode() override;
+    BaseGameMode();
+    ~BaseGameMode() override;
 
     void Tick() override;
 
@@ -45,4 +45,6 @@ protected:
 
     void SpawnActors() override;
     void DestroyActors() override;
+
+ private:
 };

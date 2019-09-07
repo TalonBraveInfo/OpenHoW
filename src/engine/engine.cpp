@@ -28,7 +28,7 @@
 #include "audio/audio.h"
 #include "map_manager.h"
 
-#include "game/SPGameMode.h"
+#include "game/mode_base.h"
 #include "script/script.h"
 #include "loaders/loaders.h"
 #include "graphics/display.h"

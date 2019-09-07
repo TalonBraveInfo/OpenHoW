@@ -16,20 +16,19 @@
  */
 
 #include "../../engine.h"
+#include "../../Map.h"
 
 #include "actor.h"
 
 Actor::Actor() = default;
 Actor::~Actor() = default;
 
-Actor::Actor(const std::string &name) {
-  spawn_name = name;
+Actor::Actor(const ActorSpawn& spawn) : class_name_(spawn.class_name) {
+  SetPosition(spawn.position);
+  SetAngles(spawn.angles);
 }
-
-void Actor::HandleInput() {}
 
 void Actor::SetAngles(PLVector3 angles) {
   VecAngleClamp(&angles);
   angles_ = angles;
-  /* todo: limit angles... */
 }

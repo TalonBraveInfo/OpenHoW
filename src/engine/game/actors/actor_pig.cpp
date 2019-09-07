@@ -23,54 +23,24 @@
 #include "../ActorManager.h"
 #include "../GameManager.h"
 
-#include "actor_model.h"
-#include "actor_animated_model.h"
+#include "actor_pig.h"
 
-class APig : public AAnimatedModel {
- public:
-  explicit APig(const std::string &name);
-  ~APig() override;
+register_actor(ac_me, APig);    // Ace
+register_actor(le_me, APig);    // Legend
+register_actor(me_me, APig);    // Medic
+register_actor(sb_me, APig);    // Commando
+register_actor(sp_me, APig);    // Spy
+register_actor(sn_me, APig);    // Sniper
+register_actor(sa_me, APig);    // Saboteur
+register_actor(gr_me, APig);    // Grunt
 
-  void HandleInput() override;
-  void Tick() override;
+APig::APig(const ActorSpawn& spawn) : AAnimatedModel(spawn) {}
 
- protected:
-  float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
-  float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
-  float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
-
- private:
-  enum {
-    EYES_OPEN,
-    EYES_CLOSED,
-    EYES_SAD,
-    EYES_SURPRISED,
-    EYES_ANGRY,
-  } upper_face_frame_{EYES_OPEN};
-
-  enum {
-    MOUTH_OPEN,
-    MOUTH_CLOSED,
-    MOUTH_SAD,
-    MOUTH_SURPRISED,
-    MOUTH_ANGRY,
-  } lower_face_frame_{MOUTH_OPEN};
-};
-
-register_actor(AC_ME, APig);    // Ace
-register_actor(LE_ME, APig);    // Legend
-register_actor(ME_ME, APig);    // Medic
-register_actor(SB_ME, APig);    // Commando
-register_actor(SP_ME, APig);    // Spy
-register_actor(SN_ME, APig);    // Sniper
-register_actor(SA_ME, APig);    // Saboteur
-register_actor(GR_ME, APig);    // Grunt
-
-APig::APig(const std::string &name) : AAnimatedModel(name) {}
+APig::APig() : AAnimatedModel() {}
 APig::~APig() = default;
 
 void APig::HandleInput() {
-  Player *player = GameManager::GetInstance()->GetCurrentPlayer();
+  Player* player = GameManager::GetInstance()->GetCurrentPlayer();
   if (player == nullptr) {
     return;
   }
@@ -112,7 +82,7 @@ void APig::Tick() {
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map *map = GameManager::GetInstance()->GetCurrentMap();
+  Map* map = GameManager::GetInstance()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
@@ -123,4 +93,7 @@ void APig::Tick() {
   if (angles_.x > MAX_PITCH) angles_.x = MAX_PITCH;
 
   VecAngleClamp(&angles_);
+}
+
+void APig::SetClass(int pclass) {
 }
