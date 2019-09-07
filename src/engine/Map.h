@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include "map_manager.h"
 #include "terrain.h"
 
 struct ActorSpawn {

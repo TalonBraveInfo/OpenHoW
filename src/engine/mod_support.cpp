@@ -26,7 +26,6 @@
 #include "script/ScriptConfig.h"
 
 #include "frontend.h"
-#include "map_manager.h"
 
 #include "game/mode_base.h"
 
@@ -132,5 +131,5 @@ void Mod_SetCampaign(const char *dir) {
   LogInfo("Campaign has been set to \"%s\" successfully!\n", campaign->name.c_str());
 
   // Ensure that our manifest list is updated
-  MapManager::GetInstance()->RegisterManifests();
+  GameManager::GetInstance()->RegisterMapManifests();
 }

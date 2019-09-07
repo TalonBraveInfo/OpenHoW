@@ -21,14 +21,8 @@
 #include "engine.h"
 #include "Map.h"
 #include "model.h"
-#include "mod_support.h"
-#include "frontend.h"
-#include "script/script.h"
-#include "script/ScriptConfig.h"
-#include "game/ActorManager.h"
-#include "map_manager.h"
+#include "game/GameManager.h"
 
-#include "graphics/display.h"
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/texture_atlas.h"
@@ -129,7 +123,7 @@ Map::Map(const std::string &name) {
 
   id_name_ = name;
 
-  manifest_ = MapManager::GetInstance()->GetManifest(name);
+  manifest_ = GameManager::GetInstance()->GetMapManifest(name);
   if (manifest_ == nullptr) {
     LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
   }

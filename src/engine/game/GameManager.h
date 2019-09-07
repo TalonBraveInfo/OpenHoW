@@ -37,6 +37,29 @@ struct Team {
   unsigned int last_player; // last player that controlled a pig for this team
 };
 
+struct MapManifest {
+  std::string path;                               // path to manifest
+  std::string name{"none"};                       // 'BOOT CAMP'
+  std::string author{"none"};                     // creator of the map
+  std::string description{"none"};                //
+  std::vector<std::string> modes;                 // supported gameplay types
+  PLColour ambient_colour{255, 255, 255, 255};    // ambient colour
+  // Sky gradient
+  PLColour sky_colour_top{0, 104, 156};
+  PLColour sky_colour_bottom{223, 255, 255};
+  // Sun/lighting properties
+  PLColour sun_colour{255, 255, 255};      // directional colour
+  float sun_yaw{0}, sun_pitch{0};       // light direction (yaw/angle)
+  // Fog
+  PLColour fog_colour{223, 255, 255, 255};
+  float fog_intensity{30.0f};
+  float fog_distance{100.0f};
+  // Misc
+  std::string temperature{"normal"};       // Determines idle animation set. Can be normal/hot/cold
+  std::string time{"day"};              // Determines ambient sound set. Can be day/night
+  std::string weather{"clear"};         // Determines weather particles. Can be clear/rain/snow
+};
+
 class GameManager {
  private:
   static GameManager* instance_;
@@ -65,14 +88,25 @@ class GameManager {
   void LoadMap(const std::string& name);
   void UnloadMap();
 
+  void RegisterMapManifest(const std::string& path);
+  void RegisterMapManifests();
+
+  MapManifest* GetMapManifest(const std::string& name);
+  const std::map<std::string, MapManifest>& GetMapManifests() { return map_manifests_; };
+
   Map* GetCurrentMap() { return active_map_; }
 
   Player* GetCurrentPlayer();
 
  protected:
  private:
+  static void MapCommand(unsigned int argc, char *argv[]);
+  static void MapsCommand(unsigned int argc, char *argv[]);
+
   IGameMode* active_mode_{nullptr};
   Map* active_map_{nullptr};
+
+  std::map<std::string, MapManifest> map_manifests_;
 
   std::vector<Team> teams_;
 

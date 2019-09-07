@@ -21,7 +21,6 @@
 #include "engine.h"
 #include "imgui_layer.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
-#include "map_manager.h"
 #include "audio/audio.h"
 #include "graphics/display.h"
 
@@ -32,7 +31,6 @@
 #include "editor/texture_viewer.h"
 #include "editor/new_map_window.h"
 #include "editor/model_viewer.h"
-#include "model.h"
 
 static bool show_quit = false;
 static bool show_file = false;

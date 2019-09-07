@@ -18,7 +18,6 @@
 #pragma once
 
 #include "base_window.h"
-#include "../map_manager.h"
 #include "../Map.h"
 
 #include <algorithm>

@@ -26,7 +26,6 @@
 #include "input.h"
 #include "frontend.h"
 #include "audio/audio.h"
-#include "map_manager.h"
 
 #include "game/mode_base.h"
 #include "script/script.h"
@@ -99,7 +98,6 @@ void Engine_Initialize(void) {
     AudioManager::GetInstance();
     GameManager::GetInstance();
     FE_Initialize();
-    MapManager::GetInstance();
     ModelManager::GetInstance();
 
     LogInfo("Base path:         \"%s\"\n", u_get_base_path());
