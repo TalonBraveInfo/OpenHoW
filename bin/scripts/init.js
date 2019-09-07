@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-function InitClientGame() {
-    LogInfo("initializing client stuff...");
+function initGame() {
+    logInfo("initializing stuff...");
 
     /* queue the videos used for the launch of the game */
     //var videos = ["sheff.bik", "infologo.bik"];
@@ -24,4 +24,10 @@ function InitClientGame() {
 
     /* immediately begin playing the videos as soon as we're ready */
     //PlayVideos();
+
+    doFile("./scripts/blah.js");
+}
+
+function gameTick() {
+    logInfo("tick!");
 }

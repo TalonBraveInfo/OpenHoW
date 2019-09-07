@@ -24,6 +24,7 @@
 #include "ActorManager.h"
 #include "mode_base.h"
 #include "../model.h"
+#include "../script/script.h"
 #include "../script/script_config.h"
 
 GameManager* GameManager::instance_ = nullptr;
@@ -31,6 +32,8 @@ GameManager* GameManager::instance_ = nullptr;
 GameManager::GameManager() {
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
+
+  CF_initGame();
 }
 
 GameManager::~GameManager() {
@@ -38,6 +41,8 @@ GameManager::~GameManager() {
 }
 
 void GameManager::Tick() {
+  CF_gameTick();
+
   FrontEnd_Tick();
 
   if (active_mode_ == nullptr) {

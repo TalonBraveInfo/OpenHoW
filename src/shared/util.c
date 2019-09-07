@@ -26,7 +26,7 @@
 /****************************************************/
 /* Logs */
 
-void u_init_logs(const char *log_path) {
+void u_init_logs(const char* log_path) {
   plSetupLogOutput(log_path);
 
   /* set our logs up */
@@ -36,9 +36,9 @@ void u_init_logs(const char *log_path) {
   plSetupLogLevel(LOG_LEVEL_ERROR, "error", PLColour(255, 0, 0, 255), true);
   plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255),
 #ifdef _DEBUG
-    true
+                  true
 #else
-    false
+      false
 #endif
   );
 }
@@ -46,14 +46,28 @@ void u_init_logs(const char *log_path) {
 /****************************************************/
 /* Memory */
 
-unsigned long u_unmangle(void *source, void *destination) {
+unsigned long u_unmangle(void* source, void* destination) {
   /* todo */
 
   return 0;
 }
 
-void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
-  void *mem = calloc(num, size);
+void* u_realloc(void* ptr, size_t new_size, bool abort_on_fail) {
+  void* mem = realloc(ptr, new_size);
+  if(mem == NULL && new_size > 0) {
+    if(abort_on_fail) {
+      Error("Failed to allocate %u bytes!\n", new_size);
+    }
+
+    LogWarn("Failed to allocate %u bytes!\n", new_size);
+    return NULL;
+  }
+
+  return mem;
+}
+
+void* u_alloc(size_t num, size_t size, bool abort_on_fail) {
+  void* mem = calloc(num, size);
   if (mem == NULL && abort_on_fail) {
     Error("Failed to allocate %u bytes!\n", size * num);
   }
@@ -63,8 +77,8 @@ void *u_alloc(size_t num, size_t size, bool abort_on_fail) {
 /****************************************************/
 /* Filesystem */
 
-PLConsoleVariable *cv_path_base = NULL;
-PLConsoleVariable *cv_path_mod = NULL;
+PLConsoleVariable* cv_path_base = NULL;
+PLConsoleVariable* cv_path_mod = NULL;
 
 void u_init_paths(void) {
 #define rvar(var, arc, ...) \
@@ -73,23 +87,29 @@ void u_init_paths(void) {
         (var) = plRegisterConsoleVariable(&str_##var[3], __VA_ARGS__); \
         (var)->archive = (arc); \
     }
-    
+
   rvar(cv_path_base, true, ".", pl_string_var, NULL, "");
   rvar(cv_path_mod, false, "", pl_string_var, NULL, "");
 }
 
-const char *u_get_base_path(void) { u_assert(cv_path_base); return cv_path_base->s_value; }
-const char *u_get_mod_path(void) { u_assert(cv_path_mod); return cv_path_mod->s_value; }
-void u_set_base_path(const char *path) { plSetConsoleVariable(cv_path_base, path); }
-void u_set_mod_path(const char *path) { plSetConsoleVariable(cv_path_mod, path); }
+const char* u_get_base_path(void) {
+  u_assert(cv_path_base);
+  return cv_path_base->s_value;
+}
+const char* u_get_mod_path(void) {
+  u_assert(cv_path_mod);
+  return cv_path_mod->s_value;
+}
+void u_set_base_path(const char* path) { plSetConsoleVariable(cv_path_base, path); }
+void u_set_mod_path(const char* path) { plSetConsoleVariable(cv_path_mod, path); }
 
-const char *u_get_full_path(void) {
+const char* u_get_full_path(void) {
   static char path[PL_SYSTEM_MAX_PATH];
   snprintf(path, sizeof(path), "%s/campaigns/%s", u_get_base_path(), u_get_mod_path());
   return path;
 }
 
-const char *u_scan(const char *path, const char **preference) {
+const char* u_scan(const char* path, const char** preference) {
   static char find[PL_SYSTEM_MAX_PATH];
   while (*preference != NULL) {
     snprintf(find, sizeof(find), "%s.%s", path, *preference);
@@ -104,7 +124,7 @@ const char *u_scan(const char *path, const char **preference) {
   return "";
 }
 
-const char *u_find(const char *path) {
+const char* u_find(const char* path) {
   static char n_path[PL_SYSTEM_MAX_PATH];
   if (!plIsEmptyString(u_get_mod_path())) {
     snprintf(n_path, sizeof(n_path), "%s/%s", u_get_full_path(), path);
@@ -119,7 +139,7 @@ const char *u_find(const char *path) {
   return n_path;
 }
 
-const char *u_find2(const char *path, const char **preference, bool abort_on_fail) {
+const char* u_find2(const char* path, const char** preference, bool abort_on_fail) {
   static char out[PL_SYSTEM_MAX_PATH];
   memset(out, 0, sizeof(out));
 
@@ -148,8 +168,8 @@ const char *u_find2(const char *path, const char **preference, bool abort_on_fai
   return out;
 }
 
-FILE *u_open(const char *path, const char *mode, bool abort_on_fail) {
-  FILE *fp = fopen(u_find(path), mode);
+FILE* u_open(const char* path, const char* mode, bool abort_on_fail) {
+  FILE* fp = fopen(u_find(path), mode);
   if (fp == NULL) {
     /* todo: provide more detail! */
     if (abort_on_fail) {

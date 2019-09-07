@@ -23,9 +23,20 @@ void Script_Initialize(void);
 void Script_EvaluateString(const char *str);
 void Script_Shutdown(void);
 
+bool Script_LoadFile(const char *path);
+
+void Script_DeclareGlobalString(const char *name, const char *value);
+void Script_DeclareGlobalInteger(const char *name, int value);
+
+#define Script_DeclareGlobalStringU(value) \
+    Script_DeclareGlobalString(#value, (value))
+#define Script_DeclareGlobalIntegerU(value) \
+    Script_DeclareGlobalInteger(#value, (value))
+
 /************************************************************/
 /* CallScript Functions */
 
-void CS_InitGame(void);
+void CF_initGame();
+void CF_gameTick();
 
 PL_EXTERN_C_END
