@@ -57,7 +57,7 @@ class ActorManager {
   };
 
  private:
-  static std::vector<Actor*> actors_;
+  static std::set<Actor*> actors_;
 };
 
 #define register_actor(NAME, CLASS) \

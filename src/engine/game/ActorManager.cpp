@@ -27,7 +27,7 @@
 
 /************************************************************/
 
-std::vector<Actor*> ActorManager::actors_;
+std::set<Actor*> ActorManager::actors_;
 std::map<std::string, ActorManager::GeneratorFunc> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
@@ -40,20 +40,25 @@ Actor* ActorManager::CreateActor(const ActorSpawn& spawn) {
     actor = i->second.ctor_spawn(spawn);
   }
 
-  actors_.push_back(actor);
+  actors_.insert(actor);
   return actor;
 }
 
 Actor* ActorManager::CreateActor(const std::string& class_name) {
   auto i = actor_classes_.find(class_name);
+  if(i == actor_classes_.end()) {
+    LogWarn("Failed to find actor class %s!\n", class_name.c_str());
+    return nullptr;
+  }
+
   Actor* actor = i->second.ctor();
-  actors_.push_back(actor);
+  actors_.insert(actor);
   return actor;
 }
 
 void ActorManager::DestroyActor(Actor* actor) {
   u_assert(actor != nullptr, "attempted to delete a null actor!\n");
-  actors_.erase(std::remove(actors_.begin(), actors_.end(), actor), actors_.end());
+  actors_.erase(actor);
   delete actor;
 }
 

@@ -41,7 +41,7 @@ struct ActorSpawn {
   PLVector3 fallback_position;
 
   int16_t extra;
-  ActorSpawn *attachment;
+  ActorSpawn* attachment{nullptr};
 };
 
 struct MapManifest;
@@ -49,38 +49,38 @@ struct MapManifest;
 /* end format data */
 
 class Map {
-public:
-    explicit Map(const std::string &name);
-    ~Map();
+ public:
+  explicit Map(const std::string& name);
+  ~Map();
 
-    void Draw();
+  void Draw();
 
-    const std::string &GetId() { return id_name_; }
-    MapManifest* GetManifest() { return manifest_; }
-    Terrain * GetTerrain() { return terrain_; }
+  const std::string& GetId() { return id_name_; }
+  MapManifest* GetManifest() { return manifest_; }
+  Terrain* GetTerrain() { return terrain_; }
 
-    const std::vector<ActorSpawn> &GetSpawns() { return spawns_; }
+  const std::vector<ActorSpawn>& GetSpawns() { return spawns_; }
 
-    void UpdateSky();
+  void UpdateSky();
 
-    void UpdateLighting();
+  void UpdateLighting();
 
-protected:
-private:
-    void LoadSpawns(const std::string &path);
-    void LoadSky();
-    static PLModel* LoadSkyModel(const std::string &path);
+ protected:
+ private:
+  void LoadSpawns(const std::string& path);
+  void LoadSky();
+  static PLModel* LoadSkyModel(const std::string& path);
 
-    void UpdateSkyModel(PLModel *model);
+  void UpdateSkyModel(PLModel* model);
 
-    MapManifest *manifest_{nullptr};
+  MapManifest* manifest_{nullptr};
 
-    std::vector<ActorSpawn> spawns_;
+  std::vector<ActorSpawn> spawns_;
 
-    std::string id_name_;
+  std::string id_name_;
 
-    PLModel *sky_model_top_{nullptr};
-    PLModel *sky_model_bottom_{nullptr};
+  PLModel* sky_model_top_{nullptr};
+  PLModel* sky_model_bottom_{nullptr};
 
-    Terrain *terrain_{nullptr};
+  Terrain* terrain_{nullptr};
 };

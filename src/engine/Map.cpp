@@ -330,7 +330,13 @@ void Map::LoadSpawns(const std::string &path) {
         [](unsigned char c) { return std::tolower(c); });
     
     spawns_[i].appearance = spawns[i].appearance;
-    spawns_[i].attachment = &spawns_[spawns[i].attached_actor_num];
+
+    try {
+      spawns_[i].attachment = &spawns_.at(spawns[i].attached_actor_num);
+    } catch(const std::out_of_range &e) {
+      LogWarn("Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[i].class_name.c_str(),
+          plPrintVector3(&spawns_[i].position, pl_int_var));
+    }
 
     spawns_[i].energy = spawns[i].energy;
     spawns_[i].index = spawns[i].index;

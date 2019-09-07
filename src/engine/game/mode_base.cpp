@@ -84,8 +84,6 @@ void BaseGameMode::SpawnActors() {
 
   std::vector<ActorSpawn> spawns = map->GetSpawns();
   for (const auto& spawn : spawns) {
-    LogInfo("Spawn: %s\n", spawn.class_name.c_str());
-
     Actor* actor = ActorManager::GetInstance()->CreateActor(spawn);
     if (actor == nullptr) {
       continue;
