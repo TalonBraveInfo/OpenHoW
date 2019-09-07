@@ -20,13 +20,7 @@
 #include "engine.h"
 #include "mod_support.h"
 #include "Map.h"
-#include "language.h"
-
-#include "script/script.h"
-#include "script/ScriptConfig.h"
-
-#include "frontend.h"
-
+#include "script/script_config.h"
 #include "game/mode_base.h"
 
 /* Mod Management

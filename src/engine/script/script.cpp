@@ -28,7 +28,7 @@
 #include "duktape-2.2.0/duktape.h"
 #include "duktape-2.2.0/duk_module_duktape.h"
 
-duk_context *scr_context = NULL;    /* server context */
+duk_context *scr_context = nullptr;    /* server context */
 
 #define CheckContext(A, B) if((A) != (B)) { LogWarn("invalid context, ignoring script function!\n"); return -1; }
 
@@ -121,7 +121,7 @@ void LoadScript(duk_context *context, const char *path) {
     }
 
     FILE *fs = fopen(path, "rb");
-    if(fs == NULL) {
+    if(fs == nullptr) {
         LogWarn("Failed to load script, \"%s\"!\n", path);
         return;
     }
@@ -187,16 +187,14 @@ void Script_Initialize(void) {
     /* init the server context */
 
     scr_context = duk_create_heap_default();
-    if(scr_context == NULL) {
+    if(scr_context == nullptr) {
         Error("Failed to create heap for default context, aborting!\n");
     }
 
-    for(unsigned int i = 0; i < plArrayElements(scr_builtins); ++i) {
-        duk_push_c_function(scr_context, scr_builtins[i].Function, scr_builtins[i].num_args);
-        duk_put_global_string(scr_context, scr_builtins[i].name);
+    for(auto & scr_builtin : scr_builtins) {
+        duk_push_c_function(scr_context, scr_builtin.Function, scr_builtin.num_args);
+        duk_put_global_string(scr_context, scr_builtin.name);
     }
-
-    duk_module_duktape_init(scr_context);
 
     /* controller vars */
     DeclareUniversalGlobalInteger(INPUT_BUTTON_CROSS);
@@ -234,7 +232,7 @@ void Script_Initialize(void) {
 }
 
 void Script_EvaluateString(const char *str) {
-    if(str == NULL) {
+    if(str == nullptr) {
         return;
     }
 
@@ -242,7 +240,7 @@ void Script_EvaluateString(const char *str) {
 }
 
 void Script_Shutdown(void) {
-    if(scr_context != NULL) {
+    if(scr_context != nullptr) {
         duk_destroy_heap(scr_context);
     }
 }

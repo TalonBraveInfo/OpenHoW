@@ -20,7 +20,7 @@
 #include "engine.h"
 #include "language.h"
 #include "script/script.h"
-#include "script/ScriptConfig.h"
+#include "script/script_config.h"
 
 /* todo: rewrite to take better advantage of std */
 

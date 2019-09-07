@@ -24,7 +24,7 @@
 #include "ActorManager.h"
 #include "mode_base.h"
 #include "../model.h"
-#include "../script/ScriptConfig.h"
+#include "../script/script_config.h"
 
 GameManager* GameManager::instance_ = nullptr;
 

@@ -21,7 +21,7 @@
 #include "config.h"
 
 #include "script/script.h"
-#include "script/ScriptConfig.h"
+#include "script/script_config.h"
 
 const char *Config_GetUserConfigPath(void) {
   static std::string config_path;
