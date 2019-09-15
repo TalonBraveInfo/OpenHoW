@@ -19,7 +19,6 @@
 
 #include "engine.h"
 #include "mod_support.h"
-#include "Map.h"
 #include "script/script_config.h"
 
 using namespace openhow;

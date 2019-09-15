@@ -34,7 +34,7 @@
 static SDL_Window *window = nullptr;
 static SDL_GLContext gl_context = nullptr;
 
-openhow::Engine* engine = nullptr;
+using namespace openhow;
 
 unsigned int System_GetTicks(void) {
   return SDL_GetTicks();
@@ -622,8 +622,10 @@ int main(int argc, char **argv) {
    * ourselves                            */
   SDL_StartTextInput();
 
-  new openhow::Engine();
-  while (openhow::engine->IsRunning());
+  engine = new Engine();
+  engine->Initialize();
+
+  while (engine->IsRunning());
 
   System_Shutdown();
 

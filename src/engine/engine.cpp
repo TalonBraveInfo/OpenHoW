@@ -57,10 +57,6 @@ extern "C" void DrawMap(void) {
 openhow::Engine* openhow::engine;
 
 openhow::Engine::Engine() {
-  engine = this;
-
-  LogInfo("Initializing Engine (%s)...\n", GetVersionString().c_str());
-
   g_state.draw_ticks = 0;
 
   g_state.last_draw_ms = 0;
@@ -73,6 +69,19 @@ openhow::Engine::Engine() {
   g_state.gfx.num_triangles_total = 0;
 
   u_init_paths();
+}
+
+openhow::Engine::~Engine() {
+  Display_Shutdown();
+
+  Config_Save(Config_GetUserConfigPath());
+
+  delete game_manager_;
+  delete audio_manager_;
+}
+
+void openhow::Engine::Initialize() {
+  LogInfo("Initializing Engine (%s)...\n", GetVersionString().c_str());
 
   Console_Initialize();
 
@@ -122,15 +131,6 @@ openhow::Engine::Engine() {
   LogInfo("Base path:         \"%s\"\n", u_get_base_path());
   LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
   LogInfo("Working directory: \"%s\"\n", plGetWorkingDirectory());
-}
-
-openhow::Engine::~Engine() {
-  Display_Shutdown();
-
-  Config_Save(Config_GetUserConfigPath());
-
-  delete game_manager_;
-  delete audio_manager_;
 }
 
 std::string openhow::Engine::GetVersionString() {

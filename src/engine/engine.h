@@ -57,6 +57,8 @@ class Engine {
   Engine();
   ~Engine();
 
+  void Initialize();
+
   std::string GetVersionString();
 
   bool IsRunning();
