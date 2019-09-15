@@ -21,7 +21,6 @@
 
 class AModel : public Actor {
  public:
-  explicit AModel(const ActorSpawn& spawn);
   AModel();
   ~AModel() override;
 

@@ -22,9 +22,10 @@
 
 class AAnimatedModel : public AModel {
  public:
-  explicit AAnimatedModel(const ActorSpawn& spawn);
   AAnimatedModel();
   ~AAnimatedModel() override;
+
+  void Deserialize(const ActorSpawn& spawn) override;
 
  protected:
  private:

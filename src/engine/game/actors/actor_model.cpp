@@ -19,12 +19,11 @@
 #include "../../model.h"
 #include "actor_model.h"
 
-AModel::AModel(const ActorSpawn& spawn) : Actor(spawn) {}
 AModel::AModel() : Actor() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
-  if (class_name_ == "dummy") {
+  if (strstr(model_->name, "dummy") != nullptr) {
     angles_.y += TICKS_PER_SECOND / 1000.f;
   }
 

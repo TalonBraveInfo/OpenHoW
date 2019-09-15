@@ -19,50 +19,17 @@
 #include "../actor_manager.h"
 #include "actor_static_model.h"
 
-register_actor(DUMMY, AStaticModel); // todo: needs special logic
-register_actor(SIGN, AStaticModel);
-register_actor(CRATE1, AStaticModel);
-register_actor(CRATE2, AStaticModel);
+register_actor(static_model, AStaticModel);
 
-// Barbed Wire
-register_actor(BARBWIRE, AStaticModel);
-register_actor(BARBWIR2, AStaticModel);
+AStaticModel::AStaticModel() : AModel() {}
+AStaticModel::~AStaticModel() = default;
 
-// Trees
-register_actor(TREEP, AStaticModel);
-register_actor(TREEPH, AStaticModel);
-register_actor(TREEPH1, AStaticModel);
-register_actor(TREEPH2, AStaticModel);
+void AStaticModel::Deserialize(const ActorSpawn& spawn) {
+  Actor::Deserialize(spawn);
 
-// Bridges
-register_actor(BRIDGE_C, AStaticModel);
-register_actor(BRID2_C, AStaticModel);
-register_actor(BRIDG_C2, AStaticModel);
-register_actor(BRIDGE_S, AStaticModel);
-
-// Building Components
-register_actor(IRONGATE, AStaticModel);
-register_actor(STF03PPP, AStaticModel);
-register_actor(STW04_W_, AStaticModel);
-register_actor(STW04_D2, AStaticModel);
-register_actor(STW04PPP, AStaticModel);
-register_actor(STW05_W_, AStaticModel);
-register_actor(STW05PPP, AStaticModel);
-register_actor(STW06_W_, AStaticModel);
-register_actor(STW06PPP, AStaticModel);
-register_actor(STW07PWW, AStaticModel);
-
-// Buildings
-register_actor(SHELTER, AStaticModel);
-
-AStaticModel::AStaticModel(const ActorSpawn& spawn) : AModel(spawn) {
   SetModel("scenery/" + spawn.class_name);
 
   if(spawn.class_name == "brid2_s") {
     angles_.z = plDegreesToRadians(-45.f);
   }
 }
-
-AStaticModel::AStaticModel() : AModel() {}
-AStaticModel::~AStaticModel() = default;
-

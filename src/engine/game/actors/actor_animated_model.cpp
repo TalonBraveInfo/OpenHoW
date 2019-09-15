@@ -18,9 +18,11 @@
 #include "../../engine.h"
 #include "actor_animated_model.h"
 
-AAnimatedModel::AAnimatedModel(const ActorSpawn& spawn) : AModel(spawn) {
-}
 AAnimatedModel::AAnimatedModel() : AModel() {
 }
 
 AAnimatedModel::~AAnimatedModel() = default;
+
+void AAnimatedModel::Deserialize(const ActorSpawn& spawn) {
+  AModel::Deserialize(spawn);
+}

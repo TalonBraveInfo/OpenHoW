@@ -22,9 +22,10 @@
 
 class AStaticModel : public AModel {
  public:
-  explicit AStaticModel(const ActorSpawn& spawn);
   AStaticModel();
   ~AStaticModel() override;
+
+  void Deserialize(const ActorSpawn& spawn) override;
 
  protected:
  private:

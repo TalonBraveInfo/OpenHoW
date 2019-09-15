@@ -70,7 +70,6 @@ class Actor {
  public:
 
   Actor();
-  explicit Actor(const struct ActorSpawn& spawn);
   virtual ~Actor();
 
   virtual void Tick() {}  // simulation tick, called per-frame
@@ -82,22 +81,27 @@ class Actor {
   virtual bool IsVisible() { return is_visible_; }
 
   virtual PLVector3 GetPosition() { return position_; }
-  virtual void SetPosition(PLVector3 position) { position_ = position; }
+  virtual void SetPosition(PLVector3 position);
 
   virtual PLVector3 GetAngles() { return angles_; }
   virtual void SetAngles(PLVector3 angles);
 
   virtual void HandleInput() {}   // handle any player input, if applicable
 
+//  virtual ActorSpawn Serialize() {}
+  virtual void Deserialize(const ActorSpawn& spawn);
+
+  virtual void Activate() {}
+  virtual void Deactivate() {}
+  virtual bool IsActivated() { return is_activated_; }
+
  protected:
   bool is_visible_{false};
 
-  PLVector3 position_{0, 0, 0};           // x, y, z
+  PLVector3 position_{0, 0, 0}, old_position_{0, 0, 0};
   PLVector3 fallback_position_{0, 0, 0};
-  PLVector3 angles_{0, 0, 0};             // p, y, r
+  PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
   PLVector3 bounds_{0, 0, 0};
-
-  std::string class_name_{"none"};
 
  private:
   uint16_t flags_{0};
@@ -105,8 +109,8 @@ class Actor {
   uint16_t team_{0};
   int16_t health_{0};
 
+  bool is_activated_{false};
+
   Actor* parent_{nullptr};
   Actor* child_{nullptr};
-
-  /* todo: collision sys */
 };

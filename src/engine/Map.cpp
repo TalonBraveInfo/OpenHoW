@@ -219,13 +219,7 @@ void Map::LoadSpawns(const std::string& path) {
     spawns_[i].angles.y = plDegreesToRadians((float) (spawns[i].angles[1]) * (360.f / 4096.f) + 90.f);
     spawns_[i].angles.z = plDegreesToRadians((float) (spawns[i].angles[2]) * (360.f / 4096.f) - 180.f);
 
-    spawns_[i].class_name = spawns[i].name;
-    std::transform(
-        spawns_[i].class_name.begin(),
-        spawns_[i].class_name.end(),
-        spawns_[i].class_name.begin(),
-        [](unsigned char c) { return std::tolower(c); });
-
+    spawns_[i].class_name = u_stringtolower(spawns[i].name);
     spawns_[i].appearance = spawns[i].appearance;
 
     try {

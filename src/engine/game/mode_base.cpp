@@ -85,19 +85,21 @@ void BaseGameMode::SpawnActors() {
 
   std::vector<ActorSpawn> spawns = map->GetSpawns();
   for (const auto& spawn : spawns) {
-    Actor* actor = ActorManager::GetInstance()->CreateActor(spawn);
+    Actor* actor = ActorManager::GetInstance()->CreateActor(spawn.class_name);
     if (actor == nullptr) {
-      continue;
+      actor = ActorManager::GetInstance()->CreateActor("static_model");
     }
+
+    actor->Deserialize(spawn);
 
     // Pigs are a special case, for obvious reasons
     APig* pig = dynamic_cast<APig*>(actor);
-    if (pig == nullptr) {
-      continue;
+    if (pig != nullptr) {
+      players_[0].input_target = actor;
     }
-
-    players_[0].input_target = actor;
   }
+
+  ActorManager::GetInstance()->ActivateActors();
 }
 
 void BaseGameMode::DestroyActors() {

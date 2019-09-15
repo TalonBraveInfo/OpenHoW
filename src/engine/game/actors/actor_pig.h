@@ -22,7 +22,6 @@
 
 class APig : public AAnimatedModel {
  public:
-  explicit APig(const ActorSpawn& spawn);
   APig();
   ~APig() override;
 
@@ -31,6 +30,8 @@ class APig : public AAnimatedModel {
 
   void SetClass(int pclass);
   int GetClass() { return pclass_; }
+
+  void Deserialize(const ActorSpawn& spawn) override;
 
  protected:
   float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */

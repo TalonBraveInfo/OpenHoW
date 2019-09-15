@@ -21,12 +21,18 @@
 Actor::Actor() = default;
 Actor::~Actor() = default;
 
-Actor::Actor(const ActorSpawn& spawn) : class_name_(spawn.class_name) {
-  SetPosition(spawn.position);
-  SetAngles(spawn.angles);
-}
-
 void Actor::SetAngles(PLVector3 angles) {
   VecAngleClamp(&angles);
+  old_angles_ = angles_;
   angles_ = angles;
+}
+
+void Actor::SetPosition(PLVector3 position) {
+  old_position_ = position_;
+  position_ = position;
+}
+
+void Actor::Deserialize(const ActorSpawn& spawn){
+  SetPosition(spawn.position);
+  SetAngles(spawn.angles);
 }

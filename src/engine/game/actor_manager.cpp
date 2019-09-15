@@ -20,26 +20,12 @@
 
 #include "actor_manager.h"
 #include "actors/actor.h"
-#include "actors/actor_static_model.h"
 
 /************************************************************/
 
 std::set<Actor*> ActorManager::actors_;
-std::map<std::string, ActorManager::GeneratorFunc> ActorManager::actor_classes_
+std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
-
-Actor* ActorManager::CreateActor(const ActorSpawn& spawn) {
-  auto i = actor_classes_.find(spawn.class_name);
-  Actor* actor;
-  if (i == actor_classes_.end()) {
-    actor = new AStaticModel(spawn);
-  } else {
-    actor = i->second.ctor_spawn(spawn);
-  }
-
-  actors_.insert(actor);
-  return actor;
-}
 
 Actor* ActorManager::CreateActor(const std::string& class_name) {
   auto i = actor_classes_.find(class_name);
@@ -48,7 +34,7 @@ Actor* ActorManager::CreateActor(const std::string& class_name) {
     return nullptr;
   }
 
-  Actor* actor = i->second.ctor();
+  Actor* actor = i->second();
   actors_.insert(actor);
   return actor;
 }
@@ -61,6 +47,10 @@ void ActorManager::DestroyActor(Actor* actor) {
 
 void ActorManager::TickActors() {
   for (auto const& actor: actors_) {
+    if(!actor->IsActivated()) {
+      continue;
+    }
+
     actor->Tick();
   }
 }
@@ -90,13 +80,21 @@ void ActorManager::DestroyActors() {
   actors_.clear();
 }
 
-ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string& name,
-                                                             actor_ctor_func ctor_func,
-                                                             actor_ctor_func_spawn ctor_func_spawn)
+void ActorManager::ActivateActors() {
+  for(auto const& actor: actors_) {
+    actor->Activate();
+  }
+}
+
+void ActorManager::DeactivateActors() {
+  for(auto const& actor: actors_) {
+    actor->Deactivate();
+  }
+}
+
+ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func)
     : name_(name) {
-  auto& i = ActorManager::actor_classes_[name];
-  i.ctor = ctor_func;
-  i.ctor_spawn = ctor_func_spawn;
+  ActorManager::actor_classes_[name] = ctor_func;
 }
 
 ActorManager::ActorClassRegistration::~ActorClassRegistration() {

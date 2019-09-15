@@ -21,13 +21,8 @@
 
 class ActorManager {
  protected:
-  typedef Actor* (* actor_ctor_func_spawn)(const struct ActorSpawn& spawn);
   typedef Actor* (* actor_ctor_func)();
-  struct GeneratorFunc {
-    actor_ctor_func ctor;
-    actor_ctor_func_spawn ctor_spawn;
-  };
-  static std::map<std::string, GeneratorFunc> actor_classes_;
+  static std::map<std::string, actor_ctor_func> actor_classes_;
 
  public:
   static ActorManager* GetInstance() {
@@ -38,7 +33,6 @@ class ActorManager {
     return instance;
   }
 
-  Actor* CreateActor(const struct ActorSpawn& spawn);
   Actor* CreateActor(const std::string& class_name);
   void DestroyActor(Actor* actor);
 
@@ -46,11 +40,14 @@ class ActorManager {
   void DrawActors();
   void DestroyActors();
 
+  void ActivateActors();
+  void DeactivateActors();
+
   class ActorClassRegistration {
    public:
     const std::string name_;
 
-    ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func, actor_ctor_func_spawn ctor_func_spawn);
+    ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func);
     ~ActorClassRegistration();
   };
 
@@ -59,8 +56,6 @@ class ActorManager {
 };
 
 #define register_actor(NAME, CLASS) \
-    static Actor * NAME ## _make_spawn(const struct ActorSpawn& spawn) \
-    { return new CLASS (spawn); } \
     static Actor * NAME ## _make() \
     { return new CLASS (); } \
-    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make, NAME ## _make_spawn)
+    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make)

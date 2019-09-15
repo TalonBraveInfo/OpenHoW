@@ -34,8 +34,6 @@ register_actor(gr_me, APig);    // Grunt
 
 using namespace openhow;
 
-APig::APig(const ActorSpawn& spawn) : AAnimatedModel(spawn) {}
-
 APig::APig() : AAnimatedModel() {}
 APig::~APig() = default;
 
@@ -101,4 +99,10 @@ void APig::Tick() {
 }
 
 void APig::SetClass(int pclass) {
+}
+
+void APig::Deserialize(const ActorSpawn& spawn) {
+  AAnimatedModel::Deserialize(spawn);
+
+  SetModel("chars/pigs/ac_hi");
 }
