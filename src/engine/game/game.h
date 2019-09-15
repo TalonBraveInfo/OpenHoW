@@ -30,7 +30,9 @@ struct Player {
 };
 
 struct MapManifest {
-  std::string path;                               // path to manifest
+  std::string filepath; // path to manifest
+  std::string filename; // name of the manifest
+
   std::string name{"none"};                       // 'BOOT CAMP'
   std::string author{"none"};                     // creator of the map
   std::string description{"none"};                //
@@ -50,6 +52,56 @@ struct MapManifest {
   std::string temperature{"normal"};       // Determines idle animation set. Can be normal/hot/cold
   std::string time{"day"};              // Determines ambient sound set. Can be day/night
   std::string weather{"clear"};         // Determines weather particles. Can be clear/rain/snow
+
+  ///////////////////////////////////////////////////
+
+  std::string Serialize() {
+    std::stringstream output;
+    output << "{";
+    output << R"("name":")" << name << "\",";
+    output << R"("author":")" << author << "\",";
+    output << R"("description":")" << description << "\",";
+    if (!modes.empty()) {
+      output << R"("modes":[)";
+      for (size_t i = 0; i < modes.size(); ++i) {
+        output << "\"" << modes[i] << "\"";
+        if (i != modes.size() - 1) {
+          output << ",";
+        }
+      }
+      output << "],";
+    }
+    output << R"("ambientColour":")" <<
+           std::to_string(ambient_colour.r) << " " <<
+           std::to_string(ambient_colour.g) << " " <<
+           std::to_string(ambient_colour.b) << "\",";
+    output << R"("skyColourTop":")" <<
+           std::to_string(sky_colour_top.r) << " " <<
+           std::to_string(sky_colour_top.g) << " " <<
+           std::to_string(sky_colour_top.b) << "\",";
+    output << R"("skyColourBottom":")" <<
+           std::to_string(sky_colour_bottom.r) << " " <<
+           std::to_string(sky_colour_bottom.g) << " " <<
+           std::to_string(sky_colour_bottom.b) << "\",";
+    output << R"("sunColour":")" <<
+           std::to_string(sun_colour.r) << " " <<
+           std::to_string(sun_colour.g) << " " <<
+           std::to_string(sun_colour.b) << "\",";
+    output << R"("sunYaw":")" << std::to_string(sun_yaw) << "\",";
+    output << R"("sunPitch":")" << std::to_string(sun_pitch) << "\",";
+    output << R"("temperature":")" << temperature << "\",";
+    output << R"("weather":")" << weather << "\",";
+    output << R"("time":")" << time << "\",";
+    // Fog
+    output << R"("fogColour":")" <<
+           std::to_string(fog_colour.r) << " " <<
+           std::to_string(fog_colour.g) << " " <<
+           std::to_string(fog_colour.b) << "\",";
+    output << R"("fogIntensity":")" << std::to_string(fog_intensity) << "\",";
+    output << R"("fogDistance":")" << std::to_string(fog_distance) << "\"";
+    output << "}\n";
+    return output.str();
+  }
 };
 
 namespace openhow {
@@ -76,6 +128,8 @@ class GameManager {
   typedef std::map<std::string, MapManifest> MapManifestMap;
   MapManifest* GetMapManifest(const std::string& name);
   const MapManifestMap& GetMapManifests() { return map_manifests_; };
+  MapManifest* CreateManifest(const std::string& name);
+  void SaveManifest(const std::string& name, const MapManifest& manifest);
 
   Map* GetCurrentMap() { return active_map_; }
 
@@ -88,6 +142,7 @@ class GameManager {
  protected:
  private:
   static void MapCommand(unsigned int argc, char* argv[]);
+  static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
 
   IGameMode* active_mode_{nullptr};

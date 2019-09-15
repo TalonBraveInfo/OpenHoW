@@ -17,43 +17,18 @@
 
 #pragma once
 
-#include "terrain.h"
+#include "base_window.h"
 
-struct MapManifest;
-
-/* end format data */
-
-struct ActorSpawn;
-
-class Map {
+class WindowTerrainImport : public BaseWindow {
  public:
-  explicit Map(MapManifest* manifest);
-  ~Map();
+  WindowTerrainImport();
+  ~WindowTerrainImport() override;
 
-  void Draw();
-
-  MapManifest* GetManifest() { return manifest_; }
-  Terrain* GetTerrain() { return terrain_; }
-
-  const std::vector<ActorSpawn>& GetSpawns() { return spawns_; }
-
-  void UpdateSky();
-  void UpdateLighting();
+  void Display() override;
 
  protected:
  private:
-  void LoadSpawns(const std::string& path);
-  void LoadSky();
-  static PLModel* LoadSkyModel(const std::string& path);
+  void ImportTerrain();
 
-  void UpdateSkyModel(PLModel* model);
-
-  MapManifest* manifest_{nullptr};
-
-  std::vector<ActorSpawn> spawns_;
-
-  PLModel* sky_model_top_{nullptr};
-  PLModel* sky_model_bottom_{nullptr};
-
-  Terrain* terrain_{nullptr};
+  char path_buffer[32]{'\0'};
 };

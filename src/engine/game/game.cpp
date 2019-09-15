@@ -23,10 +23,12 @@
 
 #include "actor_manager.h"
 #include "mode_base.h"
+#include "game.h"
 
 using namespace openhow;
 
 GameManager::GameManager() {
+  plRegisterConsoleCommand("createmap", CreateMapCommand, "");
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
 }
@@ -60,16 +62,15 @@ void GameManager::Tick() {
 }
 
 void GameManager::LoadMap(const std::string& name) {
-  //FrontEnd_SetState(FE_MODE_LOADING);
-
-  Map* map;
-  try {
-    map = new Map(name);
-  } catch (const std::runtime_error& e) {
-    LogWarn("Failed to load map, aborting!\n%s\n", e.what());
+  MapManifest* manifest = engine->GetGameManager()->GetMapManifest(name);
+  if (manifest == nullptr) {
+    LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
     return;
   }
 
+  //FrontEnd_SetState(FE_MODE_LOADING);
+
+  Map* map = new Map(manifest);
   if (active_map_ != nullptr) {
     ActorManager::GetInstance()->DestroyActors();
     ModelManager::GetInstance()->DestroyModels();
@@ -78,7 +79,6 @@ void GameManager::LoadMap(const std::string& name) {
 
   active_map_ = map;
 
-  MapManifest* manifest = GetMapManifest(name);
   std::string sample_ext = "d";
   if (manifest->time != "day") {
     sample_ext = "n";
@@ -119,7 +119,6 @@ void GameManager::RegisterMapManifest(const std::string& path) {
   LogInfo("Registering map \"%s\"...\n", path.c_str());
 
   MapManifest manifest;
-  manifest.path = path;
   try {
     ScriptConfig config(path);
     manifest.name = config.GetStringProperty("name", manifest.name);
@@ -147,6 +146,9 @@ void GameManager::RegisterMapManifest(const std::string& path) {
   char temp_buf[64];
   plStripExtension(temp_buf, sizeof(temp_buf), plGetFileName(path.c_str()));
 
+  manifest.filepath = path;
+  manifest.filename = temp_buf;
+
   map_manifests_.insert(std::make_pair(temp_buf, manifest));
 }
 
@@ -171,6 +173,44 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
 
   static MapManifest default_descript;
   return &default_descript;
+}
+
+MapManifest* GameManager::CreateManifest(const std::string& name) {
+  // ensure the map doesn't exist already
+  if(engine->GetGameManager()->GetMapManifest(name) != nullptr) {
+    LogWarn("Unable to create map, it already exists!\n");
+    return nullptr;
+  }
+
+  std::string path = std::string(u_get_full_path()) + "/maps/" + name + ".map";
+  std::ofstream output(path);
+  if(!output.is_open()) {
+    LogWarn("Failed to write to \"%s\", aborting!n\"\n", path.c_str());
+    return nullptr;
+  }
+
+  MapManifest manifest;
+  output << manifest.Serialize();
+  output.close();
+
+  LogInfo("Wrote \"%s\"!\n", path.c_str());
+
+  engine->GetGameManager()->RegisterMapManifest(path);
+  return engine->GetGameManager()->GetMapManifest(name);
+}
+
+void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
+  if(argc < 2) {
+    LogWarn("Invalid number of arguments, ignoring!\n");
+    return;
+  }
+
+  MapManifest* manifest = engine->GetGameManager()->CreateManifest(argv[1]);
+  if(manifest == nullptr) {
+    return;
+  }
+
+  engine->GetGameManager()->LoadMap(argv[1]);
 }
 
 void GameManager::MapCommand(unsigned int argc, char** argv) {

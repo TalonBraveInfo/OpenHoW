@@ -20,14 +20,16 @@
 
 #include "engine.h"
 #include "imgui_layer.h"
-#include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 #include "graphics/display.h"
 
+#include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
+
 #include "editor/base_window.h"
-#include "editor/map_config_editor.h"
-#include "editor/texture_viewer.h"
-#include "editor/new_map_window.h"
-#include "editor/model_viewer.h"
+#include "editor/window_map_config.h"
+#include "editor/window_texture_viewer.h"
+#include "editor/window_new_map.h"
+#include "editor/window_model_viewer.h"
+#include "editor/window_terrain_import.h"
 
 static bool show_quit = false;
 static bool show_file = false;
@@ -527,6 +529,9 @@ void UI_DisplayDebugMenu(void) {
     if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Particle Editor...")) {}
       if (engine->GetGameManager()->GetCurrentMap() != nullptr) {
+        if(ImGui::MenuItem("Import Heightmap...")) {
+          windows.push_back(new WindowTerrainImport());
+        }
         ImGui::Separator();
         if (ImGui::MenuItem("Map Config Editor...")) {
           windows.push_back(new MapConfigEditor());

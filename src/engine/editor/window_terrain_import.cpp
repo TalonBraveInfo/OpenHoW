@@ -16,19 +16,40 @@
  */
 
 #include "../engine.h"
+#include "../Map.h"
+#include "../terrain.h"
 
-#include "new_map_window.h"
+#include "window_terrain_import.h"
 
-void NewMapWindow::Display() {
-  ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
-  ImGui::Begin("New Map", &status_, ED_DEFAULT_WINDOW_FLAGS);
-  ImGui::InputText("Name", name_buffer_, sizeof(name_buffer_));
-  ImGui::InputText("Author", author_buffer_, sizeof(author_buffer_));
-  ImGui::Separator();
-  if(ImGui::Button("Create")) {}
+using namespace openhow;
+
+WindowTerrainImport::WindowTerrainImport() = default;
+WindowTerrainImport::~WindowTerrainImport() = default;
+
+void WindowTerrainImport::Display() {
+  ImGui::SetNextWindowSize(ImVec2(310, 512), ImGuiCond_Once);
+  ImGui::Begin(dname("Import Heightmap"), &status_, ED_DEFAULT_WINDOW_FLAGS);
+  ImGui::InputText("Path", path_buffer, sizeof(path_buffer));
+  if(ImGui::Button("Import")) {
+    ImportTerrain();
+  }
   ImGui::SameLine();
   if(ImGui::Button("Cancel")) {
     SetStatus(false);
   }
   ImGui::End();
+}
+
+void WindowTerrainImport::ImportTerrain() {
+  Map* map = engine->GetGameManager()->GetCurrentMap();
+  if(map == nullptr) {
+    return;
+  }
+
+  Terrain* terrain = map->GetTerrain();
+  if(terrain == nullptr) {
+    return;
+  }
+
+  terrain->LoadHeightmap(path_buffer);
 }

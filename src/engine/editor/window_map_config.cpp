@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 
-#include "map_config_editor.h"
+#include "window_map_config.h"
 
 using namespace openhow;
 
@@ -221,12 +221,9 @@ void MapConfigEditor::Display() {
   ImGui::Separator();
 
   if (ImGui::Button("Save")) {
-    std::string dir_name = map_->GetId();
-    SaveManifest(std::string(u_get_full_path()) + "/maps/" + dir_name + ".map");
+    SaveManifest(std::string(u_get_full_path()) + "/maps/" + manifest_->filename + ".map");
   }
-
   ImGui::SameLine();
-
   if (ImGui::Button("Cancel")) {
     RestoreManifest();
 
@@ -244,57 +241,10 @@ void MapConfigEditor::SaveManifest(const std::string &path) {
     return;
   }
 
-  output << "{";
-
   manifest_->name = name_buffer;
-  output << R"("name":")" + manifest_->name + "\",";
+  manifest_->author = author_buffer;
 
-  manifest_->name = author_buffer;
-  output << R"("author":")" + manifest_->author + "\",";
-
-  output << R"("description":")" + manifest_->description + "\",";
-  if (!manifest_->modes.empty()) {
-    output << R"("modes":[)";
-    for (size_t i = 0; i < manifest_->modes.size(); ++i) {
-      output << "\"" + manifest_->modes[i] + "\"";
-      if (i != manifest_->modes.size() - 1) {
-        output << ",";
-      }
-    }
-    output << "],";
-  }
-
-  output << R"("ambientColour":")" +
-      std::to_string(manifest_->ambient_colour.r) + " " +
-      std::to_string(manifest_->ambient_colour.g) + " " +
-      std::to_string(manifest_->ambient_colour.b) + "\",";
-  output << R"("skyColourTop":")" +
-      std::to_string(manifest_->sky_colour_top.r) + " " +
-      std::to_string(manifest_->sky_colour_top.g) + " " +
-      std::to_string(manifest_->sky_colour_top.b) + "\",";
-  output << R"("skyColourBottom":")" +
-      std::to_string(manifest_->sky_colour_bottom.r) + " " +
-      std::to_string(manifest_->sky_colour_bottom.g) + " " +
-      std::to_string(manifest_->sky_colour_bottom.b) + "\",";
-  output << R"("sunColour":")" +
-      std::to_string(manifest_->sun_colour.r) + " " +
-      std::to_string(manifest_->sun_colour.g) + " " +
-      std::to_string(manifest_->sun_colour.b) + "\",";
-  output << R"("sunYaw":")" + std::to_string(manifest_->sun_yaw) + "\",";
-  output << R"("sunPitch":")" + std::to_string(manifest_->sun_pitch) + "\",";
-  output << R"("temperature":")" + manifest_->temperature + "\",";
-  output << R"("weather":")" + manifest_->weather + "\",";
-  output << R"("time":")" + manifest_->time + "\",";
-
-  // Fog
-  output << R"("fogColour":")" +
-      std::to_string(manifest_->fog_colour.r) + " " +
-      std::to_string(manifest_->fog_colour.g) + " " +
-      std::to_string(manifest_->fog_colour.b) + "\",";
-  output << R"("fogIntensity":")" + std::to_string(manifest_->fog_intensity) + "\",";
-  output << R"("fogDistance":")" + std::to_string(manifest_->fog_distance) + "\"";
-
-  output << "}\n";
+  output << manifest_->Serialize();
 
   LogInfo("Wrote \"%s\"!\n", path.c_str());
   backup_ = *manifest_;

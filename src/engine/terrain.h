@@ -33,7 +33,7 @@ class TextureAtlas;
 
 class Terrain {
  public:
-  explicit Terrain(const std::string &pmg, const std::string &tiles);
+  explicit Terrain(const std::string& pmg, const std::string& tiles);
   Terrain();
   ~Terrain();
 
@@ -79,35 +79,38 @@ class Terrain {
 
   struct Chunk {
     Tile tiles[16];
-    PLModel *model{nullptr};
+    PLModel* model{nullptr};
   };
 
-  Chunk *GetChunk(const PLVector2 &pos);
-  Tile *GetTile(const PLVector2 &pos);
+  Chunk* GetChunk(const PLVector2& pos);
+  Tile* GetTile(const PLVector2& pos);
 
-  float GetHeight(const PLVector2 &pos);
+  float GetHeight(const PLVector2& pos);
   float GetMaxHeight() { return max_height_; }
   float GetMinHeight() { return min_height_; }
 
-  PLTexture *GetOverview() { return overview_; }
+  void LoadPmg(const std::string& path);
+  void LoadHeightmap(const std::string& path);
 
-  void Save(const std::string &path);
+  PLTexture* GetOverview() { return overview_; }
 
-  void ImportHeightmap(const std::string &path);
+  void Serialize(const std::string& path);
 
   void Draw();
   void Update();
 
  protected:
  private:
-  void GenerateModel(Chunk *chunk, const PLVector2 &offset);
+  void GenerateModel(Chunk* chunk, const PLVector2& offset);
   void GenerateOverview();
+
+  std::string path_tiles_;
 
   float max_height_{0};
   float min_height_{0};
 
   std::vector<Chunk> chunks_;
 
-  TextureAtlas *atlas_{nullptr};
-  PLTexture *overview_{nullptr};
+  TextureAtlas* atlas_{nullptr};
+  PLTexture* overview_{nullptr};
 };
