@@ -91,8 +91,8 @@ class Actor {
 //  virtual ActorSpawn Serialize() {}
   virtual void Deserialize(const ActorSpawn& spawn);
 
-  virtual void Activate() {}
-  virtual void Deactivate() {}
+  virtual void Activate() { is_activated_ = true; }
+  virtual void Deactivate() { is_activated_ = false; }
   virtual bool IsActivated() { return is_activated_; }
 
  protected:
