@@ -19,22 +19,14 @@
 
 #include "TempGame.h"
 #include "actors/actor.h"
-
-class IGameMode;
-class Map;
+#include "mode_interface.h"
 
 struct Player {
-  std::string name; // Name of the player (only useful for online play)
+  std::string name; // Name of the player/team
   Actor* input_target{nullptr}; // Actor that the player is possessing
-  unsigned int input_slot{0}; // Controll slot
-};
-
-struct Team {
-  std::string name; // Name of the team
+  unsigned int input_slot{0}; // Controller slot
   unsigned int identity; // Identity of the team (e.g. Tommy etc.)
   std::vector<Actor*> children; // List of spawnables in the team
-  std::vector<Player> players;  // list of all the players attributed to this team
-  unsigned int last_player; // last player that controlled a pig for this team
 };
 
 struct MapManifest {
@@ -60,30 +52,20 @@ struct MapManifest {
   std::string weather{"clear"};         // Determines weather particles. Can be clear/rain/snow
 };
 
+namespace openhow {
+class Engine;
+}
+class Map;
+
 class GameManager {
  private:
-  static GameManager* instance_;
-
- public:
-  static GameManager* GetInstance() {
-    if (instance_ == nullptr) {
-      instance_ = new GameManager();
-    }
-
-    return instance_;
-  }
-
-  static void DestroyInstance() {
-    delete instance_;
-    instance_ = nullptr;
-  }
-
-  /**********************************************/
-
   GameManager();
   ~GameManager();
 
+ public:
   void Tick();
+
+  // Map
 
   void LoadMap(const std::string& name);
   void UnloadMap();
@@ -91,26 +73,33 @@ class GameManager {
   void RegisterMapManifest(const std::string& path);
   void RegisterMapManifests();
 
+  typedef std::map<std::string, MapManifest> MapManifestMap;
   MapManifest* GetMapManifest(const std::string& name);
-  const std::map<std::string, MapManifest>& GetMapManifests() { return map_manifests_; };
+  const MapManifestMap& GetMapManifests() { return map_manifests_; };
 
   Map* GetCurrentMap() { return active_map_; }
 
-  Player* GetCurrentPlayer();
+  IGameMode* GetMode() { return active_mode_; }
+
+  // Player Handling
+
+  void AddPlayer(Player player);
 
  protected:
  private:
-  static void MapCommand(unsigned int argc, char *argv[]);
-  static void MapsCommand(unsigned int argc, char *argv[]);
+  static void MapCommand(unsigned int argc, char* argv[]);
+  static void MapsCommand(unsigned int argc, char* argv[]);
 
   IGameMode* active_mode_{nullptr};
   Map* active_map_{nullptr};
 
   std::map<std::string, MapManifest> map_manifests_;
 
-  std::vector<Team> teams_;
+  std::vector<Player> players_;
 
 #define MAX_AMBIENT_SAMPLES 8
   double ambient_emit_delay_{0};
   const struct AudioSample* ambient_samples_[MAX_AMBIENT_SAMPLES]{};
+
+  friend class openhow::Engine;
 };

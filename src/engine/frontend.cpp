@@ -23,14 +23,12 @@
 #include "input.h"
 #include "frontend.h"
 #include "Map.h"
-
 #include "game/TempGame.h"
-#include "game/GameManager.h"
-
 #include "graphics/font.h"
 #include "graphics/display.h"
 #include "graphics/video.h"
-#include "audio/audio.h"
+
+using namespace openhow;
 
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = (unsigned int) -1;
@@ -40,7 +38,7 @@ static unsigned int old_frontend_state = (unsigned int) -1;
  * or some other way, so y'know. Wheeee.
  */
 
-static const char *papers_teams_paths[MAX_TEAMS] = {
+static const char* papers_teams_paths[MAX_TEAMS] = {
     "frontend/papers/british.bmp",
     "frontend/papers/american.bmp",
     "frontend/papers/french.bmp",
@@ -51,11 +49,11 @@ static const char *papers_teams_paths[MAX_TEAMS] = {
 };
 
 /* texture assets, these are loaded and free'd at runtime */
-static PLTexture *fe_background = nullptr;
-static PLTexture *fe_press = nullptr;
-static PLTexture *fe_any = nullptr;
-static PLTexture *fe_key = nullptr;
-static PLTexture *fe_papers_teams[MAX_TEAMS] = {
+static PLTexture* fe_background = nullptr;
+static PLTexture* fe_press = nullptr;
+static PLTexture* fe_any = nullptr;
+static PLTexture* fe_key = nullptr;
+static PLTexture* fe_papers_teams[MAX_TEAMS] = {
     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
@@ -77,7 +75,7 @@ enum {
 
   MAX_FE_GAME_TEXTURES
 };
-static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
+static PLTexture* fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
 //static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
 /************************************************************/
@@ -94,7 +92,7 @@ static void FrontendInputCallback(int key, bool is_pressed) {
   }
 }
 
-static void CacheFEGameData(void) {
+static void CacheFEGameData() {
 #if 1
   fe_tx_game_textures[FE_TEXTURE_ANG] = Display_LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR);
   fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = Display_LoadTexture("frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
@@ -105,15 +103,15 @@ static void CacheFEGameData(void) {
 #endif
 }
 
-static void CacheFEMenuData(void) {
+static void CacheFEMenuData() {
   fe_background = Display_LoadTexture("frontend/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
   for (unsigned int i = 0; i < MAX_TEAMS; ++i) {
     fe_papers_teams[i] = Display_LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
   }
 }
 
-static void ClearFEGameData(void) {
-  for (auto &fe_tx_game_texture : fe_tx_game_textures) {
+static void ClearFEGameData() {
+  for (auto& fe_tx_game_texture : fe_tx_game_textures) {
     if (fe_tx_game_texture == nullptr) {
       continue;
     }
@@ -121,9 +119,9 @@ static void ClearFEGameData(void) {
   }
 }
 
-static void ClearFEMenuData(void) {
+static void ClearFEMenuData() {
   plDestroyTexture(fe_background, true);
-  for (auto &fe_papers_team : fe_papers_teams) {
+  for (auto& fe_papers_team : fe_papers_teams) {
     plDestroyTexture(fe_papers_team, true);
   }
 }
@@ -194,7 +192,7 @@ uint8_t loading_progress = 0;
 
 #define Redraw()   Display_DrawInterface();
 
-void FE_SetLoadingBackground(const char *name) {
+void FE_SetLoadingBackground(const char* name) {
   if (fe_background != nullptr) {
     plDestroyTexture(fe_background, true);
   }
@@ -209,7 +207,7 @@ void FE_SetLoadingBackground(const char *name) {
   Redraw();
 }
 
-void FE_SetLoadingDescription(const char *description) {
+void FE_SetLoadingDescription(const char* description) {
   snprintf(loading_description, sizeof(loading_description), "%s ...", description);
   Redraw();
 }
@@ -231,7 +229,7 @@ static void DrawMinimap() {
     return;
   }
 
-  Map *map = GameManager::GetInstance()->GetCurrentMap();
+  Map* map = openhow::engine->GetGameManager()->GetCurrentMap();
   if (map == nullptr) {
     return;
   }
@@ -268,7 +266,7 @@ static void DrawMinimap() {
  * things fixed and worry about this
  * later. */
 
-static void DrawLoadingScreen(void) {
+static void DrawLoadingScreen() {
   int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
   int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
 
@@ -428,7 +426,7 @@ void FrontEnd_SetState(unsigned int state) {
       fe_background = Display_LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
 
       // start playing the default theme
-      AudioManager::GetInstance()->PlayMusic(AUDIO_MUSIC_MENU);
+      engine->GetAudioManager()->PlayMusic(AUDIO_MUSIC_MENU);
     }
       break;
 
@@ -441,7 +439,7 @@ void FrontEnd_SetState(unsigned int state) {
 
     case FE_MODE_LOADING: {
       // stop the music as soon as we switch to a loading screen...
-      AudioManager::GetInstance()->StopMusic();
+      engine->GetAudioManager()->StopMusic();
 
       loading_description[0] = '\0';
       loading_progress = 0;

@@ -17,23 +17,18 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-#include "../audio/audio.h"
+#include "../model.h"
+#include "../script/script_config.h"
 #include "../Map.h"
 
-#include "GameManager.h"
-#include "ActorManager.h"
+#include "actor_manager.h"
 #include "mode_base.h"
-#include "../model.h"
-#include "../script/script.h"
-#include "../script/script_config.h"
 
-GameManager* GameManager::instance_ = nullptr;
+using namespace openhow;
 
 GameManager::GameManager() {
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
-
-  CF_initGame();
 }
 
 GameManager::~GameManager() {
@@ -41,8 +36,6 @@ GameManager::~GameManager() {
 }
 
 void GameManager::Tick() {
-  CF_gameTick();
-
   FrontEnd_Tick();
 
   if (active_mode_ == nullptr) {
@@ -57,7 +50,7 @@ void GameManager::Tick() {
           active_map_->GetTerrain()->GetMaxHeight(),
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
       };
-      AudioManager::GetInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
+      engine->GetAudioManager()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
     }
 
     ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
@@ -93,13 +86,13 @@ void GameManager::LoadMap(const std::string& name) {
 
   for (unsigned int i = 1, idx = 0; i < 4; ++i) {
     if (i < 3) {
-      ambient_samples_[idx++] = AudioManager::GetInstance()->CacheSample(
+      ambient_samples_[idx++] = engine->GetAudioManager()->CacheSample(
           "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
     }
     ambient_samples_[idx++] =
-        AudioManager::GetInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
+        engine->GetAudioManager()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
     ambient_samples_[idx++] =
-        AudioManager::GetInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
+        engine->GetAudioManager()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
   }
 
   ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
@@ -158,7 +151,7 @@ void GameManager::RegisterMapManifest(const std::string& path) {
 }
 
 static void RegisterManifestInterface(const char* path) {
-  GameManager::GetInstance()->RegisterMapManifest(path);
+  engine->GetGameManager()->RegisterMapManifest(path);
 }
 
 void GameManager::RegisterMapManifests() {
@@ -180,29 +173,29 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
   return &default_descript;
 }
 
-void GameManager::MapCommand(unsigned int argc, char **argv) {
+void GameManager::MapCommand(unsigned int argc, char** argv) {
   if (argc < 2) {
     LogWarn("Invalid number of arguments, ignoring!\n");
     return;
   }
 
   std::string mode = "singleplayer";
-  const MapManifest *desc = GetInstance()->GetMapManifest(argv[1]);
+  const MapManifest* desc = engine->GetGameManager()->GetMapManifest(argv[1]);
   if (desc != nullptr && !desc->modes.empty()) {
     mode = desc->modes[0];
   }
 
-  GetInstance()->LoadMap(argv[1]);
+  engine->GetGameManager()->LoadMap(argv[1]);
 }
 
-void GameManager::MapsCommand(unsigned int argc, char **argv) {
-  if (GetInstance()->map_manifests_.empty()) {
+void GameManager::MapsCommand(unsigned int argc, char** argv) {
+  if (engine->GetGameManager()->map_manifests_.empty()) {
     LogWarn("No maps available!\n");
     return;
   }
 
-  for (auto manifest : GetInstance()->map_manifests_) {
-    MapManifest *desc = &manifest.second;
+  for (auto manifest : engine->GetGameManager()->map_manifests_) {
+    MapManifest* desc = &manifest.second;
     std::string out =
         desc->name + "/" + manifest.first +
             " : " + desc->description +
@@ -214,14 +207,5 @@ void GameManager::MapsCommand(unsigned int argc, char **argv) {
     LogInfo("%s\n", out.c_str());
   }
 
-  LogInfo("%u maps\n", GetInstance()->map_manifests_.size());
-}
-
-Player* GameManager::GetCurrentPlayer() {
-  if (active_mode_ == nullptr) {
-    // todo: return local player... ?
-    return nullptr;
-  }
-
-  return active_mode_->GetCurrentPlayer();
+  LogInfo("%u maps\n", engine->GetGameManager()->map_manifests_.size());
 }

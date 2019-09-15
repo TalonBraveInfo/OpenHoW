@@ -18,10 +18,7 @@
 #include "../engine.h"
 #include "../frontend.h"
 
-#include "ActorManager.h"
-
-#include <utility>
-
+#include "actor_manager.h"
 #include "actors/actor.h"
 #include "actors/actor_static_model.h"
 
@@ -46,7 +43,7 @@ Actor* ActorManager::CreateActor(const ActorSpawn& spawn) {
 
 Actor* ActorManager::CreateActor(const std::string& class_name) {
   auto i = actor_classes_.find(class_name);
-  if(i == actor_classes_.end()) {
+  if (i == actor_classes_.end()) {
     LogWarn("Failed to find actor class %s!\n", class_name.c_str());
     return nullptr;
   }
@@ -63,7 +60,7 @@ void ActorManager::DestroyActor(Actor* actor) {
 }
 
 void ActorManager::TickActors() {
-  for (auto const &actor: actors_) {
+  for (auto const& actor: actors_) {
     actor->Tick();
   }
 }
@@ -74,7 +71,7 @@ void ActorManager::DrawActors() {
   }
 
   g_state.gfx.num_actors_drawn = 0;
-  for (auto const &actor: actors_) {
+  for (auto const& actor: actors_) {
     if (cv_graphics_cull->b_value && !actor->IsVisible()) {
       continue;
     }
@@ -86,7 +83,7 @@ void ActorManager::DrawActors() {
 }
 
 void ActorManager::DestroyActors() {
-  for (auto &actor: actors_) {
+  for (auto& actor: actors_) {
     delete actor;
   }
 
@@ -97,7 +94,7 @@ ActorManager::ActorClassRegistration::ActorClassRegistration(const std::string& 
                                                              actor_ctor_func ctor_func,
                                                              actor_ctor_func_spawn ctor_func_spawn)
     : name_(name) {
-  auto &i = ActorManager::actor_classes_[name];
+  auto& i = ActorManager::actor_classes_[name];
   i.ctor = ctor_func;
   i.ctor_spawn = ctor_func_spawn;
 }

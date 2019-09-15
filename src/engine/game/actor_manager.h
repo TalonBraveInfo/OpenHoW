@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include "../Map.h"
-
 #include "actors/actor.h"
 
 class ActorManager {

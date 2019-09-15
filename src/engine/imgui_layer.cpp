@@ -21,10 +21,7 @@
 #include "engine.h"
 #include "imgui_layer.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
-#include "audio/audio.h"
 #include "graphics/display.h"
-
-#include "game/GameManager.h"
 
 #include "editor/base_window.h"
 #include "editor/map_config_editor.h"
@@ -38,9 +35,11 @@ static bool show_new_game = false;
 static bool show_console = false;
 static bool show_settings = false;
 
-static std::vector<BaseWindow *> windows;
+static std::vector<BaseWindow*> windows;
 
-static PLCamera *imgui_camera = nullptr;
+static PLCamera* imgui_camera = nullptr;
+
+using namespace openhow;
 
 void ImGuiImpl_SetupCamera(void) {
   if ((imgui_camera = plCreateCamera()) == nullptr) {
@@ -86,7 +85,7 @@ void UI_DisplaySettings() {
 
   static int item_current = 0;
   bool display_changed = false;
-  const VideoPreset *mode = Display_GetVideoPreset(item_current);
+  const VideoPreset* mode = Display_GetVideoPreset(item_current);
   char s[32] = {0};
   snprintf(s, 32, "%dx%d", mode->width, mode->height);
   if (ImGui::BeginCombo("Resolution", s, 0)) {
@@ -113,7 +112,7 @@ void UI_DisplaySettings() {
   ImGui::SameLine();
 
   bool vsync = cv_display_vsync->b_value;
-  if(ImGui::Checkbox("Vsync", &vsync) && vsync != cv_display_vsync->b_value) {
+  if (ImGui::Checkbox("Vsync", &vsync) && vsync != cv_display_vsync->b_value) {
     plSetConsoleVariable(cv_display_vsync, vsync ? "true" : "false");
   }
 
@@ -171,7 +170,9 @@ void UI_DisplayNewGame() {
     return;
   }
 
-  ImGui::SetNextWindowSize(ImVec2(plGetCurrentViewport()->w, plGetCurrentViewport()->h));
+  ImGui::SetNextWindowSize(ImVec2(
+      static_cast<float>(plGetCurrentViewport()->w),
+      static_cast<float>(plGetCurrentViewport()->h)));
   ImGui::SetNextWindowBgAlpha(1.0f);
   ImGui::SetNextWindowPos(ImVec2(0, 0));
   ImGui::Begin("Select Team", &show_new_game,
@@ -181,53 +182,26 @@ void UI_DisplayNewGame() {
                    ED_DEFAULT_WINDOW_FLAGS
   );
 
-#if 0
   ImGui::ListBoxHeader("Maps");
-  ImGui::ListBoxFooter();
-#endif
-
-#if 0 // todo
-  ImGui::SliderInt("Number of Players", reinterpret_cast<int *>(&mode.num_players), 1, 4);
-
-  const char *teams[MAX_TEAMS]={
-          /* todo: use translation */
-          "Tommy's Trotters",
-          "Uncle Hams Hogs",
-          "Garlic Grunts",
-          "Sow-A-Krauts",
-          "Piggystroika",
-          "Sushi-Swine",
-          "Lard",
-  };
-  for (unsigned int i = 0; i < mode.num_players; ++i) {
-      std::string label_name = "Player " + std::to_string(i);
-      ImGui::Combo(label_name.c_str(), reinterpret_cast<int *>(&mode.teams[i]), teams, IM_ARRAYSIZE(teams), 12);
+  GameManager::MapManifestMap maps = openhow::engine->GetGameManager()->GetMapManifests();
+  if (!maps.empty()) {
+    {
+      ImGui::Selectable("Selected", true);
+      ImGui::Selectable("Not Selected", false);
+    }
   }
+  ImGui::ListBoxFooter();
 
   ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
 
-  if(ImGui::Button("Start Game!")) {
-      mode.force_start = true;
-      mode.num_players = 1;
-      snprintf(mode.map, sizeof(mode.map) - 1, "camp");
-      Game_SetMode(&mode);
+  if (ImGui::Button("Start Game!")) {
+    openhow::engine->GetGameManager()->LoadMap("camp");
+    show_new_game = false;
   }
   ImGui::SameLine();
-  if(ImGui::Button("Cancel")) {
-      show_new_game = false;
-  }
-#else
-
   if (ImGui::Button("Cancel")) {
     show_new_game = false;
   }
-  ImGui::SameLine();
-  if (ImGui::Button("Start Game!")) {
-    GameManager::GetInstance()->LoadMap("camp");
-    show_new_game = false;
-  }
-
-#endif
 
   ImGui::End();
 }
@@ -252,17 +226,17 @@ typedef struct FileDescriptor {
 
 static std::vector<FileDescriptor> file_list;
 
-void AddFilePath(const char *path) {
+void AddFilePath(const char* path) {
   FileDescriptor descriptor;
   strncpy(descriptor.path, path, sizeof(descriptor.path));
   descriptor.type = FILE_TYPE_UNKNOWN;
 
-  const char *ext = plGetFileExtension(path);
+  const char* ext = plGetFileExtension(path);
   if (ext != nullptr) {
     if (
         strcmp(ext, "tim") == 0 ||
-        strcmp(ext, "bmp") == 0 ||
-        strcmp(ext, "png") == 0) {
+            strcmp(ext, "bmp") == 0 ||
+            strcmp(ext, "png") == 0) {
       descriptor.type = FILE_TYPE_IMAGE;
     } else if (
         strcmp(ext, "pps") == 0
@@ -286,8 +260,8 @@ void AddFilePath(const char *path) {
       descriptor.type = FILE_TYPE_MAP_PMG;
     } else if (
         pl_strcasecmp(ext, "vtx") == 0 ||
-        pl_strcasecmp(ext, "min") == 0 ||
-        pl_strcasecmp(ext, "obj") == 0) {
+            pl_strcasecmp(ext, "min") == 0 ||
+            pl_strcasecmp(ext, "obj") == 0) {
       descriptor.type = FILE_TYPE_MODEL;
     }
   }
@@ -315,9 +289,9 @@ void UI_DisplayFileBox() {
   ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_Once);
   ImGui::Begin("Open File", &show_file);
 
-    static ImGuiTextFilter filter;
-    filter.Draw();
-    ImGui::SameLine();
+  static ImGuiTextFilter filter;
+  filter.Draw();
+  ImGui::SameLine();
 
   if (ImGui::Button("Rescan", ImVec2(ImGui::GetWindowContentRegionWidth(), 0))) {
     ScanDirectories();
@@ -327,32 +301,31 @@ void UI_DisplayFileBox() {
   ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(-1.f, 0));
   ImGui::BeginChild("Child2", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() - 64), true);
   ImGui::Columns(2);
-  for (auto &i : file_list) {
+  for (auto& i : file_list) {
     if (filter.PassFilter(i.path)) {
       if (ImGui::Button(i.path)) {
         switch (i.type) {
           case FILE_TYPE_IMAGE: {
             try {
-              TextureViewer *viewer = new TextureViewer(i.path);
+              auto* viewer = new TextureViewer(i.path);
               windows.push_back(viewer);
-            } catch(const std::runtime_error &error) {
+            } catch (const std::runtime_error& error) {
               LogWarn("%s\n", error.what());
             }
           } break;
 
           case FILE_TYPE_MODEL: {
             try {
-              ModelViewer *viewer = new ModelViewer(i.path);
+              auto* viewer = new ModelViewer(i.path);
               windows.push_back(viewer);
-            } catch(const std::runtime_error &error) {
+            } catch (const std::runtime_error& error) {
               LogWarn("%s\n", error.what());
             }
           } break;
 
           case FILE_TYPE_AUDIO: {
-            AudioManager::GetInstance()->PlayGlobalSound(i.path);
-          }
-            break;
+            engine->GetAudioManager()->PlayGlobalSound(i.path);
+          } break;
 
           default:break;
         }
@@ -360,7 +333,7 @@ void UI_DisplayFileBox() {
 
       ImGui::NextColumn();
 
-      const char *type = "Unknown";
+      const char* type = "Unknown";
       switch (i.type) {
         case FILE_TYPE_AUDIO: type = "Audio";
           break;
@@ -451,7 +424,7 @@ void UI_DisplayDebugMenu(void) {
         show_new_game = true;
       }
       if (ImGui::MenuItem("New Map...")) {
-        static NewMapWindow *popup = nullptr;
+        static NewMapWindow* popup = nullptr;
         if (popup == nullptr) {
           windows.push_back((popup = new NewMapWindow()));
         }
@@ -473,7 +446,7 @@ void UI_DisplayDebugMenu(void) {
         windows.push_back(new ConsoleWindow());
       }
 
-      #if 0
+#if 0
       static int tc = 0;
       if (ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
         char buf[4];
@@ -491,7 +464,7 @@ void UI_DisplayDebugMenu(void) {
           ImGui::EndTooltip();
         }
       }
-      #endif
+#endif
 
       static int im = 0;
       if (ImGui::SliderInt("Show Input States", &im, 0, 2)) {
@@ -503,10 +476,10 @@ void UI_DisplayDebugMenu(void) {
 
       if (ImGui::BeginMenu("Console Variables")) {
         size_t num_c;
-        PLConsoleVariable **vars;
+        PLConsoleVariable** vars;
         plGetConsoleVariables(&vars, &num_c);
 
-        for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
+        for (PLConsoleVariable** var = vars; var < num_c + vars; ++var) {
           switch ((*var)->type) {
             case pl_float_var:
               if (ImGui::InputFloat((*var)->var, &(*var)->f_value, 0, 10, nullptr,
@@ -553,7 +526,7 @@ void UI_DisplayDebugMenu(void) {
     // todo: eventually this will be moved into a dedicated toolbar
     if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Particle Editor...")) {}
-      if (GameManager::GetInstance()->GetCurrentMap() != nullptr) {
+      if (engine->GetGameManager()->GetCurrentMap() != nullptr) {
         ImGui::Separator();
         if (ImGui::MenuItem("Map Config Editor...")) {
           windows.push_back(new MapConfigEditor());

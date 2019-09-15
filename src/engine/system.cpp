@@ -15,13 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_graphics_camera.h>
-
 #include "engine.h"
 #include "input.h"
-#include "client.h"
-#include "audio/audio.h"
 #include "imgui_layer.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
@@ -38,6 +33,8 @@
 
 static SDL_Window *window = nullptr;
 static SDL_GLContext gl_context = nullptr;
+
+openhow::Engine* engine = nullptr;
 
 unsigned int System_GetTicks(void) {
   return SDL_GetTicks();
@@ -122,7 +119,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
   );
   if (window == nullptr) {
     System_DisplayMessageBox(PROMPT_LEVEL_ERROR, "Failed to create window!\n%s", SDL_GetError());
-    Engine_Shutdown();
+    System_Shutdown();
   }
 
   {
@@ -154,7 +151,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
 
   if ((gl_context = SDL_GL_CreateContext(window)) == nullptr) {
     System_DisplayMessageBox(PROMPT_LEVEL_ERROR, "Failed to create context!\n%s", SDL_GetError());
-    Engine_Shutdown();
+    System_Shutdown();
   }
 
   /* setup imgui integration */
@@ -211,7 +208,7 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
 
     /// 0 = FLAT APPEARENCE
     /// 1 = MORE "3D" LOOK
-    int is3D = 1;
+    float is3D = 1;
 
     colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
@@ -343,7 +340,7 @@ void System_SwapDisplay(void) {
 }
 
 void System_Shutdown(void) {
-  Engine_Shutdown();
+  delete openhow::engine;
 
   ImGui_ImplOpenGL3_DestroyDeviceObjects();
   ImGui::DestroyContext();
@@ -616,10 +613,6 @@ int main(int argc, char **argv) {
 
   SDL_DisableScreenSaver();
 
-  Engine_Initialize();
-
-  /* setup the camera we'll use for drawing the imgui overlay */
-
   //SDL_SetRelativeMouseMode(SDL_TRUE);
   SDL_CaptureMouse(SDL_TRUE);
   SDL_ShowCursor(SDL_TRUE);
@@ -629,7 +622,8 @@ int main(int argc, char **argv) {
    * ourselves                            */
   SDL_StartTextInput();
 
-  while (Engine_IsRunning());
+  new openhow::Engine();
+  while (openhow::engine->IsRunning());
 
   System_Shutdown();
 

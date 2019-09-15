@@ -19,13 +19,7 @@
 
 #include "engine.h"
 #include "input.h"
-#include "client.h"
-#include "audio/audio.h"
 #include "frontend.h"
-
-#include "script/script.h"
-
-#include "graphics/display.h"
 
 /************************************************************/
 

@@ -22,6 +22,8 @@
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 #include <PL/platform_package.h>
+#include <PL/platform_filesystem.h>
+#include <PL/platform_graphics_camera.h>
 
 // remove this once everything is C++'fied
 #ifdef __cplusplus
@@ -45,31 +47,39 @@
 #define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
 #define MAX_FRAMESKIP       5
 
-static inline const char *GetVersionString(void) {
-  /* this is here for when we start generating additional
-   * versioning information (such as git version) */
-  static char version[12] = {'\0'};
-  if (version[0] == '\0') {
-    snprintf(version, sizeof(version), "%d.%d.%d",
-             ENGINE_MAJOR_VERSION,
-             ENGINE_MINOR_VERSION,
-             ENGINE_PATCH_VERSION);
-  }
-  return &version[0];
+#ifdef __cplusplus
+#include "audio/audio.h"
+#include "game/game.h"
+
+namespace openhow {
+class Engine {
+ public:
+  Engine();
+  ~Engine();
+
+  std::string GetVersionString();
+
+  bool IsRunning();
+
+  // Subsystems
+  GameManager* GetGameManager() { return game_manager_; }
+  AudioManager* GetAudioManager() { return audio_manager_; }
+
+ private:
+  GameManager* game_manager_{nullptr};
+  AudioManager* audio_manager_{nullptr};
+};
+
+extern Engine* engine;
 }
 
-#ifdef __cplusplus
-class BaseGameMode;
 #else
 typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
 
 typedef struct EngineState {
-  struct PLCamera *camera;       // camera used for general gameplay
-  struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
-
-  /* server / client logic */
-  bool is_host;
+  struct PLCamera* camera;       // camera used for general gameplay
+  struct PLCamera* ui_camera;    // camera used for UI elements, orthographic
 
   unsigned int sys_ticks;
   unsigned int last_sys_tick;
@@ -83,18 +93,11 @@ typedef struct EngineState {
     unsigned int num_chunks_drawn;
     unsigned int num_actors_drawn;
     unsigned int num_triangles_total;
-
-    PLColour clear_colour;
   } gfx;
 } EngineState;
 extern EngineState g_state;
 
 PL_EXTERN_C
-
-void Engine_Initialize(void);
-void Engine_Shutdown(void);
-
-bool Engine_IsRunning(void);
 
 /************************************************************/
 /* System */
@@ -107,15 +110,15 @@ enum PromptLevel {
   PROMPT_LEVEL_ERROR,
 };
 
-void System_DisplayMessageBox(unsigned int level, const char *msg, ...);
+void System_DisplayMessageBox(unsigned int level, const char* msg, ...);
 void System_DisplayWindow(bool fullscreen, int width, int height);
 
 int System_SetSwapInterval(int interval);
 void System_SwapDisplay(void);
 
-void System_SetWindowTitle(const char *title);
-void System_GetWindowSize(int *width, int *height, bool *fs);
-void System_GetWindowDrawableSize(int *width, int *height, bool *fs);
+void System_SetWindowTitle(const char* title);
+void System_GetWindowSize(int* width, int* height, bool* fs);
+void System_GetWindowDrawableSize(int* width, int* height, bool* fs);
 bool System_SetWindowSize(int width, int height, bool fs);
 
 void System_PollEvents();

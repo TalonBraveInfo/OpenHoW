@@ -18,12 +18,9 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "config.h"
-
-#include "script/script.h"
 #include "script/script_config.h"
 
-const char *Config_GetUserConfigPath(void) {
+const char *Config_GetUserConfigPath() {
   static std::string config_path;
   if (config_path.empty()) {
     char out[PL_SYSTEM_MAX_PATH];

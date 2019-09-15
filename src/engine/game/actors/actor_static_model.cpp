@@ -16,7 +16,7 @@
  */
 
 #include "../../engine.h"
-#include "../ActorManager.h"
+#include "../actor_manager.h"
 #include "actor_static_model.h"
 
 register_actor(DUMMY, AStaticModel); // todo: needs special logic

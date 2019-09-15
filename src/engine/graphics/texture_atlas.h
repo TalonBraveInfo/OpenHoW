@@ -25,7 +25,7 @@ class TextureAtlas {
   void GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h);
   std::pair<unsigned int, unsigned int> GetTextureSize(const std::string &name);
 
-  void AddImage(const std::string &path);
+  void AddImage(const std::string &path, bool absolute = false);
   void AddImages(const std::vector<std::string> &textures);
 
   void Finalize();

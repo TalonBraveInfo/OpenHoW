@@ -21,7 +21,8 @@
 #include "mod_support.h"
 #include "Map.h"
 #include "script/script_config.h"
-#include "game/mode_base.h"
+
+using namespace openhow;
 
 /* Mod Management
  *
@@ -123,7 +124,4 @@ void Mod_SetCampaign(const char *dir) {
   u_set_mod_path(campaign->base_directory.c_str());
 
   LogInfo("Campaign has been set to \"%s\" successfully!\n", campaign->name.c_str());
-
-  // Ensure that our manifest list is updated
-  GameManager::GetInstance()->RegisterMapManifests();
 }

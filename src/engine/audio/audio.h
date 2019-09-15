@@ -64,25 +64,18 @@ struct AudioSample {
   bool preserve_{false};
 };
 
+namespace openhow {
+class Engine;
+}
+
 class AudioManager {
   friend class AudioSource;
 
- public:
-  static AudioManager *GetInstance() {
-    if (instance_ == nullptr) {
-      instance_ = new AudioManager();
-    }
-    return instance_;
-  }
-
-  static void DestroyInstance() {
-    delete instance_;
-    instance_ = nullptr;
-  }
-
+ private:
   AudioManager();
   ~AudioManager();
 
+ public:
   void Tick();
 
   const AudioSample *GetCachedSample(const std::string &path);
@@ -138,7 +131,7 @@ class AudioManager {
 
   AudioSource *music_source_{nullptr};
 
-  static AudioManager *instance_;
+  friend class openhow::Engine;
 };
 
 class AudioSource {

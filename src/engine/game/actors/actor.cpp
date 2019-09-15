@@ -16,8 +16,6 @@
  */
 
 #include "../../engine.h"
-#include "../../Map.h"
-
 #include "actor.h"
 
 Actor::Actor() = default;

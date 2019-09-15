@@ -19,7 +19,6 @@
 #include "../frontend.h"
 #include "../model.h"
 
-#include "audio.h"
 #include "stb_vorbis.c"
 
 #include <AL/al.h>
@@ -32,6 +31,8 @@
 
 #include <list>
 #include <PL/platform_filesystem.h>
+
+using namespace openhow;
 
 /* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL??
  * todo: stream music and large samples */
@@ -83,7 +84,7 @@ AudioSource::AudioSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel
   alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
   OALCheckErrors();
 
-  if (reverb && AudioManager::GetInstance()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
+  if (reverb && engine->GetAudioManager()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
     alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
     OALCheckErrors();
   }
@@ -92,7 +93,7 @@ AudioSource::AudioSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel
     SetSample(sample);
   }
 
-  AudioManager::GetInstance()->sources_.insert(this);
+  engine->GetAudioManager()->sources_.insert(this);
 }
 
 AudioSource::~AudioSource() {
@@ -106,7 +107,7 @@ AudioSource::~AudioSource() {
   alSourcei(al_source_id_, AL_BUFFER, 0);
   alDeleteSources(1, &al_source_id_);
 
-  AudioManager::GetInstance()->sources_.erase(this);
+  engine->GetAudioManager()->sources_.erase(this);
 }
 
 void AudioSource::SetSample(const AudioSample *sample) {
@@ -218,8 +219,6 @@ static LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
 //static LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
 //static LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 //static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
-
-AudioManager *AudioManager::instance_ = nullptr;
 
 AudioManager::AudioManager() {
   ALCdevice *device = alcOpenDevice(nullptr);
@@ -587,19 +586,19 @@ void AudioManager::SetMusicVolume(float gain) {
 }
 
 void AudioManager::SetMusicVolumeCommand(const PLConsoleVariable *var) {
-  AudioManager::GetInstance()->SetMusicVolume(var->f_value);
+  engine->GetAudioManager()->SetMusicVolume(var->f_value);
 }
 
 void AudioManager::StopMusicCommand(unsigned int argc, char *argv[]) {
   u_unused(argc);
   u_unused(argv);
 
-  AudioManager::GetInstance()->StopMusic();
+  engine->GetAudioManager()->StopMusic();
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)
 extern "C" void DrawAudioSources(void) {
-  AudioManager::GetInstance()->DrawSources();
+  engine->GetAudioManager()->DrawSources();
 }
 
 /************************************************************/

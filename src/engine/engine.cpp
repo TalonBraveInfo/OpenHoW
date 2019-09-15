@@ -25,153 +25,157 @@
 #include "config.h"
 #include "input.h"
 #include "frontend.h"
-#include "audio/audio.h"
+#include "Map.h"
 
-#include "game/mode_base.h"
-#include "script/script.h"
-#include "loaders/loaders.h"
 #include "graphics/display.h"
 
 EngineState g_state;
 
-void Engine_Initialize(void) {
-    LogInfo("initializing engine (v%d.%d.%d-%s:%s-%s)...\n",
-            ENGINE_MAJOR_VERSION,
-            ENGINE_MINOR_VERSION,
-            ENGINE_PATCH_VERSION,
-            GIT_BRANCH, GIT_COMMIT_HASH, GIT_COMMIT_COUNT);
-
-    g_state.draw_ticks = 0;
-    g_state.is_host = true;
-
-    g_state.last_draw_ms = 0;
-    g_state.last_sys_tick = 0;
-    g_state.sim_ticks = 0;
-    g_state.sys_ticks = 0;
-
-    g_state.gfx.clear_colour = { 0, 0, 0, 255 };
-    g_state.gfx.num_actors_drawn = 0;
-    g_state.gfx.num_chunks_drawn = 0;
-    g_state.gfx.num_triangles_total = 0;
-
-    u_init_paths();
-
-    Console_Initialize();
-
-    // check for any command line arguments
-
-    const char *var;
-    if((var = plGetCommandLineArgumentValue("-path")) != nullptr) {
-        if(!plPathExists(var)) {
-            LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
-        }
-
-        u_set_base_path(var);
-    }
-
-    Script_Initialize();
-
-    /* this MUST be done after all vars have been
-     * initialized, otherwise, right now, certain
-     * vars will not be loaded/saved! */
-    Config_Load(Config_GetUserConfigPath());
-
-    plRegisterStandardPackageLoaders();
-
-    // load in the manifests
-
-    Languages_Initialize();
-    Mod_RegisterCampaigns();
-
-    if((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
-       (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
-        // otherwise default to base campaign
-        var = "how";
-    }
-
-    Mod_SetCampaign(var);
-
-    // now initialize all other sub-systems
-
-    Input_Initialize();
-    Display_Initialize();
-    AudioManager::GetInstance();
-    GameManager::GetInstance();
-    FE_Initialize();
-    ModelManager::GetInstance();
-
-    LogInfo("Base path:         \"%s\"\n", u_get_base_path());
-    LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
-    LogInfo("Working directory: \"%s\"\n", plGetWorkingDirectory());
-}
-
 #include "imgui_layer.h"
 
-bool Engine_IsRunning(void) {
-    System_PollEvents();
-
-    static unsigned int next_tick = 0;
-    if(next_tick == 0) {
-        next_tick = System_GetTicks();
-    }
-
-    unsigned int loops = 0;
-    while(System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
-        g_state.sys_ticks = System_GetTicks();
-        g_state.sim_ticks++;
-
-        Client_ProcessInput(); // todo: kill this
-
-        GameManager::GetInstance()->Tick();
-        AudioManager::GetInstance()->Tick();
-
-        g_state.last_sys_tick = System_GetTicks();
-        next_tick += SKIP_TICKS;
-        loops++;
-    }
-
-    ImGuiImpl_SetupFrame();
-
-    double delta_time = (double)(System_GetTicks() + SKIP_TICKS - next_tick) / (double)(SKIP_TICKS);
-    Display_SetupDraw(delta_time);
-
-    Display_DrawScene();
-    Display_DrawInterface();
-    Display_DrawDebug();
-
-    ImGuiImpl_Draw();
-
-    Display_Flush();
-
-    return true;
-}
-
-void Engine_Shutdown(void) {
-    Display_Shutdown();
-    AudioManager::DestroyInstance();
-    Script_Shutdown();
-
-    Config_Save(Config_GetUserConfigPath());
-}
-
-#include "game/ActorManager.h"
+#include "game/actor_manager.h"
 
 // Temporary interface, since graphics sub-system is written in C :^)
 extern "C" void DrawActors(void) {
-    ActorManager::GetInstance()->DrawActors();
+  ActorManager::GetInstance()->DrawActors();
 }
 
 // Temporary interface, since graphics sub-system is written in C :^)
 extern "C" void DrawMap(void) {
-    if(!cv_graphics_draw_world->b_value) {
-        return;
-    }
+  if (!cv_graphics_draw_world->b_value) {
+    return;
+  }
 
-    Map* map = GameManager::GetInstance()->GetCurrentMap();
-    if(map == nullptr) {
-        return;
-    }
+  Map* map = openhow::engine->GetGameManager()->GetCurrentMap();
+  if (map == nullptr) {
+    return;
+  }
 
-    map->Draw();
+  map->Draw();
 }
 
+openhow::Engine* openhow::engine;
+
+openhow::Engine::Engine() {
+  engine = this;
+
+  LogInfo("Initializing Engine (%s)...\n", GetVersionString().c_str());
+
+  g_state.draw_ticks = 0;
+
+  g_state.last_draw_ms = 0;
+  g_state.last_sys_tick = 0;
+  g_state.sim_ticks = 0;
+  g_state.sys_ticks = 0;
+
+  g_state.gfx.num_actors_drawn = 0;
+  g_state.gfx.num_chunks_drawn = 0;
+  g_state.gfx.num_triangles_total = 0;
+
+  u_init_paths();
+
+  Console_Initialize();
+
+  // check for any command line arguments
+
+  const char* var;
+  if ((var = plGetCommandLineArgumentValue("-path")) != nullptr) {
+    if (!plPathExists(var)) {
+      LogWarn("invalid path \"%s\", does not exist, ignoring!\n");
+    }
+
+    u_set_base_path(var);
+  }
+
+  /* this MUST be done after all vars have been
+   * initialized, otherwise, right now, certain
+   * vars will not be loaded/saved! */
+  Config_Load(Config_GetUserConfigPath());
+
+  plRegisterStandardPackageLoaders();
+
+  // load in the manifests
+
+  Languages_Initialize();
+  Mod_RegisterCampaigns();
+
+  if ((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
+      (var = plGetCommandLineArgumentValue("-campaign")) == nullptr) {
+    // otherwise default to base campaign
+    var = "how";
+  }
+
+  Mod_SetCampaign(var);
+
+  // now initialize all other sub-systems
+
+  Input_Initialize();
+  Display_Initialize();
+  audio_manager_ = new AudioManager();
+  game_manager_ = new GameManager();
+  FE_Initialize();
+  ModelManager::GetInstance();
+
+  // Ensure that our manifest list is updated
+  GetGameManager()->RegisterMapManifests();
+
+  LogInfo("Base path:         \"%s\"\n", u_get_base_path());
+  LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
+  LogInfo("Working directory: \"%s\"\n", plGetWorkingDirectory());
+}
+
+openhow::Engine::~Engine() {
+  Display_Shutdown();
+
+  Config_Save(Config_GetUserConfigPath());
+
+  delete game_manager_;
+  delete audio_manager_;
+}
+
+std::string openhow::Engine::GetVersionString() {
+  return "v" +
+      std::to_string(ENGINE_MAJOR_VERSION) + "." +
+      std::to_string(ENGINE_MINOR_VERSION) + "." +
+      std::to_string(ENGINE_PATCH_VERSION) + "-" +
+      GIT_BRANCH + ":" + GIT_COMMIT_HASH + "-" + GIT_COMMIT_COUNT;
+}
+
+bool openhow::Engine::IsRunning() {
+  System_PollEvents();
+
+  static unsigned int next_tick = 0;
+  if (next_tick == 0) {
+    next_tick = System_GetTicks();
+  }
+
+  unsigned int loops = 0;
+  while (System_GetTicks() > next_tick && loops < MAX_FRAMESKIP) {
+    g_state.sys_ticks = System_GetTicks();
+    g_state.sim_ticks++;
+
+    Client_ProcessInput(); // todo: kill this
+
+    GetGameManager()->Tick();
+    GetAudioManager()->Tick();
+
+    g_state.last_sys_tick = System_GetTicks();
+    next_tick += SKIP_TICKS;
+    loops++;
+  }
+
+  ImGuiImpl_SetupFrame();
+
+  double delta_time = (double) (System_GetTicks() + SKIP_TICKS - next_tick) / (double) (SKIP_TICKS);
+  Display_SetupDraw(delta_time);
+
+  Display_DrawScene();
+  Display_DrawInterface();
+  Display_DrawDebug();
+
+  ImGuiImpl_Draw();
+
+  Display_Flush();
+
+  return true;
+}

@@ -23,8 +23,6 @@
 #include "../imgui_layer.h"
 #include "../frontend.h"
 #include "../particle.h"
-#include "../loaders/loaders.h"
-
 #include "font.h"
 #include "shader.h"
 #include "display.h"
@@ -306,10 +304,7 @@ void Display_Initialize(void) {
     System_DisplayWindow(false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT);
 
     System_SetSwapInterval(cv_display_vsync->b_value ? 1 : 0);
-
-    char win_title[32];
-    snprintf(win_title, sizeof(win_title), ENGINE_TITLE " (%s)", GetVersionString());
-    System_SetWindowTitle(win_title);
+    System_SetWindowTitle(ENGINE_TITLE);
 
     Display_UpdateState();
 
@@ -583,7 +578,7 @@ void Display_SetupDraw(double delta) {
     cur_delta = delta;
     g_state.draw_ticks = System_GetTicks();
 
-    plSetClearColour(g_state.gfx.clear_colour);
+    plSetClearColour((PLColour){0, 0, 0, 255});
 
     unsigned int clear_flags = PL_BUFFER_DEPTH;
     if(FrontEnd_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0) {

@@ -16,12 +16,13 @@
  */
 
 #include "../engine.h"
-#include "../game/GameManager.h"
 
 #include "map_config_editor.h"
 
+using namespace openhow;
+
 MapConfigEditor::MapConfigEditor() {
-  map_ = GameManager::GetInstance()->GetCurrentMap();
+  map_ = engine->GetGameManager()->GetCurrentMap();
   if (map_ == nullptr) {
     throw std::runtime_error("Attempted to create config editor without a valid map loaded!\n");
   }

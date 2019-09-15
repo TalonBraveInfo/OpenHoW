@@ -23,133 +23,15 @@
 #include "language.h"
 #include "particle.h"
 #include "frontend.h"
-
 #include "graphics/display.h"
 #include "graphics/font.h"
 #include "config.h"
-#include "script/script.h"
 
 /************************************************************/
 
 #define check_args(num) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
 
-typedef struct CallbackConstruct {
-  const char *cmd;
-
-  void (*Get)(unsigned int argc, char *argv[]);
-  void (*Set)(unsigned int argc, char *argv[]);
-  void (*Add)(unsigned int argc, char *argv[]);
-} CallbackConstruct;
-
-static CallbackConstruct callbacks[] = {
-    {"actor", NULL, NULL, NULL},
-    {"map", NULL, NULL, NULL},
-};
-
-static void GetCommand(unsigned int argc, char *argv[]) {
-  check_args(2);
-
-  const char *cmd = argv[1];
-  for (unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
-    if (pl_strcasecmp(callbacks[j].cmd, cmd) == 0) {
-      if (callbacks[j].Get == NULL) {
-        break;
-      }
-      callbacks[j].Get(argc, argv);
-      return;
-    }
-  }
-  LogWarn("invalid GET command, %s!\n", cmd);
-}
-
-static void AddCommand(unsigned int argc, char *argv[]) {
-  check_args(2);
-
-  const char *cmd = argv[1];
-  for (unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
-    if (pl_strcasecmp(callbacks[j].cmd, cmd) == 0) {
-      if (callbacks[j].Add == NULL) {
-        break;
-      }
-      callbacks[j].Add(argc, argv);
-      return;
-    }
-  }
-  LogWarn("Invalid ADD command, %s!\n", cmd);
-}
-
-static void SetCommand(unsigned int argc, char *argv[]) {
-  check_args(2);
-
-  const char *cmd = argv[1];
-  for (unsigned int j = 0; j < plArrayElements(callbacks); ++j) {
-    if (pl_strcasecmp(callbacks[j].cmd, cmd) == 0) {
-      if (callbacks[j].Add == NULL) {
-        break;
-      }
-      callbacks[j].Add(argc, argv);
-      return;
-    }
-  }
-  LogWarn("Invalid SET command, %s!\n", cmd);
-
-#if 0
-  for(unsigned int i = 1; i < argc; ++i) {
-      if(pl_strncasecmp("actor", argv[i], 5) == 0) {
-          const char *actor_name = argv[++i];
-          if(actor_name == NULL || actor_name[0] == '\0') {
-              LogWarn("invalid actor name, aborting\n");
-              return;
-          }
-
-          if(g_state.is_host) {
-              Actor *actor = SVGetActor(actor_name);
-              if (actor == NULL) {
-                  LogWarn("unable to find actor %s, aborting\n", actor_name);
-                  return;
-              }
-
-              const char *modifier = argv[++i];
-              if (modifier == NULL || modifier[0] == '\0') {
-                  LogWarn("no modifier provided for actor %s, aborting\n", actor_name);
-                  return;
-              }
-
-              /* todo, add table of string + parm so we don't need to hard-code most of this */
-              if (pl_strncasecmp("name", modifier, 4) == 0) {
-                  const char *name = argv[++i];
-                  if (name == NULL || name[0] == '\0') {
-                      LogWarn("invalid name, aborting\n");
-                      return;
-                  }
-
-                  strncpy(actor->name, name, sizeof(actor->name));
-                  return;
-              } else if (pl_strncasecmp("position", modifier, 8) == 0) {
-
-              } else if (pl_strncasecmp("bounds", modifier, 6) == 0) {
-
-              }
-          }
-          return;
-      } else if(pl_strncasecmp(CMD_GROUP_MAP, argv[i], 3) == 0) {
-          /* todo, set map properties */
-          const char *name = argv[++i];
-          if(name == NULL || name[0] == '\0') {
-              LogWarn("invalid map name, aborting\n");
-              return;
-          }
-
-          LoadMap(name, MAP_MODE_DEATHMATCH);
-          return;
-      }
-  }
-
-  LogWarn("invalid parameters provided for set command\n");
-#endif
-}
-
-static void FrontendModeCommand(unsigned int argc, char *argv[]) {
+static void FrontendModeCommand(unsigned int argc, char* argv[]) {
   check_args(2);
 
   int mode = atoi(argv[1]);
@@ -161,36 +43,36 @@ static void FrontendModeCommand(unsigned int argc, char *argv[]) {
   FrontEnd_SetState((unsigned int) mode);
 }
 
-static void UpdateDisplayCommand(unsigned int argc, char *argv[]) {
+static void UpdateDisplayCommand(unsigned int argc, char* argv[]) {
   Display_UpdateState();
 }
 
-static void QuitCommand(unsigned int argc, char *argv[]) {
+static void QuitCommand(unsigned int argc, char* argv[]) {
   System_Shutdown();
 }
 
-static void DisconnectCommand(unsigned int argc, char *argv[]) {
+static void DisconnectCommand(unsigned int argc, char* argv[]) {
   //Map_Unload();
 }
 
-static void LoadConfigCommand(unsigned int argc, char **argv) {
+static void LoadConfigCommand(unsigned int argc, char** argv) {
   check_args(2);
   Config_Load(argv[1]);
 }
 
-static void SaveConfigCommand(unsigned int argc, char **argv) {
-  const char *name = Config_GetUserConfigPath();
-  if (argc > 1 && argv[1] != NULL) {
+static void SaveConfigCommand(unsigned int argc, char** argv) {
+  const char* name = Config_GetUserConfigPath();
+  if (argc > 1 && argv[1] != nullptr) {
     name = argv[1];
   }
 
   Config_Save(name);
 }
 
-static void OpenCommand(unsigned int argc, char *argv[]) {
+static void OpenCommand(unsigned int argc, char* argv[]) {
   check_args(2);
 
-  const char *fpath = argv[1];
+  const char* fpath = argv[1];
   if (plIsEmptyString(fpath)) {
     LogWarn("invalid argument provided, ignoring!\n");
     return;
@@ -208,7 +90,7 @@ static void OpenCommand(unsigned int argc, char *argv[]) {
   unsigned int type = TYPE_UNKNOWN;
 
   /* now we just need to figure out what kind of file it is */
-  const char *ext = plGetFileExtension(fpath);
+  const char* ext = plGetFileExtension(fpath);
   if (!plIsEmptyString(ext)) {
     if (pl_strncasecmp(ext, "vtx", 3) == 0 ||
         pl_strncasecmp(ext, "fac", 3) == 0 ||
@@ -244,11 +126,11 @@ static void OpenCommand(unsigned int argc, char *argv[]) {
   }
 }
 
-static void DebugModeCallback(const PLConsoleVariable *variable) {
+static void DebugModeCallback(const PLConsoleVariable* variable) {
   plSetupLogLevel(LOG_LEVEL_DEBUG, "debug", PLColour(0, 255, 255, 255), variable->b_value);
 }
 
-static void GraphicsVsyncCallback(const PLConsoleVariable *var) {
+static void GraphicsVsyncCallback(const PLConsoleVariable* var) {
   System_SetSwapInterval(var->b_value ? 1 : 0);
 }
 
@@ -267,37 +149,37 @@ struct {
 
 static bool console_enabled = false;
 
-PLConsoleVariable *cv_debug_mode = NULL;
-PLConsoleVariable *cv_debug_fps = NULL;
-PLConsoleVariable *cv_debug_skeleton = NULL;
-PLConsoleVariable *cv_debug_input = NULL;
-PLConsoleVariable *cv_debug_cache = NULL;
-PLConsoleVariable *cv_debug_shaders = NULL;
+PLConsoleVariable* cv_debug_mode = nullptr;
+PLConsoleVariable* cv_debug_fps = nullptr;
+PLConsoleVariable* cv_debug_skeleton = nullptr;
+PLConsoleVariable* cv_debug_input = nullptr;
+PLConsoleVariable* cv_debug_cache = nullptr;
+PLConsoleVariable* cv_debug_shaders = nullptr;
 
-PLConsoleVariable *cv_camera_mode = NULL;
-PLConsoleVariable *cv_camera_fov = NULL;
-PLConsoleVariable *cv_camera_near = NULL;
-PLConsoleVariable *cv_camera_far = NULL;
+PLConsoleVariable* cv_camera_mode = nullptr;
+PLConsoleVariable* cv_camera_fov = nullptr;
+PLConsoleVariable* cv_camera_near = nullptr;
+PLConsoleVariable* cv_camera_far = nullptr;
 
-PLConsoleVariable *cv_display_texture_cache = NULL;
-PLConsoleVariable *cv_display_width = NULL;
-PLConsoleVariable *cv_display_height = NULL;
-PLConsoleVariable *cv_display_fullscreen = NULL;
-PLConsoleVariable *cv_display_use_window_aspect = NULL;
-PLConsoleVariable *cv_display_ui_scale = NULL;
-PLConsoleVariable *cv_display_vsync = NULL;
+PLConsoleVariable* cv_display_texture_cache = nullptr;
+PLConsoleVariable* cv_display_width = nullptr;
+PLConsoleVariable* cv_display_height = nullptr;
+PLConsoleVariable* cv_display_fullscreen = nullptr;
+PLConsoleVariable* cv_display_use_window_aspect = nullptr;
+PLConsoleVariable* cv_display_ui_scale = nullptr;
+PLConsoleVariable* cv_display_vsync = nullptr;
 
-PLConsoleVariable *cv_graphics_cull = NULL;
-PLConsoleVariable *cv_graphics_draw_world = NULL;
-PLConsoleVariable *cv_graphics_draw_audio_sources = NULL;
+PLConsoleVariable* cv_graphics_cull = nullptr;
+PLConsoleVariable* cv_graphics_draw_world = nullptr;
+PLConsoleVariable* cv_graphics_draw_audio_sources = nullptr;
 
-PLConsoleVariable *cv_audio_volume = NULL;
-PLConsoleVariable *cv_audio_volume_sfx = NULL;
-PLConsoleVariable *cv_audio_volume_music = NULL;
-PLConsoleVariable *cv_audio_voices = NULL;
-PLConsoleVariable *cv_audio_mode = NULL;
+PLConsoleVariable* cv_audio_volume = nullptr;
+PLConsoleVariable* cv_audio_volume_sfx = nullptr;
+PLConsoleVariable* cv_audio_volume_music = nullptr;
+PLConsoleVariable* cv_audio_voices = nullptr;
+PLConsoleVariable* cv_audio_mode = nullptr;
 
-static void ConsoleBufferUpdate(int level, const char *msg) {
+static void ConsoleBufferUpdate(int level, const char* msg) {
   size_t len = strlen(msg);
   u_assert(len < MAX_OUTPUT_BUFFER_SIZE);
   if (len + console_state.out_buffer_pos > MAX_OUTPUT_BUFFER_SIZE) {
@@ -315,7 +197,7 @@ static void ConsoleBufferUpdate(int level, const char *msg) {
   console_state.out_buffer_pos += len;
 }
 
-static void ClearConsoleOutputBuffer(unsigned int argc, char **argv) {
+static void ClearConsoleOutputBuffer(unsigned int argc, char** argv) {
   u_unused(argc);
   u_unused(argv);
   console_state.out_buffer_pos = 0;
@@ -330,45 +212,40 @@ void Console_Initialize(void) {
     }
 
   rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
-  rvar(cv_debug_fps, false, "1", pl_bool_var, NULL, "display framerate");
-  rvar(cv_debug_skeleton, false, "0", pl_bool_var, NULL, "display pig skeletons");
-  rvar(cv_debug_input, false, "0", pl_int_var, NULL,
+  rvar(cv_debug_fps, false, "1", pl_bool_var, nullptr, "display framerate");
+  rvar(cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons");
+  rvar(cv_debug_input, false, "0", pl_int_var, nullptr,
        "changing this cycles between different modes of debugging input\n"
        "1: keyboard states\n2: controller states"
   );
-  rvar(cv_debug_cache, false, "0", pl_bool_var, NULL, "display memory and other info");
-  rvar(cv_debug_shaders, false, "-1", pl_int_var, NULL, "Forces specified GLSL shader on all draw calls.");
+  rvar(cv_debug_cache, false, "0", pl_bool_var, nullptr, "display memory and other info");
+  rvar(cv_debug_shaders, false, "-1", pl_int_var, nullptr, "Forces specified GLSL shader on all draw calls.");
 
-  rvar(cv_camera_mode, false, "0", pl_int_var, NULL, "0 = default, 1 = debug");
-  rvar(cv_camera_fov, true, "75", pl_float_var, NULL, "field of view");
-  rvar(cv_camera_near, false, "0.1", pl_float_var, NULL, "");
-  rvar(cv_camera_far, false, "999999", pl_float_var, NULL, "");
+  rvar(cv_camera_mode, false, "0", pl_int_var, nullptr, "0 = default, 1 = debug");
+  rvar(cv_camera_fov, true, "75", pl_float_var, nullptr, "field of view");
+  rvar(cv_camera_near, false, "0.1", pl_float_var, nullptr, "");
+  rvar(cv_camera_far, false, "999999", pl_float_var, nullptr, "");
 
-  rvar(cv_display_texture_cache, false, "-1", pl_int_var, NULL, "");
-  rvar(cv_display_width, true, "1024", pl_int_var, NULL, "");
-  rvar(cv_display_height, true, "768", pl_int_var, NULL, "");
-  rvar(cv_display_fullscreen, true, "false", pl_bool_var, NULL, "");
-  rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, NULL, "");
-  rvar(cv_display_ui_scale, true, "1", pl_int_var, NULL, "0 = automatic scale");
+  rvar(cv_display_texture_cache, false, "-1", pl_int_var, nullptr, "");
+  rvar(cv_display_width, true, "1024", pl_int_var, nullptr, "");
+  rvar(cv_display_height, true, "768", pl_int_var, nullptr, "");
+  rvar(cv_display_fullscreen, true, "false", pl_bool_var, nullptr, "");
+  rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, nullptr, "");
+  rvar(cv_display_ui_scale, true, "1", pl_int_var, nullptr, "0 = automatic scale");
   rvar(cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync");
 
-  rvar(cv_graphics_cull, false, "false", pl_bool_var, NULL, "toggles culling of visible objects");
-  rvar(cv_graphics_draw_world, false, "true", pl_bool_var, NULL, "toggles rendering of world");
-  rvar(cv_graphics_draw_audio_sources, false, "false", pl_bool_var, NULL, "toggles rendering of audio sources");
+  rvar(cv_graphics_cull, false, "false", pl_bool_var, nullptr, "toggles culling of visible objects");
+  rvar(cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world");
+  rvar(cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources");
 
-  rvar(cv_audio_volume, true, "1", pl_float_var, NULL, "set global audio volume");
-  rvar(cv_audio_volume_sfx, true, "1", pl_float_var, NULL, "set sfx audio volume");
-  rvar(cv_audio_volume_music, true, "1", pl_float_var, NULL, "Set the music audio volume");
-  rvar(cv_audio_mode, true, "1", pl_int_var, NULL, "0 = mono, 1 = stereo");
-  rvar(cv_audio_voices, true, "true", pl_bool_var, NULL, "enable/disable pig voices");
+  rvar(cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume");
+  rvar(cv_audio_volume_sfx, true, "1", pl_float_var, nullptr, "set sfx audio volume");
+  rvar(cv_audio_volume_music, true, "1", pl_float_var, nullptr, "Set the music audio volume");
+  rvar(cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo");
+  rvar(cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices");
 
   plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 
-  void ConvertImageCallback(unsigned int argc, char *argv[]);
-
-  plRegisterConsoleCommand("set", SetCommand, "Sets state for given target");
-  plRegisterConsoleCommand("get", GetCommand, "Gets state for given target");
-  plRegisterConsoleCommand("add", AddCommand, "Adds the given target");
   plRegisterConsoleCommand("open", OpenCommand, "Opens the specified file");
   plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
   plRegisterConsoleCommand("quit", QuitCommand, "Closes the game");
@@ -380,15 +257,15 @@ void Console_Initialize(void) {
   plRegisterConsoleCommand("clear", ClearConsoleOutputBuffer, "Clears the console output buffer");
   plRegisterConsoleCommand("cls", ClearConsoleOutputBuffer, "Clears the console output buffer");
 
-  ClearConsoleOutputBuffer(0, NULL);
+  ClearConsoleOutputBuffer(0, nullptr);
   plSetConsoleOutputCallback(ConsoleBufferUpdate);
 }
 
-static void DrawInputPane(void) {
-  plSetTexture(NULL, 0);
+static void DrawInputPane() {
+  plSetTexture(nullptr, 0);
   plSetBlendMode(PL_BLEND_DEFAULT);
 
-  BitmapFont *font = g_fonts[FONT_CHARS2];
+  BitmapFont* font = g_fonts[FONT_CHARS2];
   unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
   unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
   plDrawFilledRectangle(plCreateRectangle(
@@ -429,19 +306,19 @@ static void DrawInputPane(void) {
   plSetBlendMode(PL_BLEND_DEFAULT);
 }
 
-static void DrawOutputPane(void) {
+static void DrawOutputPane() {
   //unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
   //unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
 
-  BitmapFont *font = g_fonts[FONT_CHARS2];
+  BitmapFont* font = g_fonts[FONT_CHARS2];
   for (size_t i = 0, cur_line = 0; i < console_state.out_buffer_pos;) {
     if (console_state.out_buffer[i] == '\n') {
       ++i;
       continue;
     }
 
-    char *line_end = memchr(console_state.out_buffer + i, '\n', console_state.out_buffer_pos - i);
-    if (line_end == NULL) {
+    char* line_end = static_cast<char*>(memchr(console_state.out_buffer + i, '\n', console_state.out_buffer_pos - i));
+    if (line_end == nullptr) {
       line_end = console_state.out_buffer + console_state.out_buffer_pos;
     }
 
@@ -468,12 +345,12 @@ void Console_Draw(void) {
   DrawOutputPane();
 }
 
-static void ResetInputBuffer(void) {
+static void ResetInputBuffer() {
   memset(console_state.in_buffer, 0, sizeof(console_state.in_buffer));
   console_state.in_buffer_pos = 0;
 }
 
-static void ConsoleTextInputCallback(const char *c) {
+static void ConsoleTextInputCallback(const char* c) {
   if (console_state.in_buffer_pos > MAX_INPUT_BUFFER_SIZE) {
     LogWarn("Hit console buffer limit!\n");
     return;
@@ -488,11 +365,7 @@ static void ConsoleInputCallback(int key, bool pressed) {
   }
 
   if (key == '\r' && console_state.in_buffer[0] != '\0') {
-    if (console_state.in_buffer[0] == '/') {
-      Script_EvaluateString(&console_state.in_buffer[1]);
-    } else {
-      plParseConsoleString(console_state.in_buffer);
-    }
+    plParseConsoleString(console_state.in_buffer);
     ResetInputBuffer();
     return;
   }
@@ -510,8 +383,8 @@ void Console_Toggle(void) {
     Input_SetKeyboardFocusCallback(ConsoleInputCallback);
     ResetInputBuffer();
   } else {
-    Input_SetTextFocusCallback(NULL);
-    Input_SetKeyboardFocusCallback(NULL);
+    Input_SetTextFocusCallback(nullptr);
+    Input_SetKeyboardFocusCallback(nullptr);
   }
 
   Input_ResetStates();

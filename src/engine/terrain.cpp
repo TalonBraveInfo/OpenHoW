@@ -18,9 +18,7 @@
 #include <list>
 
 #include "engine.h"
-#include "model.h"
 #include "terrain.h"
-
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/texture_atlas.h"

@@ -20,7 +20,6 @@
 #include <PL/platform_console.h>
 
 #include "../../engine/engine.h"
-#include "../../shared/util.h"
 
 #undef LogInfo
 #undef LogWarn

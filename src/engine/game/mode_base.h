@@ -17,34 +17,34 @@
 
 #pragma once
 
-#include "GameMode.h"
+#include "mode_interface.h"
 
 class BaseGameMode : public IGameMode {
-public:
-    BaseGameMode();
-    ~BaseGameMode() override;
+ public:
+  BaseGameMode();
+  ~BaseGameMode() override;
 
-    void Tick() override;
+  void Tick() override;
 
-    void StartRound() override;
-    void RestartRound() override;
-    void EndRound() override;
+  void StartRound() override;
+  void RestartRound() override;
+  void EndRound() override;
 
-    void PlayerJoined(Player* player) override;
-    void PlayerLeft(Player* player) override;
+  void PlayerJoined(Player* player) override;
+  void PlayerLeft(Player* player) override;
 
-    void SpectatorJoined(Player* player) override;
-    void SpectatorLeft(Player* player) override;
+  void SpectatorJoined(Player* player) override;
+  void SpectatorLeft(Player* player) override;
 
-    unsigned int GetMaxSpectators() const override;
-    unsigned int GetMaxPlayers() const override;
+  unsigned int GetMaxSpectators() const override;
+  unsigned int GetMaxPlayers() const override;
 
-protected:
-    void StartTurn() override;
-    void EndTurn() override;
+ protected:
+  void StartTurn() override;
+  void EndTurn() override;
 
-    void SpawnActors() override;
-    void DestroyActors() override;
+  void SpawnActors() override;
+  void DestroyActors() override;
 
  private:
 };

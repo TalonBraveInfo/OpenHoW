@@ -17,7 +17,6 @@
 
 #include "../../engine.h"
 #include "../../model.h"
-
 #include "actor_model.h"
 
 AModel::AModel(const ActorSpawn& spawn) : Actor(spawn) {}

@@ -99,7 +99,11 @@ static PLModel *Model_LoadVtxFile(const char *path) {
         LogWarn("Invalid texture name in table, skipping (%d)!\n", i);
         continue;
       }
-      atlas.AddImage(std::string("chars/scenery/") + fac->texture_table[i].name);
+
+      std::string str = path;
+      size_t pos = str.find_last_of('/');
+      std::string texture_path = str.erase(pos) + "/";
+      atlas.AddImage(texture_path + fac->texture_table[i].name + ".png", true);
     }
     atlas.Finalize();
   }

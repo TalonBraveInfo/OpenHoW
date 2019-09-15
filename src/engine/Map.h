@@ -19,33 +19,11 @@
 
 #include "terrain.h"
 
-struct ActorSpawn {
-  std::string class_name;
-  PLVector3 position; // position in the world
-  uint16_t index;                  // todo
-  PLVector3 angles; // angles in the world
-  uint16_t type;                   // todo
-
-  int16_t bounds[3]; // collision bounds
-  uint16_t bounds_type; // box, prism, sphere and none
-
-  int16_t energy;
-  uint8_t appearance;
-  uint8_t team; // uk, usa, german, french, japanese, soviet
-
-  uint16_t objective;
-  uint8_t objective_actor_id;
-  uint8_t objective_extra[2];
-
-  PLVector3 fallback_position;
-
-  int16_t extra;
-  ActorSpawn* attachment{nullptr};
-};
-
 struct MapManifest;
 
 /* end format data */
+
+struct ActorSpawn;
 
 class Map {
  public:

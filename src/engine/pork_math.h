@@ -24,7 +24,7 @@
 
 #ifdef __cplusplus
 
-inline static void VecAngleClamp(PLVector3 *vector) {
+inline static void VecAngleClamp(PLVector3* vector) {
   for (unsigned int i = 0; i < 3; ++i) {
     if ((*vector)[i] >= 360) {
       (*vector)[i] = 0;

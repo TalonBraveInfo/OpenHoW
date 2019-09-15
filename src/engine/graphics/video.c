@@ -19,7 +19,6 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-
 #include "video.h"
 #include "shader.h"
 

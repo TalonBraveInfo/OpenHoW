@@ -16,7 +16,6 @@
  */
 
 #include "../engine.h"
-
 #include "display.h"
 #include "texture_atlas.h"
 
@@ -34,14 +33,18 @@ TextureAtlas::~TextureAtlas() {
   //plDestroyTexture(texture_, true);
 }
 
-void TextureAtlas::AddImage(const std::string &path) {
+void TextureAtlas::AddImage(const std::string &path, bool absolute) {
   const auto image = images_by_name_.find(path);
   if(image != images_by_name_.end()) {
     return;
   }
 
   char full_path[PL_SYSTEM_MAX_PATH];
-  snprintf(full_path, sizeof(full_path) - 1, "%s", u_find2(path.c_str(), supported_image_formats, false));
+  if(absolute) {
+    strncpy(full_path, path.c_str(), sizeof(full_path) - 1);
+  } else {
+    snprintf(full_path, sizeof(full_path) - 1, "%s", u_find2(path.c_str(), supported_image_formats, false));
+  }
   auto* img = static_cast<PLImage *>(u_alloc(1, sizeof(PLImage), true));
   if(!plLoadImage(full_path, img)) {
     Error("Failed to load image (%s)!\n", plGetError());

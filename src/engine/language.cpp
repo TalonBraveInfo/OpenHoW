@@ -18,9 +18,6 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "language.h"
-#include "script/script.h"
-#include "script/script_config.h"
 
 /* todo: rewrite to take better advantage of std */
 
@@ -41,7 +38,7 @@ Language *l_manifest = nullptr;
 unsigned int num_languages = 0;
 unsigned int num_translations = 0;
 
-void Languages_Initialize(void) {
+void Languages_Initialize() {
   char man_path[PL_SYSTEM_MAX_PATH];
   strncpy(man_path, u_find("languages.manifest"), sizeof(man_path));
 
@@ -77,7 +74,7 @@ void Languages_Initialize(void) {
 #endif
 }
 
-void Languages_Clear(void) {
+void Languages_Clear() {
   u_free(l_manifest);
   u_free(l_cache);
 }
@@ -85,7 +82,7 @@ void Languages_Clear(void) {
 const char *GetTranslation(const char *key) { // todo: UTF-8 pls
   u_assert(plIsEmptyString(key), "invalid translation key!\n");
 
-  if (l_cache == NULL) {
+  if (l_cache == nullptr) {
     return key;
   }
 

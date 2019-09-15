@@ -19,10 +19,8 @@
 
 #include "../../engine.h"
 #include "../../input.h"
-
-#include "../ActorManager.h"
-#include "../GameManager.h"
-
+#include "../../Map.h"
+#include "../actor_manager.h"
 #include "actor_pig.h"
 
 register_actor(ac_me, APig);    // Ace
@@ -34,13 +32,20 @@ register_actor(sn_me, APig);    // Sniper
 register_actor(sa_me, APig);    // Saboteur
 register_actor(gr_me, APig);    // Grunt
 
+using namespace openhow;
+
 APig::APig(const ActorSpawn& spawn) : AAnimatedModel(spawn) {}
 
 APig::APig() : AAnimatedModel() {}
 APig::~APig() = default;
 
 void APig::HandleInput() {
-  Player* player = GameManager::GetInstance()->GetCurrentPlayer();
+  IGameMode* mode = openhow::engine->GetGameManager()->GetMode();
+  if(mode == nullptr) {
+    return;
+  }
+
+  Player* player = mode->GetCurrentPlayer();
   if (player == nullptr) {
     return;
   }
@@ -82,7 +87,7 @@ void APig::Tick() {
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map* map = GameManager::GetInstance()->GetCurrentMap();
+  Map* map = engine->GetGameManager()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;

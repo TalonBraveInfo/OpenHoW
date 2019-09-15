@@ -25,11 +25,9 @@ enum { // supported languages
   LANG_SPANISH,
 };
 
-PL_EXTERN_C
+void Languages_Initialize();
+void Languages_Clear();
 
-void Languages_Initialize(void);
-void Languages_Clear(void);
+const char* GetTranslation(const char* key);
 
-void SetLanguageCallback(const PLConsoleVariable *var);
-
-PL_EXTERN_C_END
+void SetLanguageCallback(const PLConsoleVariable* var);

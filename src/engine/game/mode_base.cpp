@@ -18,20 +18,21 @@
 #include <PL/platform_graphics_camera.h>
 
 #include "../engine.h"
-#include "../frontend.h"
-#include "../audio/audio.h"
+#include "../Map.h"
 
 #include "mode_base.h"
-#include "ActorManager.h"
+#include "actor_manager.h"
 #include "actors/actor_pig.h"
+
+using namespace openhow;
 
 BaseGameMode::BaseGameMode() {
   players_.resize(4);
 }
 
 BaseGameMode::~BaseGameMode() {
-  AudioManager::GetInstance()->FreeSources();
-  AudioManager::GetInstance()->FreeSamples();
+  engine->GetAudioManager()->FreeSources();
+  engine->GetAudioManager()->FreeSamples();
 
   DestroyActors();
 }
@@ -46,7 +47,7 @@ void BaseGameMode::StartRound() {
   round_started_ = true;
 
   // Play the deployment music
-  AudioManager::GetInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+  engine->GetAudioManager()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 }
 
 void BaseGameMode::RestartRound() {
@@ -77,7 +78,7 @@ void BaseGameMode::Tick() {
 }
 
 void BaseGameMode::SpawnActors() {
-  Map* map = GameManager::GetInstance()->GetCurrentMap();
+  Map* map = engine->GetGameManager()->GetCurrentMap();
   if (map == nullptr) {
     Error("Attempted to spawn actors without having loaded a map!\n");
   }
@@ -120,11 +121,13 @@ void BaseGameMode::EndTurn() {
 }
 
 void BaseGameMode::PlayerJoined(Player* player) {
-
+  // todo: display prompt
+  LogInfo("%s has joined the game\n", player->name.c_str());
 }
 
 void BaseGameMode::PlayerLeft(Player* player) {
-
+  // todo: display prompt
+  LogInfo("%s has left the game\n", player->name.c_str());
 }
 
 unsigned int BaseGameMode::GetMaxSpectators() const {
@@ -132,13 +135,15 @@ unsigned int BaseGameMode::GetMaxSpectators() const {
 }
 
 void BaseGameMode::SpectatorJoined(Player* player) {
-
+  // todo: display prompt
+  LogInfo("%s has joined the spectators\n", player->name.c_str());
 }
 
 void BaseGameMode::SpectatorLeft(Player* player) {
-
+  // todo: display prompt
+  LogInfo("%s has left the spectators\n", player->name.c_str());
 }
 
 unsigned int BaseGameMode::GetMaxPlayers() const {
-  return 0;
+  return 4;
 }
