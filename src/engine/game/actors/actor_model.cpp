@@ -23,21 +23,19 @@ AModel::AModel() : Actor() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
+  if(model_ == nullptr) {
+    return;
+  }
+
   if (strstr(model_->name, "dummy") != nullptr) {
     angles_.y += TICKS_PER_SECOND / 1000.f;
   }
 
-  if (model_ != nullptr) {
-    // todo: ++'ify... and should actors use degrees by defacto?
-
-    PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
-    mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.y, PLVector3(0, 1, 0)));
-    mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
-
-    model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
-
-    plDrawModel(model_);
-  }
+  PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
+  mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.y, PLVector3(0, 1, 0)));
+  mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
+  model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
+  plDrawModel(model_);
 
   Actor::Draw();
 }

@@ -27,8 +27,14 @@ using namespace openhow;
 
 Map::Map(MapManifest* manifest) : manifest_(manifest) {
   std::string base_path = "maps/" + manifest_->filename + "/";
-  std::string p = u_find(std::string(base_path + manifest_->filename).c_str());
-  terrain_ = new Terrain(p, base_path + "tiles/");
+  std::string p = u_find(std::string(base_path + manifest_->filename + ".pmg").c_str());
+
+  // create the terrain and then load the Pmg if it exists
+  // otherwise we'll just assume it's a new map (heightmap data can be imported after)
+  terrain_ = new Terrain(base_path + "tiles/");
+  if(plFileExists(p.c_str())) {
+    terrain_->LoadPmg(p);
+  }
 
   p = u_find(std::string(base_path + manifest_->filename + ".pog").c_str());
   LoadSpawns(p);

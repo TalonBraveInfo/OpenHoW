@@ -33,8 +33,7 @@ class TextureAtlas;
 
 class Terrain {
  public:
-  explicit Terrain(const std::string& pmg, const std::string& tiles);
-  Terrain();
+  explicit Terrain(const std::string& tileset);
   ~Terrain();
 
   struct Tile {
@@ -63,7 +62,7 @@ class Terrain {
 
     unsigned int slip{0}; // e.g. full, bottom or left?
 
-    std::string texture;
+    uint32_t texture{0};
 
     enum Rotation {
       ROTATION_FLAG_NONE,
@@ -103,8 +102,6 @@ class Terrain {
  private:
   void GenerateModel(Chunk* chunk, const PLVector2& offset);
   void GenerateOverview();
-
-  std::string path_tiles_;
 
   float max_height_{0};
   float min_height_{0};

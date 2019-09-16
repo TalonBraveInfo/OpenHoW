@@ -48,6 +48,7 @@ enum LogLevel {
 #else
 #define Error(...) {                                            \
         _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+        u_assert(0, __VA_ARGS__);                                   \
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
         exit(EXIT_FAILURE);                                         \
     }

@@ -170,9 +170,7 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
   }
 
   LogWarn("Failed to get manifest for \"%s\"!\n", name.c_str());
-
-  static MapManifest default_descript;
-  return &default_descript;
+  return nullptr;
 }
 
 MapManifest* GameManager::CreateManifest(const std::string& name) {
