@@ -73,7 +73,7 @@ class Terrain {
     } rotation{ROTATION_FLAG_NONE};
 
     float height[4]{0, 0, 0, 0};
-    uint8_t shading[4]{0, 0, 0, 0};
+    uint8_t shading[4]{255, 255, 255, 255};
   };
 
   struct Chunk {
