@@ -10,7 +10,7 @@
 OpenHoW aims to be an open-source reimplementation of [Hogs of War](https://en.wikipedia.org/wiki/Hogs_of_War),
 a turn-based strategy game produced by [Gremlin Interactive](https://en.wikipedia.org/wiki/Gremlin_Interactive).
 
-The entire project is being built from the ground, supporting 
+The entire project is being built from the ground up, supporting 
 content from both the PC and PSX releases of the game, and 
 the end goal will be to produce a completely open and free 
 version of the game, featuring completely new assets to 
@@ -24,11 +24,11 @@ Consider this more of a wish-list at this  point in time ;)
 * Enhanced graphics over the original game
 
 ## Status :mag:
-![Wireframe view of pig](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
+![Screenshot](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
 
-As of May 2019, the project is still in a very early phase of development, however we're now at a point
-in which models and levels can be loaded in. As we shift onto our next milestone (0.3.0)
-a lot of work will begin on actually getting the game into a basic playable form.
+As of August 1st, 2019, the project is still in a very early phase of development.
+As we shift onto our next milestone (0.4.0) a lot of work will begin on actually getting
+the game into a basic playable form.
 
 The current goal is to have the game in a rough playable state by the end of the year.
 
@@ -77,3 +77,8 @@ After you've downloaded these files, place the 'include' and 'lib' directories u
 in a new 'SDL2' directory under 'src/3rdparty'.
 
 This will be changing at a later point to make things a little easier.
+
+#### C/C++ Style Guide
+
+Please try to follow the [Google C++ guidelines](https://google.github.io/styleguide/cppguide.html), if possible.
+Otherwise please follow the style already used in the code you're editing and this will be sufficient.

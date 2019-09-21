@@ -1,0 +1,17 @@
+{
+    "name": "$map_how_creepy2",
+    "author": "none",
+    "description": "none",
+    "ambientColour": "18 19 100",
+    "skyColourTop": "0 1 41",
+    "skyColourBottom": "18 19 100",
+    "sunColour": "150 150 150",
+    "sunYaw": "0.523599",
+    "sunPitch": "0.872665",
+    "temperature": "cold",
+    "weather": "clear",
+    "time": "night",
+    "fogColour": "0 0 0",
+    "fogIntensity": "30.000000",
+    "fogDistance": "70.000000"
+}

@@ -1,7 +1,7 @@
 # Object files
 *.o
 *.ko
-*.obj
+#*.obj
 *.elf
 
 # Precompiled Headers
@@ -31,3 +31,17 @@
 # Debug files
 *.dSYM/
 *.su
+
+# IDE specific
+.vscode/
+.vs/
+build/
+
+# OpenHoW
+src/3rdparty/SDL2/
+bin/imgui.ini
+bin/debug/
+bin/release/
+
+# Ignore extracted assets 
+bin/campaigns/how/

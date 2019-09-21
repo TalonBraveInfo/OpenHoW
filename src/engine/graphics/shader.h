@@ -17,22 +17,22 @@
 
 #pragma once
 
-enum {
-    SHADER_DEFAULT,             /* unlit */
-    SHADER_UNTEXTURED,
-    SHADER_GOURAUD_LIT,         /* lit */
-    SHADER_ALPHA_TEST,          /* */
-    SHADER_WATER,               /* */
-    SHADER_DEBUG_TEST,
+typedef enum ShaderProgram {
+    SHADER_DebugTest,
+    SHADER_GenericTextured,
+    SHADER_GenericUntextured,
+    SHADER_GenericTexturedLit,
+    SHADER_AlphaTest,
+    SHADER_Water,
 
     MAX_SHADERS
-};
+} ShaderProgram;
 
 PL_EXTERN_C
 
-extern PLShaderProgram *programs[MAX_SHADERS];
-
 void Shaders_Initialize(void);
+void Shaders_SetProgram(ShaderProgram program);
+PLShaderProgram *Shaders_GetProgram(ShaderProgram program);
 void Shaders_Shutdown(void);
 
 PL_EXTERN_C_END

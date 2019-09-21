@@ -1,0 +1,17 @@
+{
+    "name": "$map_how_",
+    "author": "none",
+    "description": "none",
+    "ambientColour": "146 143 150",
+    "skyColourTop": "11 10 92",
+    "skyColourBottom": "186 123 61",
+    "sunColour": "223 133 56",
+    "sunYaw": "0.523599",
+    "sunPitch": "0.523599",
+    "temperature": "hot",
+    "weather": "clear",
+    "time": "day",
+    "fogColour": "186 123 61",
+    "fogIntensity": "30.000000",
+    "fogDistance": "75.000000"
+}

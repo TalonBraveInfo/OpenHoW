@@ -17,8 +17,4 @@
 
 #pragma once
 
-PL_EXTERN_C
-
 void Client_ProcessInput();
-
-PL_EXTERN_C_END

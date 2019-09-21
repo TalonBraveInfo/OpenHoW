@@ -17,11 +17,7 @@
 
 #pragma once
 
-PL_EXTERN_C
-
-const char *Config_GetUserConfigPath(void);
+const char *Config_GetUserConfigPath();
 
 void Config_Save(const char *path);
 void Config_Load(const char *path);
-
-PL_EXTERN_C_END

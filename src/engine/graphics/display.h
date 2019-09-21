@@ -22,23 +22,6 @@
 #define MIN_DISPLAY_WIDTH   640
 #define MIN_DISPLAY_HEIGHT  480
 
-enum {
-    TEXTURE_INDEX_BRITISH,
-    TEXTURE_INDEX_AMERICAN,
-    TEXTURE_INDEX_FRENCH,
-    TEXTURE_INDEX_GERMAN,
-    TEXTURE_INDEX_RUSSIAN,
-    TEXTURE_INDEX_JAPANESE,
-    TEXTURE_INDEX_TEAMLARD,
-
-    TEXTURE_INDEX_GOBS,
-
-    TEXTURE_INDEX_WEAPONS,
-    TEXTURE_INDEX_MAP,
-
-    MAX_TEXTURE_INDEX
-};
-
 typedef struct VideoPreset{
     int width;
     int height;
@@ -69,13 +52,10 @@ void Display_DrawInterface(void);
 void Display_DrawDebug(void);
 void Display_Flush(void);
 
-void Display_ClearTextureIndex(unsigned int id);
-void Display_CacheTextureIndex(const char *path, const char *index_name, unsigned int id);
-void Display_GetCachedTextureCoords(unsigned int id, unsigned int tex_id, float *x, float *y, float *w, float *h);
-PLTexture* Display_GetCachedTexture(unsigned int id);
 PLTexture* Display_GetDefaultTexture(void);
 PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter);
 
+extern const char *supported_model_formats[];
 extern const char *supported_image_formats[];
 
 PL_EXTERN_C_END

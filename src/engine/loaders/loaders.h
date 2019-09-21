@@ -41,46 +41,22 @@
  * OFF : File offset sizes                  (done)
  */
 
-#define MAX_MODEL_VERTICES  4096
-#define MAX_MODEL_TRIANGLES 8192
+#include "../../shared/fac.h"
+#include "../../shared/vtx.h"
+#include "../../shared/no2.h"
 
 PL_EXTERN_C
 
-typedef struct FacTriangle {
-    float       uv_coords[3][2];
-    uint16_t    vertex_indices[3];
-    uint16_t    normal_indices[3];
-    uint32_t    texture_index;
-} FacTriangle;
-
-typedef struct FacHandle {
-    FacTriangle*    triangles;
-    unsigned int    num_triangles;
-} FacHandle;
-FacHandle* Fac_LoadFile(const char* path);
-void Fac_DestroyHandle(FacHandle* handle);
-
-typedef struct VtxHandle {
-    struct PLVertex*    vertices;
-    unsigned int        num_vertices;
-} VtxHandle;
-VtxHandle* Vtx_LoadFile(const char* path);
-void Vtx_DestroyHandle(VtxHandle* handle);
-
-VtxHandle* No2_LoadFile(const char *path, VtxHandle* vertex_data);;
-
 typedef struct HirHandle {
-    PLModelBone*    bones;
-    unsigned int    num_bones;
+  PLModelBone *bones;
+  unsigned int num_bones;
 } HirHandle;
-HirHandle* Hir_LoadFile(const char* path);
-void Hir_DestroyHandle(HirHandle* handle);
+HirHandle *Hir_LoadFile(const char *path);
+void Hir_DestroyHandle(HirHandle *handle);
 
 typedef struct MinHandle {
-    unsigned int blah;
+  unsigned int blah;
 } MinHandle;
-MinHandle* Min_LoadFile(const char* path);
-
-void RegisterPackageLoaders(void);
+MinHandle *Min_LoadFile(const char *path);
 
 PL_EXTERN_C_END
