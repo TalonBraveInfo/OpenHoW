@@ -29,9 +29,14 @@ Map::Map(MapManifest* manifest) : manifest_(manifest) {
   std::string base_path = "maps/" + manifest_->filename + "/";
   std::string p = u_find(std::string(base_path + manifest_->filename + ".pmg").c_str());
 
+  std::string tile_directory = base_path + "tiles/";
+  if(!manifest_->tile_directory.empty()) {
+    tile_directory = manifest_->tile_directory;
+  }
+
   // create the terrain and then load the Pmg if it exists
   // otherwise we'll just assume it's a new map (heightmap data can be imported after)
-  terrain_ = new Terrain(base_path + "tiles/");
+  terrain_ = new Terrain(tile_directory);
   if(plFileExists(p.c_str())) {
     terrain_->LoadPmg(p);
   }

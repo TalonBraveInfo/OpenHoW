@@ -104,5 +104,5 @@ void APig::SetClass(int pclass) {
 void APig::Deserialize(const ActorSpawn& spawn) {
   AAnimatedModel::Deserialize(spawn);
 
-  SetModel("chars/pigs/ac_hi");
+  SetModel("pigs/ac_hi");
 }

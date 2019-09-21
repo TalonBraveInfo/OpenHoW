@@ -30,5 +30,7 @@ class WindowTerrainImport : public BaseWindow {
  private:
   void ImportTerrain();
 
+  int multiplier_{128};
+
   char path_buffer[32]{'\0'};
 };

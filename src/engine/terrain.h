@@ -62,7 +62,7 @@ class Terrain {
 
     unsigned int slip{0}; // e.g. full, bottom or left?
 
-    uint32_t texture{0};
+    uint8_t texture{0};
 
     enum Rotation {
       ROTATION_FLAG_NONE,
@@ -89,7 +89,7 @@ class Terrain {
   float GetMinHeight() { return min_height_; }
 
   void LoadPmg(const std::string& path);
-  void LoadHeightmap(const std::string& path);
+  void LoadHeightmap(const std::string& path, int multiplier);
 
   PLTexture* GetOverview() { return overview_; }
 

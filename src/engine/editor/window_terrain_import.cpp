@@ -27,9 +27,10 @@ WindowTerrainImport::WindowTerrainImport() = default;
 WindowTerrainImport::~WindowTerrainImport() = default;
 
 void WindowTerrainImport::Display() {
-  ImGui::SetNextWindowSize(ImVec2(310, 512), ImGuiCond_Once);
+  ImGui::SetNextWindowSize(ImVec2(310, 128), ImGuiCond_Once);
   ImGui::Begin(dname("Import Heightmap"), &status_, ED_DEFAULT_WINDOW_FLAGS);
   ImGui::InputText("Path", path_buffer, sizeof(path_buffer));
+  ImGui::InputInt("Multiplier", &multiplier_);
   if(ImGui::Button("Import")) {
     ImportTerrain();
   }
@@ -51,5 +52,5 @@ void WindowTerrainImport::ImportTerrain() {
     return;
   }
 
-  terrain->LoadHeightmap(path_buffer);
+  terrain->LoadHeightmap(path_buffer, multiplier_);
 }

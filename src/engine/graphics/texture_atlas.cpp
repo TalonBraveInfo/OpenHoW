@@ -30,7 +30,10 @@ TextureAtlas::~TextureAtlas() {
     id.second = nullptr;
   }
 
-  //plDestroyTexture(texture_, true);
+  if(texture_ != Display_GetDefaultTexture()) {
+    // TODO: reintroduce once we have a wrapper around PLModel to hold this!
+    //plDestroyTexture(texture_, true);
+  }
 }
 
 bool TextureAtlas::AddImage(const std::string &path, bool absolute) {
@@ -49,7 +52,6 @@ bool TextureAtlas::AddImage(const std::string &path, bool absolute) {
   auto* img = static_cast<PLImage *>(u_alloc(1, sizeof(PLImage), true));
   if(!plLoadImage(full_path, img)) {
     u_free(img);
-    LogWarn("Failed to load image (%s)!\n", plGetError());
     return false;
   }
 
@@ -66,6 +68,11 @@ void TextureAtlas::AddImages(const std::vector<std::string> &textures) {
 }
 
 void TextureAtlas::Finalize() {
+  if(images_by_height_.empty()) {
+    LogWarn("Failed to finalize texture atlas, no textures loaded!\n");
+    return;
+  }
+
   // Figure out how we'll organise the atlas
   unsigned int w = width_, h = height_;
   unsigned int max_h = 0;

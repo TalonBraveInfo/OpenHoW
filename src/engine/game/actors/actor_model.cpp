@@ -19,11 +19,20 @@
 #include "../../model.h"
 #include "actor_model.h"
 
+using namespace openhow;
+
 AModel::AModel() : Actor() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
+  Actor::Draw();
+
   if(model_ == nullptr) {
+    return;
+  }
+
+  Player* player = engine->GetGameManager()->GetMode()->GetCurrentPlayer();
+  if(player != nullptr && player->input_target == this) {
     return;
   }
 
@@ -36,8 +45,6 @@ void AModel::Draw() {
   mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
   model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
   plDrawModel(model_);
-
-  Actor::Draw();
 }
 
 void AModel::SetModel(const std::string &path) {

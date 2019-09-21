@@ -19,6 +19,7 @@
 
 #include "engine.h"
 #include "terrain.h"
+
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/texture_atlas.h"
@@ -47,9 +48,10 @@ const static unsigned int chunk_indices[96] = {
 
 Terrain::Terrain(const std::string& tileset) {
   // attempt to load in the atlas sheet
+  // TODO: allow us to change this on the fly
   atlas_ = new TextureAtlas(512, 8);
-  for(unsigned int i = 0; i < 256; ++i) {
-    if(!atlas_->AddImage(tileset + std::to_string(i))) {
+  for (unsigned int i = 0; i < 256; ++i) {
+    if (!atlas_->AddImage(tileset + std::to_string(i))) {
       break;
     }
   }
@@ -133,10 +135,7 @@ void Terrain::GenerateModel(Chunk* chunk, const PLVector2& offset) {
       const Tile* current_tile = &chunk->tiles[tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES];
 
       float tx_x, tx_y, tx_w, tx_h;
-      if(atlas_ == nullptr || !atlas_->GetTextureCoords(std::to_string(current_tile->texture), &tx_x, &tx_y, &tx_w, &tx_h)) {
-        tx_w = tx_x = 0;
-        tx_h = tx_y = 1;
-      }
+      atlas_->GetTextureCoords(std::to_string(current_tile->texture), &tx_x, &tx_y, &tx_w, &tx_h);
 
       // TERRAIN_FLIP_FLAG_X flips around texture sheet coords, not TERRAIN coords.
       if (current_tile->rotation & Tile::ROTATION_FLAG_X) {
@@ -184,11 +183,7 @@ void Terrain::GenerateModel(Chunk* chunk, const PLVector2& offset) {
     }
   }
 
-  //if(atlas_ == nullptr) {
-    chunk_mesh->texture = Display_GetDefaultTexture();
-  //} else {
-  //  chunk_mesh->texture = atlas_->GetTexture();
-  //}
+  chunk_mesh->texture = atlas_->GetTexture();
 
   // attach the mesh to our model
   PLModel* model = plCreateBasicStaticModel(chunk_mesh);
@@ -378,8 +373,8 @@ void Terrain::LoadPmg(const std::string& path) {
   Update();
 }
 
-void Terrain::LoadHeightmap(const std::string& path) {
-  std::string p = u_find(std::string(path + "/terrain.png").c_str());
+void Terrain::LoadHeightmap(const std::string& path, int multiplier) {
+  std::string p = u_find(std::string(path).c_str());
 
   PLImage image;
   if (!plLoadImage(p.c_str(), &image)) {
@@ -403,15 +398,15 @@ void Terrain::LoadHeightmap(const std::string& path) {
   memset(rchan, 0, chan_length);
   uint8_t* pixel = image.data[0];
   for (unsigned int i = 0; i < chan_length; ++i) {
-    rchan[i] = static_cast<float>(*pixel) * 10;
+    rchan[i] = static_cast<int>(*pixel) * multiplier; //(static_cast<int>(*pixel) - 127) * 256;
     pixel += 4;
   }
 
-  auto* gchan = static_cast<float*>(u_alloc(chan_length, sizeof(float), true));
+  auto* gchan = static_cast<uint8_t*>(u_alloc(chan_length, sizeof(uint8_t), true));
   memset(gchan, 0, chan_length);
   pixel = image.data[0] + 1;
   for (unsigned int i = 0; i < chan_length; ++i) {
-    gchan[i] = static_cast<float>(*pixel) * 10;
+    gchan[i] = *pixel;
     pixel += 4;
   }
 
@@ -428,8 +423,14 @@ void Terrain::LoadHeightmap(const std::string& path) {
           current_tile->height[1] = rchan[aaa + (tile_y * 65) + tile_x + 1];
           current_tile->height[2] = rchan[aaa + ((tile_y + 1) * 65) + tile_x];
           current_tile->height[3] = rchan[aaa + ((tile_y + 1) * 65) + tile_x + 1];
-          // TODO: double check this...
-          current_tile->texture = gchan[aaa];
+
+          current_tile->texture = gchan[aaa + (tile_y * 65) + tile_x];
+
+          // hrm...
+          current_tile->shading[0] =
+          current_tile->shading[1] =
+          current_tile->shading[2] =
+          current_tile->shading[3] = 255;
         }
       }
 

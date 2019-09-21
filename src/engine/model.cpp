@@ -103,7 +103,9 @@ static PLModel *Model_LoadVtxFile(const char *path) {
       std::string str = path;
       size_t pos = str.find_last_of('/');
       std::string texture_path = str.erase(pos) + "/";
-      atlas.AddImage(texture_path + fac->texture_table[i].name + ".png", true);
+      if(!atlas.AddImage(texture_path + fac->texture_table[i].name + ".png", true)) {
+        LogWarn("Failed to add texture \"%s\" to atlas!\n", fac->texture_table[i].name);
+      }
     }
     atlas.Finalize();
   }
