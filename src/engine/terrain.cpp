@@ -19,9 +19,11 @@
 
 #include "engine.h"
 #include "terrain.h"
+
 #include "graphics/mesh.h"
 #include "graphics/shader.h"
 #include "graphics/texture_atlas.h"
+#include "graphics/display.h"
 
 //Precalculated vertices for chunk rendering
 //TODO: Share one index buffer instance between all chunks
@@ -44,107 +46,31 @@ const static unsigned int chunk_indices[96] = {
     60, 62, 61, 61, 62, 63,
 };
 
-Terrain::Terrain(const std::string &pmg, const std::string &tiles) : Terrain() {
-  FILE *fh = std::fopen(pmg.c_str(), "rb");
-  if (fh == nullptr) {
-    Error("Failed to open tile data, \"%s\", aborting\n", pmg.c_str());
-  }
-
-  for (unsigned int chunk_y = 0; chunk_y < TERRAIN_CHUNK_ROW; ++chunk_y) {
-    for (unsigned int chunk_x = 0; chunk_x < TERRAIN_CHUNK_ROW; ++chunk_x) {
-      Chunk &current_chunk = chunks_[chunk_x + chunk_y * TERRAIN_CHUNK_ROW];
-
-      struct __attribute__((packed)) {
-        /* offsets */
-        uint16_t x{0};
-        uint16_t y{0};
-        uint16_t z{0};
-        uint16_t unknown0{0};
-      } chunk;
-      if (std::fread(&chunk, sizeof(chunk), 1, fh) != 1) {
-        Error("unexpected end of file, aborting!\n");
-      }
-
-      struct __attribute__((packed)) {
-        int16_t height{0};
-        uint16_t lighting{0};
-      } vertices[25];
-      if (std::fread(vertices, sizeof(*vertices), 25, fh) != 25) {
-        Error("Unexpected end of file, aborting!\n");
-      }
-
-      // Find the maximum and minimum points
-      for (auto &vertex : vertices) {
-        if (static_cast<float>(vertex.height) > max_height_) {
-          max_height_ = vertex.height;
-        }
-        if (static_cast<float>(vertex.height) < min_height_) {
-          min_height_ = vertex.height;
-        }
-      }
-
-      std::fseek(fh, 4, SEEK_CUR);
-
-      for (unsigned int tile_y = 0; tile_y < TERRAIN_CHUNK_ROW_TILES; ++tile_y) {
-        for (unsigned int tile_x = 0; tile_x < TERRAIN_CHUNK_ROW_TILES; ++tile_x) {
-          struct __attribute__((packed)) {
-            int8_t unused0[6]{0, 0, 0, 0, 0, 0};
-            uint8_t type{0};
-            uint8_t slip{0};
-            int16_t unused1{0};
-            uint8_t rotation{0};
-            uint32_t texture{0};
-            uint8_t unused2{0};
-          } tile;
-          if (std::fread(&tile, sizeof(tile), 1, fh) != 1) {
-            Error("unexpected end of file, aborting!\n");
-          }
-
-          Tile *current_tile = &current_chunk.tiles[tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES];
-          current_tile->surface = static_cast<Tile::Surface>(tile.type & 31U);
-          current_tile->behaviour = static_cast<Tile::Behaviour>(tile.type & ~31U);
-          current_tile->rotation = static_cast<Tile::Rotation>(tile.rotation);
-          current_tile->slip = 0;
-          current_tile->texture = std::to_string(tile.texture);
-
-          // TODO: investigate reusable tilesets...
-          atlas_->AddImage(tiles + current_tile->texture);
-
-          current_tile->height[0] = vertices[(tile_y * 5) + tile_x].height;
-          current_tile->height[1] = vertices[(tile_y * 5) + tile_x + 1].height;
-          current_tile->height[2] = vertices[((tile_y + 1) * 5) + tile_x].height;
-          current_tile->height[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].height;
-
-          current_tile->shading[0] = vertices[(tile_y * 5) + tile_x].lighting;
-          current_tile->shading[1] = vertices[(tile_y * 5) + tile_x + 1].lighting;
-          current_tile->shading[2] = vertices[((tile_y + 1) * 5) + tile_x].lighting;
-          current_tile->shading[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].lighting;
-        }
-      }
+Terrain::Terrain(const std::string& tileset) {
+  // attempt to load in the atlas sheet
+  // TODO: allow us to change this on the fly
+  atlas_ = new TextureAtlas(512, 8);
+  for (unsigned int i = 0; i < 256; ++i) {
+    if (!atlas_->AddImage(tileset + std::to_string(i))) {
+      break;
     }
   }
-
-  std::fclose(fh);
-
   atlas_->Finalize();
 
-  Update();
-}
-
-Terrain::Terrain() {
   chunks_.resize(TERRAIN_CHUNKS);
-  atlas_ = new TextureAtlas(512, 8);
+
+  Update();
 }
 
 Terrain::~Terrain() {
   delete atlas_;
 
-  for (auto &chunk : chunks_) {
+  for (auto& chunk : chunks_) {
     plDestroyModel(chunk.model);
   }
 }
 
-Terrain::Chunk *Terrain::GetChunk(const PLVector2 &pos) {
+Terrain::Chunk* Terrain::GetChunk(const PLVector2& pos) {
   if (pos.x < 0 || std::floor(pos.x) >= TERRAIN_PIXEL_WIDTH ||
       pos.y < 0 || std::floor(pos.y) >= TERRAIN_PIXEL_WIDTH) {
     return nullptr;
@@ -160,8 +86,8 @@ Terrain::Chunk *Terrain::GetChunk(const PLVector2 &pos) {
   return &chunks_[idx];
 }
 
-Terrain::Tile *Terrain::GetTile(const PLVector2 &pos) {
-  Chunk *chunk = GetChunk(pos);
+Terrain::Tile* Terrain::GetTile(const PLVector2& pos) {
+  Chunk* chunk = GetChunk(pos);
   if (chunk == nullptr) {
     return nullptr;
   }
@@ -176,8 +102,8 @@ Terrain::Tile *Terrain::GetTile(const PLVector2 &pos) {
   return &chunk->tiles[idx];
 }
 
-float Terrain::GetHeight(const PLVector2 &pos) {
-  Tile *tile = GetTile(pos);
+float Terrain::GetHeight(const PLVector2& pos) {
+  Tile* tile = GetTile(pos);
   if (tile == nullptr) {
     return 0;
   }
@@ -192,13 +118,13 @@ float Terrain::GetHeight(const PLVector2 &pos) {
   return z;
 }
 
-void Terrain::GenerateModel(Chunk *chunk, const PLVector2 &offset) {
+void Terrain::GenerateModel(Chunk* chunk, const PLVector2& offset) {
   if (chunk->model != nullptr) {
     plDestroyModel(chunk->model);
     chunk->model = nullptr;
   }
 
-  PLMesh *chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, (void *) chunk_indices, nullptr);
+  PLMesh* chunk_mesh = plCreateMeshInit(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, (void*) chunk_indices, nullptr);
   if (chunk_mesh == nullptr) {
     Error("Unable to create map chunk mesh, aborting (%s)!\n", plGetError());
   }
@@ -206,10 +132,10 @@ void Terrain::GenerateModel(Chunk *chunk, const PLVector2 &offset) {
   int cm_idx = 0;
   for (unsigned int tile_y = 0; tile_y < TERRAIN_CHUNK_ROW_TILES; ++tile_y) {
     for (unsigned int tile_x = 0; tile_x < TERRAIN_CHUNK_ROW_TILES; ++tile_x) {
-      const Tile *current_tile = &chunk->tiles[tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES];
+      const Tile* current_tile = &chunk->tiles[tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES];
 
       float tx_x, tx_y, tx_w, tx_h;
-      atlas_->GetTextureCoords(current_tile->texture, &tx_x, &tx_y, &tx_w, &tx_h);
+      atlas_->GetTextureCoords(std::to_string(current_tile->texture), &tx_x, &tx_y, &tx_w, &tx_h);
 
       // TERRAIN_FLIP_FLAG_X flips around texture sheet coords, not TERRAIN coords.
       if (current_tile->rotation & Tile::ROTATION_FLAG_X) {
@@ -222,7 +148,7 @@ void Terrain::GenerateModel(Chunk *chunk, const PLVector2 &offset) {
       float tx_Ay[] = {tx_y, tx_y, tx_y + tx_h, tx_y + tx_h};
 
       // Rotate a quad of ST coords 90 degrees clockwise.
-      auto rot90 = [](float *x) {
+      auto rot90 = [](float* x) {
         float c = x[0];
         x[0] = x[2];
         x[2] = x[3];
@@ -260,7 +186,7 @@ void Terrain::GenerateModel(Chunk *chunk, const PLVector2 &offset) {
   chunk_mesh->texture = atlas_->GetTexture();
 
   // attach the mesh to our model
-  PLModel *model = plCreateBasicStaticModel(chunk_mesh);
+  PLModel* model = plCreateBasicStaticModel(chunk_mesh);
   if (model == nullptr) {
     Error("Failed to create map model (%s), aborting!\n", plGetError());
   }
@@ -285,14 +211,14 @@ void Terrain::GenerateOverview() {
   };
 
   // Create our storage
-  PLImage *image = plCreateImage(nullptr, 64, 64, PL_COLOURFORMAT_RGB, PL_IMAGEFORMAT_RGB8);
+  PLImage* image = plCreateImage(nullptr, 64, 64, PL_COLOURFORMAT_RGB, PL_IMAGEFORMAT_RGB8);
 
   // Now write into the image buffer
-  uint8_t *buf = image->data[0];
+  uint8_t* buf = image->data[0];
   for (uint8_t y = 0; y < 64; ++y) {
     for (uint8_t x = 0; x < 64; ++x) {
       PLVector2 position(x * (TERRAIN_PIXEL_WIDTH / 64), y * (TERRAIN_PIXEL_WIDTH / 64));
-      Tile *tile = GetTile(position);
+      Tile* tile = GetTile(position);
       u_assert(tile != nullptr, "Hit an invalid tile during overview generation!\n");
 
       auto mod = static_cast<int>((GetHeight(position) + ((GetMaxHeight() + GetMinHeight()) / 2)) / 255);
@@ -342,9 +268,9 @@ void Terrain::Update() {
     }
   }
 
-  std::list<PLMesh *> meshes;
-  for (auto &chunk : chunks_) {
-    PLModelLod *lod = plGetModelLodLevel(chunk.model, 0);
+  std::list<PLMesh*> meshes;
+  for (auto& chunk : chunks_) {
+    PLModelLod* lod = plGetModelLodLevel(chunk.model, 0);
     meshes.push_back(lod->meshes[0]);
   }
 
@@ -354,7 +280,7 @@ void Terrain::Update() {
 void Terrain::Draw() {
   Shaders_SetProgram(SHADER_GenericTexturedLit);
   g_state.gfx.num_chunks_drawn = 0;
-  for (const auto &chunk : chunks_) {
+  for (const auto& chunk : chunks_) {
     if (chunk.model == nullptr) {
       continue;
     }
@@ -362,4 +288,168 @@ void Terrain::Draw() {
     g_state.gfx.num_chunks_drawn++;
     plDrawModel(chunk.model);
   }
+}
+
+void Terrain::LoadPmg(const std::string& path) {
+  FILE* fh = std::fopen(path.c_str(), "rb");
+  if (fh == nullptr) {
+    LogWarn("Failed to open tile data, \"%s\", aborting\n", path.c_str());
+    return;
+  }
+
+  for (unsigned int chunk_y = 0; chunk_y < TERRAIN_CHUNK_ROW; ++chunk_y) {
+    for (unsigned int chunk_x = 0; chunk_x < TERRAIN_CHUNK_ROW; ++chunk_x) {
+      Chunk& current_chunk = chunks_[chunk_x + chunk_y * TERRAIN_CHUNK_ROW];
+
+      struct __attribute__((packed)) {
+        /* offsets */
+        uint16_t x{0};
+        uint16_t y{0};
+        uint16_t z{0};
+        uint16_t unknown0{0};
+      } chunk;
+      if (std::fread(&chunk, sizeof(chunk), 1, fh) != 1) {
+        Error("unexpected end of file, aborting!\n");
+      }
+
+      struct __attribute__((packed)) {
+        int16_t height{0};
+        uint16_t lighting{0};
+      } vertices[25];
+      if (std::fread(vertices, sizeof(*vertices), 25, fh) != 25) {
+        Error("Unexpected end of file, aborting!\n");
+      }
+
+      // Find the maximum and minimum points
+      for (auto& vertex : vertices) {
+        if (static_cast<float>(vertex.height) > max_height_) {
+          max_height_ = vertex.height;
+        }
+        if (static_cast<float>(vertex.height) < min_height_) {
+          min_height_ = vertex.height;
+        }
+      }
+
+      std::fseek(fh, 4, SEEK_CUR);
+
+      for (unsigned int tile_y = 0; tile_y < TERRAIN_CHUNK_ROW_TILES; ++tile_y) {
+        for (unsigned int tile_x = 0; tile_x < TERRAIN_CHUNK_ROW_TILES; ++tile_x) {
+          struct __attribute__((packed)) {
+            int8_t unused0[6]{0, 0, 0, 0, 0, 0};
+            uint8_t type{0};
+            uint8_t slip{0};
+            int16_t unused1{0};
+            uint8_t rotation{0};
+            uint32_t texture{0};
+            uint8_t unused2{0};
+          } tile;
+          if (std::fread(&tile, sizeof(tile), 1, fh) != 1) {
+            Error("unexpected end of file, aborting!\n");
+          }
+
+          Tile* current_tile = &current_chunk.tiles[tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES];
+          current_tile->surface = static_cast<Tile::Surface>(tile.type & 31U);
+          current_tile->behaviour = static_cast<Tile::Behaviour>(tile.type & ~31U);
+          current_tile->rotation = static_cast<Tile::Rotation>(tile.rotation);
+          current_tile->slip = 0;
+          current_tile->texture = tile.texture;
+
+          current_tile->height[0] = vertices[(tile_y * 5) + tile_x].height;
+          current_tile->height[1] = vertices[(tile_y * 5) + tile_x + 1].height;
+          current_tile->height[2] = vertices[((tile_y + 1) * 5) + tile_x].height;
+          current_tile->height[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].height;
+
+          current_tile->shading[0] = vertices[(tile_y * 5) + tile_x].lighting;
+          current_tile->shading[1] = vertices[(tile_y * 5) + tile_x + 1].lighting;
+          current_tile->shading[2] = vertices[((tile_y + 1) * 5) + tile_x].lighting;
+          current_tile->shading[3] = vertices[((tile_y + 1) * 5) + tile_x + 1].lighting;
+        }
+      }
+    }
+  }
+
+  std::fclose(fh);
+
+  Update();
+}
+
+void Terrain::LoadHeightmap(const std::string& path, int multiplier) {
+  std::string p = u_find(std::string(path).c_str());
+
+  PLImage image;
+  if (!plLoadImage(p.c_str(), &image)) {
+    LogWarn("Failed to load the specified heightmap, \"%s\" (%s)!\n", p.c_str(), plGetError());
+    return;
+  }
+
+  if (image.width < 65 || image.height < 65) {
+    plFreeImage(&image);
+    LogWarn("Invalid image size for heightmap, %dx%d vs 65x65!\n", image.width, image.height);
+    return;
+  }
+
+  // Each channel is encoded with specific data
+  // red = height
+  // green = texture
+
+  unsigned int chan_length = image.width * image.height;
+
+  auto* rchan = static_cast<float*>(u_alloc(chan_length, sizeof(float), true));
+  uint8_t* pixel = image.data[0];
+  for (unsigned int i = 0; i < chan_length; ++i) {
+    rchan[i] = static_cast<int>(*pixel) * multiplier; //(static_cast<int>(*pixel) - 127) * 256;
+    pixel += 4;
+  }
+
+  auto* gchan = static_cast<uint8_t*>(u_alloc(chan_length, sizeof(uint8_t), true));
+  pixel = image.data[0] + 1;
+  for (unsigned int i = 0; i < chan_length; ++i) {
+    gchan[i] = *pixel;
+    pixel += 4;
+  }
+
+  plFreeImage(&image);
+
+  for (unsigned int chunk_y = 0; chunk_y < TERRAIN_CHUNK_ROW; ++chunk_y) {
+    for (unsigned int chunk_x = 0; chunk_x < TERRAIN_CHUNK_ROW; ++chunk_x) {
+      Chunk& current_chunk = chunks_[chunk_x + chunk_y * TERRAIN_CHUNK_ROW];
+      for (unsigned int tile_y = 0; tile_y < TERRAIN_CHUNK_ROW_TILES; ++tile_y) {
+        for (unsigned int tile_x = 0; tile_x < TERRAIN_CHUNK_ROW_TILES; ++tile_x) {
+          Tile* current_tile = &current_chunk.tiles[tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES];
+          unsigned int aaa = (chunk_y * 4 * 65) + (chunk_x * 4);
+          current_tile->height[0] = rchan[aaa + (tile_y * 65) + tile_x];
+          current_tile->height[1] = rchan[aaa + (tile_y * 65) + tile_x + 1];
+          current_tile->height[2] = rchan[aaa + ((tile_y + 1) * 65) + tile_x];
+          current_tile->height[3] = rchan[aaa + ((tile_y + 1) * 65) + tile_x + 1];
+
+          current_tile->texture = gchan[aaa + (tile_y * 65) + tile_x];
+
+          // hrm...
+          current_tile->shading[0] =
+          current_tile->shading[1] =
+          current_tile->shading[2] =
+          current_tile->shading[3] = 255;
+        }
+      }
+
+      max_height_ = min_height_ = current_chunk.tiles[0].height[0];
+
+      // Find the maximum and minimum points
+      for (auto& tile : current_chunk.tiles) {
+        for (float i : tile.height) {
+          if (i > max_height_) {
+            max_height_ = i;
+          }
+          if (i < min_height_) {
+            min_height_ = i;
+          }
+        }
+      }
+    }
+  }
+
+  u_free(rchan);
+  u_free(gchan);
+
+  Update();
 }

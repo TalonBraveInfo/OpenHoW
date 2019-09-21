@@ -27,19 +27,17 @@ struct ActorSpawn;
 
 class Map {
  public:
-  explicit Map(const std::string& name);
+  explicit Map(MapManifest* manifest);
   ~Map();
 
   void Draw();
 
-  const std::string& GetId() { return id_name_; }
   MapManifest* GetManifest() { return manifest_; }
   Terrain* GetTerrain() { return terrain_; }
 
   const std::vector<ActorSpawn>& GetSpawns() { return spawns_; }
 
   void UpdateSky();
-
   void UpdateLighting();
 
  protected:
@@ -53,8 +51,6 @@ class Map {
   MapManifest* manifest_{nullptr};
 
   std::vector<ActorSpawn> spawns_;
-
-  std::string id_name_;
 
   PLModel* sky_model_top_{nullptr};
   PLModel* sky_model_bottom_{nullptr};

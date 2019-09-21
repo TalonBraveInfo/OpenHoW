@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 
-#include "model_viewer.h"
+#include "window_model_viewer.h"
 
 ModelViewer::ModelViewer(const std::string &path) {
   model_ = plLoadModel(path.c_str());

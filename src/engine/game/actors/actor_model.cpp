@@ -19,27 +19,32 @@
 #include "../../model.h"
 #include "actor_model.h"
 
+using namespace openhow;
+
 AModel::AModel() : Actor() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
+  Actor::Draw();
+
+  if(model_ == nullptr) {
+    return;
+  }
+
+  Player* player = engine->GetGameManager()->GetMode()->GetCurrentPlayer();
+  if(player != nullptr && player->input_target == this) {
+    return;
+  }
+
   if (strstr(model_->name, "dummy") != nullptr) {
     angles_.y += TICKS_PER_SECOND / 1000.f;
   }
 
-  if (model_ != nullptr) {
-    // todo: ++'ify... and should actors use degrees by defacto?
-
-    PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
-    mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.y, PLVector3(0, 1, 0)));
-    mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
-
-    model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
-
-    plDrawModel(model_);
-  }
-
-  Actor::Draw();
+  PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
+  mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.y, PLVector3(0, 1, 0)));
+  mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
+  model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
+  plDrawModel(model_);
 }
 
 void AModel::SetModel(const std::string &path) {

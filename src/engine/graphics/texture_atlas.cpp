@@ -30,13 +30,16 @@ TextureAtlas::~TextureAtlas() {
     id.second = nullptr;
   }
 
-  //plDestroyTexture(texture_, true);
+  if(texture_ != Display_GetDefaultTexture()) {
+    // TODO: reintroduce once we have a wrapper around PLModel to hold this!
+    //plDestroyTexture(texture_, true);
+  }
 }
 
-void TextureAtlas::AddImage(const std::string &path, bool absolute) {
+bool TextureAtlas::AddImage(const std::string &path, bool absolute) {
   const auto image = images_by_name_.find(path);
   if(image != images_by_name_.end()) {
-    return;
+    return true;
   }
 
   char full_path[PL_SYSTEM_MAX_PATH];
@@ -45,14 +48,17 @@ void TextureAtlas::AddImage(const std::string &path, bool absolute) {
   } else {
     snprintf(full_path, sizeof(full_path) - 1, "%s", u_find2(path.c_str(), supported_image_formats, false));
   }
+
   auto* img = static_cast<PLImage *>(u_alloc(1, sizeof(PLImage), true));
   if(!plLoadImage(full_path, img)) {
-    Error("Failed to load image (%s)!\n", plGetError());
+    u_free(img);
+    return false;
   }
 
   plConvertPixelFormat(img, PL_IMAGEFORMAT_RGBA8);
   images_by_name_.emplace(path, img);
   images_by_height_.emplace(img->height, img);
+  return true;
 }
 
 void TextureAtlas::AddImages(const std::vector<std::string> &textures) {
@@ -62,6 +68,11 @@ void TextureAtlas::AddImages(const std::vector<std::string> &textures) {
 }
 
 void TextureAtlas::Finalize() {
+  if(images_by_height_.empty()) {
+    LogWarn("Failed to finalize texture atlas, no textures loaded!\n");
+    return;
+  }
+
   // Figure out how we'll organise the atlas
   unsigned int w = width_, h = height_;
   unsigned int max_h = 0;
@@ -151,18 +162,19 @@ void TextureAtlas::Finalize() {
   plFreeImage(cache);
 }
 
-void TextureAtlas::GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h) {
+bool TextureAtlas::GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h) {
   auto index = textures_.find(name);
   if(index == textures_.end()) {
     *x = *y = 0;
     *w = *h = 1.0f;
-    return;
+    return false;
   }
 
   *x = static_cast<float>(index->second.x) / static_cast<float>(texture_->w);
   *y = static_cast<float>(index->second.y) / static_cast<float>(texture_->h);
   *w = static_cast<float>(index->second.w) / static_cast<float>(texture_->w);
   *h = static_cast<float>(index->second.h) / static_cast<float>(texture_->h);
+  return true;
 }
 
 std::pair<unsigned int, unsigned int> TextureAtlas::GetTextureSize(const std::string &name) {

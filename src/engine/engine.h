@@ -28,6 +28,7 @@
 // remove this once everything is C++'fied
 #ifdef __cplusplus
 #include <string>
+#include <sstream>
 #endif
 
 #include "../shared/util.h"

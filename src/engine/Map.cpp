@@ -25,27 +25,24 @@
 
 using namespace openhow;
 
-Map::Map(const std::string& name) {
-  LogDebug("Loading map, %s...\n", name.c_str());
+Map::Map(MapManifest* manifest) : manifest_(manifest) {
+  std::string base_path = "maps/" + manifest_->filename + "/";
+  std::string p = u_find(std::string(base_path + manifest_->filename + ".pmg").c_str());
 
-  id_name_ = name;
-
-  manifest_ = engine->GetGameManager()->GetMapManifest(name);
-  if (manifest_ == nullptr) {
-    LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
+  std::string tile_directory = base_path + "tiles/";
+  if(!manifest_->tile_directory.empty()) {
+    tile_directory = manifest_->tile_directory;
   }
 
-  std::string base_path = "maps/" + name + "/";
-  std::string p = u_find(std::string(base_path + name + ".pmg").c_str());
-  terrain_ = new Terrain(p, base_path + "tiles/");
-
-  p = u_find(std::string(base_path + name + ".pog").c_str());
-  if (!plFileExists(p.c_str())) {
-    LogWarn("POG, \"%s\", doesn't exist!\n", p.c_str());
-  } else {
-    LoadSpawns(p);
+  // create the terrain and then load the Pmg if it exists
+  // otherwise we'll just assume it's a new map (heightmap data can be imported after)
+  terrain_ = new Terrain(tile_directory);
+  if(plFileExists(p.c_str())) {
+    terrain_->LoadPmg(p);
   }
 
+  p = u_find(std::string(base_path + manifest_->filename + ".pog").c_str());
+  LoadSpawns(p);
   LoadSky();
 
   UpdateSky();
@@ -186,7 +183,7 @@ void Map::LoadSpawns(const std::string& path) {
 
   std::ifstream ifs(path, std::ios_base::in | std::ios_base::binary);
   if (!ifs.is_open()) {
-    Error("Failed to open actor data, \"%s\", aborting!\n", path.c_str());
+    LogWarn("Failed to open actor data, \"%s\", aborting!\n", path.c_str());
   }
 
   uint16_t num_indices;

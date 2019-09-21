@@ -17,34 +17,20 @@
 
 #pragma once
 
-class TextureAtlas {
+#include "base_window.h"
+
+class WindowTerrainImport : public BaseWindow {
  public:
-  TextureAtlas(int w, int h);
-  ~TextureAtlas();
+  WindowTerrainImport();
+  ~WindowTerrainImport() override;
 
-  bool GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h);
-  std::pair<unsigned int, unsigned int> GetTextureSize(const std::string &name);
-
-  bool AddImage(const std::string &path, bool absolute = false);
-  void AddImages(const std::vector<std::string> &textures);
-
-  void Finalize();
-
-  PLTexture *GetTexture() { return texture_; }
+  void Display() override;
 
  protected:
  private:
-  struct Index {
-    unsigned int x, y, w, h;
-    PLImage *image;
-  };
+  void ImportTerrain();
 
-  int width_{512};
-  int height_{8};
+  int multiplier_{128};
 
-  std::map<std::string, Index> textures_;
-  std::map<std::string, PLImage *> images_by_name_;
-  std::multimap<unsigned int, PLImage *> images_by_height_;
-
-  PLTexture *texture_{nullptr};
+  char path_buffer[32]{'\0'};
 };

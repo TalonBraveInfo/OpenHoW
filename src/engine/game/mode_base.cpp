@@ -99,6 +99,12 @@ void BaseGameMode::SpawnActors() {
     }
   }
 
+  if(players_[0].input_target == nullptr) {
+    LogWarn("No pig found in map, spawning default (debugging!!!!)\n");
+    Actor* actor = ActorManager::GetInstance()->CreateActor("ac_me");
+    players_[0].input_target = actor;
+  }
+
   ActorManager::GetInstance()->ActivateActors();
 }
 

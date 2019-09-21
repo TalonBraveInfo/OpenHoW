@@ -105,7 +105,11 @@ void u_set_mod_path(const char* path) { plSetConsoleVariable(cv_path_mod, path);
 
 const char* u_get_full_path(void) {
   static char path[PL_SYSTEM_MAX_PATH];
-  snprintf(path, sizeof(path), "%s/campaigns/%s", u_get_base_path(), u_get_mod_path());
+  if(u_get_mod_path()[0] != '\0') {
+    snprintf(path, sizeof(path), "%s/campaigns/%s", u_get_base_path(), u_get_mod_path());
+  } else {
+    snprintf(path, sizeof(path), "%s", u_get_base_path());
+  }
   return path;
 }
 
