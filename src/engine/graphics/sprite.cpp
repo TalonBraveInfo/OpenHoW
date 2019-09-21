@@ -30,28 +30,6 @@
  * on the animation implementation for example...
  * */
 
-struct SpriteAnimation {
-  unsigned int fps{4};                 // Frames per second
-  unsigned int h_frames{1};            // Number of frames horizontally
-  unsigned int v_frames{1};            // Number of frames vertically
-  unsigned int start_x{0}, start_y{0}; // Start offsets
-  unsigned int frame_w{16};            // Width of the individual frames
-  unsigned int frame_h{16};            // Height of the individual frames
-};
-
-class SpriteTextureSheet {
- public:
-  explicit SpriteTextureSheet(const std::string& path);
-  ~SpriteTextureSheet();
-
-  const SpriteAnimation* GetAnimation(const std::string& name);
-
- protected:
- private:
-  PLTexture* texture_{nullptr};
-  std::unordered_map<std::string, SpriteAnimation> animations_;
-};
-
 SpriteTextureSheet::SpriteTextureSheet(const std::string& path) {
   texture_ = Display_GetDefaultTexture();
 
@@ -96,50 +74,10 @@ SpriteTextureSheet::~SpriteTextureSheet() {
   }
 }
 
-class Sprite {
- public:
-  enum SpriteType {
-    TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
-  } type_{TYPE_DEFAULT};
 
-  Sprite(SpriteType type, SpriteTextureSheet* sheet, PLVector3 position, PLColour colour, float scale);
-  ~Sprite();
 
-  float GetScale() { return scale_; }
-  void SetScale(float scale);
-
-  PLVector3 GetPosition() { return position_; }
-  void SetPosition(const PLVector3& position);
-
-  PLVector3 GetAngles() { return angles_; }
-  void SetAngles(const PLVector3& angles);
-
-  PLColour GetColour() { return colour_; }
-  void SetColour(const PLColour& colour);
-
-  const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
-  void SetAnimation(SpriteAnimation* anim);
-
-  void Tick();
-  void Draw();
-
- protected:
- private:
-  PLVector3 position_;
-  PLVector3 angles_;
-  PLColour colour_{255, 255, 255, 255};
-  float scale_{1.0f};
-
-  SpriteTextureSheet* sheet_{nullptr};
-  SpriteAnimation* current_animation_{nullptr};
-
-  unsigned int current_frame_{0};
-  double frame_delay_{0};
-};
-
-Sprite::Sprite(SpriteType type, SpriteTextureSheet* sheet, PLVector3 position, PLColour colour, float scale) :
+Sprite::Sprite(SpriteType type, SpriteTextureSheet* sheet, PLColour colour, float scale) :
     type_(type),
-    position_(position),
     colour_(colour),
     scale_(scale),
     sheet_(sheet) {

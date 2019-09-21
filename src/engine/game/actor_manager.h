@@ -56,6 +56,6 @@ class ActorManager {
 };
 
 #define register_actor(NAME, CLASS) \
-    static Actor * NAME ## _make() \
-    { return new CLASS (); } \
-    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make)
+    static Actor * NAME ## _make() { return new CLASS (); } \
+    static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) \
+    _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make) // NOLINT(cert-err58-cpp)
