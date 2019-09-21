@@ -395,7 +395,6 @@ void Terrain::LoadHeightmap(const std::string& path, int multiplier) {
   unsigned int chan_length = image.width * image.height;
 
   auto* rchan = static_cast<float*>(u_alloc(chan_length, sizeof(float), true));
-  memset(rchan, 0, chan_length);
   uint8_t* pixel = image.data[0];
   for (unsigned int i = 0; i < chan_length; ++i) {
     rchan[i] = static_cast<int>(*pixel) * multiplier; //(static_cast<int>(*pixel) - 127) * 256;
@@ -403,7 +402,6 @@ void Terrain::LoadHeightmap(const std::string& path, int multiplier) {
   }
 
   auto* gchan = static_cast<uint8_t*>(u_alloc(chan_length, sizeof(uint8_t), true));
-  memset(gchan, 0, chan_length);
   pixel = image.data[0] + 1;
   for (unsigned int i = 0; i < chan_length; ++i) {
     gchan[i] = *pixel;
@@ -433,6 +431,8 @@ void Terrain::LoadHeightmap(const std::string& path, int multiplier) {
           current_tile->shading[3] = 255;
         }
       }
+
+      max_height_ = min_height_ = current_chunk.tiles[0].height[0];
 
       // Find the maximum and minimum points
       for (auto& tile : current_chunk.tiles) {
