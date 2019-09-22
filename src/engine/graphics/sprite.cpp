@@ -17,75 +17,24 @@
 
 #include "../engine.h"
 
-#include "../script/script_config.h"
-
 #include "sprite.h"
 #include "display.h"
+#include "shader.h"
 
-/************************************************************/
-/* Sprite Implementation
- * A lot of this is slightly expanded to incorporate
- * functionality to be utilised in the future or for
- * other projects. OpenHoW probably won't be depending
- * on the animation implementation for example...
- * */
-
-SpriteTextureSheet::SpriteTextureSheet(const std::string& path) {
-  texture_ = Display_GetDefaultTexture();
-
-  try {
-    ScriptConfig sheet_data(path);
-
-    std::string filter = sheet_data.GetStringProperty("filter");
-    PLTextureFilter fmode = PL_TEXTURE_FILTER_MIPMAP_LINEAR;
-    if (filter == "linear") {
-      fmode = PL_TEXTURE_FILTER_MIPMAP_LINEAR;
-    } else if (filter == "nearest") {
-      fmode = PL_TEXTURE_FILTER_MIPMAP_NEAREST;
-    } else if (filter == "nomip linear") {
-      fmode = PL_TEXTURE_FILTER_LINEAR;
-    } else if (filter == "nomip nearest") {
-      fmode = PL_TEXTURE_FILTER_NEAREST;
-    } else if (!filter.empty()) {
-      LogWarn("Invalid filter mode \"%s\", ignoring!\n", filter.c_str());
-    }
-
-    std::string texture_path = sheet_data.GetStringProperty("texture", "", false);
-    if (!texture_path.empty()) {
-      texture_ = Display_LoadTexture(texture_path.c_str(), fmode);
-    }
-  } catch (const std::exception& e) {
-    LogWarn("Failed to load texture sheet data, using defaults...\n");
-  }
-}
-
-const SpriteAnimation* SpriteTextureSheet::GetAnimation(const std::string& name) {
-  auto animation = animations_.find(name);
-  if (animation != animations_.end()) {
-    return (&animation->second);
-  }
-
-  return nullptr;
-}
-
-SpriteTextureSheet::~SpriteTextureSheet() {
-  if (texture_ != Display_GetDefaultTexture()) {
-    plDestroyTexture(texture_, false);
-  }
-}
-
-
-
-Sprite::Sprite(SpriteType type, SpriteTextureSheet* sheet, PLColour colour, float scale) :
+Sprite::Sprite(SpriteType type, PLTexture* texture, PLColour colour, float scale) :
     type_(type),
     colour_(colour),
-    scale_(scale),
-    sheet_(sheet) {
+    scale_(scale) {
+  mesh_ = plCreateMeshRectangle(0, 0, texture->w, texture->h, colour_);
+  mesh_->texture = texture;
+
+  matrix_.Identity();
 }
 
 Sprite::~Sprite() = default;
 
 void Sprite::Tick() {
+#if 0
   if (current_animation_ == nullptr) {
     return;
   }
@@ -96,6 +45,7 @@ void Sprite::Tick() {
       current_frame_ = 0;
     }
   }
+#endif
 }
 
 void Sprite::Draw() {
@@ -103,13 +53,27 @@ void Sprite::Draw() {
     return;
   }
 
+  Shaders_SetProgram(SHADER_GenericTexturedLit);
+
+  PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
+  mrot = mrot * plRotateMatrix4(angles_.y, PLVector3(0, 1, 0));
+  mrot = mrot * plRotateMatrix4(angles_.z, PLVector3(0, 0, 1));
+  matrix_ = mrot * plTranslateMatrix4(position_);
+
+  //matrix_ = matrix_ * PLVector3(scale_, scale_, scale_);
+
+  plSetNamedShaderUniformMatrix4(NULL, "pl_model", matrix_, false);
+  plUploadMesh(mesh_);
+  plDrawMesh(mesh_);
 }
 
+#if 0
 void Sprite::SetAnimation(SpriteAnimation* anim) {
   u_assert(anim != nullptr, "Invalid pointer passed for animation!\n");
   current_frame_ = 0;
   current_animation_ = anim;
 }
+#endif
 
 void Sprite::SetScale(float scale) {
   scale_ = scale;
@@ -124,5 +88,21 @@ void Sprite::SetAngles(const PLVector3& angles) {
 }
 
 void Sprite::SetColour(const PLColour& colour) {
+  plSetMeshUniformColour(mesh_, colour);
   colour_ = colour;
+}
+
+void Sprite::SetTexture(PLTexture* texture) {
+  // a lot of this will change once the rc manager is introduced...
+
+  if(texture == mesh_->texture) {
+    return;
+  }
+
+  if(texture->w != mesh_->texture->w || texture->h != mesh_->texture->h) {
+    plDestroyMesh(mesh_);
+    mesh_ = plCreateMeshRectangle(0, 0, texture->w, texture->h, colour_);
+  }
+
+  mesh_->texture = texture;
 }

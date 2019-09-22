@@ -16,8 +16,8 @@
  */
 
 #include "../../engine.h"
-
 #include "../../graphics/sprite.h"
+#include "../../graphics/display.h"
 
 #include "../actor_manager.h"
 
@@ -34,33 +34,50 @@ class ASprite : public Actor {
   void Tick() override;
   void Draw() override;
 
-  virtual void SetSprite(const std::string& path);
+  virtual void SetSpriteTexture(const std::string& path);
+  virtual void SetSpriteTexture(PLTexture* texture);
 
  protected:
  private:
-  std::unique_ptr<Sprite> sprite_;
+  Sprite* sprite_;
 };
 
 register_actor(sprite, ASprite);
 
-ASprite::ASprite() = default;
-ASprite::~ASprite() = default;
+ASprite::ASprite() {
+  sprite_ = new Sprite(Sprite::TYPE_DEFAULT, Display_GetDefaultTexture());
+}
 
-void ASprite::SetSprite(const std::string& path) {
-  //sprite_ = new Sprite(Sprite::TYPE_DEFAULT, );
-  //sprite_->SetPosition(position_);
+ASprite::~ASprite() {
+  delete sprite_;
+}
+
+void ASprite::SetSpriteTexture(const std::string& path) {
+  // TODO: resource manager aaaahhhh!!!
+  PLTexture* texture = Display_LoadTexture(path.c_str(), PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+  sprite_->SetTexture(texture);
+}
+
+void ASprite::SetSpriteTexture(PLTexture* texture) {
+  sprite_->SetTexture(texture);
 }
 
 void ASprite::Tick() {
   Actor::Tick();
+
+  angles_.x += 0.5f;
+  angles_.y += 0.5f;
+  angles_.z += 0.5f;
+
+  sprite_->SetPosition(position_);
+  sprite_->SetAngles(angles_);
+
+  // increment animation etc.
+  sprite_->Tick();
 }
 
 void ASprite::Draw() {
   Actor::Draw();
-
-  if(sprite_ == nullptr) {
-    return;
-  }
 
   sprite_->Draw();
 }

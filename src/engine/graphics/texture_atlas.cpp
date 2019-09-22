@@ -111,6 +111,7 @@ void TextureAtlas::Finalize() {
 
   // Ensure power of two for final atlas
   h = static_cast<unsigned int>(pow(2, ceil(log(h) / log(2))));
+  w = static_cast<unsigned int>(pow(2, ceil(log(w) / log(2))));
 
   // Image pointers will be freed when we're done with textures list
   images_by_name_.clear();
@@ -125,6 +126,8 @@ void TextureAtlas::Finalize() {
   // todo: generate mipmap levels
   cache->data = (uint8_t**)u_alloc(cache->levels, sizeof(uint8_t *), true);
   cache->data[0] = (uint8_t*)u_alloc(cache->size, sizeof(uint8_t), true);
+
+  //plReplaceImageColour(cache, {0, 0, 0, 0}, {0, 0, 0, 255});
 
   for(auto& tarr : textures_) {
     Index *texture = &tarr.second;
@@ -170,10 +173,16 @@ bool TextureAtlas::GetTextureCoords(const std::string &name, float *x, float *y,
     return false;
   }
 
-  *x = static_cast<float>(index->second.x) / static_cast<float>(texture_->w);
-  *y = static_cast<float>(index->second.y) / static_cast<float>(texture_->h);
-  *w = static_cast<float>(index->second.w) / static_cast<float>(texture_->w);
-  *h = static_cast<float>(index->second.h) / static_cast<float>(texture_->h);
+  // HACK: work around texture leaking until we have a better solution!
+  int shift = 0;
+  if(texture_->filter == PL_TEXTURE_FILTER_MIPMAP_LINEAR) {
+    shift = 1;
+  }
+
+  *x = static_cast<float>(index->second.x + shift) / static_cast<float>(texture_->w);
+  *y = static_cast<float>(index->second.y + shift) / static_cast<float>(texture_->h);
+  *w = static_cast<float>(index->second.w - shift * 2) / static_cast<float>(texture_->w);
+  *h = static_cast<float>(index->second.h - shift * 2) / static_cast<float>(texture_->h);
   return true;
 }
 

@@ -17,35 +17,13 @@
 
 #pragma once
 
-struct SpriteAnimation {
-  unsigned int fps{4};                 // Frames per second
-  unsigned int h_frames{1};            // Number of frames horizontally
-  unsigned int v_frames{1};            // Number of frames vertically
-  unsigned int start_x{0}, start_y{0}; // Start offsets
-  unsigned int frame_w{16};            // Width of the individual frames
-  unsigned int frame_h{16};            // Height of the individual frames
-};
-
-class SpriteTextureSheet {
- public:
-  explicit SpriteTextureSheet(const std::string& path);
-  ~SpriteTextureSheet();
-
-  const SpriteAnimation* GetAnimation(const std::string& name);
-
- protected:
- private:
-  PLTexture* texture_{nullptr};
-  std::unordered_map<std::string, SpriteAnimation> animations_;
-};
-
 class Sprite {
  public:
   enum SpriteType {
     TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
   } type_{TYPE_DEFAULT};
 
-  Sprite(SpriteType type, SpriteTextureSheet* sheet, PLColour colour, float scale);
+  Sprite(SpriteType type, PLTexture* texture, PLColour colour = {255, 255, 255, 255}, float scale = 1.0f);
   ~Sprite();
 
   float GetScale() { return scale_; }
@@ -60,8 +38,10 @@ class Sprite {
   PLColour GetColour() { return colour_; }
   void SetColour(const PLColour& colour);
 
-  const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
-  void SetAnimation(SpriteAnimation* anim);
+  void SetTexture(PLTexture* texture);
+
+  //const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
+  //void SetAnimation(SpriteAnimation* anim);
 
   void Tick();
   void Draw();
@@ -73,9 +53,9 @@ class Sprite {
   PLColour colour_{255, 255, 255, 255};
   float scale_{1.0f};
 
-  SpriteTextureSheet* sheet_{nullptr};
-  SpriteAnimation* current_animation_{nullptr};
-
   unsigned int current_frame_{0};
   double frame_delay_{0};
+
+  PLMesh* mesh_{nullptr};
+  PLMatrix4 matrix_{};
 };

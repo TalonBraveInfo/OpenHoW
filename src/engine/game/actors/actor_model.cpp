@@ -41,9 +41,10 @@ void AModel::Draw() {
   }
 
   PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
-  mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.y, PLVector3(0, 1, 0)));
-  mrot = plMultiplyMatrix4(mrot, plRotateMatrix4(angles_.z, PLVector3(0, 0, 1)));
-  model_->model_matrix = plMultiplyMatrix4(mrot, plTranslateMatrix4(position_));
+  mrot = mrot * plRotateMatrix4(angles_.y, PLVector3(0, 1, 0));
+  mrot = mrot * plRotateMatrix4(angles_.z, PLVector3(0, 0, 1));
+  model_->model_matrix = mrot * plTranslateMatrix4(position_);
+
   plDrawModel(model_);
 }
 

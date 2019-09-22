@@ -99,6 +99,26 @@ void BaseGameMode::SpawnActors() {
     }
   }
 
+#if 1 // debug sprites...
+  for(unsigned int i = 0; i < 4096; ++i) {
+    Actor* actor = ActorManager::GetInstance()->CreateActor("sprite");
+    if(actor == nullptr) {
+      break;
+    }
+
+    actor->SetPosition({
+                    static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+                    static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+                    static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
+                });
+    actor->SetAngles({
+                  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+                  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+                  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
+              });
+  }
+#endif
+
   if(players_[0].input_target == nullptr) {
     LogWarn("No pig found in map, spawning default (debugging!!!!)\n");
     Actor* actor = ActorManager::GetInstance()->CreateActor("ac_me");
