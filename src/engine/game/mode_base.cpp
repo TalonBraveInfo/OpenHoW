@@ -99,7 +99,7 @@ void BaseGameMode::SpawnActors() {
     }
   }
 
-#if 1 // debug sprites...
+#if 0 // debug sprites...
   for(unsigned int i = 0; i < 4096; ++i) {
     Actor* actor = ActorManager::GetInstance()->CreateActor("sprite");
     if(actor == nullptr) {
