@@ -44,4 +44,11 @@ bin/debug/
 bin/release/
 
 # Ignore extracted assets 
-bin/campaigns/how/
+bin/campaigns/how/audio/
+bin/campaigns/how/chars/
+bin/campaigns/how/frontend/
+bin/campaigns/how/music/
+bin/campaigns/how/skys/
+bin/campaigns/how/speech/
+bin/campaigns/how/streams/
+bin/campaigns/how/textures/
