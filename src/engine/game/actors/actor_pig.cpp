@@ -31,6 +31,7 @@ register_actor(sp_me, APig);    // Spy
 register_actor(sn_me, APig);    // Sniper
 register_actor(sa_me, APig);    // Saboteur
 register_actor(gr_me, APig);    // Grunt
+register_actor(hv_me, APig);
 
 using namespace openhow;
 
