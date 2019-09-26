@@ -66,6 +66,8 @@ struct ActorSpawn {
   ActorSpawn* attachment{nullptr};
 };
 
+class IPhysicsBody;
+
 class Actor {
  public:
 
@@ -95,6 +97,11 @@ class Actor {
   virtual void Deactivate() { is_activated_ = false; }
   virtual bool IsActivated() { return is_activated_; }
 
+  // Physics
+  virtual void CreatePhysicsBody();
+  virtual void DestroyPhysicsBody();
+  virtual void TickPhysicsBody();
+
  protected:
   bool is_visible_{false};
 
@@ -108,6 +115,8 @@ class Actor {
 
   uint16_t team_{0};
   int16_t health_{0};
+
+  IPhysicsBody* physics_body_{nullptr};
 
   bool is_activated_{false};
 

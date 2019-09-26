@@ -47,6 +47,11 @@ file(
         script/duktape-2.2.0/*.h
 
         audio/audio.cpp
+
+        # Physics Sub-System
+        physics/*.cpp
+        physics/newton/*.cpp
+
         editor/*.*
         graphics/*.*
         script/*.*
@@ -97,6 +102,7 @@ target_include_directories(OpenHoW PUBLIC ../3rdparty/imgui/ script/duktape-2.2.
 target_link_libraries(OpenHoW
         platform
 
+        newton
         #avformat
         #avcodec
         #avutil

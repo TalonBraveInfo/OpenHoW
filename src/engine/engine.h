@@ -51,6 +51,7 @@
 #ifdef __cplusplus
 #include "audio/audio.h"
 #include "game/game.h"
+#include "physics/physics_interface.h"
 
 namespace openhow {
 class Engine {
@@ -67,10 +68,12 @@ class Engine {
   // Subsystems
   GameManager* GetGameManager() { return game_manager_; }
   AudioManager* GetAudioManager() { return audio_manager_; }
+  IPhysicsInterface* Physics() { return physics_interface_; }
 
  private:
   GameManager* game_manager_{nullptr};
   AudioManager* audio_manager_{nullptr};
+  IPhysicsInterface* physics_interface_{nullptr};
 };
 
 extern Engine* engine;
