@@ -35,7 +35,7 @@ class NTPhysicsInterface : public IPhysicsInterface {
   IPhysicsBody* CreatePhysicsBody() override;
   void DestroyPhysicsBody(IPhysicsBody* body) override;
 
-  void GenerateTerrainCollision(std::vector<PLVertex> vertices) override;
+  void GenerateTerrainCollision(std::vector<float> vertices) override;
   void DestroyTerrainCollision() override;
 
  protected:
@@ -47,6 +47,7 @@ class NTPhysicsInterface : public IPhysicsInterface {
   static void FreeMemory(void* ptr, int size);
 
   NewtonWorld* newton_world_{nullptr};
+  NewtonCollision* terrain_collision_{nullptr};
 
   friend IPhysicsInterface;
 };
@@ -91,10 +92,16 @@ void NTPhysicsInterface::DestroyPhysicsBody(IPhysicsBody* body) {
 /////////////////////////////////////////////////////////////
 // Terrain
 
-void NTPhysicsInterface::GenerateTerrainCollision(std::vector<PLVertex> vertices) {
-
+void NTPhysicsInterface::GenerateTerrainCollision(std::vector<float> vertices) {
+  const unsigned int size = 65;
+  terrain_collision_ = NewtonCreateHeightFieldCollision(
+      newton_world_,
+      size, size,
+      0, 0,
+      vertices.data(),
+      )
 }
 
 void NTPhysicsInterface::DestroyTerrainCollision() {
-
+  NewtonDestroyCollision(terrain_collision_);
 }

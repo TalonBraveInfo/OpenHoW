@@ -36,3 +36,11 @@ void Actor::Deserialize(const ActorSpawn& spawn){
   SetPosition(spawn.position);
   SetAngles(spawn.angles);
 }
+
+void Actor::TickPhysicsBody() {
+  physics_body_->Tick();
+}
+
+void Actor::CreatePhysicsBody() {
+
+}

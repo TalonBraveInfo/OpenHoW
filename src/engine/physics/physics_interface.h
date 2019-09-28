@@ -43,7 +43,7 @@ class IPhysicsInterface {
   virtual IPhysicsBody* CreatePhysicsBody() = 0;
   virtual void DestroyPhysicsBody(IPhysicsBody* body) = 0;
 
-  virtual void GenerateTerrainCollision(std::vector<PLVertex> vertices) = 0;
+  virtual void GenerateTerrainCollision(std::vector<float> vertices) = 0;
   virtual void DestroyTerrainCollision() = 0;
 
  protected:
