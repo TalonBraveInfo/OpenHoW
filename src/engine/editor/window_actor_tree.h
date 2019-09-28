@@ -17,19 +17,14 @@
 
 #pragma once
 
-#include "actor.h"
-#include "actor_model.h"
+#include "base_window.h"
 
-class AStaticModel : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
-
+class ActorTreeWindow : public BaseWindow {
  public:
-  AStaticModel();
-  ~AStaticModel() override;
+  ActorTreeWindow();
+  ~ActorTreeWindow() override;
 
-  void Draw() override;
-
-  void Deserialize(const ActorSpawn& spawn) override;
+  void Display() override;
 
  protected:
  private:

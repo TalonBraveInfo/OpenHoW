@@ -19,6 +19,8 @@
 
 #include "actors/actor.h"
 
+typedef std::set<Actor*> ActorSet;
+
 class ActorManager {
  protected:
   typedef Actor* (* actor_ctor_func)();
@@ -43,6 +45,8 @@ class ActorManager {
   void ActivateActors();
   void DeactivateActors();
 
+  const ActorSet &GetActors() const { return actors_; }
+
   class ActorClassRegistration {
    public:
     const std::string name_;
@@ -52,7 +56,7 @@ class ActorManager {
   };
 
  private:
-  static std::set<Actor*> actors_;
+  static ActorSet actors_;
 };
 
 #define REGISTER_ACTOR(NAME, CLASS) \

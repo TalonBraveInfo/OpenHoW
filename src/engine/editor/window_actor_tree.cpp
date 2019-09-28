@@ -15,22 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
+#include "window_actor_tree.h"
+#include "../game/actor_manager.h"
 
-#include "actor.h"
-#include "actor_model.h"
+using namespace openhow;
 
-class AStaticModel : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
+ActorTreeWindow::ActorTreeWindow() = default;
+ActorTreeWindow::~ActorTreeWindow() = default;
 
- public:
-  AStaticModel();
-  ~AStaticModel() override;
+void ActorTreeWindow::Display() {
+  ImGui::SetNextWindowSize(ImVec2(310, 512), ImGuiCond_Once);
+  ImGui::Begin(dname("Actor Tree"), &status_, ED_DEFAULT_WINDOW_FLAGS);
 
-  void Draw() override;
+  const ActorSet actors = ActorManager::GetInstance()->GetActors();
+  if(!actors.empty()) {
+    // blah
+  }
 
-  void Deserialize(const ActorSpawn& spawn) override;
+  ImGui::End();
+}
 
- protected:
- private:
-};

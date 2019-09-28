@@ -33,3 +33,7 @@ void AStaticModel::Deserialize(const ActorSpawn& spawn) {
     angles_.z = plDegreesToRadians(-45.f);
   }
 }
+
+void AStaticModel::Draw() {
+  SuperClass::Draw();
+}
