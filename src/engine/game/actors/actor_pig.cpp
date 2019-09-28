@@ -35,7 +35,7 @@ REGISTER_ACTOR(hv_me, APig)
 
 using namespace openhow;
 
-APig::APig() : AAnimatedModel() {}
+APig::APig() : SuperClass() {}
 APig::~APig() = default;
 
 void APig::HandleInput() {
@@ -78,6 +78,8 @@ void APig::HandleInput() {
 }
 
 void APig::Tick() {
+  SuperClass::Tick();
+
   position_.x += input_forward * 100.0f * g_state.camera->forward.x;
   position_.y += input_forward * 100.0f * g_state.camera->forward.y;
   position_.z += input_forward * 100.0f * g_state.camera->forward.z;
@@ -103,7 +105,7 @@ void APig::SetClass(int pclass) {
 }
 
 void APig::Deserialize(const ActorSpawn& spawn) {
-  AAnimatedModel::Deserialize(spawn);
+  SuperClass::Deserialize(spawn);
 
   SetModel("pigs/ac_hi");
 }

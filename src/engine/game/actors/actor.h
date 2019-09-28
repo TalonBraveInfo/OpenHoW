@@ -66,6 +66,8 @@ struct ActorSpawn {
   ActorSpawn* attachment{nullptr};
 };
 
+#define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
+
 class Actor {
  public:
 
@@ -74,6 +76,8 @@ class Actor {
 
   virtual void Tick() {}  // simulation tick, called per-frame
   virtual void Draw() {}  // draw tick, called per-frame
+
+  virtual void AddHealth(int health);
 
   //virtual bool Possess(Player* player);
   //virtual bool Depossess(Player* player);

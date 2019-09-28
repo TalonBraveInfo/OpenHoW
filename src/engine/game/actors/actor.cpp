@@ -36,3 +36,7 @@ void Actor::Deserialize(const ActorSpawn& spawn){
   SetPosition(spawn.position);
   SetAngles(spawn.angles);
 }
+
+void Actor::AddHealth(int health) {
+  health_ += health;
+}

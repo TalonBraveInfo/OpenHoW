@@ -16,16 +16,18 @@
  */
 
 #include "../../engine.h"
-
 #include "../actor_manager.h"
 #include "actor_item.h"
+#include "actor_pig.h"
 
 class AItemHealth : public AItem {
+  ACTOR_IMPLEMENT_SUPER(AItem)
+
  public:
   AItemHealth();
   ~AItemHealth() override;
 
-  void PickUp(const Actor* other) override;
+  void PickUp(Actor* other) override;
 
  protected:
  private:
@@ -35,14 +37,19 @@ REGISTER_ACTOR(crate2, AItemHealth)
 
 using namespace openhow;
 
-AItemHealth::AItemHealth() : AItem() {
-
-}
-
+AItemHealth::AItemHealth() : SuperClass() {}
 AItemHealth::~AItemHealth() = default;
 
-void AItemHealth::PickUp(const Actor* other) {
-  AItem::PickUp(other);
+void AItemHealth::PickUp(Actor* other) {
+  SuperClass::PickUp(other);
+
+  APig* pig = dynamic_cast<APig*>(other);
+  if(pig == nullptr) {
+    // only pigs should be able to pick these up!
+    return;
+  }
+
+  pig->AddHealth(item_quantity_);
 
   // may want to introduce networking logic here for actor destruction
   // hence why it's done this way for now

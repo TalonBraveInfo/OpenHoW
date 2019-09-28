@@ -20,20 +20,22 @@
 #include "actor_model.h"
 
 class AItem : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
+
  public:
   AItem();
   ~AItem() override;
 
   void Deserialize(const ActorSpawn& spawn) override;
 
-  virtual void PickUp(const Actor* other);
+  virtual void PickUp(Actor* other);
 
   // Information for frontend
   virtual std::string GetInventoryDescription() const { return "invalid"; }
   virtual PLTexture* GetInventoryIcon();
 
  protected:
-  unsigned int item_quantity_{1};
+  int item_quantity_{0};
 
   enum ItemIdent {
     ITEM_NONE,

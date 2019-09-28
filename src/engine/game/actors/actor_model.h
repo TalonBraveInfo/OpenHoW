@@ -20,6 +20,8 @@
 #include "actor.h"
 
 class AModel : public Actor {
+  ACTOR_IMPLEMENT_SUPER(Actor)
+
  public:
   AModel();
   ~AModel() override;

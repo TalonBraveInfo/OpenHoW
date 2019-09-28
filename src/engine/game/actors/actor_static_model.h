@@ -21,6 +21,8 @@
 #include "actor_model.h"
 
 class AStaticModel : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
+
  public:
   AStaticModel();
   ~AStaticModel() override;

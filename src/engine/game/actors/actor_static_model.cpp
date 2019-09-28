@@ -21,11 +21,11 @@
 
 REGISTER_ACTOR(static_model, AStaticModel);
 
-AStaticModel::AStaticModel() : AModel() {}
+AStaticModel::AStaticModel() : SuperClass() {}
 AStaticModel::~AStaticModel() = default;
 
 void AStaticModel::Deserialize(const ActorSpawn& spawn) {
-  Actor::Deserialize(spawn);
+  SuperClass::Deserialize(spawn);
 
   SetModel("scenery/" + spawn.class_name);
 

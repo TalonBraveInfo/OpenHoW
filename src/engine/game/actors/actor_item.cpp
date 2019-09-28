@@ -27,14 +27,14 @@ struct ItemSpawnIndex {
 
 };
 
-AItem::AItem() : AModel() {}
+AItem::AItem() : SuperClass() {}
 AItem::~AItem() = default;
 
 void AItem::Deserialize(const ActorSpawn& spawn) {
-  AModel::Deserialize(spawn);
+  SuperClass::Deserialize(spawn);
 }
 
-void AItem::PickUp(const Actor* other) {
+void AItem::PickUp(Actor* other) {
   u_assert(other != nullptr);
 }
 

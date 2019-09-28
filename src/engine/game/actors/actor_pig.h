@@ -21,6 +21,8 @@
 #include "actor_animated_model.h"
 
 class APig : public AAnimatedModel {
+  ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
+
  public:
   APig();
   ~APig() override;

@@ -21,11 +21,11 @@
 
 using namespace openhow;
 
-AModel::AModel() : Actor() {}
+AModel::AModel() : SuperClass() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
-  Actor::Draw();
+  SuperClass::Draw();
 
   if(model_ == nullptr) {
     return;

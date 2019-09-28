@@ -20,9 +20,14 @@
 #include "actor_item.h"
 
 class AWeapon : public AItem {
+  ACTOR_IMPLEMENT_SUPER(AItem)
+
  public:
+  AWeapon();
+  ~AWeapon() override;
 
   virtual void Fire(const PLVector3& pos, const PLVector3& dir);
+  virtual void Deploy() {}
 
  protected:
  private:

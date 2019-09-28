@@ -16,9 +16,10 @@
  */
 
 #include "../../engine.h"
-#include "../actor_manager.h"
-
 #include "actor_weapon.h"
+
+AWeapon::AWeapon() : SuperClass() {}
+AWeapon::~AWeapon() = default;
 
 void AWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
 
