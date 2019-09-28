@@ -42,7 +42,7 @@ class ASprite : public Actor {
   Sprite* sprite_;
 };
 
-register_actor(sprite, ASprite);
+REGISTER_ACTOR(sprite, ASprite)
 
 ASprite::ASprite() {
   sprite_ = new Sprite(Sprite::TYPE_DEFAULT, Display_GetDefaultTexture());

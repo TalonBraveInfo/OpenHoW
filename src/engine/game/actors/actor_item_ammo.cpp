@@ -15,22 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../engine.h"
 
-// Legacy / Prototyping
+#include "actor_item.h"
 
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
+class AItemAmmo : public AItem {
 
-enum TeamType {
-  TEAM_BRITISH,
-  TEAM_AMERICAN,
-  TEAM_FRENCH,
-  TEAM_GERMAN,
-  TEAM_RUSSIAN,
-  TEAM_JAPAN,
-  TEAM_LARD,
-
-  MAX_TEAMS
 };

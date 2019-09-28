@@ -23,15 +23,15 @@
 #include "../actor_manager.h"
 #include "actor_pig.h"
 
-register_actor(ac_me, APig);    // Ace
-register_actor(le_me, APig);    // Legend
-register_actor(me_me, APig);    // Medic
-register_actor(sb_me, APig);    // Commando
-register_actor(sp_me, APig);    // Spy
-register_actor(sn_me, APig);    // Sniper
-register_actor(sa_me, APig);    // Saboteur
-register_actor(gr_me, APig);    // Grunt
-register_actor(hv_me, APig);
+REGISTER_ACTOR(ac_me, APig)    // Ace
+REGISTER_ACTOR(le_me, APig)    // Legend
+REGISTER_ACTOR(me_me, APig)    // Medic
+REGISTER_ACTOR(sb_me, APig)    // Commando
+REGISTER_ACTOR(sp_me, APig)    // Spy
+REGISTER_ACTOR(sn_me, APig)    // Sniper
+REGISTER_ACTOR(sa_me, APig)    // Saboteur
+REGISTER_ACTOR(gr_me, APig)    // Grunt
+REGISTER_ACTOR(hv_me, APig)
 
 using namespace openhow;
 

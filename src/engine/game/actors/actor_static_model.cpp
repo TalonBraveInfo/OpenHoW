@@ -19,7 +19,7 @@
 #include "../actor_manager.h"
 #include "actor_static_model.h"
 
-register_actor(static_model, AStaticModel);
+REGISTER_ACTOR(static_model, AStaticModel);
 
 AStaticModel::AStaticModel() : AModel() {}
 AStaticModel::~AStaticModel() = default;

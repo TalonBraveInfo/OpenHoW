@@ -17,20 +17,13 @@
 
 #pragma once
 
-// Legacy / Prototyping
+#include "actor_item.h"
 
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
+class AWeapon : public AItem {
+ public:
 
-enum TeamType {
-  TEAM_BRITISH,
-  TEAM_AMERICAN,
-  TEAM_FRENCH,
-  TEAM_GERMAN,
-  TEAM_RUSSIAN,
-  TEAM_JAPAN,
-  TEAM_LARD,
+  virtual void Fire(const PLVector3& pos, const PLVector3& dir);
 
-  MAX_TEAMS
+ protected:
+ private:
 };

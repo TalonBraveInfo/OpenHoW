@@ -15,22 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../engine.h"
+#include "../actor_manager.h"
 
-// Legacy / Prototyping
+#include "actor_weapon.h"
 
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
+void AWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
 
-enum TeamType {
-  TEAM_BRITISH,
-  TEAM_AMERICAN,
-  TEAM_FRENCH,
-  TEAM_GERMAN,
-  TEAM_RUSSIAN,
-  TEAM_JAPAN,
-  TEAM_LARD,
-
-  MAX_TEAMS
-};
+}

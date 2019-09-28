@@ -15,22 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../engine.h"
 
-// Legacy / Prototyping
+#include "../actor_manager.h"
+#include "actor_item.h"
 
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
+class AItemHealth : public AItem {
+ public:
+  AItemHealth();
+  ~AItemHealth() override;
 
-enum TeamType {
-  TEAM_BRITISH,
-  TEAM_AMERICAN,
-  TEAM_FRENCH,
-  TEAM_GERMAN,
-  TEAM_RUSSIAN,
-  TEAM_JAPAN,
-  TEAM_LARD,
+  void PickUp(const Actor* other) override;
 
-  MAX_TEAMS
+ protected:
+ private:
 };
+
+REGISTER_ACTOR(crate2, AItemHealth)
+
+using namespace openhow;
+
+AItemHealth::AItemHealth() : AItem() {
+
+}
+
+AItemHealth::~AItemHealth() = default;
+
+void AItemHealth::PickUp(const Actor* other) {
+  AItem::PickUp(other);
+
+  // may want to introduce networking logic here for actor destruction
+  // hence why it's done this way for now
+  ActorManager::GetInstance()->DestroyActor(this);
+}

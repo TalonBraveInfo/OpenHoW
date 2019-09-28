@@ -15,22 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../engine.h"
+#include "../../graphics/display.h"
+#include "../actor_manager.h"
 
-// Legacy / Prototyping
+#include "actor_item.h"
 
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
+using namespace openhow;
 
-enum TeamType {
-  TEAM_BRITISH,
-  TEAM_AMERICAN,
-  TEAM_FRENCH,
-  TEAM_GERMAN,
-  TEAM_RUSSIAN,
-  TEAM_JAPAN,
-  TEAM_LARD,
+struct ItemSpawnIndex {
 
-  MAX_TEAMS
 };
+
+AItem::AItem() : AModel() {}
+AItem::~AItem() = default;
+
+void AItem::Deserialize(const ActorSpawn& spawn) {
+  AModel::Deserialize(spawn);
+}
+
+void AItem::PickUp(const Actor* other) {
+  u_assert(other != nullptr);
+}
+
+PLTexture* AItem::GetInventoryIcon() {
+  return Display_GetDefaultTexture();
+}
