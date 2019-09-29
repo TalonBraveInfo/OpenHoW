@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <PL/platform_graphics_camera.h>
-
 #define MIN_DISPLAY_WIDTH   640
 #define MIN_DISPLAY_HEIGHT  480
 
@@ -26,8 +24,6 @@ typedef struct VideoPreset{
     int width;
     int height;
 } VideoPreset;
-
-PL_EXTERN_C
 
 void Display_Initialize(void);
 void Display_Shutdown(void);
@@ -57,5 +53,3 @@ PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter);
 
 extern const char *supported_model_formats[];
 extern const char *supported_image_formats[];
-
-PL_EXTERN_C_END

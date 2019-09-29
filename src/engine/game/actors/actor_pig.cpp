@@ -39,8 +39,8 @@ APig::APig() : SuperClass() {}
 APig::~APig() = default;
 
 void APig::HandleInput() {
-  IGameMode* mode = openhow::engine->GetGameManager()->GetMode();
-  if(mode == nullptr) {
+  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
+  if (mode == nullptr) {
     return;
   }
 
@@ -80,15 +80,16 @@ void APig::HandleInput() {
 void APig::Tick() {
   SuperClass::Tick();
 
-  position_.x += input_forward * 100.0f * g_state.camera->forward.x;
-  position_.y += input_forward * 100.0f * g_state.camera->forward.y;
-  position_.z += input_forward * 100.0f * g_state.camera->forward.z;
+  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  position_.x += input_forward * 100.0f * camera->GetForward().x;
+  position_.y += input_forward * 100.0f * camera->GetForward().y;
+  position_.z += input_forward * 100.0f * camera->GetForward().z;
 
   angles_.x += input_pitch * 2.0f;
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map* map = engine->GetGameManager()->GetCurrentMap();
+  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
@@ -107,19 +108,37 @@ void APig::SetClass(int pclass) {
 void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
-  switch(pclass_) {
-    default: Error("Unknown pig class, \"%d\", aborting!\n");
-    case CLASS_ACE:break;
-    case CLASS_LEGEND:break;
-    case CLASS_MEDIC:break;
-    case CLASS_COMMANDO:break;
+#if 0
+  std::string model_path;
+  switch (pclass_) {
+    default:
+      LogWarn("Unknown pig class, \"%d\", destroying!\n");
+      ActorManager::GetInstance()->DestroyActor(this);
+      break;
+
+    case CLASS_ACE:
+      model_path = "pigs/ac_hi";
+      break;
+    case CLASS_LEGEND:
+      model_path = "pigs/le_hi";
+      break;
+    case CLASS_MEDIC:
+      model_path = "pigs/me_hi";
+      break;
+    case CLASS_COMMANDO:
+      model_path = "pigs/"
+      break;
     case CLASS_SPY:break;
     case CLASS_SNIPER:break;
     case CLASS_SABOTEUR:break;
     case CLASS_HEAVY:break;
     case CLASS_GRUNT:break;
   }
-  SetModel("pigs/ac_hi");
+
+  if (!model_path.empty()) {
+    SetModel(model_path);
+  }
+#endif
 }
 
 bool APig::Possessed(const Player* player) {

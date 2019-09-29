@@ -31,7 +31,7 @@ void AModel::Draw() {
     return;
   }
 
-  Player* player = engine->GetGameManager()->GetMode()->GetCurrentPlayer();
+  Player* player = Engine::GameManagerInstance()->GetMode()->GetCurrentPlayer();
   if(player != nullptr && player->input_target == this) {
     return;
   }

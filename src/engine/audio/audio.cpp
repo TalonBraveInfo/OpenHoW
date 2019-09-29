@@ -84,7 +84,7 @@ AudioSource::AudioSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel
   alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
   OALCheckErrors();
 
-  if (reverb && engine->GetAudioManager()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
+  if (reverb && Engine::AudioManagerInstance()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
     alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
     OALCheckErrors();
   }
@@ -93,7 +93,7 @@ AudioSource::AudioSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel
     SetSample(sample);
   }
 
-  engine->GetAudioManager()->sources_.insert(this);
+  Engine::AudioManagerInstance()->sources_.insert(this);
 }
 
 AudioSource::~AudioSource() {
@@ -107,7 +107,7 @@ AudioSource::~AudioSource() {
   alSourcei(al_source_id_, AL_BUFFER, 0);
   alDeleteSources(1, &al_source_id_);
 
-  engine->GetAudioManager()->sources_.erase(this);
+  Engine::AudioManagerInstance()->sources_.erase(this);
 }
 
 void AudioSource::SetSample(const AudioSample *sample) {
@@ -417,9 +417,11 @@ AudioSource *AudioManager::CreateSource(const AudioSample *sample, PLVector3 pos
 
 void AudioManager::Tick() {
   PLVector3 position = {0, 0, 0}, angles = {0, 0, 0};
-  if (FrontEnd_GetState() == FE_MODE_GAME) {
-    position = g_state.camera->position;
-    angles = g_state.camera->angles;
+
+  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  if (FrontEnd_GetState() == FE_MODE_GAME && camera != nullptr) {
+    position = camera->GetPosition();
+    angles = camera->GetAngles();
   }
 
   PLVector3 forward, left, up;
@@ -586,19 +588,14 @@ void AudioManager::SetMusicVolume(float gain) {
 }
 
 void AudioManager::SetMusicVolumeCommand(const PLConsoleVariable *var) {
-  engine->GetAudioManager()->SetMusicVolume(var->f_value);
+  Engine::AudioManagerInstance()->SetMusicVolume(var->f_value);
 }
 
 void AudioManager::StopMusicCommand(unsigned int argc, char *argv[]) {
   u_unused(argc);
   u_unused(argv);
 
-  engine->GetAudioManager()->StopMusic();
-}
-
-// Temporary interface, since graphics sub-system is written in C :^)
-extern "C" void DrawAudioSources(void) {
-  engine->GetAudioManager()->DrawSources();
+  Engine::AudioManagerInstance()->StopMusic();
 }
 
 /************************************************************/

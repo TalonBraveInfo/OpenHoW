@@ -185,7 +185,7 @@ void UI_DisplayNewGame() {
   );
 
   ImGui::ListBoxHeader("Maps");
-  GameManager::MapManifestMap maps = openhow::engine->GetGameManager()->GetMapManifests();
+  GameManager::MapManifestMap maps = openhow::Engine::GameManagerInstance()->GetMapManifests();
   if (!maps.empty()) {
     {
       ImGui::Selectable("Selected", true);
@@ -197,7 +197,7 @@ void UI_DisplayNewGame() {
   ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
 
   if (ImGui::Button("Start Game!")) {
-    openhow::engine->GetGameManager()->LoadMap("camp");
+    openhow::Engine::GameManagerInstance()->LoadMap("camp");
     show_new_game = false;
   }
   ImGui::SameLine();
@@ -326,7 +326,7 @@ void UI_DisplayFileBox() {
           } break;
 
           case FILE_TYPE_AUDIO: {
-            engine->GetAudioManager()->PlayGlobalSound(i.path);
+            Engine::AudioManagerInstance()->PlayGlobalSound(i.path);
           } break;
 
           default:break;
@@ -400,8 +400,9 @@ class ConsoleWindow : public BaseWindow {
   }
 
   void Display() override {
-    ImGui::SetNextWindowSize(ImVec2(Display_GetViewportWidth(&g_state.camera->viewport) - 20, 128), ImGuiCond_Once);
-    ImGui::SetNextWindowPos(ImVec2(10, Display_GetViewportHeight(&g_state.camera->viewport) - 138));
+    Camera* camera = Engine::GameManagerInstance()->GetCamera();
+    ImGui::SetNextWindowSize(ImVec2((float)(camera->GetViewportWidth()) - 20, 128), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10, (float)(camera->GetViewportHeight()) - 138));
     ImGui::Begin("Console", &show_console);
     if (ImGui::InputText("", input_buf_, 256, ImGuiInputTextFlags_EnterReturnsTrue) && input_buf_[0] != '\0') {
       SendCommand();
@@ -528,7 +529,7 @@ void UI_DisplayDebugMenu(void) {
     // todo: eventually this will be moved into a dedicated toolbar
     if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Particle Editor...")) {}
-      if (engine->GetGameManager()->GetCurrentMap() != nullptr) {
+      if (Engine::GameManagerInstance()->GetCurrentMap() != nullptr) {
         if(ImGui::MenuItem("Import Heightmap...")) {
           windows.push_back(new WindowTerrainImport());
         }

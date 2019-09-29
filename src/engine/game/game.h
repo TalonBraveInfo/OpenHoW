@@ -20,6 +20,7 @@
 #include "TempGame.h"
 #include "actors/actor.h"
 #include "mode_interface.h"
+#include "../graphics/camera.h"
 
 struct Player {
   std::string name; // Name of the player/team
@@ -80,6 +81,8 @@ class GameManager {
  public:
   void Tick();
 
+  Camera* GetCamera() { return camera_; }
+
   // Map
 
   void LoadMap(const std::string& name);
@@ -107,6 +110,8 @@ class GameManager {
   static void MapCommand(unsigned int argc, char* argv[]);
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
+
+  Camera* camera_{nullptr};
 
   IGameMode* active_mode_{nullptr};
   Map* active_map_{nullptr};
