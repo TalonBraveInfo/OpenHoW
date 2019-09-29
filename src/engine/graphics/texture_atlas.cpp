@@ -23,7 +23,7 @@
 using namespace openhow;
 
 TextureAtlas::TextureAtlas(int w, int h) : width_(w), height_(h) {
-  texture_ = Engine::ResourceManagerInstace()->GetFallbackTexture();
+  texture_ = Engine::ResourceManagerInstance()->GetFallbackTexture();
 }
 
 TextureAtlas::~TextureAtlas() {
@@ -33,7 +33,7 @@ TextureAtlas::~TextureAtlas() {
     id.second = nullptr;
   }
 
-  if(texture_ != Engine::ResourceManagerInstace()->GetFallbackTexture()) {
+  if(texture_ != Engine::ResourceManagerInstance()->GetFallbackTexture()) {
     // TODO: reintroduce once we have a wrapper around PLModel to hold this!
     //plDestroyTexture(texture_, true);
   }

@@ -68,7 +68,7 @@ class Engine {
   static GameManager* GameManagerInstance() {
     return engine->game_manager_;
   }
-  static ResourceManager* ResourceManagerInstace() {
+  static ResourceManager* ResourceManagerInstance() {
     return engine->resource_manager_;
   }
 

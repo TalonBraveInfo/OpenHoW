@@ -20,7 +20,7 @@
 class TextureViewer : public BaseWindow {
  public:
   explicit TextureViewer(const std::string &path) {
-    texture_ = openhow::Engine::ResourceManagerInstace()->LoadTexture(path, PL_TEXTURE_FILTER_LINEAR);
+    texture_ = openhow::Engine::ResourceManagerInstance()->LoadTexture(path, PL_TEXTURE_FILTER_LINEAR);
     if (texture_ == nullptr) {
       throw std::runtime_error("Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!");
     }
@@ -38,7 +38,7 @@ class TextureViewer : public BaseWindow {
     }
 
     plDestroyTexture(texture_, true);
-    texture_ = openhow::Engine::ResourceManagerInstace()->LoadTexture(texture_path, filter_mode);
+    texture_ = openhow::Engine::ResourceManagerInstance()->LoadTexture(texture_path, filter_mode);
     filter_mode_ = filter_mode;
   }
 

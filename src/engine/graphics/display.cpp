@@ -46,7 +46,7 @@ static PLConsoleVariable* cv_display_show_camerapos;
 static PLConsoleVariable* cv_display_show_viewportinfo;
 
 PLTexture* Display_GetDefaultTexture() {
-  return Engine::ResourceManagerInstace()->GetFallbackTexture();
+  return Engine::ResourceManagerInstance()->GetFallbackTexture();
 }
 
 #if 0

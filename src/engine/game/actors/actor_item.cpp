@@ -113,5 +113,5 @@ void AItem::PickUp(Actor* other) {
 }
 
 PLTexture* AItem::GetInventoryIcon() {
-  return Engine::ResourceManagerInstace()->GetFallbackTexture();
+  return Engine::ResourceManagerInstance()->GetFallbackTexture();
 }

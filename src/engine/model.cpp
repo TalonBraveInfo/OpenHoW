@@ -83,7 +83,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     Vtx_DestroyHandle(vtx);
     Fac_DestroyHandle(fac);
 
-    mesh->texture = Engine::ResourceManagerInstace()->GetFallbackTexture();
+    mesh->texture = Engine::ResourceManagerInstance()->GetFallbackTexture();
 
     PLModel* model = plCreateBasicStaticModel(mesh);
     if (model == nullptr) {
