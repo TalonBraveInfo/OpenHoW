@@ -15,32 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "actor.h"
+#pragma once
 
-Actor::Actor() = default;
-Actor::~Actor() = default;
+#include "actor_model.h"
 
-void Actor::SetAngles(PLVector3 angles) {
-  VecAngleClamp(&angles);
-  old_angles_ = angles_;
-  angles_ = angles;
-}
+class AVehicle : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
 
-void Actor::SetPosition(PLVector3 position) {
-  old_position_ = position_;
-  position_ = position;
-}
+ public:
+  AVehicle();
+  ~AVehicle();
 
-void Actor::Deserialize(const ActorSpawn& spawn){
-  SetPosition(spawn.position);
-  SetAngles(spawn.angles);
-}
+  virtual void Occupy(Actor* occupant);
+  virtual void Unoccupy();
 
-void Actor::AddHealth(int health) {
-  if(health <= 0) {
-    return;
-  }
-
-  health_ += health;
-}
+ protected:
+ private:
+};

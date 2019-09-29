@@ -27,6 +27,56 @@
 
 using namespace openhow;
 
+std::string MapManifest::Serialize() {
+  std::stringstream output;
+  output << "{";
+  output << R"("name":")" << name << "\",";
+  output << R"("author":")" << author << "\",";
+  output << R"("description":")" << description << "\",";
+  if (!modes.empty()) {
+    output << R"("modes":[)";
+    for (size_t i = 0; i < modes.size(); ++i) {
+      output << "\"" << modes[i] << "\"";
+      if (i != modes.size() - 1) {
+        output << ",";
+      }
+    }
+    output << "],";
+  }
+  output << R"("ambientColour":")" <<
+         std::to_string(ambient_colour.r) << " " <<
+         std::to_string(ambient_colour.g) << " " <<
+         std::to_string(ambient_colour.b) << "\",";
+  output << R"("skyColourTop":")" <<
+         std::to_string(sky_colour_top.r) << " " <<
+         std::to_string(sky_colour_top.g) << " " <<
+         std::to_string(sky_colour_top.b) << "\",";
+  output << R"("skyColourBottom":")" <<
+         std::to_string(sky_colour_bottom.r) << " " <<
+         std::to_string(sky_colour_bottom.g) << " " <<
+         std::to_string(sky_colour_bottom.b) << "\",";
+  output << R"("sunColour":")" <<
+         std::to_string(sun_colour.r) << " " <<
+         std::to_string(sun_colour.g) << " " <<
+         std::to_string(sun_colour.b) << "\",";
+  output << R"("sunYaw":")" << std::to_string(sun_yaw) << "\",";
+  output << R"("sunPitch":")" << std::to_string(sun_pitch) << "\",";
+  output << R"("temperature":")" << temperature << "\",";
+  output << R"("weather":")" << weather << "\",";
+  output << R"("time":")" << time << "\",";
+  // Fog
+  output << R"("fogColour":")" <<
+         std::to_string(fog_colour.r) << " " <<
+         std::to_string(fog_colour.g) << " " <<
+         std::to_string(fog_colour.b) << "\",";
+  output << R"("fogIntensity":")" << std::to_string(fog_intensity) << "\",";
+  output << R"("fogDistance":")" << std::to_string(fog_distance) << "\"";
+  output << "}\n";
+  return output.str();
+}
+
+/////////////////////////////////////////////////////////////
+
 GameManager::GameManager() {
   plRegisterConsoleCommand("createmap", CreateMapCommand, "");
   plRegisterConsoleCommand("map", MapCommand, "");

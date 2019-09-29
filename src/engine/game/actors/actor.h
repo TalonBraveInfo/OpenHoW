@@ -79,9 +79,6 @@ class Actor {
 
   virtual void AddHealth(int health);
 
-  //virtual bool Possess(Player* player);
-  //virtual bool Depossess(Player* player);
-
   virtual bool IsVisible() { return is_visible_; }
 
   virtual PLVector3 GetPosition() { return position_; }
@@ -92,7 +89,7 @@ class Actor {
 
   virtual void HandleInput() {}   // handle any player input, if applicable
 
-//  virtual ActorSpawn Serialize() {}
+  virtual ActorSpawn Serialize() { return ActorSpawn(); }
   virtual void Deserialize(const ActorSpawn& spawn);
 
   virtual void Activate() { is_activated_ = true; }
@@ -106,6 +103,8 @@ class Actor {
   PLVector3 fallback_position_{0, 0, 0};
   PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
   PLVector3 bounds_{0, 0, 0};
+
+  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
 
  private:
   uint16_t flags_{0};

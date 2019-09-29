@@ -16,31 +16,7 @@
  */
 
 #include "../../engine.h"
-#include "actor.h"
+#include "../actor_manager.h"
+#include "actor_vehicle.h"
 
-Actor::Actor() = default;
-Actor::~Actor() = default;
 
-void Actor::SetAngles(PLVector3 angles) {
-  VecAngleClamp(&angles);
-  old_angles_ = angles_;
-  angles_ = angles;
-}
-
-void Actor::SetPosition(PLVector3 position) {
-  old_position_ = position_;
-  position_ = position;
-}
-
-void Actor::Deserialize(const ActorSpawn& spawn){
-  SetPosition(spawn.position);
-  SetAngles(spawn.angles);
-}
-
-void Actor::AddHealth(int health) {
-  if(health <= 0) {
-    return;
-  }
-
-  health_ += health;
-}

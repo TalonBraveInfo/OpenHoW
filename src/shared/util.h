@@ -40,18 +40,14 @@ enum LogLevel {
 #define LogInfo(...)    _print_w_function(LOG_LEVEL_DEFAULT, __VA_ARGS__)
 #define LogWarn(...)    _print_w_function(LOG_LEVEL_WARNING, __VA_ARGS__)
 #if !defined(COMPILE_ENGINE)
-#define Error(...) {                                            \
-        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+#define Error(...) _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__); \
         u_assert(0, __VA_ARGS__);                                   \
-        exit(EXIT_FAILURE);                                         \
-    }
+        exit(EXIT_FAILURE)
 #else
-#define Error(...) {                                            \
-        _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__);            \
+#define Error(...) _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__); \
         u_assert(0, __VA_ARGS__);                                   \
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
-        exit(EXIT_FAILURE);                                         \
-    }
+        System_Shutdown()
 #endif
 
 typedef unsigned int uint;

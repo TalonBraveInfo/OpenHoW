@@ -29,14 +29,14 @@
 #include "graphics/mesh.h"
 
 struct {
-  HirHandle *pig_skeleton;
+  HirHandle* pig_skeleton;
 
   Animation animations[MAX_ANIMATIONS];
   unsigned int num_animations;
 } model_cache;
 
-static PLModel *Model_LoadVtxFile(const char *path) {
-  VtxHandle *vtx = Vtx_LoadFile(path);
+static PLModel* Model_LoadVtxFile(const char* path) {
+  VtxHandle* vtx = Vtx_LoadFile(path);
   if (vtx == nullptr) {
     LogWarn("Failed to load Vtx, \"%s\"!\n", path);
     return nullptr;
@@ -47,17 +47,17 @@ static PLModel *Model_LoadVtxFile(const char *path) {
   strncpy(fac_path, path, strlen(path) - 3);
   fac_path[strlen(path) - 3] = '\0';
   strcat(fac_path, "fac");
-  FacHandle *fac = Fac_LoadFile(fac_path);
+  FacHandle* fac = Fac_LoadFile(fac_path);
   if (fac == nullptr) {
     Vtx_DestroyHandle(vtx);
     LogWarn("Failed to load Fac, \"%s\"!\n", path);
     return nullptr;
   }
 
-  const char *filename = plGetFileName(path);
+  const char* filename = plGetFileName(path);
   // skydome is a special case, since we don't care about textures...
   if (pl_strcasecmp(filename, "skydome.vtx") == 0 || pl_strcasecmp(filename, "skydomeu.vtx") == 0) {
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, fac->num_triangles, vtx->num_vertices);
+    PLMesh* mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, fac->num_triangles, vtx->num_vertices);
     if (mesh == nullptr) {
       Vtx_DestroyHandle(vtx);
       Fac_DestroyHandle(fac);
@@ -83,7 +83,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
 
     mesh->texture = Display_GetDefaultTexture();
 
-    PLModel *model = plCreateBasicStaticModel(mesh);
+    PLModel* model = plCreateBasicStaticModel(mesh);
     if (model == nullptr) {
       LogWarn("Failed to create model (%s)!\n", plGetError());
       return nullptr;
@@ -103,14 +103,14 @@ static PLModel *Model_LoadVtxFile(const char *path) {
       std::string str = path;
       size_t pos = str.find_last_of('/');
       std::string texture_path = str.erase(pos) + "/";
-      if(!atlas.AddImage(texture_path + fac->texture_table[i].name + ".png", true)) {
+      if (!atlas.AddImage(texture_path + fac->texture_table[i].name + ".png", true)) {
         LogWarn("Failed to add texture \"%s\" to atlas!\n", fac->texture_table[i].name);
       }
     }
     atlas.Finalize();
   }
 
-  PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, fac->num_triangles * 3);
+  PLMesh* mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, fac->num_triangles * 3);
   if (mesh == nullptr) {
     Vtx_DestroyHandle(vtx);
     Fac_DestroyHandle(fac);
@@ -144,11 +144,11 @@ static PLModel *Model_LoadVtxFile(const char *path) {
                               next_vtx_i - 2,
                               next_vtx_i - 3
 
-                              /*
-                              next_vtx_i - 3,
-                              next_vtx_i - 2,
-                              next_vtx_i - 1
-                               */
+        /*
+        next_vtx_i - 3,
+        next_vtx_i - 2,
+        next_vtx_i - 1
+         */
     );
 
     if (fac->texture_table != nullptr) {
@@ -168,7 +168,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
     }
   }
 
-  std::list<PLMesh *> meshes(&mesh, &mesh + 1);
+  std::list<PLMesh*> meshes(&mesh, &mesh + 1);
   Mesh_GenerateFragmentedMeshNormals(meshes);
 
 #if 0
@@ -177,7 +177,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
   memcpy(skeleton, model_cache.pig_skeleton->bones, sizeof(PLModelBone) * model_cache.pig_skeleton->num_bones);
   PLModel *model = plCreateBasicSkeletalModel(mesh, skeleton, model_cache.pig_skeleton->num_bones, BONE_INDEX_PELVIS);
 #else
-  PLModel *model = plCreateBasicStaticModel(mesh);
+  PLModel* model = plCreateBasicStaticModel(mesh);
 #endif
   if (model == nullptr) {
     LogWarn("Failed to create model (%s)!\n", plGetError());
@@ -189,7 +189,7 @@ static PLModel *Model_LoadVtxFile(const char *path) {
   return model;
 }
 
-PLModel *Model_LoadMinFile(const char *path) {
+PLModel* Model_LoadMinFile(const char* path) {
   u_assert(0, "TODO");
   return nullptr;
 }
@@ -377,7 +377,7 @@ void DEBUGDrawSkeleton() {
     return;
   }
 
-  static PLMesh *skeleton_mesh = nullptr;
+  static PLMesh* skeleton_mesh = nullptr;
   if (skeleton_mesh == nullptr) {
     skeleton_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, model_cache.pig_skeleton->num_bones * 2);
   }
@@ -406,7 +406,7 @@ void DEBUGDrawSkeleton() {
   }
 
   for (unsigned int i = 0, vert = 0; i < model_cache.pig_skeleton->num_bones; ++i, vert += 2) {
-    PLModelBone *bone = &model_cache.pig_skeleton->bones[i];
+    PLModelBone* bone = &model_cache.pig_skeleton->bones[i];
 
     //start
     plSetMeshVertexPosition(skeleton_mesh, vert, bone->position);
@@ -426,15 +426,15 @@ void DEBUGDrawSkeleton() {
 #endif
 }
 
-ModelManager *ModelManager::instance_ = nullptr;
+ModelManager* ModelManager::instance_ = nullptr;
 
 ModelManager::ModelManager() {
-  PLModel *LoadObjModel(const char *path); // see loaders/obj.cpp
+  PLModel* LoadObjModel(const char* path); // see loaders/obj.cpp
   plRegisterModelLoader("obj", LoadObjModel);
   plRegisterModelLoader("vtx", Model_LoadVtxFile);
   plRegisterModelLoader("min", Model_LoadMinFile);
 
-  PLMesh *default_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
+  PLMesh* default_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
   plSetMeshVertexPosition(default_mesh, 0, PLVector3(0, 20, 0));
   plSetMeshVertexPosition(default_mesh, 1, PLVector3(0, -20, 0));
   plSetMeshVertexPosition(default_mesh, 2, PLVector3(20, 0, 0));
@@ -476,19 +476,19 @@ ModelManager::~ModelManager() {
 }
 
 void ModelManager::DestroyModels() {
-  for (const auto &i : cached_models_) {
+  for (const auto& i : cached_models_) {
     plDestroyModel(i.second);
   }
   cached_models_.clear();
 }
 
-void ModelManager::DestroyModel(PLModel *model) {
+void ModelManager::DestroyModel(PLModel* model) {
   // Never EVER delete the default model!
   if (model == fallback_) {
     return;
   }
 
-  for (const auto &i : cached_models_) {
+  for (const auto& i : cached_models_) {
     if (i.second == model) {
       plDestroyModel(i.second);
       cached_models_.erase(i.first);
@@ -497,16 +497,16 @@ void ModelManager::DestroyModel(PLModel *model) {
   }
 }
 
-PLModel *ModelManager::LoadModel(const std::string &path, bool abort_on_fail) {
-  const char *fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
+PLModel* ModelManager::LoadModel(const std::string& path, bool abort_on_fail) {
+  const char* fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
   if (fp == nullptr) {
     return fallback_;
   }
 
-  PLModel *model = plLoadModel(fp);
+  PLModel* model = plLoadModel(fp);
   if (model == nullptr) {
     if (abort_on_fail) {
-      Error("Failed to load model, \"%s\", aborting (%s)!\n", fp, plGetError())
+      Error("Failed to load model, \"%s\", aborting (%s)!\n", fp, plGetError());
     }
 
     LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
@@ -516,13 +516,13 @@ PLModel *ModelManager::LoadModel(const std::string &path, bool abort_on_fail) {
   return model;
 }
 
-PLModel *ModelManager::LoadCachedModel(const std::string &path, bool abort_on_fail) {
+PLModel* ModelManager::LoadCachedModel(const std::string& path, bool abort_on_fail) {
   auto i = cached_models_.find(path);
   if (i != cached_models_.end()) {
     return i->second;
   }
 
-  PLModel *model = LoadModel(path, abort_on_fail);
+  PLModel* model = LoadModel(path, abort_on_fail);
   cached_models_.emplace(path, model);
   return model;
 }

@@ -24,14 +24,14 @@
 #include "actor_pig.h"
 
 REGISTER_ACTOR(ac_me, APig)    // Ace
-REGISTER_ACTOR(le_me, APig)    // Legend
-REGISTER_ACTOR(me_me, APig)    // Medic
-REGISTER_ACTOR(sb_me, APig)    // Commando
-REGISTER_ACTOR(sp_me, APig)    // Spy
-REGISTER_ACTOR(sn_me, APig)    // Sniper
-REGISTER_ACTOR(sa_me, APig)    // Saboteur
 REGISTER_ACTOR(gr_me, APig)    // Grunt
 REGISTER_ACTOR(hv_me, APig)
+REGISTER_ACTOR(le_me, APig)    // Legend
+REGISTER_ACTOR(me_me, APig)    // Medic
+REGISTER_ACTOR(sa_me, APig)    // Saboteur
+REGISTER_ACTOR(sb_me, APig)    // Commando
+REGISTER_ACTOR(sn_me, APig)    // Sniper
+REGISTER_ACTOR(sp_me, APig)    // Spy
 
 using namespace openhow;
 
@@ -107,5 +107,31 @@ void APig::SetClass(int pclass) {
 void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
+  switch(pclass_) {
+    default: Error("Unknown pig class, \"%d\", aborting!\n");
+    case CLASS_ACE:break;
+    case CLASS_LEGEND:break;
+    case CLASS_MEDIC:break;
+    case CLASS_COMMANDO:break;
+    case CLASS_SPY:break;
+    case CLASS_SNIPER:break;
+    case CLASS_SABOTEUR:break;
+    case CLASS_HEAVY:break;
+    case CLASS_GRUNT:break;
+  }
   SetModel("pigs/ac_hi");
+}
+
+bool APig::Possessed(const Player* player) {
+  // TODO
+  return false;
+}
+
+bool APig::Depossessed(const Player* player) {
+  // TODO
+  return false;
+}
+
+void APig::Killed() {
+  // TODO
 }
