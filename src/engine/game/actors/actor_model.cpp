@@ -31,11 +31,6 @@ void AModel::Draw() {
     return;
   }
 
-  Player* player = Engine::GameManagerInstance()->GetMode()->GetCurrentPlayer();
-  if(player != nullptr && player->input_target == this) {
-    return;
-  }
-
   if (strstr(model_->name, "dummy") != nullptr) {
     angles_.y += TICKS_PER_SECOND / 1000.f;
   }

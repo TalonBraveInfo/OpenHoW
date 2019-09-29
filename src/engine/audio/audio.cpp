@@ -524,8 +524,8 @@ void AudioManager::FreeSamples(bool force) {
   }
 }
 
-/** Debug function for drawing audio sources
- *
+/**
+ * Debug function for drawing audio sources.
  */
 void AudioManager::DrawSources() {
   if (!cv_graphics_draw_audio_sources->b_value) {
@@ -546,6 +546,10 @@ void AudioManager::DrawSources() {
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 }
 
+/**
+ * Play the specified music globally.
+ * @param path Path to the sample to be played.
+ */
 void AudioManager::PlayMusic(const std::string &path) {
   const AudioSample *sample = CacheSample(path);
   if (sample == nullptr) {

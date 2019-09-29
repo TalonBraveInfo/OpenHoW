@@ -18,6 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "../engine.h"
+
 #include "font.h"
 #include "display.h"
 

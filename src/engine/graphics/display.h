@@ -48,8 +48,5 @@ void Display_DrawInterface(void);
 void Display_DrawDebug(void);
 void Display_Flush(void);
 
-PLTexture* Display_GetDefaultTexture(void);
-PLTexture* Display_LoadTexture(const char *path, PLTextureFilter filter);
-
 extern const char *supported_model_formats[];
 extern const char *supported_image_formats[];

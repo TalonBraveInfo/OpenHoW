@@ -17,7 +17,8 @@
 
 #pragma once
 
-struct Player;
+class Player;
+
 class IGameMode {
  public:
   virtual ~IGameMode() = default;

@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_filesystem.h>
-
 #include "engine.h"
 #include "language.h"
 #include "model.h"
@@ -26,14 +24,12 @@
 #include "input.h"
 #include "frontend.h"
 #include "Map.h"
-
-#include "graphics/display.h"
-
-EngineState g_state;
-
 #include "imgui_layer.h"
 
+#include "graphics/display.h"
 #include "game/actor_manager.h"
+
+EngineState g_state;
 
 openhow::Engine* openhow::engine;
 
@@ -59,6 +55,7 @@ openhow::Engine::~Engine() {
 
   delete game_manager_;
   delete audio_manager_;
+  delete resource_manager_;
 }
 
 void openhow::Engine::Initialize() {
@@ -101,6 +98,7 @@ void openhow::Engine::Initialize() {
 
   Input_Initialize();
   Display_Initialize();
+  resource_manager_ = new ResourceManager();
   audio_manager_ = new AudioManager();
   game_manager_ = new GameManager();
   FE_Initialize();

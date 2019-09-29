@@ -84,7 +84,7 @@ class AudioManager {
   AudioSource *CreateSource(const std::string &path, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
   AudioSource *CreateSource(const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb = false,
                             float gain = 1.0f, float pitch = 1.0f, bool looping = false);
-  AudioSource *CreateSource(const AudioSample *sample, PLVector3 pos = {0, 0, 0}, PLVector3 vel = {0, 0, 0},
+  AudioSource *CreateSource(const AudioSample *sample = nullptr, PLVector3 pos = {0, 0, 0}, PLVector3 vel = {0, 0, 0},
                             bool reverb = false, float gain = 1.0f, float pitch = 1.0f, bool looping = false);
 
   void PlayGlobalSound(const std::string &path);

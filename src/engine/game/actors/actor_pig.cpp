@@ -18,9 +18,10 @@
 #include <PL/platform_graphics_camera.h>
 
 #include "../../engine.h"
-#include "../../input.h"
 #include "../../Map.h"
+
 #include "../actor_manager.h"
+
 #include "actor_pig.h"
 
 REGISTER_ACTOR(ac_me, APig)    // Ace
@@ -35,50 +36,54 @@ REGISTER_ACTOR(sp_me, APig)    // Spy
 
 using namespace openhow;
 
-APig::APig() : SuperClass() {}
-APig::~APig() = default;
+/////////////////////////////////////////////////////////////
+// Inventory Manager
+
+/**
+ * Clear the inventory of items.
+ */
+void InventoryManager::Clear() {
+  for(auto& item : items_) {
+    ActorManager::GetInstance()->DestroyActor(item);
+    item = nullptr;
+  }
+}
+
+/////////////////////////////////////////////////////////////
+
+APig::APig() : SuperClass() {
+  speech_ = Engine::AudioManagerInstance()->CreateSource();
+}
+
+APig::~APig() {
+  delete speech_;
+}
 
 void APig::HandleInput() {
-  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
-  if (mode == nullptr) {
-    return;
-  }
-
-  Player* player = mode->GetCurrentPlayer();
-  if (player == nullptr) {
-    return;
-  }
-
-  PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
-  PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
-
-  if (Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-    input_forward = 1.0f;
-  } else if (Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-    input_forward = -1.0f;
-  } else {
-    input_forward = -cl.y / 327.0f;
-  }
-
-  if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-    input_yaw = -1.0f;
-  } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-    input_yaw = 1.0f;
-  } else {
-    input_yaw = cr.x / 327.0f;
-  }
-
-  if (Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
-    input_pitch = 1.0f;
-  } else if (Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
-    input_pitch = -1.0f;
-  } else {
-    input_pitch = -cr.y / 327.0f;
-  }
+  SuperClass::HandleInput();
 }
 
 void APig::Tick() {
   SuperClass::Tick();
+
+  // a dead piggy
+  if(GetHealth() <= 0) {
+    if(speech_->IsPlaying()) {
+      return;
+    }
+
+    Actor* boots = ActorManager::GetInstance()->CreateActor("boots");
+    boots->SetPosition(GetPosition());
+    boots->SetAngles(GetAngles());
+    boots->DropToFloor();
+
+    // activate the boots (should begin smoke effect etc.)
+    boots->Activate();
+
+    // ensure our own destruction on next tick
+    ActorManager::GetInstance()->DestroyActor(this);
+    return;
+  }
 
   Camera* camera = Engine::GameManagerInstance()->GetCamera();
   position_.x += input_forward * 100.0f * camera->GetForward().x;
@@ -103,12 +108,6 @@ void APig::Tick() {
 }
 
 void APig::SetClass(int pclass) {
-}
-
-void APig::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
-
-#if 0
   std::string model_path;
   switch (pclass_) {
     default:
@@ -126,31 +125,50 @@ void APig::Deserialize(const ActorSpawn& spawn) {
       model_path = "pigs/me_hi";
       break;
     case CLASS_COMMANDO:
-      model_path = "pigs/"
+      model_path = "pigs/sb_hi";
       break;
-    case CLASS_SPY:break;
-    case CLASS_SNIPER:break;
-    case CLASS_SABOTEUR:break;
-    case CLASS_HEAVY:break;
-    case CLASS_GRUNT:break;
+    case CLASS_SPY:
+      model_path = "pigs/sp_hi";
+      break;
+    case CLASS_SNIPER:
+      model_path = "pigs/sn_hi";
+      break;
+    case CLASS_SABOTEUR:
+      model_path = "pigs/sa_hi";
+      break;
+    case CLASS_HEAVY:
+      model_path = "pigs/hv_hi";
+      break;
+    case CLASS_GRUNT:
+      model_path = "pigs/gr_hi";
+      break;
   }
 
   if (!model_path.empty()) {
     SetModel(model_path);
   }
-#endif
+}
+
+void APig::Deserialize(const ActorSpawn& spawn) {
+  SuperClass::Deserialize(spawn);
+
+  // TODO: this is slightly more complicated...
+  SetClass(spawn.appearance);
 }
 
 bool APig::Possessed(const Player* player) {
   // TODO
-  return false;
+  //  Trigger speech
+  //  Update camera
+  return SuperClass::Possessed(player);
 }
 
-bool APig::Depossessed(const Player* player) {
+void APig::Depossessed(const Player* player) {
   // TODO
-  return false;
+  SuperClass::Depossessed(player);
 }
 
 void APig::Killed() {
   // TODO
+  //  Trigger speech
 }

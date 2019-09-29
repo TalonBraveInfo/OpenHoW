@@ -16,7 +16,12 @@
  */
 
 #include "../../engine.h"
+#include "../../input.h"
+#include "../../Map.h"
+
 #include "actor.h"
+
+using namespace openhow;
 
 Actor::Actor() = default;
 Actor::~Actor() = default;
@@ -37,10 +42,64 @@ void Actor::Deserialize(const ActorSpawn& spawn){
   SetAngles(spawn.angles);
 }
 
-void Actor::AddHealth(int health) {
+void Actor::AddHealth(int16_t health) {
   if(health <= 0) {
     return;
   }
 
   health_ += health;
+}
+
+bool Actor::Possessed(const Player* player) {
+  return true;
+}
+
+void Actor::Depossessed(const Player* player) {}
+
+/**
+ * Drop the actor to the ground based on it's bounding box size.
+ */
+void Actor::DropToFloor() {
+  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
+  position_.y = height + bounds_.y;
+}
+
+void Actor::HandleInput() {
+  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
+  if (mode == nullptr) {
+    return;
+  }
+
+  Player* player = mode->GetCurrentPlayer();
+  if (player == nullptr) {
+    return;
+  }
+
+  PLVector2 cl = Input_GetJoystickState(player->GetControllerSlot(), INPUT_JOYSTICK_LEFT);
+  PLVector2 cr = Input_GetJoystickState(player->GetControllerSlot(), INPUT_JOYSTICK_RIGHT);
+
+  if (Input_GetActionState(player->GetControllerSlot(), ACTION_MOVE_FORWARD)) {
+    input_forward = 1.0f;
+  } else if (Input_GetActionState(player->GetControllerSlot(), ACTION_MOVE_BACKWARD)) {
+    input_forward = -1.0f;
+  } else {
+    input_forward = -cl.y / 327.0f;
+  }
+
+  if (Input_GetActionState(player->GetControllerSlot(), ACTION_TURN_LEFT)) {
+    input_yaw = -1.0f;
+  } else if (Input_GetActionState(player->GetControllerSlot(), ACTION_TURN_RIGHT)) {
+    input_yaw = 1.0f;
+  } else {
+    input_yaw = cr.x / 327.0f;
+  }
+
+  if (Input_GetActionState(player->GetControllerSlot(), ACTION_AIM_UP)) {
+    input_pitch = 1.0f;
+  } else if (Input_GetActionState(player->GetControllerSlot(), ACTION_AIM_DOWN)) {
+    input_pitch = -1.0f;
+  } else {
+    input_pitch = -cr.y / 327.0f;
+  }
 }

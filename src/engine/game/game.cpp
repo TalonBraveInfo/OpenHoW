@@ -77,6 +77,35 @@ std::string MapManifest::Serialize() {
 
 /////////////////////////////////////////////////////////////
 
+Player::Player() = default;
+Player::~Player() = default;
+
+void Player::PossessChild(unsigned int index) {
+#if 0 // TODO: rethink...
+  if(index >= children_.size()) {
+    LogWarn("Failed to possess actor, child index is out of range (%d vs %d)!\n", index, children_.size());
+    return;
+  }
+
+  Actor* child = children_[index];
+  if(child == nullptr) {
+    LogWarn("Child of player is null!\n");
+    return;
+  }
+
+  if(!child->Possessed(this)) {
+    LogWarn("Failed to possess actor!\n");
+    return;
+  }
+#endif
+}
+
+void Player::DepossessChild() {
+
+}
+
+/////////////////////////////////////////////////////////////
+
 GameManager::GameManager() {
   plRegisterConsoleCommand("createmap", CreateMapCommand, "");
   plRegisterConsoleCommand("map", MapCommand, "");
@@ -111,6 +140,17 @@ void GameManager::Tick() {
   }
 
   active_mode_->Tick();
+
+  if (active_actor_ != nullptr) {
+    active_actor_->HandleInput();
+
+    // temp: force the camera at the actor pos
+    Camera* camera = Engine::GameManagerInstance()->GetCamera();
+    camera->SetPosition(active_actor_->GetPosition());
+    camera->SetAngles(active_actor_->GetAngles());
+  }
+
+  ActorManager::GetInstance()->TickActors();
 }
 
 void GameManager::LoadMap(const std::string& name) {
@@ -124,9 +164,7 @@ void GameManager::LoadMap(const std::string& name) {
 
   Map* map = new Map(manifest);
   if (active_map_ != nullptr) {
-    ActorManager::GetInstance()->DestroyActors();
-    ModelManager::GetInstance()->DestroyModels();
-    delete active_map_;
+    EndCurrentMode();
   }
 
   active_map_ = map;
@@ -163,7 +201,6 @@ void GameManager::UnloadMap() {
     delete ambient_sample;
   }
 
-  delete active_mode_;
   delete active_map_;
 }
 
@@ -209,6 +246,9 @@ static void RegisterManifestInterface(const char* path) {
   Engine::GameManagerInstance()->RegisterMapManifest(path);
 }
 
+/**
+ * Scans the campaigns directory for .map files and indexes them.
+ */
 void GameManager::RegisterMapManifests() {
   map_manifests_.clear();
 
@@ -216,6 +256,11 @@ void GameManager::RegisterMapManifests() {
   plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 
+/**
+ * Returns a pointer to the requested manifest.
+ * @param name
+ * @return Returns a pointer to the requested manifest, otherwise returns null.
+ */
 MapManifest* GameManager::GetMapManifest(const std::string& name) {
   auto manifest = map_manifests_.find(name);
   if (manifest != map_manifests_.end()) {
@@ -226,6 +271,11 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
   return nullptr;
 }
 
+/**
+ * Creates a new map manifest and writes it into the maps directory.
+ * @param name
+ * @return
+ */
 MapManifest* GameManager::CreateManifest(const std::string& name) {
   // ensure the map doesn't exist already
   if(Engine::GameManagerInstance()->GetMapManifest(name) != nullptr) {
@@ -264,6 +314,11 @@ void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
   Engine::GameManagerInstance()->LoadMap(argv[1]);
 }
 
+/**
+ * Loads the specified map.
+ * @param argc
+ * @param argv
+ */
 void GameManager::MapCommand(unsigned int argc, char** argv) {
   if (argc < 2) {
     LogWarn("Invalid number of arguments, ignoring!\n");
@@ -279,6 +334,11 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
   Engine::GameManagerInstance()->LoadMap(argv[1]);
 }
 
+/**
+ * Provide a list of all the currently registered maps.
+ * @param argc
+ * @param argv
+ */
 void GameManager::MapsCommand(unsigned int argc, char** argv) {
   if (Engine::GameManagerInstance()->map_manifests_.empty()) {
     LogWarn("No maps available!\n");
@@ -299,4 +359,19 @@ void GameManager::MapsCommand(unsigned int argc, char** argv) {
   }
 
   LogInfo("%u maps\n", Engine::GameManagerInstance()->map_manifests_.size());
+}
+
+/**
+ * End the currently active mode and flush everything.
+ */
+void GameManager::EndCurrentMode() {
+  delete active_mode_;
+
+  UnloadMap();
+
+  ActorManager::GetInstance()->DestroyActors();
+  ModelManager::GetInstance()->DestroyModels();
+
+  Engine::AudioManagerInstance()->FreeSources();
+  Engine::AudioManagerInstance()->FreeSamples();
 }

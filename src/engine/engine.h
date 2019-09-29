@@ -49,6 +49,8 @@
 #define MAX_FRAMESKIP       5
 
 #ifdef __cplusplus
+#include "resource_manager.h"
+
 #include "audio/audio.h"
 #include "game/game.h"
 
@@ -66,6 +68,9 @@ class Engine {
   static GameManager* GameManagerInstance() {
     return engine->game_manager_;
   }
+  static ResourceManager* ResourceManagerInstace() {
+    return engine->resource_manager_;
+  }
 
   void Initialize();
 
@@ -76,6 +81,7 @@ class Engine {
  private:
   GameManager* game_manager_{nullptr};
   AudioManager* audio_manager_{nullptr};
+  ResourceManager* resource_manager_{nullptr};
 };
 }
 

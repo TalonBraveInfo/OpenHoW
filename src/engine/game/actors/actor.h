@@ -68,6 +68,8 @@ struct ActorSpawn {
 
 #define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
 
+class Player;
+
 class Actor {
  public:
 
@@ -77,7 +79,8 @@ class Actor {
   virtual void Tick() {}  // simulation tick, called per-frame
   virtual void Draw() {}  // draw tick, called per-frame
 
-  virtual void AddHealth(int health);
+  virtual void AddHealth(int16_t health);
+  int16_t GetHealth() { return health_; }
 
   virtual bool IsVisible() { return is_visible_; }
 
@@ -87,7 +90,9 @@ class Actor {
   virtual PLVector3 GetAngles() { return angles_; }
   virtual void SetAngles(PLVector3 angles);
 
-  virtual void HandleInput() {}   // handle any player input, if applicable
+  virtual bool Possessed(const Player* player);
+  virtual void Depossessed(const Player* player);
+  virtual void HandleInput();   // handle any player input, if applicable
 
   virtual ActorSpawn Serialize() { return ActorSpawn(); }
   virtual void Deserialize(const ActorSpawn& spawn);
@@ -96,8 +101,14 @@ class Actor {
   virtual void Deactivate() { is_activated_ = false; }
   virtual bool IsActivated() { return is_activated_; }
 
+  void DropToFloor();
+
  protected:
   bool is_visible_{false};
+
+  float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
+  float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
+  float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
 
   PLVector3 position_{0, 0, 0}, old_position_{0, 0, 0};
   PLVector3 fallback_position_{0, 0, 0};

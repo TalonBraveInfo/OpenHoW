@@ -28,6 +28,8 @@
 #include "graphics/texture_atlas.h"
 #include "graphics/mesh.h"
 
+using namespace openhow;
+
 struct {
   HirHandle* pig_skeleton;
 
@@ -81,7 +83,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     Vtx_DestroyHandle(vtx);
     Fac_DestroyHandle(fac);
 
-    mesh->texture = Display_GetDefaultTexture();
+    mesh->texture = Engine::ResourceManagerInstace()->GetFallbackTexture();
 
     PLModel* model = plCreateBasicStaticModel(mesh);
     if (model == nullptr) {

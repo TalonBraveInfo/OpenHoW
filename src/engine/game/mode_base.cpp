@@ -30,12 +30,7 @@ BaseGameMode::BaseGameMode() {
   players_.resize(4);
 }
 
-BaseGameMode::~BaseGameMode() {
-  Engine::AudioManagerInstance()->FreeSources();
-  Engine::AudioManagerInstance()->FreeSamples();
-
-  DestroyActors();
-}
+BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartRound() {
   if (HasRoundStarted()) {
@@ -44,10 +39,10 @@ void BaseGameMode::StartRound() {
 
   SpawnActors();
 
-  round_started_ = true;
-
   // Play the deployment music
   Engine::AudioManagerInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+
+  round_started_ = true;
 }
 
 void BaseGameMode::RestartRound() {
@@ -64,18 +59,6 @@ void BaseGameMode::Tick() {
     // still setting the game up...
     return;
   }
-
-  Actor* slave = GetCurrentPlayer()->input_target;
-  if (slave != nullptr) {
-    slave->HandleInput();
-
-    // temp: force the camera at the actor pos
-    Camera* camera = Engine::GameManagerInstance()->GetCamera();
-    camera->SetPosition(slave->GetPosition());
-    camera->SetAngles(slave->GetAngles());
-  }
-
-  ActorManager::GetInstance()->TickActors();
 }
 
 void BaseGameMode::SpawnActors() {
@@ -95,8 +78,14 @@ void BaseGameMode::SpawnActors() {
 
     // Pigs are a special case, for obvious reasons
     APig* pig = dynamic_cast<APig*>(actor);
-    if (pig != nullptr) {
-      players_[0].input_target = actor;
+    if (pig == nullptr) {
+      continue;
+    }
+
+    // add each pig to the players list
+    for(auto& player : players_) {
+      if(pig->GetTeam() == player.GetTeam()) {
+      }
     }
   }
 
@@ -120,12 +109,6 @@ void BaseGameMode::SpawnActors() {
   }
 #endif
 
-  if(players_[0].input_target == nullptr) {
-    LogWarn("No pig found in map, spawning default (debugging!!!!)\n");
-    Actor* actor = ActorManager::GetInstance()->CreateActor("ac_me");
-    players_[0].input_target = actor;
-  }
-
   ActorManager::GetInstance()->ActivateActors();
 }
 
@@ -134,12 +117,14 @@ void BaseGameMode::DestroyActors() {
 }
 
 void BaseGameMode::StartTurn() {
+#if 0 // TODO: rethink...
   Player* player = GetCurrentPlayer();
-  if (player->input_target == nullptr) {
-    LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
+  if (player->GetInputTarget() == nullptr) {
+    LogWarn("No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str());
     EndTurn();
     return;
   }
+#endif
 }
 
 void BaseGameMode::EndTurn() {
@@ -151,12 +136,12 @@ void BaseGameMode::EndTurn() {
 
 void BaseGameMode::PlayerJoined(Player* player) {
   // todo: display prompt
-  LogInfo("%s has joined the game\n", player->name.c_str());
+  LogInfo("%s has joined the game\n", player->GetTeam()->name.c_str());
 }
 
 void BaseGameMode::PlayerLeft(Player* player) {
   // todo: display prompt
-  LogInfo("%s has left the game\n", player->name.c_str());
+  LogInfo("%s has left the game\n", player->GetTeam()->name.c_str());
 }
 
 unsigned int BaseGameMode::GetMaxSpectators() const {
@@ -165,12 +150,12 @@ unsigned int BaseGameMode::GetMaxSpectators() const {
 
 void BaseGameMode::SpectatorJoined(Player* player) {
   // todo: display prompt
-  LogInfo("%s has joined the spectators\n", player->name.c_str());
+  LogInfo("%s has joined the spectators\n", player->GetTeam()->name.c_str());
 }
 
 void BaseGameMode::SpectatorLeft(Player* player) {
   // todo: display prompt
-  LogInfo("%s has left the spectators\n", player->name.c_str());
+  LogInfo("%s has left the spectators\n", player->GetTeam()->name.c_str());
 }
 
 unsigned int BaseGameMode::GetMaxPlayers() const {

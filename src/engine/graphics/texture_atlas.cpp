@@ -16,11 +16,14 @@
  */
 
 #include "../engine.h"
+
 #include "display.h"
 #include "texture_atlas.h"
 
+using namespace openhow;
+
 TextureAtlas::TextureAtlas(int w, int h) : width_(w), height_(h) {
-  texture_ = Display_GetDefaultTexture();
+  texture_ = Engine::ResourceManagerInstace()->GetFallbackTexture();
 }
 
 TextureAtlas::~TextureAtlas() {
@@ -30,7 +33,7 @@ TextureAtlas::~TextureAtlas() {
     id.second = nullptr;
   }
 
-  if(texture_ != Display_GetDefaultTexture()) {
+  if(texture_ != Engine::ResourceManagerInstace()->GetFallbackTexture()) {
     // TODO: reintroduce once we have a wrapper around PLModel to hold this!
     //plDestroyTexture(texture_, true);
   }

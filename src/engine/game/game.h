@@ -22,22 +22,43 @@
 #include "mode_interface.h"
 #include "../graphics/camera.h"
 
-struct Player {
-  std::string name; // Name of the player/team
-  Actor* input_target{nullptr}; // Actor that the player is possessing
-  unsigned int input_slot{0}; // Controller slot
-  unsigned int identity; // Identity of the team (e.g. Tommy etc.)
-  std::vector<Actor*> children; // List of spawnables in the team
-};
-
-struct TeamManifest {
+struct Team {
   std::string name{"none"};
   std::string description{"none"};
+  std::string identifier{"en"};
 
   // data directories
-  std::string texture_path{"chars/pigs/british"};
+  std::string pig_textures{"chars/pigs/british"};
+  std::string paper_texture{"frontend/papers/british"};
+  std::string debrief_texture{"frontend/debrief/unifeng"};
 
   std::string Serialize() { /* TODO */ return ""; }
+};
+
+class Player {
+ public:
+  Player();
+  ~Player();
+
+  void PossessChild(unsigned int index);
+  void DepossessChild();
+
+  void SetControllerSlot(unsigned int slot) { input_slot = slot; }
+  unsigned int GetControllerSlot() { return input_slot; }
+
+  const Team* GetTeam() const { return team_; }
+  void SetTeam(const Team* team) { team_ = team; }
+
+ protected:
+ private:
+  std::string name_{"none"};
+
+  unsigned int input_slot{0}; // Controller slot
+  unsigned int identity{}; // Identity of the team (e.g. Tommy etc.)
+
+  const Team* team_{nullptr};
+
+  unsigned int current_target_{0};
 };
 
 struct MapManifest {
@@ -68,9 +89,6 @@ struct MapManifest {
   std::string Serialize();
 };
 
-namespace openhow {
-class Engine;
-}
 class Map;
 
 class GameManager {
@@ -101,15 +119,17 @@ class GameManager {
 
   IGameMode* GetMode() { return active_mode_; }
 
-  // Player Handling
+  void EndCurrentMode();
 
-  void AddPlayer(Player player);
+  // Player Handling
 
  protected:
  private:
   static void MapCommand(unsigned int argc, char* argv[]);
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
+
+  Actor* active_actor_{nullptr};
 
   Camera* camera_{nullptr};
 
@@ -119,6 +139,7 @@ class GameManager {
   std::map<std::string, MapManifest> map_manifests_;
 
   std::vector<Player> players_;
+  std::vector<Team> teams_;
 
 #define MAX_AMBIENT_SAMPLES 8
   double ambient_emit_delay_{0};

@@ -42,13 +42,11 @@ static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 //static PLFrameBuffer* game_target;
 //static PLFrameBuffer* frontend_target;
 
-static PLTexture* default_texture = nullptr;
-
 static PLConsoleVariable* cv_display_show_camerapos;
 static PLConsoleVariable* cv_display_show_viewportinfo;
 
 PLTexture* Display_GetDefaultTexture() {
-  return default_texture;
+  return Engine::ResourceManagerInstace()->GetFallbackTexture();
 }
 
 #if 0
@@ -131,54 +129,6 @@ PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() 
     /* this one still needs doing... */
     plReplaceImageColour(&cache, PLColourRGB(115, 98, 24), mid_channel);
 #endif
-
-/* todo: platform library should pass this information back */
-const char* supported_model_formats[] = {"obj", "vtx", "min", nullptr};
-const char* supported_image_formats[] = {"png", "tga", "bmp", "tim", nullptr};
-//const char *supported_audio_formats[]={"wav", NULL};
-//const char *supported_video_formats[]={"bik", NULL};
-
-PLTexture* Display_LoadTexture(const char* path, PLTextureFilter filter) {
-  const char* ext = plGetFileExtension(path);
-  if (plIsEmptyString(ext)) {
-    const char* fp = u_find2(path, supported_image_formats, false);
-    if (fp == nullptr) {
-      return default_texture;
-    }
-
-    PLTexture* texture = plLoadTextureImage(fp, filter);
-    if (texture == nullptr) {
-      LogWarn("%s, aborting!\n", plGetError());
-      return default_texture;
-    }
-
-    return texture;
-  }
-
-  PLImage img;
-  const char* fp = u_find(path);
-  if (plLoadImage(fp, &img)) {
-    /* pixel format of TIM will be changed before uploading */
-    if (pl_strncasecmp(ext, "tim", 3) == 0) {
-      plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
-    }
-
-    PLTexture* texture = plCreateTexture();
-    if (texture != nullptr) {
-      texture->filter = filter;
-      if (plUploadTextureImage(texture, &img)) {
-        return texture;
-      }
-    }
-    plDestroyTexture(texture, true);
-  }
-
-  LogWarn("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
-  plFreeImage(&img);
-  return default_texture;
-}
-
-/************************************************************/
 
 bool Display_AppendVideoPreset(int width, int height) {
   if (num_vid_presets >= MAX_VIDEO_PRESETS) {
@@ -356,32 +306,10 @@ void Display_Initialize() {
   plSetCullMode(PL_CULL_POSTIVE);
 
   plSetDepthMask(true);
-
-  /* go ahead and create our placeholder texture, used if
-   * one fails to load */
-
-  PLColour pbuffer[] = {
-      {255, 255, 0, 255}, {0, 255, 255, 255},
-      {0, 255, 255, 255}, {255, 255, 0, 255}};
-  PLImage* image = plCreateImage((uint8_t*) pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
-  if (image != nullptr) {
-    default_texture = plCreateTexture();
-    default_texture->flags &= PL_TEXTURE_FLAG_NOMIPS;
-    if (!plUploadTextureImage(default_texture, image)) {
-      LogWarn("Failed to upload default texture (%s)!\n", plGetError());
-      plDestroyTexture(default_texture, true);
-      default_texture = nullptr;
-    }
-    plFreeImage(image);
-  } else {
-    Error("Failed to generate default texture (%s)!\n", plGetError());
-  }
 }
 
 void Display_Shutdown() {
   Shaders_Shutdown();
-
-  plDestroyTexture(default_texture, true);
 }
 
 /************************************************************/
