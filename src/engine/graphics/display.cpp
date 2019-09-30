@@ -246,6 +246,9 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
     g_state.ui_camera->viewport.w = newWidth;
     g_state.ui_camera->viewport.h = newHeight;
   }
+
+  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  camera->SetViewport({x, y}, {width, height});
 }
 
 int Display_GetViewportWidth(const PLViewport* viewport) {
