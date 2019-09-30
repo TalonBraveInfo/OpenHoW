@@ -22,18 +22,18 @@
 #include "font.h"
 #include "display.h"
 
-BitmapFont *g_fonts[NUM_FONTS];
+BitmapFont* g_fonts[NUM_FONTS];
 
-PLMesh *font_mesh = NULL;
+PLMesh* font_mesh = nullptr;
 
-void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character) {
-  if(font == NULL || scale == 0) {
+void Font_DrawBitmapCharacter(BitmapFont* font, int x, int y, float scale, PLColour colour, uint8_t character) {
+  if (font == nullptr || scale == 0) {
     return;
   }
 
   int dw = g_state.ui_camera->viewport.w;
   int dh = g_state.ui_camera->viewport.h;
-  if(x > dw || y > dh) {
+  if (x > dw || y > dh) {
     return;
   }
 
@@ -43,11 +43,11 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
   }
   character -= 33;
 
-  if (font->texture == NULL) {
+  if (font->texture == nullptr) {
     Error("attempted to draw bitmap font with invalid texture, aborting!\n");
   }
 
-  if (font_mesh == NULL) {
+  if (font_mesh == nullptr) {
     Error("attempted to draw font before font init, aborting!\n");
   }
 
@@ -57,7 +57,7 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
 
   plSetMeshUniformColour(font_mesh, colour);
 
-  BitmapChar *bitmap_char = &font->chars[character];
+  BitmapChar* bitmap_char = &font->chars[character];
   plSetMeshVertexPosition(font_mesh, 0, PLVector3(x, y, 0));
   plSetMeshVertexPosition(font_mesh, 1, PLVector3(x, y + (bitmap_char->h * scale), 0));
   plSetMeshVertexPosition(font_mesh, 2, PLVector3(x + (bitmap_char->w * scale), y, 0));
@@ -77,9 +77,9 @@ void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLCol
   plDrawMesh(font_mesh);
 }
 
-void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
-                           const char *msg) {
-  if(font == NULL) {
+void Font_DrawBitmapString(BitmapFont* font, int x, int y, unsigned int spacing, float scale, PLColour colour,
+                           const char* msg) {
+  if (font == nullptr) {
     return;
   }
 
@@ -87,12 +87,12 @@ void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing,
     return;
   }
 
-  unsigned int num_chars = (unsigned int) strlen(msg);
+  auto num_chars = strlen(msg);
   if (num_chars == 0) {
     return;
   }
 
-  if (font->texture == NULL) {
+  if (font->texture == nullptr) {
     Error("attempted to draw bitmap font with invalid texture, aborting!\n");
   }
 
@@ -100,7 +100,7 @@ void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing,
 
   int n_x = x;
   int n_y = y;
-  for (unsigned int i = 0; i < num_chars; ++i) {
+  for (size_t i = 0; i < num_chars; ++i) {
     Font_DrawBitmapCharacter(font, n_x, n_y, scale, colour, (uint8_t) msg[i]);
     if (msg[i] >= 33 && msg[i] <= 122) {
       n_x += font->chars[msg[i] - 33].w + spacing;
@@ -115,19 +115,19 @@ void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing,
   plSetBlendMode(PL_BLEND_DEFAULT);
 }
 
-BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
+BitmapFont* LoadBitmapFont(const char* name, const char* tab_name) {
   char buf[PL_SYSTEM_MAX_PATH];
   snprintf(buf, sizeof(buf) - 1, "frontend/text/%s.tab", tab_name);
-  const char *tab_path = u_find(buf);
+  const char* tab_path = u_find(buf);
   if (!plFileExists(tab_path)) {
     LogWarn("Failed to load tab for \"%s\", aborting!\n", name);
-    return NULL;
+    return nullptr;
   }
 
-  FILE *tab_file = fopen(tab_path, "rb");
-  if (tab_file == NULL) {
+  FILE* tab_file = fopen(tab_path, "rb");
+  if (tab_file == nullptr) {
     LogWarn("Failed to load tab \"%s\", aborting!\n", tab_path);
-    return NULL;
+    return nullptr;
   }
 
   fseek(tab_file, 16, SEEK_CUR);
@@ -139,7 +139,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
     uint16_t w;
     uint16_t h;
   } tab_indices[MAX_CHARS];
-  unsigned int num_chars = (unsigned int) fread(tab_indices, sizeof(tab_indices) / MAX_CHARS, MAX_CHARS, tab_file);
+  auto num_chars = (unsigned int) fread(tab_indices, sizeof(tab_indices) / MAX_CHARS, MAX_CHARS, tab_file);
   if (num_chars == 0) {
     Error("Invalid number of characters for \"%s\", aborting!\n", tab_path);
   }
@@ -148,7 +148,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
   // todo, load in the image
 
   snprintf(buf, sizeof(buf) - 1, "frontend/text/%s", name);
-  const char *tex_path = u_find2(buf, supported_image_formats, true);
+  const char* tex_path = u_find2(buf, supported_image_formats, true);
   PLImage image;
   if (!plLoadImage(tex_path, &image)) {
     Error("Failed to load in image, %s, aborting!\n", plGetError());
@@ -156,7 +156,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
 
   plReplaceImageColour(&image, PLColour(255, 0, 255, 255), PLColour(0, 0, 0, 0));
 
-  BitmapFont *font = u_alloc(1, sizeof(BitmapFont), true);
+  auto* font = static_cast<BitmapFont*>(u_alloc(1, sizeof(BitmapFont), true));
   memset(font, 0, sizeof(BitmapFont));
 
   font->width = image.width;
@@ -185,7 +185,7 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
   // upload the texture to the GPU
 
   font->texture = plCreateTexture();
-  if (font->texture == NULL) {
+  if (font->texture == nullptr) {
     Error("Failed to create texture for font, %s, aborting!\n", plGetError());
   }
 
@@ -199,9 +199,9 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
 
 //////////////////////////////////////////////////////////////////////////
 
-void CacheFontData(void) {
+void CacheFontData() {
   font_mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4);
-  if (font_mesh == NULL) {
+  if (font_mesh == nullptr) {
     Error("failed to create font mesh, %s, aborting!\n", plGetError());
   }
 
@@ -213,9 +213,9 @@ void CacheFontData(void) {
   g_fonts[FONT_SMALL] = LoadBitmapFont("small", "small");
 }
 
-void ClearFontData(void) {
-  for (unsigned int i = 0; i < NUM_FONTS; ++i) {
-    if (g_fonts[i] == NULL) {
+void ClearFontData() {
+  for (auto& g_font : g_fonts) {
+    if (g_font == nullptr) {
       /* if we hit a null slot, it's possible the fonts
        * failed loading at this point. so we'll just
        * break here. */
@@ -223,7 +223,7 @@ void ClearFontData(void) {
       break;
     }
 
-    plDestroyTexture(g_fonts[i]->texture, true);
-    free(g_fonts[i]);
+    plDestroyTexture(g_font->texture, true);
+    free(g_font);
   }
 }
