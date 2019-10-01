@@ -28,9 +28,11 @@ class AItem : public AModel {
 
   void Deserialize(const ActorSpawn& spawn) override;
 
+  virtual void Equipped(Actor* other);
   virtual void PickUp(Actor* other);
 
   // Information for frontend
+  virtual bool IsSelectable();
   virtual std::string GetInventoryDescription() const { return "invalid"; }
   virtual PLTexture* GetInventoryIcon();
 

@@ -47,6 +47,8 @@ class APig : public AAnimatedModel {
   virtual bool Possessed(const Player* player);
   virtual bool Depossessed(const Player* player);
 
+  void AddInventory(AItem* item);
+
   void SetClass(int pclass);
   int GetClass() { return pclass_; }
 
@@ -61,6 +63,8 @@ class APig : public AAnimatedModel {
 
  private:
   AItem* current_equiped_item_{nullptr};
+
+  InventoryManager inventory_manager_;
 
   enum {
     CLASS_NONE = -1,

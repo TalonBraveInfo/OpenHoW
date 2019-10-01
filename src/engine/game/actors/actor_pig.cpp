@@ -35,6 +35,19 @@ REGISTER_ACTOR(sp_me, APig)    // Spy
 
 using namespace openhow;
 
+void InventoryManager::Clear() {
+  for(auto item : items_) {
+    ActorManager::GetInstance()->DestroyActor(item);
+    item = nullptr;
+  }
+
+  items_.clear();
+}
+
+void InventoryManager::AddItem(AItem *item) {
+  items_.push_back(item);
+}
+
 APig::APig() : SuperClass() {}
 APig::~APig() = default;
 
@@ -108,6 +121,10 @@ void APig::SetClass(int pclass) {
 void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
+  // ensure pig is spawned up in the air for deployment
+  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
+
 #if 0
   std::string model_path;
   switch (pclass_) {
@@ -153,4 +170,17 @@ bool APig::Depossessed(const Player* player) {
 
 void APig::Killed() {
   // TODO
+
+  inventory_manager_.Clear();
+}
+
+/**
+ * Add an item into the pig's inventory
+ * @param item
+ */
+void APig::AddInventory(AItem *item) {
+  inventory_manager_.AddItem(item);
+
+  // TODO
+  //  Display message to user? Or should inventory manager do this...
 }
