@@ -32,18 +32,22 @@ struct ItemSpawnIndex {
 AItem::AItem() : SuperClass() {}
 AItem::~AItem() = default;
 
-void AItem::Deserialize(const ActorSpawn &spawn) {
+void AItem::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 }
 
-void AItem::Equipped(Actor *other) {
+/**
+ * Call when the item is selected from the menu and becomes the active item
+ * @param other The actor that's selected this item
+ */
+void AItem::Equipped(Actor* other) {
 
 }
 
-void AItem::PickUp(Actor *other) {
+void AItem::PickUp(Actor* other) {
   u_assert(other != nullptr);
 
-  APig *pig = dynamic_cast<APig *>(other);
+  APig* pig = dynamic_cast<APig*>(other);
   if (pig == nullptr) {
     return;
   }
@@ -61,7 +65,7 @@ void AItem::PickUp(Actor *other) {
     case ITEM_WEAPON_RIFLE:break;
     case ITEM_WEAPON_RIFLE_BURST:break;
     case ITEM_WEAPON_MACHINE_GUN: {
-      AWeapon *weapon = dynamic_cast<AWeapon *>(ActorManager::GetInstance()->CreateActor("weapon_machine_gun"));
+      AWeapon* weapon = dynamic_cast<AWeapon*>(ActorManager::GetInstance()->CreateActor("weapon_machine_gun"));
       if (weapon == nullptr) {
         break;
       }
@@ -131,7 +135,7 @@ void AItem::PickUp(Actor *other) {
   }
 }
 
-PLTexture *AItem::GetInventoryIcon() {
+PLTexture* AItem::GetInventoryIcon() {
   return Engine::ResourceManagerInstance()->GetFallbackTexture();
 }
 
