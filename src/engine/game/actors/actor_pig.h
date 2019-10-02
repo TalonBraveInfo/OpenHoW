@@ -44,6 +44,8 @@ class APig : public AAnimatedModel {
   void HandleInput() override;
   void Tick() override;
 
+  void AddInventory(AItem* item);
+
   void SetClass(int pclass);
   int GetClass() { return pclass_; }
 
@@ -63,6 +65,8 @@ class APig : public AAnimatedModel {
  protected:
  private:
   AItem* current_equiped_item_{nullptr};
+
+  InventoryManager inventory_manager_;
 
   AudioSource* speech_{nullptr};
 

@@ -26,8 +26,8 @@ Consider this more of a wish-list at this  point in time ;)
 ## Status :mag:
 ![Screenshot](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
 
-As of August 1st, 2019, the project is still in a very early phase of development.
-As we shift onto our next milestone (0.4.0) a lot of work will begin on actually getting
+As of October 1st, 2019, the project is still in a very early phase of development.
+As we shift onto our next milestone (0.5.0) a lot of work will begin on actually getting
 the game into a basic playable form.
 
 The current goal is to have the game in a rough playable state by the end of the year.
