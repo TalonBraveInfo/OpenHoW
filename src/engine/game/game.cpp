@@ -24,6 +24,7 @@
 #include "actor_manager.h"
 #include "mode_base.h"
 #include "game.h"
+#include "actors/actor_pig.h"
 
 using namespace openhow;
 
@@ -299,4 +300,31 @@ void GameManager::MapsCommand(unsigned int argc, char** argv) {
   }
 
   LogInfo("%u maps\n", Engine::GameManagerInstance()->map_manifests_.size());
+}
+
+void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
+  if (argc < 2) {
+    LogWarn("Invalid number of arguments, ignoring!\n");
+    return;
+  }
+
+  if(Engine::GameManagerInstance()->current_actor_ == nullptr) {
+    LogWarn("No actor currently active!\n");
+    return;
+  }
+
+  APig* pig = dynamic_cast<APig*>(Engine::GameManagerInstance()->current_actor_);
+  if(pig == nullptr) {
+    LogWarn("Actor is not a pig!\n");
+    return;
+  }
+
+  AItem* item = dynamic_cast<AItem*>(ActorManager::GetInstance()->CreateActor(argv[1]));
+  if(item == nullptr) {
+    ActorManager::GetInstance()->DestroyActor(item);
+    LogWarn("Failed to create valid item!\n");
+    return;
+  }
+
+  pig->AddInventory(item);
 }
