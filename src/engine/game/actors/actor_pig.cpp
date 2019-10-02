@@ -51,6 +51,12 @@ void InventoryManager::Clear() {
   items_.clear();
 }
 
+void InventoryManager::AddItem(AItem *item) {
+  LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
+
+  items_.push_back(item);
+}
+
 /////////////////////////////////////////////////////////////
 
 APig::APig() : SuperClass() {
@@ -157,13 +163,6 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   // ensure pig is spawned up in the air for deployment
   Map* map = Engine::GameManagerInstance()->GetCurrentMap();
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
-
-  // TODO: this is slightly more complicated...
-  SetClass(spawn.appearance);
-}
-
-void APig::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
 
   // TODO: this is slightly more complicated...
   SetClass(spawn.appearance);
