@@ -111,6 +111,7 @@ GameManager::GameManager() {
   plRegisterConsoleCommand("createmap", CreateMapCommand, "");
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
+  plRegisterConsoleCommand("give", GiveItemCommand, "");
 
   camera_ = new Camera({0, 0, 0}, {0, 0, 0});
 }
