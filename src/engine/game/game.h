@@ -122,6 +122,7 @@ class GameManager {
   void EndCurrentMode();
 
   // Player Handling
+  const Actor* GetActiveActor() { return active_actor_; }
 
  protected:
  private:
