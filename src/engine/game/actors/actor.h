@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "../../property.h"
+
 enum ActorFlag {
   ACTOR_FLAG_PLAYABLE = 1,
   ACTOR_FLAG_SCRIPTED = 16,
@@ -68,7 +70,7 @@ struct ActorSpawn {
 
 #define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
 
-class Actor {
+class Actor: public PropertyOwner {
  public:
 
   Actor();
