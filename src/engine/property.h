@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Daniel Collins <solemnwarning@solemnwarning.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <assert.h>
 #include <map>
 #include <sstream>
 #include <string>
@@ -174,14 +173,14 @@ template<typename T> class NumericProperty: public Property
 			return value;
 		}
 		
-		virtual std::string Serialise() const override
+		std::string Serialise() const override
 		{
 			return std::string((const char*)(&value_), sizeof(value_));
 		}
 		
-		virtual void Deserialise(const std::string &serialised) override
+		void Deserialise(const std::string &serialised) override
 		{
-			assert(serialised.length() == sizeof(value_));
+			u_assert(serialised.length() == sizeof(value_));
 			memcpy(&value_, serialised.data(), sizeof(value_));
 			MarkDirty();
 		}
@@ -218,14 +217,14 @@ class BooleanProperty: public Property
 			return value;
 		}
 		
-		virtual std::string Serialise() const override
+		std::string Serialise() const override
 		{
 			return value_
 				? "true"
 				: "false";
 		}
 		
-		virtual void Deserialise(const std::string &serialised) override
+		void Deserialise(const std::string &serialised) override
 		{
 			if(serialised == "false")
 			{

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2019 Daniel Collins <solemnwarning@solemnwarning.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <assert.h>
-
 #include "engine.h"
 #include "property.h"
 
@@ -27,7 +25,7 @@ Property::Property(PropertyOwner &po, const std::string &name, unsigned flags):
 	is_dirty_(false)
 {
 	auto x = po_.properties_.insert(std::make_pair(name, this));
-	assert(x.second); /* Check for name collision */
+	u_assert(x.second); /* Check for name collision */
 }
 
 Property::~Property()
