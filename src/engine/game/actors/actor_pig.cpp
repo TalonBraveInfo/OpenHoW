@@ -48,7 +48,12 @@ void InventoryManager::AddItem(AItem *item) {
   items_.push_back(item);
 }
 
-APig::APig() : SuperClass() {}
+APig::APig():
+  SuperClass(),
+  INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
+  INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
+  INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
+
 APig::~APig() = default;
 
 void APig::HandleInput() {
