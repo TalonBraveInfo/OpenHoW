@@ -20,21 +20,9 @@
 #include "actor_model.h"
 #include "actor_animated_model.h"
 #include "actor_item.h"
+#include "inventory.h"
 
-class InventoryManager {
- public:
-
-  void AddItem(AItem* item);
-  void RemoveItem(AItem* item);
-
-  void Clear();
-
- protected:
- private:
-  std::vector<AItem*> items_;
-};
-
-class APig : public AAnimatedModel {
+class APig : public AAnimatedModel, public InventoryManager {
   ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
 
  public:
@@ -43,8 +31,6 @@ class APig : public AAnimatedModel {
 
   void HandleInput() override;
   void Tick() override;
-
-  void AddInventory(AItem* item);
 
   void SetClass(int pclass);
   int GetClass() { return pclass_; }
@@ -58,6 +44,15 @@ class APig : public AAnimatedModel {
   bool Possessed(const Player* player) override;
   void Depossessed(const Player* player) override;
 
+  enum class VoiceCategory {
+    READY,
+    FIRE,
+    FIRE2,
+    DEATH,
+    DEATH2
+  };
+  void PlayVoiceSample(VoiceCategory category);
+
   void Killed();
 
   void Deserialize(const ActorSpawn& spawn) override;
@@ -66,11 +61,11 @@ class APig : public AAnimatedModel {
  private:
   AItem* current_equiped_item_{nullptr};
 
-  InventoryManager inventory_manager_;
-
   AudioSource* speech_{nullptr};
 
   const Team* team_{nullptr};
+
+  unsigned int personality_{1};
 
   enum {
     CLASS_NONE = -1,

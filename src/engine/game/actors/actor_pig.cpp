@@ -36,29 +36,6 @@ REGISTER_ACTOR(sp_me, APig)    // Spy
 
 using namespace openhow;
 
-/////////////////////////////////////////////////////////////
-// Inventory Manager
-
-/**
- * Clear the inventory of items.
- */
-void InventoryManager::Clear() {
-  for(auto& item : items_) {
-    ActorManager::GetInstance()->DestroyActor(item);
-    item = nullptr;
-  }
-
-  items_.clear();
-}
-
-void InventoryManager::AddItem(AItem *item) {
-  LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
-
-  items_.push_back(item);
-}
-
-/////////////////////////////////////////////////////////////
-
 APig::APig() : SuperClass() {
   speech_ = Engine::AudioManagerInstance()->CreateSource();
 }
@@ -79,6 +56,9 @@ void APig::Tick() {
     if(speech_->IsPlaying()) {
       return;
     }
+
+    // TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
+    Engine::AudioManagerInstance()->PlayLocalSound("audio/e_1.wav", GetPosition(), {0, 0, 0}, true);
 
     Actor* boots = ActorManager::GetInstance()->CreateActor("boots");
     boots->SetPosition(GetPosition());
@@ -166,12 +146,15 @@ void APig::Deserialize(const ActorSpawn& spawn) {
 
   // TODO: this is slightly more complicated...
   SetClass(spawn.appearance);
+
+  AddItem(dynamic_cast<AItem*>(ActorManager::GetInstance()->CreateActor("item_parachute")));
 }
 
 bool APig::Possessed(const Player* player) {
   // TODO
-  //  Trigger speech
   //  Update camera
+  PlayVoiceSample(VoiceCategory::READY);
+
   return SuperClass::Possessed(player);
 }
 
@@ -183,16 +166,13 @@ void APig::Depossessed(const Player* player) {
 void APig::Killed() {
   // TODO
 
-  inventory_manager_.Clear();
+  ClearItems();
 }
 
 /**
- * Add an item into the pig's inventory
- * @param item
+ * Play a randomised voice sample based on personality and team
+ * @param category
  */
-void APig::AddInventory(AItem *item) {
-  inventory_manager_.AddItem(item);
+void APig::PlayVoiceSample(VoiceCategory category) {
 
-  // TODO
-  //  Display message to user? Or should inventory manager do this...
 }
