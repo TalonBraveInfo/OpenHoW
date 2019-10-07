@@ -58,6 +58,10 @@ class APig : public AAnimatedModel, public InventoryManager {
   void Deserialize(const ActorSpawn& spawn) override;
 
  protected:
+  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
+  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
+  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
+
  private:
   AItem* current_equiped_item_{nullptr};
 

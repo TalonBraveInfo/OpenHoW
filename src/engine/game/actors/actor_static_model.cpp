@@ -30,7 +30,7 @@ void AStaticModel::Deserialize(const ActorSpawn& spawn) {
   SetModel("scenery/" + spawn.class_name);
 
   if(spawn.class_name == "brid2_s") {
-    angles_.z = plDegreesToRadians(-45.f);
+    angles_.z = plDegreesToRadians(135.f);
   }
 }
 
