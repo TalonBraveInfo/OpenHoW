@@ -387,7 +387,7 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
     return;
   }
 
-  pig->AddInventory(item);
+//  pig->AddInventory(item);
 }
 
 /**

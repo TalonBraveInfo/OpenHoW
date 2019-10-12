@@ -70,7 +70,7 @@ void AItem::PickUp(Actor* other) {
         break;
       }
 
-      pig->AddInventory(weapon);
+//      pig->AddInventory(weapon);
       break;
     }
     case ITEM_WEAPON_HMG:break;

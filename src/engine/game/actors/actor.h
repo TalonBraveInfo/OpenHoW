@@ -103,14 +103,16 @@ class Actor: public PropertyOwner {
   virtual void Deactivate() { is_activated_ = false; }
   virtual bool IsActivated() { return is_activated_; }
 
+  virtual void Touch(Actor* other);
+
   void DropToFloor();
 
  protected:
   bool is_visible_{false};
 
-  float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
-  float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
-  float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
+  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
+  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
+  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
 
   PLVector3 position_{0, 0, 0}, old_position_{0, 0, 0};
   PLVector3 fallback_position_{0, 0, 0};

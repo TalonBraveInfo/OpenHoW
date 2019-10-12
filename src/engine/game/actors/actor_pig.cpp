@@ -44,14 +44,6 @@ APig::~APig() {
   delete speech_;
 }
 
-APig::APig():
-  SuperClass(),
-  INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
-  INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
-  INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
-
-APig::~APig() = default;
-
 void APig::HandleInput() {
   SuperClass::HandleInput();
 }

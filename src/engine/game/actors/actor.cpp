@@ -23,7 +23,10 @@
 
 using namespace openhow;
 
-Actor::Actor() = default;
+Actor::Actor() :
+  INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
+  INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
+  INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
 Actor::~Actor() = default;
 
 void Actor::SetAngles(PLVector3 angles) {
@@ -102,4 +105,14 @@ void Actor::HandleInput() {
   } else {
     input_pitch = -cr.y / 327.0f;
   }
+}
+
+/**
+ * Called when one actor collides with another.
+ * @param other The touchee.
+ */
+void Actor::Touch(Actor* other) {
+  LogDebug("actor (%s) touched actor (%s)\n",
+           plPrintVector3(&position_, pl_int_var),
+           plPrintVector3(&other->position_, pl_int_var));
 }

@@ -25,8 +25,6 @@ class InventoryManager {
   void AddItem(AItem* item);
   void RemoveItem(AItem* item);
 
-  bool HasItem(const std::string& name);
-
   void ClearItems();
 
  protected:

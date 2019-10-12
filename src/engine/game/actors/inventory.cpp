@@ -40,13 +40,4 @@ void InventoryManager::AddItem(AItem* item) {
 }
 
 void InventoryManager::RemoveItem(AItem* item) {
-  items_.find()
-}
-
-bool InventoryManager::HasItem(const AItem* item) {
-  for (const auto& item : items_) {
-
-  }
-
-  return false;
 }
