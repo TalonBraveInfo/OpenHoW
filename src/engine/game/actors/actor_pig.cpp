@@ -15,13 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_graphics_camera.h>
-
 #include "../../engine.h"
 #include "../../Map.h"
-
 #include "../actor_manager.h"
-
 #include "actor_pig.h"
 
 REGISTER_ACTOR(ac_me, APig)    // Ace
@@ -96,12 +92,12 @@ void APig::Tick() {
 }
 
 void APig::SetClass(int pclass) {
-  std::string model_path;
+  // TODO: setup default inventory
+
+#if 0 // TODO: pass via json blob instead...
   switch (pclass_) {
     default:
-      LogWarn("Unknown pig class, \"%d\", destroying!\n");
-      ActorManager::GetInstance()->DestroyActor(this);
-      break;
+
 
     case CLASS_ACE:
       model_path = "pigs/ac_hi";
@@ -128,26 +124,34 @@ void APig::SetClass(int pclass) {
       model_path = "pigs/hv_hi";
       break;
     case CLASS_GRUNT:
-      model_path = "pigs/gr_hi";
-      break;
-  }
 
-  if (!model_path.empty()) {
-    SetModel(model_path);
   }
+#endif
+}
+
+void APig::SetPersonality(PigPersonality personality) {
+  // TODO: ensure all the necessary sounds are cached...
 }
 
 void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
-  // ensure pig is spawned up in the air for deployment
+  // Ensure pig is spawned up in the air for deployment
   Map* map = Engine::GameManagerInstance()->GetCurrentMap();
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
-  // TODO: this is slightly more complicated...
+  // TODO: This is slightly more complicated...
   SetClass(spawn.appearance);
 
-  AddItem(dynamic_cast<AItem*>(ActorManager::GetInstance()->CreateActor("item_parachute")));
+  // Create and equip our parachute, and then
+  // link it to ensure it gets destroyed when we do
+  parachute_ = dynamic_cast<AParachuteItem*>(ActorManager::GetInstance()->CreateActor("item_parachute"));
+  if(parachute_ == nullptr) {
+    Error("Failed to create \"item_parachute\" actor, aborting!\n");
+  }
+
+  LinkChild(parachute_);
+  parachute_->Deploy();
 }
 
 bool APig::Possessed(const Player* player) {
@@ -164,7 +168,10 @@ void APig::Depossessed(const Player* player) {
 }
 
 void APig::Killed() {
-  // TODO
+  // TODO: queue me until camera focus, if valid (in some cases we'll insta die)
+  //  Check if we're in water...
+
+  PlayVoiceSample(VoiceCategory::DEATH);
 
   ClearItems();
 }

@@ -18,6 +18,7 @@
 #include "../../engine.h"
 #include "../../input.h"
 #include "../../Map.h"
+#include "../actor_manager.h"
 
 #include "actor.h"
 
@@ -27,7 +28,16 @@ Actor::Actor() :
   INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
   INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
   INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
-Actor::~Actor() = default;
+
+Actor::~Actor() {
+  for(auto actor : children_) {
+    ActorManager::GetInstance()->DestroyActor(actor);
+    actor = nullptr;
+  }
+
+  children_.clear();
+  children_.shrink_to_fit();
+}
 
 void Actor::SetAngles(PLVector3 angles) {
   VecAngleClamp(&angles);
@@ -105,6 +115,20 @@ void Actor::HandleInput() {
   } else {
     input_pitch = -cr.y / 327.0f;
   }
+}
+
+/**
+ * Attach actor to self, and set self as parent. Children are automatically destroyed.
+ * @param actor Child actor to link.
+ */
+void Actor::LinkChild(Actor* actor) {
+  if(actor == nullptr) {
+    LogWarn("Attempted to attach an invalid actor to self!\n");
+    return;
+  }
+
+  children_.push_back(actor);
+  actor->parent_ = this;
 }
 
 /**

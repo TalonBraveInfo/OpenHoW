@@ -27,7 +27,7 @@ AModel::~AModel() = default;
 void AModel::Draw() {
   SuperClass::Draw();
 
-  if(model_ == nullptr) {
+  if(!show_model_ || model_ == nullptr) {
     return;
   }
 
@@ -45,4 +45,8 @@ void AModel::Draw() {
 
 void AModel::SetModel(const std::string &path) {
   model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
+}
+
+void AModel::ShowModel(bool show) {
+  show_model_ = show;
 }

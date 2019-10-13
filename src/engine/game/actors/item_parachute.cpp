@@ -17,27 +17,32 @@
 
 #include "../../engine.h"
 #include "../actor_manager.h"
-#include "inventory.h"
+#include "item_parachute.h"
+#include "actor_pig.h"
 
-/**
- * Clear the inventory of items.
- */
-void InventoryManager::ClearItems() {
-  for (auto& item : items_) {
-    ActorManager::GetInstance()->DestroyActor(item.second);
-    item.second = nullptr;
+REGISTER_ACTOR(item_parachute, AParachuteItem)
+
+AParachuteItem::AParachuteItem() : SuperClass() {
+  SetModel("weapons/we_para");
+  ShowModel(false);
+}
+
+AParachuteItem::~AParachuteItem() = default;
+
+void AParachuteItem::Tick() {
+  SuperClass::Tick();
+
+  if(!is_deployed_) {
+    return;
   }
 
-  items_.clear();
+  //APig* pig = dynamic_cast<APig*>(GetParent());
 }
 
-void InventoryManager::AddItem(AItem* item) {
-  u_assert(item != nullptr, "Attempted to add a null item to inventory!\n");
-
-  LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
-
-  items_.emplace(std::pair<std::string, AItem*>(item->GetInventoryDescription(), item));
+void AParachuteItem::Fire(const PLVector3& pos, const PLVector3& dir) {
+  SuperClass::Fire(pos, dir);
 }
 
-void InventoryManager::RemoveItem(AItem* item) {
+void AParachuteItem::Deploy() {
+  SuperClass::Deploy();
 }

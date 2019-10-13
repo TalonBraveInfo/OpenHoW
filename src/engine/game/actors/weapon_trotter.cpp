@@ -15,19 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../engine.h"
+#include "weapon_trotter.h"
 
-#include "actor_item.h"
+// Basic Melee Attack
 
-class InventoryManager {
- public:
+ATrotterWeapon::ATrotterWeapon() {}
+ATrotterWeapon::~ATrotterWeapon() {
 
-  void AddItem(AItem* item);
-  void RemoveItem(AItem* item);
+}
 
-  void ClearItems();
+void ATrotterWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
+  AWeapon::Fire(pos, dir);
+}
 
- protected:
- private:
-  std::map<std::string, AItem*> items_;
-};
+void ATrotterWeapon::Deploy() {
+  AWeapon::Deploy();
+}

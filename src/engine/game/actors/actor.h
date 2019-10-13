@@ -76,11 +76,12 @@ class Actor: public PropertyOwner {
  public:
 
   Actor();
-  virtual ~Actor();
+  ~Actor() override;
 
   virtual void Tick() {}  // simulation tick, called per-frame
   virtual void Draw() {}  // draw tick, called per-frame
 
+  virtual void SetHealth(int16_t health) { health_ = health; }
   virtual void AddHealth(int16_t health);
   int16_t GetHealth() { return health_; }
 
@@ -103,6 +104,9 @@ class Actor: public PropertyOwner {
   virtual void Deactivate() { is_activated_ = false; }
   virtual bool IsActivated() { return is_activated_; }
 
+  Actor* GetParent() { return parent_; }
+  void LinkChild(Actor* actor);
+
   virtual void Touch(Actor* other);
 
   void DropToFloor();
@@ -123,12 +127,10 @@ class Actor: public PropertyOwner {
 
  private:
   uint16_t flags_{0};
-
-  uint16_t team_{0};
   int16_t health_{0};
 
   bool is_activated_{false};
 
   Actor* parent_{nullptr};
-  Actor* child_{nullptr};
+  std::vector<Actor*> children_;
 };

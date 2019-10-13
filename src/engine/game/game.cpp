@@ -380,14 +380,13 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
     return;
   }
 
-  AItem* item = dynamic_cast<AItem*>(ActorManager::GetInstance()->CreateActor(argv[1]));
-  if(item == nullptr) {
-    ActorManager::GetInstance()->DestroyActor(item);
-    LogWarn("Failed to create valid item!\n");
-    return;
+  auto item = static_cast<ItemIdentifier>(strtol(argv[1], nullptr, 10));
+  unsigned int quantity = 1;
+  if(argc > 2) {
+    quantity = strtol(argv[2], nullptr, 10);
   }
 
-//  pig->AddInventory(item);
+  pig->AddInventoryItem(item, quantity);
 }
 
 /**

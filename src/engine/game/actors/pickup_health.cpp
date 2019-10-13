@@ -17,31 +17,31 @@
 
 #include "../../engine.h"
 #include "../actor_manager.h"
-#include "actor_item.h"
 #include "actor_pig.h"
 
-class AItemHealth : public AItem {
-  ACTOR_IMPLEMENT_SUPER(AItem)
+class AHealthPickup : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
 
  public:
-  AItemHealth();
-  ~AItemHealth() override;
+  AHealthPickup();
+  ~AHealthPickup() override;
 
-  void PickUp(Actor* other) override;
+  void Touch(Actor* other) override;
 
  protected:
  private:
+  unsigned int pickup_quantity_{ 0 };
 };
 
-REGISTER_ACTOR(crate2, AItemHealth)
+REGISTER_ACTOR(crate2, AHealthPickup)
 
 using namespace openhow;
 
-AItemHealth::AItemHealth() : SuperClass() {}
-AItemHealth::~AItemHealth() = default;
+AHealthPickup::AHealthPickup() : SuperClass() {}
+AHealthPickup::~AHealthPickup() = default;
 
-void AItemHealth::PickUp(Actor* other) {
-  SuperClass::PickUp(other);
+void AHealthPickup::Touch(Actor* other) {
+  SuperClass::Touch(other);
 
   APig* pig = dynamic_cast<APig*>(other);
   if(pig == nullptr) {
@@ -49,7 +49,7 @@ void AItemHealth::PickUp(Actor* other) {
     return;
   }
 
-  pig->AddHealth(item_quantity_);
+  pig->AddHealth(pickup_quantity_);
 
   // may want to introduce networking logic here for actor destruction
   // hence why it's done this way for now

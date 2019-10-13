@@ -17,23 +17,18 @@
 
 #pragma once
 
-#include "actor.h"
+#include "actor_weapon.h"
 
-class AModel : public Actor {
-  ACTOR_IMPLEMENT_SUPER(Actor)
+class ATrotterWeapon : public AWeapon {
+  ACTOR_IMPLEMENT_SUPER(AWeapon)
 
  public:
-  AModel();
-  ~AModel() override;
+  ATrotterWeapon();
+  ~ATrotterWeapon() override;
 
-  void Draw() override;
-  void ShowModel(bool show = true);
-
-  virtual void SetModel(const std::string &path);
+  void Fire(const PLVector3& pos, const PLVector3& dir) override;
+  void Deploy() override;
 
  protected:
-  PLModel *model_{nullptr};
-
  private:
-  bool show_model_{true};
 };

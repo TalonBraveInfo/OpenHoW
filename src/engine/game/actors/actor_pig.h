@@ -19,8 +19,42 @@
 
 #include "actor_model.h"
 #include "actor_animated_model.h"
-#include "actor_item.h"
-#include "inventory.h"
+#include "actor_weapon.h"
+#include "item_parachute.h"
+#include "../inventory.h"
+
+enum class PigPersonality {
+  NONE = -1,
+};
+
+enum class PigClass {
+  NONE = -1,
+  GRUNT,
+  // Heavy Weapons
+  GUNNER,
+  BOMBARDIER,
+  PYROTECHNIC,
+  // Engineer
+  SAPPER,
+  ENGINEER,
+  SABOTEUR,
+  // Espionage
+  SCOUT,
+  SNIPER,
+  SPY,
+  // Medic
+  ORDERLY,
+  MEDIC,
+  SURGEON,
+  // High Rank
+  COMMANDO,
+  HERO,
+  ACE,
+  LEGEND,
+  // Multiplayer
+  PARATROOPER,
+  GRENADIER,
+};
 
 class APig : public AAnimatedModel, public InventoryManager {
   ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
@@ -33,10 +67,10 @@ class APig : public AAnimatedModel, public InventoryManager {
   void Tick() override;
 
   void SetClass(int pclass);
-  int GetClass() { return pclass_; }
+  PigClass GetClass() { return class_; }
 
-  void SetPersonality(int personality);
-  int GetPersonality();
+  void SetPersonality(PigPersonality personality);
+  PigPersonality GetPersonality() { return personality_; }
 
   void SetTeam(const Team* team);
   const Team* GetTeam() const { return team_; }
@@ -58,26 +92,15 @@ class APig : public AAnimatedModel, public InventoryManager {
   void Deserialize(const ActorSpawn& spawn) override;
 
  private:
-  AItem* current_equiped_item_{nullptr};
+  AWeapon* weapon_{nullptr};
+  AParachuteItem* parachute_{nullptr};
 
   AudioSource* speech_{nullptr};
 
   const Team* team_{nullptr};
 
-  unsigned int personality_{1};
-
-  enum {
-    CLASS_NONE = -1,
-    CLASS_ACE,
-    CLASS_LEGEND,
-    CLASS_MEDIC,
-    CLASS_COMMANDO,
-    CLASS_SPY,
-    CLASS_SNIPER,
-    CLASS_SABOTEUR,
-    CLASS_HEAVY,
-    CLASS_GRUNT,
-  } pclass_{CLASS_NONE};
+  PigPersonality personality_{ PigPersonality::NONE };
+  PigClass class_{ PigClass::NONE };
 
   enum {
     EYES_OPEN,
