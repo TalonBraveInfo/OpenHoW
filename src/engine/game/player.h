@@ -17,36 +17,29 @@
 
 #pragma once
 
-#include "mode_interface.h"
-
-class BaseGameMode : public IGameMode {
+class Player {
  public:
-  BaseGameMode();
-  ~BaseGameMode() override;
+  explicit Player(Team* team);
+  ~Player();
 
-  void Tick() override;
+  unsigned int GetNumChildren() { return children_.size(); }
+  void AddChild(Actor* actor);
+  void RemoveChild(Actor* actor);
+  void PossessChild(unsigned int index);
+  void DepossessChild();
 
-  void StartRound() override;
-  void RestartRound() override;
-  void EndRound() override;
+  void SetControllerSlot(unsigned int slot) { input_slot = slot; }
+  unsigned int GetControllerSlot() { return input_slot; }
 
-  void PlayerJoined(Player* player) override;
-  void PlayerLeft(Player* player) override;
-
-  void SpectatorJoined(Player* player) override;
-  void SpectatorLeft(Player* player) override;
-
-  unsigned int GetMaxSpectators() const override;
-  unsigned int GetMaxPlayers() const override;
-
-  void AssignActorToPlayer(Actor* target, Player* owner) override;
+  const Team* GetTeam() const { return team_; }
 
  protected:
-  void StartTurn() override;
-  void EndTurn() override;
-
-  void SpawnActors() override;
-  void DestroyActors() override;
-
  private:
+  unsigned int input_slot{0}; // Controller slot
+  unsigned int identity{}; // Identity of the team (e.g. Tommy etc.)
+
+  Team* team_{nullptr};
+
+  std::vector<Actor*> children_;
+  Actor* current_child_{nullptr};
 };

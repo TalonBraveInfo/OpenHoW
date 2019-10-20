@@ -66,14 +66,14 @@ class APig : public AAnimatedModel, public InventoryManager {
   void HandleInput() override;
   void Tick() override;
 
-  void SetClass(int pclass);
+  void SetClass(PigClass pclass);
   PigClass GetClass() { return class_; }
 
   void SetPersonality(PigPersonality personality);
   PigPersonality GetPersonality() { return personality_; }
 
-  void SetTeam(const Team* team);
-  const Team* GetTeam() const { return team_; }
+  void SetPlayerOwner(Player* owner);
+  const Player* GetPlayerOwner() const { return team_; }
 
   bool Possessed(const Player* player) override;
   void Depossessed(const Player* player) override;
@@ -97,7 +97,7 @@ class APig : public AAnimatedModel, public InventoryManager {
 
   AudioSource* speech_{nullptr};
 
-  const Team* team_{nullptr};
+  const Player* team_{nullptr};
 
   PigPersonality personality_{ PigPersonality::NONE };
   PigClass class_{ PigClass::NONE };

@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_graphics_camera.h>
-
 #include "../engine.h"
 #include "../Map.h"
 
@@ -26,10 +24,7 @@
 
 using namespace openhow;
 
-BaseGameMode::BaseGameMode() {
-  players_.resize(4);
-}
-
+BaseGameMode::BaseGameMode() = default;
 BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartRound() {
@@ -59,6 +54,17 @@ void BaseGameMode::Tick() {
     // still setting the game up...
     return;
   }
+
+#if 0
+  if (active_actor_ != nullptr) {
+    active_actor_->HandleInput();
+
+    // temp: force the camera at the actor pos
+    Camera* camera = Engine::GameManagerInstance()->GetCamera();
+    camera->SetPosition(active_actor_->GetPosition());
+    camera->SetAngles(active_actor_->GetAngles());
+  }
+#endif
 }
 
 void BaseGameMode::SpawnActors() {
@@ -75,18 +81,6 @@ void BaseGameMode::SpawnActors() {
     }
 
     actor->Deserialize(spawn);
-
-    // Pigs are a special case, for obvious reasons
-    APig* pig = dynamic_cast<APig*>(actor);
-    if (pig == nullptr) {
-      continue;
-    }
-
-    // add each pig to the players list
-    for(auto& player : players_) {
-      if(pig->GetTeam() == player.GetTeam()) {
-      }
-    }
   }
 
 #if 0 // debug sprites...
@@ -117,20 +111,17 @@ void BaseGameMode::DestroyActors() {
 }
 
 void BaseGameMode::StartTurn() {
-#if 0 // TODO: rethink...
-  Player* player = GetCurrentPlayer();
   if (player->GetInputTarget() == nullptr) {
     LogWarn("No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str());
     EndTurn();
     return;
   }
-#endif
 }
 
 void BaseGameMode::EndTurn() {
   // move onto the next player
-  if (++current_player_ >= players_.size()) {
-    current_player_ = 0;
+  if (++player_slot_ >= rotation_.size()) {
+    player_slot_ = 0;
   }
 }
 
@@ -158,6 +149,14 @@ void BaseGameMode::SpectatorLeft(Player* player) {
   LogInfo("%s has left the spectators\n", player->GetTeam()->name.c_str());
 }
 
+/**
+ * Maximum players allowed in this mode.
+ * @return Number of players.
+ */
 unsigned int BaseGameMode::GetMaxPlayers() const {
   return 4;
+}
+
+void BaseGameMode::AssignActorToPlayer(Actor* target, Player* owner) {
+  owner->AddTarget();
 }

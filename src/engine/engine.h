@@ -29,6 +29,7 @@
 #ifdef __cplusplus
 #include <string>
 #include <sstream>
+#include <list>
 #endif
 
 #include "../shared/util.h"
@@ -41,7 +42,7 @@
 #define ENGINE_LOG          "debug"
 
 #define ENGINE_MAJOR_VERSION    0
-#define ENGINE_MINOR_VERSION    4
+#define ENGINE_MINOR_VERSION    5
 #define ENGINE_PATCH_VERSION    0
 
 #define TICKS_PER_SECOND    25
@@ -86,7 +87,9 @@ class Engine {
 }
 
 #else
+
 typedef struct BaseGameMode BaseGameMode;
+
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
 
 typedef struct EngineState {

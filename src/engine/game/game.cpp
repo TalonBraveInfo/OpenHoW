@@ -23,7 +23,9 @@
 
 #include "actor_manager.h"
 #include "mode_base.h"
+#include "player.h"
 #include "game.h"
+
 #include "actors/actor_pig.h"
 
 using namespace openhow;
@@ -76,37 +78,6 @@ std::string MapManifest::Serialize() {
   return output.str();
 }
 
-/////////////////////////////////////////////////////////////
-
-Player::Player() = default;
-Player::~Player() = default;
-
-void Player::PossessChild(unsigned int index) {
-#if 0 // TODO: rethink...
-  if(index >= children_.size()) {
-    LogWarn("Failed to possess actor, child index is out of range (%d vs %d)!\n", index, children_.size());
-    return;
-  }
-
-  Actor* child = children_[index];
-  if(child == nullptr) {
-    LogWarn("Child of player is null!\n");
-    return;
-  }
-
-  if(!child->Possessed(this)) {
-    LogWarn("Failed to possess actor!\n");
-    return;
-  }
-#endif
-}
-
-void Player::DepossessChild() {
-
-}
-
-/////////////////////////////////////////////////////////////
-
 GameManager::GameManager() {
   plRegisterConsoleCommand("createmap", CreateMapCommand, "");
   plRegisterConsoleCommand("map", MapCommand, "");
@@ -143,16 +114,17 @@ void GameManager::Tick() {
 
   active_mode_->Tick();
 
-  if (active_actor_ != nullptr) {
-    active_actor_->HandleInput();
-
-    // temp: force the camera at the actor pos
-    Camera* camera = Engine::GameManagerInstance()->GetCamera();
-    camera->SetPosition(active_actor_->GetPosition());
-    camera->SetAngles(active_actor_->GetAngles());
-  }
-
   ActorManager::GetInstance()->TickActors();
+}
+
+void GameManager::SetupPlayers(std::vector<Team*> teams) {
+  int controller_slot = -1;
+  for(auto team : teams) {
+    auto* player = new Player(team);
+    if(team->type_ == Team::Type::LOCAL) { controller_slot++; }
+    player->SetControllerSlot(controller_slot);
+    players_.push_back(player);
+  }
 }
 
 void GameManager::LoadMap(const std::string& name) {

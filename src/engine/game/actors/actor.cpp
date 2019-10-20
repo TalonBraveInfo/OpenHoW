@@ -18,7 +18,9 @@
 #include "../../engine.h"
 #include "../../input.h"
 #include "../../Map.h"
+
 #include "../actor_manager.h"
+#include "../player.h"
 
 #include "actor.h"
 

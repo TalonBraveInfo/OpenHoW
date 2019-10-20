@@ -33,32 +33,12 @@ struct Team {
   std::string debrief_texture{"frontend/debrief/unifeng"};
 
   std::string Serialize() { /* TODO */ return ""; }
-};
 
-class Player {
- public:
-  Player();
-  ~Player();
-
-  void PossessChild(unsigned int index);
-  void DepossessChild();
-
-  void SetControllerSlot(unsigned int slot) { input_slot = slot; }
-  unsigned int GetControllerSlot() { return input_slot; }
-
-  const Team* GetTeam() const { return team_; }
-  void SetTeam(const Team* team) { team_ = team; }
-
- protected:
- private:
-  std::string name_{"none"};
-
-  unsigned int input_slot{0}; // Controller slot
-  unsigned int identity{}; // Identity of the team (e.g. Tommy etc.)
-
-  const Team* team_{nullptr};
-
-  unsigned int current_target_{0};
+  enum class Type {
+    LOCAL,
+    NETWORKED,
+    COMPUTER,
+  } type_{ Type::LOCAL };
 };
 
 struct MapManifest {
@@ -101,6 +81,8 @@ class GameManager {
 
   Camera* GetCamera() { return camera_; }
 
+  void SetupPlayers(std::vector<Team*> teams);
+
   // Map
 
   void LoadMap(const std::string& name);
@@ -113,7 +95,7 @@ class GameManager {
   MapManifest* GetMapManifest(const std::string& name);
   const MapManifestMap& GetMapManifests() { return map_manifests_; };
   MapManifest* CreateManifest(const std::string& name);
-  void SaveManifest(const std::string& name, const MapManifest& manifest);
+  //void SaveManifest(const std::string& name, const MapManifest& manifest);
 
   Map* GetCurrentMap() { return active_map_; }
 
@@ -121,17 +103,12 @@ class GameManager {
 
   void EndCurrentMode();
 
-  // Player Handling
-  const Actor* GetActiveActor() { return active_actor_; }
-
  protected:
  private:
   static void MapCommand(unsigned int argc, char* argv[]);
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
   static void GiveItemCommand(unsigned int argc, char* argv[]);
-
-  Actor* active_actor_{nullptr};
 
   Camera* camera_{nullptr};
 
@@ -142,8 +119,7 @@ class GameManager {
 
   std::map<std::string, MapManifest> map_manifests_;
 
-  std::vector<Player> players_;
-  std::vector<Team> teams_;
+  std::vector<Player*> players_;
 
 #define MAX_AMBIENT_SAMPLES 8
   double ambient_emit_delay_{0};

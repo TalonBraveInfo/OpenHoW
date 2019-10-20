@@ -79,7 +79,7 @@ void APig::Tick() {
 
   // Clamp height based on current tile pos
   Map* map = Engine::GameManagerInstance()->GetCurrentMap();
-  float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
+  float height = map->GetTerrain()->GetHeight({position_.x, position_.z});
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
   }
@@ -91,8 +91,10 @@ void APig::Tick() {
   VecAngleClamp(&angles_);
 }
 
-void APig::SetClass(int pclass) {
+void APig::SetClass(PigClass pclass) {
   // TODO: setup default inventory
+
+  SetHealth(100);
 
 #if 0 // TODO: pass via json blob instead...
   switch (pclass_) {
@@ -133,6 +135,11 @@ void APig::SetPersonality(PigPersonality personality) {
   // TODO: ensure all the necessary sounds are cached...
 }
 
+void APig::SetPlayerOwner(Player* owner){
+  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
+  mode->AssignActorToPlayer(this, owner);
+}
+
 void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
@@ -141,7 +148,8 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
   // TODO: This is slightly more complicated...
-  SetClass(spawn.appearance);
+  SetClass(PigClass::GRUNT);
+  SetPlayerOwner(Engine::GameManagerInstance()->GetMode()->GetCurrentPlayer()); // temp
 
   // Create and equip our parachute, and then
   // link it to ensure it gets destroyed when we do
@@ -156,7 +164,6 @@ void APig::Deserialize(const ActorSpawn& spawn) {
 
 bool APig::Possessed(const Player* player) {
   // TODO
-  //  Update camera
   PlayVoiceSample(VoiceCategory::READY);
 
   return SuperClass::Possessed(player);
@@ -181,5 +188,5 @@ void APig::Killed() {
  * @param category
  */
 void APig::PlayVoiceSample(VoiceCategory category) {
-
+  // TODO
 }

@@ -17,6 +17,7 @@
 
 #pragma once
 
+struct Team;
 class Player;
 
 class IGameMode {
@@ -38,7 +39,7 @@ class IGameMode {
   virtual unsigned int GetMaxSpectators() const = 0;
   virtual unsigned int GetMaxPlayers() const = 0;
 
-  Player* GetCurrentPlayer() { return &players_[current_player_]; }
+  Player* GetCurrentPlayer() { return rotation_[player_slot_].player; }
 
   bool HasModeStarted() const { return mode_started_; }
   bool HasRoundStarted() const { return round_started_; }
@@ -46,6 +47,8 @@ class IGameMode {
 
   unsigned int GetTurnTime() { return turn_time_; }
   unsigned int GetTurnTimeSeconds() { return turn_time_ / 1000; }
+
+  virtual void AssignActorToPlayer(Actor* target, Player* owner) = 0;
 
  protected:
   virtual void StartTurn() = 0;
@@ -60,8 +63,11 @@ class IGameMode {
   bool round_started_{false};
   bool turn_started_{false};
 
-  std::vector<Player> players_;
-  std::vector<Player> spectators_;
+  struct PlayerRotation {
+    Player* player{nullptr};
+    unsigned int target_slot{0};
+  };
 
-  unsigned int current_player_{0};
+  std::vector<PlayerRotation> rotation_;
+  unsigned int player_slot_{0};
 };
