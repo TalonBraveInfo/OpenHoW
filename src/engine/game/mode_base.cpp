@@ -20,11 +20,14 @@
 
 #include "mode_base.h"
 #include "actor_manager.h"
-#include "actors/actor_pig.h"
+#include "player.h"
 
 using namespace openhow;
 
-BaseGameMode::BaseGameMode() = default;
+BaseGameMode::BaseGameMode(const GameModeDescriptor& descriptor) {
+
+}
+
 BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartRound() {
@@ -110,15 +113,18 @@ void BaseGameMode::DestroyActors() {
   ActorManager::GetInstance()->DestroyActors();
 }
 
-void BaseGameMode::StartTurn() {
-  if (player->GetInputTarget() == nullptr) {
+void BaseGameMode::StartTurn(Player* player) {
+  if(player->GetNumChildren() == 0) {
     LogWarn("No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str());
-    EndTurn();
     return;
   }
+
+  player->PossessChild(0);
 }
 
-void BaseGameMode::EndTurn() {
+void BaseGameMode::EndTurn(Player* player) {
+  player->DepossessChild();
+
   // move onto the next player
   if (++player_slot_ >= rotation_.size()) {
     player_slot_ = 0;
@@ -158,5 +164,5 @@ unsigned int BaseGameMode::GetMaxPlayers() const {
 }
 
 void BaseGameMode::AssignActorToPlayer(Actor* target, Player* owner) {
-  owner->AddTarget();
+  owner->AddChild(target);
 }

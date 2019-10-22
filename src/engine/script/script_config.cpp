@@ -271,7 +271,7 @@ std::vector<std::string> ScriptConfig::GetArrayStrings(const std::string& proper
   std::vector<std::string> strings;
   strings.reserve(length);
 
-  for (unsigned int i = 0; i < length; ++i) {
+  for (size_t i = 0; i < length; ++i) {
     duk_get_prop_index(context, -1, i);
     const char* c = duk_get_string(context, -1);
     u_assert(c != nullptr, "Null string passed by duk_get_string!\n");

@@ -103,7 +103,7 @@ void GameManager::Tick() {
     if (sample != nullptr) {
       PLVector3 position = {
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH),
-          active_map_->GetTerrain()->GetMaxHeight(),
+          map_->GetTerrain()->GetMaxHeight(),
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
       };
       Engine::AudioManagerInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
@@ -137,33 +137,11 @@ void GameManager::LoadMap(const std::string& name) {
   //FrontEnd_SetState(FE_MODE_LOADING);
 
   Map* map = new Map(manifest);
-  if (active_map_ != nullptr) {
-    EndCurrentMode();
+  if (map_ != nullptr) {
+    EndMode();
   }
 
-  active_map_ = map;
-
-  std::string sample_ext = "d";
-  if (manifest->time != "day") {
-    sample_ext = "n";
-  }
-
-  for (unsigned int i = 1, idx = 0; i < 4; ++i) {
-    if (i < 3) {
-      ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(
-          "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
-    }
-    ambient_samples_[idx++] =
-        Engine::AudioManagerInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
-    ambient_samples_[idx++] =
-        Engine::AudioManagerInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
-  }
-
-  ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
-
-  active_mode_ = new BaseGameMode();
-  // call StartRound; deals with spawning everything in and other mode specific logic
-  active_mode_->StartRound();
+  map_ = map;
 
   /* todo: we should actually pause here and wait for user input
    *       otherwise players won't have time to read the loading screen */
@@ -175,7 +153,7 @@ void GameManager::UnloadMap() {
     delete ambient_sample;
   }
 
-  delete active_map_;
+  delete map_;
 }
 
 void GameManager::RegisterMapManifest(const std::string& path) {
@@ -306,6 +284,13 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
   }
 
   Engine::GameManagerInstance()->LoadMap(argv[1]);
+
+  // Set up a mode with some defaults...
+  GameModeDescriptor descriptor;
+  descriptor.teams = {
+      {}, {}
+  };
+  Engine::GameManagerInstance()->StartMode(descriptor);
 }
 
 /**
@@ -361,10 +346,40 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
   pig->AddInventoryItem(item, quantity);
 }
 
+void GameManager::StartMode(const GameModeDescriptor& descriptor) {
+  if(map_ == nullptr) {
+    Error("Attempted to start mode without a valid map loaded!\n");
+  }
+
+  std::string sample_ext = "d";
+  if (map_->GetManifest()->time != "day") {
+    sample_ext = "n";
+  }
+
+  ambient_emit_delay_ = g_state.sim_ticks + plGenerateRandomd(100) + 1;
+  for (unsigned int i = 1, idx = 0; i < 4; ++i) {
+    std::string snum = std::to_string(i);
+    std::string path = "audio/amb_";
+    if (i < 3) {
+      path += snum + sample_ext + ".wav";
+      ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(path, false);
+    }
+
+    path = "audio/batt_s" + snum + ".wav";
+    ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(path, false);
+    path = "audio/batt_l" + snum + ".wav";
+    ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(path, false);
+  }
+
+  // call StartRound; deals with spawning everything in and other mode specific logic
+  active_mode_ = new BaseGameMode(descriptor);
+  active_mode_->StartRound();
+}
+
 /**
  * End the currently active mode and flush everything.
  */
-void GameManager::EndCurrentMode() {
+void GameManager::EndMode() {
   delete active_mode_;
 
   UnloadMap();

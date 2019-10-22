@@ -23,39 +23,6 @@
 #include "item_parachute.h"
 #include "../inventory.h"
 
-enum class PigPersonality {
-  NONE = -1,
-};
-
-enum class PigClass {
-  NONE = -1,
-  GRUNT,
-  // Heavy Weapons
-  GUNNER,
-  BOMBARDIER,
-  PYROTECHNIC,
-  // Engineer
-  SAPPER,
-  ENGINEER,
-  SABOTEUR,
-  // Espionage
-  SCOUT,
-  SNIPER,
-  SPY,
-  // Medic
-  ORDERLY,
-  MEDIC,
-  SURGEON,
-  // High Rank
-  COMMANDO,
-  HERO,
-  ACE,
-  LEGEND,
-  // Multiplayer
-  PARATROOPER,
-  GRENADIER,
-};
-
 class APig : public AAnimatedModel, public InventoryManager {
   ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
 

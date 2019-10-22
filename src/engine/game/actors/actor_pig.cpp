@@ -135,7 +135,7 @@ void APig::SetPersonality(PigPersonality personality) {
   // TODO: ensure all the necessary sounds are cached...
 }
 
-void APig::SetPlayerOwner(Player* owner){
+void APig::SetPlayerOwner(Player* owner) {
   IGameMode* mode = Engine::GameManagerInstance()->GetMode();
   mode->AssignActorToPlayer(this, owner);
 }

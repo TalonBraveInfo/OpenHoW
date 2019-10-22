@@ -19,10 +19,6 @@
 
 // Legacy / Prototyping
 
-#define MAX_PLAYERS     4
-#define MAX_PIGS        24
-#define MAX_INVENTORY   32
-
 enum TeamType {
   TEAM_BRITISH,
   TEAM_AMERICAN,

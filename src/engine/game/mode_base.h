@@ -21,7 +21,7 @@
 
 class BaseGameMode : public IGameMode {
  public:
-  BaseGameMode();
+  explicit BaseGameMode(const GameModeDescriptor& descriptor);
   ~BaseGameMode() override;
 
   void Tick() override;
@@ -42,8 +42,8 @@ class BaseGameMode : public IGameMode {
   void AssignActorToPlayer(Actor* target, Player* owner) override;
 
  protected:
-  void StartTurn() override;
-  void EndTurn() override;
+  void StartTurn(Player* player) override;
+  void EndTurn(Player* player) override;
 
   void SpawnActors() override;
   void DestroyActors() override;

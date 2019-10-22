@@ -20,7 +20,54 @@
 #include "TempGame.h"
 #include "actors/actor.h"
 #include "mode_interface.h"
+
 #include "../graphics/camera.h"
+
+enum class PigStatus {
+  NONE = -1,
+  ALIVE,
+  DEAD,
+};
+
+enum class PigPersonality {
+  NONE = -1,
+};
+
+enum class PigClass {
+  NONE = -1,
+  GRUNT,
+  // Heavy Weapons
+  GUNNER,
+  BOMBARDIER,
+  PYROTECHNIC,
+  // Engineer
+  SAPPER,
+  ENGINEER,
+  SABOTEUR,
+  // Espionage
+  SCOUT,
+  SNIPER,
+  SPY,
+  // Medic
+  ORDERLY,
+  MEDIC,
+  SURGEON,
+  // High Rank
+  COMMANDO,
+  HERO,
+  ACE,
+  LEGEND,
+  // Multiplayer
+  PARATROOPER,
+  GRENADIER,
+};
+
+struct PigSlot {
+  std::string     name{"none"};   // Assigned name, e.g. Herman
+  PigClass        classname;      // Ace, gunner, sapper etc.
+  PigPersonality  personality;    // Determines voice and portrait
+  PigStatus       status;         // Pig's status (alive / dead)
+};
 
 struct Team {
   std::string name{"none"};
@@ -34,12 +81,16 @@ struct Team {
 
   std::string Serialize() { /* TODO */ return ""; }
 
+  PigSlot slots[8];
+
   enum class Type {
     LOCAL,
     NETWORKED,
     COMPUTER,
   } type_{ Type::LOCAL };
 };
+
+typedef std::vector<Team*> TeamArray;
 
 struct MapManifest {
   std::string filepath; // path to manifest
@@ -62,11 +113,25 @@ struct MapManifest {
   float fog_intensity{30.0f};
   float fog_distance{100.0f};
   // Misc
-  std::string temperature{"normal"};       // Determines idle animation set. Can be normal/hot/cold
+  std::string temperature{"normal"};    // Determines idle animation set. Can be normal/hot/cold
   std::string time{"day"};              // Determines ambient sound set. Can be day/night
   std::string weather{"clear"};         // Determines weather particles. Can be clear/rain/snow
 
   std::string Serialize();
+};
+
+struct GameModeDescriptor {
+  std::string   desired_mode{"survival"};
+  TeamArray     teams;
+
+  // Mode specific properties, probably provide these
+  // via json going forward and then parse via the mode... somehow
+  bool          select_pig{false};
+  bool          sudden_death{false};
+  unsigned int  default_health{50};
+  unsigned int  num_pigs{3};
+  unsigned int  turn_time{45};
+  unsigned int  deathmatch_limit{5};
 };
 
 class Map;
@@ -81,7 +146,10 @@ class GameManager {
 
   Camera* GetCamera() { return camera_; }
 
-  void SetupPlayers(std::vector<Team*> teams);
+  void StartMode(const GameModeDescriptor& descriptor);
+  void EndMode();
+
+  void SetupPlayers(TeamArray teams);
 
   // Map
 
@@ -97,11 +165,9 @@ class GameManager {
   MapManifest* CreateManifest(const std::string& name);
   //void SaveManifest(const std::string& name, const MapManifest& manifest);
 
-  Map* GetCurrentMap() { return active_map_; }
+  Map* GetCurrentMap() { return map_; }
 
   IGameMode* GetMode() { return active_mode_; }
-
-  void EndCurrentMode();
 
  protected:
  private:
@@ -113,7 +179,7 @@ class GameManager {
   Camera* camera_{nullptr};
 
   IGameMode* active_mode_{nullptr};
-  Map* active_map_{nullptr};
+  Map* map_{nullptr};
 
   Actor* current_actor_{nullptr};
 

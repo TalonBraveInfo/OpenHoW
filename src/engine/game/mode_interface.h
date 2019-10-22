@@ -51,8 +51,8 @@ class IGameMode {
   virtual void AssignActorToPlayer(Actor* target, Player* owner) = 0;
 
  protected:
-  virtual void StartTurn() = 0;
-  virtual void EndTurn() = 0;
+  virtual void StartTurn(Player* player) = 0;
+  virtual void EndTurn(Player* player) = 0;
 
   virtual void SpawnActors() = 0;
   virtual void DestroyActors() = 0;

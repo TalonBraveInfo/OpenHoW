@@ -57,5 +57,5 @@ void Player::AddChild(Actor* actor) {
 }
 
 void Player::RemoveChild(Actor* actor) {
-  children_.erase(actor);
+  // todo
 }
