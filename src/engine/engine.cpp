@@ -35,25 +35,6 @@ EngineState g_state;
 
 #include "game/actor_manager.h"
 
-// Temporary interface, since graphics sub-system is written in C :^)
-extern "C" void DrawActors(void) {
-  ActorManager::GetInstance()->DrawActors();
-}
-
-// Temporary interface, since graphics sub-system is written in C :^)
-extern "C" void DrawMap(void) {
-  if (!cv_graphics_draw_world->b_value) {
-    return;
-  }
-
-  Map* map = openhow::engine->GetGameManager()->GetCurrentMap();
-  if (map == nullptr) {
-    return;
-  }
-
-  map->Draw();
-}
-
 openhow::Engine* openhow::engine;
 
 openhow::Engine::Engine() {
@@ -131,7 +112,7 @@ void openhow::Engine::Initialize() {
   physics_interface_ = IPhysicsInterface::CreateInstance();
 
   // Ensure that our manifest list is updated
-  GetGameManager()->RegisterMapManifests();
+  GameManagerInstance()->RegisterMapManifests();
 
   LogInfo("Base path:         \"%s\"\n", u_get_base_path());
   LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
@@ -161,8 +142,8 @@ bool openhow::Engine::IsRunning() {
 
     Client_ProcessInput(); // todo: kill this
 
-    GetGameManager()->Tick();
-    GetAudioManager()->Tick();
+    GameManagerInstance()->Tick();
+    AudioManagerInstance()->Tick();
 
     g_state.last_sys_tick = System_GetTicks();
     next_tick += SKIP_TICKS;

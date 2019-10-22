@@ -27,6 +27,8 @@
 // Can be used for very basic effects etc.
 
 class ASprite : public Actor {
+  ACTOR_IMPLEMENT_SUPER(Actor)
+
  public:
   ASprite();
   ~ASprite() override;
@@ -42,9 +44,9 @@ class ASprite : public Actor {
   Sprite* sprite_;
 };
 
-register_actor(sprite, ASprite);
+REGISTER_ACTOR(sprite, ASprite)
 
-ASprite::ASprite() {
+ASprite::ASprite() : SuperClass() {
   sprite_ = new Sprite(Sprite::TYPE_DEFAULT, Display_GetDefaultTexture());
 }
 
@@ -63,7 +65,7 @@ void ASprite::SetSpriteTexture(PLTexture* texture) {
 }
 
 void ASprite::Tick() {
-  Actor::Tick();
+  SuperClass::Tick();
 
   angles_.x += 0.5f;
   angles_.y += 0.5f;
@@ -77,7 +79,7 @@ void ASprite::Tick() {
 }
 
 void ASprite::Draw() {
-  Actor::Draw();
+  SuperClass::Draw();
 
   sprite_->Draw();
 }

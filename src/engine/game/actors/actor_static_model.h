@@ -21,9 +21,13 @@
 #include "actor_model.h"
 
 class AStaticModel : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
+
  public:
   AStaticModel();
   ~AStaticModel() override;
+
+  void Draw() override;
 
   void Deserialize(const ActorSpawn& spawn) override;
 

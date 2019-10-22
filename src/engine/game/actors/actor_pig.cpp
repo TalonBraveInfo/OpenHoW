@@ -23,24 +23,42 @@
 #include "../actor_manager.h"
 #include "actor_pig.h"
 
-register_actor(ac_me, APig);    // Ace
-register_actor(le_me, APig);    // Legend
-register_actor(me_me, APig);    // Medic
-register_actor(sb_me, APig);    // Commando
-register_actor(sp_me, APig);    // Spy
-register_actor(sn_me, APig);    // Sniper
-register_actor(sa_me, APig);    // Saboteur
-register_actor(gr_me, APig);    // Grunt
-register_actor(hv_me, APig);
+REGISTER_ACTOR(ac_me, APig)    // Ace
+REGISTER_ACTOR(gr_me, APig)    // Grunt
+REGISTER_ACTOR(hv_me, APig)
+REGISTER_ACTOR(le_me, APig)    // Legend
+REGISTER_ACTOR(me_me, APig)    // Medic
+REGISTER_ACTOR(sa_me, APig)    // Saboteur
+REGISTER_ACTOR(sb_me, APig)    // Commando
+REGISTER_ACTOR(sn_me, APig)    // Sniper
+REGISTER_ACTOR(sp_me, APig)    // Spy
 
 using namespace openhow;
 
-APig::APig() : AAnimatedModel() {}
+void InventoryManager::Clear() {
+  for(auto item : items_) {
+    ActorManager::GetInstance()->DestroyActor(item);
+    item = nullptr;
+  }
+
+  items_.clear();
+}
+
+void InventoryManager::AddItem(AItem *item) {
+  items_.push_back(item);
+}
+
+APig::APig():
+  SuperClass(),
+  INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
+  INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
+  INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
+
 APig::~APig() = default;
 
 void APig::HandleInput() {
-  IGameMode* mode = openhow::engine->GetGameManager()->GetMode();
-  if(mode == nullptr) {
+  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
+  if (mode == nullptr) {
     return;
   }
 
@@ -78,15 +96,18 @@ void APig::HandleInput() {
 }
 
 void APig::Tick() {
-  position_.x += input_forward * 100.0f * g_state.camera->forward.x;
-  position_.y += input_forward * 100.0f * g_state.camera->forward.y;
-  position_.z += input_forward * 100.0f * g_state.camera->forward.z;
+  SuperClass::Tick();
+
+  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  position_.x += input_forward * 100.0f * camera->GetForward().x;
+  position_.y += input_forward * 100.0f * camera->GetForward().y;
+  position_.z += input_forward * 100.0f * camera->GetForward().z;
 
   angles_.x += input_pitch * 2.0f;
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map* map = engine->GetGameManager()->GetCurrentMap();
+  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
@@ -103,7 +124,68 @@ void APig::SetClass(int pclass) {
 }
 
 void APig::Deserialize(const ActorSpawn& spawn) {
-  AAnimatedModel::Deserialize(spawn);
+  SuperClass::Deserialize(spawn);
 
-  SetModel("pigs/ac_hi");
+  // ensure pig is spawned up in the air for deployment
+  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
+
+#if 0
+  std::string model_path;
+  switch (pclass_) {
+    default:
+      LogWarn("Unknown pig class, \"%d\", destroying!\n");
+      ActorManager::GetInstance()->DestroyActor(this);
+      break;
+
+    case CLASS_ACE:
+      model_path = "pigs/ac_hi";
+      break;
+    case CLASS_LEGEND:
+      model_path = "pigs/le_hi";
+      break;
+    case CLASS_MEDIC:
+      model_path = "pigs/me_hi";
+      break;
+    case CLASS_COMMANDO:
+      model_path = "pigs/"
+      break;
+    case CLASS_SPY:break;
+    case CLASS_SNIPER:break;
+    case CLASS_SABOTEUR:break;
+    case CLASS_HEAVY:break;
+    case CLASS_GRUNT:break;
+  }
+
+  if (!model_path.empty()) {
+    SetModel(model_path);
+  }
+#endif
+}
+
+bool APig::Possessed(const Player* player) {
+  // TODO
+  return false;
+}
+
+bool APig::Depossessed(const Player* player) {
+  // TODO
+  return false;
+}
+
+void APig::Killed() {
+  // TODO
+
+  inventory_manager_.Clear();
+}
+
+/**
+ * Add an item into the pig's inventory
+ * @param item
+ */
+void APig::AddInventory(AItem *item) {
+  inventory_manager_.AddItem(item);
+
+  // TODO
+  //  Display message to user? Or should inventory manager do this...
 }

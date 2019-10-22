@@ -21,17 +21,17 @@
 
 using namespace openhow;
 
-AModel::AModel() : Actor() {}
+AModel::AModel() : SuperClass() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
-  Actor::Draw();
+  SuperClass::Draw();
 
   if(model_ == nullptr) {
     return;
   }
 
-  Player* player = engine->GetGameManager()->GetMode()->GetCurrentPlayer();
+  Player* player = Engine::GameManagerInstance()->GetMode()->GetCurrentPlayer();
   if(player != nullptr && player->input_target == this) {
     return;
   }

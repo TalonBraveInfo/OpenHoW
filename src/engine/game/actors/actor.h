@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "../../property.h"
+
 enum ActorFlag {
   ACTOR_FLAG_PLAYABLE = 1,
   ACTOR_FLAG_SCRIPTED = 16,
@@ -68,17 +70,17 @@ struct ActorSpawn {
 
 class IPhysicsBody;
 
-class Actor {
- public:
+#define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
 
+class Actor: public PropertyOwner {
+ public:
   Actor();
   virtual ~Actor();
 
   virtual void Tick() {}  // simulation tick, called per-frame
   virtual void Draw() {}  // draw tick, called per-frame
 
-  //virtual bool Possess(Player* player);
-  //virtual bool Depossess(Player* player);
+  virtual void AddHealth(int health);
 
   virtual bool IsVisible() { return is_visible_; }
 
@@ -90,7 +92,7 @@ class Actor {
 
   virtual void HandleInput() {}   // handle any player input, if applicable
 
-//  virtual ActorSpawn Serialize() {}
+  virtual ActorSpawn Serialize() { return ActorSpawn(); }
   virtual void Deserialize(const ActorSpawn& spawn);
 
   virtual void Activate() { is_activated_ = true; }
@@ -109,6 +111,8 @@ class Actor {
   PLVector3 fallback_position_{0, 0, 0};
   PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
   PLVector3 bounds_{0, 0, 0};
+
+  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
 
  private:
   uint16_t flags_{0};

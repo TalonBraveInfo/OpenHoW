@@ -17,23 +17,41 @@
 
 #include "../../engine.h"
 #include "../actor_manager.h"
-#include "actor_static_model.h"
+#include "actor_item.h"
+#include "actor_pig.h"
 
-REGISTER_ACTOR(static_model, AStaticModel);
+class AItemHealth : public AItem {
+  ACTOR_IMPLEMENT_SUPER(AItem)
 
-AStaticModel::AStaticModel() : SuperClass() {}
-AStaticModel::~AStaticModel() = default;
+ public:
+  AItemHealth();
+  ~AItemHealth() override;
 
-void AStaticModel::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
+  void PickUp(Actor* other) override;
 
-  SetModel("scenery/" + spawn.class_name);
+ protected:
+ private:
+};
 
-  if(spawn.class_name == "brid2_s") {
-    angles_.z = plDegreesToRadians(135.f);
+REGISTER_ACTOR(crate2, AItemHealth)
+
+using namespace openhow;
+
+AItemHealth::AItemHealth() : SuperClass() {}
+AItemHealth::~AItemHealth() = default;
+
+void AItemHealth::PickUp(Actor* other) {
+  SuperClass::PickUp(other);
+
+  APig* pig = dynamic_cast<APig*>(other);
+  if(pig == nullptr) {
+    // only pigs should be able to pick these up!
+    return;
   }
-}
 
-void AStaticModel::Draw() {
-  SuperClass::Draw();
+  pig->AddHealth(item_quantity_);
+
+  // may want to introduce networking logic here for actor destruction
+  // hence why it's done this way for now
+  ActorManager::GetInstance()->DestroyActor(this);
 }

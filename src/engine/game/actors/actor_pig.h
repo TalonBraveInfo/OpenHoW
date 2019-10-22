@@ -19,8 +19,24 @@
 
 #include "actor_model.h"
 #include "actor_animated_model.h"
+#include "actor_item.h"
+
+class InventoryManager {
+ public:
+
+  void AddItem(AItem* item);
+  void RemoveItem(AItem* item);
+
+  void Clear();
+
+ protected:
+ private:
+  std::vector<AItem*> items_;
+};
 
 class APig : public AAnimatedModel {
+  ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
+
  public:
   APig();
   ~APig() override;
@@ -28,17 +44,28 @@ class APig : public AAnimatedModel {
   void HandleInput() override;
   void Tick() override;
 
+  virtual bool Possessed(const Player* player);
+  virtual bool Depossessed(const Player* player);
+
+  void AddInventory(AItem* item);
+
   void SetClass(int pclass);
   int GetClass() { return pclass_; }
+
+  void Killed();
 
   void Deserialize(const ActorSpawn& spawn) override;
 
  protected:
-  float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
-  float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
-  float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
+  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
+  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
+  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
 
  private:
+  AItem* current_equiped_item_{nullptr};
+
+  InventoryManager inventory_manager_;
+
   enum {
     CLASS_NONE = -1,
     CLASS_ACE,

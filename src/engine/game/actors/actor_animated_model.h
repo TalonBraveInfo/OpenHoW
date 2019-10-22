@@ -21,6 +21,8 @@
 #include "actor_model.h"
 
 class AAnimatedModel : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
+
  public:
   AAnimatedModel();
   ~AAnimatedModel() override;

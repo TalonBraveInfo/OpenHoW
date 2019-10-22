@@ -23,7 +23,7 @@
 
 /************************************************************/
 
-std::set<Actor*> ActorManager::actors_;
+ActorSet ActorManager::actors_;
 std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 

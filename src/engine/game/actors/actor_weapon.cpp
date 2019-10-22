@@ -15,26 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
+#include "../../engine.h"
+#include "actor_weapon.h"
 
-#include "window_new_map.h"
+AWeapon::AWeapon() : SuperClass() {}
+AWeapon::~AWeapon() = default;
 
-using namespace openhow;
+void AWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
 
-void NewMapWindow::Display() {
-  ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
-  ImGui::Begin("New Map", &status_, ED_DEFAULT_WINDOW_FLAGS);
-  ImGui::InputText("Name", name_buffer_, sizeof(name_buffer_));
-  //ImGui::InputText("Author", author_buffer_, sizeof(author_buffer_));
-  ImGui::Separator();
-  if(ImGui::Button("Create")) {
-    Engine::GameManagerInstance()->CreateManifest(name_buffer_);
-    Engine::GameManagerInstance()->LoadMap(name_buffer_);
-    SetStatus(false);
-  }
-  ImGui::SameLine();
-  if(ImGui::Button("Cancel")) {
-    SetStatus(false);
-  }
-  ImGui::End();
 }

@@ -15,26 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
+#pragma once
 
-#include "window_new_map.h"
+#include "actor_model.h"
 
-using namespace openhow;
+class AVehicle : public AModel {
+  ACTOR_IMPLEMENT_SUPER(AModel)
 
-void NewMapWindow::Display() {
-  ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
-  ImGui::Begin("New Map", &status_, ED_DEFAULT_WINDOW_FLAGS);
-  ImGui::InputText("Name", name_buffer_, sizeof(name_buffer_));
-  //ImGui::InputText("Author", author_buffer_, sizeof(author_buffer_));
-  ImGui::Separator();
-  if(ImGui::Button("Create")) {
-    Engine::GameManagerInstance()->CreateManifest(name_buffer_);
-    Engine::GameManagerInstance()->LoadMap(name_buffer_);
-    SetStatus(false);
-  }
-  ImGui::SameLine();
-  if(ImGui::Button("Cancel")) {
-    SetStatus(false);
-  }
-  ImGui::End();
-}
+ public:
+  AVehicle();
+  ~AVehicle();
+
+  virtual void Occupy(Actor* occupant);
+  virtual void Unoccupy();
+
+ protected:
+ private:
+};

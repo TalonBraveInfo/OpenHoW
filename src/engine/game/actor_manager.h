@@ -19,6 +19,8 @@
 
 #include "actors/actor.h"
 
+typedef std::set<Actor*> ActorSet;
+
 class ActorManager {
  protected:
   typedef Actor* (* actor_ctor_func)();
@@ -43,6 +45,8 @@ class ActorManager {
   void ActivateActors();
   void DeactivateActors();
 
+  const ActorSet &GetActors() const { return actors_; }
+
   class ActorClassRegistration {
    public:
     const std::string name_;
@@ -52,10 +56,10 @@ class ActorManager {
   };
 
  private:
-  static std::set<Actor*> actors_;
+  static ActorSet actors_;
 };
 
-#define register_actor(NAME, CLASS) \
+#define REGISTER_ACTOR(NAME, CLASS) \
     static Actor * NAME ## _make() { return new CLASS (); } \
     static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) \
-    _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make) // NOLINT(cert-err58-cpp)
+    _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make); // NOLINT(cert-err58-cpp)

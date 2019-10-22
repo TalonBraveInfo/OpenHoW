@@ -44,3 +44,11 @@ void Actor::TickPhysicsBody() {
 void Actor::CreatePhysicsBody() {
 
 }
+
+void Actor::AddHealth(int health) {
+  if(health <= 0) {
+    return;
+  }
+
+  health_ += health;
+}

@@ -24,13 +24,66 @@
 #include "actor_manager.h"
 #include "mode_base.h"
 #include "game.h"
+#include "actors/actor_pig.h"
 
 using namespace openhow;
+
+std::string MapManifest::Serialize() {
+  std::stringstream output;
+  output << "{";
+  output << R"("name":")" << name << "\",";
+  output << R"("author":")" << author << "\",";
+  output << R"("description":")" << description << "\",";
+  if (!modes.empty()) {
+    output << R"("modes":[)";
+    for (size_t i = 0; i < modes.size(); ++i) {
+      output << "\"" << modes[i] << "\"";
+      if (i != modes.size() - 1) {
+        output << ",";
+      }
+    }
+    output << "],";
+  }
+  output << R"("ambientColour":")" <<
+         std::to_string(ambient_colour.r) << " " <<
+         std::to_string(ambient_colour.g) << " " <<
+         std::to_string(ambient_colour.b) << "\",";
+  output << R"("skyColourTop":")" <<
+         std::to_string(sky_colour_top.r) << " " <<
+         std::to_string(sky_colour_top.g) << " " <<
+         std::to_string(sky_colour_top.b) << "\",";
+  output << R"("skyColourBottom":")" <<
+         std::to_string(sky_colour_bottom.r) << " " <<
+         std::to_string(sky_colour_bottom.g) << " " <<
+         std::to_string(sky_colour_bottom.b) << "\",";
+  output << R"("sunColour":")" <<
+         std::to_string(sun_colour.r) << " " <<
+         std::to_string(sun_colour.g) << " " <<
+         std::to_string(sun_colour.b) << "\",";
+  output << R"("sunYaw":")" << std::to_string(sun_yaw) << "\",";
+  output << R"("sunPitch":")" << std::to_string(sun_pitch) << "\",";
+  output << R"("temperature":")" << temperature << "\",";
+  output << R"("weather":")" << weather << "\",";
+  output << R"("time":")" << time << "\",";
+  // Fog
+  output << R"("fogColour":")" <<
+         std::to_string(fog_colour.r) << " " <<
+         std::to_string(fog_colour.g) << " " <<
+         std::to_string(fog_colour.b) << "\",";
+  output << R"("fogIntensity":")" << std::to_string(fog_intensity) << "\",";
+  output << R"("fogDistance":")" << std::to_string(fog_distance) << "\"";
+  output << "}\n";
+  return output.str();
+}
+
+/////////////////////////////////////////////////////////////
 
 GameManager::GameManager() {
   plRegisterConsoleCommand("createmap", CreateMapCommand, "");
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
+
+  camera_ = new Camera({0, 0, 0}, {0, 0, 0});
 }
 
 GameManager::~GameManager() {
@@ -52,7 +105,7 @@ void GameManager::Tick() {
           active_map_->GetTerrain()->GetMaxHeight(),
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
       };
-      engine->GetAudioManager()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
+      Engine::AudioManagerInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
     }
 
     ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
@@ -62,7 +115,7 @@ void GameManager::Tick() {
 }
 
 void GameManager::LoadMap(const std::string& name) {
-  MapManifest* manifest = engine->GetGameManager()->GetMapManifest(name);
+  MapManifest* manifest = Engine::GameManagerInstance()->GetMapManifest(name);
   if (manifest == nullptr) {
     LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
     return;
@@ -86,13 +139,13 @@ void GameManager::LoadMap(const std::string& name) {
 
   for (unsigned int i = 1, idx = 0; i < 4; ++i) {
     if (i < 3) {
-      ambient_samples_[idx++] = engine->GetAudioManager()->CacheSample(
+      ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(
           "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
     }
     ambient_samples_[idx++] =
-        engine->GetAudioManager()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
+        Engine::AudioManagerInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
     ambient_samples_[idx++] =
-        engine->GetAudioManager()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
+        Engine::AudioManagerInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
   }
 
   ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
@@ -154,7 +207,7 @@ void GameManager::RegisterMapManifest(const std::string& path) {
 }
 
 static void RegisterManifestInterface(const char* path) {
-  engine->GetGameManager()->RegisterMapManifest(path);
+  Engine::GameManagerInstance()->RegisterMapManifest(path);
 }
 
 void GameManager::RegisterMapManifests() {
@@ -176,7 +229,7 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
 
 MapManifest* GameManager::CreateManifest(const std::string& name) {
   // ensure the map doesn't exist already
-  if(engine->GetGameManager()->GetMapManifest(name) != nullptr) {
+  if(Engine::GameManagerInstance()->GetMapManifest(name) != nullptr) {
     LogWarn("Unable to create map, it already exists!\n");
     return nullptr;
   }
@@ -194,8 +247,8 @@ MapManifest* GameManager::CreateManifest(const std::string& name) {
 
   LogInfo("Wrote \"%s\"!\n", path.c_str());
 
-  engine->GetGameManager()->RegisterMapManifest(path);
-  return engine->GetGameManager()->GetMapManifest(name);
+  Engine::GameManagerInstance()->RegisterMapManifest(path);
+  return Engine::GameManagerInstance()->GetMapManifest(name);
 }
 
 void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
@@ -204,12 +257,12 @@ void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
     return;
   }
 
-  MapManifest* manifest = engine->GetGameManager()->CreateManifest(argv[1]);
+  MapManifest* manifest = Engine::GameManagerInstance()->CreateManifest(argv[1]);
   if(manifest == nullptr) {
     return;
   }
 
-  engine->GetGameManager()->LoadMap(argv[1]);
+  Engine::GameManagerInstance()->LoadMap(argv[1]);
 }
 
 void GameManager::MapCommand(unsigned int argc, char** argv) {
@@ -219,21 +272,21 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
   }
 
   std::string mode = "singleplayer";
-  const MapManifest* desc = engine->GetGameManager()->GetMapManifest(argv[1]);
+  const MapManifest* desc = Engine::GameManagerInstance()->GetMapManifest(argv[1]);
   if (desc != nullptr && !desc->modes.empty()) {
     mode = desc->modes[0];
   }
 
-  engine->GetGameManager()->LoadMap(argv[1]);
+  Engine::GameManagerInstance()->LoadMap(argv[1]);
 }
 
 void GameManager::MapsCommand(unsigned int argc, char** argv) {
-  if (engine->GetGameManager()->map_manifests_.empty()) {
+  if (Engine::GameManagerInstance()->map_manifests_.empty()) {
     LogWarn("No maps available!\n");
     return;
   }
 
-  for (auto manifest : engine->GetGameManager()->map_manifests_) {
+  for (auto manifest : Engine::GameManagerInstance()->map_manifests_) {
     MapManifest* desc = &manifest.second;
     std::string out =
         desc->name + "/" + manifest.first +
@@ -246,5 +299,32 @@ void GameManager::MapsCommand(unsigned int argc, char** argv) {
     LogInfo("%s\n", out.c_str());
   }
 
-  LogInfo("%u maps\n", engine->GetGameManager()->map_manifests_.size());
+  LogInfo("%u maps\n", Engine::GameManagerInstance()->map_manifests_.size());
+}
+
+void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
+  if (argc < 2) {
+    LogWarn("Invalid number of arguments, ignoring!\n");
+    return;
+  }
+
+  if(Engine::GameManagerInstance()->current_actor_ == nullptr) {
+    LogWarn("No actor currently active!\n");
+    return;
+  }
+
+  APig* pig = dynamic_cast<APig*>(Engine::GameManagerInstance()->current_actor_);
+  if(pig == nullptr) {
+    LogWarn("Actor is not a pig!\n");
+    return;
+  }
+
+  AItem* item = dynamic_cast<AItem*>(ActorManager::GetInstance()->CreateActor(argv[1]));
+  if(item == nullptr) {
+    ActorManager::GetInstance()->DestroyActor(item);
+    LogWarn("Failed to create valid item!\n");
+    return;
+  }
+
+  pig->AddInventory(item);
 }

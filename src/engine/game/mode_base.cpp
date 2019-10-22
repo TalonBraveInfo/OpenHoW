@@ -31,8 +31,8 @@ BaseGameMode::BaseGameMode() {
 }
 
 BaseGameMode::~BaseGameMode() {
-  engine->GetAudioManager()->FreeSources();
-  engine->GetAudioManager()->FreeSamples();
+  Engine::AudioManagerInstance()->FreeSources();
+  Engine::AudioManagerInstance()->FreeSamples();
 
   DestroyActors();
 }
@@ -47,7 +47,7 @@ void BaseGameMode::StartRound() {
   round_started_ = true;
 
   // Play the deployment music
-  engine->GetAudioManager()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+  Engine::AudioManagerInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 }
 
 void BaseGameMode::RestartRound() {
@@ -70,15 +70,16 @@ void BaseGameMode::Tick() {
     slave->HandleInput();
 
     // temp: force the camera at the actor pos
-    g_state.camera->position = slave->GetPosition();
-    g_state.camera->angles = slave->GetAngles();
+    Camera* camera = Engine::GameManagerInstance()->GetCamera();
+    camera->SetPosition(slave->GetPosition());
+    camera->SetAngles(slave->GetAngles());
   }
 
   ActorManager::GetInstance()->TickActors();
 }
 
 void BaseGameMode::SpawnActors() {
-  Map* map = engine->GetGameManager()->GetCurrentMap();
+  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
   if (map == nullptr) {
     Error("Attempted to spawn actors without having loaded a map!\n");
   }

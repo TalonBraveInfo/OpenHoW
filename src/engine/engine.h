@@ -54,10 +54,22 @@
 #include "physics/physics_interface.h"
 
 namespace openhow {
+class Engine;
+extern Engine* engine;
 class Engine {
  public:
   Engine();
   ~Engine();
+
+  static AudioManager* AudioManagerInstance() {
+    return engine->audio_manager_;
+  }
+  static GameManager* GameManagerInstance() {
+    return engine->game_manager_;
+  }
+  static IPhysicsInterface* Physics() {
+    return engine->physics_interface_;
+  }
 
   void Initialize();
 
@@ -65,18 +77,11 @@ class Engine {
 
   bool IsRunning();
 
-  // Subsystems
-  GameManager* GetGameManager() { return game_manager_; }
-  AudioManager* GetAudioManager() { return audio_manager_; }
-  IPhysicsInterface* Physics() { return physics_interface_; }
-
  private:
   GameManager* game_manager_{nullptr};
   AudioManager* audio_manager_{nullptr};
   IPhysicsInterface* physics_interface_{nullptr};
 };
-
-extern Engine* engine;
 }
 
 #else
@@ -84,7 +89,6 @@ typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
 
 typedef struct EngineState {
-  struct PLCamera* camera;       // camera used for general gameplay
   struct PLCamera* ui_camera;    // camera used for UI elements, orthographic
 
   unsigned int sys_ticks;
