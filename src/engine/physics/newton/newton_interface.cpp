@@ -93,13 +93,15 @@ void NTPhysicsInterface::DestroyPhysicsBody(IPhysicsBody* body) {
 // Terrain
 
 void NTPhysicsInterface::GenerateTerrainCollision(std::vector<float> vertices) {
+#if 0
   const unsigned int size = 65;
   terrain_collision_ = NewtonCreateHeightFieldCollision(
       newton_world_,
       size, size,
       0, 0,
       vertices.data(),
-      )
+      );
+#endif
 }
 
 void NTPhysicsInterface::DestroyTerrainCollision() {
