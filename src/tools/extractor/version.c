@@ -50,9 +50,9 @@ void CheckGameVersion(const char *path) {
 
   /* todo: need better method to determine this */
   snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/fetext.bin", path);
-  unsigned int fetext_size = plGetFileSize(fcheck);
+  unsigned int fetext_size = plGetLocalFileSize(fcheck);
   snprintf(fcheck, sizeof(fcheck), "%s/Language/Text/gtext.bin", path);
-  unsigned int gtext_size = plGetFileSize(fcheck);
+  unsigned int gtext_size = plGetLocalFileSize(fcheck);
   if (fetext_size == 8997 && gtext_size == 4518) {
     version_info.region = REGION_GER;
   } else if (fetext_size == 8102 && gtext_size == 4112) {

@@ -26,20 +26,20 @@ ParticleSystem *LoadParticleSystem(const char *path) {
 
 
   /* load in the particle system so we can cache it */
-  FILE *fp = fopen(u_find(path), "rb");
+  PLFile *fp = plOpenFile(u_find(path), false);
   if (fp == NULL) {
     LogWarn("failed to load PPS \"%s\", ignoring!\n", path);
     return NULL;
   }
 
   PPSHeader header;
-  if (fread(&header, sizeof(PPSHeader), 1, fp) != 1) {
+  if (plReadFile(fp, &header, sizeof(PPSHeader), 1) != 1) {
     LogWarn("failed to load PPS header!\n");
     goto ABORT;
   }
 
   ABORT:
-  u_fclose(fp);
+  plCloseFile(fp);
   return NULL;
 }
 

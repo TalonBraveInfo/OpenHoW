@@ -25,23 +25,23 @@
 /* Fac Triangle/Quad Faces Format */
 
 FacHandle *Fac_LoadFile(const char *path) {
-  FILE *fac_file = fopen(path, "rb");
+  PLFile *fac_file = plOpenFile(path, false);
   if (fac_file == NULL) {
     LogWarn("Failed to load Fac \"%s\", aborting!\n", path);
     return NULL;
   }
 
   /* 16 bytes of unknown data, just skip it for now */
-  fseek(fac_file, 16, SEEK_CUR);
+  plFileSeek(fac_file, 16, PL_SEEK_CUR);
 
   uint32_t num_triangles;
-  if (fread(&num_triangles, sizeof(uint32_t), 1, fac_file) != 1) {
+  if (plReadFile(fac_file, &num_triangles, sizeof(uint32_t), 1) != 1) {
     LogWarn("Failed to get number of triangles, \"%s\"!\n", path);
   }
 
   /* some models can have 0 triangles, as they'll use quads instead */
   if (num_triangles >= FAC_MAX_TRIANGLES) {
-    u_fclose(fac_file);
+    plCloseFile(fac_file);
     LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
     return NULL;
   }
@@ -54,21 +54,21 @@ FacHandle *Fac_LoadFile(const char *path) {
     uint32_t texture_index;
     uint16_t unknown1[4];
   } triangles[num_triangles];
-  if (fread(triangles, sizeof(*triangles), num_triangles, fac_file) != num_triangles) {
-    u_fclose(fac_file);
+  if (plReadFile(fac_file, triangles, sizeof(*triangles), num_triangles) != num_triangles) {
+    plCloseFile(fac_file);
     LogWarn("Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path);
     return NULL;
   }
 
   uint32_t num_quads;
-  if (fread(&num_quads, sizeof(uint32_t), 1, fac_file) != 1) {
-    u_fclose(fac_file);
+  if (plReadFile(fac_file, &num_quads, sizeof(uint32_t), 1) != 1) {
+    plCloseFile(fac_file);
     LogWarn("Failed to get number of quads, \"%s\", aborting!\n", path);
     return NULL;
   }
 
   if (num_quads >= FAC_MAX_TRIANGLES) {
-    u_fclose(fac_file);
+    plCloseFile(fac_file);
     LogWarn("Invalid number of quads in \"%s\" (%d/%d)!\n", path, num_quads, FAC_MAX_TRIANGLES);
     return NULL;
   }
@@ -80,8 +80,8 @@ FacHandle *Fac_LoadFile(const char *path) {
     uint32_t texture_index;
     uint16_t unknown[4];
   } quads[num_quads];
-  if (fread(quads, sizeof(*quads), num_quads, fac_file) != num_quads) {
-    u_fclose(fac_file);
+  if (plReadFile(fac_file, quads, sizeof(*quads), num_quads) != num_quads) {
+    plCloseFile(fac_file);
     LogWarn("Failed to get %u quads, \"%s\", aborting!\n", num_quads, path);
     return NULL;
   }
@@ -89,14 +89,14 @@ FacHandle *Fac_LoadFile(const char *path) {
   // check for textures table
   uint8_t num_textures;
   FacTextureIndex *texture_table = NULL;
-  if(fread(&num_textures, sizeof(uint8_t), 1, fac_file) == 1 && num_textures > 0) {
+  if(plReadFile(fac_file, &num_textures, sizeof(uint8_t), 1) == 1 && num_textures > 0) {
     texture_table = u_alloc(num_textures, sizeof(FacTextureIndex), true);
     for(unsigned int i = 0; i < num_textures; ++i) {
-      fread(texture_table[i].name, 1, sizeof(texture_table[i].name), fac_file);
+      plReadFile(fac_file, texture_table[i].name, 1, sizeof(texture_table[i].name));
     }
   }
 
-  u_fclose(fac_file);
+  plCloseFile(fac_file);
 
   unsigned int total_triangles = num_triangles + (num_quads * 2);
   if (total_triangles == 0 || total_triangles >= FAC_MAX_TRIANGLES) {

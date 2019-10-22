@@ -291,7 +291,7 @@ void Terrain::Draw() {
 }
 
 void Terrain::LoadPmg(const std::string& path) {
-  FILE* fh = std::fopen(path.c_str(), "rb");
+  PLFile* fh = plOpenFile(path.c_str(), false);
   if (fh == nullptr) {
     LogWarn("Failed to open tile data, \"%s\", aborting\n", path.c_str());
     return;
@@ -308,7 +308,7 @@ void Terrain::LoadPmg(const std::string& path) {
         uint16_t z{0};
         uint16_t unknown0{0};
       } chunk;
-      if (std::fread(&chunk, sizeof(chunk), 1, fh) != 1) {
+      if (plReadFile(fh, &chunk, sizeof(chunk), 1) != 1) {
         Error("unexpected end of file, aborting!\n");
       }
 
@@ -316,7 +316,7 @@ void Terrain::LoadPmg(const std::string& path) {
         int16_t height{0};
         uint16_t lighting{0};
       } vertices[25];
-      if (std::fread(vertices, sizeof(*vertices), 25, fh) != 25) {
+      if (plReadFile(fh, vertices, sizeof(*vertices), 25) != 25) {
         Error("Unexpected end of file, aborting!\n");
       }
 
@@ -330,7 +330,7 @@ void Terrain::LoadPmg(const std::string& path) {
         }
       }
 
-      std::fseek(fh, 4, SEEK_CUR);
+      plFileSeek(fh, 4, PL_SEEK_CUR);
 
       for (unsigned int tile_y = 0; tile_y < TERRAIN_CHUNK_ROW_TILES; ++tile_y) {
         for (unsigned int tile_x = 0; tile_x < TERRAIN_CHUNK_ROW_TILES; ++tile_x) {
@@ -343,7 +343,7 @@ void Terrain::LoadPmg(const std::string& path) {
             uint32_t texture{0};
             uint8_t unused2{0};
           } tile;
-          if (std::fread(&tile, sizeof(tile), 1, fh) != 1) {
+          if (plReadFile(fh, &tile, sizeof(tile), 1) != 1) {
             Error("unexpected end of file, aborting!\n");
           }
 
@@ -368,7 +368,7 @@ void Terrain::LoadPmg(const std::string& path) {
     }
   }
 
-  std::fclose(fh);
+  plCloseFile(fh);
 
   Update();
 }
