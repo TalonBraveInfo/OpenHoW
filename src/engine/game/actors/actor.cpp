@@ -57,6 +57,14 @@ void Actor::Deserialize(const ActorSpawn& spawn){
   SetAngles(spawn.angles);
 }
 
+void Actor::TickPhysicsBody() {
+  physics_body_->Tick();
+}
+
+void Actor::CreatePhysicsBody() {
+
+}
+
 void Actor::AddHealth(int16_t health) {
   if(health <= 0) {
     return;

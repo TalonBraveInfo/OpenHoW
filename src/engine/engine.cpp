@@ -56,6 +56,8 @@ openhow::Engine::~Engine() {
   delete game_manager_;
   delete audio_manager_;
   delete resource_manager_;
+
+  IPhysicsInterface::DestroyInstance(physics_interface_);
 }
 
 void openhow::Engine::Initialize() {
@@ -103,6 +105,9 @@ void openhow::Engine::Initialize() {
   game_manager_ = new GameManager();
   FE_Initialize();
   ModelManager::GetInstance();
+
+  // Setup our interface to the physics engine, this handles the abstraction
+  physics_interface_ = IPhysicsInterface::CreateInstance();
 
   // Ensure that our manifest list is updated
   GameManagerInstance()->RegisterMapManifests();

@@ -68,13 +68,14 @@ struct ActorSpawn {
   ActorSpawn* attachment{nullptr};
 };
 
+class IPhysicsBody;
+
 #define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
 
 class Player;
 
 class Actor: public PropertyOwner {
  public:
-
   Actor();
   ~Actor() override;
 
@@ -110,6 +111,11 @@ class Actor: public PropertyOwner {
   virtual void Touch(Actor* other);
 
   void DropToFloor();
+  
+  // Physics
+  virtual void CreatePhysicsBody();
+  virtual void DestroyPhysicsBody();
+  virtual void TickPhysicsBody();
 
  protected:
   bool is_visible_{false};
@@ -128,6 +134,8 @@ class Actor: public PropertyOwner {
  private:
   uint16_t flags_{0};
   int16_t health_{0};
+
+  IPhysicsBody* physics_body_{nullptr};
 
   bool is_activated_{false};
 

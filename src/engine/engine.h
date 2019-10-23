@@ -54,6 +54,7 @@
 
 #include "audio/audio.h"
 #include "game/game.h"
+#include "physics/physics_interface.h"
 
 namespace openhow {
 class Engine;
@@ -72,6 +73,9 @@ class Engine {
   static ResourceManager* ResourceManagerInstance() {
     return engine->resource_manager_;
   }
+  static IPhysicsInterface* Physics() {
+    return engine->physics_interface_;
+  }
 
   void Initialize();
 
@@ -83,6 +87,7 @@ class Engine {
   GameManager* game_manager_{nullptr};
   AudioManager* audio_manager_{nullptr};
   ResourceManager* resource_manager_{nullptr};
+  IPhysicsInterface* physics_interface_{nullptr};
 };
 }
 
