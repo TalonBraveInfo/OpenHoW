@@ -78,7 +78,7 @@ void openhow::Engine::Initialize() {
   }
 
   // Initialize the language manager
-  LanguageManager::GetInstance();
+  LanguageManager::GetInstance()->SetLanguage("eng");
 
   /* this MUST be done after all vars have been
    * initialized, otherwise, right now, certain

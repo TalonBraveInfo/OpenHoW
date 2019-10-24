@@ -201,21 +201,28 @@ PLVector3 ScriptConfig::GetVector3Property(const std::string& property, PLVector
 unsigned int ScriptConfig::GetArrayLength(const std::string& property) {
   auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    LogMissingProperty(p);
-    return 0;
+  if(!property.empty()) {
+    const char* p = property.c_str();
+    if (!duk_get_prop_string(context, -1, p)) {
+      duk_pop(context);
+      LogMissingProperty(p);
+      return 0;
+    }
   }
 
   if (!duk_is_array(context, -1)) {
-    duk_pop(context);
-    LogInvalidArray(p);
+    if(!property.empty()) {
+      duk_pop(context);
+    }
+    LogWarn("Invalid array node!\n");
     return 0;
   }
 
   duk_size_t len = duk_get_length(context, -1);
-  duk_pop(context);
+
+  if(!property.empty()) {
+    duk_pop(context);
+  }
 
   return static_cast<unsigned int>(len);
 }
@@ -324,4 +331,18 @@ void ScriptConfig::EnterChildNode(unsigned int index) {
 void ScriptConfig::LeaveChildNode() {
   auto* context = static_cast<duk_context*>(ctx_);
   duk_pop(context);
+}
+
+std::list<std::string> ScriptConfig::GetObjectKeys() {
+  std::list<std::string> lst;
+
+  auto* context = static_cast<duk_context*>(ctx_);
+  duk_enum(context, -1, 0);
+  while(duk_next(context, -1, 1)) {
+    lst.emplace_back(duk_safe_to_string(context, -2));
+    duk_pop_2(context);
+  }
+  duk_pop(context);
+
+  return lst;
 }

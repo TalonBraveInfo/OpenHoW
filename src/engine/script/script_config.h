@@ -36,6 +36,8 @@ class ScriptConfig {
   PLColour GetColourProperty(const std::string& property, PLColour def = PLColour(0, 0, 0), bool silent = true);
   PLVector3 GetVector3Property(const std::string& property, PLVector3 def = PLVector3(0, 0, 0), bool silent = true);
 
+  std::list<std::string> GetObjectKeys();
+
   unsigned int GetArrayLength(const std::string& property = "");
   std::vector<std::string> GetArrayStrings(const std::string& property);
   std::string GetArrayStringProperty(const std::string& property, unsigned int index);

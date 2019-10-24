@@ -38,8 +38,7 @@ LanguageManager::LanguageManager() {
   // Load in the languages manifest
   try {
     ScriptConfig manifest(man_path);
-    unsigned int num_keys = manifest.GetArrayLength("languages");
-    manifest.EnterChildNode("languages");
+    unsigned int num_keys = manifest.GetArrayLength();
     for(unsigned int i = 0; i < num_keys; ++i) {
       Index index;
       manifest.EnterChildNode(i);
@@ -104,8 +103,13 @@ void LanguageManager::SetLanguage(const char* key) {
 
   try {
     ScriptConfig manifest(path);
-    unsigned int num_keys = manifest.GetArrayLength();
-    LogDebug("Keys: %d\n", num_keys);
+    std::list<std::string> keys = manifest.GetObjectKeys();
+    for(const auto& idx : keys) {
+      current_language->keys.insert(std::pair<std::string, Key>(idx, {
+        manifest.GetStringProperty(idx)
+      }));
+      LogDebug("Key: %s", idx.c_str());
+    }
   } catch(const std::exception &e) {
     Error("Failed to load language manifest, \"%s\"!\n", path);
   }
