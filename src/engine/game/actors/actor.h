@@ -113,9 +113,8 @@ class Actor: public PropertyOwner {
   void DropToFloor();
   
   // Physics
-  virtual void CreatePhysicsBody();
+  virtual const IPhysicsBody* CreatePhysicsBody();
   virtual void DestroyPhysicsBody();
-  virtual void TickPhysicsBody();
 
  protected:
   bool is_visible_{false};
@@ -124,15 +123,13 @@ class Actor: public PropertyOwner {
   NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
   NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
 
+  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
   PLVector3 position_{0, 0, 0}, old_position_{0, 0, 0};
   PLVector3 fallback_position_{0, 0, 0};
   PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
   PLVector3 bounds_{0, 0, 0};
 
-  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
-
  private:
-  uint16_t flags_{0};
   int16_t health_{0};
 
   IPhysicsBody* physics_body_{nullptr};

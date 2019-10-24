@@ -233,7 +233,7 @@ static void DrawMinimap() {
     return;
   }
 
-  Map* map = openhow::Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = openhow::Engine::Game()->GetCurrentMap();
   if (map == nullptr) {
     return;
   }
@@ -430,7 +430,7 @@ void FrontEnd_SetState(unsigned int state) {
       fe_background = Engine::ResourceManagerInstance()->LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
 
       // start playing the default theme
-      Engine::AudioManagerInstance()->PlayMusic(AUDIO_MUSIC_MENU);
+      Engine::Audio()->PlayMusic(AUDIO_MUSIC_MENU);
     }
       break;
 
@@ -443,7 +443,7 @@ void FrontEnd_SetState(unsigned int state) {
 
     case FE_MODE_LOADING: {
       // stop the music as soon as we switch to a loading screen...
-      Engine::AudioManagerInstance()->StopMusic();
+      Engine::Audio()->StopMusic();
 
       loading_description[0] = '\0';
       loading_progress = 0;

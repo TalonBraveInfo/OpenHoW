@@ -106,7 +106,7 @@ void GameManager::Tick() {
           map_->GetTerrain()->GetMaxHeight(),
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
       };
-      Engine::AudioManagerInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
+      Engine::Audio()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
     }
 
     ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
@@ -128,7 +128,7 @@ void GameManager::SetupPlayers(std::vector<Team*> teams) {
 }
 
 void GameManager::LoadMap(const std::string& name) {
-  MapManifest* manifest = Engine::GameManagerInstance()->GetMapManifest(name);
+  MapManifest* manifest = Engine::Game()->GetMapManifest(name);
   if (manifest == nullptr) {
     LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
     return;
@@ -195,7 +195,7 @@ void GameManager::RegisterMapManifest(const std::string& path) {
 }
 
 static void RegisterManifestInterface(const char* path) {
-  Engine::GameManagerInstance()->RegisterMapManifest(path);
+  Engine::Game()->RegisterMapManifest(path);
 }
 
 /**
@@ -230,7 +230,7 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
  */
 MapManifest* GameManager::CreateManifest(const std::string& name) {
   // ensure the map doesn't exist already
-  if(Engine::GameManagerInstance()->GetMapManifest(name) != nullptr) {
+  if(Engine::Game()->GetMapManifest(name) != nullptr) {
     LogWarn("Unable to create map, it already exists!\n");
     return nullptr;
   }
@@ -248,8 +248,8 @@ MapManifest* GameManager::CreateManifest(const std::string& name) {
 
   LogInfo("Wrote \"%s\"!\n", path.c_str());
 
-  Engine::GameManagerInstance()->RegisterMapManifest(path);
-  return Engine::GameManagerInstance()->GetMapManifest(name);
+  Engine::Game()->RegisterMapManifest(path);
+  return Engine::Game()->GetMapManifest(name);
 }
 
 void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
@@ -258,12 +258,12 @@ void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
     return;
   }
 
-  MapManifest* manifest = Engine::GameManagerInstance()->CreateManifest(argv[1]);
+  MapManifest* manifest = Engine::Game()->CreateManifest(argv[1]);
   if(manifest == nullptr) {
     return;
   }
 
-  Engine::GameManagerInstance()->LoadMap(argv[1]);
+  Engine::Game()->LoadMap(argv[1]);
 }
 
 /**
@@ -278,19 +278,19 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
   }
 
   std::string mode = "singleplayer";
-  const MapManifest* desc = Engine::GameManagerInstance()->GetMapManifest(argv[1]);
+  const MapManifest* desc = Engine::Game()->GetMapManifest(argv[1]);
   if (desc != nullptr && !desc->modes.empty()) {
     mode = desc->modes[0];
   }
 
-  Engine::GameManagerInstance()->LoadMap(argv[1]);
+  Engine::Game()->LoadMap(argv[1]);
 
   // Set up a mode with some defaults...
   GameModeDescriptor descriptor;
   descriptor.teams = {
       {}, {}
   };
-  Engine::GameManagerInstance()->StartMode(descriptor);
+  Engine::Game()->StartMode(descriptor);
 }
 
 /**
@@ -299,12 +299,12 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
  * @param argv
  */
 void GameManager::MapsCommand(unsigned int argc, char** argv) {
-  if (Engine::GameManagerInstance()->map_manifests_.empty()) {
+  if (Engine::Game()->map_manifests_.empty()) {
     LogWarn("No maps available!\n");
     return;
   }
 
-  for (auto manifest : Engine::GameManagerInstance()->map_manifests_) {
+  for (auto manifest : Engine::Game()->map_manifests_) {
     MapManifest* desc = &manifest.second;
     std::string out =
         desc->name + "/" + manifest.first +
@@ -317,7 +317,7 @@ void GameManager::MapsCommand(unsigned int argc, char** argv) {
     LogInfo("%s\n", out.c_str());
   }
 
-  LogInfo("%u maps\n", Engine::GameManagerInstance()->map_manifests_.size());
+  LogInfo("%u maps\n", Engine::Game()->map_manifests_.size());
 }
 
 void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
@@ -326,12 +326,12 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
     return;
   }
 
-  if(Engine::GameManagerInstance()->current_actor_ == nullptr) {
+  if(Engine::Game()->current_actor_ == nullptr) {
     LogWarn("No actor currently active!\n");
     return;
   }
 
-  APig* pig = dynamic_cast<APig*>(Engine::GameManagerInstance()->current_actor_);
+  APig* pig = dynamic_cast<APig*>(Engine::Game()->current_actor_);
   if(pig == nullptr) {
     LogWarn("Actor is not a pig!\n");
     return;
@@ -362,13 +362,13 @@ void GameManager::StartMode(const GameModeDescriptor& descriptor) {
     std::string path = "audio/amb_";
     if (i < 3) {
       path += snum + sample_ext + ".wav";
-      ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(path, false);
+      ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
     }
 
     path = "audio/batt_s" + snum + ".wav";
-    ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(path, false);
+    ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
     path = "audio/batt_l" + snum + ".wav";
-    ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(path, false);
+    ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
   }
 
   // call StartRound; deals with spawning everything in and other mode specific logic
@@ -387,6 +387,6 @@ void GameManager::EndMode() {
   ActorManager::GetInstance()->DestroyActors();
   ModelManager::GetInstance()->DestroyModels();
 
-  Engine::AudioManagerInstance()->FreeSources();
-  Engine::AudioManagerInstance()->FreeSamples();
+  Engine::Audio()->FreeSources();
+  Engine::Audio()->FreeSamples();
 }

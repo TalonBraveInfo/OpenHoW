@@ -89,7 +89,6 @@ void openhow::Engine::Initialize() {
 
   // load in the manifests
 
-  Languages_Initialize();
   Mod_RegisterCampaigns();
 
   if ((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
@@ -108,13 +107,13 @@ void openhow::Engine::Initialize() {
   audio_manager_ = new AudioManager();
   game_manager_ = new GameManager();
   FE_Initialize();
-  ModelManager::GetInstance();
+  ModelManager::GetInstance(); // TODO: obsolete
 
   // Setup our interface to the physics engine, this handles the abstraction
   physics_interface_ = IPhysicsInterface::CreateInstance();
 
   // Ensure that our manifest list is updated
-  GameManagerInstance()->RegisterMapManifests();
+  Game()->RegisterMapManifests();
 
   LogInfo("Base path:         \"%s\"\n", u_get_base_path());
   LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
@@ -144,8 +143,9 @@ bool openhow::Engine::IsRunning() {
 
     Client_ProcessInput(); // todo: kill this
 
-    GameManagerInstance()->Tick();
-    AudioManagerInstance()->Tick();
+    Physics() ->Tick();
+    Game()    ->Tick();
+    Audio()   ->Tick();
 
     g_state.last_sys_tick = System_GetTicks();
     next_tick += SKIP_TICKS;

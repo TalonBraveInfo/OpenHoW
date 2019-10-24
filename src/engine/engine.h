@@ -64,10 +64,10 @@ class Engine {
   Engine();
   ~Engine();
 
-  static AudioManager* AudioManagerInstance() {
+  static AudioManager* Audio() {
     return engine->audio_manager_;
   }
-  static GameManager* GameManagerInstance() {
+  static GameManager* Game() {
     return engine->game_manager_;
   }
   static ResourceManager* ResourceManagerInstance() {

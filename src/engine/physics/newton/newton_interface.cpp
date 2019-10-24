@@ -25,13 +25,24 @@
 
 class NTPhysicsBody : public IPhysicsBody {
  public:
+  NTPhysicsBody() {}
+  ~NTPhysicsBody() override {
+    NewtonDestroyCollision(newton_collision_);
+  }
+
  protected:
  private:
-  NewtonCollision* newton_collision_{nullptr};
+  NewtonCollision*  newton_collision_{nullptr};
+  NewtonBody*       newton_body_{nullptr};
 };
 
 class NTPhysicsInterface : public IPhysicsInterface {
  public:
+  NTPhysicsInterface();
+  ~NTPhysicsInterface() override;
+
+  void Tick() override;
+
   IPhysicsBody* CreatePhysicsBody() override;
   void DestroyPhysicsBody(IPhysicsBody* body) override;
 
@@ -40,16 +51,11 @@ class NTPhysicsInterface : public IPhysicsInterface {
 
  protected:
  private:
-  NTPhysicsInterface();
-  ~NTPhysicsInterface() override;
-
   static void* AllocMemory(int size);
   static void FreeMemory(void* ptr, int size);
 
   NewtonWorld* newton_world_{nullptr};
   NewtonCollision* terrain_collision_{nullptr};
-
-  friend IPhysicsInterface;
 };
 
 IPhysicsInterface* IPhysicsInterface::CreateInstance() {
@@ -77,7 +83,12 @@ NTPhysicsInterface::NTPhysicsInterface() {
 }
 
 NTPhysicsInterface::~NTPhysicsInterface() {
+  NewtonDestroyAllBodies(newton_world_);
   NewtonDestroy(newton_world_);
+}
+
+void NTPhysicsInterface::Tick() {
+  NewtonUpdate(newton_world_, 1.0f / 25.0f); // todo: double check this...
 }
 
 IPhysicsBody* NTPhysicsInterface::CreatePhysicsBody() {
@@ -86,7 +97,7 @@ IPhysicsBody* NTPhysicsInterface::CreatePhysicsBody() {
 }
 
 void NTPhysicsInterface::DestroyPhysicsBody(IPhysicsBody* body) {
-  delete body;
+  delete dynamic_cast<NTPhysicsBody*>(body);
 }
 
 /////////////////////////////////////////////////////////////

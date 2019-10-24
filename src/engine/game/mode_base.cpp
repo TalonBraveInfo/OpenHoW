@@ -38,7 +38,7 @@ void BaseGameMode::StartRound() {
   SpawnActors();
 
   // Play the deployment music
-  Engine::AudioManagerInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+  Engine::Audio()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 
   round_started_ = true;
 }
@@ -71,7 +71,7 @@ void BaseGameMode::Tick() {
 }
 
 void BaseGameMode::SpawnActors() {
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = Engine::Game()->GetCurrentMap();
   if (map == nullptr) {
     Error("Attempted to spawn actors without having loaded a map!\n");
   }

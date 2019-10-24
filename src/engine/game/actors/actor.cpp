@@ -39,6 +39,8 @@ Actor::~Actor() {
 
   children_.clear();
   children_.shrink_to_fit();
+
+  DestroyPhysicsBody();
 }
 
 void Actor::SetAngles(PLVector3 angles) {
@@ -57,12 +59,26 @@ void Actor::Deserialize(const ActorSpawn& spawn){
   SetAngles(spawn.angles);
 }
 
-void Actor::TickPhysicsBody() {
-  physics_body_->Tick();
+const IPhysicsBody* Actor::CreatePhysicsBody() {
+  if(physics_body_ != nullptr) {
+    return physics_body_;
+  }
+
+  physics_body_ = Engine::Physics()->CreatePhysicsBody();
+  if(physics_body_ == nullptr) {
+    return nullptr;
+  }
+
+  return physics_body_;
 }
 
-void Actor::CreatePhysicsBody() {
+void Actor::DestroyPhysicsBody() {
+  if(physics_body_ == nullptr) {
+    return;
+  }
 
+  Engine::Physics()->DestroyPhysicsBody(physics_body_);
+  physics_body_ = nullptr;
 }
 
 void Actor::AddHealth(int16_t health) {
@@ -83,13 +99,13 @@ void Actor::Depossessed(const Player* player) {}
  * Drop the actor to the ground based on it's bounding box size.
  */
 void Actor::DropToFloor() {
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = Engine::Game()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
   position_.y = height + bounds_.y;
 }
 
 void Actor::HandleInput() {
-  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
+  IGameMode* mode = Engine::Game()->GetMode();
   if (mode == nullptr) {
     return;
   }

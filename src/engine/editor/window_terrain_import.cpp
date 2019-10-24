@@ -42,7 +42,7 @@ void WindowTerrainImport::Display() {
 }
 
 void WindowTerrainImport::ImportTerrain() {
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = Engine::Game()->GetCurrentMap();
   if(map == nullptr) {
     return;
   }

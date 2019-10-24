@@ -31,9 +31,10 @@ enum class PhysicsPrimitiveType {
 
 class IPhysicsBody {
  public:
-  virtual void Tick() = 0;
-
  protected:
+  IPhysicsBody() = default;
+  virtual ~IPhysicsBody() = default;
+
  private:
 };
 
@@ -41,6 +42,8 @@ class IPhysicsInterface {
  public:
   static IPhysicsInterface* CreateInstance();
   static void DestroyInstance(IPhysicsInterface* instance);
+
+  virtual void Tick() = 0;
 
   virtual IPhysicsBody* CreatePhysicsBody() = 0;
   virtual void DestroyPhysicsBody(IPhysicsBody* body) = 0;
@@ -50,7 +53,7 @@ class IPhysicsInterface {
 
  protected:
   IPhysicsInterface() = default;
-  virtual ~IPhysicsInterface() = 0;
+  virtual ~IPhysicsInterface() = default;
 
  private:
 };

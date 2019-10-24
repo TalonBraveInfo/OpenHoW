@@ -33,7 +33,7 @@ REGISTER_ACTOR(sp_me, APig)    // Spy
 using namespace openhow;
 
 APig::APig() : SuperClass() {
-  speech_ = Engine::AudioManagerInstance()->CreateSource();
+  speech_ = Engine::Audio()->CreateSource();
 }
 
 APig::~APig() {
@@ -54,7 +54,7 @@ void APig::Tick() {
     }
 
     // TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
-    Engine::AudioManagerInstance()->PlayLocalSound("audio/e_1.wav", GetPosition(), {0, 0, 0}, true);
+    Engine::Audio()->PlayLocalSound("audio/e_1.wav", GetPosition(), {0, 0, 0}, true);
 
     Actor* boots = ActorManager::GetInstance()->CreateActor("boots");
     boots->SetPosition(GetPosition());
@@ -69,7 +69,7 @@ void APig::Tick() {
     return;
   }
 
-  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  Camera* camera = Engine::Game()->GetCamera();
   position_.x += input_forward * 100.0f * camera->GetForward().x;
   position_.y += input_forward * 100.0f * camera->GetForward().y;
   position_.z += input_forward * 100.0f * camera->GetForward().z;
@@ -78,7 +78,7 @@ void APig::Tick() {
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = Engine::Game()->GetCurrentMap();
   float height = map->GetTerrain()->GetHeight({position_.x, position_.z});
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
@@ -136,7 +136,7 @@ void APig::SetPersonality(PigPersonality personality) {
 }
 
 void APig::SetPlayerOwner(Player* owner) {
-  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
+  IGameMode* mode = Engine::Game()->GetMode();
   mode->AssignActorToPlayer(this, owner);
 }
 
@@ -144,12 +144,12 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
   // Ensure pig is spawned up in the air for deployment
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = Engine::Game()->GetCurrentMap();
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
   // TODO: This is slightly more complicated...
   SetClass(PigClass::GRUNT);
-  SetPlayerOwner(Engine::GameManagerInstance()->GetMode()->GetCurrentPlayer()); // temp
+  SetPlayerOwner(Engine::Game()->GetMode()->GetCurrentPlayer()); // temp
 
   // Create and equip our parachute, and then
   // link it to ensure it gets destroyed when we do

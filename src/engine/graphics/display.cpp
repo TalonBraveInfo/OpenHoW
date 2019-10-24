@@ -197,7 +197,7 @@ void Display_UpdateViewport(int x, int y, int width, int height) {
     g_state.ui_camera->viewport.h = newHeight;
   }
 
-  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  Camera* camera = Engine::Game()->GetCamera();
   camera->SetViewport({x, y}, {width, height});
 }
 
@@ -394,7 +394,7 @@ static void DrawCameraInfoOverlay() {
     return;
   }
 
-  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  Camera* camera = Engine::Game()->GetCamera();
   if (camera == nullptr) {
     return;
   }
@@ -539,7 +539,7 @@ void Display_SetupDraw(double delta) {
 
   plBindFrameBuffer(nullptr, PL_FRAMEBUFFER_DRAW);
 
-  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  Camera* camera = Engine::Game()->GetCamera();
   if (camera == nullptr) {
     return;
   }
@@ -552,7 +552,7 @@ void DrawMap() {
     return;
   }
 
-  Map* map = openhow::Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = openhow::Engine::Game()->GetCurrentMap();
   if (map == nullptr) {
     return;
   }
@@ -568,7 +568,7 @@ void Display_DrawScene() {
   //DrawParticles(cur_delta);
 
   /* debug methods */
-  Engine::AudioManagerInstance()->DrawSources();
+  Engine::Audio()->DrawSources();
 }
 
 void Display_DrawInterface() {

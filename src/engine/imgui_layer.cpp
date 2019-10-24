@@ -30,6 +30,8 @@
 #include "editor/window_new_map.h"
 #include "editor/window_model_viewer.h"
 #include "editor/window_terrain_import.h"
+#include "editor/window_actor_tree.h"
+#include "language.h"
 
 static bool show_quit = false;
 static bool show_file = false;
@@ -184,20 +186,19 @@ void UI_DisplayNewGame() {
                    ED_DEFAULT_WINDOW_FLAGS
   );
 
-  ImGui::ListBoxHeader("Maps");
-  GameManager::MapManifestMap maps = openhow::Engine::GameManagerInstance()->GetMapManifests();
-  if (!maps.empty()) {
-    {
-      ImGui::Selectable("Selected", true);
-      ImGui::Selectable("Not Selected", false);
-    }
+  GameManager::MapManifestMap maps = Engine::Game()->GetMapManifests();
+  std::vector<const char*> options;
+  for(const auto& map : maps) {
+    options.push_back(LanguageManager::GetInstance()->GetTranslation(map.second.name.c_str()));
   }
-  ImGui::ListBoxFooter();
+
+  static int selected_map = 1;
+  ImGui::ListBox("Maps", &selected_map, &options[0], options.size(), 10);
 
   ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
 
   if (ImGui::Button("Start Game!")) {
-    openhow::Engine::GameManagerInstance()->LoadMap("camp");
+    Engine::Game()->LoadMap("camp");
     show_new_game = false;
   }
   ImGui::SameLine();
@@ -326,7 +327,7 @@ void UI_DisplayFileBox() {
           } break;
 
           case FILE_TYPE_AUDIO: {
-            Engine::AudioManagerInstance()->PlayGlobalSound(i.path);
+            Engine::Audio()->PlayGlobalSound(i.path);
           } break;
 
           default:break;
@@ -400,7 +401,7 @@ class ConsoleWindow : public BaseWindow {
   }
 
   void Display() override {
-    Camera* camera = Engine::GameManagerInstance()->GetCamera();
+    Camera* camera = Engine::Game()->GetCamera();
     ImGui::SetNextWindowSize(ImVec2((float)(camera->GetViewportWidth()) - 20, 128), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(10, (float)(camera->GetViewportHeight()) - 138));
     ImGui::Begin("Console", &show_console);
@@ -529,14 +530,13 @@ void UI_DisplayDebugMenu(void) {
     // todo: eventually this will be moved into a dedicated toolbar
     if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Particle Editor...")) {}
-      if (Engine::GameManagerInstance()->GetCurrentMap() != nullptr) {
+      if (Engine::Game()->GetCurrentMap() != nullptr) {
         if(ImGui::MenuItem("Import Heightmap...")) {
           windows.push_back(new WindowTerrainImport());
         }
         ImGui::Separator();
-        if (ImGui::MenuItem("Map Config Editor...")) {
-          windows.push_back(new MapConfigEditor());
-        }
+        if(ImGui::MenuItem("Actor Inspector...")) { windows.push_back(new ActorTreeWindow()); }
+        if (ImGui::MenuItem("Map Config Editor...")) { windows.push_back(new MapConfigEditor()); }
       }
       ImGui::EndMenu();
     }

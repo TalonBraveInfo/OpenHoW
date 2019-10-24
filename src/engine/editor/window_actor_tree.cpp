@@ -29,10 +29,11 @@ void ActorTreeWindow::Display() {
   ImGui::Begin(dname("Actor Tree"), &status_, ED_DEFAULT_WINDOW_FLAGS);
 
   const ActorSet actors = ActorManager::GetInstance()->GetActors();
-  if(!actors.empty()) {
-    // blah
+  if(actors.empty()) {
+    ImGui::TextColored(ImVec4(1.0f, 0, 0, 1.0f), "No actors loaded...");
+    ImGui::End();
+    return;
   }
 
   ImGui::End();
 }
-

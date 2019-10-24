@@ -27,6 +27,8 @@
 #include "graphics/font.h"
 #include "config.h"
 
+using namespace openhow;
+
 /************************************************************/
 
 #define check_args(num) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
@@ -52,7 +54,7 @@ static void QuitCommand(unsigned int argc, char* argv[]) {
 }
 
 static void DisconnectCommand(unsigned int argc, char* argv[]) {
-  //Map_Unload();
+  Engine::Game()->EndMode();
 }
 
 static void LoadConfigCommand(unsigned int argc, char** argv) {
@@ -106,9 +108,8 @@ static void OpenCommand(unsigned int argc, char* argv[]) {
   }
 
   switch (type) {
-    default: {
+    default:
       LogWarn("unknown filetype, ignoring!\n");
-    }
       break;
 
     case TYPE_MAP: {
@@ -121,8 +122,8 @@ static void OpenCommand(unsigned int argc, char* argv[]) {
 
       u_assert(0);
       //Map_Load(map_name, MAP_MODE_EDITOR);
-    }
       break;
+    }
   }
 }
 
@@ -155,6 +156,8 @@ PLConsoleVariable* cv_debug_skeleton = nullptr;
 PLConsoleVariable* cv_debug_input = nullptr;
 PLConsoleVariable* cv_debug_cache = nullptr;
 PLConsoleVariable* cv_debug_shaders = nullptr;
+
+PLConsoleVariable* cv_game_language = nullptr;
 
 PLConsoleVariable* cv_camera_mode = nullptr;
 PLConsoleVariable* cv_camera_fov = nullptr;
@@ -221,6 +224,8 @@ void Console_Initialize(void) {
   rvar(cv_debug_cache, false, "0", pl_bool_var, nullptr, "display memory and other info");
   rvar(cv_debug_shaders, false, "-1", pl_int_var, nullptr, "Forces specified GLSL shader on all draw calls.");
 
+  rvar(cv_game_language, true, "eng", pl_string_var, &LanguageManager::SetLanguageCallback, "Set the language");
+
   rvar(cv_camera_mode, false, "0", pl_int_var, nullptr, "0 = default, 1 = debug");
   rvar(cv_camera_fov, true, "75", pl_float_var, nullptr, "field of view");
   rvar(cv_camera_near, false, "0.1", pl_float_var, nullptr, "");
@@ -243,8 +248,6 @@ void Console_Initialize(void) {
   rvar(cv_audio_volume_music, true, "1", pl_float_var, nullptr, "Set the music audio volume");
   rvar(cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo");
   rvar(cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices");
-
-  plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 
   plRegisterConsoleCommand("open", OpenCommand, "Opens the specified file");
   plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");

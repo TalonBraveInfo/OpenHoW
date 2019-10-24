@@ -26,6 +26,8 @@ extern PLConsoleVariable *cv_debug_input;
 extern PLConsoleVariable *cv_debug_cache;
 extern PLConsoleVariable *cv_debug_shaders;
 
+extern PLConsoleVariable *cv_game_language;
+
 extern PLConsoleVariable *cv_camera_mode;
 extern PLConsoleVariable *cv_camera_fov;
 extern PLConsoleVariable *cv_camera_near;
