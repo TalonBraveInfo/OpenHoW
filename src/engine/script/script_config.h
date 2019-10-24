@@ -25,7 +25,8 @@ class ScriptConfig {
 
   void ParseBuffer(const char* buf);
 
-  void EnterChildNode(const std::string& property, unsigned int index);
+  void EnterChildNode(const std::string& property);
+  void EnterChildNode(unsigned int index);
   void LeaveChildNode();
 
   std::string GetStringProperty(const std::string& property, const std::string& def = "", bool silent = true);

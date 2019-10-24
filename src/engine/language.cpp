@@ -39,9 +39,10 @@ LanguageManager::LanguageManager() {
   try {
     ScriptConfig manifest(man_path);
     unsigned int num_keys = manifest.GetArrayLength("languages");
+    manifest.EnterChildNode("languages");
     for(unsigned int i = 0; i < num_keys; ++i) {
       Index index;
-      manifest.EnterChildNode("languages", i);
+      manifest.EnterChildNode(i);
       index.name = manifest.GetStringProperty("name");
       LogDebug("Language Name: %s\n", index.name.c_str());
       index.key = manifest.GetStringProperty("key");

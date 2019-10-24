@@ -294,19 +294,21 @@ void ScriptConfig::ParseBuffer(const char* buf) {
   duk_json_decode(context, -1);
 }
 
-void ScriptConfig::EnterChildNode(const std::string& property, unsigned int index) {
+void ScriptConfig::EnterChildNode(const std::string& property) {
   auto* context = static_cast<duk_context*>(ctx_);
-
   const char* p = property.c_str();
   if (!duk_get_prop_string(context, -1, p)) {
     duk_pop(context);
     LogMissingProperty(p);
     return;
   }
+}
 
+void ScriptConfig::EnterChildNode(unsigned int index) {
+  auto* context = static_cast<duk_context*>(ctx_);
   if (!duk_is_array(context, -1)) {
     duk_pop(context);
-    LogInvalidArray(p);
+    LogWarn("Node is not an array!\n");
     return;
   }
 
