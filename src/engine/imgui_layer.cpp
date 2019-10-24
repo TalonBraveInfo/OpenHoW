@@ -198,7 +198,7 @@ void UI_DisplayNewGame() {
   ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
 
   if (ImGui::Button("Start Game!")) {
-    Engine::Game()->LoadMap("camp");
+    Engine::Game()->LoadMap(std::next(maps.begin(), selected_map)->second.filename);
     show_new_game = false;
   }
   ImGui::SameLine();
