@@ -17,17 +17,44 @@
 
 #pragma once
 
-enum { // supported languages
-  LANG_ENGLISH,
-  LANG_FRENCH,
-  LANG_GERMAN,
-  LANG_ITALIAN,
-  LANG_SPANISH,
+class LanguageManager {
+ public:
+  static LanguageManager* GetInstance() {
+    if(language_manager_ == nullptr) {
+      language_manager_ = new LanguageManager();
+    }
+    return language_manager_;
+  }
+
+  static void DestroyInstance() {
+    delete language_manager_;
+  }
+
+  void SetLanguage(const char* key);
+  const char* GetTranslation(const char* key);
+
+  static void SetLanguageCallback(const PLConsoleVariable* var);
+
+ protected:
+ private:
+  static LanguageManager* language_manager_;
+
+  LanguageManager();
+  ~LanguageManager();
+
+  struct Key {
+    std::string translation;
+  };
+
+  struct Index {
+    std::string                 key;
+    std::string                 name;
+    std::string                 font;
+    std::map<std::string, Key>  keys;
+  };
+
+  std::map<std::string, Index> languages_;
+  Index* current_language{ nullptr };
 };
 
-void Languages_Initialize();
-void Languages_Clear();
-
-const char* GetTranslation(const char* key);
-
-void SetLanguageCallback(const PLConsoleVariable* var);
+extern LanguageManager g_translation;

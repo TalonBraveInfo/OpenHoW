@@ -18,27 +18,13 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
+#include "language.h"
 
-/* todo: rewrite to take better advantage of std */
+#include "script/script_config.h"
 
-typedef struct LanguageKey {
-  char key[64];
-  char translation[512]; // todo: UTF-8 pls
-} LanguageKey;
-LanguageKey *l_cache = nullptr;
-unsigned int l_cache_keys = 0;
+LanguageManager* LanguageManager::language_manager_;
 
-typedef struct Language {
-  char key[3];    /* "eng" */
-  char name[64];  /* "English" */ // todo: UTF-8 pls
-  char font[32];  /* "whatever" */
-} Language;
-Language *l_manifest = nullptr;
-
-unsigned int num_languages = 0;
-unsigned int num_translations = 0;
-
-void Languages_Initialize() {
+LanguageManager::LanguageManager() {
   char man_path[PL_SYSTEM_MAX_PATH];
   strncpy(man_path, u_find("languages.manifest"), sizeof(man_path));
 
@@ -47,65 +33,83 @@ void Languages_Initialize() {
     strncpy(man_path, var, sizeof(man_path));
   }
 
-  LogDebug("caching language data...\n");
+  LogInfo("Loading languages.manifest\n");
 
-  /* load in the language manifest */
-
-#if 0 // todo: rethink this
-  num_languages = Script_GetArrayLength(ctx, "languages");
-  l_manifest = u_alloc(num_languages, sizeof(Language), true);
-  for(unsigned int i = 0; i < num_languages; ++i) {
-      strncpy(l_manifest[i].key, Script_GetArrayObjectString(ctx, "languages", i, "key", ""), sizeof(l_manifest[i].key));
-      strncpy(l_manifest[i].name, Script_GetArrayObjectString(ctx, "languages", i, "name", ""), sizeof(l_manifest[i].name)); // todo: UTF-8 PLEASE!!!!!!
-      /* uncomment once we're using this...
-      strncpy(l_manifest[i].font_path, Script_GetStringProperty("font_path"), sizeof(l_manifest[i].font_path)); */
+  // Load in the languages manifest
+  try {
+    ScriptConfig manifest(man_path);
+    unsigned int num_keys = manifest.GetArrayLength("languages");
+    for(unsigned int i = 0; i < num_keys; ++i) {
+      Index index;
+      manifest.EnterChildNode("languages", i);
+      index.name = manifest.GetStringProperty("name");
+      LogDebug("Language Name: %s\n", index.name.c_str());
+      index.key = manifest.GetStringProperty("key");
+      LogDebug("Language Key: %s\n", index.key.c_str());
+      //index.font = manifest.GetStringProperty("font");
+      //LogDebug("Language Font: %s\n", index.font.c_str());
+      manifest.LeaveChildNode();
+      languages_.insert(std::pair<std::string, Index>(index.key, index));
+    }
+  } catch(const std::exception &e) {
+    Error("Failed to load languages manifest, \"%s\"!\n", man_path);
   }
-
-#if _DEBUG /* debug */
-  for(unsigned int i = 0; i < num_languages; ++i) {
-      printf("key %s\n", l_manifest[i].key);
-      printf("name %s\n", l_manifest[i].name);
-      printf("font %s\n", l_manifest[i].font);
-  }
-  printf("done!\n");
-#endif
-
-  Script_DestroyContext(ctx);
-#endif
 }
 
-void Languages_Clear() {
-  u_free(l_manifest);
-  u_free(l_cache);
-}
+LanguageManager::~LanguageManager() = default;
 
-const char *GetTranslation(const char *key) { // todo: UTF-8 pls
-  u_assert(plIsEmptyString(key), "invalid translation key!\n");
-
-  if (l_cache == nullptr) {
+const char *LanguageManager::GetTranslation(const char *key) { // todo: UTF-8 pls
+  if(key[0] != '$') {
     return key;
   }
 
-  for (uint i = 0; i < l_cache_keys; ++i) {
-    if (strcmp(key, l_cache[i].key) == 0) {
-      return l_cache[i].translation;
-    }
+  const char* p = ++key;
+  if(*p == '\0') {
+    LogWarn("Invalid key provided\n");
+    return p;
   }
 
-  return key;
+  if(current_language == nullptr) {
+    LogWarn("No valid language set\n");
+    return p;
+  }
+
+  auto i = current_language->keys.find(p);
+  if(i == current_language->keys.end()) {
+    LogWarn("Failed to find translation key\n");
+    return p;
+  }
+
+  return i->second.translation.c_str();
 }
 
-void SetLanguageCallback(const PLConsoleVariable *var) {
-#if 0 // todo
-  pork_assert(var->s_value != NULL, "invalid language key provided!\n");
+void LanguageManager::SetLanguage(const char* key) {
+  if(current_language != nullptr && current_language->key == key) {
+    return;
+  }
 
-  pork_free(l_cache);
+  auto language = languages_.find(key);
+  if(language == languages_.end()) {
+    Error("Failed to find specified language, \"%s\"!\n", key);
+  }
 
-  // todo: load in the .language data ...
+  current_language = &language->second;
 
-  l_cache = malloc(sizeof(l_cache));
-  memset(l_cache, 0, sizeof(LanguageKey) * 2048); // todo: get the number of keys (done during load?) ...
+  char filename[64];
+  snprintf(filename, sizeof(filename), "languages/%s.language", current_language->key.c_str());
 
-  // todo: how about the rest? ...
-#endif
+  char path[PL_SYSTEM_MAX_PATH];
+  snprintf(path, sizeof(path), "%s", u_find(filename));
+
+  try {
+    ScriptConfig manifest(path);
+    unsigned int num_keys = manifest.GetArrayLength();
+    LogDebug("Keys: %d\n", num_keys);
+  } catch(const std::exception &e) {
+    Error("Failed to load language manifest, \"%s\"!\n", path);
+  }
+}
+
+void LanguageManager::SetLanguageCallback(const PLConsoleVariable *var) {
+  LanguageManager::GetInstance()->SetLanguage(var->s_value);
 }

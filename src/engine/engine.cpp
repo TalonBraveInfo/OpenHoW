@@ -58,6 +58,7 @@ openhow::Engine::~Engine() {
   delete resource_manager_;
 
   IPhysicsInterface::DestroyInstance(physics_interface_);
+  LanguageManager::DestroyInstance();
 }
 
 void openhow::Engine::Initialize() {
@@ -75,6 +76,9 @@ void openhow::Engine::Initialize() {
 
     u_set_base_path(var);
   }
+
+  // Initialize the language manager
+  LanguageManager::GetInstance();
 
   /* this MUST be done after all vars have been
    * initialized, otherwise, right now, certain

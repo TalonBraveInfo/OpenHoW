@@ -293,3 +293,33 @@ void ScriptConfig::ParseBuffer(const char* buf) {
   duk_push_string(context, buf);
   duk_json_decode(context, -1);
 }
+
+void ScriptConfig::EnterChildNode(const std::string& property, unsigned int index) {
+  auto* context = static_cast<duk_context*>(ctx_);
+
+  const char* p = property.c_str();
+  if (!duk_get_prop_string(context, -1, p)) {
+    duk_pop(context);
+    LogMissingProperty(p);
+    return;
+  }
+
+  if (!duk_is_array(context, -1)) {
+    duk_pop(context);
+    LogInvalidArray(p);
+    return;
+  }
+
+  duk_size_t length = duk_get_length(context, -1);
+  if (index >= length) {
+    LogWarn("Invalid index, %d (%d), in array!\n", index, length);
+    return;
+  }
+
+  duk_get_prop_index(context, -1, index);
+}
+
+void ScriptConfig::LeaveChildNode() {
+  auto* context = static_cast<duk_context*>(ctx_);
+  duk_pop(context);
+}
