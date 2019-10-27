@@ -29,15 +29,15 @@ void NewGameWindow::Display() {
   // Team Selection
   {
     ImGui::Text("Select Team");
-    GameManager::MapManifestMap maps = Engine::Game()->GetMapManifests();
+    GameManager::TeamVector teams = Engine::Game()->GetDefaultTeams();
     std::vector<const char*> options;
-    for (const auto& map : maps) {
-      options.push_back(LanguageManager::GetInstance()->GetTranslation(map.second.name.c_str()));
+    for (const auto& team : teams) {
+      options.push_back(team.name.c_str());
     }
 
-    static int selected_map = 1;
-    if(ImGui::ListBox("Teams", &selected_map, &options[0], options.size(), 10)) {
-      snprintf(team_name_, sizeof(team_name_), "%s", std::next(maps.begin(), selected_map)->second.name.c_str());
+    static int selected_team = 0;
+    if(ImGui::ListBox("Teams", &selected_team, &options[0], options.size(), 10)) {
+      snprintf(team_name_, sizeof(team_name_), "%s", teams[selected_team].name.c_str());
     }
 
     ImGui::InputText("Team Name", team_name_, sizeof(team_name_));

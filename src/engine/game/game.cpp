@@ -27,6 +27,7 @@
 #include "game.h"
 
 #include "actors/actor_pig.h"
+#include "../language.h"
 
 using namespace openhow;
 
@@ -154,6 +155,35 @@ void GameManager::UnloadMap() {
   }
 
   delete map_;
+}
+
+void GameManager::RegisterTeamManifest(const std::string& path) {
+  const char* upath = u_find(path.c_str());
+  LogInfo("Registering team manifest \"%s\"...\n", upath);
+
+  try {
+    ScriptConfig config(upath);
+    unsigned int num_teams = config.GetArrayLength();
+    if(num_teams == 0) {
+      Error("Failed to register teams, no teams available in \"%s\"!\n", upath);
+    }
+
+    for(unsigned int i = 0; i < num_teams; ++i) {
+      config.EnterChildNode(i);
+
+      Team team;
+      team.name = LanguageManager::GetInstance()->GetTranslation(config.GetStringProperty("name", team.name).c_str());
+      team.debrief_texture = config.GetStringProperty("debriefTexture", team.debrief_texture);
+      team.paper_texture = config.GetStringProperty("paperTextures", team.paper_texture);
+      team.pig_textures = config.GetStringProperty("pigTextures", team.pig_textures);
+      team.voice_set = config.GetStringProperty("voiceSet", team.voice_set);
+      default_teams_.push_back(team);
+
+      config.LeaveChildNode();
+    }
+  } catch (const std::exception& e) {
+    LogWarn("Failed to read map config, \"%s\"!\n%s\n", upath, e.what());
+  }
 }
 
 void GameManager::RegisterMapManifest(const std::string& path) {

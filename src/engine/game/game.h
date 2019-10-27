@@ -72,14 +72,12 @@ struct PigSlot {
 struct Team {
   std::string name{"none"};
   std::string description{"none"};
-  std::string identifier{"en"};
 
   // data directories
   std::string pig_textures{"chars/pigs/british"};
   std::string paper_texture{"frontend/papers/british"};
   std::string debrief_texture{"frontend/debrief/unifeng"};
-
-  std::string Serialize() { /* TODO */ return ""; }
+  std::string voice_set{"en"};
 
   PigSlot slots[8];
 
@@ -156,6 +154,7 @@ class GameManager {
   void LoadMap(const std::string& name);
   void UnloadMap();
 
+  void RegisterTeamManifest(const std::string& path);
   void RegisterMapManifest(const std::string& path);
   void RegisterMapManifests();
 
@@ -164,6 +163,9 @@ class GameManager {
   const MapManifestMap& GetMapManifests() { return map_manifests_; };
   MapManifest* CreateManifest(const std::string& name);
   //void SaveManifest(const std::string& name, const MapManifest& manifest);
+
+  typedef std::vector<Team> TeamVector;
+  const TeamVector& GetDefaultTeams() { return default_teams_; }
 
   Map* GetCurrentMap() { return map_; }
 
@@ -185,6 +187,7 @@ class GameManager {
 
   std::map<std::string, MapManifest> map_manifests_;
 
+  TeamVector default_teams_;
   std::vector<Player*> players_;
 
 #define MAX_AMBIENT_SAMPLES 8

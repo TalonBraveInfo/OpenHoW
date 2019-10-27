@@ -114,6 +114,7 @@ void openhow::Engine::Initialize() {
 
   // Ensure that our manifest list is updated
   Game()->RegisterMapManifests();
+  Game()->RegisterTeamManifest("scripts/teams.json");
 
   LogInfo("Base path:         \"%s\"\n", u_get_base_path());
   LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
