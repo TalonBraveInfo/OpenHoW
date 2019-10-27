@@ -45,10 +45,6 @@ static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
 static PLConsoleVariable* cv_display_show_camerapos;
 static PLConsoleVariable* cv_display_show_viewportinfo;
 
-PLTexture* Display_GetDefaultTexture() {
-  return Engine::ResourceManagerInstance()->GetFallbackTexture();
-}
-
 #if 0
 void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
     size_t cache_size = GetTextureCacheSize();

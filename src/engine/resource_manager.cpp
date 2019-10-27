@@ -17,12 +17,34 @@
 
 #include "engine.h"
 #include "resource_manager.h"
+#include "graphics/shader.h"
 
 using namespace openhow;
 
-ResourceManager::ResourceManager() = default;
+/* todo:
+ *  allow resources to be cached into collections (e.g. Clear("GameTextures"))
+ */
+
+PLModel* LoadObjModel(const char* path); // see loaders/obj.cpp
+PLModel* Model_LoadVtxFile(const char* path);
+PLModel* Model_LoadMinFile(const char* path);
+
+ResourceManager::ResourceManager() {
+  plRegisterModelLoader("obj", LoadObjModel);
+  plRegisterModelLoader("vtx", Model_LoadVtxFile);
+  plRegisterModelLoader("min", Model_LoadMinFile);
+
+  plRegisterConsoleCommand("ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources.");
+  plRegisterConsoleCommand("ClearModels", &ResourceManager::ClearModelsCommand, "Clears all cached models.");
+  plRegisterConsoleCommand("ClearTextures", &ResourceManager::ClearTexturesCommand, "Clears all cached textures.");
+}
+
 ResourceManager::~ResourceManager() {
+  ClearTextures(true);
+  ClearModels(true);
+
   plDestroyTexture(fallback_texture_, true);
+  plDestroyModel(fallback_model_);
 }
 
 // TODO: we should be able to query the platform library for this!!
@@ -49,12 +71,13 @@ PLModel* ResourceManager::GetCachedModel(const std::string& path) {
   return nullptr;
 }
 
-PLTexture* ResourceManager::LoadTexture(const std::string& path, PLTextureFilter filter, bool persist) {
+PLTexture* ResourceManager::LoadTexture(const std::string& path, PLTextureFilter filter, bool persist,
+    bool abort_on_fail) {
   const char* ext = plGetFileExtension(path.c_str());
   if (plIsEmptyString(ext)) {
-    const char* fp = u_find2(path.c_str(), supported_image_formats, false);
+    const char* fp = u_find2(path.c_str(), supported_image_formats, abort_on_fail);
     if (fp == nullptr) {
-      return GetFallbackTexture();
+      return CacheTexture(path, GetFallbackTexture(), persist);
     }
 
     PLTexture* texture = GetCachedTexture(fp);
@@ -64,11 +87,15 @@ PLTexture* ResourceManager::LoadTexture(const std::string& path, PLTextureFilter
 
     texture = plLoadTextureImage(fp, filter);
     if (texture != nullptr) {
-      return texture;
+      return CacheTexture(fp, texture, persist);;
+    }
+
+    if(abort_on_fail) {
+      Error("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
     }
 
     LogWarn("%s, aborting!\n", plGetError());
-    return GetFallbackTexture();
+    return CacheTexture(fp, GetFallbackTexture(), persist);
   }
 
   const char* fp = u_find(path.c_str());
@@ -88,16 +115,44 @@ PLTexture* ResourceManager::LoadTexture(const std::string& path, PLTextureFilter
     if (texture != nullptr) {
       texture->filter = filter;
       if (plUploadTextureImage(texture, &img)) {
-        return texture;
+        return CacheTexture(fp, texture, persist);
       }
     }
     plDestroyTexture(texture, true);
   }
 
+  if(abort_on_fail) {
+    Error("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
+  }
+
   LogWarn("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
   plFreeImage(&img);
 
-  return GetFallbackTexture();
+  return CacheTexture(fp, GetFallbackTexture(), persist);;
+}
+
+PLModel* ResourceManager::LoadModel(const std::string& path, bool persist, bool abort_on_fail) {
+  const char* fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
+  if (fp == nullptr) {
+    return CacheModel(path, GetFallbackModel(), persist);
+  }
+
+  PLModel* model = GetCachedModel(fp);
+  if(model != nullptr) {
+    return model;
+  }
+
+  model = plLoadModel(fp);
+  if (model == nullptr) {
+    if (abort_on_fail) {
+      Error("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
+    }
+
+    LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
+    return CacheModel(fp, GetFallbackModel(), persist);
+  }
+
+  return CacheModel(fp, model, persist);
 }
 
 PLTexture* ResourceManager::GetFallbackTexture() {
@@ -124,5 +179,90 @@ PLTexture* ResourceManager::GetFallbackTexture() {
 }
 
 PLModel* ResourceManager::GetFallbackModel() {
-  return nullptr;
+  if(fallback_model_ != nullptr) {
+    return fallback_model_;
+  }
+
+  PLMesh* mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
+  plSetMeshVertexPosition(mesh, 0, PLVector3(0, 20, 0));
+  plSetMeshVertexPosition(mesh, 1, PLVector3(0, -20, 0));
+  plSetMeshVertexPosition(mesh, 2, PLVector3(20, 0, 0));
+  plSetMeshVertexPosition(mesh, 3, PLVector3(-20, 0, 0));
+  plSetMeshVertexPosition(mesh, 4, PLVector3(0, 0, 20));
+  plSetMeshVertexPosition(mesh, 5, PLVector3(0, 0, -20));
+  plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+  plSetMeshShaderProgram(mesh, Shaders_GetProgram(SHADER_GenericUntextured));
+  plUploadMesh(mesh);
+
+  return (fallback_model_ = plCreateBasicStaticModel(mesh));
+}
+
+void ResourceManager::ClearTextures(bool force) {
+  if(textures_.empty()) {
+    return;
+  }
+
+  for(auto &i : textures_) {
+    if((i.second.persist && !force) || (fallback_texture_ != nullptr && i.second.texture_ptr == fallback_texture_)) {
+      continue;
+    }
+
+    plDestroyTexture(i.second.texture_ptr, true);
+  }
+
+  if(force) {
+    textures_.clear();
+  }
+}
+
+void ResourceManager::ClearModels(bool force) {
+  if(models_.empty()) {
+    return;
+  }
+
+  for(auto &i : models_) {
+    if((i.second.persist && !force) || (fallback_model_ != nullptr && i.second.model_ptr == fallback_model_)) {
+      continue;
+    }
+
+    plDestroyModel(i.second.model_ptr);
+  }
+
+  if(force) {
+    models_.clear();
+  }
+}
+
+void ResourceManager::ListCachedResources(unsigned int argc, char** argv) {
+  u_unused(argc);
+  u_unused(argv);
+
+  LogInfo("Printing cache...\n");
+
+  for(auto const& i : Engine::Resource()->models_) {
+    LogInfo(" model %s / %s : name(%s)\n", i.first.c_str(), i.second.persist ? "true" : "false",
+        i.second.model_ptr->name);
+  }
+
+  unsigned int tsize = 0;
+  for(auto const& i : Engine::Resource()->textures_) {
+    LogInfo(" texture %s / %s : name(%s)\n", i.first.c_str(), i.second.persist ? "true" : "false",
+            i.second.texture_ptr->name);
+    tsize += i.second.texture_ptr->size;
+  }
+  LogInfo("Texture Memory: %dkb\n", plBytesToKilobytes(tsize));
+}
+
+void ResourceManager::ClearTexturesCommand(unsigned int argc, char** argv) {
+  u_unused(argc);
+  u_unused(argv);
+
+  Engine::Resource()->ClearTextures();
+}
+
+void ResourceManager::ClearModelsCommand(unsigned int argc, char** argv) {
+  u_unused(argc);
+  u_unused(argv);
+
+  Engine::Resource()->ClearModels();
 }

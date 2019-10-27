@@ -30,14 +30,7 @@
 
 using namespace openhow;
 
-struct {
-  HirHandle* pig_skeleton;
-
-  Animation animations[MAX_ANIMATIONS];
-  unsigned int num_animations;
-} model_cache;
-
-static PLModel* Model_LoadVtxFile(const char* path) {
+PLModel* Model_LoadVtxFile(const char* path) {
   VtxHandle* vtx = Vtx_LoadFile(path);
   if (vtx == nullptr) {
     LogWarn("Failed to load Vtx, \"%s\"!\n", path);
@@ -83,7 +76,7 @@ static PLModel* Model_LoadVtxFile(const char* path) {
     Vtx_DestroyHandle(vtx);
     Fac_DestroyHandle(fac);
 
-    mesh->texture = Engine::ResourceManagerInstance()->GetFallbackTexture();
+    mesh->texture = Engine::Resource()->GetFallbackTexture();
 
     PLModel* model = plCreateBasicStaticModel(mesh);
     if (model == nullptr) {
@@ -198,12 +191,12 @@ PLModel* Model_LoadMinFile(const char* path) {
 
 /************************************************************/
 
+#if 0
 /* cache the pigs data into memory, since we
  * share it between all of them anyway :) */
 void CacheModelData() {
   memset(&model_cache, 0, sizeof(model_cache));
 
-#if 0
   model_cache.pig_skeleton = Hir_LoadFile(u_find("chars/pig.hir"));
   if (model_cache.pig_skeleton == nullptr) {
     Error("Failed to load skeleton, aborting!\n")
@@ -371,9 +364,10 @@ void CacheModelData() {
       }
   }
 #endif
-#endif
 }
+#endif
 
+#if 0
 void DEBUGDrawSkeleton() {
   if (!cv_debug_skeleton->b_value) {
     return;
@@ -427,104 +421,4 @@ void DEBUGDrawSkeleton() {
   glPopMatrix();
 #endif
 }
-
-ModelManager* ModelManager::instance_ = nullptr;
-
-ModelManager::ModelManager() {
-  PLModel* LoadObjModel(const char* path); // see loaders/obj.cpp
-  plRegisterModelLoader("obj", LoadObjModel);
-  plRegisterModelLoader("vtx", Model_LoadVtxFile);
-  plRegisterModelLoader("min", Model_LoadMinFile);
-
-  PLMesh* default_mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
-  plSetMeshVertexPosition(default_mesh, 0, PLVector3(0, 20, 0));
-  plSetMeshVertexPosition(default_mesh, 1, PLVector3(0, -20, 0));
-  plSetMeshVertexPosition(default_mesh, 2, PLVector3(20, 0, 0));
-  plSetMeshVertexPosition(default_mesh, 3, PLVector3(-20, 0, 0));
-  plSetMeshVertexPosition(default_mesh, 4, PLVector3(0, 0, 20));
-  plSetMeshVertexPosition(default_mesh, 5, PLVector3(0, 0, -20));
-  plSetMeshUniformColour(default_mesh, PLColour(255, 0, 0, 255));
-  plSetMeshShaderProgram(default_mesh, Shaders_GetProgram(SHADER_GenericUntextured));
-  plUploadMesh(default_mesh);
-  fallback_ = plCreateBasicStaticModel(default_mesh);
-
-  // todo: do something with this...
-  CacheModelData();
-
-#if 0
-  model_cache.pigs[PIG_CLASS_ACE] = Model_LoadFile("chars/pigs/ac_hi", true);
-  model_cache.pigs[PIG_CLASS_COMMANDO] = Model_LoadFile("chars/pigs/sb_hi", true);
-  model_cache.pigs[PIG_CLASS_GRUNT] = Model_LoadFile("chars/pigs/gr_hi", true);
-  model_cache.pigs[PIG_CLASS_HEAVY] = Model_LoadFile("chars/pigs/hv_hi", true);
-  model_cache.pigs[PIG_CLASS_LEGEND] = Model_LoadFile("chars/pigs/le_hi", true);
-  model_cache.pigs[PIG_CLASS_MEDIC] = Model_LoadFile("chars/pigs/me_hi", true);
-  model_cache.pigs[PIG_CLASS_SABOTEUR] = Model_LoadFile("chars/pigs/sa_hi", true);
-  model_cache.pigs[PIG_CLASS_SNIPER] = Model_LoadFile("chars/pigs/sn_hi", true);
-  model_cache.pigs[PIG_CLASS_SPY] = Model_LoadFile("chars/pigs/sp_hi", true);
-
-  /* debug loading min models */
-  PLModel* debug = Model_LoadFile("chars/shed1d", false);
-  if(debug != NULL) {
-      plDestroyModel(default_model);
-      default_model = debug;
-  }
 #endif
-}
-
-ModelManager::~ModelManager() {
-  DestroyModels();
-
-  plDestroyModel(fallback_);
-}
-
-void ModelManager::DestroyModels() {
-  for (const auto& i : cached_models_) {
-    plDestroyModel(i.second);
-  }
-  cached_models_.clear();
-}
-
-void ModelManager::DestroyModel(PLModel* model) {
-  // Never EVER delete the default model!
-  if (model == fallback_) {
-    return;
-  }
-
-  for (const auto& i : cached_models_) {
-    if (i.second == model) {
-      plDestroyModel(i.second);
-      cached_models_.erase(i.first);
-      return;
-    }
-  }
-}
-
-PLModel* ModelManager::LoadModel(const std::string& path, bool abort_on_fail) {
-  const char* fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
-  if (fp == nullptr) {
-    return fallback_;
-  }
-
-  PLModel* model = plLoadModel(fp);
-  if (model == nullptr) {
-    if (abort_on_fail) {
-      Error("Failed to load model, \"%s\", aborting (%s)!\n", fp, plGetError());
-    }
-
-    LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
-    return fallback_;
-  }
-
-  return model;
-}
-
-PLModel* ModelManager::LoadCachedModel(const std::string& path, bool abort_on_fail) {
-  auto i = cached_models_.find(path);
-  if (i != cached_models_.end()) {
-    return i->second;
-  }
-
-  PLModel* model = LoadModel(path, abort_on_fail);
-  cached_models_.emplace(path, model);
-  return model;
-}

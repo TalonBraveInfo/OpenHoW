@@ -98,38 +98,22 @@ static void FrontendInputCallback(int key, bool is_pressed) {
 static void CacheFEGameData() {
 #if 1
   fe_tx_game_textures[FE_TEXTURE_ANG] =
-      Engine::ResourceManagerInstance()->LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR, true);
+      Engine::Resource()->LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR, true);
   fe_tx_game_textures[FE_TEXTURE_ANGPOINT] =
-      Engine::ResourceManagerInstance()->LoadTexture("frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR, true);
+      Engine::Resource()->LoadTexture("frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR, true);
   fe_tx_game_textures[FE_TEXTURE_CLOCK] =
-      Engine::ResourceManagerInstance()->LoadTexture("frontend/dash/clock", PL_TEXTURE_FILTER_LINEAR, true);
+      Engine::Resource()->LoadTexture("frontend/dash/clock", PL_TEXTURE_FILTER_LINEAR, true);
   fe_tx_game_textures[FE_TEXTURE_CLIGHT] =
-      Engine::ResourceManagerInstance()->LoadTexture("frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR, true);
+      Engine::Resource()->LoadTexture("frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR, true);
   fe_tx_game_textures[FE_TEXTURE_TIMER] =
-      Engine::ResourceManagerInstance()->LoadTexture("frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR, true);
+      Engine::Resource()->LoadTexture("frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR, true);
 #endif
 }
 
 static void CacheFEMenuData() {
-  fe_background = Engine::ResourceManagerInstance()->LoadTexture("frontend/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+  fe_background = Engine::Resource()->LoadTexture("frontend/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
   for (unsigned int i = 0; i < MAX_TEAMS; ++i) {
-    fe_papers_teams[i] = Engine::ResourceManagerInstance()->LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
-  }
-}
-
-static void ClearFEGameData() {
-  for (auto& fe_tx_game_texture : fe_tx_game_textures) {
-    if (fe_tx_game_texture == nullptr) {
-      continue;
-    }
-    plDestroyTexture(fe_tx_game_texture, true);
-  }
-}
-
-static void ClearFEMenuData() {
-  plDestroyTexture(fe_background, true);
-  for (auto& fe_papers_team : fe_papers_teams) {
-    plDestroyTexture(fe_papers_team, true);
+    fe_papers_teams[i] = Engine::Resource()->LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
   }
 }
 
@@ -137,7 +121,6 @@ static void ClearFEMenuData() {
 
 void FE_Initialize(void) {
   CacheFontData();
-  CacheFEMenuData();
 }
 
 void FE_Shutdown(void) {
@@ -179,10 +162,10 @@ void FrontEnd_Tick(void) {
 
         /* load in some of the assets we'll be using on the
          * next screen before proceeding... */
-        fe_press = Engine::ResourceManagerInstance()->LoadTexture("frontend/title/press", PL_TEXTURE_FILTER_LINEAR);
-        fe_any = Engine::ResourceManagerInstance()->LoadTexture("frontend/title/any", PL_TEXTURE_FILTER_LINEAR);
-        fe_key = Engine::ResourceManagerInstance()->LoadTexture("frontend/title/key", PL_TEXTURE_FILTER_LINEAR);
-        fe_background = Engine::ResourceManagerInstance()->LoadTexture("frontend/title/title", PL_TEXTURE_FILTER_LINEAR);
+        fe_press = Engine::Resource()->LoadTexture("frontend/title/press", PL_TEXTURE_FILTER_LINEAR);
+        fe_any = Engine::Resource()->LoadTexture("frontend/title/any", PL_TEXTURE_FILTER_LINEAR);
+        fe_key = Engine::Resource()->LoadTexture("frontend/title/key", PL_TEXTURE_FILTER_LINEAR);
+        fe_background = Engine::Resource()->LoadTexture("frontend/title/title", PL_TEXTURE_FILTER_LINEAR);
         break;
       }
 
@@ -200,17 +183,13 @@ uint8_t loading_progress = 0;
 #define Redraw()   Display_DrawInterface();
 
 void FE_SetLoadingBackground(const char* name) {
-  if (fe_background != nullptr) {
-    plDestroyTexture(fe_background, true);
-  }
-
   char screen_path[PL_SYSTEM_MAX_PATH];
   snprintf(screen_path, sizeof(screen_path), "frontend/briefing/%s", name);
   if (!plFileExists(screen_path)) {
     snprintf(screen_path, sizeof(screen_path), "frontend/briefing/loadmult");
   }
 
-  fe_background = Engine::ResourceManagerInstance()->LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
+  fe_background = Engine::Resource()->LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
   Redraw();
 }
 
@@ -338,7 +317,6 @@ void FE_Draw(void) {
         static bool is_background_drawn = false;
         if (!is_background_drawn) {
           plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-          plDestroyTexture(fe_background, true);
           is_background_drawn = true;
         }
 
@@ -428,10 +406,8 @@ void FrontEnd_SetState(unsigned int state) {
   }
 
   if (frontend_state == FE_MODE_GAME && state != FE_MODE_GAME) {
-    ClearFEGameData();
     CacheFEMenuData();
   } else if (frontend_state != FE_MODE_GAME && state == FE_MODE_GAME) {
-    ClearFEMenuData();
     CacheFEGameData();
   }
 
@@ -446,11 +422,7 @@ void FrontEnd_SetState(unsigned int state) {
       /* remove the textures we loaded in
        * for the start screen - we won't
        * be needing them again... */
-      plDestroyTexture(fe_press, true);
-      plDestroyTexture(fe_any, true);
-      plDestroyTexture(fe_key, true);
-      plDestroyTexture(fe_background, true);
-      fe_background = Engine::ResourceManagerInstance()->LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
+      fe_background = Engine::Resource()->LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
 
       // start playing the default theme
       Engine::Audio()->PlayMusic(AUDIO_MUSIC_MENU);

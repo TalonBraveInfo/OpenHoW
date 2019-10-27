@@ -17,8 +17,6 @@
 
 #pragma once
 
-#define MAX_BONES 32
-
 typedef struct Keyframe {
   PLVector3 transforms[10];
   PLQuaternion rotations[15];
@@ -32,36 +30,36 @@ typedef struct Animation {
   unsigned int num_frames;
 } Animation;
 
-enum {
-  BONE_INDEX_PELVIS,
-  BONE_INDEX_SPINE,
-  BONE_INDEX_HEAD,
+enum class SkeletonBone {
+  PELVIS = 0,
+  SPINE,
+  HEAD,
 
-  BONE_INDEX_UPPER_ARM_L,
-  BONE_INDEX_LOWER_ARM_L,
-  BONE_INDEX_HAND_L,
+  UPPER_ARM_L,
+  LOWER_ARM_L,
+  HAND_L,
 
-  BONE_INDEX_UPPER_ARM_R,
-  BONE_INDEX_LOWER_ARM_R,
-  BONE_INDEX_HAND_R,
+  UPPER_ARM_R,
+  LOWER_ARM_R,
+  HAND_R,
 
-  BONE_INDEX_UPPER_LEG_L,
-  BONE_INDEX_LOWER_LEG_L,
-  BONE_INDEX_FOOT_L,
+  UPPER_LEG_L,
+  LOWER_LEG_L,
+  FOOT_L,
 
-  BONE_INDEX_UPPER_LEG_R,
-  BONE_INDEX_LOWER_LEG_R,
-  BONE_INDEX_FOOT_R,
+  UPPER_LEG_R,
+  LOWER_LEG_R,
+  FOOT_R,
 
-  MAX_BONE_INDICES
+  MAX_BONES
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Animations
 
-enum { // todo, switch over to using macros here
+enum class AnimationIndex {
   //MCAP (in-game)
-      ANI_RUN_NORMAL = 0,         // Run cycle (normal)
+  ANI_RUN_NORMAL = 0,         // Run cycle (normal)
   ANI_RUN_WOUNDED1 = 1,       // Run cycle (wounded)
   ANI_RUN_WOUNDED2 = 2,       // Run cycle (more wounded)
   ANI_WALK_BACKWARD = 3,      // Walk cycle (backwards)
@@ -122,7 +120,7 @@ enum { // todo, switch over to using macros here
   ANI_PARACHUTE = 58,         // Parachuting
 
   //FEMCAP (front-end)
-      ANI_59 = 59,                //
+  ANI_59 = 59,                //
   ANI_60 = 60,                //
   ANI_61 = 61,                //
   ANI_62 = 62,                //
@@ -156,44 +154,6 @@ enum { // todo, switch over to using macros here
   ANI_90 = 90,                //
   ANI_91 = 91,                //
   ANI_92 = 92,                //
-};
-
-#define MAX_ANIMATIONS 93
-
-/* * * * * * * * * * * * * * * * * */
-
-class ModelManager {
- public:
-  static ModelManager *GetInstance() {
-    if (instance_ == nullptr) {
-      instance_ = new ModelManager();
-    }
-
-    return instance_;
-  }
-
-  static void DestroyInstance() {
-    delete instance_;
-    instance_ = nullptr;
-  }
-
-  PLModel *LoadModel(const std::string &path, bool abort_on_fail = false);
-  PLModel *LoadCachedModel(const std::string &path, bool abort_on_fail = false);
-  void DestroyModel(PLModel *model);
-  void DestroyModels();
-
-  PLModel *GetFallbackModel() {
-    return fallback_;
-  }
-
- protected:
- private:
-  ModelManager();
-  ~ModelManager();
-
-  PLModel *fallback_{nullptr};
-
-  std::unordered_map<std::string, PLModel *> cached_models_;
-
-  static ModelManager *instance_;
+  
+  MAX_ANIMATIONS
 };

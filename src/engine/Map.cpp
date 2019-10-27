@@ -50,8 +50,6 @@ Map::Map(MapManifest* manifest) : manifest_(manifest) {
 }
 
 Map::~Map() {
-  ModelManager::GetInstance()->DestroyModel(sky_model_top_);
-  ModelManager::GetInstance()->DestroyModel(sky_model_bottom_);
   delete terrain_;
 }
 
@@ -66,7 +64,7 @@ void Map::LoadSky() {
 }
 
 PLModel* Map::LoadSkyModel(const std::string& path) {
-  PLModel* model = ModelManager::GetInstance()->LoadModel(path, true);
+  PLModel* model = Engine::Resource()->LoadModel(path, true, true);
   model->model_matrix = plTranslateMatrix4(PLVector3(TERRAIN_PIXEL_WIDTH / 2, 0, TERRAIN_PIXEL_WIDTH / 2));
   // Default skydome is smaller than the map, so we'll scale it
   model->model_matrix = plScaleMatrix4(model->model_matrix, PLVector3(5, 5, 5));

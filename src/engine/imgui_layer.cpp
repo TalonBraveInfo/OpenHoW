@@ -385,6 +385,7 @@ class QuitWindow : public BaseWindow {
     ImGui::Dummy(ImVec2(0, 5));
 
     if (ImGui::Button("Yes", ImVec2(64, 0))) {
+      ImGui::End();
       System_Shutdown();
     }
 

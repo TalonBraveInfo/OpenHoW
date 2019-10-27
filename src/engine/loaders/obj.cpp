@@ -41,9 +41,9 @@ PLModel *LoadObjModel(const char *path) {
     plSetMeshUniformColour(mesh, PLColour(255, 255, 255));
 
     if(!obj.materials.empty()) {
-        mesh->texture = Engine::ResourceManagerInstance()->LoadTexture(obj.materials[1].strTexture, PL_TEXTURE_FILTER_MIPMAP_NEAREST);
+        mesh->texture = Engine::Resource()->LoadTexture(obj.materials[1].strTexture, PL_TEXTURE_FILTER_MIPMAP_NEAREST);
     } else {
-        mesh->texture = Engine::ResourceManagerInstance()->GetFallbackTexture();
+        mesh->texture = Engine::Resource()->GetFallbackTexture();
     }
 
     return plCreateBasicStaticModel(mesh);

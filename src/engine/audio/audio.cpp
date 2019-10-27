@@ -532,7 +532,7 @@ void AudioManager::DrawSources() {
     return;
   }
 
-  PLModel *sprite = ModelManager::GetInstance()->GetFallbackModel();
+  PLModel *sprite = Engine::Resource()->GetFallbackModel();
   PLMesh *mesh = sprite->levels[0].meshes[0];
   plSetMeshUniformColour(mesh, PLColour(0, 255, 255, 255));
   for (auto source : sources_) {

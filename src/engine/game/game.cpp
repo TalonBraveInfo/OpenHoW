@@ -85,11 +85,24 @@ GameManager::GameManager() {
   plRegisterConsoleCommand("maps", MapsCommand, "");
   plRegisterConsoleCommand("give", GiveItemCommand, "");
 
+  // Load in all the data we'll retain in memory
+  Engine::Resource()->LoadModel("chars/pigs/ac_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sb_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/gr_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/hv_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/le_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/me_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sa_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sn_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sp_hi", true, true);
+
   camera_ = new Camera({0, 0, 0}, {0, 0, 0});
 }
 
 GameManager::~GameManager() {
   map_manifests_.clear();
+
+  delete camera_;
 }
 
 void GameManager::Tick() {
@@ -118,7 +131,7 @@ void GameManager::Tick() {
   ActorManager::GetInstance()->TickActors();
 }
 
-void GameManager::SetupPlayers(std::vector<Team*> teams) {
+void GameManager::SetupPlayers(const std::vector<Team*>& teams) {
   int controller_slot = -1;
   for(auto team : teams) {
     auto* player = new Player(team);
@@ -415,7 +428,9 @@ void GameManager::EndMode() {
   UnloadMap();
 
   ActorManager::GetInstance()->DestroyActors();
-  ModelManager::GetInstance()->DestroyModels();
+
+  Engine::Resource()->ClearTextures();
+  Engine::Resource()->ClearModels();
 
   Engine::Audio()->FreeSources();
   Engine::Audio()->FreeSamples();

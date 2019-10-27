@@ -70,7 +70,7 @@ class Engine {
   static GameManager* Game() {
     return engine->game_manager_;
   }
-  static ResourceManager* ResourceManagerInstance() {
+  static ResourceManager* Resource() {
     return engine->resource_manager_;
   }
   static IPhysicsInterface* Physics() {

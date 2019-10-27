@@ -53,7 +53,7 @@ HirHandle* Hir_LoadFile(const char* path) {
     }
 
     /* for debugging */
-    static const char* bone_names[MAX_BONE_INDICES]={
+    static const char* bone_names[static_cast<int>(SkeletonBone::MAX_BONES)]={
             "Pelvis",
             "Spine",
             "Head",
@@ -65,8 +65,8 @@ HirHandle* Hir_LoadFile(const char* path) {
 
     /* in the long term, we won't have this here, we'll probably extend the format
      * to include the names of each bone (.skeleton format?) */
-    if(num_bones > MAX_BONE_INDICES) {
-        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
+    if(static_cast<SkeletonBone>(num_bones) >= SkeletonBone::MAX_BONES) {
+        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, SkeletonBone::MAX_BONES);
         return nullptr;
     }
 

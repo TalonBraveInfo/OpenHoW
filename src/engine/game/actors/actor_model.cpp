@@ -44,7 +44,7 @@ void AModel::Draw() {
 }
 
 void AModel::SetModel(const std::string &path) {
-  model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
+  model_ = Engine::Resource()->LoadModel("chars/" + path, false);
 }
 
 void AModel::ShowModel(bool show) {

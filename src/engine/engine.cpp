@@ -107,7 +107,6 @@ void openhow::Engine::Initialize() {
   audio_manager_ = new AudioManager();
   game_manager_ = new GameManager();
   FE_Initialize();
-  ModelManager::GetInstance(); // TODO: obsolete
 
   // Setup our interface to the physics engine, this handles the abstraction
   physics_interface_ = IPhysicsInterface::CreateInstance();

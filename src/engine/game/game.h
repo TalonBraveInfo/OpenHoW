@@ -147,7 +147,7 @@ class GameManager {
   void StartMode(const GameModeDescriptor& descriptor);
   void EndMode();
 
-  void SetupPlayers(TeamArray teams);
+  void SetupPlayers(const TeamArray& teams);
 
   // Map
 
