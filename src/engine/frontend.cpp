@@ -78,6 +78,9 @@ enum {
 static PLTexture* fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
 //static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
+static int frontend_width = 0;
+static int frontend_height = 0;
+
 /************************************************************/
 
 static void FrontendInputCallback(int key, bool is_pressed) {
@@ -228,6 +231,27 @@ uint8_t FE_GetLoadingProgress(void) {
 
 /************************************************************/
 
+/**
+ * Draw the timer in the bottom corner of the screen.
+ */
+static void DrawTimer() {
+  if (FrontEnd_GetState() != FE_MODE_GAME) {
+    return;
+  }
+
+  IGameMode* mode = Engine::Game()->GetMode();
+  if(!mode->HasRoundStarted()) {
+    return;
+  }
+
+  char str[64];
+  snprintf(str, sizeof(str), "TURN TIME: %d", mode->GetTurnTimeSeconds());
+  Font_DrawBitmapString(g_fonts[FONT_BIG], frontend_width - 256, frontend_height - 100, 4, 1.0f, PL_COLOUR_WHITE, str);
+}
+
+/**
+ * Draw the minimap on the button left corner of the screen.
+ */
 static void DrawMinimap() {
   if (FrontEnd_GetState() != FE_MODE_GAME) {
     return;
@@ -271,9 +295,6 @@ static void DrawMinimap() {
  * later. */
 
 static void DrawLoadingScreen() {
-  int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
-  int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
-
   plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
 
   /* originally I wrote some code ensuring the menu bar
@@ -300,10 +321,11 @@ static void DrawLoadingScreen() {
 }
 
 void FE_Draw(void) {
+  frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+  frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
   /* render and handle the main menu */
   if (frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
-    int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
-    int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
     switch (frontend_state) {
       default:break;
 
@@ -386,6 +408,7 @@ void FE_Draw(void) {
   }
 
   DrawMinimap();
+  DrawTimer();
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */

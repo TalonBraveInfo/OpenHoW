@@ -45,8 +45,10 @@ class IGameMode {
   bool HasRoundStarted() const { return round_started_; }
   bool HasTurnStarted() const { return turn_started_; }
 
-  unsigned int GetTurnTime() { return turn_time_; }
-  unsigned int GetTurnTimeSeconds() { return turn_time_ / 1000; }
+  unsigned int GetTurnTime() { return num_turn_ticks; }
+  unsigned int GetTurnTimeSeconds() { return num_turn_ticks / 1000; }
+  unsigned int GetMaxTurnTime() { return max_turn_ticks; }
+  unsigned int GetMaxTurnTimeSeconds() { return max_turn_ticks / 1000; }
 
   virtual void AssignActorToPlayer(Actor* target, Player* owner) = 0;
 
@@ -57,7 +59,8 @@ class IGameMode {
   virtual void SpawnActors() = 0;
   virtual void DestroyActors() = 0;
 
-  unsigned int turn_time_{0};
+  unsigned int max_turn_ticks{0}; // Maximum ticks for a turn
+  unsigned int num_turn_ticks{0}; // Current number of ticks in the turn
 
   bool mode_started_{false};
   bool round_started_{false};
