@@ -1,0 +1,51 @@
+[
+  {
+    "name": "$team_british",
+    "pigTextures": "chars/pigs/british",
+    "paperTextures": "frontend/papers/british",
+    "debriefTexture": "frontend/debrief/unifeng",
+    "voiceSet": "en"
+  },
+  {
+    "name": "$team_french",
+    "pigTextures": "chars/pigs/french",
+    "paperTextures": "frontend/papers/french",
+    "debriefTexture": "frontend/debrief/uniffren",
+    "voiceSet": "fr"
+  },
+  {
+    "name": "$team_american",
+    "pigTextures": "chars/pigs/american",
+    "paperTextures": "frontend/papers/american",
+    "debriefTexture": "frontend/debrief/unifusa",
+    "voiceSet": "am"
+  },
+  {
+    "name": "$team_russian",
+    "pigTextures": "chars/pigs/british",
+    "paperTextures": "frontend/papers/british",
+    "debriefTexture": "frontend/debrief/unifruss",
+    "voiceSet": "ru"
+  },
+  {
+    "name": "$team_japanese",
+    "pigTextures": "chars/pigs/japanese",
+    "paperTextures": "frontend/papers/japanese",
+    "debriefTexture": "frontend/debrief/unifjap",
+    "voiceSet": "ja"
+  },
+  {
+    "name": "$team_german",
+    "pigTextures": "chars/pigs/german",
+    "paperTextures": "frontend/papers/german",
+    "debriefTexture": "frontend/debrief/unifgerm",
+    "voiceSet": "ge"
+  },
+  {
+    "name": "$team_lard",
+    "pigTextures": "chars/pigs/teamlard",
+    "paperTextures": "frontend/papers/teamlard",
+    "debriefTexture": "frontend/debrief/uniflard",
+    "voiceSet": "en"
+  }
+]
