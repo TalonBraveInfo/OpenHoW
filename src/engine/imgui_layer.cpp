@@ -142,6 +142,12 @@ void UI_DisplaySettings() {
   ImGui::SameLine();
   ui_scale_changed |= ImGui::RadioButton("4x", &ui_scale_opt, 4);
 
+  static int filter_textures = -1;
+  if(filter_textures == -1) { filter_textures = cv_graphics_texture_filter->b_value; }
+  if(ImGui::Checkbox("Filter textures", reinterpret_cast<bool*>(&filter_textures))) {
+    plSetConsoleVariable(cv_graphics_texture_filter, filter_textures ? "true" : "false");
+  }
+
   //Apply changes
   char buf[16];
   if (display_changed) {

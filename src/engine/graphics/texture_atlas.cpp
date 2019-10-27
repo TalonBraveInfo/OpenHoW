@@ -160,7 +160,7 @@ void TextureAtlas::Finalize() {
     Error("Failed to generate atlas texture (%s)!\n", plGetError());
   }
 
-  texture_->filter = PL_TEXTURE_FILTER_NEAREST;
+  texture_->filter = cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_MIPMAP_LINEAR : PL_TEXTURE_FILTER_NEAREST;
   if(!plUploadTextureImage(texture_, cache)) {
     Error("Failed to upload texture atlas (%s)!\n", plGetError());
   }
