@@ -31,6 +31,8 @@
 #include "editor/window_model_viewer.h"
 #include "editor/window_terrain_import.h"
 #include "editor/window_actor_tree.h"
+#include "editor/window_new_game.h"
+
 #include "language.h"
 
 static bool show_quit = false;
@@ -424,19 +426,25 @@ void UI_DisplayDebugMenu(void) {
   static bool show_about = false;
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if (ImGui::MenuItem("New Game...")) {
-        show_new_game = true;
+      if (ImGui::BeginMenu("One Player")) {
+        if(ImGui::MenuItem("New Game")) {
+          windows.push_back(new NewGameWindow());
+        }
+        if(ImGui::MenuItem("Load Game")) {} // todo
+        ImGui::EndMenu();
       }
-      if (ImGui::MenuItem("New Map...")) {
+      if(ImGui::MenuItem("Multi-Player")) {}  // todo
+      ImGui::Separator();
+      if (ImGui::MenuItem("Create Map")) {
         static NewMapWindow* popup = nullptr;
         if (popup == nullptr) {
           windows.push_back((popup = new NewMapWindow()));
         }
       }
+      if (ImGui::MenuItem("Load Map")) {} // todo
       ImGui::Separator();
-      if (ImGui::MenuItem("Open...")) { show_file = true; }
-      ImGui::Separator();
-      if (ImGui::MenuItem("Settings...")) { show_settings = true; }
+      if (ImGui::MenuItem("Options")) { show_settings = true; }
+      if (ImGui::MenuItem("Controls")) {} // todo
       ImGui::Separator();
       if (ImGui::MenuItem("Quit")) {
         windows.push_back(new QuitWindow());
