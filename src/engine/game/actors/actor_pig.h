@@ -20,7 +20,7 @@
 #include "actor_model.h"
 #include "actor_animated_model.h"
 #include "actor_weapon.h"
-#include "item_parachute.h"
+#include "weapon_parachute.h"
 #include "../inventory.h"
 
 class APig : public AAnimatedModel, public InventoryManager {
@@ -60,7 +60,7 @@ class APig : public AAnimatedModel, public InventoryManager {
 
  private:
   AWeapon* weapon_{nullptr};
-  AParachuteItem* parachute_{nullptr};
+  AParachuteWeapon* parachute_{nullptr};
 
   AudioSource* speech_{nullptr};
 

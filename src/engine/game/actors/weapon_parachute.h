@@ -19,12 +19,12 @@
 
 #include "actor_weapon.h"
 
-class AParachuteItem : public AWeapon {
+class AParachuteWeapon : public AWeapon {
   ACTOR_IMPLEMENT_SUPER(AWeapon)
 
  public:
-  AParachuteItem();
-  ~AParachuteItem() override;
+  AParachuteWeapon();
+  ~AParachuteWeapon() override;
 
   void Tick() override;
 

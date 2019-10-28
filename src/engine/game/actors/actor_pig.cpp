@@ -153,7 +153,7 @@ void APig::Deserialize(const ActorSpawn& spawn) {
 
   // Create and equip our parachute, and then
   // link it to ensure it gets destroyed when we do
-  parachute_ = dynamic_cast<AParachuteItem*>(ActorManager::GetInstance()->CreateActor("item_parachute"));
+  parachute_ = dynamic_cast<AParachuteWeapon*>(ActorManager::GetInstance()->CreateActor("weapon_parachute"));
   if(parachute_ == nullptr) {
     Error("Failed to create \"item_parachute\" actor, aborting!\n");
   }

@@ -17,19 +17,20 @@
 
 #include "../../engine.h"
 #include "../actor_manager.h"
-#include "item_parachute.h"
-#include "actor_pig.h"
+#include "weapon_parachute.h"
 
-REGISTER_ACTOR(item_parachute, AParachuteItem)
+// Parachute, not really a weapon but hey ho!
 
-AParachuteItem::AParachuteItem() : SuperClass() {
+REGISTER_ACTOR(weapon_parachute, AParachuteWeapon)
+
+AParachuteWeapon::AParachuteWeapon() : SuperClass() {
   SetModel("weapons/we_para");
   ShowModel(false);
 }
 
-AParachuteItem::~AParachuteItem() = default;
+AParachuteWeapon::~AParachuteWeapon() = default;
 
-void AParachuteItem::Tick() {
+void AParachuteWeapon::Tick() {
   SuperClass::Tick();
 
   if(!is_deployed_) {
@@ -39,10 +40,10 @@ void AParachuteItem::Tick() {
   //APig* pig = dynamic_cast<APig*>(GetParent());
 }
 
-void AParachuteItem::Fire(const PLVector3& pos, const PLVector3& dir) {
+void AParachuteWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
   SuperClass::Fire(pos, dir);
 }
 
-void AParachuteItem::Deploy() {
+void AParachuteWeapon::Deploy() {
   SuperClass::Deploy();
 }
