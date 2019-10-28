@@ -45,6 +45,7 @@ extern PLConsoleVariable *cv_graphics_cull;
 extern PLConsoleVariable *cv_graphics_draw_world;
 extern PLConsoleVariable *cv_graphics_draw_audio_sources;
 extern PLConsoleVariable *cv_graphics_texture_filter;
+extern PLConsoleVariable *cv_graphics_alpha_to_coverage;
 
 extern PLConsoleVariable *cv_audio_volume;
 extern PLConsoleVariable *cv_audio_volume_sfx;

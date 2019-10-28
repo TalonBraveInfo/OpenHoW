@@ -176,6 +176,7 @@ PLConsoleVariable* cv_graphics_cull = nullptr;
 PLConsoleVariable* cv_graphics_draw_world = nullptr;
 PLConsoleVariable* cv_graphics_draw_audio_sources = nullptr;
 PLConsoleVariable* cv_graphics_texture_filter = nullptr;
+PLConsoleVariable* cv_graphics_alpha_to_coverage = nullptr;
 
 PLConsoleVariable* cv_audio_volume = nullptr;
 PLConsoleVariable* cv_audio_volume_sfx = nullptr;
@@ -244,6 +245,7 @@ void Console_Initialize(void) {
   rvar(cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world");
   rvar(cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources");
   rvar(cv_graphics_texture_filter, true, "false", pl_bool_var, nullptr, "Filter level/model textures?");
+  rvar(cv_graphics_alpha_to_coverage, true, "false", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage");
 
   rvar(cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume");
   rvar(cv_audio_volume_sfx, true, "1", pl_float_var, nullptr, "set sfx audio volume");

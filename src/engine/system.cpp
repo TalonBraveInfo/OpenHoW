@@ -94,6 +94,12 @@ void System_DisplayWindow(bool fullscreen, int width, int height) {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+  const char* arg = plGetCommandLineArgumentValue("-msaa");
+  if(arg != nullptr) {
+    int i = static_cast<int>(strtol(arg, nullptr, 10));
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, i);
+  }
+
 #ifdef _DEBUG
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #else

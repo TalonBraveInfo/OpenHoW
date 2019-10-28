@@ -22,12 +22,15 @@
 #include "../input.h"
 #include "../imgui_layer.h"
 #include "../frontend.h"
-#include "../particle.h"
 #include "../Map.h"
+
 #include "../game/actor_manager.h"
+
 #include "font.h"
 #include "shader.h"
 #include "display.h"
+
+#include <GL/glew.h>
 
 using namespace openhow;
 
@@ -557,6 +560,10 @@ void DrawMap() {
 }
 
 void Display_DrawScene() {
+  if(cv_graphics_alpha_to_coverage->b_value) {
+    glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+  }
+
   Shaders_SetProgram(SHADER_GenericTextured);
 
   DrawMap();
@@ -565,6 +572,10 @@ void Display_DrawScene() {
 
   /* debug methods */
   Engine::Audio()->DrawSources();
+
+  if(cv_graphics_alpha_to_coverage->b_value) {
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+  }
 }
 
 void Display_DrawInterface() {
