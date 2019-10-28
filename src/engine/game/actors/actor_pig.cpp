@@ -69,10 +69,10 @@ void APig::Tick() {
     return;
   }
 
-  Camera* camera = Engine::Game()->GetCamera();
-  position_.x += input_forward * 100.0f * camera->GetForward().x;
-  position_.y += input_forward * 100.0f * camera->GetForward().y;
-  position_.z += input_forward * 100.0f * camera->GetForward().z;
+  PLVector3 forward = GetForward();
+  position_.x += input_forward * 100.0f * forward.x;
+  position_.y += input_forward * 100.0f * forward.y;
+  position_.z += input_forward * 100.0f * forward.z;
 
   angles_.x += input_pitch * 2.0f;
   angles_.y += input_yaw * 2.0f;

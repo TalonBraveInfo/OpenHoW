@@ -111,6 +111,8 @@ class Actor: public PropertyOwner {
   virtual void Touch(Actor* other);
 
   void DropToFloor();
+
+  PLVector3 GetForward();
   
   // Physics
   virtual const IPhysicsBody* CreatePhysicsBody();

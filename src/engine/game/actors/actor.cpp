@@ -104,6 +104,14 @@ void Actor::DropToFloor() {
   position_.y = height + bounds_.y;
 }
 
+PLVector3 Actor::GetForward() {
+  return plNormalizeVector3({
+  cosf(plDegreesToRadians(angles_.y)) * cosf(plDegreesToRadians(angles_.x)),
+  sinf(plDegreesToRadians(angles_.x)),
+  sinf(plDegreesToRadians(angles_.y)) * cosf(plDegreesToRadians(angles_.x))
+  });
+}
+
 void Actor::HandleInput() {
   IGameMode* mode = Engine::Game()->GetMode();
   if (mode == nullptr) {
