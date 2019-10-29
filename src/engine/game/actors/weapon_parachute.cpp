@@ -36,8 +36,6 @@ void AParachuteWeapon::Tick() {
   if(!is_deployed_) {
     return;
   }
-
-  //APig* pig = dynamic_cast<APig*>(GetParent());
 }
 
 void AParachuteWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {

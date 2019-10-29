@@ -17,7 +17,10 @@
 
 #include "../../engine.h"
 #include "../../Map.h"
+
+#include "../player.h"
 #include "../actor_manager.h"
+
 #include "actor_pig.h"
 
 REGISTER_ACTOR(ac_me, APig)    // Ace
@@ -89,6 +92,8 @@ void APig::Tick() {
   if (angles_.x > MAX_PITCH) angles_.x = MAX_PITCH;
 
   VecAngleClamp(&angles_);
+
+  speech_->SetPosition(GetPosition());
 }
 
 void APig::SetClass(PigClass pclass) {
@@ -147,9 +152,29 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   Map* map = Engine::Game()->GetCurrentMap();
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
-  // TODO: This is slightly more complicated...
-  SetClass(PigClass::GRUNT);
-  SetPlayerOwner(Engine::Game()->GetMode()->GetCurrentPlayer()); // temp
+  // TODO: This is actually slightly more complicated, but this'll do for now
+  PigClass pig_class = PigClass::GRUNT;
+  if(spawn.class_name == "ac_me") {
+    pig_class = PigClass::ACE;
+  } else if(spawn.class_name == "le_me") {
+    pig_class = PigClass::LEGEND;
+  }
+
+  SetClass(pig_class);
+
+  /*
+REGISTER_ACTOR(ac_me, APig)    // Ace
+REGISTER_ACTOR(gr_me, APig)    // Grunt
+REGISTER_ACTOR(hv_me, APig)
+REGISTER_ACTOR(le_me, APig)    // Legend
+REGISTER_ACTOR(me_me, APig)    // Medic
+REGISTER_ACTOR(sa_me, APig)    // Saboteur
+REGISTER_ACTOR(sb_me, APig)    // Commando
+REGISTER_ACTOR(sn_me, APig)    // Sniper
+REGISTER_ACTOR(sp_me, APig)    // Spy
+   */
+
+  //SetPlayerOwner(Engine::Game()->GetMode()->GetCurrentPlayer()); // temp
 
   // Create and equip our parachute, and then
   // link it to ensure it gets destroyed when we do
@@ -188,5 +213,21 @@ void APig::Killed() {
  * @param category
  */
 void APig::PlayVoiceSample(VoiceCategory category) {
-  // TODO
+  char path[32];
+  snprintf(path, sizeof(path), "speech/eng/pig%0d/%0d%s%0d%0d.wav",
+      // this is horrible, will need to revisit it...
+      static_cast<int>(GetPersonality()),
+      static_cast<int>(GetPersonality()),
+      team_->GetTeam()->voice_set.c_str(),
+      static_cast<int>(category),
+      rand() % 6 + 1
+      );
+
+  const AudioSample* sample = Engine::Audio()->CacheSample(path);
+  if(sample == nullptr) {
+    return;
+  }
+
+  speech_->SetSample(sample);
+  speech_->StartPlaying();
 }
