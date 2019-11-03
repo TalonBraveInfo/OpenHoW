@@ -121,6 +121,8 @@ class Property
 		std::string clean_serialised_;
 };
 
+typedef std::map<std::string, Property*> PropertyMap;
+
 /**
  * @brief Base class for actors, game modes, etc to allow them to have properties.
 */
@@ -132,6 +134,8 @@ class PropertyOwner
 		/* No copy/assignment c'tors. */
 		PropertyOwner(const PropertyOwner&) = delete;
 		PropertyOwner& operator=(const PropertyOwner&) = delete;
+
+		const PropertyMap& GetProperties() { return properties_; }
 	
 	protected:
 		PropertyOwner();
@@ -139,7 +143,7 @@ class PropertyOwner
 		
 	private:
 		/** Properties registered under this object */
-		std::map<std::string, Property*> properties_;
+        PropertyMap properties_;
 };
 
 /**

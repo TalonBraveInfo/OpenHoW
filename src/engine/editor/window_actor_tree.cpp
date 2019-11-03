@@ -38,7 +38,6 @@ void ActorTreeWindow::Display() {
   ImGui::Text("%lu Actors", actors.size());
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2,2));
-  size_t num = 0;
   for(auto i : actors) {
     //ImGui::BeginGroup();
     //ImGui::EndGroup();
@@ -48,7 +47,7 @@ void ActorTreeWindow::Display() {
       continue;
     }
 
-    ImGui::PushID(num);
+    ImGui::PushID(i);
     ImGui::AlignTextToFramePadding();
 
     if(ImGui::TreeNode("Actor", "%s (%d %s)", i->GetClassName(), i->GetNumOfChildren(),
@@ -65,6 +64,44 @@ void ActorTreeWindow::Display() {
 }
 
 void ActorTreeWindow::DisplayActorProperties(Actor* actor) {
+  const PropertyMap& property_map = actor->GetProperties();
+  if(property_map.empty()) {
+    // Very unlikely, better safe than sorry...
+    return;
+  }
+
+  for(const auto& i : property_map) {
+    Property* property = i.second;
+    ImGui::PushID(property);
+
+    auto* boolean_property = dynamic_cast<BooleanProperty*>(property);
+    if(boolean_property != nullptr) {
+      bool value = *boolean_property;
+      if(ImGui::Checkbox(property->name.c_str(), &value)) {
+        *boolean_property = value;
+      }
+    }
+
+    auto* numeric_property = dynamic_cast<NumericProperty<int>*>(property);
+    if(numeric_property != nullptr) {
+      int value = *numeric_property;
+      if(ImGui::InputInt(property->name.c_str(), &value)) {
+        *numeric_property = value;
+      }
+    }
+
+    auto* float_property = dynamic_cast<NumericProperty<float>*>(property);
+    if(float_property != nullptr) {
+      float value = *float_property;
+      if(ImGui::InputFloat(property->name.c_str(), &value)) {
+        *float_property = value;
+      }
+    }
+
+    ImGui::PopID();
+  }
+
+#if 0
   static float dummy_members[8] = { 0.0f,0.0f,1.0f,3.1416f,100.0f,999.0f };
   for (int i = 0; i < 8; i++) {
     ImGui::PushID(i); // Use field index as identifier.
@@ -84,4 +121,5 @@ void ActorTreeWindow::DisplayActorProperties(Actor* actor) {
     }
     ImGui::PopID();
   }
+#endif
 }
