@@ -27,7 +27,7 @@
 // Can be used for very basic effects etc.
 
 class ASprite : public Actor {
-  ACTOR_IMPLEMENT_SUPER(Actor)
+  IMPLEMENT_ACTOR(ASprite, Actor)
 
  public:
   ASprite();

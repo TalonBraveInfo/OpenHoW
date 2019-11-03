@@ -20,7 +20,7 @@
 #include "actor_weapon.h"
 
 class AParachuteWeapon : public AWeapon {
-  ACTOR_IMPLEMENT_SUPER(AWeapon)
+  IMPLEMENT_ACTOR(AParachuteWeapon, AWeapon)
 
  public:
   AParachuteWeapon();

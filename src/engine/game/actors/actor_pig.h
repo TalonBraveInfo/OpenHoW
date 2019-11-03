@@ -24,7 +24,7 @@
 #include "../inventory.h"
 
 class APig : public AAnimatedModel, public InventoryManager {
-  ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
+  IMPLEMENT_ACTOR(APig, AAnimatedModel)
 
  public:
   APig();
@@ -36,11 +36,14 @@ class APig : public AAnimatedModel, public InventoryManager {
   void SetClass(PigClass pclass);
   PigClass GetClass() { return class_; }
 
-  void SetPersonality(PigPersonality personality);
-  PigPersonality GetPersonality() { return personality_; }
+  void SetPersonality(unsigned int personality);
+  unsigned int GetPersonality() { return personality_; }
 
   void SetPlayerOwner(Player* owner);
-  const Player* GetPlayerOwner() const { return team_; }
+  const Player* GetPlayerOwner();
+
+  void SetTeam(unsigned int team);
+  unsigned int GetTeam() { return team_; }
 
   bool Possessed(const Player* player) override;
   void Depossessed(const Player* player) override;
@@ -64,9 +67,9 @@ class APig : public AAnimatedModel, public InventoryManager {
 
   AudioSource* speech_{nullptr};
 
-  const Player* team_{nullptr};
+  unsigned int team_{ 0 };
+  unsigned int personality_{ 0 };
 
-  PigPersonality personality_{ PigPersonality::NONE };
   PigClass class_{ PigClass::NONE };
 
   enum {

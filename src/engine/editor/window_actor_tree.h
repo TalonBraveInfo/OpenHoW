@@ -25,6 +25,7 @@ class ActorTreeWindow : public BaseWindow {
   ~ActorTreeWindow() override;
 
   void Display() override;
+  void DisplayActorProperties(Actor* actor);
 
  protected:
  private:

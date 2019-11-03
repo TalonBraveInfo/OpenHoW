@@ -35,5 +35,53 @@ void ActorTreeWindow::Display() {
     return;
   }
 
+  ImGui::Text("%lu Actors", actors.size());
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2,2));
+  size_t num = 0;
+  for(auto i : actors) {
+    //ImGui::BeginGroup();
+    //ImGui::EndGroup();
+
+    if(i->GetParent() != nullptr) {
+      // Children get shown under their parents
+      continue;
+    }
+
+    ImGui::PushID(num);
+    ImGui::AlignTextToFramePadding();
+
+    if(ImGui::TreeNode("Actor", "%s (%d %s)", i->GetClassName(), i->GetNumOfChildren(),
+        i->GetNumOfChildren() == 1 ? "child" : "children")) {
+      DisplayActorProperties(i);
+      ImGui::TreePop();
+    }
+
+    ImGui::PopID();
+  }
+  ImGui::PopStyleVar();
+
   ImGui::End();
+}
+
+void ActorTreeWindow::DisplayActorProperties(Actor* actor) {
+  static float dummy_members[8] = { 0.0f,0.0f,1.0f,3.1416f,100.0f,999.0f };
+  for (int i = 0; i < 8; i++) {
+    ImGui::PushID(i); // Use field index as identifier.
+    if (i < 2) {
+      //ShowDummyObject("Child", 424242);
+    } else {
+      // Here we use a TreeNode to highlight on hover (we could use e.g. Selectable as well)
+      ImGui::AlignTextToFramePadding();
+      ImGui::TreeNodeEx("Field", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen, "Field_%d", i);
+      ImGui::NextColumn();
+      ImGui::SetNextItemWidth(-1);
+      if (i >= 5)
+        ImGui::InputFloat("##value", &dummy_members[i], 1.0f);
+      else
+        ImGui::DragFloat("##value", &dummy_members[i], 0.01f);
+      ImGui::NextColumn();
+    }
+    ImGui::PopID();
+  }
 }

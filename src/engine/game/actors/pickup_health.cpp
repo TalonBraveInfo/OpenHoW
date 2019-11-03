@@ -20,7 +20,7 @@
 #include "actor_pig.h"
 
 class AHealthPickup : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
+  IMPLEMENT_ACTOR(AHealthPickup, AModel)
 
  public:
   AHealthPickup();

@@ -70,7 +70,11 @@ struct ActorSpawn {
 
 class IPhysicsBody;
 
-#define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
+#define IMPLEMENT_SUPER(a) typedef a SuperClass;
+#define IMPLEMENT_ACTOR(base, parent) \
+  IMPLEMENT_SUPER(parent) \
+  public: const char* GetClassName() override { return plStringify(base) ; } \
+  private:
 
 class Player;
 
@@ -78,6 +82,8 @@ class Actor: public PropertyOwner {
  public:
   Actor();
   ~Actor() override;
+
+  virtual const char* GetClassName() { return "Actor"; }
 
   virtual void Tick() {}  // simulation tick, called per-frame
   virtual void Draw() {}  // draw tick, called per-frame
@@ -107,6 +113,8 @@ class Actor: public PropertyOwner {
 
   Actor* GetParent() { return parent_; }
   void LinkChild(Actor* actor);
+  unsigned int GetNumOfChildren() { return children_.size(); }
+  std::vector<Actor*> GetChildren() { return children_; }
 
   virtual void Touch(Actor* other);
 
@@ -130,6 +138,9 @@ class Actor: public PropertyOwner {
   PLVector3 fallback_position_{0, 0, 0};
   PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
   PLVector3 bounds_{0, 0, 0};
+
+  // Use this if you want your actor to have a helpful descriptor in it's
+  std::string reference_name_{"actor"};
 
  private:
   int16_t health_{0};

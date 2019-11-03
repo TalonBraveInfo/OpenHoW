@@ -20,7 +20,7 @@
 #include "actor_model.h"
 
 class AVehicle : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
+  IMPLEMENT_ACTOR(AVehicle, AModel)
 
  public:
   AVehicle();

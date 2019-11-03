@@ -136,13 +136,17 @@ void APig::SetClass(PigClass pclass) {
 #endif
 }
 
-void APig::SetPersonality(PigPersonality personality) {
+void APig::SetPersonality(unsigned int personality) {
   // TODO: ensure all the necessary sounds are cached...
 }
 
 void APig::SetPlayerOwner(Player* owner) {
   IGameMode* mode = Engine::Game()->GetMode();
   mode->AssignActorToPlayer(this, owner);
+}
+
+const Player* APig::GetPlayerOwner() {
+  return nullptr;
 }
 
 void APig::Deserialize(const ActorSpawn& spawn) {
@@ -158,9 +162,12 @@ void APig::Deserialize(const ActorSpawn& spawn) {
     pig_class = PigClass::ACE;
   } else if(spawn.class_name == "le_me") {
     pig_class = PigClass::LEGEND;
+  } else if(spawn.class_name == "me_me") {
+    pig_class = PigClass::MEDIC;
   }
 
   SetClass(pig_class);
+//  SetTeam(spawn.team);
 
   /*
 REGISTER_ACTOR(ac_me, APig)    // Ace
@@ -213,12 +220,22 @@ void APig::Killed() {
  * @param category
  */
 void APig::PlayVoiceSample(VoiceCategory category) {
+  const Player* player = GetPlayerOwner();
+  if(player == nullptr) {
+    return;
+  }
+
+  const Team* team = player->GetTeam();
+  if(team == nullptr) {
+    return;
+  }
+
   char path[32];
   snprintf(path, sizeof(path), "speech/eng/pig%0d/%0d%s%0d%0d.wav",
       // this is horrible, will need to revisit it...
       static_cast<int>(GetPersonality()),
       static_cast<int>(GetPersonality()),
-      team_->GetTeam()->voice_set.c_str(),
+      team->voice_set.c_str(),
       static_cast<int>(category),
       rand() % 6 + 1
       );

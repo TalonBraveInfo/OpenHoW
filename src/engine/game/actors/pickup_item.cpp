@@ -21,7 +21,7 @@
 #include "actor_pig.h"
 
 class AItemPickup : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
+  IMPLEMENT_ACTOR(AItemPickup, AModel)
 
  public:
   AItemPickup();
