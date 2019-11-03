@@ -29,10 +29,6 @@ enum class PigStatus {
   DEAD,
 };
 
-enum class PigPersonality {
-  NONE = -1,
-};
-
 enum class PigClass {
   NONE = -1,
   GRUNT,
@@ -65,11 +61,13 @@ enum class PigClass {
 struct PigSlot {
   std::string     name{"none"};   // Assigned name, e.g. Herman
   PigClass        classname;      // Ace, gunner, sapper etc.
-  PigPersonality  personality;    // Determines voice and portrait
   PigStatus       status;         // Pig's status (alive / dead)
+  unsigned int    voice_group;    // Determines voice and portrait
 };
 
 struct Team {
+  Team() = default;
+
   std::string name{"none"};
   std::string description{"none"};
 

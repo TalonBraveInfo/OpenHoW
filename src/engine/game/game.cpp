@@ -131,12 +131,14 @@ void GameManager::Tick() {
   ActorManager::GetInstance()->TickActors();
 }
 
-void GameManager::SetupPlayers(const std::vector<Team*>& teams) {
-  int controller_slot = -1;
+void GameManager::SetupPlayers(const TeamArray& teams) {
+  unsigned int controller_slot = 0;
   for(auto team : teams) {
     auto* player = new Player(team);
-    if(team->type_ == Team::Type::LOCAL) { controller_slot++; }
-    player->SetControllerSlot(controller_slot);
+    if(team->type_ == Team::Type::LOCAL) {
+      player->SetControllerSlot(controller_slot++);
+    }
+
     players_.push_back(player);
   }
 }
@@ -173,6 +175,8 @@ void GameManager::UnloadMap() {
 void GameManager::RegisterTeamManifest(const std::string& path) {
   const char* upath = u_find(path.c_str());
   LogInfo("Registering team manifest \"%s\"...\n", upath);
+
+  // TODO: recurse through each dependency and add them to our list...
 
   try {
     ScriptConfig config(upath);
@@ -329,9 +333,10 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
   Engine::Game()->LoadMap(argv[1]);
 
   // Set up a mode with some defaults...
+  Team a, b;
   GameModeDescriptor descriptor;
   descriptor.teams = {
-      {}, {}
+      &a, &b
   };
   Engine::Game()->StartMode(descriptor);
 }
@@ -413,6 +418,8 @@ void GameManager::StartMode(const GameModeDescriptor& descriptor) {
     path = "audio/batt_l" + snum + ".wav";
     ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
   }
+
+  SetupPlayers(descriptor.teams);
 
   // call StartRound; deals with spawning everything in and other mode specific logic
   active_mode_ = new BaseGameMode(descriptor);
