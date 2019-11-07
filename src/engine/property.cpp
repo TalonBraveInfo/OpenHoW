@@ -67,3 +67,7 @@ unsigned int Property::DirtyTicks() const
 
 PropertyOwner::PropertyOwner() {}
 PropertyOwner::~PropertyOwner() {}
+
+std::string PropertyOwner::SerializePropertiesAsJson() {
+
+}

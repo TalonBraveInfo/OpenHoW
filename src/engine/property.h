@@ -70,6 +70,11 @@ class Property
 		 * or may not be a printable string; treat it as a byte array.
 		*/
 		virtual std::string Serialise() const = 0;
+
+        /**
+         * Returns the property formatted as Json.
+         */
+        virtual std::string SerialiseAsJson() const = 0;
 		
 		/**
 		 * @brief Set the property to the given serialised form.
@@ -136,6 +141,8 @@ class PropertyOwner
 		PropertyOwner& operator=(const PropertyOwner&) = delete;
 
 		const PropertyMap& GetProperties() { return properties_; }
+
+		std::string SerializePropertiesAsJson();
 	
 	protected:
 		PropertyOwner();
@@ -181,6 +188,10 @@ template<typename T> class NumericProperty: public Property
 		{
 			return std::string((const char*)(&value_), sizeof(value_));
 		}
+
+        std::string SerialiseAsJson() const override {
+            return std::to_string(value_);
+        }
 		
 		void Deserialise(const std::string &serialised) override
 		{
@@ -188,6 +199,96 @@ template<typename T> class NumericProperty: public Property
 			memcpy(&value_, serialised.data(), sizeof(value_));
 			MarkDirty();
 		}
+};
+
+class VectorStringProperty : public Property {
+ private:
+  std::vector<std::string> value_;
+
+ public:
+  VectorStringProperty(PropertyOwner& po, const std::string& name, unsigned int flags,
+                       const std::vector<std::string>& value = {}) :
+      Property(po, name, flags), value_(value) {}
+
+  operator const std::vector<std::string>&() const {
+    return value_;
+  }
+
+  const std::vector<std::string>& operator=(const std::vector<std::string>& value) {
+    value_ = value;
+    MarkDirty();
+    return value;
+  }
+
+  std::string Serialise() const override {
+    std::string value;
+    for(const auto& i : value_) {
+      uint32_t l = i.length();
+      value += std::string((const char*)(&l), sizeof(l)) + i;
+    }
+    return value;
+  }
+
+  std::string SerialiseAsJson() const override {
+    std::string str = "[";
+    for(size_t i = 0; i < value_.size(); ++i) {
+      if(i > 0) {
+        str += ",";
+      }
+      str += "\"" + value_[i] + "\"";
+    }
+    str += "]";
+    return str;
+  }
+
+  void Deserialise(const std::string& serialised) override {
+    value_.clear();
+
+    /* TODO: Assertions should be a bad-serialised-value exception */
+    for (size_t i = 0; i < serialised.length();) {
+      assert((i + sizeof(uint32_t)) < serialised.length());
+      uint32_t l = *(uint32_t*) (serialised.data() + i);
+      i += sizeof(uint32_t);
+
+      assert((i + l) < serialised.length());
+      value_.emplace_back((serialised.data() + i), l);
+      i += l;
+    }
+
+    MarkDirty();
+  }
+};
+
+class StringProperty : public Property {
+ private:
+  std::string value_;
+
+ public:
+  StringProperty(PropertyOwner& po, const std::string& name, unsigned int flags, const std::string& value = "") :
+      Property(po, name, flags), value_(value) {}
+
+  operator const std::string&() const {
+    return value_;
+  }
+
+  const std::string& operator=(const std::string& value) {
+    value_ = value;
+    MarkDirty();
+    return value;
+  }
+
+  std::string Serialise() const override {
+    return value_;
+  }
+
+  std::string SerialiseAsJson() const override {
+    return "\"" + value_ + "\"";
+  }
+
+  void Deserialise(const std::string& serialised) override {
+    value_ = serialised;
+    MarkDirty();
+  }
 };
 
 /**
@@ -226,6 +327,10 @@ class BooleanProperty: public Property
 			return value_
 				? "true"
 				: "false";
+		}
+
+		std::string SerialiseAsJson() const override {
+		  return Serialise();
 		}
 		
 		void Deserialise(const std::string &serialised) override
