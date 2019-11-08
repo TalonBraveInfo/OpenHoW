@@ -29,8 +29,7 @@ enum class CharacterStatus {
   DEAD,
 };
 
-#if 0
-enum class PigClass {
+/* 
   NONE = -1,
   GRUNT,
   // Heavy Weapons
@@ -57,8 +56,9 @@ enum class PigClass {
   // Multiplayer
   PARATROOPER,
   GRENADIER,
-};
-#else
+ */
+
+#if 0
 struct CharacterClass : PropertyOwner {
   CharacterClass() :
   INIT_PROPERTY(key, 0),
@@ -81,8 +81,24 @@ struct CharacterClass : PropertyOwner {
   };
   std::vector<Item> items;
 };
+#else
+struct CharacterClass {
+  std::string     key;
+  std::string     label;
+  std::string     model;
+  unsigned int    cost;
+  unsigned int    health;
+
+  struct Item {
+    std::string   key;
+    std::string   classname;
+    unsigned int  quantity{ 0 };
+  };
+  std::vector<Item> items;
+};
 #endif
 
+#if 0
 struct CharacterSlot : PropertyOwner {
   CharacterSlot() :
   INIT_PROPERTY(portrait, 0),
@@ -106,7 +122,25 @@ struct CharacterSlot : PropertyOwner {
   unsigned int            kill_count{ 0 };                    // Number of other pigs we've killed
   unsigned int            death_count{ 0 };                   // Number of times we've died
 };
+#else
+struct CharacterSlot {
+  // Static
+  std::string      portrait;           // Face profile
+  std::string      portrait_selected;  // Selected face profile
+  std::string      portrait_wounded;   // Wounded face profile
+  std::string      voice_language;
+  unsigned int     voice_set{ 0 };
 
+  // Dynamic
+  std::string             name;                               // Assigned name, e.g. Herman
+  const CharacterClass*   classname{ nullptr };               // Ace, gunner, sapper etc.
+  CharacterStatus         status{ CharacterStatus::ALIVE };   // Pig's status (alive / dead)
+  unsigned int            kill_count{ 0 };                    // Number of other pigs we've killed
+  unsigned int            death_count{ 0 };                   // Number of times we've died
+};
+#endif
+
+#if 0
 struct Team : PropertyOwner {
   Team() :
   INIT_PROPERTY(name, 0),
@@ -132,6 +166,20 @@ struct Team : PropertyOwner {
     std::string string;
   }
 };
+#else
+struct Team {
+  std::string name;
+  std::string description;
+
+  // data directories
+  std::string pig_textures;
+  std::string paper_texture;
+  std::string debrief_texture;
+  std::string voice_set;
+
+  std::array<CharacterSlot, 8> slots;
+};
+#endif
 
 struct MapManifest {
   std::string filepath; // path to manifest
