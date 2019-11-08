@@ -121,7 +121,7 @@ class Property
 		
 	private:
 		bool is_dirty_;
-		unsigned int dirty_since_;
+		unsigned int dirty_since_{ 0 };
 		
 		std::string clean_serialised_;
 };

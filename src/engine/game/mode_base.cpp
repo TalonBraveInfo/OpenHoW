@@ -21,6 +21,7 @@
 #include "mode_base.h"
 #include "actor_manager.h"
 #include "player.h"
+#include "actors/actor_pig.h"
 
 using namespace openhow;
 
@@ -58,6 +59,8 @@ void BaseGameMode::Tick() {
     return;
   }
 
+
+
 #if 0
   if (active_actor_ != nullptr) {
     active_actor_->HandleInput();
@@ -84,6 +87,19 @@ void BaseGameMode::SpawnActors() {
     }
 
     actor->Deserialize(spawn);
+
+    APig* pig = dynamic_cast<APig*>(actor);
+    if(pig == nullptr) {
+      continue;
+    }
+
+    Player* player = Engine::Game()->GetPlayerByIndex(pig->GetTeam());
+    if(player == nullptr) {
+      LogWarn("Failed to assign pig to team!\n");
+      continue;
+    }
+
+    AssignActorToPlayer(pig, player);
   }
 
 #if 0 // debug sprites...

@@ -18,6 +18,8 @@
 #include "../engine.h"
 #include "../language.h"
 
+#include "../game/player.h"
+
 #include "window_new_game.h"
 
 using namespace openhow;
@@ -26,21 +28,25 @@ void NewGameWindow::Display() {
   ImGui::SetNextWindowSize(ImVec2(320, 320), ImGuiCond_Once);
   ImGui::Begin("New Game", &status_, ED_DEFAULT_WINDOW_FLAGS);
 
+  Player* player = Engine::Game()->GetPlayerByIndex(0);
+
   // Team Selection
-  {
-    ImGui::Text("Select Team");
-    GameManager::TeamVector teams = Engine::Game()->GetDefaultTeams();
-    std::vector<const char*> options;
-    for (const auto& team : teams) {
-      options.push_back(team.name.c_str());
-    }
+  ImGui::Text("Select Team");
+  GameManager::TeamVector teams = Engine::Game()->GetDefaultTeams();
+  std::vector<const char*> options;
+  for (const auto& team : teams) {
+    options.push_back(team.name.c_str());
+  }
 
-    static int selected_team = 0;
-    if(ImGui::ListBox("Teams", &selected_team, &options[0], options.size(), 10)) {
-      snprintf(team_name_, sizeof(team_name_), "%s", teams[selected_team].name.c_str());
-    }
+  static int selected_team = 0;
+  if(ImGui::ListBox("Teams", &selected_team, &options[0], options.size(), 10)) {
+    snprintf(team_name_, sizeof(team_name_), "%s", teams[selected_team].name.c_str());
+    player->SetTeam(teams[selected_team]);
+  }
 
-    ImGui::InputText("Team Name", team_name_, sizeof(team_name_));
+  if(ImGui::InputText("Team Name", team_name_, sizeof(team_name_))) {
+    Team* team = player->GetTeam();
+    team->name = team_name_;
   }
 
   if(ImGui::Button("Configure Team")) {
@@ -52,14 +58,32 @@ void NewGameWindow::Display() {
   ImGui::Checkbox("Play training mission?", &training_mission_);
 
   if(ImGui::Button("Start Game")) {
-    if(training_mission_) {
-      Engine::Game()->LoadMap("camp");
-    } else {
-      Engine::Game()->LoadMap("estu");
-    }
+    PlayerPtrVector players = { player };
 
     GameModeDescriptor game_mode_descriptor;
-    Engine::Game()->StartMode(game_mode_descriptor);
+    std::string mapname;
+    if(!training_mission_) {
+      mapname = "estu";
+
+      // crap for now, need to fill this in with the correct data...
+      game_mode_descriptor.default_health = 100;
+      game_mode_descriptor.desired_mode = "sp";
+      game_mode_descriptor.select_pig = false;
+      game_mode_descriptor.turn_time = 60;
+      game_mode_descriptor.sudden_death = false;
+
+      players.push_back(new Player(PlayerType::COMPUTER));
+    } else {
+      mapname = "camp";
+      // crap for now, need to fill this in with the correct data...
+      game_mode_descriptor.default_health = 100;
+      game_mode_descriptor.desired_mode = "sp";
+      game_mode_descriptor.select_pig = false;
+      game_mode_descriptor.turn_time = 60;
+      game_mode_descriptor.sudden_death = false;
+    }
+
+    Engine::Game()->StartMode(mapname, players, game_mode_descriptor);
 
     SetStatus(false);
   }

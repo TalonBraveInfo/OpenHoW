@@ -97,6 +97,9 @@ GameManager::GameManager() {
   Engine::Resource()->LoadModel("chars/pigs/sp_hi", true, true);
 
   camera_ = new Camera({0, 0, 0}, {0, 0, 0});
+
+  // Setup local player
+  players_.push_back(new Player(PlayerType::LOCAL));
 }
 
 GameManager::~GameManager() {
@@ -108,7 +111,7 @@ GameManager::~GameManager() {
 void GameManager::Tick() {
   FrontEnd_Tick();
 
-  if (active_mode_ == nullptr) {
+  if (mode_ == nullptr) {
     return;
   }
 
@@ -126,21 +129,20 @@ void GameManager::Tick() {
     ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
   }
 
-  active_mode_->Tick();
+  mode_->Tick();
 
   ActorManager::GetInstance()->TickActors();
 }
 
-void GameManager::SetupPlayers(const TeamArray& teams) {
-  unsigned int controller_slot = 0;
-  for(auto team : teams) {
-    auto* player = new Player(team);
-    if(team->type_ == Team::Type::LOCAL) {
-      player->SetControllerSlot(controller_slot++);
-    }
+void GameManager::SetupPlayers(const PlayerPtrVector& players) {}
 
-    players_.push_back(player);
+Player* GameManager::GetPlayerByIndex(unsigned int i) {
+  if(i >= players_.size()) {
+    LogWarn("Invalid player index, \"%d\"!\n", i);
+    return nullptr;
   }
+
+  return players_[i];
 }
 
 void GameManager::LoadMap(const std::string& name) {
@@ -149,8 +151,6 @@ void GameManager::LoadMap(const std::string& name) {
     LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
     return;
   }
-
-  //FrontEnd_SetState(FE_MODE_LOADING);
 
   Map* map = new Map(manifest);
   if (map_ != nullptr) {
@@ -330,15 +330,9 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
     mode = desc->modes[0];
   }
 
-  Engine::Game()->LoadMap(argv[1]);
-
   // Set up a mode with some defaults...
-  Team a, b;
   GameModeDescriptor descriptor;
-  descriptor.teams = {
-      &a, &b
-  };
-  Engine::Game()->StartMode(descriptor);
+  Engine::Game()->StartMode(argv[1], { Engine::Game()->GetPlayerByIndex(0) }, descriptor);
 }
 
 /**
@@ -374,12 +368,19 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
     return;
   }
 
-  if(Engine::Game()->current_actor_ == nullptr) {
+  Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+  if(player == nullptr) {
+    LogWarn("Failed to get current player!\n");
+    return;
+  }
+
+  Actor* actor = player->GetCurrentChild();
+  if(actor == nullptr) {
     LogWarn("No actor currently active!\n");
     return;
   }
 
-  APig* pig = dynamic_cast<APig*>(Engine::Game()->current_actor_);
+  APig* pig = dynamic_cast<APig*>(actor);
   if(pig == nullptr) {
     LogWarn("Actor is not a pig!\n");
     return;
@@ -394,9 +395,15 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
   pig->AddInventoryItem(item, quantity);
 }
 
-void GameManager::StartMode(const GameModeDescriptor& descriptor) {
+void GameManager::StartMode(const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor) {
+  FrontEnd_SetState(FE_MODE_LOADING);
+
+  Engine::Game()->LoadMap(map);
+
   if(map_ == nullptr) {
-    Error("Attempted to start mode without a valid map loaded!\n");
+    LogWarn("Failed to start mode, map wasn't loaded!\n");
+    FrontEnd_SetState(FE_MODE_MAIN_MENU);
+    return;
   }
 
   std::string sample_ext = "d";
@@ -419,18 +426,20 @@ void GameManager::StartMode(const GameModeDescriptor& descriptor) {
     ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
   }
 
-  SetupPlayers(descriptor.teams);
+  SetupPlayers(players);
+
+  FrontEnd_SetState(FE_MODE_GAME);
 
   // call StartRound; deals with spawning everything in and other mode specific logic
-  active_mode_ = new BaseGameMode(descriptor);
-  active_mode_->StartRound();
+  mode_ = new BaseGameMode(descriptor);
+  mode_->StartRound();
 }
 
 /**
  * End the currently active mode and flush everything.
  */
 void GameManager::EndMode() {
-  delete active_mode_;
+  delete mode_;
 
   UnloadMap();
 

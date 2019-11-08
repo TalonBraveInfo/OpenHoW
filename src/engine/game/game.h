@@ -23,12 +23,13 @@
 
 #include "../graphics/camera.h"
 
-enum class PigStatus {
+enum class CharacterStatus {
   NONE = -1,
   ALIVE,
   DEAD,
 };
 
+#if 0
 enum class PigClass {
   NONE = -1,
   GRUNT,
@@ -57,18 +58,39 @@ enum class PigClass {
   PARATROOPER,
   GRENADIER,
 };
+#else
+struct CharacterClass {
+  std::string   key;
+  std::string   label;
+  std::string   model;
+  unsigned int  cost{ 0 };
+  unsigned int  health{ 0 };
 
-struct PigSlot {
-  std::string     name{"none"};   // Assigned name, e.g. Herman
-  PigClass        classname;      // Ace, gunner, sapper etc.
-  PigStatus       status;         // Pig's status (alive / dead)
-  unsigned int    voice_group;    // Determines voice and portrait
+  struct Item {
+    std::string   key;
+    std::string   classname;
+    unsigned int  quantity{ 0 };
+  };
+  std::vector<Item> items;
+};
+#endif
+
+struct CharacterSlot {
+  // Static
+  std::string             portrait;           // Face profile
+  std::string             portrait_selected;  // Selected face profile
+  std::string             portrait_wounded;   // Wounded face profile
+  std::string             voice_language;
+  unsigned int            voice_set{ 0 };
+
+  // Dynamic
+  std::string             name;           // Assigned name, e.g. Herman
+  const CharacterClass*   classname;      // Ace, gunner, sapper etc.
+  CharacterStatus         status;         // Pig's status (alive / dead)
 };
 
 struct Team {
-  Team() = default;
-
-  std::string name{"none"};
+  std::string name;
   std::string description{"none"};
 
   // data directories
@@ -77,16 +99,8 @@ struct Team {
   std::string debrief_texture{"frontend/debrief/unifeng"};
   std::string voice_set{"en"};
 
-  PigSlot slots[8];
-
-  enum class Type {
-    LOCAL,
-    NETWORKED,
-    COMPUTER,
-  } type_{ Type::LOCAL };
+  std::array<CharacterSlot, 8> slots;
 };
-
-typedef std::vector<Team*> TeamArray;
 
 struct MapManifest {
   std::string filepath; // path to manifest
@@ -118,7 +132,6 @@ struct MapManifest {
 
 struct GameModeDescriptor {
   std::string   desired_mode{"survival"};
-  TeamArray     teams;
 
   // Mode specific properties, probably provide these
   // via json going forward and then parse via the mode... somehow
@@ -129,6 +142,8 @@ struct GameModeDescriptor {
   unsigned int  turn_time{45};
   unsigned int  deathmatch_limit{5};
 };
+
+typedef std::vector<Player*> PlayerPtrVector;
 
 class Map;
 
@@ -142,10 +157,11 @@ class GameManager {
 
   Camera* GetCamera() { return camera_; }
 
-  void StartMode(const GameModeDescriptor& descriptor);
+  void StartMode(const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor);
   void EndMode();
 
-  void SetupPlayers(const TeamArray& teams);
+  void SetupPlayers(const PlayerPtrVector& teams);
+  Player* GetPlayerByIndex(unsigned int i);
 
   // Map
 
@@ -167,7 +183,7 @@ class GameManager {
 
   Map* GetCurrentMap() { return map_; }
 
-  IGameMode* GetMode() { return active_mode_; }
+  IGameMode* GetMode() { return mode_; }
 
  protected:
  private:
@@ -177,16 +193,14 @@ class GameManager {
   static void GiveItemCommand(unsigned int argc, char* argv[]);
 
   Camera* camera_{nullptr};
-
-  IGameMode* active_mode_{nullptr};
   Map* map_{nullptr};
 
-  Actor* current_actor_{nullptr};
+  IGameMode* mode_{nullptr};
 
   std::map<std::string, MapManifest> map_manifests_;
 
   TeamVector default_teams_;
-  std::vector<Player*> players_;
+  PlayerPtrVector players_;
 
 #define MAX_AMBIENT_SAMPLES 8
   double ambient_emit_delay_{0};

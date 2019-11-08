@@ -19,7 +19,7 @@
 
 #include "player.h"
 
-Player::Player(Team* team) : team_(team) {}
+Player::Player(PlayerType type) : type_(type) {}
 Player::~Player() = default;
 
 void Player::PossessChild(unsigned int index) {
@@ -39,16 +39,42 @@ void Player::PossessChild(unsigned int index) {
     return;
   }
 
-  current_child_ = child;
+  current_child_ = index;
 }
 
 void Player::DepossessChild() {
-  if(current_child_ == nullptr) {
+  Actor* actor_ptr = GetCurrentChild();
+  if(actor_ptr == nullptr) {
     return;
   }
 
-  current_child_->Depossessed(this);
-  current_child_ = nullptr;
+  actor_ptr->Depossessed(this);
+}
+
+Actor* Player::GetCurrentChild() {
+  if(current_child_ >= children_.size()) {
+    return nullptr;
+  }
+
+  return children_[current_child_];
+}
+
+void Player::CycleChildren(bool forward) {
+  if(forward) {
+    if (current_child_ >= children_.size()) {
+      current_child_ = 0;
+    } else {
+      current_child_++;
+    }
+  } else {
+    if(current_child_ == 0) {
+      current_child_ = children_.size() - 1;
+    } else {
+      current_child_--;
+    }
+  }
+
+  PossessChild(current_child_);
 }
 
 void Player::AddChild(Actor* actor) {

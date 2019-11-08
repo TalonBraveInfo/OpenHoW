@@ -1,6 +1,7 @@
 [
   {
-    "name": "$gruntClass",
+    "key": "gr",
+    "label": "$gruntClass",
     "health": "50",
     "cost": "0",
     "model": "pigs/gr_hi",
@@ -11,9 +12,8 @@
       }
     ]
   },
-
   {
-    "name": "$gunnerClass",
+    "label": "$gunnerClass",
     "health": "75",
     "cost": "1",
     "model": "pigs/hv_hi",
@@ -26,7 +26,7 @@
     ]
   },
   {
-    "name": "$bombardierClass",
+    "label": "$bombardierClass",
     "health": "90",
     "cost": "",
     "model": "pigs/hv_hi",

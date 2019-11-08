@@ -96,7 +96,7 @@ void APig::Tick() {
   speech_->SetPosition(GetPosition());
 }
 
-void APig::SetClass(PigClass pclass) {
+void APig::SetClass(unsigned int pclass) {
   // TODO: setup default inventory
 
   SetHealth(100);
@@ -149,6 +149,21 @@ const Player* APig::GetPlayerOwner() {
   return nullptr;
 }
 
+void APig::SetTeam(unsigned int team) {
+  team_ = team;
+
+#if 0
+  Player* player = Engine::Game()->GetPlayerByIndex(team);
+  if(player == nullptr) {
+    ActorManager::GetInstance()->DestroyActor(this);
+    LogWarn("Failed to set team for pig!\n");
+    return;
+  }
+
+  Engine::Game()->GetMode()->AssignActorToPlayer(this, player);
+#endif
+}
+
 void APig::Deserialize(const ActorSpawn& spawn) {
   SuperClass::Deserialize(spawn);
 
@@ -156,32 +171,8 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   Map* map = Engine::Game()->GetCurrentMap();
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
-  // TODO: This is actually slightly more complicated, but this'll do for now
-  PigClass pig_class = PigClass::GRUNT;
-  if(spawn.class_name == "ac_me") {
-    pig_class = PigClass::ACE;
-  } else if(spawn.class_name == "le_me") {
-    pig_class = PigClass::LEGEND;
-  } else if(spawn.class_name == "me_me") {
-    pig_class = PigClass::MEDIC;
-  }
-
-  SetClass(pig_class);
-//  SetTeam(spawn.team);
-
-  /*
-REGISTER_ACTOR(ac_me, APig)    // Ace
-REGISTER_ACTOR(gr_me, APig)    // Grunt
-REGISTER_ACTOR(hv_me, APig)
-REGISTER_ACTOR(le_me, APig)    // Legend
-REGISTER_ACTOR(me_me, APig)    // Medic
-REGISTER_ACTOR(sa_me, APig)    // Saboteur
-REGISTER_ACTOR(sb_me, APig)    // Commando
-REGISTER_ACTOR(sn_me, APig)    // Sniper
-REGISTER_ACTOR(sp_me, APig)    // Spy
-   */
-
-  //SetPlayerOwner(Engine::Game()->GetMode()->GetCurrentPlayer()); // temp
+  SetTeam(spawn.team);
+  //SetClass(pig_class);
 
   // Create and equip our parachute, and then
   // link it to ensure it gets destroyed when we do
@@ -220,6 +211,7 @@ void APig::Killed() {
  * @param category
  */
 void APig::PlayVoiceSample(VoiceCategory category) {
+#if 0
   const Player* player = GetPlayerOwner();
   if(player == nullptr) {
     return;
@@ -247,4 +239,5 @@ void APig::PlayVoiceSample(VoiceCategory category) {
 
   speech_->SetSample(sample);
   speech_->StartPlaying();
+#endif
 }

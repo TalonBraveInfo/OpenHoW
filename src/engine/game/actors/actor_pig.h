@@ -33,8 +33,8 @@ class APig : public AAnimatedModel, public InventoryManager {
   void HandleInput() override;
   void Tick() override;
 
-  void SetClass(PigClass pclass);
-  PigClass GetClass() { return class_; }
+  void SetClass(unsigned int pclass);
+  unsigned int GetClass() { return class_; }
 
   void SetPersonality(unsigned int personality);
   unsigned int GetPersonality() { return personality_; }
@@ -69,8 +69,7 @@ class APig : public AAnimatedModel, public InventoryManager {
 
   unsigned int team_{ 0 };
   unsigned int personality_{ 0 };
-
-  PigClass class_{ PigClass::NONE };
+  unsigned int class_{ 0 };
 
   enum {
     EYES_OPEN,

@@ -17,9 +17,15 @@
 
 #pragma once
 
+enum class PlayerType {
+  LOCAL,
+  NETWORKED,
+  COMPUTER,
+};
+
 class Player {
  public:
-  explicit Player(Team* team);
+  Player(PlayerType type);
   ~Player();
 
   unsigned int GetNumChildren() { return children_.size(); }
@@ -28,18 +34,23 @@ class Player {
   void PossessChild(unsigned int index);
   void DepossessChild();
 
+  Actor* GetCurrentChild();
+
+  void CycleChildren(bool forward = true);
+
   void SetControllerSlot(unsigned int slot) { input_slot = slot; }
   unsigned int GetControllerSlot() { return input_slot; }
 
-  const Team* GetTeam() const { return team_; }
+  void SetTeam(const Team& team) { team_ = team; }
+  Team* GetTeam() { return &team_; }
 
  protected:
  private:
-  unsigned int input_slot{0}; // Controller slot
-  unsigned int identity{}; // Identity of the team (e.g. Tommy etc.)
+  unsigned int  input_slot{0}; // Controller slot
 
-  Team* team_{nullptr};
+  PlayerType type_;
+  Team team_;
 
   std::vector<Actor*> children_;
-  Actor* current_child_{nullptr};
+  unsigned int current_child_{ 0 };
 };
