@@ -28,8 +28,6 @@ void NewGameWindow::Display() {
   ImGui::SetNextWindowSize(ImVec2(320, 320), ImGuiCond_Once);
   ImGui::Begin("New Game", &status_, ED_DEFAULT_WINDOW_FLAGS);
 
-  Player* player = Engine::Game()->GetPlayerByIndex(0);
-
   // Team Selection
   ImGui::Text("Select Team");
   GameManager::TeamVector teams = Engine::Game()->GetDefaultTeams();
@@ -41,12 +39,11 @@ void NewGameWindow::Display() {
   static int selected_team = 0;
   if(ImGui::ListBox("Teams", &selected_team, &options[0], options.size(), 10)) {
     snprintf(team_name_, sizeof(team_name_), "%s", teams[selected_team].name.c_str());
-    player->SetTeam(teams[selected_team]);
+    team_ = teams[selected_team];
   }
 
   if(ImGui::InputText("Team Name", team_name_, sizeof(team_name_))) {
-    Team* team = player->GetTeam();
-    team->name = team_name_;
+    team_.name = team_name_;
   }
 
   if(ImGui::Button("Configure Team")) {
@@ -58,7 +55,13 @@ void NewGameWindow::Display() {
   ImGui::Checkbox("Play training mission?", &training_mission_);
 
   if(ImGui::Button("Start Game")) {
-    PlayerPtrVector players = { player };
+    // Setup local player
+    Player* player = new Player(PlayerType::LOCAL);
+    player->SetTeam(team_);
+
+    PlayerPtrVector players = {
+        player
+    };
 
     GameModeDescriptor game_mode_descriptor;
     std::string mapname;
@@ -72,7 +75,15 @@ void NewGameWindow::Display() {
       game_mode_descriptor.turn_time = 60;
       game_mode_descriptor.sudden_death = false;
 
-      players.push_back(new Player(PlayerType::COMPUTER));
+      Player* enemy = new Player(PlayerType::COMPUTER);
+      unsigned int enemy_team = selected_team + 1;
+      if(enemy_team >= teams.size()) {
+        enemy->SetTeam(teams[enemy_team - 2]);
+      } else {
+        enemy->SetTeam(teams[enemy_team + 1]);
+      }
+
+      players.push_back(enemy);
     } else {
       mapname = "camp";
       // crap for now, need to fill this in with the correct data...

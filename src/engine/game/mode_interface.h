@@ -39,7 +39,7 @@ class IGameMode {
   virtual unsigned int GetMaxSpectators() const = 0;
   virtual unsigned int GetMaxPlayers() const = 0;
 
-  Player* GetCurrentPlayer() { return rotation_[player_slot_].player; }
+  virtual Player* GetCurrentPlayer() = 0;
 
   bool HasModeStarted() const { return mode_started_; }
   bool HasRoundStarted() const { return round_started_; }
@@ -66,11 +66,5 @@ class IGameMode {
   bool round_started_{false};
   bool turn_started_{false};
 
-  struct PlayerRotation {
-    Player* player{nullptr};
-    unsigned int target_slot{0};
-  };
-
-  std::vector<PlayerRotation> rotation_;
-  unsigned int player_slot_{0};
+  unsigned int current_player_{0 };
 };

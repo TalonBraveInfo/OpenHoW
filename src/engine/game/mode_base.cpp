@@ -25,10 +25,7 @@
 
 using namespace openhow;
 
-BaseGameMode::BaseGameMode(const GameModeDescriptor& descriptor) {
-
-}
-
+BaseGameMode::BaseGameMode(const GameModeDescriptor& descriptor) {}
 BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartRound() {
@@ -41,12 +38,15 @@ void BaseGameMode::StartRound() {
   // Play the deployment music
   Engine::Audio()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
 
+  StartTurn(GetCurrentPlayer());
+
   round_started_ = true;
 }
 
 void BaseGameMode::RestartRound() {
   DestroyActors();
-  SpawnActors();
+
+  StartRound();
 }
 
 void BaseGameMode::EndRound() {
@@ -58,8 +58,6 @@ void BaseGameMode::Tick() {
     // still setting the game up...
     return;
   }
-
-
 
 #if 0
   if (active_actor_ != nullptr) {
@@ -135,16 +133,15 @@ void BaseGameMode::StartTurn(Player* player) {
     return;
   }
 
-  player->PossessChild(0);
+  player->PossessCurrentChild();
 }
 
 void BaseGameMode::EndTurn(Player* player) {
-  player->DepossessChild();
+  player->DepossessCurrentChild();
+  player->CycleChildren();
 
   // move onto the next player
-  if (++player_slot_ >= rotation_.size()) {
-    player_slot_ = 0;
-  }
+  CyclePlayers();
 }
 
 void BaseGameMode::PlayerJoined(Player* player) {
@@ -177,6 +174,19 @@ void BaseGameMode::SpectatorLeft(Player* player) {
  */
 unsigned int BaseGameMode::GetMaxPlayers() const {
   return 4;
+}
+
+Player* BaseGameMode::GetCurrentPlayer() {
+  return Engine::Game()->GetPlayerByIndex(current_player_);
+}
+
+void BaseGameMode::CyclePlayers() {
+  PlayerPtrVector players = Engine::Game()->GetPlayers();
+  if (current_player_ >= players.size()) {
+    current_player_ = 0;
+  } else {
+    current_player_++;
+  }
 }
 
 void BaseGameMode::AssignActorToPlayer(Actor* target, Player* owner) {

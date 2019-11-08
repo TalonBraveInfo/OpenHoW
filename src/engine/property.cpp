@@ -69,5 +69,5 @@ PropertyOwner::PropertyOwner() {}
 PropertyOwner::~PropertyOwner() {}
 
 std::string PropertyOwner::SerializePropertiesAsJson() {
-
+  return "";
 }

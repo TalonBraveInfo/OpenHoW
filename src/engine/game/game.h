@@ -168,6 +168,9 @@ struct Team : PropertyOwner {
 };
 #else
 struct Team {
+  Team() = default;
+  ~Team() = default;
+
   std::string name;
   std::string description;
 
@@ -241,6 +244,7 @@ class GameManager {
 
   void SetupPlayers(const PlayerPtrVector& teams);
   Player* GetPlayerByIndex(unsigned int i);
+  const PlayerPtrVector& GetPlayers() { return players_; }
 
   // Map
 

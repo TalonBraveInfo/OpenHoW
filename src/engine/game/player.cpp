@@ -22,13 +22,8 @@
 Player::Player(PlayerType type) : type_(type) {}
 Player::~Player() = default;
 
-void Player::PossessChild(unsigned int index) {
-  if(index >= children_.size()) {
-    LogWarn("Failed to possess actor, child index is out of range (%d vs %d)!\n", index, children_.size());
-    return;
-  }
-
-  Actor* child = children_[index];
+void Player::PossessCurrentChild() {
+  Actor* child = children_[current_child_];
   if(child == nullptr) {
     LogWarn("Child of player is null!\n");
     return;
@@ -39,16 +34,18 @@ void Player::PossessChild(unsigned int index) {
     return;
   }
 
-  current_child_ = index;
+  LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
-void Player::DepossessChild() {
+void Player::DepossessCurrentChild() {
   Actor* actor_ptr = GetCurrentChild();
   if(actor_ptr == nullptr) {
     return;
   }
 
   actor_ptr->Depossessed(this);
+
+  LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
 Actor* Player::GetCurrentChild() {
@@ -74,12 +71,14 @@ void Player::CycleChildren(bool forward) {
     }
   }
 
-  PossessChild(current_child_);
+  LogDebug("%s cycled to child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
 void Player::AddChild(Actor* actor) {
   u_assert(actor != nullptr, "Attempted to pass a null actor reference to player!\n");
   children_.push_back(actor);
+
+  LogDebug("%s received child %d...\n", GetTeam()->name.c_str(), children_.size());
 }
 
 void Player::RemoveChild(Actor* actor) {

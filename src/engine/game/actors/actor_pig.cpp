@@ -171,6 +171,8 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   Map* map = Engine::Game()->GetCurrentMap();
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
+  SetHealth(100);
+
   SetTeam(spawn.team);
   //SetClass(pig_class);
 

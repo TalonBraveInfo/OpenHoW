@@ -97,9 +97,6 @@ GameManager::GameManager() {
   Engine::Resource()->LoadModel("chars/pigs/sp_hi", true, true);
 
   camera_ = new Camera({0, 0, 0}, {0, 0, 0});
-
-  // Setup local player
-  players_.push_back(new Player(PlayerType::LOCAL));
 }
 
 GameManager::~GameManager() {
@@ -134,7 +131,13 @@ void GameManager::Tick() {
   ActorManager::GetInstance()->TickActors();
 }
 
-void GameManager::SetupPlayers(const PlayerPtrVector& players) {}
+void GameManager::SetupPlayers(const PlayerPtrVector& players) {
+  for(auto i : players) {
+    GetMode()->PlayerJoined(i);
+  }
+
+  players_ = players;
+}
 
 Player* GameManager::GetPlayerByIndex(unsigned int i) {
   if(i >= players_.size()) {
@@ -332,7 +335,7 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
 
   // Set up a mode with some defaults...
   GameModeDescriptor descriptor;
-  Engine::Game()->StartMode(argv[1], { Engine::Game()->GetPlayerByIndex(0) }, descriptor);
+  Engine::Game()->StartMode(argv[1], { new Player(PlayerType::LOCAL) }, descriptor);
 }
 
 /**
@@ -402,7 +405,7 @@ void GameManager::StartMode(const std::string& map, const PlayerPtrVector& playe
 
   if(map_ == nullptr) {
     LogWarn("Failed to start mode, map wasn't loaded!\n");
-    FrontEnd_SetState(FE_MODE_MAIN_MENU);
+    EndMode();
     return;
   }
 
@@ -426,12 +429,13 @@ void GameManager::StartMode(const std::string& map, const PlayerPtrVector& playe
     ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
   }
 
-  SetupPlayers(players);
-
   FrontEnd_SetState(FE_MODE_GAME);
 
   // call StartRound; deals with spawning everything in and other mode specific logic
   mode_ = new BaseGameMode(descriptor);
+
+  SetupPlayers(players);
+
   mode_->StartRound();
 }
 
@@ -440,6 +444,12 @@ void GameManager::StartMode(const std::string& map, const PlayerPtrVector& playe
  */
 void GameManager::EndMode() {
   delete mode_;
+
+  // Clear out all the allocated players for this game
+  for(auto i : players_) {
+    delete i;
+  }
+  players_.clear();
 
   UnloadMap();
 

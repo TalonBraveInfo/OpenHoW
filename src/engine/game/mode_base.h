@@ -39,6 +39,9 @@ class BaseGameMode : public IGameMode {
   unsigned int GetMaxSpectators() const override;
   unsigned int GetMaxPlayers() const override;
 
+  Player* GetCurrentPlayer();
+  void CyclePlayers();
+
   void AssignActorToPlayer(Actor* target, Player* owner) override;
 
  protected:

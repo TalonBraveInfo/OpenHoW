@@ -29,10 +29,12 @@ class Player {
   ~Player();
 
   unsigned int GetNumChildren() { return children_.size(); }
+
   void AddChild(Actor* actor);
   void RemoveChild(Actor* actor);
-  void PossessChild(unsigned int index);
-  void DepossessChild();
+
+  void PossessCurrentChild();
+  void DepossessCurrentChild();
 
   Actor* GetCurrentChild();
 
@@ -46,7 +48,7 @@ class Player {
 
  protected:
  private:
-  unsigned int  input_slot{0}; // Controller slot
+  unsigned int  input_slot{ 0 }; // Controller slot
 
   PlayerType type_;
   Team team_;
