@@ -61,7 +61,7 @@ class Property
 		
 		/* No copy/assignment c'tors. */
 		Property(const Property&) = delete;
-		Property& operator=(const Property&) = delete;
+		//Property& operator=(const Property&) = delete;
 		
 		/**
 		 * @brief Returns the serialised form of the property's value.
@@ -138,11 +138,11 @@ class PropertyOwner
 	public:
 		/* No copy/assignment c'tors. */
 		PropertyOwner(const PropertyOwner&) = delete;
-		PropertyOwner& operator=(const PropertyOwner&) = delete;
+		//PropertyOwner& operator=(const PropertyOwner&) = delete;
 
 		const PropertyMap& GetProperties() { return properties_; }
 
-		std::string SerializePropertiesAsJson();
+		virtual std::string SerializePropertiesAsJson();
 	
 	protected:
 		PropertyOwner();
@@ -170,6 +170,13 @@ template<typename T> class NumericProperty: public Property
 		{
 			return value_;
 		}
+
+        const T& operator=(const NumericProperty& value)
+        {
+          this->value_ = value;
+          MarkDirty();
+          return value;
+        }
 		
 		/**
 		 * @brief Assigns value, marks property dirty.
@@ -269,6 +276,12 @@ class StringProperty : public Property {
 
   operator const std::string&() const {
     return value_;
+  }
+
+  const std::string& operator=(const StringProperty& value) {
+    value_ = value;
+    MarkDirty();
+    return value;
   }
 
   const std::string& operator=(const std::string& value) {

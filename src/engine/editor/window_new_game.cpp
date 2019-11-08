@@ -35,12 +35,12 @@ void NewGameWindow::Display() {
   GameManager::TeamVector teams = Engine::Game()->GetDefaultTeams();
   std::vector<const char*> options;
   for (const auto& team : teams) {
-    options.push_back(team.name.c_str());
+    options.push_back(static_cast<std::string>(team.name).c_str());
   }
 
   static int selected_team = 0;
   if(ImGui::ListBox("Teams", &selected_team, &options[0], options.size(), 10)) {
-    snprintf(team_name_, sizeof(team_name_), "%s", teams[selected_team].name.c_str());
+    snprintf(team_name_, sizeof(team_name_), "%s", static_cast<std::string>(teams[selected_team].name).c_str());
     player->SetTeam(teams[selected_team]);
   }
 

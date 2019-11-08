@@ -127,6 +127,10 @@ struct Team : PropertyOwner {
   StringProperty voice_set;
 
   std::array<CharacterSlot, 8> slots;
+
+  virtual std::string SerializePropertiesAsJson() {
+    std::string string;
+  }
 };
 
 struct MapManifest {
