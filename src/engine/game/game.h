@@ -59,12 +59,20 @@ enum class PigClass {
   GRENADIER,
 };
 #else
-struct CharacterClass {
-  std::string   key;
-  std::string   label;
-  std::string   model;
-  unsigned int  cost{ 0 };
-  unsigned int  health{ 0 };
+struct CharacterClass : PropertyOwner {
+  CharacterClass() :
+  INIT_PROPERTY(key, 0),
+  INIT_PROPERTY(label, 0),
+  INIT_PROPERTY(model, 0),
+  INIT_PROPERTY(cost, 0, 0),
+  INIT_PROPERTY(health, 0, 0)
+  {}
+  
+  StringProperty                  key;
+  StringProperty                  label;
+  StringProperty                  model;
+  NumericProperty<unsigned int>   cost;
+  NumericProperty<unsigned int>   health;
 
   struct Item {
     std::string   key;
@@ -75,29 +83,48 @@ struct CharacterClass {
 };
 #endif
 
-struct CharacterSlot {
+struct CharacterSlot : PropertyOwner {
+  CharacterSlot() :
+  INIT_PROPERTY(portrait, 0),
+  INIT_PROPERTY(portrait_selected, 0),
+  INIT_PROPERTY(portrait_wounded, 0),
+  INIT_PROPERTY(voice_language, 0),
+  INIT_PROPERTY(voice_set, 0, 0)
+  {}
+  
   // Static
-  std::string             portrait;           // Face profile
-  std::string             portrait_selected;  // Selected face profile
-  std::string             portrait_wounded;   // Wounded face profile
-  std::string             voice_language;
-  unsigned int            voice_set{ 0 };
-
+  StringProperty                    portrait;           // Face profile
+  StringProperty                    portrait_selected;  // Selected face profile
+  StringProperty                    portrait_wounded;   // Wounded face profile
+  StringProperty                    voice_language;
+  NumericProperty<unsigned int>     voice_set;
+  
   // Dynamic
-  std::string             name;           // Assigned name, e.g. Herman
-  const CharacterClass*   classname;      // Ace, gunner, sapper etc.
-  CharacterStatus         status;         // Pig's status (alive / dead)
+  std::string             name;                               // Assigned name, e.g. Herman
+  const CharacterClass*   classname{ nullptr };               // Ace, gunner, sapper etc.
+  CharacterStatus         status{ CharacterStatus::ALIVE };   // Pig's status (alive / dead)
+  unsigned int            kill_count{ 0 };                    // Number of other pigs we've killed
+  unsigned int            death_count{ 0 };                   // Number of times we've died
 };
 
-struct Team {
-  std::string name;
-  std::string description{"none"};
+struct Team : PropertyOwner {
+  Team() :
+  INIT_PROPERTY(name, 0),
+  INIT_PROPERTY(description, 0),
+  INIT_PROPERTY(pig_textures, 0),
+  INIT_PROPERTY(paper_texture, 0),
+  INIT_PROPERTY(debrief_texture, 0),
+  INIT_PROPERTY(voice_set, 0)
+  {}
+
+  StringProperty name;
+  StringProperty description;
 
   // data directories
-  std::string pig_textures{"chars/pigs/british"};
-  std::string paper_texture{"frontend/papers/british"};
-  std::string debrief_texture{"frontend/debrief/unifeng"};
-  std::string voice_set{"en"};
+  StringProperty pig_textures;
+  StringProperty paper_texture;
+  StringProperty debrief_texture;
+  StringProperty voice_set;
 
   std::array<CharacterSlot, 8> slots;
 };
