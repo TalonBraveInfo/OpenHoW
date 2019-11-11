@@ -27,7 +27,7 @@ class AWeapon : public AItem {
   ~AWeapon() override;
 
   virtual void Fire(const PLVector3& pos, const PLVector3& dir);
-  virtual void Deploy() {}
+  //virtual void Deploy();
 
  protected:
  private:

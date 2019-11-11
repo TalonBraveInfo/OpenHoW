@@ -20,6 +20,8 @@
 #include "../actor_manager.h"
 
 #include "actor_item.h"
+#include "actor_pig.h"
+#include "actor_weapon.h"
 
 using namespace openhow;
 
@@ -30,16 +32,25 @@ struct ItemSpawnIndex {
 AItem::AItem() : SuperClass() {}
 AItem::~AItem() = default;
 
-void AItem::Deserialize(const ActorSpawn& spawn) {
+void AItem::Deserialize(const ActorSpawn &spawn) {
   SuperClass::Deserialize(spawn);
 }
 
-void AItem::PickUp(Actor* other) {
+void AItem::Equipped(Actor *other) {
+
+}
+
+void AItem::PickUp(Actor *other) {
   u_assert(other != nullptr);
+
+  APig *pig = dynamic_cast<APig *>(other);
+  if (pig == nullptr) {
+    return;
+  }
 
   // on pickup, spawn the necessary item we'll be
   // adding into the targets inventory
-  switch(item_ident_) {
+  switch (item_ident_) {
     default:break;
     case ITEM_WEAPON_TROTTER:break;
     case ITEM_WEAPON_KNIFE:break;
@@ -49,7 +60,15 @@ void AItem::PickUp(Actor* other) {
     case ITEM_WEAPON_PISTOL:break;
     case ITEM_WEAPON_RIFLE:break;
     case ITEM_WEAPON_RIFLE_BURST:break;
-    case ITEM_WEAPON_MACHINE_GUN:break;
+    case ITEM_WEAPON_MACHINE_GUN: {
+      AWeapon *weapon = dynamic_cast<AWeapon *>(ActorManager::GetInstance()->CreateActor("weapon_machine_gun"));
+      if (weapon == nullptr) {
+        break;
+      }
+
+      pig->AddInventory(weapon);
+      break;
+    }
     case ITEM_WEAPON_HMG:break;
     case ITEM_WEAPON_SNIPER_RIFLE:break;
     case ITEM_WEAPON_SHOTGUN:break;
@@ -112,6 +131,14 @@ void AItem::PickUp(Actor* other) {
   }
 }
 
-PLTexture* AItem::GetInventoryIcon() {
+PLTexture *AItem::GetInventoryIcon() {
   return Display_GetDefaultTexture();
+}
+
+/**
+ * Whether or not this item can be selected from the inventory.
+ * @return True if it's selectable, otherwise not.
+ */
+bool AItem::IsSelectable() {
+  return false;
 }

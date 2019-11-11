@@ -123,13 +123,13 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
     return NULL;
   }
 
-  FILE *tab_file = fopen(tab_path, "rb");
+  PLFile *tab_file = plOpenFile(tab_path, false);
   if (tab_file == NULL) {
     LogWarn("Failed to load tab \"%s\", aborting!\n", tab_path);
     return NULL;
   }
 
-  fseek(tab_file, 16, SEEK_CUR);
+  plFileSeek(tab_file, 16, PL_SEEK_CUR);
 
 #define MAX_CHARS   256
   struct {
@@ -138,11 +138,11 @@ BitmapFont *LoadBitmapFont(const char *name, const char *tab_name) {
     uint16_t w;
     uint16_t h;
   } tab_indices[MAX_CHARS];
-  unsigned int num_chars = (unsigned int) fread(tab_indices, sizeof(tab_indices) / MAX_CHARS, MAX_CHARS, tab_file);
+  unsigned int num_chars = (unsigned int)plReadFile(tab_file, tab_indices, sizeof(tab_indices) / MAX_CHARS, MAX_CHARS);
   if (num_chars == 0) {
     Error("Invalid number of characters for \"%s\", aborting!\n", tab_path);
   }
-  fclose(tab_file);
+  plCloseFile(tab_file);
 
   // todo, load in the image
 

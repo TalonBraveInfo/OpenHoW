@@ -24,21 +24,21 @@
 /* PSX Min Model Format */
 
 MinHandle *Min_LoadFile(const char *path) {
-  FILE *fp = fopen(path, "rb");
+  PLFile *fp = plOpenFile(path, false);
   if (fp == NULL) {
     LogWarn("Failed to load Min \"%s\", aborting!\n", path);
     return NULL;
   }
 
-  fseek(fp, 16, SEEK_CUR);
+  plFileSeek(fp, 16, PL_SEEK_CUR);
 
   uint32_t num_triangles;
-  if (fread(&num_triangles, sizeof(uint32_t), 1, fp) != 1) {
+  if (plReadFile(fp, &num_triangles, sizeof(uint32_t), 1) != 1) {
     LogWarn("Failed to get number of triangles, \"%s\"!\n", path);
   }
 
   if (num_triangles == 0 || num_triangles >= FAC_MAX_TRIANGLES) {
-    u_fclose(fp);
+    plCloseFile(fp);
     LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
     return NULL;
   }
@@ -56,8 +56,8 @@ MinHandle *Min_LoadFile(const char *path) {
 #endif
   } triangles[num_triangles];
   static_assert(sizeof(*triangles) == 24, "invalid struct size");
-  if (fread(triangles, sizeof(*triangles), num_triangles, fp) != num_triangles) {
-    u_fclose(fp);
+  if (plReadFile(fp, triangles, sizeof(*triangles), num_triangles) != num_triangles) {
+    plCloseFile(fp);
     LogWarn("Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path);
     return NULL;
   }

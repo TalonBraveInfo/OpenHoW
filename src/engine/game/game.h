@@ -110,11 +110,14 @@ class GameManager {
   static void MapCommand(unsigned int argc, char* argv[]);
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
+  static void GiveItemCommand(unsigned int argc, char* argv[]);
 
   Camera* camera_{nullptr};
 
   IGameMode* active_mode_{nullptr};
   Map* active_map_{nullptr};
+
+  Actor* current_actor_{nullptr};
 
   std::map<std::string, MapManifest> map_manifests_;
 

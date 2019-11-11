@@ -311,7 +311,7 @@ static void ExtractPtgPackage(const char *input_path, const char *output_path) {
     LogWarn("Invalid PTG file, failed to get number of textures!\n");
   }
 
-  size_t tim_size = (plGetFileSize(input_path) - sizeof(num_textures)) / num_textures;
+  size_t tim_size = (plGetLocalFileSize(input_path) - sizeof(num_textures)) / num_textures;
   for (unsigned int i = 0; i < num_textures; ++i) {
     uint8_t tim[tim_size];
     if (fread(tim, tim_size, 1, file) != 1) {

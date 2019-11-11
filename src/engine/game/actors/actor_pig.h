@@ -47,6 +47,8 @@ class APig : public AAnimatedModel {
   virtual bool Possessed(const Player* player);
   virtual bool Depossessed(const Player* player);
 
+  void AddInventory(AItem* item);
+
   void SetClass(int pclass);
   int GetClass() { return pclass_; }
 
@@ -55,12 +57,14 @@ class APig : public AAnimatedModel {
   void Deserialize(const ActorSpawn& spawn) override;
 
  protected:
-  float input_forward{0.00};  /* -1.0 = backwards, +1.0 = forwards */
-  float input_yaw{0.00};      /* -1.0 = left, +1.0 = right */
-  float input_pitch{0.00};    /* -1.0 = down, +1.0 = up */
+  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
+  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
+  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
 
  private:
   AItem* current_equiped_item_{nullptr};
+
+  InventoryManager inventory_manager_;
 
   enum {
     CLASS_NONE = -1,
