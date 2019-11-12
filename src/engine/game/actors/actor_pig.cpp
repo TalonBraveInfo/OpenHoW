@@ -50,6 +50,9 @@ void APig::HandleInput() {
 void APig::Tick() {
   SuperClass::Tick();
 
+  // temp
+  DropToFloor();
+
   // a dead piggy
   if(GetHealth() <= 0) {
     if(speech_->IsPlaying()) {
@@ -77,7 +80,7 @@ void APig::Tick() {
   position_.y += input_forward * 100.0f * forward.y;
   position_.z += input_forward * 100.0f * forward.z;
 
-  angles_.x += input_pitch * 2.0f;
+  aim_pitch_ += input_pitch * 2.0f;
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
@@ -88,8 +91,8 @@ void APig::Tick() {
   }
 
 #define MAX_PITCH 89.f
-  if (angles_.x < -MAX_PITCH) angles_.x = -MAX_PITCH;
-  if (angles_.x > MAX_PITCH) angles_.x = MAX_PITCH;
+  if (aim_pitch_ < -MAX_PITCH) aim_pitch_ = -MAX_PITCH;
+  if (aim_pitch_ > MAX_PITCH) aim_pitch_ = MAX_PITCH;
 
   VecAngleClamp(&angles_);
 
@@ -172,7 +175,7 @@ void APig::Deserialize(const ActorSpawn& spawn) {
   SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
 
   SetHealth(100);
-
+  SetModel("pigs/ac_hi"); // temp
   SetTeam(spawn.team);
   //SetClass(pig_class);
 

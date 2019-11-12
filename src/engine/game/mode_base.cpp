@@ -59,16 +59,26 @@ void BaseGameMode::Tick() {
     return;
   }
 
-#if 0
-  if (active_actor_ != nullptr) {
-    active_actor_->HandleInput();
-
-    // temp: force the camera at the actor pos
-    Camera* camera = Engine::GameManagerInstance()->GetCamera();
-    camera->SetPosition(active_actor_->GetPosition());
-    camera->SetAngles(active_actor_->GetAngles());
+  Player* player = GetCurrentPlayer();
+  if(player == nullptr) {
+    return;
   }
-#endif
+
+  Actor* actor = player->GetCurrentChild();
+  if(actor == nullptr) {
+    return;
+  }
+
+  actor->HandleInput();
+
+  // temp: force the camera at the actor pos
+  Camera* camera = Engine::Game()->GetCamera();
+  PLVector3 forward = actor->GetForward();
+  camera->SetPosition({
+    actor->GetPosition().x + forward.x * -500,
+    actor->GetPosition().y + 500.f,
+    actor->GetPosition().z + forward.z * -500});
+  camera->SetAngles({-25.f, actor->GetAngles().y, 0});
 }
 
 void BaseGameMode::SpawnActors() {

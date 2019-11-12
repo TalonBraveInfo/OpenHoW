@@ -67,6 +67,8 @@ class APig : public AAnimatedModel, public InventoryManager {
 
   AudioSource* speech_{nullptr};
 
+  float aim_pitch_{ 0 };
+
   unsigned int team_{ 0 };
   unsigned int personality_{ 0 };
   unsigned int class_{ 0 };
