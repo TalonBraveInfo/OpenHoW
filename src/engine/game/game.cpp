@@ -27,6 +27,8 @@
 #include "game.h"
 
 #include "actors/actor_pig.h"
+#include "actors/actor_static_model.h"
+
 #include "../language.h"
 
 using namespace openhow;
@@ -84,6 +86,7 @@ GameManager::GameManager() {
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
   plRegisterConsoleCommand("give", GiveItemCommand, "");
+  plRegisterConsoleCommand("CreateModel", CreateModelCommand, "Creates a model at your current position.");
 
   // Load in all the data we'll retain in memory
   Engine::Resource()->LoadModel("chars/pigs/ac_hi", true, true);
@@ -396,6 +399,38 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
   }
 
   pig->AddInventoryItem(item, quantity);
+}
+
+void GameManager::CreateModelCommand(unsigned int argc, char** argv) {
+  if(Engine::Game()->mode_ == nullptr) {
+    LogInfo("Command cannot function outside of game!\n");
+    return;
+  } else if(argc < 2) {
+    LogWarn("Invalid number of arguments, ignoring!\n");
+    return;
+  }
+
+  Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+  if(player == nullptr) {
+    LogWarn("Failed to get current player!\n");
+    return;
+  }
+
+  // Fetch the player's actor, so we can get their position
+  Actor* actor = player->GetCurrentChild();
+  if(actor == nullptr) {
+    LogWarn("No actor currently active!\n");
+    return;
+  }
+
+  AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor("static_model"));
+  if(model_actor == nullptr) {
+    Error("Failed to create model actor!\n");
+  }
+
+  model_actor->SetModel(argv[1]);
+  model_actor->SetPosition(actor->GetPosition());
+  model_actor->SetAngles(actor->GetAngles());
 }
 
 void GameManager::StartMode(const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor) {

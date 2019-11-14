@@ -244,6 +244,7 @@ class GameManager {
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
   static void GiveItemCommand(unsigned int argc, char* argv[]);
+  static void CreateModelCommand(unsigned int argc, char* argv[]);
 
   Camera* camera_{nullptr};
   Map* map_{nullptr};

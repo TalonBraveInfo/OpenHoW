@@ -30,6 +30,7 @@ std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes
 Actor* ActorManager::CreateActor(const std::string& class_name) {
   auto i = actor_classes_.find(class_name);
   if (i == actor_classes_.end()) {
+    // TODO: make this throw an error rather than continue...
     LogWarn("Failed to find actor class %s!\n", class_name.c_str());
     return nullptr;
   }
