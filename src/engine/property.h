@@ -48,6 +48,14 @@
 */
 #define INIT_PROPERTY(name, flags, ...) name(*this, #name, flags, ##__VA_ARGS__)
 
+/**
+ * @brief Helper macro for copying-constructing properties.
+ *
+ * @param name  Name of member (bareword)
+ * @param src   Name of source structure (bareword)
+*/
+#define COPY_PROPERTY(name, src) name(*this, src.name)
+
 class PropertyOwner;
 
 /**
@@ -61,7 +69,7 @@ class Property
 		
 		/* No copy/assignment c'tors. */
 		Property(const Property&) = delete;
-		//Property& operator=(const Property&) = delete;
+		Property& operator=(const Property&) = delete;
 		
 		/**
 		 * @brief Returns the serialised form of the property's value.
@@ -117,6 +125,7 @@ class Property
 		PropertyOwner &po_;
 		
 		Property(PropertyOwner &po, const std::string &name, unsigned flags);
+		Property(PropertyOwner &po, const Property &src);
 		virtual ~Property();
 		
 	private:
@@ -136,9 +145,12 @@ class PropertyOwner
 	friend Property;
 	
 	public:
-		/* No copy/assignment c'tors. */
-		PropertyOwner(const PropertyOwner&) = delete;
-		//PropertyOwner& operator=(const PropertyOwner&) = delete;
+		/* These are no-ops because copying or assigning a PropertyOwner class should just
+		 * assign/copy the properties under it, which will be registered when the property
+		 * is copy-constructed, or already registered in the case of assignment.
+		*/
+		PropertyOwner(const PropertyOwner&) {}
+		PropertyOwner& operator=(const PropertyOwner&) { return *this; }
 
 		const PropertyMap& GetProperties() { return properties_; }
 
@@ -164,6 +176,9 @@ template<typename T> class NumericProperty: public Property
 	public:
 		NumericProperty(PropertyOwner &po, const std::string &name, unsigned flags, T value = 0):
 			Property(po, name, flags), value_(value) {}
+		
+		NumericProperty(PropertyOwner &po, const NumericProperty<T> &src):
+			Property(po, src), value_(src.value_) {}
 		
 		/* Implicit conversion for using as a (const) T */
 		operator const T&() const
@@ -274,8 +289,15 @@ class StringProperty : public Property {
   StringProperty(PropertyOwner& po, const std::string& name, unsigned int flags, const std::string& value = "") :
       Property(po, name, flags), value_(value) {}
 
+  StringProperty(PropertyOwner& po, const StringProperty &src):
+      Property(po, src), value_(src.value_) {}
+
   operator const std::string&() const {
     return value_;
+  }
+
+  const char *c_str() const {
+    return value_.c_str();
   }
 
   const std::string& operator=(const StringProperty& value) {

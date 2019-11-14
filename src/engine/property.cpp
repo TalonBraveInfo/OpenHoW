@@ -28,6 +28,18 @@ Property::Property(PropertyOwner &po, const std::string &name, unsigned flags):
 	u_assert(x.second); /* Check for name collision */
 }
 
+Property::Property(PropertyOwner &po, const Property &src):
+	name(src.name),
+	flags(src.flags),
+	po_(po),
+	is_dirty_(src.is_dirty_),
+	dirty_since_(src.dirty_since_),
+	clean_serialised_(src.clean_serialised_)
+{
+	auto x = po_.properties_.insert(std::make_pair(name, this));
+	u_assert(x.second); /* Check for name collision */
+}
+
 Property::~Property()
 {
 	po_.properties_.erase(name);
