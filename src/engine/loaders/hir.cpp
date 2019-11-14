@@ -24,16 +24,17 @@
 /* Hir Skeleton Format */
 
 HirHandle* Hir_LoadFile(const char* path) {
-    size_t hir_size = plGetFileSize(path);
-    if(hir_size == 0) {
-        LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
-        return nullptr;
-    }
-
-    FILE *file = fopen(path, "rb");
+    PLFile *file = plOpenFile(path, false);
     if(file == nullptr) {
         LogWarn("Failed to load \"%s\", aborting!\n", path);
         return nullptr;
+    }
+
+    size_t hir_size = plGetFileSize(file);
+    if(hir_size == 0) {
+      plCloseFile(file);
+      LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
+      return nullptr;
     }
 
     typedef struct __attribute__((packed)) HirBone {
@@ -44,8 +45,8 @@ HirHandle* Hir_LoadFile(const char* path) {
 
     auto num_bones = (unsigned int)(hir_size / sizeof(HirBone));
     HirBone bones[num_bones];
-    unsigned int rnum_bones = fread(bones, sizeof(HirBone), num_bones, file);
-    u_fclose(file)
+    unsigned int rnum_bones = plReadFile(file, bones, sizeof(HirBone), num_bones);
+    plCloseFile(file);
 
     if(rnum_bones != num_bones) {
         LogWarn("Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones);

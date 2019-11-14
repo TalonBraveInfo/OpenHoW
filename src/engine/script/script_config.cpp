@@ -30,7 +30,7 @@ ScriptConfig::ScriptConfig(const std::string& path) : ScriptConfig() {
     throw std::runtime_error("Empty path for config, aborting!\n");
   }
 
-  size_t sz = plGetFileSize(path.c_str());
+  size_t sz = plGetLocalFileSize(path.c_str());
   if (sz == 0) {
     throw std::runtime_error("Failed to load file, empty config!\n");
   }

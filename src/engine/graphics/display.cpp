@@ -30,8 +30,6 @@
 #include "shader.h"
 #include "display.h"
 
-#include <GL/glew.h>
-
 using namespace openhow;
 
 /************************************************************/
@@ -561,7 +559,7 @@ void DrawMap() {
 
 void Display_DrawScene() {
   if(cv_graphics_alpha_to_coverage->b_value) {
-    glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+    plEnableGraphicsState(PL_GFX_STATE_ALPHATOCOVERAGE);
   }
 
   Shaders_SetProgram(SHADER_GenericTextured);
@@ -574,7 +572,7 @@ void Display_DrawScene() {
   Engine::Audio()->DrawSources();
 
   if(cv_graphics_alpha_to_coverage->b_value) {
-    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+    plDisableGraphicsState(PL_GFX_STATE_ALPHATOCOVERAGE);
   }
 }
 
