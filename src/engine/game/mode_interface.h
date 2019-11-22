@@ -46,9 +46,9 @@ class IGameMode {
   bool HasTurnStarted() const { return turn_started_; }
 
   unsigned int GetTurnTime() { return num_turn_ticks; }
-  unsigned int GetTurnTimeSeconds() { return num_turn_ticks / 1000; }
+  unsigned int GetTurnTimeSeconds() { return num_turn_ticks / TICKS_PER_SECOND; }
   unsigned int GetMaxTurnTime() { return max_turn_ticks; }
-  unsigned int GetMaxTurnTimeSeconds() { return max_turn_ticks / 1000; }
+  unsigned int GetMaxTurnTimeSeconds() { return max_turn_ticks / TICKS_PER_SECOND; }
 
   virtual void AssignActorToPlayer(Actor* target, Player* owner) = 0;
 

@@ -50,9 +50,6 @@ static const char* papers_teams_paths[MAX_TEAMS] = {
 
 /* texture assets, these are loaded and free'd at runtime */
 static PLTexture* fe_background = nullptr;
-static PLTexture* fe_press = nullptr;
-static PLTexture* fe_any = nullptr;
-static PLTexture* fe_key = nullptr;
 static PLTexture* fe_papers_teams[MAX_TEAMS] = {
     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
@@ -199,7 +196,7 @@ static void DrawTimer() {
   }
 
   char str[64];
-  snprintf(str, sizeof(str), "TURN TIME: %d", mode->GetTurnTimeSeconds());
+  snprintf(str, sizeof(str), "%0d / %0d", mode->GetTurnTimeSeconds(), mode->GetMaxTurnTimeSeconds());
   Font_DrawBitmapString(g_fonts[FONT_BIG], frontend_width - 256, frontend_height - 100, 4, 1.0f, PL_COLOUR_WHITE, str);
 }
 
@@ -346,8 +343,8 @@ void FrontEnd_SetState(unsigned int state) {
 
       loading_description[0] = '\0';
       loading_progress = 0;
-    }
       break;
+    }
 
     case FE_MODE_EDITOR: break;
   }

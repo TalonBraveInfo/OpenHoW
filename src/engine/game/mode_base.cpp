@@ -25,7 +25,10 @@
 
 using namespace openhow;
 
-BaseGameMode::BaseGameMode(const GameModeDescriptor& descriptor) {}
+BaseGameMode::BaseGameMode(const GameModeDescriptor& descriptor) {
+  max_turn_ticks = descriptor.turn_time * TICKS_PER_SECOND;
+}
+
 BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartRound() {
@@ -80,6 +83,13 @@ void BaseGameMode::Tick() {
     actor->GetPosition().y + 500.f,
     actor->GetPosition().z + forward.z * -500});
   camera->SetAngles({-25.f, actor->GetAngles().y, 0});
+
+  if(HasTurnStarted()) {
+    num_turn_ticks++;
+    if(num_turn_ticks >= max_turn_ticks) {
+
+    }
+  }
 }
 
 void BaseGameMode::SpawnActors() {
@@ -145,6 +155,8 @@ void BaseGameMode::StartTurn(Player* player) {
   }
 
   player->PossessCurrentChild();
+
+  turn_started_ = true;
 }
 
 void BaseGameMode::EndTurn(Player* player) {
@@ -153,6 +165,10 @@ void BaseGameMode::EndTurn(Player* player) {
 
   // move onto the next player
   CyclePlayers();
+
+  num_turn_ticks = 0;
+
+  turn_started_ = false;
 }
 
 void BaseGameMode::PlayerJoined(Player* player) {
