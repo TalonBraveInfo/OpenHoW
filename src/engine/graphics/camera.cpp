@@ -47,6 +47,10 @@ void Camera::SetAngles(const PLVector3& angles) {
   camera_->angles = angles;
 }
 
+void Camera::SetFieldOfView(float fov) {
+  camera_->fov = fov;
+}
+
 /**
  * Sets the viewport position and size.
  * @param xy X and Y.

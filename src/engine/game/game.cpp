@@ -17,19 +17,19 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-#include "../model.h"
-#include "../script/script_config.h"
 #include "../Map.h"
+#include "../language.h"
 
 #include "actor_manager.h"
 #include "mode_base.h"
 #include "player.h"
 #include "game.h"
 
+#include "../script/script_config.h"
+
 #include "actors/actor_pig.h"
 #include "actors/actor_static_model.h"
 
-#include "../language.h"
 
 using namespace openhow;
 
@@ -82,11 +82,11 @@ std::string MapManifest::Serialize() {
 }
 
 GameManager::GameManager() {
-  plRegisterConsoleCommand("createmap", CreateMapCommand, "");
+  plRegisterConsoleCommand("CreateMap", CreateMapCommand, "Creates a new named map.");
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
-  plRegisterConsoleCommand("give", GiveItemCommand, "");
-  plRegisterConsoleCommand("CreateModel", CreateModelCommand, "Creates a model at your current position.");
+  plRegisterConsoleCommand("GiveItem", GiveItemCommand, "Gives a specified item to the current occupied pig.");
+  plRegisterConsoleCommand("SpawnModel", SpawnModelCommand, "Creates a model at your current position.");
 
   // Load in all the data we'll retain in memory
   Engine::Resource()->LoadModel("chars/pigs/ac_hi", true, true);
@@ -132,6 +132,13 @@ void GameManager::Tick() {
   mode_->Tick();
 
   ActorManager::GetInstance()->TickActors();
+
+  switch(camera_mode_) {
+    case CameraMode::FIRSTPERSON:break;
+    case CameraMode::FLY:break;
+    case CameraMode::FOLLOW:break;
+    case CameraMode::FLYAROUND:break;
+  }
 }
 
 void GameManager::SetupPlayers(const PlayerPtrVector& players) {
@@ -336,8 +343,8 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
     mode = desc->modes[0];
   }
 
-  // Set up a mode with some defaults...
-  GameModeDescriptor descriptor;
+  // Set up a mode with some defaults.
+  GameModeDescriptor descriptor = GameModeDescriptor();
   Engine::Game()->StartMode(argv[1], { new Player(PlayerType::LOCAL) }, descriptor);
 }
 
@@ -401,7 +408,7 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
   pig->AddInventoryItem(item, quantity);
 }
 
-void GameManager::CreateModelCommand(unsigned int argc, char** argv) {
+void GameManager::SpawnModelCommand(unsigned int argc, char** argv) {
   if(Engine::Game()->mode_ == nullptr) {
     LogInfo("Command cannot function outside of game!\n");
     return;
@@ -495,4 +502,12 @@ void GameManager::EndMode() {
 
   Engine::Audio()->FreeSources();
   Engine::Audio()->FreeSamples();
+}
+
+/**
+ * Check whether or not a mode is currently active.
+ * @return Returns true if a mode is currently active.
+ */
+bool GameManager::IsModeActive() {
+  return (mode_ != nullptr);
 }

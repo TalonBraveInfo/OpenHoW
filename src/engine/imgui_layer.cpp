@@ -545,7 +545,7 @@ void UI_DisplayDebugMenu(void) {
     // todo: eventually this will be moved into a dedicated toolbar
     if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Particle Editor...")) {}
-      if (Engine::Game()->GetCurrentMap() != nullptr) {
+      if (Engine::Game()->IsModeActive()) {
         if(ImGui::MenuItem("Import Heightmap...")) {
           windows.push_back(new WindowTerrainImport());
         }
@@ -561,7 +561,6 @@ void UI_DisplayDebugMenu(void) {
       ImGui::EndMenu();
     }
 
-#if 0 // pointless
     ImGui::Separator();
 
     unsigned int fps, ms;
@@ -570,9 +569,32 @@ void UI_DisplayDebugMenu(void) {
     ImGui::PushItemWidth(64);
     ImGui::Text("FPS %d (%dms)", fps, ms);
     ImGui::PopItemWidth();
-#endif
 
     ImGui::EndMainMenuBar();
+  }
+
+  // Prompt to notify players that games can be started
+  // via File > New Game, until we get an actual frontend
+  // implementation done.
+  if (!Engine::Game()->IsModeActive()) {
+    ImGui::SetNextWindowSize(ImVec2(320, 128));
+    ImGui::SetNextWindowPosCenter();
+    static bool state = false;
+    if(ImGui::Begin(
+        "InstructionMenu",
+        &state,
+        ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoBackground
+        )) {
+      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+      ImGui::TextWrapped("%s", LanguageManager::GetInstance()->GetTranslation("$dbt0"));
+      ImGui::PopStyleColor();
+      ImGui::TextWrapped("%s", LanguageManager::GetInstance()->GetTranslation("$dbt1"));
+      ImGui::Text("%s", LanguageManager::GetInstance()->GetTranslation("$dbt2"));
+      ImGui::End();
+    }
   }
 
   UI_DisplayFileBox();

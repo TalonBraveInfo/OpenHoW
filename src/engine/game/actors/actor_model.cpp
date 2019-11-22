@@ -45,6 +45,7 @@ void AModel::Draw() {
 
 void AModel::SetModel(const std::string &path) {
   model_ = Engine::Resource()->LoadModel("chars/" + path, false);
+  u_assert(model_ != nullptr);
 }
 
 void AModel::ShowModel(bool show) {

@@ -475,17 +475,16 @@ void System_PollEvents() {
         if (key != -1) {
           Input_SetKeyState(key, (event.type == SDL_KEYDOWN));
         }
-      }
         break;
+      }
 
-      case SDL_TEXTINPUT: {
+      case SDL_TEXTINPUT:
         if (io.WantCaptureKeyboard) {
           io.AddInputCharactersUTF8(event.text.text);
           break;
         }
 
         Input_AddTextCharacter(event.text.text);
-      }
         break;
 
       case SDL_MOUSEBUTTONUP:
@@ -507,10 +506,10 @@ void System_PollEvents() {
 
         int button = TranslateSDLMouseButton(event.button.button);
         Input_SetMouseState(event.motion.x, event.motion.y, button, event.button.state);
-      }
         break;
+      }
 
-      case SDL_MOUSEWHEEL: {
+      case SDL_MOUSEWHEEL:
         if (event.wheel.x > 0) {
           io.MouseWheelH += 1;
         } else if (event.wheel.x < 0) {
@@ -522,15 +521,13 @@ void System_PollEvents() {
         } else if (event.wheel.y < 0) {
           io.MouseWheel -= 1;
         }
-      }
         break;
 
-      case SDL_MOUSEMOTION: {
+      case SDL_MOUSEMOTION:
         io.MousePos.x = event.motion.x;
         io.MousePos.y = event.motion.y;
 
         Input_SetMouseState(event.motion.x, event.motion.y, -1, false);
-      }
         break;
 
       case SDL_CONTROLLERBUTTONUP: {
@@ -538,18 +535,17 @@ void System_PollEvents() {
         if (button != -1) {
           Input_SetButtonState((unsigned int) event.cbutton.which, button, false);
         }
-      }
         break;
-
+      }
       case SDL_CONTROLLERBUTTONDOWN: {
         int button = TranslateSDLButton(event.cbutton.button);
         if (button != -1) {
           Input_SetButtonState((unsigned int) event.cbutton.which, button, true);
         }
-      }
         break;
+      }
 
-      case SDL_CONTROLLERAXISMOTION: {
+      case SDL_CONTROLLERAXISMOTION:
         if (event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000) {
           Input_SetButtonState((unsigned int) event.caxis.which, INPUT_BUTTON_L2, true);
         } else if (event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000) {
@@ -563,12 +559,10 @@ void System_PollEvents() {
         }
 
         Input_SetAxisState(event.caxis.which, event.caxis.axis, event.caxis.value);
-      }
         break;
 
-      case SDL_QUIT: {
+      case SDL_QUIT:
         System_Shutdown();
-      }
         break;
 
       case SDL_WINDOWEVENT: {
@@ -580,8 +574,8 @@ void System_PollEvents() {
           ImGuiImpl_UpdateViewport(event.window.data1, event.window.data2);
           io.DisplaySize = ImVec2(event.window.data1, event.window.data2);
         }
-      }
         break;
+      }
     }
   }
 }

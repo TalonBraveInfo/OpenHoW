@@ -26,6 +26,7 @@ class Camera {
 
   void SetPosition(const PLVector3& pos);
   void SetAngles(const PLVector3& angles);
+  void SetFieldOfView(float fov);
 
   PLVector3 GetPosition() { return camera_->position; }
   PLVector3 GetAngles() { return camera_->angles; }

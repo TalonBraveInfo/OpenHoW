@@ -238,15 +238,36 @@ class GameManager {
 
   IGameMode* GetMode() { return mode_; }
 
+  bool IsModeActive();
+
  protected:
  private:
   static void MapCommand(unsigned int argc, char* argv[]);
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
   static void GiveItemCommand(unsigned int argc, char* argv[]);
-  static void CreateModelCommand(unsigned int argc, char* argv[]);
+  static void SpawnModelCommand(unsigned int argc, char** argv);
 
-  Camera* camera_{nullptr};
+  /////////////////////////////////////////////////////////////
+  // Camera
+
+  enum class CameraMode {
+    // Debugging modes
+
+    FLY,          // Fly around
+    FIRSTPERSON,  // First person controls
+
+    // Gameplay
+
+    FOLLOW,       // Follows behind a specific entity
+    FLYAROUND,
+  };
+
+  Camera* camera_{ nullptr };
+  CameraMode camera_mode_{ CameraMode::FOLLOW };
+
+  /////////////////////////////////////////////////////////////
+
   Map* map_{nullptr};
 
   IGameMode* mode_{nullptr};

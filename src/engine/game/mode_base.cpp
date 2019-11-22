@@ -72,8 +72,9 @@ void BaseGameMode::Tick() {
   actor->HandleInput();
 
   // temp: force the camera at the actor pos
-  Camera* camera = Engine::Game()->GetCamera();
+
   PLVector3 forward = actor->GetForward();
+  Camera* camera = Engine::Game()->GetCamera();
   camera->SetPosition({
     actor->GetPosition().x + forward.x * -500,
     actor->GetPosition().y + 500.f,

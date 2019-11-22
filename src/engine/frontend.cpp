@@ -96,7 +96,6 @@ static void FrontendInputCallback(int key, bool is_pressed) {
 }
 
 static void CacheFEGameData() {
-#if 1
   fe_tx_game_textures[FE_TEXTURE_ANG] =
       Engine::Resource()->LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR, true);
   fe_tx_game_textures[FE_TEXTURE_ANGPOINT] =
@@ -107,13 +106,12 @@ static void CacheFEGameData() {
       Engine::Resource()->LoadTexture("frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR, true);
   fe_tx_game_textures[FE_TEXTURE_TIMER] =
       Engine::Resource()->LoadTexture("frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR, true);
-#endif
 }
 
 static void CacheFEMenuData() {
-  fe_background = Engine::Resource()->LoadTexture("frontend/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+  fe_background = Engine::Resource()->LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR, true);
   for (unsigned int i = 0; i < MAX_TEAMS; ++i) {
-    fe_papers_teams[i] = Engine::Resource()->LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
+    fe_papers_teams[i] = Engine::Resource()->LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR, true);
   }
 }
 
@@ -121,6 +119,8 @@ static void CacheFEMenuData() {
 
 void FE_Initialize(void) {
   CacheFontData();
+  CacheFEMenuData();
+  CacheFEGameData();
 }
 
 void FE_Shutdown(void) {
@@ -148,32 +148,7 @@ void FE_ProcessInput(void) {
   }
 }
 
-void FrontEnd_Tick(void) {
-  switch (frontend_state) {
-    default:break;
-
-    case FE_MODE_INIT: {
-      /* by this point we'll make an assumption that we're
-       * done initializing, bump up the progress, draw that
-       * frame and then switch over to our 'start' state */
-      if (FE_GetLoadingProgress() < 100) {
-        FE_SetLoadingDescription("LOADING FRONTEND RESOURCES");
-        FE_SetLoadingProgress(100);
-
-        /* load in some of the assets we'll be using on the
-         * next screen before proceeding... */
-        fe_press = Engine::Resource()->LoadTexture("frontend/title/press", PL_TEXTURE_FILTER_LINEAR);
-        fe_any = Engine::Resource()->LoadTexture("frontend/title/any", PL_TEXTURE_FILTER_LINEAR);
-        fe_key = Engine::Resource()->LoadTexture("frontend/title/key", PL_TEXTURE_FILTER_LINEAR);
-        fe_background = Engine::Resource()->LoadTexture("frontend/title/title", PL_TEXTURE_FILTER_LINEAR);
-        break;
-      }
-
-      FrontEnd_SetState(FE_MODE_START);
-    }
-      break;
-  }
-}
+void FrontEnd_Tick(void) {}
 
 /************************************************************/
 
@@ -308,77 +283,18 @@ void FE_Draw(void) {
     switch (frontend_state) {
       default:break;
 
-      case FE_MODE_INIT: {
-        /* here we display the background for the init once,
-         * taking advantage of the fact that we're not going
-         * to clear the buffer initially - this gives us an
-         * opportunity to unload the texture and load in the
-         * final one */
-        static bool is_background_drawn = false;
-        if (!is_background_drawn) {
-          plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-          is_background_drawn = true;
-        }
-
-        /* first we'll draw in a little rectangle representing
-         * the incomplete portion of the load */
-        static bool is_load_drawn = false;
-        if (!is_load_drawn) {
-          plSetBlendMode(PL_BLEND_DEFAULT);
-          plDrawFilledRectangle(plCreateRectangle(
-              PLVector2(0, 464),
-              PLVector2(frontend_width, 16),
-              PLColour(0, 0, 0, 150),
-              PLColour(0, 0, 0, 150),
-              PLColour(0, 0, 0, 150),
-              PLColour(0, 0, 0, 150)
-          ));
-          plSetBlendMode(PL_BLEND_DISABLE);
-          is_load_drawn = true;
-        }
-
-        /* and now we're going to draw the loading bar. */
-        plDrawFilledRectangle(plCreateRectangle(
-            PLVector2(0, 464),
-            PLVector2(loading_progress, 16),
-            PL_COLOUR_INDIAN_RED,
-            PL_COLOUR_INDIAN_RED,
-            PL_COLOUR_RED,
-            PL_COLOUR_RED
-        ));
-      }
-        break;
-
-      case FE_MODE_START: {
+      case FE_MODE_INIT:
+      case FE_MODE_START:
+      case FE_MODE_MAIN_MENU:
         plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-
-        /* this will probably be rewritten later on, but below we're setting up
-         * where each of the little blocks of text will be and then moving them
-         * up and down until the player presses an action (which is handled via
-         * our crappy callback) */
-
-        int press_x = (frontend_width / 2) - (180 / 2);
-        int press_y = frontend_height - 45;
-        /* todo, these should be bouncing... */
-        plDrawTexturedRectangle(press_x, press_y, 62, 16, fe_press);
-        plDrawTexturedRectangle(press_x += 70, press_y, 40, 16, fe_any);
-        plDrawTexturedRectangle(press_x += 48, press_y - 4, 39, 20, fe_key);
-      }
         break;
 
-      case FE_MODE_MAIN_MENU: {
-        plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-      }
-        break;
-
-      case FE_MODE_LOADING: {
+      case FE_MODE_LOADING:
         DrawLoadingScreen();
-      }
         break;
 
-      case FE_MODE_VIDEO: {
+      case FE_MODE_VIDEO:
         Video_Draw();
-      }
         break;
     }
 
@@ -405,12 +321,6 @@ void FrontEnd_SetState(unsigned int state) {
     return;
   }
 
-  if (frontend_state == FE_MODE_GAME && state != FE_MODE_GAME) {
-    CacheFEMenuData();
-  } else if (frontend_state != FE_MODE_GAME && state == FE_MODE_GAME) {
-    CacheFEGameData();
-  }
-
   LogDebug("changing frontend state to %u...\n", state);
   switch (state) {
     default: {
@@ -418,15 +328,9 @@ void FrontEnd_SetState(unsigned int state) {
       return;
     }
 
-    case FE_MODE_MAIN_MENU: {
-      /* remove the textures we loaded in
-       * for the start screen - we won't
-       * be needing them again... */
-      fe_background = Engine::Resource()->LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
-
+    case FE_MODE_MAIN_MENU:
       // start playing the default theme
       Engine::Audio()->PlayMusic(AUDIO_MUSIC_MENU);
-    }
       break;
 
     case FE_MODE_START: break;

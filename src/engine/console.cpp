@@ -217,7 +217,7 @@ void Console_Initialize(void) {
     }
 
   rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
-  rvar(cv_debug_fps, false, "1", pl_bool_var, nullptr, "display framerate");
+  rvar(cv_debug_fps, false, "0", pl_bool_var, nullptr, "Display the framerate count while in-game");
   rvar(cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons");
   rvar(cv_debug_input, false, "0", pl_int_var, nullptr,
        "changing this cycles between different modes of debugging input\n"
