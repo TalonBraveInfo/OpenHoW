@@ -37,14 +37,15 @@ void AModel::Draw() {
 
   PLVector3 angles(
       plDegreesToRadians(angles_.x),
-      plDegreesToRadians(angles_.y - 180.0f),
+      plDegreesToRadians(angles_.y),
       plDegreesToRadians(angles_.z));
 
   PLMatrix4 translation =
-      (plRotateMatrix4(angles.x, { 1, 0, 0 }) *
-      plRotateMatrix4(angles.y, { 0, 1, 0 }) *
-      plRotateMatrix4(angles.z, { 0, 0, 1 })) *
-      plTranslateMatrix4(position_);
+      (
+        plRotateMatrix4(angles.z, { 1, 0, 0 }) *
+        plRotateMatrix4(-angles.y, { 0, 1, 0 }) *
+        plRotateMatrix4(angles.x, { 0, 0, 1 })
+      ) * plTranslateMatrix4(position_);
 
   Model_Draw(model_, translation);
 }
