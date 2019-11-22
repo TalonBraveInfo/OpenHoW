@@ -22,7 +22,7 @@
 #include <PL/platform_mesh.h>
 #include <PL/pl_math_vector.h>
 
-void Mesh_GenerateFragmentedMeshNormals(std::list<PLMesh*> meshes) {
+void Mesh_GenerateFragmentedMeshNormals(const std::list<PLMesh*>& meshes) {
     struct Position {
         PLVector3 sum_normals;
         std::set<PLVertex*> vertices;

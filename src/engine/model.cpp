@@ -422,3 +422,19 @@ void DEBUGDrawSkeleton() {
 #endif
 }
 #endif
+
+void Model_Draw(PLModel* model, PLMatrix4 translation) {
+  PLShaderProgram* save = nullptr;
+  if(cv_graphics_debug_normals->b_value) {
+    save = plGetCurrentShaderProgram();
+    plSetShaderProgram(Shaders_GetProgram(SHADER_DebugNormals));
+  }
+
+  model->model_matrix = translation;
+  plDrawModel(model);
+
+  if(cv_graphics_debug_normals->b_value) {
+    // Restore the previous shader program
+    plSetShaderProgram(save);
+  }
+}
