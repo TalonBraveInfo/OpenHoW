@@ -24,8 +24,8 @@
 /************************************************************/
 /* Vtx Vertex Format */
 
-VtxHandle *Vtx_LoadFile(const char *path) {
-  PLFile *vtx_file = plOpenFile(path, false);
+VtxHandle* Vtx_LoadFile(const char* path) {
+  PLFile* vtx_file = plOpenFile(path, false);
   if (vtx_file == NULL) {
     LogWarn("Failed to load Vtx \"%s\", aborting!\n", path);
     return NULL;
@@ -37,7 +37,7 @@ VtxHandle *Vtx_LoadFile(const char *path) {
     int16_t v[3];
     uint16_t bone_index;
   } VtxCoord;
-  unsigned int num_vertices = (unsigned int) (plGetFileSize(vtx_file) / sizeof(VtxCoord));
+  unsigned int num_vertices = (unsigned int) (plGetLocalFileSize(vtx_file) / sizeof(VtxCoord));
   if (num_vertices >= VTX_MAX_VERTICES) {
     plCloseFile(vtx_file);
     LogWarn("Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, VTX_MAX_VERTICES);
@@ -58,7 +58,7 @@ VtxHandle *Vtx_LoadFile(const char *path) {
     return NULL;
   }
 
-  VtxHandle *handle = u_alloc(1, sizeof(VtxHandle), true);
+  VtxHandle* handle = u_alloc(1, sizeof(VtxHandle), true);
   handle->vertices = u_alloc(num_vertices, sizeof(PLVertex), true);
   handle->num_vertices = num_vertices;
   for (unsigned int i = 0; i < num_vertices; ++i) {
@@ -69,7 +69,7 @@ VtxHandle *Vtx_LoadFile(const char *path) {
   return handle;
 }
 
-void Vtx_DestroyHandle(VtxHandle *handle) {
+void Vtx_DestroyHandle(VtxHandle* handle) {
   if (handle == NULL) {
     return;
   }
