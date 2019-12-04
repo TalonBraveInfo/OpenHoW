@@ -27,7 +27,7 @@
 // Can be used for very basic effects etc.
 
 class ASprite : public Actor {
-  ACTOR_IMPLEMENT_SUPER(Actor)
+  IMPLEMENT_ACTOR(ASprite, Actor)
 
  public:
   ASprite();
@@ -46,8 +46,10 @@ class ASprite : public Actor {
 
 REGISTER_ACTOR(sprite, ASprite)
 
+using namespace openhow;
+
 ASprite::ASprite() : SuperClass() {
-  sprite_ = new Sprite(Sprite::TYPE_DEFAULT, Display_GetDefaultTexture());
+  sprite_ = new Sprite(Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture());
 }
 
 ASprite::~ASprite() {
@@ -56,7 +58,7 @@ ASprite::~ASprite() {
 
 void ASprite::SetSpriteTexture(const std::string& path) {
   // TODO: resource manager aaaahhhh!!!
-  PLTexture* texture = Display_LoadTexture(path.c_str(), PL_TEXTURE_FILTER_MIPMAP_LINEAR);
+  PLTexture* texture = Engine::Resource()->LoadTexture(path, PL_TEXTURE_FILTER_MIPMAP_LINEAR);
   sprite_->SetTexture(texture);
 }
 

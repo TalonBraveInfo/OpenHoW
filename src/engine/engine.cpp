@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_filesystem.h>
-
 #include "engine.h"
 #include "language.h"
 #include "model.h"
@@ -26,14 +24,12 @@
 #include "input.h"
 #include "frontend.h"
 #include "Map.h"
-
-#include "graphics/display.h"
-
-EngineState g_state;
-
 #include "imgui_layer.h"
 
+#include "graphics/display.h"
 #include "game/actor_manager.h"
+
+EngineState g_state;
 
 openhow::Engine* openhow::engine;
 
@@ -59,6 +55,10 @@ openhow::Engine::~Engine() {
 
   delete game_manager_;
   delete audio_manager_;
+  delete resource_manager_;
+
+  IPhysicsInterface::DestroyInstance(physics_interface_);
+  LanguageManager::DestroyInstance();
 }
 
 void openhow::Engine::Initialize() {
@@ -77,6 +77,9 @@ void openhow::Engine::Initialize() {
     u_set_base_path(var);
   }
 
+  // Initialize the language manager
+  LanguageManager::GetInstance()->SetLanguage("eng");
+
   /* this MUST be done after all vars have been
    * initialized, otherwise, right now, certain
    * vars will not be loaded/saved! */
@@ -86,7 +89,6 @@ void openhow::Engine::Initialize() {
 
   // load in the manifests
 
-  Languages_Initialize();
   Mod_RegisterCampaigns();
 
   if ((var = plGetCommandLineArgumentValue("-mod")) == nullptr &&
@@ -101,13 +103,17 @@ void openhow::Engine::Initialize() {
 
   Input_Initialize();
   Display_Initialize();
+  resource_manager_ = new ResourceManager();
   audio_manager_ = new AudioManager();
   game_manager_ = new GameManager();
   FE_Initialize();
-  ModelManager::GetInstance();
+
+  // Setup our interface to the physics engine, this handles the abstraction
+  physics_interface_ = IPhysicsInterface::CreateInstance();
 
   // Ensure that our manifest list is updated
-  GameManagerInstance()->RegisterMapManifests();
+  Game()->RegisterMapManifests();
+  Game()->RegisterTeamManifest("scripts/teams.json");
 
   LogInfo("Base path:         \"%s\"\n", u_get_base_path());
   LogInfo("Campaign path:     \"%s\"\n", u_get_full_path());
@@ -137,8 +143,9 @@ bool openhow::Engine::IsRunning() {
 
     Client_ProcessInput(); // todo: kill this
 
-    GameManagerInstance()->Tick();
-    AudioManagerInstance()->Tick();
+    Physics() ->Tick();
+    Game()    ->Tick();
+    Audio()   ->Tick();
 
     g_state.last_sys_tick = System_GetTicks();
     next_tick += SKIP_TICKS;

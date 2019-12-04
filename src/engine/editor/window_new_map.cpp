@@ -28,8 +28,8 @@ void NewMapWindow::Display() {
   //ImGui::InputText("Author", author_buffer_, sizeof(author_buffer_));
   ImGui::Separator();
   if(ImGui::Button("Create")) {
-    Engine::GameManagerInstance()->CreateManifest(name_buffer_);
-    Engine::GameManagerInstance()->LoadMap(name_buffer_);
+    Engine::Game()->CreateManifest(name_buffer_);
+    Engine::Game()->LoadMap(name_buffer_);
     SetStatus(false);
   }
   ImGui::SameLine();

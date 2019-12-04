@@ -21,8 +21,6 @@
 #include "../engine.h"
 #include "shader.h"
 
-//#define GLSL(...) #__VA_ARGS__
-
 static PLShaderProgram *programs[MAX_SHADERS];
 static ShaderProgram last_program = SHADER_GenericUntextured;  /* for resetting following rebuild */
 
@@ -72,6 +70,7 @@ static void RebuildShaders(void) {
     programs[SHADER_Water]              = CreateShaderProgram("generic", "water");
     programs[SHADER_AlphaTest]          = CreateShaderProgram("generic", "alpha_test_texture");
     programs[SHADER_DebugTest]          = CreateShaderProgram("generic", "debug");
+    programs[SHADER_DebugNormals]       = CreateShaderProgram("generic", "debug_normals");
 
     /* set defaults */
     for(unsigned int i = 0; i < MAX_SHADERS; ++i) {

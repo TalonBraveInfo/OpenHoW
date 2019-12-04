@@ -27,10 +27,13 @@
 #include "graphics/font.h"
 #include "config.h"
 
+using namespace openhow;
+
 /************************************************************/
 
 #define check_args(num) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
 
+#if 0
 static void FrontendModeCommand(unsigned int argc, char* argv[]) {
   check_args(2);
 
@@ -42,6 +45,7 @@ static void FrontendModeCommand(unsigned int argc, char* argv[]) {
 
   FrontEnd_SetState((unsigned int) mode);
 }
+#endif
 
 static void UpdateDisplayCommand(unsigned int argc, char* argv[]) {
   Display_UpdateState();
@@ -52,7 +56,7 @@ static void QuitCommand(unsigned int argc, char* argv[]) {
 }
 
 static void DisconnectCommand(unsigned int argc, char* argv[]) {
-  //Map_Unload();
+  Engine::Game()->EndMode();
 }
 
 static void LoadConfigCommand(unsigned int argc, char** argv) {
@@ -106,9 +110,8 @@ static void OpenCommand(unsigned int argc, char* argv[]) {
   }
 
   switch (type) {
-    default: {
+    default:
       LogWarn("unknown filetype, ignoring!\n");
-    }
       break;
 
     case TYPE_MAP: {
@@ -121,8 +124,8 @@ static void OpenCommand(unsigned int argc, char* argv[]) {
 
       u_assert(0);
       //Map_Load(map_name, MAP_MODE_EDITOR);
-    }
       break;
+    }
   }
 }
 
@@ -156,6 +159,8 @@ PLConsoleVariable* cv_debug_input = nullptr;
 PLConsoleVariable* cv_debug_cache = nullptr;
 PLConsoleVariable* cv_debug_shaders = nullptr;
 
+PLConsoleVariable* cv_game_language = nullptr;
+
 PLConsoleVariable* cv_camera_mode = nullptr;
 PLConsoleVariable* cv_camera_fov = nullptr;
 PLConsoleVariable* cv_camera_near = nullptr;
@@ -172,6 +177,9 @@ PLConsoleVariable* cv_display_vsync = nullptr;
 PLConsoleVariable* cv_graphics_cull = nullptr;
 PLConsoleVariable* cv_graphics_draw_world = nullptr;
 PLConsoleVariable* cv_graphics_draw_audio_sources = nullptr;
+PLConsoleVariable* cv_graphics_texture_filter = nullptr;
+PLConsoleVariable* cv_graphics_alpha_to_coverage = nullptr;
+PLConsoleVariable* cv_graphics_debug_normals = nullptr;
 
 PLConsoleVariable* cv_audio_volume = nullptr;
 PLConsoleVariable* cv_audio_volume_sfx = nullptr;
@@ -212,7 +220,7 @@ void Console_Initialize(void) {
     }
 
   rvar(cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level");
-  rvar(cv_debug_fps, false, "1", pl_bool_var, nullptr, "display framerate");
+  rvar(cv_debug_fps, false, "0", pl_bool_var, nullptr, "Display the framerate count while in-game");
   rvar(cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons");
   rvar(cv_debug_input, false, "0", pl_int_var, nullptr,
        "changing this cycles between different modes of debugging input\n"
@@ -220,6 +228,8 @@ void Console_Initialize(void) {
   );
   rvar(cv_debug_cache, false, "0", pl_bool_var, nullptr, "display memory and other info");
   rvar(cv_debug_shaders, false, "-1", pl_int_var, nullptr, "Forces specified GLSL shader on all draw calls.");
+
+  rvar(cv_game_language, true, "eng", pl_string_var, &LanguageManager::SetLanguageCallback, "Set the language");
 
   rvar(cv_camera_mode, false, "0", pl_int_var, nullptr, "0 = default, 1 = debug");
   rvar(cv_camera_fov, true, "75", pl_float_var, nullptr, "field of view");
@@ -237,14 +247,15 @@ void Console_Initialize(void) {
   rvar(cv_graphics_cull, false, "false", pl_bool_var, nullptr, "toggles culling of visible objects");
   rvar(cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world");
   rvar(cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources");
+  rvar(cv_graphics_texture_filter, true, "false", pl_bool_var, nullptr, "Filter level/model textures?");
+  rvar(cv_graphics_alpha_to_coverage, true, "false", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage");
+  rvar(cv_graphics_debug_normals, false, "false", pl_bool_var, nullptr, "Forces normals to be displayed");
 
   rvar(cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume");
   rvar(cv_audio_volume_sfx, true, "1", pl_float_var, nullptr, "set sfx audio volume");
   rvar(cv_audio_volume_music, true, "1", pl_float_var, nullptr, "Set the music audio volume");
   rvar(cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo");
   rvar(cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices");
-
-  plRegisterConsoleVariable("language", "eng", pl_string_var, SetLanguageCallback, "Current language");
 
   plRegisterConsoleCommand("open", OpenCommand, "Opens the specified file");
   plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");
@@ -253,7 +264,7 @@ void Console_Initialize(void) {
   plRegisterConsoleCommand("saveConfig", SaveConfigCommand, "Save current config");
   plRegisterConsoleCommand("disconnect", DisconnectCommand, "Disconnects and unloads current map");
   plRegisterConsoleCommand("displayUpdate", UpdateDisplayCommand, "Updates the display to match current settings");
-  plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
+  //plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
   plRegisterConsoleCommand("clear", ClearConsoleOutputBuffer, "Clears the console output buffer");
   plRegisterConsoleCommand("cls", ClearConsoleOutputBuffer, "Clears the console output buffer");
 

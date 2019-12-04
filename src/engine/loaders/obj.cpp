@@ -20,6 +20,8 @@
 
 #include "WaveFrontReader.h"
 
+using namespace openhow;
+
 PLModel *LoadObjModel(const char *path) {
     WaveFrontReader obj;
     if(!obj.Load(path, false)) {
@@ -39,9 +41,9 @@ PLModel *LoadObjModel(const char *path) {
     plSetMeshUniformColour(mesh, PLColour(255, 255, 255));
 
     if(!obj.materials.empty()) {
-        mesh->texture = Display_LoadTexture(obj.materials[1].strTexture.c_str(), PL_TEXTURE_FILTER_MIPMAP_NEAREST);
+        mesh->texture = Engine::Resource()->LoadTexture(obj.materials[1].strTexture, PL_TEXTURE_FILTER_MIPMAP_NEAREST);
     } else {
-        mesh->texture = Display_GetDefaultTexture();
+        mesh->texture = Engine::Resource()->GetFallbackTexture();
     }
 
     return plCreateBasicStaticModel(mesh);

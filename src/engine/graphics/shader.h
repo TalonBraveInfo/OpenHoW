@@ -19,6 +19,8 @@
 
 typedef enum ShaderProgram {
     SHADER_DebugTest,
+    SHADER_DebugNormals,
+
     SHADER_GenericTextured,
     SHADER_GenericUntextured,
     SHADER_GenericTexturedLit,

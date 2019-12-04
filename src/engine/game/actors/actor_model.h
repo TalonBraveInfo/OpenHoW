@@ -20,13 +20,14 @@
 #include "actor.h"
 
 class AModel : public Actor {
-  ACTOR_IMPLEMENT_SUPER(Actor)
+  IMPLEMENT_ACTOR(AModel, Actor)
 
  public:
   AModel();
   ~AModel() override;
 
   void Draw() override;
+  void ShowModel(bool show = true);
 
   virtual void SetModel(const std::string &path);
 
@@ -34,4 +35,5 @@ class AModel : public Actor {
   PLModel *model_{nullptr};
 
  private:
+  bool show_model_{true};
 };

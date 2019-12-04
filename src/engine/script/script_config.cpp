@@ -201,21 +201,28 @@ PLVector3 ScriptConfig::GetVector3Property(const std::string& property, PLVector
 unsigned int ScriptConfig::GetArrayLength(const std::string& property) {
   auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    LogMissingProperty(p);
-    return 0;
+  if(!property.empty()) {
+    const char* p = property.c_str();
+    if (!duk_get_prop_string(context, -1, p)) {
+      duk_pop(context);
+      LogMissingProperty(p);
+      return 0;
+    }
   }
 
   if (!duk_is_array(context, -1)) {
-    duk_pop(context);
-    LogInvalidArray(p);
+    if(!property.empty()) {
+      duk_pop(context);
+    }
+    LogWarn("Invalid array node!\n");
     return 0;
   }
 
   duk_size_t len = duk_get_length(context, -1);
-  duk_pop(context);
+
+  if(!property.empty()) {
+    duk_pop(context);
+  }
 
   return static_cast<unsigned int>(len);
 }
@@ -271,7 +278,7 @@ std::vector<std::string> ScriptConfig::GetArrayStrings(const std::string& proper
   std::vector<std::string> strings;
   strings.reserve(length);
 
-  for (unsigned int i = 0; i < length; ++i) {
+  for (size_t i = 0; i < length; ++i) {
     duk_get_prop_index(context, -1, i);
     const char* c = duk_get_string(context, -1);
     u_assert(c != nullptr, "Null string passed by duk_get_string!\n");
@@ -292,4 +299,50 @@ void ScriptConfig::ParseBuffer(const char* buf) {
   auto* context = static_cast<duk_context*>(ctx_);
   duk_push_string(context, buf);
   duk_json_decode(context, -1);
+}
+
+void ScriptConfig::EnterChildNode(const std::string& property) {
+  auto* context = static_cast<duk_context*>(ctx_);
+  const char* p = property.c_str();
+  if (!duk_get_prop_string(context, -1, p)) {
+    duk_pop(context);
+    LogMissingProperty(p);
+    return;
+  }
+}
+
+void ScriptConfig::EnterChildNode(unsigned int index) {
+  auto* context = static_cast<duk_context*>(ctx_);
+  if (!duk_is_array(context, -1)) {
+    duk_pop(context);
+    LogWarn("Node is not an array!\n");
+    return;
+  }
+
+  duk_size_t length = duk_get_length(context, -1);
+  if (index >= length) {
+    LogWarn("Invalid index, %d (%d), in array!\n", index, length);
+    return;
+  }
+
+  duk_get_prop_index(context, -1, index);
+}
+
+void ScriptConfig::LeaveChildNode() {
+  auto* context = static_cast<duk_context*>(ctx_);
+  duk_pop(context);
+}
+
+std::list<std::string> ScriptConfig::GetObjectKeys() {
+  std::list<std::string> lst;
+
+  auto* context = static_cast<duk_context*>(ctx_);
+  duk_enum(context, -1, 0);
+  while(duk_next(context, -1, 1)) {
+    lst.emplace_back(duk_safe_to_string(context, -2));
+    duk_pop_2(context);
+  }
+  duk_pop(context);
+
+  return lst;
 }

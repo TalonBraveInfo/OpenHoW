@@ -278,7 +278,7 @@ void Terrain::Update() {
 }
 
 void Terrain::Draw() {
-  Shaders_SetProgram(SHADER_GenericTexturedLit);
+  Shaders_SetProgram(cv_graphics_debug_normals->b_value ? SHADER_DebugNormals : SHADER_GenericTexturedLit);
   g_state.gfx.num_chunks_drawn = 0;
   for (const auto& chunk : chunks_) {
     if (chunk.model == nullptr) {

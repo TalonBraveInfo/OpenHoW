@@ -16,11 +16,14 @@
  */
 
 #include "../engine.h"
+
 #include "display.h"
 #include "texture_atlas.h"
 
+using namespace openhow;
+
 TextureAtlas::TextureAtlas(int w, int h) : width_(w), height_(h) {
-  texture_ = Display_GetDefaultTexture();
+  texture_ = Engine::Resource()->GetFallbackTexture();
 }
 
 TextureAtlas::~TextureAtlas() {
@@ -30,7 +33,7 @@ TextureAtlas::~TextureAtlas() {
     id.second = nullptr;
   }
 
-  if(texture_ != Display_GetDefaultTexture()) {
+  if(texture_ != Engine::Resource()->GetFallbackTexture()) {
     // TODO: reintroduce once we have a wrapper around PLModel to hold this!
     //plDestroyTexture(texture_, true);
   }
@@ -157,7 +160,7 @@ void TextureAtlas::Finalize() {
     Error("Failed to generate atlas texture (%s)!\n", plGetError());
   }
 
-  texture_->filter = PL_TEXTURE_FILTER_NEAREST;
+  texture_->filter = cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_MIPMAP_LINEAR : PL_TEXTURE_FILTER_NEAREST;
   if(!plUploadTextureImage(texture_, cache)) {
     Error("Failed to upload texture atlas (%s)!\n", plGetError());
   }

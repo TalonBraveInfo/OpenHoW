@@ -39,13 +39,13 @@ enum {
   FE_MODE_MAIN_MENU,
 
   /* Main Menu */
-      FE_MODE_ONE_PLAYER,
+  FE_MODE_ONE_PLAYER,
   FE_MODE_MULTI_PLAYER,
   FE_MODE_OPTIONS,
   FE_MODE_CONTROLS,
 
   /* One Player */
-      FE_MODE_NEW_GAME,
+  FE_MODE_NEW_GAME,
   FE_MODE_LOAD_GAME,
 
   /* Multi-player */
@@ -54,7 +54,7 @@ enum {
   /* Options */
   /* todo */
 
-      FE_MODE_SELECT_TEAM,
+  FE_MODE_SELECT_TEAM,
 
   FE_MODE_EDITOR, /* editor mode - either embedded or standalone */
   FE_MODE_VIDEO,  /* playing a video - pressing escape will skip */

@@ -21,6 +21,10 @@
 AWeapon::AWeapon() : SuperClass() {}
 AWeapon::~AWeapon() = default;
 
-void AWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
+void AWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {}
 
+void AWeapon::Deploy() {
+  ShowModel(true);
+
+  is_deployed_ = true;
 }

@@ -33,7 +33,7 @@
 
 {"/Language/Tims/Pigbkpc1.BMP", "/campaigns/how/frontend/"},
 
-{"/Language/Tims/Briefing/loadmult.bmp", "/campaigns/how/frontend/briefing/"},
+{"/Language/Tims/loadmult.bmp", "/campaigns/how/frontend/briefing/"},
 {"/Language/Tims/Briefing/Level0.bmp", "/campaigns/how/frontend/briefing/"},
 {"/Language/Tims/Briefing/Level1.bmp", "/campaigns/how/frontend/briefing/"},
 {"/Language/Tims/Briefing/Level1n0.bmp", "/campaigns/how/frontend/briefing/"},

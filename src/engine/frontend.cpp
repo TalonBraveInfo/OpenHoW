@@ -50,9 +50,6 @@ static const char* papers_teams_paths[MAX_TEAMS] = {
 
 /* texture assets, these are loaded and free'd at runtime */
 static PLTexture* fe_background = nullptr;
-static PLTexture* fe_press = nullptr;
-static PLTexture* fe_any = nullptr;
-static PLTexture* fe_key = nullptr;
 static PLTexture* fe_papers_teams[MAX_TEAMS] = {
     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
@@ -78,6 +75,9 @@ enum {
 static PLTexture* fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
 //static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
+static int frontend_width = 0;
+static int frontend_height = 0;
+
 /************************************************************/
 
 static void FrontendInputCallback(int key, bool is_pressed) {
@@ -93,36 +93,22 @@ static void FrontendInputCallback(int key, bool is_pressed) {
 }
 
 static void CacheFEGameData() {
-#if 1
-  fe_tx_game_textures[FE_TEXTURE_ANG] = Display_LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR);
-  fe_tx_game_textures[FE_TEXTURE_ANGPOINT] = Display_LoadTexture("frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR);
-
-  fe_tx_game_textures[FE_TEXTURE_CLOCK] = Display_LoadTexture("frontend/dash/clock", PL_TEXTURE_FILTER_LINEAR);
-  fe_tx_game_textures[FE_TEXTURE_CLIGHT] = Display_LoadTexture("frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR);
-  fe_tx_game_textures[FE_TEXTURE_TIMER] = Display_LoadTexture("frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR);
-#endif
+  fe_tx_game_textures[FE_TEXTURE_ANG] =
+      Engine::Resource()->LoadTexture("frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR, true);
+  fe_tx_game_textures[FE_TEXTURE_ANGPOINT] =
+      Engine::Resource()->LoadTexture("frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR, true);
+  fe_tx_game_textures[FE_TEXTURE_CLOCK] =
+      Engine::Resource()->LoadTexture("frontend/dash/clock", PL_TEXTURE_FILTER_LINEAR, true);
+  fe_tx_game_textures[FE_TEXTURE_CLIGHT] =
+      Engine::Resource()->LoadTexture("frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR, true);
+  fe_tx_game_textures[FE_TEXTURE_TIMER] =
+      Engine::Resource()->LoadTexture("frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR, true);
 }
 
 static void CacheFEMenuData() {
-  fe_background = Display_LoadTexture("frontend/title/titlemon", PL_TEXTURE_FILTER_LINEAR);
+  fe_background = Engine::Resource()->LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR, true);
   for (unsigned int i = 0; i < MAX_TEAMS; ++i) {
-    fe_papers_teams[i] = Display_LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR);
-  }
-}
-
-static void ClearFEGameData() {
-  for (auto& fe_tx_game_texture : fe_tx_game_textures) {
-    if (fe_tx_game_texture == nullptr) {
-      continue;
-    }
-    plDestroyTexture(fe_tx_game_texture, true);
-  }
-}
-
-static void ClearFEMenuData() {
-  plDestroyTexture(fe_background, true);
-  for (auto& fe_papers_team : fe_papers_teams) {
-    plDestroyTexture(fe_papers_team, true);
+    fe_papers_teams[i] = Engine::Resource()->LoadTexture(papers_teams_paths[i], PL_TEXTURE_FILTER_LINEAR, true);
   }
 }
 
@@ -131,6 +117,7 @@ static void ClearFEMenuData() {
 void FE_Initialize(void) {
   CacheFontData();
   CacheFEMenuData();
+  CacheFEGameData();
 }
 
 void FE_Shutdown(void) {
@@ -158,32 +145,7 @@ void FE_ProcessInput(void) {
   }
 }
 
-void FrontEnd_Tick(void) {
-  switch (frontend_state) {
-    default:break;
-
-    case FE_MODE_INIT: {
-      /* by this point we'll make an assumption that we're
-       * done initializing, bump up the progress, draw that
-       * frame and then switch over to our 'start' state */
-      if (FE_GetLoadingProgress() < 100) {
-        FE_SetLoadingDescription("LOADING FRONTEND RESOURCES");
-        FE_SetLoadingProgress(100);
-
-        /* load in some of the assets we'll be using on the
-         * next screen before proceeding... */
-        fe_press = Display_LoadTexture("frontend/title/press", PL_TEXTURE_FILTER_LINEAR);
-        fe_any = Display_LoadTexture("frontend/title/any", PL_TEXTURE_FILTER_LINEAR);
-        fe_key = Display_LoadTexture("frontend/title/key", PL_TEXTURE_FILTER_LINEAR);
-        fe_background = Display_LoadTexture("frontend/title/title", PL_TEXTURE_FILTER_LINEAR);
-        break;
-      }
-
-      FrontEnd_SetState(FE_MODE_START);
-    }
-      break;
-  }
-}
+void FrontEnd_Tick(void) {}
 
 /************************************************************/
 
@@ -193,17 +155,13 @@ uint8_t loading_progress = 0;
 #define Redraw()   Display_DrawInterface();
 
 void FE_SetLoadingBackground(const char* name) {
-  if (fe_background != nullptr) {
-    plDestroyTexture(fe_background, true);
-  }
-
   char screen_path[PL_SYSTEM_MAX_PATH];
   snprintf(screen_path, sizeof(screen_path), "frontend/briefing/%s", name);
   if (!plFileExists(screen_path)) {
     snprintf(screen_path, sizeof(screen_path), "frontend/briefing/loadmult");
   }
 
-  fe_background = Display_LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
+  fe_background = Engine::Resource()->LoadTexture(screen_path, PL_TEXTURE_FILTER_LINEAR);
   Redraw();
 }
 
@@ -224,12 +182,33 @@ uint8_t FE_GetLoadingProgress(void) {
 
 /************************************************************/
 
+/**
+ * Draw the timer in the bottom corner of the screen.
+ */
+static void DrawTimer() {
+  if (FrontEnd_GetState() != FE_MODE_GAME) {
+    return;
+  }
+
+  IGameMode* mode = Engine::Game()->GetMode();
+  if(!mode->HasRoundStarted()) {
+    return;
+  }
+
+  char str[64];
+  snprintf(str, sizeof(str), "%0d / %0d", mode->GetTurnTimeSeconds(), mode->GetMaxTurnTimeSeconds());
+  Font_DrawBitmapString(g_fonts[FONT_BIG], frontend_width - 256, frontend_height - 100, 4, 1.0f, PL_COLOUR_WHITE, str);
+}
+
+/**
+ * Draw the minimap on the button left corner of the screen.
+ */
 static void DrawMinimap() {
   if (FrontEnd_GetState() != FE_MODE_GAME) {
     return;
   }
 
-  Map* map = openhow::Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = openhow::Engine::Game()->GetCurrentMap();
   if (map == nullptr) {
     return;
   }
@@ -267,9 +246,6 @@ static void DrawMinimap() {
  * later. */
 
 static void DrawLoadingScreen() {
-  int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
-  int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
-
   plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
 
   /* originally I wrote some code ensuring the menu bar
@@ -296,85 +272,26 @@ static void DrawLoadingScreen() {
 }
 
 void FE_Draw(void) {
+  frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
+  frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
+
   /* render and handle the main menu */
   if (frontend_state != FE_MODE_GAME) { // todo: what's going on here... ?
-    int frontend_width = Display_GetViewportWidth(&g_state.ui_camera->viewport);
-    int frontend_height = Display_GetViewportHeight(&g_state.ui_camera->viewport);
     switch (frontend_state) {
       default:break;
 
-      case FE_MODE_INIT: {
-        /* here we display the background for the init once,
-         * taking advantage of the fact that we're not going
-         * to clear the buffer initially - this gives us an
-         * opportunity to unload the texture and load in the
-         * final one */
-        static bool is_background_drawn = false;
-        if (!is_background_drawn) {
-          plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-          plDestroyTexture(fe_background, true);
-          is_background_drawn = true;
-        }
-
-        /* first we'll draw in a little rectangle representing
-         * the incomplete portion of the load */
-        static bool is_load_drawn = false;
-        if (!is_load_drawn) {
-          plSetBlendMode(PL_BLEND_DEFAULT);
-          plDrawFilledRectangle(plCreateRectangle(
-              PLVector2(0, 464),
-              PLVector2(frontend_width, 16),
-              PLColour(0, 0, 0, 150),
-              PLColour(0, 0, 0, 150),
-              PLColour(0, 0, 0, 150),
-              PLColour(0, 0, 0, 150)
-          ));
-          plSetBlendMode(PL_BLEND_DISABLE);
-          is_load_drawn = true;
-        }
-
-        /* and now we're going to draw the loading bar. */
-        plDrawFilledRectangle(plCreateRectangle(
-            PLVector2(0, 464),
-            PLVector2(loading_progress, 16),
-            PL_COLOUR_INDIAN_RED,
-            PL_COLOUR_INDIAN_RED,
-            PL_COLOUR_RED,
-            PL_COLOUR_RED
-        ));
-      }
-        break;
-
-      case FE_MODE_START: {
+      case FE_MODE_INIT:
+      case FE_MODE_START:
+      case FE_MODE_MAIN_MENU:
         plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-
-        /* this will probably be rewritten later on, but below we're setting up
-         * where each of the little blocks of text will be and then moving them
-         * up and down until the player presses an action (which is handled via
-         * our crappy callback) */
-
-        int press_x = (frontend_width / 2) - (180 / 2);
-        int press_y = frontend_height - 45;
-        /* todo, these should be bouncing... */
-        plDrawTexturedRectangle(press_x, press_y, 62, 16, fe_press);
-        plDrawTexturedRectangle(press_x += 70, press_y, 40, 16, fe_any);
-        plDrawTexturedRectangle(press_x += 48, press_y - 4, 39, 20, fe_key);
-      }
         break;
 
-      case FE_MODE_MAIN_MENU: {
-        plDrawTexturedRectangle(0, 0, frontend_width, frontend_height, fe_background);
-      }
-        break;
-
-      case FE_MODE_LOADING: {
+      case FE_MODE_LOADING:
         DrawLoadingScreen();
-      }
         break;
 
-      case FE_MODE_VIDEO: {
+      case FE_MODE_VIDEO:
         Video_Draw();
-      }
         break;
     }
 
@@ -382,6 +299,7 @@ void FE_Draw(void) {
   }
 
   DrawMinimap();
+  DrawTimer();
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */
@@ -400,14 +318,6 @@ void FrontEnd_SetState(unsigned int state) {
     return;
   }
 
-  if (frontend_state == FE_MODE_GAME && state != FE_MODE_GAME) {
-    ClearFEGameData();
-    CacheFEMenuData();
-  } else if (frontend_state != FE_MODE_GAME && state == FE_MODE_GAME) {
-    ClearFEMenuData();
-    CacheFEGameData();
-  }
-
   LogDebug("changing frontend state to %u...\n", state);
   switch (state) {
     default: {
@@ -415,19 +325,9 @@ void FrontEnd_SetState(unsigned int state) {
       return;
     }
 
-    case FE_MODE_MAIN_MENU: {
-      /* remove the textures we loaded in
-       * for the start screen - we won't
-       * be needing them again... */
-      plDestroyTexture(fe_press, true);
-      plDestroyTexture(fe_any, true);
-      plDestroyTexture(fe_key, true);
-      plDestroyTexture(fe_background, true);
-      fe_background = Display_LoadTexture("frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR);
-
+    case FE_MODE_MAIN_MENU:
       // start playing the default theme
-      Engine::AudioManagerInstance()->PlayMusic(AUDIO_MUSIC_MENU);
-    }
+      Engine::Audio()->PlayMusic(AUDIO_MUSIC_MENU);
       break;
 
     case FE_MODE_START: break;
@@ -439,12 +339,12 @@ void FrontEnd_SetState(unsigned int state) {
 
     case FE_MODE_LOADING: {
       // stop the music as soon as we switch to a loading screen...
-      Engine::AudioManagerInstance()->StopMusic();
+      Engine::Audio()->StopMusic();
 
       loading_description[0] = '\0';
       loading_progress = 0;
-    }
       break;
+    }
 
     case FE_MODE_EDITOR: break;
   }

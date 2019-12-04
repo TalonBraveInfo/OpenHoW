@@ -16,6 +16,7 @@
  */
 
 #include "../engine.h"
+
 #include "camera.h"
 
 using namespace openhow;
@@ -46,6 +47,15 @@ void Camera::SetAngles(const PLVector3& angles) {
   camera_->angles = angles;
 }
 
+void Camera::SetFieldOfView(float fov) {
+  camera_->fov = fov;
+}
+
+/**
+ * Sets the viewport position and size.
+ * @param xy X and Y.
+ * @param wh Width and height.
+ */
 void Camera::SetViewport(const std::array<int, 2>& xy, const std::array<int, 2>& wh) {
   camera_->viewport.x = xy[0];
   camera_->viewport.y = xy[1];

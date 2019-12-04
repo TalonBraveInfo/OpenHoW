@@ -19,23 +19,12 @@
 
 #include "actor_model.h"
 #include "actor_animated_model.h"
-#include "actor_item.h"
+#include "actor_weapon.h"
+#include "weapon_parachute.h"
+#include "../inventory.h"
 
-class InventoryManager {
- public:
-
-  void AddItem(AItem* item);
-  void RemoveItem(AItem* item);
-
-  void Clear();
-
- protected:
- private:
-  std::vector<AItem*> items_;
-};
-
-class APig : public AAnimatedModel {
-  ACTOR_IMPLEMENT_SUPER(AAnimatedModel)
+class APig : public AAnimatedModel, public InventoryManager {
+  IMPLEMENT_ACTOR(APig, AAnimatedModel)
 
  public:
   APig();
@@ -44,40 +33,45 @@ class APig : public AAnimatedModel {
   void HandleInput() override;
   void Tick() override;
 
-  virtual bool Possessed(const Player* player);
-  virtual bool Depossessed(const Player* player);
+  void SetClass(unsigned int pclass);
+  unsigned int GetClass() { return class_; }
 
-  void AddInventory(AItem* item);
+  void SetPersonality(unsigned int personality);
+  unsigned int GetPersonality() { return personality_; }
 
-  void SetClass(int pclass);
-  int GetClass() { return pclass_; }
+  void SetPlayerOwner(Player* owner);
+  const Player* GetPlayerOwner();
+
+  void SetTeam(unsigned int team);
+  unsigned int GetTeam() { return team_; }
+
+  bool Possessed(const Player* player) override;
+  void Depossessed(const Player* player) override;
+
+  enum class VoiceCategory {
+    READY,
+    FIRE,
+    FIRE2,
+    DEATH,
+    DEATH2
+  };
+  void PlayVoiceSample(VoiceCategory category);
 
   void Killed();
 
   void Deserialize(const ActorSpawn& spawn) override;
 
- protected:
-  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
-  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
-  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
-
  private:
-  AItem* current_equiped_item_{nullptr};
+  AWeapon* weapon_{nullptr};
+  AParachuteWeapon* parachute_{nullptr};
 
-  InventoryManager inventory_manager_;
+  AudioSource* speech_{nullptr};
 
-  enum {
-    CLASS_NONE = -1,
-    CLASS_ACE,
-    CLASS_LEGEND,
-    CLASS_MEDIC,
-    CLASS_COMMANDO,
-    CLASS_SPY,
-    CLASS_SNIPER,
-    CLASS_SABOTEUR,
-    CLASS_HEAVY,
-    CLASS_GRUNT,
-  } pclass_{CLASS_NONE};
+  float aim_pitch_{ 0 };
+
+  unsigned int team_{ 0 };
+  unsigned int personality_{ 0 };
+  unsigned int class_{ 0 };
 
   enum {
     EYES_OPEN,

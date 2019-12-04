@@ -1,4 +1,8 @@
 {
+  "dbt0": "Please note that OpenHoW is still heavily under development.",
+  "dbt1": "\nBe sure to report any bugs to our GitHub page.",
+  "dbt2": "https://github.com/TalonBraveInfo/OpenHoW/",
+
   "english" :"ENGLISH",
   "french"  :"FRANÇAIS",
   "german"  :"DEUTSCH",

@@ -30,6 +30,7 @@ project(OpenHoW)
 add_definitions(
         "-DIMGUI_IMPL_OPENGL_LOADER_GLEW"   # Required for OpenGL3.x imgui setup
         "-DCOMPILE_ENGINE"
+        "-D_NEWTON_STATIC_LIB"              # Sigh...
 )
 
 file(
@@ -47,6 +48,11 @@ file(
         script/duktape-2.2.0/*.h
 
         audio/audio.cpp
+
+        # Physics Sub-System
+        physics/*.cpp
+        physics/newton/*.cpp
+
         editor/*.*
         graphics/*.*
         script/*.*
@@ -87,7 +93,7 @@ elseif(APPLE)
     target_include_directories(OpenHoW PRIVATE ../3rdparty/openal-soft/include/)
     target_link_libraries(OpenHoW OpenAL SDL2)
 else()
-    target_link_libraries(OpenHoW openal SDL2)
+    target_link_libraries(OpenHoW pthread openal SDL2)
 endif()
 
 #set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
@@ -97,6 +103,7 @@ target_include_directories(OpenHoW PUBLIC ../3rdparty/imgui/ script/duktape-2.2.
 target_link_libraries(OpenHoW
         platform
 
+        newton
         #avformat
         #avcodec
         #avutil

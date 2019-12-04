@@ -84,7 +84,7 @@ AudioSource::AudioSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel
   alSourcef(al_source_id_, AL_ROLLOFF_FACTOR, 1.0f);
   OALCheckErrors();
 
-  if (reverb && Engine::AudioManagerInstance()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
+  if (reverb && Engine::Audio()->SupportsExtension(AudioManager::ExtensionType::AUDIO_EXT_EFX)) {
     alSource3i(al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL);
     OALCheckErrors();
   }
@@ -93,7 +93,7 @@ AudioSource::AudioSource(const AudioSample *sample, PLVector3 pos, PLVector3 vel
     SetSample(sample);
   }
 
-  Engine::AudioManagerInstance()->sources_.insert(this);
+  Engine::Audio()->sources_.insert(this);
 }
 
 AudioSource::~AudioSource() {
@@ -107,7 +107,7 @@ AudioSource::~AudioSource() {
   alSourcei(al_source_id_, AL_BUFFER, 0);
   alDeleteSources(1, &al_source_id_);
 
-  Engine::AudioManagerInstance()->sources_.erase(this);
+  Engine::Audio()->sources_.erase(this);
 }
 
 void AudioSource::SetSample(const AudioSample *sample) {
@@ -418,7 +418,7 @@ AudioSource *AudioManager::CreateSource(const AudioSample *sample, PLVector3 pos
 void AudioManager::Tick() {
   PLVector3 position = {0, 0, 0}, angles = {0, 0, 0};
 
-  Camera* camera = Engine::GameManagerInstance()->GetCamera();
+  Camera* camera = Engine::Game()->GetCamera();
   if (FrontEnd_GetState() == FE_MODE_GAME && camera != nullptr) {
     position = camera->GetPosition();
     angles = camera->GetAngles();
@@ -524,15 +524,15 @@ void AudioManager::FreeSamples(bool force) {
   }
 }
 
-/** Debug function for drawing audio sources
- *
+/**
+ * Debug function for drawing audio sources.
  */
 void AudioManager::DrawSources() {
   if (!cv_graphics_draw_audio_sources->b_value) {
     return;
   }
 
-  PLModel *sprite = ModelManager::GetInstance()->GetFallbackModel();
+  PLModel *sprite = Engine::Resource()->GetFallbackModel();
   PLMesh *mesh = sprite->levels[0].meshes[0];
   plSetMeshUniformColour(mesh, PLColour(0, 255, 255, 255));
   for (auto source : sources_) {
@@ -546,6 +546,10 @@ void AudioManager::DrawSources() {
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 }
 
+/**
+ * Play the specified music globally.
+ * @param path Path to the sample to be played.
+ */
 void AudioManager::PlayMusic(const std::string &path) {
   const AudioSample *sample = CacheSample(path);
   if (sample == nullptr) {
@@ -588,14 +592,14 @@ void AudioManager::SetMusicVolume(float gain) {
 }
 
 void AudioManager::SetMusicVolumeCommand(const PLConsoleVariable *var) {
-  Engine::AudioManagerInstance()->SetMusicVolume(var->f_value);
+  Engine::Audio()->SetMusicVolume(var->f_value);
 }
 
 void AudioManager::StopMusicCommand(unsigned int argc, char *argv[]) {
   u_unused(argc);
   u_unused(argv);
 
-  Engine::AudioManagerInstance()->StopMusic();
+  Engine::Audio()->StopMusic();
 }
 
 /************************************************************/

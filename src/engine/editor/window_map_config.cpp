@@ -22,7 +22,7 @@
 using namespace openhow;
 
 MapConfigEditor::MapConfigEditor() {
-  map_ = Engine::GameManagerInstance()->GetCurrentMap();
+  map_ = Engine::Game()->GetCurrentMap();
   if (map_ == nullptr) {
     throw std::runtime_error("Attempted to create config editor without a valid map loaded!\n");
   }

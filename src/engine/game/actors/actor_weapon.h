@@ -17,18 +17,21 @@
 
 #pragma once
 
-#include "actor_item.h"
+#include "actor_model.h"
 
-class AWeapon : public AItem {
-  ACTOR_IMPLEMENT_SUPER(AItem)
+class AWeapon : public AModel {
+  IMPLEMENT_ACTOR(AWeapon, AModel)
 
  public:
   AWeapon();
   ~AWeapon() override;
 
   virtual void Fire(const PLVector3& pos, const PLVector3& dir);
-  //virtual void Deploy();
+  virtual void Deploy();
 
  protected:
+
+  bool is_deployed_{ false };
+
  private:
 };

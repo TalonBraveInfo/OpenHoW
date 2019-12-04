@@ -15,27 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_graphics_camera.h>
-
 #include "../engine.h"
 #include "../Map.h"
 
 #include "mode_base.h"
 #include "actor_manager.h"
+#include "player.h"
 #include "actors/actor_pig.h"
 
 using namespace openhow;
 
-BaseGameMode::BaseGameMode() {
-  players_.resize(4);
+BaseGameMode::BaseGameMode(const GameModeDescriptor& descriptor) {
+  max_turn_ticks = descriptor.turn_time * TICKS_PER_SECOND;
 }
 
-BaseGameMode::~BaseGameMode() {
-  Engine::AudioManagerInstance()->FreeSources();
-  Engine::AudioManagerInstance()->FreeSamples();
-
-  DestroyActors();
-}
+BaseGameMode::~BaseGameMode() = default;
 
 void BaseGameMode::StartRound() {
   if (HasRoundStarted()) {
@@ -44,15 +38,18 @@ void BaseGameMode::StartRound() {
 
   SpawnActors();
 
-  round_started_ = true;
-
   // Play the deployment music
-  Engine::AudioManagerInstance()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+  Engine::Audio()->PlayMusic("music/track" + std::to_string(std::rand() % 4 + 27) + ".ogg");
+
+  StartTurn(GetCurrentPlayer());
+
+  round_started_ = true;
 }
 
 void BaseGameMode::RestartRound() {
   DestroyActors();
-  SpawnActors();
+
+  StartRound();
 }
 
 void BaseGameMode::EndRound() {
@@ -65,21 +62,38 @@ void BaseGameMode::Tick() {
     return;
   }
 
-  Actor* slave = GetCurrentPlayer()->input_target;
-  if (slave != nullptr) {
-    slave->HandleInput();
-
-    // temp: force the camera at the actor pos
-    Camera* camera = Engine::GameManagerInstance()->GetCamera();
-    camera->SetPosition(slave->GetPosition());
-    camera->SetAngles(slave->GetAngles());
+  Player* player = GetCurrentPlayer();
+  if(player == nullptr) {
+    return;
   }
 
-  ActorManager::GetInstance()->TickActors();
+  Actor* actor = player->GetCurrentChild();
+  if(actor == nullptr) {
+    return;
+  }
+
+  actor->HandleInput();
+
+  // temp: force the camera at the actor pos
+
+  PLVector3 forward = actor->GetForward();
+  Camera* camera = Engine::Game()->GetCamera();
+  camera->SetPosition({
+    actor->GetPosition().x + forward.x * -500,
+    actor->GetPosition().y + 500.f,
+    actor->GetPosition().z + forward.z * -500});
+  camera->SetAngles({-25.f, actor->GetAngles().y, 0});
+
+  if(HasTurnStarted()) {
+    num_turn_ticks++;
+    if(num_turn_ticks >= max_turn_ticks) {
+
+    }
+  }
 }
 
 void BaseGameMode::SpawnActors() {
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
+  Map* map = Engine::Game()->GetCurrentMap();
   if (map == nullptr) {
     Error("Attempted to spawn actors without having loaded a map!\n");
   }
@@ -93,11 +107,18 @@ void BaseGameMode::SpawnActors() {
 
     actor->Deserialize(spawn);
 
-    // Pigs are a special case, for obvious reasons
     APig* pig = dynamic_cast<APig*>(actor);
-    if (pig != nullptr) {
-      players_[0].input_target = actor;
+    if(pig == nullptr) {
+      continue;
     }
+
+    Player* player = Engine::Game()->GetPlayerByIndex(pig->GetTeam());
+    if(player == nullptr) {
+      LogWarn("Failed to assign pig to team!\n");
+      continue;
+    }
+
+    AssignActorToPlayer(pig, player);
   }
 
 #if 0 // debug sprites...
@@ -120,12 +141,6 @@ void BaseGameMode::SpawnActors() {
   }
 #endif
 
-  if(players_[0].input_target == nullptr) {
-    LogWarn("No pig found in map, spawning default (debugging!!!!)\n");
-    Actor* actor = ActorManager::GetInstance()->CreateActor("ac_me");
-    players_[0].input_target = actor;
-  }
-
   ActorManager::GetInstance()->ActivateActors();
 }
 
@@ -133,30 +148,37 @@ void BaseGameMode::DestroyActors() {
   ActorManager::GetInstance()->DestroyActors();
 }
 
-void BaseGameMode::StartTurn() {
-  Player* player = GetCurrentPlayer();
-  if (player->input_target == nullptr) {
-    LogWarn("No valid control target for player \"%s\"!\n", player->name.c_str());
-    EndTurn();
+void BaseGameMode::StartTurn(Player* player) {
+  if(player->GetNumChildren() == 0) {
+    LogWarn("No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str());
     return;
   }
+
+  player->PossessCurrentChild();
+
+  turn_started_ = true;
 }
 
-void BaseGameMode::EndTurn() {
+void BaseGameMode::EndTurn(Player* player) {
+  player->DepossessCurrentChild();
+  player->CycleChildren();
+
   // move onto the next player
-  if (++current_player_ >= players_.size()) {
-    current_player_ = 0;
-  }
+  CyclePlayers();
+
+  num_turn_ticks = 0;
+
+  turn_started_ = false;
 }
 
 void BaseGameMode::PlayerJoined(Player* player) {
   // todo: display prompt
-  LogInfo("%s has joined the game\n", player->name.c_str());
+  LogInfo("%s has joined the game\n", player->GetTeam()->name.c_str());
 }
 
 void BaseGameMode::PlayerLeft(Player* player) {
   // todo: display prompt
-  LogInfo("%s has left the game\n", player->name.c_str());
+  LogInfo("%s has left the game\n", player->GetTeam()->name.c_str());
 }
 
 unsigned int BaseGameMode::GetMaxSpectators() const {
@@ -165,14 +187,35 @@ unsigned int BaseGameMode::GetMaxSpectators() const {
 
 void BaseGameMode::SpectatorJoined(Player* player) {
   // todo: display prompt
-  LogInfo("%s has joined the spectators\n", player->name.c_str());
+  LogInfo("%s has joined the spectators\n", player->GetTeam()->name.c_str());
 }
 
 void BaseGameMode::SpectatorLeft(Player* player) {
   // todo: display prompt
-  LogInfo("%s has left the spectators\n", player->name.c_str());
+  LogInfo("%s has left the spectators\n", player->GetTeam()->name.c_str());
 }
 
+/**
+ * Maximum players allowed in this mode.
+ * @return Number of players.
+ */
 unsigned int BaseGameMode::GetMaxPlayers() const {
   return 4;
+}
+
+Player* BaseGameMode::GetCurrentPlayer() {
+  return Engine::Game()->GetPlayerByIndex(current_player_);
+}
+
+void BaseGameMode::CyclePlayers() {
+  PlayerPtrVector players = Engine::Game()->GetPlayers();
+  if (current_player_ >= players.size()) {
+    current_player_ = 0;
+  } else {
+    current_player_++;
+  }
+}
+
+void BaseGameMode::AssignActorToPlayer(Actor* target, Player* owner) {
+  owner->AddChild(target);
 }

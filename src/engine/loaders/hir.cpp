@@ -24,16 +24,17 @@
 /* Hir Skeleton Format */
 
 HirHandle* Hir_LoadFile(const char* path) {
-    size_t hir_size = plGetLocalFileSize(path);
-    if(hir_size == 0) {
-        LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
-        return nullptr;
-    }
-
     PLFile *file = plOpenFile(path, false);
     if(file == nullptr) {
         LogWarn("Failed to load \"%s\", aborting!\n", path);
         return nullptr;
+    }
+
+    size_t hir_size = plGetFileSize(file);
+    if(hir_size == 0) {
+      plCloseFile(file);
+      LogWarn("Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError());
+      return nullptr;
     }
 
     typedef struct __attribute__((packed)) HirBone {
@@ -53,7 +54,7 @@ HirHandle* Hir_LoadFile(const char* path) {
     }
 
     /* for debugging */
-    static const char* bone_names[MAX_BONE_INDICES]={
+    static const char* bone_names[static_cast<int>(SkeletonBone::MAX_BONES)]={
             "Pelvis",
             "Spine",
             "Head",
@@ -65,8 +66,8 @@ HirHandle* Hir_LoadFile(const char* path) {
 
     /* in the long term, we won't have this here, we'll probably extend the format
      * to include the names of each bone (.skeleton format?) */
-    if(num_bones > MAX_BONE_INDICES) {
-        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, MAX_BONE_INDICES);
+    if(static_cast<SkeletonBone>(num_bones) >= SkeletonBone::MAX_BONES) {
+        LogWarn("Invalid number of bones, %d/%d, aborting!\n", num_bones, SkeletonBone::MAX_BONES);
         return nullptr;
     }
 

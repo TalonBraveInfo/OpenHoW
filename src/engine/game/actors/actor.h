@@ -68,18 +68,29 @@ struct ActorSpawn {
   ActorSpawn* attachment{nullptr};
 };
 
-#define ACTOR_IMPLEMENT_SUPER(a) typedef a SuperClass;
+class IPhysicsBody;
+
+#define IMPLEMENT_SUPER(a) typedef a SuperClass;
+#define IMPLEMENT_ACTOR(base, parent) \
+  IMPLEMENT_SUPER(parent) \
+  public: const char* GetClassName() override { return plStringify(base) ; } \
+  private:
+
+class Player;
 
 class Actor: public PropertyOwner {
  public:
-
   Actor();
-  virtual ~Actor();
+  ~Actor() override;
+
+  virtual const char* GetClassName() { return "Actor"; }
 
   virtual void Tick() {}  // simulation tick, called per-frame
   virtual void Draw() {}  // draw tick, called per-frame
 
-  virtual void AddHealth(int health);
+  virtual void SetHealth(int16_t health) { health_ = health; }
+  virtual void AddHealth(int16_t health);
+  int16_t GetHealth() { return health_; }
 
   virtual bool IsVisible() { return is_visible_; }
 
@@ -89,7 +100,9 @@ class Actor: public PropertyOwner {
   virtual PLVector3 GetAngles() { return angles_; }
   virtual void SetAngles(PLVector3 angles);
 
-  virtual void HandleInput() {}   // handle any player input, if applicable
+  virtual bool Possessed(const Player* player);
+  virtual void Depossessed(const Player* player);
+  virtual void HandleInput();   // handle any player input, if applicable
 
   virtual ActorSpawn Serialize() { return ActorSpawn(); }
   virtual void Deserialize(const ActorSpawn& spawn);
@@ -98,24 +111,44 @@ class Actor: public PropertyOwner {
   virtual void Deactivate() { is_activated_ = false; }
   virtual bool IsActivated() { return is_activated_; }
 
+  Actor* GetParent() { return parent_; }
+  void LinkChild(Actor* actor);
+  unsigned int GetNumOfChildren() { return children_.size(); }
+  std::vector<Actor*> GetChildren() { return children_; }
+
+  virtual void Touch(Actor* other);
+
+  void DropToFloor();
+
+  PLVector3 GetForward();
+  
+  // Physics
+  virtual const IPhysicsBody* CreatePhysicsBody();
+  virtual void DestroyPhysicsBody();
+
  protected:
   bool is_visible_{false};
 
+  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
+  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
+  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
+
+  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
   PLVector3 position_{0, 0, 0}, old_position_{0, 0, 0};
   PLVector3 fallback_position_{0, 0, 0};
   PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
   PLVector3 bounds_{0, 0, 0};
 
-  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
+  // Use this if you want your actor to have a helpful descriptor in it's
+  std::string reference_name_{"actor"};
 
  private:
-  uint16_t flags_{0};
-
-  uint16_t team_{0};
   int16_t health_{0};
+
+  IPhysicsBody* physics_body_{nullptr};
 
   bool is_activated_{false};
 
   Actor* parent_{nullptr};
-  Actor* child_{nullptr};
+  std::vector<Actor*> children_;
 };

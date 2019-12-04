@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_graphics_camera.h>
-
 #include "../../engine.h"
-#include "../../input.h"
 #include "../../Map.h"
+
+#include "../player.h"
 #include "../actor_manager.h"
+
 #include "actor_pig.h"
 
 REGISTER_ACTOR(ac_me, APig)    // Ace
@@ -35,108 +35,79 @@ REGISTER_ACTOR(sp_me, APig)    // Spy
 
 using namespace openhow;
 
-void InventoryManager::Clear() {
-  for(auto item : items_) {
-    ActorManager::GetInstance()->DestroyActor(item);
-    item = nullptr;
-  }
-
-  items_.clear();
+APig::APig() : SuperClass() {
+  speech_ = Engine::Audio()->CreateSource();
 }
 
-void InventoryManager::AddItem(AItem *item) {
-  items_.push_back(item);
+APig::~APig() {
+  delete speech_;
 }
-
-APig::APig():
-  SuperClass(),
-  INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
-  INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
-  INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
-
-APig::~APig() = default;
 
 void APig::HandleInput() {
-  IGameMode* mode = Engine::GameManagerInstance()->GetMode();
-  if (mode == nullptr) {
-    return;
-  }
-
-  Player* player = mode->GetCurrentPlayer();
-  if (player == nullptr) {
-    return;
-  }
-
-  PLVector2 cl = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_LEFT);
-  PLVector2 cr = Input_GetJoystickState(player->input_slot, INPUT_JOYSTICK_RIGHT);
-
-  if (Input_GetActionState(player->input_slot, ACTION_MOVE_FORWARD)) {
-    input_forward = 1.0f;
-  } else if (Input_GetActionState(player->input_slot, ACTION_MOVE_BACKWARD)) {
-    input_forward = -1.0f;
-  } else {
-    input_forward = -cl.y / 327.0f;
-  }
-
-  if (Input_GetActionState(player->input_slot, ACTION_TURN_LEFT)) {
-    input_yaw = -1.0f;
-  } else if (Input_GetActionState(player->input_slot, ACTION_TURN_RIGHT)) {
-    input_yaw = 1.0f;
-  } else {
-    input_yaw = cr.x / 327.0f;
-  }
-
-  if (Input_GetActionState(player->input_slot, ACTION_AIM_UP)) {
-    input_pitch = 1.0f;
-  } else if (Input_GetActionState(player->input_slot, ACTION_AIM_DOWN)) {
-    input_pitch = -1.0f;
-  } else {
-    input_pitch = -cr.y / 327.0f;
-  }
+  SuperClass::HandleInput();
 }
 
 void APig::Tick() {
   SuperClass::Tick();
 
-  Camera* camera = Engine::GameManagerInstance()->GetCamera();
-  position_.x += input_forward * 100.0f * camera->GetForward().x;
-  position_.y += input_forward * 100.0f * camera->GetForward().y;
-  position_.z += input_forward * 100.0f * camera->GetForward().z;
+  // temp
+  DropToFloor();
 
-  angles_.x += input_pitch * 2.0f;
+  // a dead piggy
+  if(GetHealth() <= 0) {
+    if(speech_->IsPlaying()) {
+      return;
+    }
+
+    // TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
+    Engine::Audio()->PlayLocalSound("audio/e_1.wav", GetPosition(), {0, 0, 0}, true);
+
+    Actor* boots = ActorManager::GetInstance()->CreateActor("boots");
+    boots->SetPosition(GetPosition());
+    boots->SetAngles(GetAngles());
+    boots->DropToFloor();
+
+    // activate the boots (should begin smoke effect etc.)
+    boots->Activate();
+
+    // ensure our own destruction on next tick
+    ActorManager::GetInstance()->DestroyActor(this);
+    return;
+  }
+
+  PLVector3 forward = GetForward();
+  position_.x += input_forward * 100.0f * forward.x;
+  position_.y += input_forward * 100.0f * forward.y;
+  position_.z += input_forward * 100.0f * forward.z;
+
+  aim_pitch_ += input_pitch * 2.0f;
   angles_.y += input_yaw * 2.0f;
 
   // Clamp height based on current tile pos
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
-  float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
+  Map* map = Engine::Game()->GetCurrentMap();
+  float height = map->GetTerrain()->GetHeight({position_.x, position_.z});
   if ((position_.y - 32.f) < height) {
     position_.y = height + 32.f;
   }
 
 #define MAX_PITCH 89.f
-  if (angles_.x < -MAX_PITCH) angles_.x = -MAX_PITCH;
-  if (angles_.x > MAX_PITCH) angles_.x = MAX_PITCH;
+  if (aim_pitch_ < -MAX_PITCH) aim_pitch_ = -MAX_PITCH;
+  if (aim_pitch_ > MAX_PITCH) aim_pitch_ = MAX_PITCH;
 
   VecAngleClamp(&angles_);
+
+  speech_->SetPosition(GetPosition());
 }
 
-void APig::SetClass(int pclass) {
-}
+void APig::SetClass(unsigned int pclass) {
+  // TODO: setup default inventory
 
-void APig::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
+  SetHealth(100);
 
-  // ensure pig is spawned up in the air for deployment
-  Map* map = Engine::GameManagerInstance()->GetCurrentMap();
-  SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
-
-#if 0
-  std::string model_path;
+#if 0 // TODO: pass via json blob instead...
   switch (pclass_) {
     default:
-      LogWarn("Unknown pig class, \"%d\", destroying!\n");
-      ActorManager::GetInstance()->DestroyActor(this);
-      break;
+
 
     case CLASS_ACE:
       model_path = "pigs/ac_hi";
@@ -148,44 +119,130 @@ void APig::Deserialize(const ActorSpawn& spawn) {
       model_path = "pigs/me_hi";
       break;
     case CLASS_COMMANDO:
-      model_path = "pigs/"
+      model_path = "pigs/sb_hi";
       break;
-    case CLASS_SPY:break;
-    case CLASS_SNIPER:break;
-    case CLASS_SABOTEUR:break;
-    case CLASS_HEAVY:break;
-    case CLASS_GRUNT:break;
-  }
+    case CLASS_SPY:
+      model_path = "pigs/sp_hi";
+      break;
+    case CLASS_SNIPER:
+      model_path = "pigs/sn_hi";
+      break;
+    case CLASS_SABOTEUR:
+      model_path = "pigs/sa_hi";
+      break;
+    case CLASS_HEAVY:
+      model_path = "pigs/hv_hi";
+      break;
+    case CLASS_GRUNT:
 
-  if (!model_path.empty()) {
-    SetModel(model_path);
   }
 #endif
 }
 
-bool APig::Possessed(const Player* player) {
-  // TODO
-  return false;
+void APig::SetPersonality(unsigned int personality) {
+  // TODO: ensure all the necessary sounds are cached...
 }
 
-bool APig::Depossessed(const Player* player) {
+void APig::SetPlayerOwner(Player* owner) {
+  IGameMode* mode = Engine::Game()->GetMode();
+  mode->AssignActorToPlayer(this, owner);
+}
+
+const Player* APig::GetPlayerOwner() {
+  return nullptr;
+}
+
+void APig::SetTeam(unsigned int team) {
+  team_ = team;
+
+#if 0
+  Player* player = Engine::Game()->GetPlayerByIndex(team);
+  if(player == nullptr) {
+    ActorManager::GetInstance()->DestroyActor(this);
+    LogWarn("Failed to set team for pig!\n");
+    return;
+  }
+
+  Engine::Game()->GetMode()->AssignActorToPlayer(this, player);
+#endif
+}
+
+void APig::Deserialize(const ActorSpawn& spawn) {
+  SuperClass::Deserialize(spawn);
+
+  // Ensure pig is spawned up in the air for deployment
+  Map* map = Engine::Game()->GetCurrentMap();
+  SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
+
+  SetHealth(100);
+  SetModel("pigs/ac_hi"); // temp
+  SetTeam(spawn.team);
+  //SetClass(pig_class);
+
+  // Create and equip our parachute, and then
+  // link it to ensure it gets destroyed when we do
+  parachute_ = dynamic_cast<AParachuteWeapon*>(ActorManager::GetInstance()->CreateActor("weapon_parachute"));
+  if(parachute_ == nullptr) {
+    Error("Failed to create \"item_parachute\" actor, aborting!\n");
+  }
+
+  LinkChild(parachute_);
+  parachute_->Deploy();
+}
+
+bool APig::Possessed(const Player* player) {
   // TODO
-  return false;
+  PlayVoiceSample(VoiceCategory::READY);
+
+  return SuperClass::Possessed(player);
+}
+
+void APig::Depossessed(const Player* player) {
+  // TODO
+  SuperClass::Depossessed(player);
 }
 
 void APig::Killed() {
-  // TODO
+  // TODO: queue me until camera focus, if valid (in some cases we'll insta die)
+  //  Check if we're in water...
 
-  inventory_manager_.Clear();
+  PlayVoiceSample(VoiceCategory::DEATH);
+
+  ClearItems();
 }
 
 /**
- * Add an item into the pig's inventory
- * @param item
+ * Play a randomised voice sample based on personality and team
+ * @param category
  */
-void APig::AddInventory(AItem *item) {
-  inventory_manager_.AddItem(item);
+void APig::PlayVoiceSample(VoiceCategory category) {
+#if 0
+  const Player* player = GetPlayerOwner();
+  if(player == nullptr) {
+    return;
+  }
 
-  // TODO
-  //  Display message to user? Or should inventory manager do this...
+  const Team* team = player->GetTeam();
+  if(team == nullptr) {
+    return;
+  }
+
+  char path[32];
+  snprintf(path, sizeof(path), "speech/eng/pig%0d/%0d%s%0d%0d.wav",
+      // this is horrible, will need to revisit it...
+      static_cast<int>(GetPersonality()),
+      static_cast<int>(GetPersonality()),
+      team->voice_set.c_str(),
+      static_cast<int>(category),
+      rand() % 6 + 1
+      );
+
+  const AudioSample* sample = Engine::Audio()->CacheSample(path);
+  if(sample == nullptr) {
+    return;
+  }
+
+  speech_->SetSample(sample);
+  speech_->StartPlaying();
+#endif
 }

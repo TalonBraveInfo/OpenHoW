@@ -21,7 +21,7 @@
 #include "actor_model.h"
 
 class AStaticModel : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
+  IMPLEMENT_ACTOR(AStaticModel, AModel)
 
  public:
   AStaticModel();

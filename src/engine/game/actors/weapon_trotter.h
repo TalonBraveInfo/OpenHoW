@@ -15,10 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
+#pragma once
 
-#include "actor_item.h"
+#include "actor_weapon.h"
 
-class AItemAmmo : public AItem {
+class ATrotterWeapon : public AWeapon {
+  IMPLEMENT_ACTOR(ATrotterWeapon, AWeapon)
 
+ public:
+  ATrotterWeapon();
+  ~ATrotterWeapon() override;
+
+  void Fire(const PLVector3& pos, const PLVector3& dir) override;
+  void Deploy() override;
+
+ protected:
+ private:
 };

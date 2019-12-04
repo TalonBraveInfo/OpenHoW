@@ -45,7 +45,7 @@ class ActorManager {
   void ActivateActors();
   void DeactivateActors();
 
-  const ActorSet &GetActors() const { return actors_; }
+  const ActorSet& GetActors() const { return actors_; }
 
   class ActorClassRegistration {
    public:

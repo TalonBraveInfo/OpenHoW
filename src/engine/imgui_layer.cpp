@@ -30,6 +30,10 @@
 #include "editor/window_new_map.h"
 #include "editor/window_model_viewer.h"
 #include "editor/window_terrain_import.h"
+#include "editor/window_actor_tree.h"
+#include "editor/window_new_game.h"
+
+#include "language.h"
 
 static bool show_quit = false;
 static bool show_file = false;
@@ -138,6 +142,12 @@ void UI_DisplaySettings() {
   ImGui::SameLine();
   ui_scale_changed |= ImGui::RadioButton("4x", &ui_scale_opt, 4);
 
+  static int filter_textures = -1;
+  if(filter_textures == -1) { filter_textures = cv_graphics_texture_filter->b_value; }
+  if(ImGui::Checkbox("Filter textures", reinterpret_cast<bool*>(&filter_textures))) {
+    plSetConsoleVariable(cv_graphics_texture_filter, filter_textures ? "true" : "false");
+  }
+
   //Apply changes
   char buf[16];
   if (display_changed) {
@@ -184,20 +194,19 @@ void UI_DisplayNewGame() {
                    ED_DEFAULT_WINDOW_FLAGS
   );
 
-  ImGui::ListBoxHeader("Maps");
-  GameManager::MapManifestMap maps = openhow::Engine::GameManagerInstance()->GetMapManifests();
-  if (!maps.empty()) {
-    {
-      ImGui::Selectable("Selected", true);
-      ImGui::Selectable("Not Selected", false);
-    }
+  GameManager::MapManifestMap maps = Engine::Game()->GetMapManifests();
+  std::vector<const char*> options;
+  for(const auto& map : maps) {
+    options.push_back(LanguageManager::GetInstance()->GetTranslation(map.second.name.c_str()));
   }
-  ImGui::ListBoxFooter();
+
+  static int selected_map = 1;
+  ImGui::ListBox("Maps", &selected_map, &options[0], options.size(), 10);
 
   ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 32);
 
   if (ImGui::Button("Start Game!")) {
-    openhow::Engine::GameManagerInstance()->LoadMap("camp");
+    Engine::Game()->LoadMap(std::next(maps.begin(), selected_map)->second.filename);
     show_new_game = false;
   }
   ImGui::SameLine();
@@ -326,7 +335,7 @@ void UI_DisplayFileBox() {
           } break;
 
           case FILE_TYPE_AUDIO: {
-            Engine::AudioManagerInstance()->PlayGlobalSound(i.path);
+            Engine::Audio()->PlayGlobalSound(i.path);
           } break;
 
           default:break;
@@ -376,6 +385,7 @@ class QuitWindow : public BaseWindow {
     ImGui::Dummy(ImVec2(0, 5));
 
     if (ImGui::Button("Yes", ImVec2(64, 0))) {
+      ImGui::End();
       System_Shutdown();
     }
 
@@ -400,7 +410,7 @@ class ConsoleWindow : public BaseWindow {
   }
 
   void Display() override {
-    Camera* camera = Engine::GameManagerInstance()->GetCamera();
+    Camera* camera = Engine::Game()->GetCamera();
     ImGui::SetNextWindowSize(ImVec2((float)(camera->GetViewportWidth()) - 20, 128), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(10, (float)(camera->GetViewportHeight()) - 138));
     ImGui::Begin("Console", &show_console);
@@ -423,19 +433,25 @@ void UI_DisplayDebugMenu(void) {
   static bool show_about = false;
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if (ImGui::MenuItem("New Game...")) {
-        show_new_game = true;
+      if (ImGui::BeginMenu("One Player")) {
+        if(ImGui::MenuItem("New Game")) {
+          windows.push_back(new NewGameWindow());
+        }
+        if(ImGui::MenuItem("Load Game")) {} // todo
+        ImGui::EndMenu();
       }
-      if (ImGui::MenuItem("New Map...")) {
+      if(ImGui::MenuItem("Multi-Player")) {}  // todo
+      ImGui::Separator();
+      if (ImGui::MenuItem("Create Map")) {
         static NewMapWindow* popup = nullptr;
         if (popup == nullptr) {
           windows.push_back((popup = new NewMapWindow()));
         }
       }
+      if (ImGui::MenuItem("Load Map")) {} // todo
       ImGui::Separator();
-      if (ImGui::MenuItem("Open...")) { show_file = true; }
-      ImGui::Separator();
-      if (ImGui::MenuItem("Settings...")) { show_settings = true; }
+      if (ImGui::MenuItem("Options")) { show_settings = true; }
+      if (ImGui::MenuItem("Controls")) {} // todo
       ImGui::Separator();
       if (ImGui::MenuItem("Quit")) {
         windows.push_back(new QuitWindow());
@@ -529,14 +545,13 @@ void UI_DisplayDebugMenu(void) {
     // todo: eventually this will be moved into a dedicated toolbar
     if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Particle Editor...")) {}
-      if (Engine::GameManagerInstance()->GetCurrentMap() != nullptr) {
+      if (Engine::Game()->IsModeActive()) {
         if(ImGui::MenuItem("Import Heightmap...")) {
           windows.push_back(new WindowTerrainImport());
         }
         ImGui::Separator();
-        if (ImGui::MenuItem("Map Config Editor...")) {
-          windows.push_back(new MapConfigEditor());
-        }
+        if(ImGui::MenuItem("Actor Inspector...")) { windows.push_back(new ActorTreeWindow()); }
+        if (ImGui::MenuItem("Map Config Editor...")) { windows.push_back(new MapConfigEditor()); }
       }
       ImGui::EndMenu();
     }
@@ -546,7 +561,6 @@ void UI_DisplayDebugMenu(void) {
       ImGui::EndMenu();
     }
 
-#if 0 // pointless
     ImGui::Separator();
 
     unsigned int fps, ms;
@@ -555,9 +569,32 @@ void UI_DisplayDebugMenu(void) {
     ImGui::PushItemWidth(64);
     ImGui::Text("FPS %d (%dms)", fps, ms);
     ImGui::PopItemWidth();
-#endif
 
     ImGui::EndMainMenuBar();
+  }
+
+  // Prompt to notify players that games can be started
+  // via File > New Game, until we get an actual frontend
+  // implementation done.
+  if (!Engine::Game()->IsModeActive()) {
+    ImGui::SetNextWindowSize(ImVec2(320, 128));
+    ImGui::SetNextWindowPosCenter();
+    static bool state = false;
+    if(ImGui::Begin(
+        "InstructionMenu",
+        &state,
+        ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoBackground
+        )) {
+      ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+      ImGui::TextWrapped("%s", LanguageManager::GetInstance()->GetTranslation("$dbt0"));
+      ImGui::PopStyleColor();
+      ImGui::TextWrapped("%s", LanguageManager::GetInstance()->GetTranslation("$dbt1"));
+      ImGui::Text("%s", LanguageManager::GetInstance()->GetTranslation("$dbt2"));
+      ImGui::End();
+    }
   }
 
   UI_DisplayFileBox();

@@ -17,14 +17,19 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-#include "../model.h"
-#include "../script/script_config.h"
 #include "../Map.h"
+#include "../language.h"
 
 #include "actor_manager.h"
 #include "mode_base.h"
+#include "player.h"
 #include "game.h"
+
+#include "../script/script_config.h"
+
 #include "actors/actor_pig.h"
+#include "actors/actor_static_model.h"
+
 
 using namespace openhow;
 
@@ -76,24 +81,37 @@ std::string MapManifest::Serialize() {
   return output.str();
 }
 
-/////////////////////////////////////////////////////////////
-
 GameManager::GameManager() {
-  plRegisterConsoleCommand("createmap", CreateMapCommand, "");
+  plRegisterConsoleCommand("CreateMap", CreateMapCommand, "Creates a new named map.");
   plRegisterConsoleCommand("map", MapCommand, "");
   plRegisterConsoleCommand("maps", MapsCommand, "");
+  plRegisterConsoleCommand("GiveItem", GiveItemCommand, "Gives a specified item to the current occupied pig.");
+  plRegisterConsoleCommand("SpawnModel", SpawnModelCommand, "Creates a model at your current position.");
+
+  // Load in all the data we'll retain in memory
+  Engine::Resource()->LoadModel("chars/pigs/ac_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sb_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/gr_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/hv_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/le_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/me_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sa_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sn_hi", true, true);
+  Engine::Resource()->LoadModel("chars/pigs/sp_hi", true, true);
 
   camera_ = new Camera({0, 0, 0}, {0, 0, 0});
 }
 
 GameManager::~GameManager() {
   map_manifests_.clear();
+
+  delete camera_;
 }
 
 void GameManager::Tick() {
   FrontEnd_Tick();
 
-  if (active_mode_ == nullptr) {
+  if (mode_ == nullptr) {
     return;
   }
 
@@ -102,57 +120,57 @@ void GameManager::Tick() {
     if (sample != nullptr) {
       PLVector3 position = {
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH),
-          active_map_->GetTerrain()->GetMaxHeight(),
+          map_->GetTerrain()->GetMaxHeight(),
           plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
       };
-      Engine::AudioManagerInstance()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
+      Engine::Audio()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
     }
 
     ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
   }
 
-  active_mode_->Tick();
+  mode_->Tick();
+
+  ActorManager::GetInstance()->TickActors();
+
+  switch(camera_mode_) {
+    case CameraMode::FIRSTPERSON:break;
+    case CameraMode::FLY:break;
+    case CameraMode::FOLLOW:break;
+    case CameraMode::FLYAROUND:break;
+  }
+}
+
+void GameManager::SetupPlayers(const PlayerPtrVector& players) {
+  for(auto i : players) {
+    GetMode()->PlayerJoined(i);
+  }
+
+  players_ = players;
+}
+
+Player* GameManager::GetPlayerByIndex(unsigned int i) {
+  if(i >= players_.size()) {
+    LogWarn("Invalid player index, \"%d\"!\n", i);
+    return nullptr;
+  }
+
+  return players_[i];
 }
 
 void GameManager::LoadMap(const std::string& name) {
-  MapManifest* manifest = Engine::GameManagerInstance()->GetMapManifest(name);
+  MapManifest* manifest = Engine::Game()->GetMapManifest(name);
   if (manifest == nullptr) {
     LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
     return;
   }
 
-  //FrontEnd_SetState(FE_MODE_LOADING);
-
   Map* map = new Map(manifest);
-  if (active_map_ != nullptr) {
-    ActorManager::GetInstance()->DestroyActors();
-    ModelManager::GetInstance()->DestroyModels();
-    delete active_map_;
+  if (map_ != nullptr) {
+    EndMode();
   }
 
-  active_map_ = map;
-
-  std::string sample_ext = "d";
-  if (manifest->time != "day") {
-    sample_ext = "n";
-  }
-
-  for (unsigned int i = 1, idx = 0; i < 4; ++i) {
-    if (i < 3) {
-      ambient_samples_[idx++] = Engine::AudioManagerInstance()->CacheSample(
-          "audio/amb_" + std::to_string(i) + sample_ext + ".wav", false);
-    }
-    ambient_samples_[idx++] =
-        Engine::AudioManagerInstance()->CacheSample("audio/batt_s" + std::to_string(i) + ".wav", false);
-    ambient_samples_[idx++] =
-        Engine::AudioManagerInstance()->CacheSample("audio/batt_l" + std::to_string(i) + ".wav", false);
-  }
-
-  ambient_emit_delay_ = g_state.sim_ticks + rand() % 100;
-
-  active_mode_ = new BaseGameMode();
-  // call StartRound; deals with spawning everything in and other mode specific logic
-  active_mode_->StartRound();
+  map_ = map;
 
   /* todo: we should actually pause here and wait for user input
    *       otherwise players won't have time to read the loading screen */
@@ -164,8 +182,38 @@ void GameManager::UnloadMap() {
     delete ambient_sample;
   }
 
-  delete active_mode_;
-  delete active_map_;
+  delete map_;
+}
+
+void GameManager::RegisterTeamManifest(const std::string& path) {
+  const char* upath = u_find(path.c_str());
+  LogInfo("Registering team manifest \"%s\"...\n", upath);
+
+  // TODO: recurse through each dependency and add them to our list...
+
+  try {
+    ScriptConfig config(upath);
+    unsigned int num_teams = config.GetArrayLength();
+    if(num_teams == 0) {
+      Error("Failed to register teams, no teams available in \"%s\"!\n", upath);
+    }
+
+    for(unsigned int i = 0; i < num_teams; ++i) {
+      config.EnterChildNode(i);
+
+      Team team;
+      team.name = LanguageManager::GetInstance()->GetTranslation(config.GetStringProperty("name", team.name).c_str());
+      team.debrief_texture = config.GetStringProperty("debriefTexture", team.debrief_texture);
+      team.paper_texture = config.GetStringProperty("paperTextures", team.paper_texture);
+      team.pig_textures = config.GetStringProperty("pigTextures", team.pig_textures);
+      team.voice_set = config.GetStringProperty("voiceSet", team.voice_set);
+      default_teams_.push_back(team);
+
+      config.LeaveChildNode();
+    }
+  } catch (const std::exception& e) {
+    LogWarn("Failed to read map config, \"%s\"!\n%s\n", upath, e.what());
+  }
 }
 
 void GameManager::RegisterMapManifest(const std::string& path) {
@@ -207,9 +255,12 @@ void GameManager::RegisterMapManifest(const std::string& path) {
 }
 
 static void RegisterManifestInterface(const char* path) {
-  Engine::GameManagerInstance()->RegisterMapManifest(path);
+  Engine::Game()->RegisterMapManifest(path);
 }
 
+/**
+ * Scans the campaigns directory for .map files and indexes them.
+ */
 void GameManager::RegisterMapManifests() {
   map_manifests_.clear();
 
@@ -217,6 +268,11 @@ void GameManager::RegisterMapManifests() {
   plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
 }
 
+/**
+ * Returns a pointer to the requested manifest.
+ * @param name
+ * @return Returns a pointer to the requested manifest, otherwise returns null.
+ */
 MapManifest* GameManager::GetMapManifest(const std::string& name) {
   auto manifest = map_manifests_.find(name);
   if (manifest != map_manifests_.end()) {
@@ -227,9 +283,14 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
   return nullptr;
 }
 
+/**
+ * Creates a new map manifest and writes it into the maps directory.
+ * @param name
+ * @return
+ */
 MapManifest* GameManager::CreateManifest(const std::string& name) {
   // ensure the map doesn't exist already
-  if(Engine::GameManagerInstance()->GetMapManifest(name) != nullptr) {
+  if(Engine::Game()->GetMapManifest(name) != nullptr) {
     LogWarn("Unable to create map, it already exists!\n");
     return nullptr;
   }
@@ -247,8 +308,8 @@ MapManifest* GameManager::CreateManifest(const std::string& name) {
 
   LogInfo("Wrote \"%s\"!\n", path.c_str());
 
-  Engine::GameManagerInstance()->RegisterMapManifest(path);
-  return Engine::GameManagerInstance()->GetMapManifest(name);
+  Engine::Game()->RegisterMapManifest(path);
+  return Engine::Game()->GetMapManifest(name);
 }
 
 void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
@@ -257,14 +318,19 @@ void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
     return;
   }
 
-  MapManifest* manifest = Engine::GameManagerInstance()->CreateManifest(argv[1]);
+  MapManifest* manifest = Engine::Game()->CreateManifest(argv[1]);
   if(manifest == nullptr) {
     return;
   }
 
-  Engine::GameManagerInstance()->LoadMap(argv[1]);
+  Engine::Game()->LoadMap(argv[1]);
 }
 
+/**
+ * Loads the specified map.
+ * @param argc
+ * @param argv
+ */
 void GameManager::MapCommand(unsigned int argc, char** argv) {
   if (argc < 2) {
     LogWarn("Invalid number of arguments, ignoring!\n");
@@ -272,21 +338,28 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
   }
 
   std::string mode = "singleplayer";
-  const MapManifest* desc = Engine::GameManagerInstance()->GetMapManifest(argv[1]);
+  const MapManifest* desc = Engine::Game()->GetMapManifest(argv[1]);
   if (desc != nullptr && !desc->modes.empty()) {
     mode = desc->modes[0];
   }
 
-  Engine::GameManagerInstance()->LoadMap(argv[1]);
+  // Set up a mode with some defaults.
+  GameModeDescriptor descriptor = GameModeDescriptor();
+  Engine::Game()->StartMode(argv[1], { new Player(PlayerType::LOCAL) }, descriptor);
 }
 
+/**
+ * Provide a list of all the currently registered maps.
+ * @param argc
+ * @param argv
+ */
 void GameManager::MapsCommand(unsigned int argc, char** argv) {
-  if (Engine::GameManagerInstance()->map_manifests_.empty()) {
+  if (Engine::Game()->map_manifests_.empty()) {
     LogWarn("No maps available!\n");
     return;
   }
 
-  for (auto manifest : Engine::GameManagerInstance()->map_manifests_) {
+  for (auto manifest : Engine::Game()->map_manifests_) {
     MapManifest* desc = &manifest.second;
     std::string out =
         desc->name + "/" + manifest.first +
@@ -299,7 +372,7 @@ void GameManager::MapsCommand(unsigned int argc, char** argv) {
     LogInfo("%s\n", out.c_str());
   }
 
-  LogInfo("%u maps\n", Engine::GameManagerInstance()->map_manifests_.size());
+  LogInfo("%u maps\n", Engine::Game()->map_manifests_.size());
 }
 
 void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
@@ -308,23 +381,133 @@ void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
     return;
   }
 
-  if(Engine::GameManagerInstance()->current_actor_ == nullptr) {
+  Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+  if(player == nullptr) {
+    LogWarn("Failed to get current player!\n");
+    return;
+  }
+
+  Actor* actor = player->GetCurrentChild();
+  if(actor == nullptr) {
     LogWarn("No actor currently active!\n");
     return;
   }
 
-  APig* pig = dynamic_cast<APig*>(Engine::GameManagerInstance()->current_actor_);
+  APig* pig = dynamic_cast<APig*>(actor);
   if(pig == nullptr) {
     LogWarn("Actor is not a pig!\n");
     return;
   }
 
-  AItem* item = dynamic_cast<AItem*>(ActorManager::GetInstance()->CreateActor(argv[1]));
-  if(item == nullptr) {
-    ActorManager::GetInstance()->DestroyActor(item);
-    LogWarn("Failed to create valid item!\n");
+  auto item = static_cast<ItemIdentifier>(strtol(argv[1], nullptr, 10));
+  unsigned int quantity = 1;
+  if(argc > 2) {
+    quantity = strtol(argv[2], nullptr, 10);
+  }
+
+  pig->AddInventoryItem(item, quantity);
+}
+
+void GameManager::SpawnModelCommand(unsigned int argc, char** argv) {
+  if(Engine::Game()->mode_ == nullptr) {
+    LogInfo("Command cannot function outside of game!\n");
+    return;
+  } else if(argc < 2) {
+    LogWarn("Invalid number of arguments, ignoring!\n");
     return;
   }
 
-  pig->AddInventory(item);
+  Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+  if(player == nullptr) {
+    LogWarn("Failed to get current player!\n");
+    return;
+  }
+
+  // Fetch the player's actor, so we can get their position
+  Actor* actor = player->GetCurrentChild();
+  if(actor == nullptr) {
+    LogWarn("No actor currently active!\n");
+    return;
+  }
+
+  AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor("static_model"));
+  if(model_actor == nullptr) {
+    Error("Failed to create model actor!\n");
+  }
+
+  model_actor->SetModel(argv[1]);
+  model_actor->SetPosition(actor->GetPosition());
+  model_actor->SetAngles(actor->GetAngles());
+}
+
+void GameManager::StartMode(const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor) {
+  FrontEnd_SetState(FE_MODE_LOADING);
+
+  Engine::Game()->LoadMap(map);
+
+  if(map_ == nullptr) {
+    LogWarn("Failed to start mode, map wasn't loaded!\n");
+    EndMode();
+    return;
+  }
+
+  std::string sample_ext = "d";
+  if (map_->GetManifest()->time != "day") {
+    sample_ext = "n";
+  }
+
+  ambient_emit_delay_ = g_state.sim_ticks + plGenerateRandomd(100) + 1;
+  for (unsigned int i = 1, idx = 0; i < 4; ++i) {
+    std::string snum = std::to_string(i);
+    std::string path = "audio/amb_";
+    if (i < 3) {
+      path += snum + sample_ext + ".wav";
+      ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
+    }
+
+    path = "audio/batt_s" + snum + ".wav";
+    ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
+    path = "audio/batt_l" + snum + ".wav";
+    ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
+  }
+
+  FrontEnd_SetState(FE_MODE_GAME);
+
+  // call StartRound; deals with spawning everything in and other mode specific logic
+  mode_ = new BaseGameMode(descriptor);
+
+  SetupPlayers(players);
+
+  mode_->StartRound();
+}
+
+/**
+ * End the currently active mode and flush everything.
+ */
+void GameManager::EndMode() {
+  delete mode_;
+
+  // Clear out all the allocated players for this game
+  for(auto i : players_) {
+    delete i;
+  }
+  players_.clear();
+
+  UnloadMap();
+
+  ActorManager::GetInstance()->DestroyActors();
+
+  Engine::Resource()->ClearTextures();
+  Engine::Resource()->ClearModels();
+
+  Engine::Audio()->FreeSources();
+  Engine::Audio()->FreeSamples();
+}
+
+/**
+ * Check whether or not a mode is currently active.
+ * @return Returns true if a mode is currently active.
+ */
+bool GameManager::IsModeActive() {
+  return (mode_ != nullptr);
 }

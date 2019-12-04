@@ -50,8 +50,6 @@ Map::Map(MapManifest* manifest) : manifest_(manifest) {
 }
 
 Map::~Map() {
-  ModelManager::GetInstance()->DestroyModel(sky_model_top_);
-  ModelManager::GetInstance()->DestroyModel(sky_model_bottom_);
   delete terrain_;
 }
 
@@ -66,7 +64,7 @@ void Map::LoadSky() {
 }
 
 PLModel* Map::LoadSkyModel(const std::string& path) {
-  PLModel* model = ModelManager::GetInstance()->LoadModel(path, true);
+  PLModel* model = Engine::Resource()->LoadModel(path, true, true);
   model->model_matrix = plTranslateMatrix4(PLVector3(TERRAIN_PIXEL_WIDTH / 2, 0, TERRAIN_PIXEL_WIDTH / 2));
   // Default skydome is smaller than the map, so we'll scale it
   model->model_matrix = plScaleMatrix4(model->model_matrix, PLVector3(5, 5, 5));
@@ -212,9 +210,9 @@ void Map::LoadSpawns(const std::string& path) {
     spawns_[i].fallback_position.y = (spawns[i].fallback_position[1]);
     spawns_[i].fallback_position.z = (spawns[i].fallback_position[2] += (TERRAIN_PIXEL_WIDTH / 2) * -1);
 
-    spawns_[i].angles.x = plDegreesToRadians((float) (spawns[i].angles[0]) * (360.f / 4096.f));
-    spawns_[i].angles.y = plDegreesToRadians((float) (spawns[i].angles[1]) * (360.f / 4096.f) + 90.f);
-    spawns_[i].angles.z = plDegreesToRadians((float) (spawns[i].angles[2]) * (360.f / 4096.f) - 180.f);
+    spawns_[i].angles.x = (float) (spawns[i].angles[0]) * (360.f / 4096.f);
+    spawns_[i].angles.y = (float) (spawns[i].angles[1]) * (360.f / 4096.f) + 90.f;
+    spawns_[i].angles.z = (float) (spawns[i].angles[2]) * (360.f / 4096.f);
 
     spawns_[i].class_name = u_stringtolower(spawns[i].name);
     spawns_[i].appearance = spawns[i].appearance;

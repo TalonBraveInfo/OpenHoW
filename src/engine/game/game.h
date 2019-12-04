@@ -20,24 +20,138 @@
 #include "TempGame.h"
 #include "actors/actor.h"
 #include "mode_interface.h"
+
 #include "../graphics/camera.h"
 
-struct Player {
-  std::string name; // Name of the player/team
-  Actor* input_target{nullptr}; // Actor that the player is possessing
-  unsigned int input_slot{0}; // Controller slot
-  unsigned int identity; // Identity of the team (e.g. Tommy etc.)
-  std::vector<Actor*> children; // List of spawnables in the team
+enum class CharacterStatus {
+  NONE = -1,
+  ALIVE,
+  DEAD,
 };
 
-struct TeamManifest {
-  std::string name{"none"};
-  std::string description{"none"};
+/* 
+  NONE = -1,
+  GRUNT,
+  // Heavy Weapons
+  GUNNER,
+  BOMBARDIER,
+  PYROTECHNIC,
+  // Engineer
+  SAPPER,
+  ENGINEER,
+  SABOTEUR,
+  // Espionage
+  SCOUT,
+  SNIPER,
+  SPY,
+  // Medic
+  ORDERLY,
+  MEDIC,
+  SURGEON,
+  // High Rank
+  COMMANDO,
+  HERO,
+  ACE,
+  LEGEND,
+  // Multiplayer
+  PARATROOPER,
+  GRENADIER,
+ */
+
+struct CharacterClass : PropertyOwner {
+  CharacterClass() :
+  INIT_PROPERTY(key, 0),
+  INIT_PROPERTY(label, 0),
+  INIT_PROPERTY(model, 0),
+  INIT_PROPERTY(cost, 0, 0),
+  INIT_PROPERTY(health, 0, 0)
+  {}
+  
+  StringProperty                  key;
+  StringProperty                  label;
+  StringProperty                  model;
+  NumericProperty<unsigned int>   cost;
+  NumericProperty<unsigned int>   health;
+
+  struct Item {
+    std::string   key;
+    std::string   classname;
+    unsigned int  quantity{ 0 };
+  };
+  std::vector<Item> items;
+};
+
+struct CharacterSlot : PropertyOwner {
+  CharacterSlot() :
+  INIT_PROPERTY(portrait, 0),
+  INIT_PROPERTY(portrait_selected, 0),
+  INIT_PROPERTY(portrait_wounded, 0),
+  INIT_PROPERTY(voice_language, 0),
+  INIT_PROPERTY(voice_set, 0, 0)
+  {}
+  
+  CharacterSlot(const CharacterSlot &src) :
+  COPY_PROPERTY(portrait, src),
+  COPY_PROPERTY(portrait_selected, src),
+  COPY_PROPERTY(portrait_wounded, src),
+  COPY_PROPERTY(voice_language, src),
+  COPY_PROPERTY(voice_set, src),
+  name(src.name),
+  classname(src.classname),
+  status(src.status),
+  kill_count(src.kill_count),
+  death_count(src.death_count)
+  {}
+  
+  // Static
+  StringProperty                    portrait;           // Face profile
+  StringProperty                    portrait_selected;  // Selected face profile
+  StringProperty                    portrait_wounded;   // Wounded face profile
+  StringProperty                    voice_language;
+  NumericProperty<unsigned int>     voice_set;
+  
+  // Dynamic
+  std::string             name;                               // Assigned name, e.g. Herman
+  const CharacterClass*   classname{ nullptr };               // Ace, gunner, sapper etc.
+  CharacterStatus         status{ CharacterStatus::ALIVE };   // Pig's status (alive / dead)
+  unsigned int            kill_count{ 0 };                    // Number of other pigs we've killed
+  unsigned int            death_count{ 0 };                   // Number of times we've died
+};
+
+struct Team : PropertyOwner {
+  Team() :
+  INIT_PROPERTY(name, 0),
+  INIT_PROPERTY(description, 0),
+  INIT_PROPERTY(pig_textures, 0),
+  INIT_PROPERTY(paper_texture, 0),
+  INIT_PROPERTY(debrief_texture, 0),
+  INIT_PROPERTY(voice_set, 0)
+  {}
+  
+  Team(const Team &src) :
+  COPY_PROPERTY(name, src),
+  COPY_PROPERTY(description, src),
+  COPY_PROPERTY(pig_textures, src),
+  COPY_PROPERTY(paper_texture, src),
+  COPY_PROPERTY(debrief_texture, src),
+  COPY_PROPERTY(voice_set, src),
+  slots(src.slots)
+  {}
+
+  StringProperty name;
+  StringProperty description;
 
   // data directories
-  std::string texture_path{"chars/pigs/british"};
+  StringProperty pig_textures;
+  StringProperty paper_texture;
+  StringProperty debrief_texture;
+  StringProperty voice_set;
 
-  std::string Serialize() { /* TODO */ return ""; }
+  std::array<CharacterSlot, 8> slots;
+
+  virtual std::string SerializePropertiesAsJson() {
+    std::string string;
+  }
 };
 
 struct MapManifest {
@@ -61,16 +175,28 @@ struct MapManifest {
   float fog_intensity{30.0f};
   float fog_distance{100.0f};
   // Misc
-  std::string temperature{"normal"};       // Determines idle animation set. Can be normal/hot/cold
+  std::string temperature{"normal"};    // Determines idle animation set. Can be normal/hot/cold
   std::string time{"day"};              // Determines ambient sound set. Can be day/night
   std::string weather{"clear"};         // Determines weather particles. Can be clear/rain/snow
 
   std::string Serialize();
 };
 
-namespace openhow {
-class Engine;
-}
+struct GameModeDescriptor {
+  std::string   desired_mode{"survival"};
+
+  // Mode specific properties, probably provide these
+  // via json going forward and then parse via the mode... somehow
+  bool          select_pig{false};
+  bool          sudden_death{false};
+  unsigned int  default_health{50};
+  unsigned int  num_pigs{3};
+  unsigned int  turn_time{45};
+  unsigned int  deathmatch_limit{5};
+};
+
+typedef std::vector<Player*> PlayerPtrVector;
+
 class Map;
 
 class GameManager {
@@ -83,11 +209,19 @@ class GameManager {
 
   Camera* GetCamera() { return camera_; }
 
+  void StartMode(const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor);
+  void EndMode();
+
+  void SetupPlayers(const PlayerPtrVector& teams);
+  Player* GetPlayerByIndex(unsigned int i);
+  const PlayerPtrVector& GetPlayers() { return players_; }
+
   // Map
 
   void LoadMap(const std::string& name);
   void UnloadMap();
 
+  void RegisterTeamManifest(const std::string& path);
   void RegisterMapManifest(const std::string& path);
   void RegisterMapManifests();
 
@@ -95,15 +229,16 @@ class GameManager {
   MapManifest* GetMapManifest(const std::string& name);
   const MapManifestMap& GetMapManifests() { return map_manifests_; };
   MapManifest* CreateManifest(const std::string& name);
-  void SaveManifest(const std::string& name, const MapManifest& manifest);
+  //void SaveManifest(const std::string& name, const MapManifest& manifest);
 
-  Map* GetCurrentMap() { return active_map_; }
+  typedef std::vector<Team> TeamVector;
+  const TeamVector& GetDefaultTeams() { return default_teams_; }
 
-  IGameMode* GetMode() { return active_mode_; }
+  Map* GetCurrentMap() { return map_; }
 
-  // Player Handling
+  IGameMode* GetMode() { return mode_; }
 
-  void AddPlayer(Player player);
+  bool IsModeActive();
 
  protected:
  private:
@@ -111,17 +246,36 @@ class GameManager {
   static void CreateMapCommand(unsigned int argc, char* argv[]);
   static void MapsCommand(unsigned int argc, char* argv[]);
   static void GiveItemCommand(unsigned int argc, char* argv[]);
+  static void SpawnModelCommand(unsigned int argc, char** argv);
 
-  Camera* camera_{nullptr};
+  /////////////////////////////////////////////////////////////
+  // Camera
 
-  IGameMode* active_mode_{nullptr};
-  Map* active_map_{nullptr};
+  enum class CameraMode {
+    // Debugging modes
 
-  Actor* current_actor_{nullptr};
+    FLY,          // Fly around
+    FIRSTPERSON,  // First person controls
+
+    // Gameplay
+
+    FOLLOW,       // Follows behind a specific entity
+    FLYAROUND,
+  };
+
+  Camera* camera_{ nullptr };
+  CameraMode camera_mode_{ CameraMode::FOLLOW };
+
+  /////////////////////////////////////////////////////////////
+
+  Map* map_{nullptr};
+
+  IGameMode* mode_{nullptr};
 
   std::map<std::string, MapManifest> map_manifests_;
 
-  std::vector<Player> players_;
+  TeamVector default_teams_;
+  PlayerPtrVector players_;
 
 #define MAX_AMBIENT_SAMPLES 8
   double ambient_emit_delay_{0};

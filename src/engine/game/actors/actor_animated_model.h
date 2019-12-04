@@ -21,7 +21,7 @@
 #include "actor_model.h"
 
 class AAnimatedModel : public AModel {
-  ACTOR_IMPLEMENT_SUPER(AModel)
+  IMPLEMENT_ACTOR(AAnimatedModel, AModel)
 
  public:
   AAnimatedModel();

@@ -1,0 +1,131 @@
+[
+  {
+    "name": "$team_british",
+    "colour": "9 155 46",
+    "pigTextures": "chars/pigs/british",
+    "paperTextures": "frontend/papers/british",
+    "debriefTexture": "frontend/debrief/unifeng",
+    "personalities": [
+      {
+        "defaultName": "$pig_british_01",
+        "portrait": "frontend/debrief/facepc1",
+        "portraitSelected": "frontend/debrief/facepc1",
+        "portraitWounded": "frontend/debrief/facepcw1",
+        "voiceLanguage": "en",
+        "voiceSet": "1"
+      },
+      {
+        "defaultName": "$pig_british_02",
+        "portrait": "frontend/debrief/facepc2",
+        "portraitSelected": "frontend/debrief/facepc2",
+        "portraitWounded": "frontend/debrief/facepcw2",
+        "voiceLanguage": "en",
+        "voiceSet": "2"
+      },
+      {
+        "defaultName": "$pig_british_03",
+        "portrait": "frontend/debrief/facepc3",
+        "portraitSelected": "frontend/debrief/facepc3",
+        "portraitWounded": "frontend/debrief/facepcw3",
+        "voiceLanguage": "en",
+        "voiceSet": "3"
+      },
+      {
+        "defaultName": "$pig_british_04",
+        "portrait": "frontend/debrief/facepc4",
+        "portraitSelected": "frontend/debrief/facepc4",
+        "portraitWounded": "frontend/debrief/facepcw4",
+        "voiceLanguage": "en",
+        "voiceSet": "4"
+      },
+      {
+        "defaultName": "$pig_british_05",
+        "portrait": "frontend/debrief/facepc5",
+        "portraitSelected": "frontend/debrief/facepc5",
+        "portraitWounded": "frontend/debrief/facepcw5",
+        "voiceLanguage": "en",
+        "voiceSet": "5"
+      },
+      {
+        "defaultName": "$pig_british_06",
+        "portrait": "frontend/debrief/facepc6",
+        "portraitSelected": "frontend/debrief/facepc6",
+        "portraitWounded": "frontend/debrief/facepcw6",
+        "voiceLanguage": "en",
+        "voiceSet": "6"
+      },
+      {
+        "defaultName": "$pig_british_07",
+        "portrait": "frontend/debrief/facepc7",
+        "portraitSelected": "frontend/debrief/facepc7",
+        "portraitWounded": "frontend/debrief/facepcw7",
+        "voiceLanguage": "en",
+        "voiceSet": "7"
+      },
+      {
+        "defaultName": "$pig_british_08",
+        "portrait": "frontend/debrief/facepc8",
+        "portraitSelected": "frontend/debrief/facepc8",
+        "portraitWounded": "frontend/debrief/facepcw8",
+        "voiceLanguage": "en",
+        "voiceSet": "8"
+      },
+      {
+        "defaultName": "$pig_british_09",
+        "portrait": "frontend/debrief/facepc9",
+        "portraitSelected": "frontend/debrief/facepc9",
+        "portraitWounded": "frontend/debrief/facepcw9",
+        "voiceLanguage": "en",
+        "voiceSet": "9"
+      }
+    ]
+  },
+  {
+    "name": "$team_french",
+    "colour": "0 0 196",
+    "pigTextures": "chars/pigs/french",
+    "paperTextures": "frontend/papers/french",
+    "debriefTexture": "frontend/debrief/uniffren",
+    "voiceSet": "fr"
+  },
+  {
+    "name": "$team_american",
+    "colour": "51 166 217",
+    "pigTextures": "chars/pigs/american",
+    "paperTextures": "frontend/papers/american",
+    "debriefTexture": "frontend/debrief/unifusa",
+    "voiceSet": "am"
+  },
+  {
+    "name": "$team_russian",
+    "colour": "202 0 0",
+    "pigTextures": "chars/pigs/british",
+    "paperTextures": "frontend/papers/british",
+    "debriefTexture": "frontend/debrief/unifruss",
+    "voiceSet": "ru"
+  },
+  {
+    "name": "$team_japanese",
+    "colour": "202 204 4",
+    "pigTextures": "chars/pigs/japanese",
+    "paperTextures": "frontend/papers/japanese",
+    "debriefTexture": "frontend/debrief/unifjap",
+    "voiceSet": "ja"
+  },
+  {
+    "name": "$team_german",
+    "colour": "90 80 70",
+    "pigTextures": "chars/pigs/german",
+    "paperTextures": "frontend/papers/german",
+    "debriefTexture": "frontend/debrief/unifgerm",
+    "voiceSet": "ge"
+  },
+  {
+    "name": "$team_lard",
+    "colour": "133 0 200",
+    "pigTextures": "chars/pigs/teamlard",
+    "paperTextures": "frontend/papers/teamlard",
+    "debriefTexture": "frontend/debrief/uniflard",
+    "voiceSet": "en"
+  }
+]

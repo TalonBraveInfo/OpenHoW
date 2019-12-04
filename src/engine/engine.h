@@ -29,6 +29,7 @@
 #ifdef __cplusplus
 #include <string>
 #include <sstream>
+#include <list>
 #endif
 
 #include "../shared/util.h"
@@ -41,7 +42,7 @@
 #define ENGINE_LOG          "debug"
 
 #define ENGINE_MAJOR_VERSION    0
-#define ENGINE_MINOR_VERSION    4
+#define ENGINE_MINOR_VERSION    5
 #define ENGINE_PATCH_VERSION    0
 
 #define TICKS_PER_SECOND    25
@@ -49,8 +50,11 @@
 #define MAX_FRAMESKIP       5
 
 #ifdef __cplusplus
+#include "resource_manager.h"
+
 #include "audio/audio.h"
 #include "game/game.h"
+#include "physics/physics_interface.h"
 
 namespace openhow {
 class Engine;
@@ -60,11 +64,17 @@ class Engine {
   Engine();
   ~Engine();
 
-  static AudioManager* AudioManagerInstance() {
+  static AudioManager* Audio() {
     return engine->audio_manager_;
   }
-  static GameManager* GameManagerInstance() {
+  static GameManager* Game() {
     return engine->game_manager_;
+  }
+  static ResourceManager* Resource() {
+    return engine->resource_manager_;
+  }
+  static IPhysicsInterface* Physics() {
+    return engine->physics_interface_;
   }
 
   void Initialize();
@@ -76,11 +86,15 @@ class Engine {
  private:
   GameManager* game_manager_{nullptr};
   AudioManager* audio_manager_{nullptr};
+  ResourceManager* resource_manager_{nullptr};
+  IPhysicsInterface* physics_interface_{nullptr};
 };
 }
 
 #else
+
 typedef struct BaseGameMode BaseGameMode;
+
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
 
 typedef struct EngineState {

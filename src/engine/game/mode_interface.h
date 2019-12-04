@@ -17,7 +17,9 @@
 
 #pragma once
 
-struct Player;
+struct Team;
+class Player;
+
 class IGameMode {
  public:
   virtual ~IGameMode() = default;
@@ -37,30 +39,32 @@ class IGameMode {
   virtual unsigned int GetMaxSpectators() const = 0;
   virtual unsigned int GetMaxPlayers() const = 0;
 
-  Player* GetCurrentPlayer() { return &players_[current_player_]; }
+  virtual Player* GetCurrentPlayer() = 0;
 
   bool HasModeStarted() const { return mode_started_; }
   bool HasRoundStarted() const { return round_started_; }
   bool HasTurnStarted() const { return turn_started_; }
 
-  unsigned int GetTurnTime() { return turn_time_; }
-  unsigned int GetTurnTimeSeconds() { return turn_time_ / 1000; }
+  unsigned int GetTurnTime() { return num_turn_ticks; }
+  unsigned int GetTurnTimeSeconds() { return num_turn_ticks / TICKS_PER_SECOND; }
+  unsigned int GetMaxTurnTime() { return max_turn_ticks; }
+  unsigned int GetMaxTurnTimeSeconds() { return max_turn_ticks / TICKS_PER_SECOND; }
+
+  virtual void AssignActorToPlayer(Actor* target, Player* owner) = 0;
 
  protected:
-  virtual void StartTurn() = 0;
-  virtual void EndTurn() = 0;
+  virtual void StartTurn(Player* player) = 0;
+  virtual void EndTurn(Player* player) = 0;
 
   virtual void SpawnActors() = 0;
   virtual void DestroyActors() = 0;
 
-  unsigned int turn_time_{0};
+  unsigned int max_turn_ticks{0}; // Maximum ticks for a turn
+  unsigned int num_turn_ticks{0}; // Current number of ticks in the turn
 
   bool mode_started_{false};
   bool round_started_{false};
   bool turn_started_{false};
 
-  std::vector<Player> players_;
-  std::vector<Player> spectators_;
-
-  unsigned int current_player_{0};
+  unsigned int current_player_{0 };
 };

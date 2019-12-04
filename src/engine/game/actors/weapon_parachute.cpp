@@ -17,41 +17,31 @@
 
 #include "../../engine.h"
 #include "../actor_manager.h"
-#include "actor_item.h"
-#include "actor_pig.h"
+#include "weapon_parachute.h"
 
-class AItemHealth : public AItem {
-  ACTOR_IMPLEMENT_SUPER(AItem)
+// Parachute, not really a weapon but hey ho!
 
- public:
-  AItemHealth();
-  ~AItemHealth() override;
+REGISTER_ACTOR(weapon_parachute, AParachuteWeapon)
 
-  void PickUp(Actor* other) override;
+AParachuteWeapon::AParachuteWeapon() : SuperClass() {
+  SetModel("weapons/we_para");
+  ShowModel(false);
+}
 
- protected:
- private:
-};
+AParachuteWeapon::~AParachuteWeapon() = default;
 
-REGISTER_ACTOR(crate2, AItemHealth)
+void AParachuteWeapon::Tick() {
+  SuperClass::Tick();
 
-using namespace openhow;
-
-AItemHealth::AItemHealth() : SuperClass() {}
-AItemHealth::~AItemHealth() = default;
-
-void AItemHealth::PickUp(Actor* other) {
-  SuperClass::PickUp(other);
-
-  APig* pig = dynamic_cast<APig*>(other);
-  if(pig == nullptr) {
-    // only pigs should be able to pick these up!
+  if(!is_deployed_) {
     return;
   }
+}
 
-  pig->AddHealth(item_quantity_);
+void AParachuteWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
+  SuperClass::Fire(pos, dir);
+}
 
-  // may want to introduce networking logic here for actor destruction
-  // hence why it's done this way for now
-  ActorManager::GetInstance()->DestroyActor(this);
+void AParachuteWeapon::Deploy() {
+  SuperClass::Deploy();
 }

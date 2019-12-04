@@ -20,4 +20,4 @@
 #include <list>
 #include <PL/platform_mesh.h>
 
-void Mesh_GenerateFragmentedMeshNormals(std::list<PLMesh*> meshes);
+void Mesh_GenerateFragmentedMeshNormals(const std::list<PLMesh*>& meshes);

@@ -26,6 +26,8 @@ extern PLConsoleVariable *cv_debug_input;
 extern PLConsoleVariable *cv_debug_cache;
 extern PLConsoleVariable *cv_debug_shaders;
 
+extern PLConsoleVariable *cv_game_language;
+
 extern PLConsoleVariable *cv_camera_mode;
 extern PLConsoleVariable *cv_camera_fov;
 extern PLConsoleVariable *cv_camera_near;
@@ -42,6 +44,9 @@ extern PLConsoleVariable *cv_display_vsync;
 extern PLConsoleVariable *cv_graphics_cull;
 extern PLConsoleVariable *cv_graphics_draw_world;
 extern PLConsoleVariable *cv_graphics_draw_audio_sources;
+extern PLConsoleVariable *cv_graphics_texture_filter;
+extern PLConsoleVariable *cv_graphics_alpha_to_coverage;
+extern PLConsoleVariable *cv_graphics_debug_normals;
 
 extern PLConsoleVariable *cv_audio_volume;
 extern PLConsoleVariable *cv_audio_volume_sfx;

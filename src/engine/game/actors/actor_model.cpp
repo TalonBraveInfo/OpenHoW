@@ -27,27 +27,34 @@ AModel::~AModel() = default;
 void AModel::Draw() {
   SuperClass::Draw();
 
-  if(model_ == nullptr) {
-    return;
-  }
-
-  Player* player = Engine::GameManagerInstance()->GetMode()->GetCurrentPlayer();
-  if(player != nullptr && player->input_target == this) {
+  if(!show_model_ || model_ == nullptr) {
     return;
   }
 
   if (strstr(model_->name, "dummy") != nullptr) {
-    angles_.y += TICKS_PER_SECOND / 1000.f;
+    angles_.y += TICKS_PER_SECOND / 10.f;
   }
 
-  PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
-  mrot = mrot * plRotateMatrix4(angles_.y, PLVector3(0, 1, 0));
-  mrot = mrot * plRotateMatrix4(angles_.z, PLVector3(0, 0, 1));
-  model_->model_matrix = mrot * plTranslateMatrix4(position_);
+  PLVector3 angles(
+      plDegreesToRadians(angles_.x),
+      plDegreesToRadians(angles_.y),
+      plDegreesToRadians(angles_.z));
 
-  plDrawModel(model_);
+  PLMatrix4 translation =
+      (
+        plRotateMatrix4(angles.z, { 1, 0, 0 }) *
+        plRotateMatrix4(-angles.y, { 0, 1, 0 }) *
+        plRotateMatrix4(angles.x, { 0, 0, 1 })
+      ) * plTranslateMatrix4(position_);
+
+  Model_Draw(model_, translation);
 }
 
 void AModel::SetModel(const std::string &path) {
-  model_ = ModelManager::GetInstance()->LoadCachedModel("chars/" + path, false);
+  model_ = Engine::Resource()->LoadModel("chars/" + path, false);
+  u_assert(model_ != nullptr);
+}
+
+void AModel::ShowModel(bool show) {
+  show_model_ = show;
 }
