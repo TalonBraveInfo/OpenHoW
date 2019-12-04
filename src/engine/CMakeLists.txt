@@ -30,6 +30,7 @@ project(OpenHoW)
 add_definitions(
         "-DIMGUI_IMPL_OPENGL_LOADER_GLEW"   # Required for OpenGL3.x imgui setup
         "-DCOMPILE_ENGINE"
+        "-D_NEWTON_STATIC_LIB"              # Sigh...
 )
 
 file(

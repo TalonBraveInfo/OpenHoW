@@ -56,6 +56,7 @@ endfunction()
 
 function(build_newton)
     set(NEWTON_BUILD_SANDBOX_DEMOS OFF CACHE BOOL "generates demos projects")
+    set(NEWTON_BUILD_SHARED_LIBS OFF CACHE BOOL "build shared library")
     set(NEWTON_WITH_AVX_PLUGIN OFF CACHE BOOL "adding avx parallel solver (forces shared libs)")
     add_subdirectory(src/3rdparty/newton-dynamics)
 endfunction()
