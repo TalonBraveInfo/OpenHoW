@@ -27,7 +27,7 @@
 #include "../game/actor_manager.h"
 
 #include "font.h"
-#include "shader.h"
+#include "shaders.h"
 #include "display.h"
 
 using namespace openhow;
@@ -562,7 +562,7 @@ void Display_DrawScene() {
     plEnableGraphicsState(PL_GFX_STATE_ALPHATOCOVERAGE);
   }
 
-  Shaders_SetProgram(SHADER_GenericTextured);
+  Shaders_SetProgramByName("generic_textured");
 
   DrawMap();
   ActorManager::GetInstance()->DrawActors();
@@ -577,7 +577,8 @@ void Display_DrawScene() {
 }
 
 void Display_DrawInterface() {
-  Shaders_SetProgram(SHADER_GenericTextured);
+  Shaders_SetProgramByName("generic_textured");
+
   plSetupCamera(g_state.ui_camera);
   plSetDepthBufferMode(PL_DEPTHBUFFER_DISABLE);
   FE_Draw();
@@ -588,7 +589,8 @@ void Display_DrawDebug() {
   bool fs;
   System_GetWindowDrawableSize(&window_draw_w, &window_draw_h, &fs);
 
-  Shaders_SetProgram(SHADER_GenericTextured);
+  Shaders_SetProgramByName("generic_textured");
+
   plSetupCamera(g_state.ui_camera);
 
   DrawDebugOverlay();

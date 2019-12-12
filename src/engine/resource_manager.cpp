@@ -17,7 +17,7 @@
 
 #include "engine.h"
 #include "resource_manager.h"
-#include "graphics/shader.h"
+#include "graphics/shaders.h"
 
 using namespace openhow;
 
@@ -191,7 +191,7 @@ PLModel* ResourceManager::GetFallbackModel() {
   plSetMeshVertexPosition(mesh, 4, PLVector3(0, 0, 20));
   plSetMeshVertexPosition(mesh, 5, PLVector3(0, 0, -20));
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
-  plSetMeshShaderProgram(mesh, Shaders_GetProgram(SHADER_GenericUntextured));
+  plSetMeshShaderProgram(mesh, Shaders_GetProgramByName(SHADER_GenericUntextured));
   plUploadMesh(mesh);
 
   return (fallback_model_ = plCreateBasicStaticModel(mesh));
