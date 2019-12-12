@@ -191,7 +191,8 @@ PLModel* ResourceManager::GetFallbackModel() {
   plSetMeshVertexPosition(mesh, 4, PLVector3(0, 0, 20));
   plSetMeshVertexPosition(mesh, 5, PLVector3(0, 0, -20));
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
-  plSetMeshShaderProgram(mesh, Shaders_GetProgramByName(SHADER_GenericUntextured));
+
+  plSetMeshShaderProgram(mesh, Shaders_GetProgram("generic_untextured")->GetInternalProgram());
   plUploadMesh(mesh);
 
   return (fallback_model_ = plCreateBasicStaticModel(mesh));
