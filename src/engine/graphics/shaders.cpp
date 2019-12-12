@@ -25,8 +25,6 @@ static hwShaderProgram* fallbackShaderProgram = nullptr;
 // For resetting following rebuild
 static std::string lastProgramName;
 
-hwShaderProgram* Shaders_GetProgramByName( const std::string& name );
-
 /**
  * Validate the default shader set has been loaded.
  */
@@ -38,7 +36,7 @@ static void Shaders_ValidateDefault() {
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( defaultShaders ); ++i ) {
-		hwShaderProgram* program = Shaders_GetProgramByName( defaultShaders[ i ] );
+		hwShaderProgram* program = Shaders_GetProgram( defaultShaders[ i ] );
 		if ( program == nullptr ) {
 			Error( "Failed to fetch default shader, \"%s\"!\n", defaultShaders[ i ] );
 		}
