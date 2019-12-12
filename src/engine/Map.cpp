@@ -129,8 +129,7 @@ void Map::UpdateSkyModel(PLModel* model) {
 }
 
 void Map::UpdateLighting() {
-#if 0 // todo
-  PLShaderProgram* program = Shaders_GetProgram(SHADER_GenericTexturedLit);
+  PLShaderProgram* program = Shaders_GetProgram("generic_textured_lit")->GetInternalProgram();
   if (program == nullptr) {
     return;
   }
@@ -153,7 +152,6 @@ void Map::UpdateLighting() {
   plSetNamedShaderUniformVector4(program, "sun_colour", manifest_->sun_colour.ToVec4());
 
   plSetNamedShaderUniformVector4(program, "ambient_colour", manifest_->ambient_colour.ToVec4());
-#endif
 }
 
 void Map::LoadSpawns(const std::string& path) {
