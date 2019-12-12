@@ -158,7 +158,7 @@ void Shaders_SetProgramByName( const std::string& name ) {
 
 hwShaderProgram::hwShaderProgram( const std::string& vertPath, const std::string& fragPath ) {
 	shaderProgram = plCreateShaderProgram();
-	if ( shaderProgram ) {
+	if ( shaderProgram == nullptr ) {
 		throw std::runtime_error( plGetError());
 	}
 
