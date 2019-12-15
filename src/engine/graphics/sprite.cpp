@@ -19,7 +19,7 @@
 
 #include "sprite.h"
 #include "display.h"
-#include "shader.h"
+#include "shaders.h"
 
 Sprite::Sprite(SpriteType type, PLTexture* texture, PLColour colour, float scale) :
     type_(type),
@@ -53,7 +53,7 @@ void Sprite::Draw() {
     return;
   }
 
-  Shaders_SetProgram(SHADER_GenericTexturedLit);
+  Shaders_SetProgramByName("generic_textured_lit");
 
   PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
   mrot = mrot * plRotateMatrix4(angles_.y, PLVector3(0, 1, 0));
@@ -63,6 +63,7 @@ void Sprite::Draw() {
   //matrix_ = matrix_ * PLVector3(scale_, scale_, scale_);
 
   plSetNamedShaderUniformMatrix4(NULL, "pl_model", matrix_, false);
+
   plUploadMesh(mesh_);
   plDrawMesh(mesh_);
 }

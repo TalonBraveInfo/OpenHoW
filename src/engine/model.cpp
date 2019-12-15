@@ -24,7 +24,7 @@
 #include "loaders/loaders.h"
 
 #include "graphics/display.h"
-#include "graphics/shader.h"
+#include "graphics/shaders.h"
 #include "graphics/texture_atlas.h"
 #include "graphics/mesh.h"
 
@@ -428,6 +428,7 @@ void DEBUGDrawSkeleton() {
 #endif
 
 void Model_Draw(PLModel* model, PLMatrix4 translation) {
+#if 0
   PLShaderProgram* save = nullptr;
   if(cv_graphics_debug_normals->b_value) {
     save = plGetCurrentShaderProgram();
@@ -441,4 +442,8 @@ void Model_Draw(PLModel* model, PLMatrix4 translation) {
     // Restore the previous shader program
     plSetShaderProgram(save);
   }
+#else
+  model->model_matrix = translation;
+  plDrawModel(model);
+#endif
 }

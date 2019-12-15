@@ -17,7 +17,7 @@
 
 #include "engine.h"
 #include "resource_manager.h"
-#include "graphics/shader.h"
+#include "graphics/shaders.h"
 
 using namespace openhow;
 
@@ -191,7 +191,14 @@ PLModel* ResourceManager::GetFallbackModel() {
   plSetMeshVertexPosition(mesh, 4, PLVector3(0, 0, 20));
   plSetMeshVertexPosition(mesh, 5, PLVector3(0, 0, -20));
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
-  plSetMeshShaderProgram(mesh, Shaders_GetProgram(SHADER_GenericUntextured));
+
+  hwShaderProgram* shaderProgram = Shaders_GetProgram( "generic_untextured" );
+  if( shaderProgram == nullptr ) {
+  	Error( "Failed to get default shader program, \"generic_untextured\"!\n" );
+  }
+
+  // todo: kill this api, if we rebuild shader cache we'll die
+  plSetMeshShaderProgram(mesh, shaderProgram->GetInternalProgram());
   plUploadMesh(mesh);
 
   return (fallback_model_ = plCreateBasicStaticModel(mesh));

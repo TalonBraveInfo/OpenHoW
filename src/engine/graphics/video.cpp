@@ -20,7 +20,7 @@
 #include "../engine.h"
 #include "../frontend.h"
 #include "video.h"
-#include "shader.h"
+#include "shaders.h"
 
 #if 0
 #include <libavformat/avformat.h>
@@ -244,7 +244,7 @@ void Video_Draw(void) {
         plUploadMesh(mesh);
     }
 
-    Shaders_SetProgram(SHADER_GenericTextured);
+    Shaders_SetProgramByName("generic_textured");
 
     /* todo pass correct texture */
     plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
