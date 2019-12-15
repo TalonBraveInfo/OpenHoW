@@ -29,14 +29,14 @@ static std::string lastProgramName;
  * Validate the default shader set has been loaded.
  */
 static void Shaders_ValidateDefault() {
-	const char* defaultShaders[] = {
+	const char* defaultShadersStrings[] = {
 		"generic_untextured",
 		"generic_textured",
 		"generic_textured_lit",
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( defaultShaders ); ++i ) {
-		hwShaderProgram* program = Shaders_GetProgram( defaultShaders[ i ] );
+		hwShaderProgram* program = Shaders_GetProgram( defaultShadersStrings[ i ] );
 		if ( program == nullptr ) {
 			Error( "Failed to fetch default shader, \"%s\"!\n", defaultShaders[ i ] );
 		}
@@ -103,28 +103,60 @@ static void Shaders_CachePrograms() {
 	Shaders_ValidateDefault();
 }
 
-static void Cmd_RebuildShaderPrograms( unsigned int argc, char* argv[] ) {
-	Shaders_CachePrograms();
-}
-
-static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
+static void Cmd_RebuildShaderProgramCache( unsigned int argc, char* argv[] ) {
 	u_unused( argc );
 	u_unused( argv );
 
-	try {
-		for ( const auto& program : programs ) {
+	Shaders_CachePrograms();
+}
+
+static void Cmd_RebuildShaderPrograms( unsigned int argc, char* argv[] ) {
+	u_unused( argc );
+	u_unused( argv );
+
+	for ( const auto& program : programs ) {
+		try {
 			program.second->Rebuild();
+		} catch ( const std::exception& exception ) {
+			LogWarn( "Failed to rebuild shader program, \"%s\" (%s)!\n", program.first.c_str(), exception.what());
 		}
-	} catch ( ... ) {
-		Error( "Failed to rebuild shader programs, check logs for details!\n" );
 	}
 
 	Shaders_SetProgramByName( lastProgramName );
 }
 
+static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
+	if( argc == 0 ) {
+		LogWarn( "Please provide the name of the shader program you wish to rebuild!\n" );
+		return;
+	} else if( argc > 1 ) {
+		LogWarn( "Too many arguments, please provide only the name of the shader program you wish to rebuild!\n" );
+		return;
+	}
+
+	const char* shaderProgramArg = argv[0];
+	if( shaderProgramArg == NULL ) {
+		LogWarn( "Invalid argument provided, please try again!\n" );
+		return;
+	}
+
+	hwShaderProgram* shaderProgram = Shaders_GetProgram( shaderProgramArg );
+	if( shaderProgram == nullptr ) {
+		return;
+	}
+
+	try {
+		shaderProgram->Rebuild();
+	} catch( const std::exception& exception ) {
+		LogWarn( "Failed to rebuild shader program, \"%s\" (%s)!\n", shaderProgramArg, exception.what());
+	}
+}
+
 void Shaders_Initialize() {
 	plRegisterConsoleCommand( "rebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
 	plRegisterConsoleCommand( "rebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
+	plRegisterConsoleCommand( "rebuildShaderProgramCache", Cmd_RebuildShaderProgramCache,
+		"Rebuild shader program cache" );
 
 	Shaders_CachePrograms();
 }
@@ -181,18 +213,26 @@ hwShaderProgram::~hwShaderProgram() {
 }
 
 void hwShaderProgram::Rebuild() {
-	plDestroyShaderProgram( shaderProgram, true );
-	shaderProgram = nullptr;
-
-	shaderProgram = plCreateShaderProgram();
-	if ( shaderProgram ) {
+	PLShaderProgram* newShaderProgram = plCreateShaderProgram();
+	if ( newShaderProgram ) {
 		throw std::runtime_error( plGetError());
 	}
 
-	RegisterShaderStage( vertPath.c_str(), PL_SHADER_TYPE_VERTEX );
-	RegisterShaderStage( fragPath.c_str(), PL_SHADER_TYPE_FRAGMENT );
+	PLShaderProgram* oldProgram = shaderProgram;
+	shaderProgram = newShaderProgram;
+
+	try {
+		RegisterShaderStage( vertPath.c_str(), PL_SHADER_TYPE_VERTEX );
+		RegisterShaderStage( fragPath.c_str(), PL_SHADER_TYPE_FRAGMENT );
+	} catch ( const std::exception& exception ) {
+		plDestroyShaderProgram( shaderProgram, true );
+		shaderProgram = oldProgram;
+		throw;
+	}
 
 	plLinkShaderProgram( shaderProgram );
+
+	plDestroyShaderProgram( oldProgram, true );
 }
 
 void hwShaderProgram::Enable() {
