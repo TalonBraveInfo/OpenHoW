@@ -45,7 +45,6 @@ private:
 hwShaderProgram* Shaders_GetProgram( const std::string& name );
 
 void Shaders_SetProgramByName( const std::string& name );
-void Shaders_SetProgram( hwShaderProgram* shaderProgram );
 
 void Shaders_Initialize();
 void Shaders_Shutdown();

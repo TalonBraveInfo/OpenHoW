@@ -191,17 +191,13 @@ hwShaderProgram* Shaders_GetProgram( const std::string& name ) {
 	return i->second;
 }
 
-void Shaders_SetProgram( hwShaderProgram* shaderProgram ) {
-	shaderProgram->Enable();
-}
-
 void Shaders_SetProgramByName( const std::string& name ) {
 	hwShaderProgram* shaderProgram = Shaders_GetProgram( name );
 	if ( shaderProgram == nullptr ) {
 		shaderProgram = fallbackShaderProgram;
 	}
 
-	Shaders_SetProgram( shaderProgram );
+	shaderProgram->Enable();
 }
 
 hwShaderProgram::hwShaderProgram( const std::string& vertPath, const std::string& fragPath ) {
