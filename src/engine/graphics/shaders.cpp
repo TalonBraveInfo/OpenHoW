@@ -76,7 +76,7 @@ static void Shaders_CacheShaderProgram( const char* path ) {
 		hwShaderProgram* program = new hwShaderProgram( vertPath, fragPath );
 		programs.insert( std::pair<std::string, hwShaderProgram*>( shortFileName, program ));
 	} catch ( const std::exception& error ) {
-		LogWarn( "Failed to register shader program, %s!\n", error.what());
+		LogWarn( "Failed to register shader program (%s)!\n", error.what());
 	}
 }
 
@@ -104,6 +104,18 @@ static void Shaders_CachePrograms() {
 	}
 
 	Shaders_ValidateDefault();
+}
+
+static void Cmd_ListShaderPrograms( unsigned int argc, char* argv[] ) {
+	u_unused( argc );
+	u_unused( argv );
+
+	std::string list = "\n";
+	for ( const auto& program : programs ) {
+		list += program.first + "\n";
+	}
+
+	LogInfo( "%s\n", list.c_str() );
 }
 
 static void Cmd_RebuildShaderProgramCache( unsigned int argc, char* argv[] ) {
@@ -156,6 +168,7 @@ static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
 }
 
 void Shaders_Initialize() {
+	plRegisterConsoleCommand( "listShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
 	plRegisterConsoleCommand( "rebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
 	plRegisterConsoleCommand( "rebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
 	plRegisterConsoleCommand( "rebuildShaderProgramCache", Cmd_RebuildShaderProgramCache,
