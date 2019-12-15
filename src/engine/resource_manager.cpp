@@ -192,7 +192,12 @@ PLModel* ResourceManager::GetFallbackModel() {
   plSetMeshVertexPosition(mesh, 5, PLVector3(0, 0, -20));
   plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
-  plSetMeshShaderProgram(mesh, Shaders_GetProgram("generic_untextured")->GetInternalProgram());
+  hwShaderProgram* shaderProgram = Shaders_GetProgram( "generic_untextured" );
+  if( shaderProgram == nullptr ) {
+  	Error( "Failed to get default shader program, \"generic_untextured\"!\n" );
+  }
+
+  plSetMeshShaderProgram(mesh, shaderProgram->GetInternalProgram());
   plUploadMesh(mesh);
 
   return (fallback_model_ = plCreateBasicStaticModel(mesh));
