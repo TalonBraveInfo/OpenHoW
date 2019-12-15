@@ -33,6 +33,9 @@ static void Shaders_ValidateDefault() {
 		"generic_untextured",
 		"generic_textured",
 		"generic_textured_lit",
+
+		"debug_normals",
+		"debug_test",
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( defaultShaders ); ++i ) {
