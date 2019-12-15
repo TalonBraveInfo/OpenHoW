@@ -38,10 +38,10 @@ static void Shaders_ValidateDefault() {
 		"debug_test",
 	};
 
-	for ( unsigned int i = 0; i < plArrayElements( defaultShaders ); ++i ) {
+	for ( unsigned int i = 0; i < plArrayElements( defaultShadersStrings ); ++i ) {
 		hwShaderProgram* program = Shaders_GetProgram( defaultShadersStrings[ i ] );
 		if ( program == nullptr ) {
-			Error( "Failed to fetch default shader, \"%s\"!\n", defaultShaders[ i ] );
+			Error( "Failed to fetch default shader, \"%s\"!\n", defaultShadersStrings[ i ] );
 		}
 
 		if ( i == 0 ) {
