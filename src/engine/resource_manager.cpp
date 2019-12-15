@@ -197,6 +197,7 @@ PLModel* ResourceManager::GetFallbackModel() {
   	Error( "Failed to get default shader program, \"generic_untextured\"!\n" );
   }
 
+  // todo: kill this api, if we rebuild shader cache we'll die
   plSetMeshShaderProgram(mesh, shaderProgram->GetInternalProgram());
   plUploadMesh(mesh);
 
