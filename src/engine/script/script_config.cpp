@@ -22,327 +22,324 @@
 #include "../engine.h"
 #include "script_config.h"
 
-#define LogMissingProperty(P)   LogWarn("Failed to get JSON property \"%s\"!\n", (P))
-#define LogInvalidArray(P)      LogWarn("Invalid JSON array for property \"%s\"!\n", (P))
+#define LogMissingProperty( P )   LogWarn("Failed to get JSON property \"%s\"!\n", (P))
+#define LogInvalidArray( P )      LogWarn("Invalid JSON array for property \"%s\"!\n", (P))
 
-ScriptConfig::ScriptConfig(const std::string& path) : ScriptConfig() {
-  if (path.empty()) {
-    throw std::runtime_error("Empty path for config, aborting!\n");
-  }
+ScriptConfig::ScriptConfig( const std::string& path ) : ScriptConfig() {
+	if ( path.empty() ) {
+		throw std::runtime_error( "Empty path for config, aborting!\n" );
+	}
 
-  size_t sz = plGetLocalFileSize(path.c_str());
-  if (sz == 0) {
-    throw std::runtime_error("Failed to load file, empty config!\n");
-  }
+	PLFile* filePtr = plOpenFile( path.c_str(), false );
+	size_t sz = plGetFileSize( filePtr );
+	if ( sz == 0 ) {
+		plCloseFile( filePtr );
+		throw std::runtime_error( "Failed to load file, empty config!\n" );
+	}
 
-  FILE* fp = fopen(path.c_str(), "rb");
-  if (fp == nullptr) {
-    throw std::runtime_error("Failed to open config at \"" + path + "\", aborting!\n");
-  }
-
-  std::vector<char> buf(sz + 1);
-  fread(buf.data(), sizeof(char), sz, fp);
-  buf[sz] = '\0';
-  fclose(fp);
-  ParseBuffer(buf.data());
+	std::vector<char> buf( sz + 1 );
+	plReadFile( filePtr, buf.data(), sizeof( char ), sz );
+	buf[ sz ] = '\0';
+	plCloseFile( filePtr );
+	ParseBuffer( buf.data() );
 }
 
 ScriptConfig::ScriptConfig() {
-  if ((ctx_ = duk_create_heap_default()) == nullptr) {
-    throw std::bad_alloc();
-  }
+	if ( ( ctx_ = duk_create_heap_default() ) == nullptr ) {
+		throw std::bad_alloc();
+	}
 }
 
 ScriptConfig::~ScriptConfig() {
-  if (ctx_ != nullptr) {
-    duk_destroy_heap(static_cast<duk_context*>(ctx_));
-  }
+	if ( ctx_ != nullptr ) {
+		duk_destroy_heap( static_cast<duk_context*>(ctx_) );
+	}
 }
 
-std::string ScriptConfig::GetStringProperty(const std::string& property, const std::string& def, bool silent) {
-  auto* context = static_cast<duk_context*>(ctx_);
+std::string ScriptConfig::GetStringProperty( const std::string& property, const std::string& def, bool silent ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    if (!silent) {
-      LogMissingProperty(p);
-    }
-    return def;
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
 
-  std::string str = duk_safe_to_string(context, -1);
-  duk_pop(context);
+	std::string str = duk_safe_to_string( context, -1 );
+	duk_pop( context );
 
-  return str;
+	return str;
 }
 
-int ScriptConfig::GetIntegerProperty(const std::string& property, int def, bool silent) {
-  auto* context = static_cast<duk_context*>(ctx_);
+int ScriptConfig::GetIntegerProperty( const std::string& property, int def, bool silent ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    if (!silent) {
-      LogMissingProperty(p);
-    }
-    return def;
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
 
-  int var = duk_to_int32(context, -1);
-  duk_pop(context);
+	int var = duk_to_int32( context, -1 );
+	duk_pop( context );
 
-  return var;
+	return var;
 }
 
-bool ScriptConfig::GetBooleanProperty(const std::string& property, bool def, bool silent) {
-  auto* context = static_cast<duk_context*>(ctx_);
+bool ScriptConfig::GetBooleanProperty( const std::string& property, bool def, bool silent ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    if (!silent) {
-      LogMissingProperty(p);
-    }
-    return def;
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
 
-  auto var = static_cast<bool>(duk_to_boolean(context, -1));
-  duk_pop(context);
+	auto var = static_cast<bool>(duk_to_boolean( context, -1 ));
+	duk_pop( context );
 
-  return var;
+	return var;
 }
 
-float ScriptConfig::GetFloatProperty(const std::string& property, float def, bool silent) {
-  auto* context = static_cast<duk_context*>(ctx_);
+float ScriptConfig::GetFloatProperty( const std::string& property, float def, bool silent ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    if (!silent) {
-      LogMissingProperty(p);
-    }
-    return def;
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
 
-  float var = duk_to_number(context, -1);
-  duk_pop(context);
+	float var = duk_to_number( context, -1 );
+	duk_pop( context );
 
-  return var;
+	return var;
 }
 
 // https://stackoverflow.com/a/23305012
-template<char C>
-std::istream& expect(std::istream& in) {
-  if (in.peek() == C) {
-    in.ignore();
-  } else {
-    in.setstate(std::ios_base::failbit);
-  }
-  return in;
+template< char C >
+std::istream& expect( std::istream& in ) {
+	if ( in.peek() == C ) {
+		in.ignore();
+	} else {
+		in.setstate( std::ios_base::failbit );
+	}
+	return in;
 }
 
-PLColour ScriptConfig::GetColourProperty(const std::string& property, PLColour def, bool silent) {
-  auto* context = static_cast<duk_context*>(ctx_);
+PLColour ScriptConfig::GetColourProperty( const std::string& property, PLColour def, bool silent ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    if (!silent) {
-      LogMissingProperty(p);
-    }
-    return def;
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
 
-  std::string str = duk_safe_to_string(context, -1);
-  duk_pop(context);
+	std::string str = duk_safe_to_string( context, -1 );
+	duk_pop( context );
 
-  std::stringstream stream(str);
-  int r, g, b, a;
-  stream >> r >> expect<' '> >> g >> expect<' '> >> b;
-  if (!(stream.rdstate() & std::stringstream::failbit)) {
-    stream >> expect<' '> >> a;
-    if (stream.rdstate() & std::stringstream::failbit) {
-      // can still ignore alpha channel
-      a = 255;
-    }
-  } else {
-    throw std::runtime_error("Failed to parse entirety of colour from JSON property, \"" + property + "\"!\n");
-  }
+	std::stringstream stream( str );
+	int r, g, b, a;
+	stream >> r >> expect<' '> >> g >> expect<' '> >> b;
+	if ( !( stream.rdstate() & std::stringstream::failbit ) ) {
+		stream >> expect<' '> >> a;
+		if ( stream.rdstate() & std::stringstream::failbit ) {
+			// can still ignore alpha channel
+			a = 255;
+		}
+	} else {
+		throw std::runtime_error( "Failed to parse entirety of colour from JSON property, \"" + property + "\"!\n" );
+	}
 
-  return {r, g, b, a};
+	return { r, g, b, a };
 }
 
-PLVector3 ScriptConfig::GetVector3Property(const std::string& property, PLVector3 def, bool silent) {
-  auto* context = static_cast<duk_context*>(ctx_);
+PLVector3 ScriptConfig::GetVector3Property( const std::string& property, PLVector3 def, bool silent ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    if (!silent) {
-      LogMissingProperty(p);
-    }
-    return def;
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
 
-  std::string str = duk_safe_to_string(context, -1);
-  duk_pop(context);
+	std::string str = duk_safe_to_string( context, -1 );
+	duk_pop( context );
 
-  PLVector3 out;
-  std::stringstream stream(str);
-  stream >> out.x >> expect<' '> >> out.y >> expect<' '> >> out.z;
-  if (stream.rdstate() & std::stringstream::failbit) {
-    throw std::runtime_error("Failed to parse entirety of vector from JSON property, \"" + property + "\"!\n");
-  }
+	PLVector3 out;
+	std::stringstream stream( str );
+	stream >> out.x >> expect<' '> >> out.y >> expect<' '> >> out.z;
+	if ( stream.rdstate() & std::stringstream::failbit ) {
+		throw std::runtime_error( "Failed to parse entirety of vector from JSON property, \"" + property + "\"!\n" );
+	}
 
-  return out;
+	return out;
 }
 
-unsigned int ScriptConfig::GetArrayLength(const std::string& property) {
-  auto* context = static_cast<duk_context*>(ctx_);
+unsigned int ScriptConfig::GetArrayLength( const std::string& property ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  if(!property.empty()) {
-    const char* p = property.c_str();
-    if (!duk_get_prop_string(context, -1, p)) {
-      duk_pop(context);
-      LogMissingProperty(p);
-      return 0;
-    }
-  }
+	if ( !property.empty() ) {
+		const char* p = property.c_str();
+		if ( !duk_get_prop_string( context, -1, p ) ) {
+			duk_pop( context );
+			LogMissingProperty( p );
+			return 0;
+		}
+	}
 
-  if (!duk_is_array(context, -1)) {
-    if(!property.empty()) {
-      duk_pop(context);
-    }
-    LogWarn("Invalid array node!\n");
-    return 0;
-  }
+	if ( !duk_is_array( context, -1 ) ) {
+		if ( !property.empty() ) {
+			duk_pop( context );
+		}
+		LogWarn( "Invalid array node!\n" );
+		return 0;
+	}
 
-  duk_size_t len = duk_get_length(context, -1);
+	duk_size_t len = duk_get_length( context, -1 );
 
-  if(!property.empty()) {
-    duk_pop(context);
-  }
+	if ( !property.empty() ) {
+		duk_pop( context );
+	}
 
-  return static_cast<unsigned int>(len);
+	return static_cast<unsigned int>(len);
 }
 
-std::string ScriptConfig::GetArrayStringProperty(const std::string& property, unsigned int index) {
-  auto* context = static_cast<duk_context*>(ctx_);
+std::string ScriptConfig::GetArrayStringProperty( const std::string& property, unsigned int index ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    LogMissingProperty(p);
-    return "";
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		LogMissingProperty( p );
+		return "";
+	}
 
-  if (!duk_is_array(context, -1)) {
-    duk_pop(context);
-    LogInvalidArray(p);
-    return "";
-  }
+	if ( !duk_is_array( context, -1 ) ) {
+		duk_pop( context );
+		LogInvalidArray( p );
+		return "";
+	}
 
-  duk_size_t length = duk_get_length(context, -1);
-  if (index >= length) {
-    LogWarn("Invalid index, %d (%d), in array!\n", index, length);
-    return "";
-  }
+	duk_size_t length = duk_get_length( context, -1 );
+	if ( index >= length ) {
+		LogWarn( "Invalid index, %d (%d), in array!\n", index, length );
+		return "";
+	}
 
-  duk_get_prop_string(context, -1, p);
-  duk_get_prop_index(context, -1, index);
-  const char* str = duk_get_string(context, index);
-  duk_pop(context);
+	duk_get_prop_string( context, -1, p );
+	duk_get_prop_index( context, -1, index );
+	const char* str = duk_get_string( context, index );
+	duk_pop( context );
 
-  return str;
+	return str;
 }
 
-std::vector<std::string> ScriptConfig::GetArrayStrings(const std::string& property) {
-  auto* context = static_cast<duk_context*>(ctx_);
+std::vector<std::string> ScriptConfig::GetArrayStrings( const std::string& property ) {
+	auto* context = static_cast<duk_context*>(ctx_);
 
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    LogMissingProperty(p);
-    return {};
-  }
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		LogMissingProperty( p );
+		return {};
+	}
 
-  if (!duk_is_array(context, -1)) {
-    duk_pop(context);
-    LogInvalidArray(p);
-    return {};
-  }
+	if ( !duk_is_array( context, -1 ) ) {
+		duk_pop( context );
+		LogInvalidArray( p );
+		return {};
+	}
 
-  duk_size_t length = duk_get_length(context, -1);
+	duk_size_t length = duk_get_length( context, -1 );
 
-  std::vector<std::string> strings;
-  strings.reserve(length);
+	std::vector<std::string> strings;
+	strings.reserve( length );
 
-  for (size_t i = 0; i < length; ++i) {
-    duk_get_prop_index(context, -1, i);
-    const char* c = duk_get_string(context, -1);
-    u_assert(c != nullptr, "Null string passed by duk_get_string!\n");
-    strings.emplace_back(c);
-    duk_pop(context);
-  }
+	for ( size_t i = 0; i < length; ++i ) {
+		duk_get_prop_index( context, -1, i );
+		const char* c = duk_get_string( context, -1 );
+		u_assert( c != nullptr, "Null string passed by duk_get_string!\n" );
+		strings.emplace_back( c );
+		duk_pop( context );
+	}
 
-  duk_pop(context);
+	duk_pop( context );
 
-  return strings;
+	return strings;
 }
 
-void ScriptConfig::ParseBuffer(const char* buf) {
-  if (buf == nullptr) {
-    Error("Invalid buffer length!\n");
-  }
+void ScriptConfig::ParseBuffer( const char* buf ) {
+	if ( buf == nullptr ) {
+		Error( "Invalid buffer length!\n" );
+	}
 
-  auto* context = static_cast<duk_context*>(ctx_);
-  duk_push_string(context, buf);
-  duk_json_decode(context, -1);
+	auto* context = static_cast<duk_context*>(ctx_);
+	duk_push_string( context, buf );
+	duk_json_decode( context, -1 );
 }
 
-void ScriptConfig::EnterChildNode(const std::string& property) {
-  auto* context = static_cast<duk_context*>(ctx_);
-  const char* p = property.c_str();
-  if (!duk_get_prop_string(context, -1, p)) {
-    duk_pop(context);
-    LogMissingProperty(p);
-    return;
-  }
+void ScriptConfig::EnterChildNode( const std::string& property ) {
+	auto* context = static_cast<duk_context*>(ctx_);
+	const char* p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		LogMissingProperty( p );
+		return;
+	}
 }
 
-void ScriptConfig::EnterChildNode(unsigned int index) {
-  auto* context = static_cast<duk_context*>(ctx_);
-  if (!duk_is_array(context, -1)) {
-    duk_pop(context);
-    LogWarn("Node is not an array!\n");
-    return;
-  }
+void ScriptConfig::EnterChildNode( unsigned int index ) {
+	auto* context = static_cast<duk_context*>(ctx_);
+	if ( !duk_is_array( context, -1 ) ) {
+		duk_pop( context );
+		LogWarn( "Node is not an array!\n" );
+		return;
+	}
 
-  duk_size_t length = duk_get_length(context, -1);
-  if (index >= length) {
-    LogWarn("Invalid index, %d (%d), in array!\n", index, length);
-    return;
-  }
+	duk_size_t length = duk_get_length( context, -1 );
+	if ( index >= length ) {
+		LogWarn( "Invalid index, %d (%d), in array!\n", index, length );
+		return;
+	}
 
-  duk_get_prop_index(context, -1, index);
+	duk_get_prop_index( context, -1, index );
 }
 
 void ScriptConfig::LeaveChildNode() {
-  auto* context = static_cast<duk_context*>(ctx_);
-  duk_pop(context);
+	auto* context = static_cast<duk_context*>(ctx_);
+	duk_pop( context );
 }
 
 std::list<std::string> ScriptConfig::GetObjectKeys() {
-  std::list<std::string> lst;
+	std::list<std::string> lst;
 
-  auto* context = static_cast<duk_context*>(ctx_);
-  duk_enum(context, -1, 0);
-  while(duk_next(context, -1, 1)) {
-    lst.emplace_back(duk_safe_to_string(context, -2));
-    duk_pop_2(context);
-  }
-  duk_pop(context);
+	auto* context = static_cast<duk_context*>(ctx_);
+	duk_enum( context, -1, 0 );
+	while ( duk_next( context, -1, 1 ) ) {
+		lst.emplace_back( duk_safe_to_string( context, -2 ) );
+		duk_pop_2( context );
+	}
+	duk_pop( context );
 
-  return lst;
+	return lst;
 }
