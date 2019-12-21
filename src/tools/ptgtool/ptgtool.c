@@ -16,7 +16,6 @@
  */
 
 #include <PL/platform_filesystem.h>
-#include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
 #include "../../engine/engine.h"
@@ -35,7 +34,7 @@ static char dir_textures[256][PL_SYSTEM_MAX_PATH];
 static void PTG_CountDirectoryTextures(const char *path) {
     /* ensure consistency */
 
-    size_t size = plGetFileSize(path);
+    size_t size = plGetLocalFileSize( path );
     if(size == 0) {
         Error("Invalid file size for \"%s\", aborting!\n", path);
     }
