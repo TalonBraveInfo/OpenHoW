@@ -17,103 +17,194 @@
  */
 
 /* pigs */
-{"/Chars/british.mad", "/campaigns/how/chars/pigs/"},        /* actually contains all the pig models */
-{"/Chars/FACES.MTD", "/campaigns/how/chars/pigs/faces/"},  /* contains all the face textures       */
-{"/Chars/AMERICAN.MTD", "/campaigns/how/chars/pigs/american/"},
-{"/Chars/british.mtd", "/campaigns/how/chars/pigs/british/"},
-{"/Chars/FRENCH.MTD", "/campaigns/how/chars/pigs/french/"},
-{"/Chars/GERMAN.MTD", "/campaigns/how/chars/pigs/german/"},
-{"/Chars/JAPANESE.MTD", "/campaigns/how/chars/pigs/japanese/"},
-{"/Chars/RUSSIAN.MTD", "/campaigns/how/chars/pigs/russian/"},
-{"/Chars/TEAMLARD.MTD", "/campaigns/how/chars/pigs/teamlard/"},
-{"/Chars/BRITHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
-{"/Chars/FHATS.MAD", "/campaigns/how/chars/pigs/hats/"},
+{
+"/Chars/british.mad", "/mods/how/chars/pigs/"},        /* actually contains all the pig models */
+{
+"/Chars/FACES.MTD", "/mods/how/chars/pigs/faces/"},  /* contains all the face textures       */
+{
+"/Chars/AMERICAN.MTD", "/mods/how/chars/pigs/american/"},
+{
+"/Chars/british.mtd", "/mods/how/chars/pigs/british/"},
+{
+"/Chars/FRENCH.MTD", "/mods/how/chars/pigs/french/"},
+{
+"/Chars/GERMAN.MTD", "/mods/how/chars/pigs/german/"},
+{
+"/Chars/JAPANESE.MTD", "/mods/how/chars/pigs/japanese/"},
+{
+"/Chars/RUSSIAN.MTD", "/mods/how/chars/pigs/russian/"},
+{
+"/Chars/TEAMLARD.MTD", "/mods/how/chars/pigs/teamlard/"},
+{
+"/Chars/BRITHATS.MAD", "/mods/how/chars/pigs/hats/"},
+{
+"/Chars/FHATS.MAD", "/mods/how/chars/pigs/hats/"},
 
 /* sky */
-{"/Chars/TOY.MAD", "/campaigns/how/skys/toy/"},
-{"/Chars/SPACE.MAD", "/campaigns/how/skys/space/"},
-{"/Chars/SUNSET.MAD", "/campaigns/how/skys/sunset/"},
-{"/Chars/SUNRISE.MAD", "/campaigns/how/skys/sunrise/"},
-{"/Chars/SUNNY.MAD", "/campaigns/how/skys/sunny/"},
-{"/Chars/OMINOUS.MAD", "/campaigns/how/skys/ominous/"},
-{"/Chars/DESERT.MAD", "/campaigns/how/skys/desert/"},
-{"/Chars/COLDSKY.MAD", "/campaigns/how/skys/coldsky/"},
-{"/Chars/NIGHT1.MAD", "/campaigns/how/skys/night1/"},
+{
+"/Chars/TOY.MAD", "/mods/how/skys/toy/"},
+{
+"/Chars/SPACE.MAD", "/mods/how/skys/space/"},
+{
+"/Chars/SUNSET.MAD", "/mods/how/skys/sunset/"},
+{
+"/Chars/SUNRISE.MAD", "/mods/how/skys/sunrise/"},
+{
+"/Chars/SUNNY.MAD", "/mods/how/skys/sunny/"},
+{
+"/Chars/OMINOUS.MAD", "/mods/how/skys/ominous/"},
+{
+"/Chars/DESERT.MAD", "/mods/how/skys/desert/"},
+{
+"/Chars/COLDSKY.MAD", "/mods/how/skys/coldsky/"},
+{
+"/Chars/NIGHT1.MAD", "/mods/how/skys/night1/"},
 
 /* frontend */
-{"/FEBmps/FEBMP.MAD", "/campaigns/how/frontend/bitmaps/"},
-{"/Language/Tims/FEFXTIMS.MTD", "/campaigns/how/frontend/fx/"},
-{"/Language/Tims/EXPLTIMS.MAD", "/campaigns/how/frontend/expl/"},
-{"/Language/Tims/FACETIMS.MAD", "/campaigns/how/frontend/dash/"},
-{"/Language/Tims/FLAGTIMS.MAD", "/campaigns/how/frontend/dash/"},
-{"/Language/Tims/dashtims.mad", "/campaigns/how/frontend/dash/"},
-{"/Language/Tims/MAPICONS.MTD", "/campaigns/how/frontend/map/"},
-{"/Language/Tims/MENUTIMS.MAD", "/campaigns/how/frontend/dash/menu/"},
-{"/Language/Tims/TBOXTIMS.MAD", "/campaigns/how/frontend/dash/"},
+{
+"/FEBmps/FEBMP.MAD", "/mods/how/frontend/bitmaps/"},
+{
+"/Language/Tims/FEFXTIMS.MTD", "/mods/how/frontend/fx/"},
+{
+"/Language/Tims/EXPLTIMS.MAD", "/mods/how/frontend/expl/"},
+{
+"/Language/Tims/FACETIMS.MAD", "/mods/how/frontend/dash/"},
+{
+"/Language/Tims/FLAGTIMS.MAD", "/mods/how/frontend/dash/"},
+{
+"/Language/Tims/dashtims.mad", "/mods/how/frontend/dash/"},
+{
+"/Language/Tims/MAPICONS.MTD", "/mods/how/frontend/map/"},
+{
+"/Language/Tims/MENUTIMS.MAD", "/mods/how/frontend/dash/menu/"},
+{
+"/Language/Tims/TBOXTIMS.MAD", "/mods/how/frontend/dash/"},
 
 #if 1
-{"/Maps/BAY.PTG", "/campaigns/how/maps/bay/tiles/"},
-{"/Maps/ICE.PTG", "/campaigns/how/maps/ice/tiles/"},
-{"/Maps/BOOM.PTG", "/campaigns/how/maps/boom/tiles/"},
-{"/Maps/BUTE.PTG", "/campaigns/how/maps/bute/tiles/"},
-{"/Maps/CAMP.PTG", "/campaigns/how/maps/camp/tiles/"},
-{"/Maps/DEMO.PTG", "/campaigns/how/maps/demo/tiles/"},
-{"/Maps/DEVI.PTG", "/campaigns/how/maps/devi/tiles/"},
-{"/Maps/DVAL.PTG", "/campaigns/how/maps/dval/tiles/"},
-{"/Maps/EASY.PTG", "/campaigns/how/maps/easy/tiles/"},
-{"/Maps/ESTU.PTG", "/campaigns/how/maps/estu/tiles/"},
-{"/Maps/FOOT.PTG", "/campaigns/how/maps/foot/tiles/"},
-{"/Maps/GUNS.PTG", "/campaigns/how/maps/guns/tiles/"},
-{"/Maps/KEEP.PTG", "/campaigns/how/maps/keep/tiles/"},
-{"/Maps/LAKE.PTG", "/campaigns/how/maps/lake/tiles/"},
-{"/Maps/MAZE.PTG", "/campaigns/how/maps/maze/tiles/"},
-{"/Maps/ROAD.PTG", "/campaigns/how/maps/road/tiles/"},
-{"/Maps/TWIN.PTG", "/campaigns/how/maps/twin/tiles/"},
-{"/Maps/ARCHI.PTG", "/campaigns/how/maps/archi/tiles/"},
-{"/Maps/BHILL.PTG", "/campaigns/how/maps/bhill/tiles/"},
-{"/Maps/CMASS.PTG", "/campaigns/how/maps/cmass/tiles/"},
-{"/Maps/DBOWL.PTG", "/campaigns/how/maps/dbowl/tiles/"},
-{"/Maps/DEMO2.PTG", "/campaigns/how/maps/demo2/tiles/"},
-{"/Maps/DVAL2.PTG", "/campaigns/how/maps/dval2/tiles/"},
-{"/Maps/EYRIE.PTG", "/campaigns/how/maps/eyrie/tiles/"},
-{"/Maps/FINAL.PTG", "/campaigns/how/maps/final/tiles/"},
-{"/Maps/HELL2.PTG", "/campaigns/how/maps/hell2/tiles/"},
-{"/Maps/HELL3.PTG", "/campaigns/how/maps/hell3/tiles/"},
-{"/Maps/MEDIX.PTG", "/campaigns/how/maps/medix/tiles/"},
-{"/Maps/MLAKE.PTG", "/campaigns/how/maps/mlake/tiles/"},
-{"/Maps/OASIS.PTG", "/campaigns/how/maps/oasis/tiles/"},
-{"/Maps/PLAY1.PTG", "/campaigns/how/maps/play1/tiles/"},
-{"/Maps/PLAY2.PTG", "/campaigns/how/maps/play2/tiles/"},
-{"/Maps/RIDGE.PTG", "/campaigns/how/maps/ridge/tiles/"},
-{"/Maps/SNAKE.PTG", "/campaigns/how/maps/snake/tiles/"},
-{"/Maps/ZULUS.PTG", "/campaigns/how/maps/zulus/tiles/"},
-{"/Maps/ARTGUN.PTG", "/campaigns/how/maps/artgun/tiles/"},
-{"/Maps/BRIDGE.PTG", "/campaigns/how/maps/bridge/tiles/"},
-{"/Maps/DESVAL.PTG", "/campaigns/how/maps/desval/tiles/"},
-{"/Maps/FJORDS.PTG", "/campaigns/how/maps/fjords/tiles/"},
-{"/Maps/GENMUD.PTG", "/campaigns/how/maps/genmud/tiles/"},
-{"/Maps/ISLAND.PTG", "/campaigns/how/maps/island/tiles/"},
-{"/Maps/LUNAR1.PTG", "/campaigns/how/maps/lunar1/tiles/"},
-{"/Maps/MASHED.PTG", "/campaigns/how/maps/mashed/tiles/"},
-{"/Maps/ONEWAY.PTG", "/campaigns/how/maps/oneway/tiles/"},
-{"/Maps/RUMBLE.PTG", "/campaigns/how/maps/rumble/tiles/"},
-{"/Maps/SEPIA1.PTG", "/campaigns/how/maps/sepia1/tiles/"},
-{"/Maps/SNIPER.PTG", "/campaigns/how/maps/sniper/tiles/"},
-{"/Maps/TRENCH.PTG", "/campaigns/how/maps/trench/tiles/"},
-{"/Maps/CREEPY2.PTG", "/campaigns/how/maps/creepy2/tiles/"},
-{"/Maps/EMPLACE.PTG", "/campaigns/how/maps/emplace/tiles/"},
-{"/Maps/GENLAVA.PTG", "/campaigns/how/maps/genlava/tiles/"},
-{"/Maps/GENSNOW.PTG", "/campaigns/how/maps/gensnow/tiles/"},
-{"/Maps/ICEFLOW.PTG", "/campaigns/how/maps/iceflow/tiles/"},
-{"/Maps/LECPROD.PTG", "/campaigns/how/maps/lecprod/tiles/"},
-{"/Maps/SUPLINE.PTG", "/campaigns/how/maps/supline/tiles/"},
-{"/Maps/genbrack.ptg", "/campaigns/how/maps/genbrack/tiles/"},
-{"/Maps/GENCHALK.PTG", "/campaigns/how/maps/genchalk/tiles/"},
-{"/Maps/GENDESRT.PTG", "/campaigns/how/maps/gendesrt/tiles/"},
-{"/Maps/HILLBASE.PTG", "/campaigns/how/maps/hillbase/tiles/"},
-{"/Maps/LIBERATE.PTG", "/campaigns/how/maps/liberate/tiles/"},
-{"/Maps/TESTER.PTG", "/campaigns/how/maps/tester/tiles/"},
+{
+"/Maps/BAY.PTG", "/mods/how/maps/bay/tiles/"},
+{
+"/Maps/ICE.PTG", "/mods/how/maps/ice/tiles/"},
+{
+"/Maps/BOOM.PTG", "/mods/how/maps/boom/tiles/"},
+{
+"/Maps/BUTE.PTG", "/mods/how/maps/bute/tiles/"},
+{
+"/Maps/CAMP.PTG", "/mods/how/maps/camp/tiles/"},
+{
+"/Maps/DEMO.PTG", "/mods/how/maps/demo/tiles/"},
+{
+"/Maps/DEVI.PTG", "/mods/how/maps/devi/tiles/"},
+{
+"/Maps/DVAL.PTG", "/mods/how/maps/dval/tiles/"},
+{
+"/Maps/EASY.PTG", "/mods/how/maps/easy/tiles/"},
+{
+"/Maps/ESTU.PTG", "/mods/how/maps/estu/tiles/"},
+{
+"/Maps/FOOT.PTG", "/mods/how/maps/foot/tiles/"},
+{
+"/Maps/GUNS.PTG", "/mods/how/maps/guns/tiles/"},
+{
+"/Maps/KEEP.PTG", "/mods/how/maps/keep/tiles/"},
+{
+"/Maps/LAKE.PTG", "/mods/how/maps/lake/tiles/"},
+{
+"/Maps/MAZE.PTG", "/mods/how/maps/maze/tiles/"},
+{
+"/Maps/ROAD.PTG", "/mods/how/maps/road/tiles/"},
+{
+"/Maps/TWIN.PTG", "/mods/how/maps/twin/tiles/"},
+{
+"/Maps/ARCHI.PTG", "/mods/how/maps/archi/tiles/"},
+{
+"/Maps/BHILL.PTG", "/mods/how/maps/bhill/tiles/"},
+{
+"/Maps/CMASS.PTG", "/mods/how/maps/cmass/tiles/"},
+{
+"/Maps/DBOWL.PTG", "/mods/how/maps/dbowl/tiles/"},
+{
+"/Maps/DEMO2.PTG", "/mods/how/maps/demo2/tiles/"},
+{
+"/Maps/DVAL2.PTG", "/mods/how/maps/dval2/tiles/"},
+{
+"/Maps/EYRIE.PTG", "/mods/how/maps/eyrie/tiles/"},
+{
+"/Maps/FINAL.PTG", "/mods/how/maps/final/tiles/"},
+{
+"/Maps/HELL2.PTG", "/mods/how/maps/hell2/tiles/"},
+{
+"/Maps/HELL3.PTG", "/mods/how/maps/hell3/tiles/"},
+{
+"/Maps/MEDIX.PTG", "/mods/how/maps/medix/tiles/"},
+{
+"/Maps/MLAKE.PTG", "/mods/how/maps/mlake/tiles/"},
+{
+"/Maps/OASIS.PTG", "/mods/how/maps/oasis/tiles/"},
+{
+"/Maps/PLAY1.PTG", "/mods/how/maps/play1/tiles/"},
+{
+"/Maps/PLAY2.PTG", "/mods/how/maps/play2/tiles/"},
+{
+"/Maps/RIDGE.PTG", "/mods/how/maps/ridge/tiles/"},
+{
+"/Maps/SNAKE.PTG", "/mods/how/maps/snake/tiles/"},
+{
+"/Maps/ZULUS.PTG", "/mods/how/maps/zulus/tiles/"},
+{
+"/Maps/ARTGUN.PTG", "/mods/how/maps/artgun/tiles/"},
+{
+"/Maps/BRIDGE.PTG", "/mods/how/maps/bridge/tiles/"},
+{
+"/Maps/DESVAL.PTG", "/mods/how/maps/desval/tiles/"},
+{
+"/Maps/FJORDS.PTG", "/mods/how/maps/fjords/tiles/"},
+{
+"/Maps/GENMUD.PTG", "/mods/how/maps/genmud/tiles/"},
+{
+"/Maps/ISLAND.PTG", "/mods/how/maps/island/tiles/"},
+{
+"/Maps/LUNAR1.PTG", "/mods/how/maps/lunar1/tiles/"},
+{
+"/Maps/MASHED.PTG", "/mods/how/maps/mashed/tiles/"},
+{
+"/Maps/ONEWAY.PTG", "/mods/how/maps/oneway/tiles/"},
+{
+"/Maps/RUMBLE.PTG", "/mods/how/maps/rumble/tiles/"},
+{
+"/Maps/SEPIA1.PTG", "/mods/how/maps/sepia1/tiles/"},
+{
+"/Maps/SNIPER.PTG", "/mods/how/maps/sniper/tiles/"},
+{
+"/Maps/TRENCH.PTG", "/mods/how/maps/trench/tiles/"},
+{
+"/Maps/CREEPY2.PTG", "/mods/how/maps/creepy2/tiles/"},
+{
+"/Maps/EMPLACE.PTG", "/mods/how/maps/emplace/tiles/"},
+{
+"/Maps/GENLAVA.PTG", "/mods/how/maps/genlava/tiles/"},
+{
+"/Maps/GENSNOW.PTG", "/mods/how/maps/gensnow/tiles/"},
+{
+"/Maps/ICEFLOW.PTG", "/mods/how/maps/iceflow/tiles/"},
+{
+"/Maps/LECPROD.PTG", "/mods/how/maps/lecprod/tiles/"},
+{
+"/Maps/SUPLINE.PTG", "/mods/how/maps/supline/tiles/"},
+{
+"/Maps/genbrack.ptg", "/mods/how/maps/genbrack/tiles/"},
+{
+"/Maps/GENCHALK.PTG", "/mods/how/maps/genchalk/tiles/"},
+{
+"/Maps/GENDESRT.PTG", "/mods/how/maps/gendesrt/tiles/"},
+{
+"/Maps/HILLBASE.PTG", "/mods/how/maps/hillbase/tiles/"},
+{
+"/Maps/LIBERATE.PTG", "/mods/how/maps/liberate/tiles/"},
+{
+"/Maps/TESTER.PTG", "/mods/how/maps/tester/tiles/"},
 
-{"/Skys/COLD/COLD1.PTG", "/campaigns/how/skys/cold1/"},
-//{"/Skys/DESERT/DESERT1.PTG", "/campaigns/how/skys/desert1/"},
+{
+"/Skys/COLD/COLD1.PTG", "/mods/how/skys/cold1/"},
+//{"/Skys/DESERT/DESERT1.PTG", "/mods/how/skys/desert1/"},
 #endif

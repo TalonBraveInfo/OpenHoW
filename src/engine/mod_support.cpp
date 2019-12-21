@@ -29,98 +29,114 @@ using namespace openhow;
  * of the game as a whole is dealt with here.
  */
 
-std::map<std::string, ModManifest> campaigns;
-ModManifest *current_campaign = nullptr;
+modsMap_t modsList;
+modDirectory_t* currentModification = nullptr;
 
-static ModManifest *GetModManifestByDirectory(const std::string &dir) {
-  auto campaign = campaigns.find(dir);
-  if (campaign != campaigns.end()) {
-    return &campaign->second;
-  }
-
-  LogWarn("Failed to find campaign \"%s\"!\n");
-  return nullptr;
+/**
+ * Pull a list of registered mods which can be displayed
+ * for user selection.
+ * @return Pointer to modification list.
+ */
+const modsMap_t* Mod_GetRegisteredMods() {
+	return &modsList;
 }
 
-/** Load in the campaign manifest and store it into a buffer.
- *
+static modDirectory_t* Mod_GetManifest( const std::string& name ) {
+	auto campaign = modsList.find( name );
+	if ( campaign != modsList.end() ) {
+		return &campaign->second;
+	}
+
+	LogWarn( "Failed to find campaign \"%s\"!\n" );
+	return nullptr;
+}
+
+static modDirectory_t Mod_LoadManifest( const char* path ) {
+	modDirectory_t slot;
+	try {
+		ScriptConfig config( path );
+
+		slot.name = config.GetStringProperty( "name" );
+		slot.version = config.GetStringProperty( "version", "Unknown", true );
+		slot.author = config.GetStringProperty( "author", "Unknown", true );
+		slot.isVisible = config.GetBooleanProperty( "isVisible", false, true );
+
+		char filename[64];
+		snprintf( filename, sizeof( filename ), "%s", plGetFileName( path ) );
+		slot.fileName = path;
+
+		char name[32];
+		plStripExtension( name, sizeof( name ), plGetFileName( path ) );
+		slot.directory = name;
+
+		slot.dependencies = config.GetArrayStrings( "dependencies" );
+	} catch ( const std::exception& e ) {
+		Error( "Failed to read campaign config, \"%s\"!\n%s\n", path, e.what() );
+	}
+
+	return slot;
+}
+
+/**
+ * Load in the campaign manifest and store it into a buffer.
  * @param path Path to the manifest file.
  */
-void Mod_RegisterCampaign(const char *path) {
-  ModManifest slot;
-  try {
-    ScriptConfig config(path);
-    slot.name = config.GetStringProperty("name");
-    slot.version = config.GetStringProperty("version");
-    slot.author = config.GetStringProperty("author");
-  } catch (const std::exception &e) {
-    LogWarn("Failed to read campaign config, \"%s\"!\n%s\n", path, e.what());
-    return;
-  }
-
-  char filename[64];
-  snprintf(filename, sizeof(filename), "%s", plGetFileName(path));
-  slot.manifest_path = path;
-
-  char name[32];
-  plStripExtension(name, sizeof(name), plGetFileName(path));
-  slot.base_directory = name;
-
-#if _DEBUG
-  LogDebug("\nRegistered Campaign\n"
-           "name:    %s\n"
-           "version: %s\n"
-           "author:  %s\n"
-           "path:    %s\n"
-           "dir:     %s\n",
-
-           slot.name.c_str(),
-           slot.version.c_str(),
-           slot.author.c_str(),
-           slot.manifest_path.c_str(),
-           slot.base_directory.c_str()
-  );
-#endif
-
-  campaigns.emplace(name, slot);
+void Mod_RegisterMod( const char* path ) {
+	modDirectory_t mod = Mod_LoadManifest( path );
+	modsList.emplace( mod.name, mod );
 }
 
 /** Registers all of the campaigns provided under the campaigns
  *  directory.
  */
-void Mod_RegisterCampaigns(void) {
-  char path[PL_SYSTEM_MAX_PATH];
-  snprintf(path, sizeof(path), "%s/campaigns/", u_get_base_path());
-  plScanDirectory(path, "campaign", Mod_RegisterCampaign, false);
+void Mod_RegisterMods( void ) {
+	char path[PL_SYSTEM_MAX_PATH];
+	snprintf( path, sizeof( path ), "%s/mods/", u_get_base_path() );
+	plScanDirectory( path, "mod", Mod_RegisterMod, false );
 }
 
 /** Returns a pointer to the campaign that's currently active.
  *
  * @return Pointer to the current campaign.
  */
-ModManifest *Mod_GetCurrentCampaign(void) {
-  return current_campaign;
+const modDirectory_t* Mod_GetCurrentMod( void ) {
+	return currentModification;
 }
 
-void Mod_SetCampaign(const char *dir) {
-  ModManifest *campaign = GetModManifestByDirectory(dir);
-  if (campaign == nullptr) {
-    LogInfo("Campaign, \"%s\", wasn't cached on launch... attempting to load!\n", dir);
+void Mod_SetMod( const char* name ) {
+	// Attempt to fetch the manifest, if it doesn't exist then attempt to load it
+	modDirectory_t* mod = Mod_GetManifest( name );
+	if ( mod == nullptr ) {
+		LogInfo( "Mod manifest, \"%s\", wasn't cached on launch... attempting to load!\n", name );
 
-    char path[PL_SYSTEM_MAX_PATH];
-    snprintf(path, sizeof(path), "%s/campaigns/%s.campaign", u_get_base_path(), dir);
-    if (plFileExists(path)) {
-      Mod_RegisterCampaign(path);
-      campaign = GetModManifestByDirectory(dir);
-    }
+		char path[PL_SYSTEM_MAX_PATH];
+		snprintf( path, sizeof( path ), "mods/%s.mod", name );
+		if ( plFileExists( path ) ) {
+			Mod_RegisterMod( path );
+			mod = Mod_GetManifest( name );
+		}
 
-    if (campaign == nullptr) {
-      LogWarn("Campaign \"%s\" doesn't exist!\n", dir);
-      return;
-    }
-  }
+		if ( mod == nullptr ) {
+			LogWarn( "Mod \"%s\" doesn't exist!\n", name );
+			return;
+		}
+	}
 
-  u_set_mod_path(campaign->base_directory.c_str());
+	if ( currentModification == mod ) {
+		LogInfo( "Mod is already mounted\n" );
+		return;
+	}
 
-  LogInfo("Campaign has been set to \"%s\" successfully!\n", campaign->name.c_str());
+	// If a modification is already mounted, unmount it
+	if ( currentModification != nullptr ) {
+		for ( const auto& i : currentModification->mountList ) {
+			plClearMountedLocation( i );
+		}
+
+		currentModification->mountList.clear();
+	}
+
+	u_set_mod_path( mod->directory.c_str() );
+
+	LogInfo( "Mod has been set to \"%s\" successfully!\n", mod->name.c_str() );
 }

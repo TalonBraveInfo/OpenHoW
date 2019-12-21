@@ -178,10 +178,6 @@ void GameManager::LoadMap(const std::string& name) {
 }
 
 void GameManager::UnloadMap() {
-  for (auto& ambient_sample : ambient_samples_) {
-    delete ambient_sample;
-  }
-
   delete map_;
 }
 
@@ -332,20 +328,23 @@ void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
  * @param argv
  */
 void GameManager::MapCommand(unsigned int argc, char** argv) {
-  if (argc < 2) {
-    LogWarn("Invalid number of arguments, ignoring!\n");
-    return;
-  }
+	if ( argc < 2 ) {
+		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		return;
+	}
 
-  std::string mode = "singleplayer";
-  const MapManifest* desc = Engine::Game()->GetMapManifest(argv[1]);
-  if (desc != nullptr && !desc->modes.empty()) {
-    mode = desc->modes[0];
-  }
+	// End the current mode
+	Engine::Game()->EndMode();
 
-  // Set up a mode with some defaults.
-  GameModeDescriptor descriptor = GameModeDescriptor();
-  Engine::Game()->StartMode(argv[1], { new Player(PlayerType::LOCAL) }, descriptor);
+	std::string mode = "singleplayer";
+	const MapManifest* desc = Engine::Game()->GetMapManifest( argv[ 1 ] );
+	if ( desc != nullptr && !desc->modes.empty() ) {
+		mode = desc->modes[ 0 ];
+	}
+
+	// Set up a mode with some defaults.
+	GameModeDescriptor descriptor = GameModeDescriptor();
+	Engine::Game()->StartMode( argv[ 1 ], { new Player( PlayerType::LOCAL ) }, descriptor );
 }
 
 /**

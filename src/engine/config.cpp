@@ -25,9 +25,9 @@ const char *Config_GetUserConfigPath() {
   if (config_path.empty()) {
     char out[PL_SYSTEM_MAX_PATH];
     if (plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH) == nullptr) {
-      LogWarn("failed to get app data directory!\n%s\n", plGetError());
-      config_path = "./user.config";
-    } else {
+		LogWarn( "Failed to get app data directory!\n%s\n", plGetError() );
+		config_path = "./user.config";
+	} else {
       config_path = std::string(out) + "/user.config";
     }
   }

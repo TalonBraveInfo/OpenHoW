@@ -22,6 +22,7 @@
 #include "actor_manager.h"
 #include "player.h"
 #include "actors/actor_pig.h"
+#include "actors/actor_static_model.h"
 
 using namespace openhow;
 
@@ -112,33 +113,47 @@ void BaseGameMode::SpawnActors() {
       continue;
     }
 
-    Player* player = Engine::Game()->GetPlayerByIndex(pig->GetTeam());
-    if(player == nullptr) {
-      LogWarn("Failed to assign pig to team!\n");
-      continue;
-    }
+	  Player* player = Engine::Game()->GetPlayerByIndex( pig->GetTeam() );
+	  if ( player == nullptr ) {
+		  LogWarn( "Failed to assign pig to team!\n" );
+		  continue;
+	  }
 
-    AssignActorToPlayer(pig, player);
+	  AssignActorToPlayer( pig, player );
   }
+
+	// TEMP START
+
+	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "static_model" ));
+	if ( model_actor == nullptr ) {
+		Error( "Failed to create model actor!\n" );
+	}
+
+	model_actor->SetModel( "scenery/airship1" );
+	model_actor->SetPosition( {
+								  TERRAIN_PIXEL_WIDTH / 2, TERRAIN_PIXEL_WIDTH / 2,
+								  Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight() } );
+
+	// TEMP END
 
 #if 0 // debug sprites...
-  for(unsigned int i = 0; i < 4096; ++i) {
-    Actor* actor = ActorManager::GetInstance()->CreateActor("sprite");
-    if(actor == nullptr) {
-      break;
-    }
+	for(unsigned int i = 0; i < 4096; ++i) {
+	  Actor* actor = ActorManager::GetInstance()->CreateActor("sprite");
+	  if(actor == nullptr) {
+		break;
+	  }
 
-    actor->SetPosition({
-                    static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-                    static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-                    static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
-                });
-    actor->SetAngles({
-                  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-                  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-                  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
-              });
-  }
+	  actor->SetPosition({
+					  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+					  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+					  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
+				  });
+	  actor->SetAngles({
+					static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+					static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
+					static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
+				});
+	}
 #endif
 
   ActorManager::GetInstance()->ActivateActors();
