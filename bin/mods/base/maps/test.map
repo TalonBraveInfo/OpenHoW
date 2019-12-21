@@ -1,0 +1,17 @@
+{
+  "name": "Test World",
+  "author": "hogsy",
+  "description": "none",
+  "ambientColour": "113 113 113",
+  "skyColourTop": "0 104 156",
+  "skyColourBottom": "223 255 255",
+  "sunColour": "215 191 140",
+  "sunYaw": "-0.820305",
+  "sunPitch": "1.047198",
+  "temperature": "normal",
+  "weather": "clear",
+  "time": "day",
+  "fogColour": "223 255 255",
+  "fogIntensity": "12.000000",
+  "fogDistance": "114.000000"
+}

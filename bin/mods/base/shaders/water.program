@@ -1,0 +1,6 @@
+{
+  "gl3": {
+    "vertPath": "shaders/gl3/generic.vert",
+    "fragPath": "shaders/gl3/water.frag"
+  }
+}
