@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,10 @@ ScriptConfig::ScriptConfig( const std::string& path ) : ScriptConfig() {
 	}
 
 	PLFile* filePtr = plOpenFile( path.c_str(), false );
+	if ( filePtr == nullptr ) {
+		throw std::runtime_error( "Failed to load file!\n" );
+	}
+
 	size_t sz = plGetFileSize( filePtr );
 	if ( sz == 0 ) {
 		plCloseFile( filePtr );

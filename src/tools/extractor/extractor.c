@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  * Copyright (C) 2017 Daniel Collins <solemnwarning@solemnwarning.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -585,7 +585,6 @@ int main( int argc, char** argv ) {
 	/* now deal with any arguments */
 
 	u_init_paths();
-	u_set_mod_path( "how" );
 
 #if 0
 	if(getcwd(output_path, sizeof(output_path) - 1) == NULL) {

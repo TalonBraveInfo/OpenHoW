@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,16 +92,8 @@ static void Shaders_ClearPrograms() {
 static void Shaders_CachePrograms() {
 	Shaders_ClearPrograms();
 
-	char scanPath[PL_SYSTEM_MAX_PATH];
-	snprintf( scanPath, sizeof( scanPath ), "%s/shaders", u_get_base_path());
-	plScanDirectory( scanPath, "program", Shaders_CacheShaderProgram, false );
-
 	// Recursive searches through dependencies... This needs revisiting!
-	const char* modPath = u_get_mod_path();
-	if ( modPath[ 0 ] != '\0' ) {
-		snprintf( scanPath, sizeof( scanPath ), "%s/shaders", u_get_full_path());
-		plScanDirectory( scanPath, "program", Shaders_CacheShaderProgram, false );
-	}
+	plScanDirectory( "shaders/", "program", Shaders_CacheShaderProgram, false );
 
 	Shaders_ValidateDefault();
 }
@@ -256,7 +248,7 @@ void hwShaderProgram::Disable() {
 }
 
 void hwShaderProgram::RegisterShaderStage( const char* path, PLShaderType type ) {
-	if ( !plRegisterShaderStageFromDisk( shaderProgram, u_find( path ), type )) {
-		throw std::runtime_error( plGetError());
+	if ( !plRegisterShaderStageFromDisk( shaderProgram, path, type ) ) {
+		throw std::runtime_error( plGetError() );
 	}
 }

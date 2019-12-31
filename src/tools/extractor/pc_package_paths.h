@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  * Copyright (C) 2017 Daniel Collins <solemnwarning@solemnwarning.net>
  *
  * This program is free software: you can redistribute it and/or modify

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,26 +27,28 @@ class ResourceManager {
   PLTexture* GetCachedTexture(const std::string& path);
   PLModel* GetCachedModel(const std::string& path);
 
-  PLTexture* LoadTexture(const std::string& path,
-                         PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST,
-                         bool persist = false, bool abort_on_fail = false);
-  PLModel* LoadModel(const std::string& path, bool persist = false, bool abort_on_fail = false);
+  PLTexture* LoadTexture( const std::string& path,
+						  PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST,
+						  bool persist = false, bool abort_on_fail = false );
+	PLModel* LoadModel( const std::string& path, bool persist = false, bool abort_on_fail = false );
 
-  PLTexture* GetFallbackTexture();
-  PLModel* GetFallbackModel();
+	PLTexture* GetFallbackTexture();
+	PLModel* GetFallbackModel();
 
-  void ClearTextures(bool force = false);
-  void ClearModels(bool force = false);
+	void ClearTextures( bool force = false );
+	void ClearModels( bool force = false );
 
- private:
-  static void ListCachedResources(unsigned int argc, char** argv);
-  static void ClearTexturesCommand(unsigned int argc, char** argv);
-  static void ClearModelsCommand(unsigned int argc, char** argv);
+	void ClearAll();
 
-  struct TextureHandle {
-    TextureHandle(PLTexture* texture_ptr, bool persist) {
-      this->texture_ptr = texture_ptr;
-      this->persist = persist;
+private:
+	static void ListCachedResources( unsigned int argc, char** argv );
+	static void ClearTexturesCommand( unsigned int argc, char** argv );
+	static void ClearModelsCommand( unsigned int argc, char** argv );
+
+	struct TextureHandle {
+		TextureHandle( PLTexture* texture_ptr, bool persist ) {
+			this->texture_ptr = texture_ptr;
+			this->persist = persist;
     }
 
     PLTexture* texture_ptr{nullptr};

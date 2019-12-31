@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,10 +64,7 @@ static modDirectory_t Mod_LoadManifest( const char* path ) {
 		char filename[64];
 		snprintf( filename, sizeof( filename ), "%s", plGetFileName( path ) );
 		slot.fileName = path;
-
-		char name[32];
-		plStripExtension( name, sizeof( name ), plGetFileName( path ) );
-		slot.directory = name;
+		slot.directory = std::string( filename, strlen( filename ) - 3 ) + "/";
 
 		slot.dependencies = config.GetArrayStrings( "dependencies" );
 	} catch ( const std::exception& e ) {
@@ -86,21 +83,33 @@ void Mod_RegisterMod( const char* path ) {
 	modsList.emplace( mod.name, mod );
 }
 
-/** Registers all of the campaigns provided under the campaigns
- *  directory.
+/**
+ * Registers all of the campaigns provided under the mods directory.
  */
-void Mod_RegisterMods( void ) {
-	char path[PL_SYSTEM_MAX_PATH];
-	snprintf( path, sizeof( path ), "%s/mods/", u_get_base_path() );
-	plScanDirectory( path, "mod", Mod_RegisterMod, false );
+void Mod_RegisterMods() {
+	plScanDirectory( "mods/", "mod", Mod_RegisterMod, false );
 }
 
-/** Returns a pointer to the campaign that's currently active.
- *
+/**
+ * Returns a pointer to the campaign that's currently active.
  * @return Pointer to the current campaign.
  */
-const modDirectory_t* Mod_GetCurrentMod( void ) {
+const modDirectory_t* Mod_GetCurrentMod() {
 	return currentModification;
+}
+
+/**
+ * Unmounts the specified modification.
+ */
+static void Mod_Unmount( modDirectory_t* mod ) {
+	// If a modification is already mounted, unmount it
+	if ( mod != nullptr ) {
+		for ( const auto& i : mod->mountList ) {
+			plClearMountedLocation( i );
+		}
+
+		mod->mountList.clear();
+	}
 }
 
 void Mod_SetMod( const char* name ) {
@@ -127,16 +136,29 @@ void Mod_SetMod( const char* name ) {
 		return;
 	}
 
-	// If a modification is already mounted, unmount it
-	if ( currentModification != nullptr ) {
-		for ( const auto& i : currentModification->mountList ) {
-			plClearMountedLocation( i );
+	// Generate a list of directories to mount based on the dependencies
+	std::list<std::string> dirList;
+	for ( const auto& i : mod->dependencies ) {
+		modDirectory_t* dependency = Mod_GetManifest( i );
+		if ( dependency == nullptr ) {
+			LogWarn( "Failed to fetch dependency for mod, \"%s\"!\n", i.c_str() );
+			return;
 		}
-
-		currentModification->mountList.clear();
 	}
 
-	u_set_mod_path( mod->directory.c_str() );
+	// Now attempt to mount everything
+	for ( const auto& i : dirList ) {
+		PLFileSystemMount* mount = plMountLocation( i.c_str() );
+		if ( mount == nullptr ) {
+			Mod_Unmount( mod );
+			LogWarn( "Failed to mount location, \"%s\" (%s)!\n", i.c_str(), plGetError() );
+			return;
+		}
+	}
+
+	Mod_Unmount( currentModification );
+
+	Engine::Resource()->ClearAll();
 
 	LogInfo( "Mod has been set to \"%s\" successfully!\n", mod->name.c_str() );
 }

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,33 @@ int System_SetSwapInterval( int interval ) {
 	return SDL_GL_GetSwapInterval();
 }
 
+static SDL_Surface* SDL_LoadPNG( const char* path ) {
+	PLImage image;
+	if ( !plLoadImage( path, &image ) ) {
+		LogWarn( "Failed to load image, %s (%s)!\n", path, plGetError() );
+		return nullptr;
+	}
+
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+		image.data[ 0 ],
+		static_cast<int>( image.width ),
+		static_cast<int>( image.height ),
+		4,
+		image.width * 4,
+		0xFF000000,
+		0x00FF0000,
+		0x0000FF00,
+		0x000000FF
+	);
+	if ( surface == nullptr ) {
+		LogWarn( "Failed to create requested SDL surface, %s!\n", SDL_GetError() );
+	}
+
+	plFreeImage( &image );
+
+	return surface;
+}
+
 void System_DisplayWindow( bool fullscreen, int width, int height ) {
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
@@ -126,6 +153,12 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 	if ( window == nullptr ) {
 		System_DisplayMessageBox( PROMPT_LEVEL_ERROR, "Failed to create window!\n%s", SDL_GetError() );
 		System_Shutdown();
+	}
+
+	SDL_Surface* icon = SDL_LoadPNG( "icon.png" );
+	if ( icon != nullptr ) {
+		SDL_SetWindowIcon( window, icon );
+		SDL_FreeSurface( icon );
 	}
 
 	{
@@ -597,6 +630,11 @@ int main( int argc, char** argv ) {
 	pl_calloc = u_calloc;
 
 	plInitialize( argc, argv );
+	plInitializeSubSystems( PL_SUBSYSTEM_IO );
+
+	plRegisterStandardPackageLoaders();
+
+	plMountLocation( plGetWorkingDirectory() );
 
 	char app_dir[PL_SYSTEM_MAX_PATH];
 	plGetApplicationDataDirectory( ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH );

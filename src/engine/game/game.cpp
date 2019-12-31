@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,239 +29,235 @@
 
 #include "actors/actor_pig.h"
 #include "actors/actor_static_model.h"
-
+#include "../mod_support.h"
 
 using namespace openhow;
 
 std::string MapManifest::Serialize() {
-  std::stringstream output;
-  output << "{";
-  output << R"("name":")" << name << "\",";
-  output << R"("author":")" << author << "\",";
-  output << R"("description":")" << description << "\",";
-  if (!modes.empty()) {
-    output << R"("modes":[)";
-    for (size_t i = 0; i < modes.size(); ++i) {
-      output << "\"" << modes[i] << "\"";
-      if (i != modes.size() - 1) {
-        output << ",";
-      }
-    }
-    output << "],";
-  }
-  output << R"("ambientColour":")" <<
-         std::to_string(ambient_colour.r) << " " <<
-         std::to_string(ambient_colour.g) << " " <<
-         std::to_string(ambient_colour.b) << "\",";
-  output << R"("skyColourTop":")" <<
-         std::to_string(sky_colour_top.r) << " " <<
-         std::to_string(sky_colour_top.g) << " " <<
-         std::to_string(sky_colour_top.b) << "\",";
-  output << R"("skyColourBottom":")" <<
-         std::to_string(sky_colour_bottom.r) << " " <<
-         std::to_string(sky_colour_bottom.g) << " " <<
-         std::to_string(sky_colour_bottom.b) << "\",";
-  output << R"("sunColour":")" <<
-         std::to_string(sun_colour.r) << " " <<
-         std::to_string(sun_colour.g) << " " <<
-         std::to_string(sun_colour.b) << "\",";
-  output << R"("sunYaw":")" << std::to_string(sun_yaw) << "\",";
-  output << R"("sunPitch":")" << std::to_string(sun_pitch) << "\",";
-  output << R"("temperature":")" << temperature << "\",";
-  output << R"("weather":")" << weather << "\",";
-  output << R"("time":")" << time << "\",";
-  // Fog
-  output << R"("fogColour":")" <<
-         std::to_string(fog_colour.r) << " " <<
-         std::to_string(fog_colour.g) << " " <<
-         std::to_string(fog_colour.b) << "\",";
-  output << R"("fogIntensity":")" << std::to_string(fog_intensity) << "\",";
-  output << R"("fogDistance":")" << std::to_string(fog_distance) << "\"";
-  output << "}\n";
-  return output.str();
+	std::stringstream output;
+	output << "{";
+	output << R"("name":")" << name << "\",";
+	output << R"("author":")" << author << "\",";
+	output << R"("description":")" << description << "\",";
+	if ( !modes.empty() ) {
+		output << R"("modes":[)";
+		for ( size_t i = 0; i < modes.size(); ++i ) {
+			output << "\"" << modes[ i ] << "\"";
+			if ( i != modes.size() - 1 ) {
+				output << ",";
+			}
+		}
+		output << "],";
+	}
+	output << R"("ambientColour":")" <<
+		   std::to_string( ambient_colour.r ) << " " <<
+		   std::to_string( ambient_colour.g ) << " " <<
+		   std::to_string( ambient_colour.b ) << "\",";
+	output << R"("skyColourTop":")" <<
+		   std::to_string( sky_colour_top.r ) << " " <<
+		   std::to_string( sky_colour_top.g ) << " " <<
+		   std::to_string( sky_colour_top.b ) << "\",";
+	output << R"("skyColourBottom":")" <<
+		   std::to_string( sky_colour_bottom.r ) << " " <<
+		   std::to_string( sky_colour_bottom.g ) << " " <<
+		   std::to_string( sky_colour_bottom.b ) << "\",";
+	output << R"("sunColour":")" <<
+		   std::to_string( sun_colour.r ) << " " <<
+		   std::to_string( sun_colour.g ) << " " <<
+		   std::to_string( sun_colour.b ) << "\",";
+	output << R"("sunYaw":")" << std::to_string( sun_yaw ) << "\",";
+	output << R"("sunPitch":")" << std::to_string( sun_pitch ) << "\",";
+	output << R"("temperature":")" << temperature << "\",";
+	output << R"("weather":")" << weather << "\",";
+	output << R"("time":")" << time << "\",";
+	// Fog
+	output << R"("fogColour":")" <<
+		   std::to_string( fog_colour.r ) << " " <<
+		   std::to_string( fog_colour.g ) << " " <<
+		   std::to_string( fog_colour.b ) << "\",";
+	output << R"("fogIntensity":")" << std::to_string( fog_intensity ) << "\",";
+	output << R"("fogDistance":")" << std::to_string( fog_distance ) << "\"";
+	output << "}\n";
+	return output.str();
 }
 
 GameManager::GameManager() {
-  plRegisterConsoleCommand("CreateMap", CreateMapCommand, "Creates a new named map.");
-  plRegisterConsoleCommand("map", MapCommand, "");
-  plRegisterConsoleCommand("maps", MapsCommand, "");
-  plRegisterConsoleCommand("GiveItem", GiveItemCommand, "Gives a specified item to the current occupied pig.");
-  plRegisterConsoleCommand("SpawnModel", SpawnModelCommand, "Creates a model at your current position.");
+	plRegisterConsoleCommand( "CreateMap", CreateMapCommand, "Creates a new named map." );
+	plRegisterConsoleCommand( "map", MapCommand, "" );
+	plRegisterConsoleCommand( "maps", MapsCommand, "" );
+	plRegisterConsoleCommand( "GiveItem", GiveItemCommand, "Gives a specified item to the current occupied pig." );
+	plRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
 
-  // Load in all the data we'll retain in memory
-  Engine::Resource()->LoadModel("chars/pigs/ac_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/sb_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/gr_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/hv_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/le_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/me_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/sa_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/sn_hi", true, true);
-  Engine::Resource()->LoadModel("chars/pigs/sp_hi", true, true);
+	// Load in all the data we'll retain in memory
+	Engine::Resource()->LoadModel( "chars/pigs/ac_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/sb_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/gr_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/hv_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/le_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/me_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/sa_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/sn_hi", true, true );
+	Engine::Resource()->LoadModel( "chars/pigs/sp_hi", true, true );
 
-  camera_ = new Camera({0, 0, 0}, {0, 0, 0});
+	camera_ = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
 }
 
 GameManager::~GameManager() {
-  map_manifests_.clear();
+	map_manifests_.clear();
 
-  delete camera_;
+	delete camera_;
 }
 
 void GameManager::Tick() {
-  FrontEnd_Tick();
+	FrontEnd_Tick();
 
-  if (mode_ == nullptr) {
-    return;
-  }
+	if ( mode_ == nullptr ) {
+		return;
+	}
 
-  if (ambient_emit_delay_ < g_state.sim_ticks) {
-    const AudioSample* sample = ambient_samples_[rand() % MAX_AMBIENT_SAMPLES];
-    if (sample != nullptr) {
-      PLVector3 position = {
-          plGenerateRandomf(TERRAIN_PIXEL_WIDTH),
-          map_->GetTerrain()->GetMaxHeight(),
-          plGenerateRandomf(TERRAIN_PIXEL_WIDTH)
-      };
-      Engine::Audio()->PlayLocalSound(sample, position, {0, 0, 0}, true, 0.5f);
-    }
+	if ( ambient_emit_delay_ < g_state.sim_ticks ) {
+		const AudioSample* sample = ambient_samples_[ rand() % MAX_AMBIENT_SAMPLES ];
+		if ( sample != nullptr ) {
+			PLVector3 position = {
+				plGenerateRandomf( TERRAIN_PIXEL_WIDTH ),
+				map_->GetTerrain()->GetMaxHeight(),
+				plGenerateRandomf( TERRAIN_PIXEL_WIDTH )
+			};
+			Engine::Audio()->PlayLocalSound( sample, position, { 0, 0, 0 }, true, 0.5f );
+		}
 
-    ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % (7 * TICKS_PER_SECOND);
-  }
+		ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % ( 7 * TICKS_PER_SECOND );
+	}
 
-  mode_->Tick();
+	mode_->Tick();
 
-  ActorManager::GetInstance()->TickActors();
+	ActorManager::GetInstance()->TickActors();
 
-  switch(camera_mode_) {
-    case CameraMode::FIRSTPERSON:break;
-    case CameraMode::FLY:break;
-    case CameraMode::FOLLOW:break;
-    case CameraMode::FLYAROUND:break;
-  }
+	switch ( camera_mode_ ) {
+		case CameraMode::FIRSTPERSON:break;
+		case CameraMode::FLY:break;
+		case CameraMode::FOLLOW:break;
+		case CameraMode::FLYAROUND:break;
+	}
 }
 
-void GameManager::SetupPlayers(const PlayerPtrVector& players) {
-  for(auto i : players) {
-    GetMode()->PlayerJoined(i);
-  }
+void GameManager::SetupPlayers( const PlayerPtrVector& players ) {
+	for ( auto i : players ) {
+		GetMode()->PlayerJoined( i );
+	}
 
-  players_ = players;
+	players_ = players;
 }
 
-Player* GameManager::GetPlayerByIndex(unsigned int i) {
-  if(i >= players_.size()) {
-    LogWarn("Invalid player index, \"%d\"!\n", i);
-    return nullptr;
-  }
+Player* GameManager::GetPlayerByIndex( unsigned int i ) {
+	if ( i >= players_.size() ) {
+		LogWarn( "Invalid player index, \"%d\"!\n", i );
+		return nullptr;
+	}
 
-  return players_[i];
+	return players_[ i ];
 }
 
-void GameManager::LoadMap(const std::string& name) {
-  MapManifest* manifest = Engine::Game()->GetMapManifest(name);
-  if (manifest == nullptr) {
-    LogWarn("Failed to get map descriptor, \"%s\"\n", name.c_str());
-    return;
-  }
+void GameManager::LoadMap( const std::string& name ) {
+	MapManifest* manifest = Engine::Game()->GetMapManifest( name );
+	if ( manifest == nullptr ) {
+		LogWarn( "Failed to get map descriptor, \"%s\"\n", name.c_str() );
+		return;
+	}
 
-  Map* map = new Map(manifest);
-  if (map_ != nullptr) {
-    EndMode();
-  }
+	Map* map = new Map( manifest );
+	if ( map_ != nullptr ) {
+		EndMode();
+	}
 
-  map_ = map;
+	map_ = map;
 
-  /* todo: we should actually pause here and wait for user input
-   *       otherwise players won't have time to read the loading screen */
-  FrontEnd_SetState(FE_MODE_GAME);
+	/* todo: we should actually pause here and wait for user input
+	 *       otherwise players won't have time to read the loading screen */
+	FrontEnd_SetState( FE_MODE_GAME );
 }
 
 void GameManager::UnloadMap() {
-  delete map_;
+	delete map_;
 }
 
-void GameManager::RegisterTeamManifest(const std::string& path) {
-  const char* upath = u_find(path.c_str());
-  LogInfo("Registering team manifest \"%s\"...\n", upath);
+void GameManager::RegisterTeamManifest( const std::string& path ) {
+	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
 
-  // TODO: recurse through each dependency and add them to our list...
+	try {
+		ScriptConfig config( path );
+		unsigned int num_teams = config.GetArrayLength();
+		if ( num_teams == 0 ) {
+			Error( "Failed to register teams, no teams available in \"%s\"!\n", path.c_str() );
+		}
 
-  try {
-    ScriptConfig config(upath);
-    unsigned int num_teams = config.GetArrayLength();
-    if(num_teams == 0) {
-      Error("Failed to register teams, no teams available in \"%s\"!\n", upath);
-    }
+		for ( unsigned int i = 0; i < num_teams; ++i ) {
+			config.EnterChildNode( i );
 
-    for(unsigned int i = 0; i < num_teams; ++i) {
-      config.EnterChildNode(i);
+			Team team;
+			team.name =
+				LanguageManager::GetInstance()->GetTranslation( config.GetStringProperty( "name", team.name ).c_str() );
+			team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
+			team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
+			team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures );
+			team.voice_set = config.GetStringProperty( "voiceSet", team.voice_set );
+			default_teams_.push_back( team );
 
-      Team team;
-      team.name = LanguageManager::GetInstance()->GetTranslation(config.GetStringProperty("name", team.name).c_str());
-      team.debrief_texture = config.GetStringProperty("debriefTexture", team.debrief_texture);
-      team.paper_texture = config.GetStringProperty("paperTextures", team.paper_texture);
-      team.pig_textures = config.GetStringProperty("pigTextures", team.pig_textures);
-      team.voice_set = config.GetStringProperty("voiceSet", team.voice_set);
-      default_teams_.push_back(team);
-
-      config.LeaveChildNode();
-    }
-  } catch (const std::exception& e) {
-    LogWarn("Failed to read map config, \"%s\"!\n%s\n", upath, e.what());
-  }
+			config.LeaveChildNode();
+		}
+	} catch ( const std::exception& e ) {
+		LogWarn( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
+	}
 }
 
-void GameManager::RegisterMapManifest(const std::string& path) {
-  LogInfo("Registering map \"%s\"...\n", path.c_str());
+void GameManager::RegisterMapManifest( const std::string& path ) {
+	LogInfo( "Registering map \"%s\"...\n", path.c_str() );
 
-  MapManifest manifest;
-  try {
-    ScriptConfig config(path);
-    manifest.name = config.GetStringProperty("name", manifest.name);
-    manifest.author = config.GetStringProperty("author", manifest.author);
-    manifest.description = config.GetStringProperty("description", manifest.description);
-    manifest.tile_directory = config.GetStringProperty("tileDirectory", manifest.tile_directory);
-    manifest.modes = config.GetArrayStrings("modes");
-    manifest.ambient_colour = config.GetColourProperty("ambientColour", manifest.ambient_colour);
-    manifest.sky_colour_top = config.GetColourProperty("skyColourTop", manifest.sky_colour_top);
-    manifest.sky_colour_bottom = config.GetColourProperty("skyColourBottom", manifest.sky_colour_bottom);
-    manifest.sun_colour = config.GetColourProperty("sunColour", manifest.sun_colour);
-    manifest.sun_yaw = config.GetFloatProperty("sunYaw", manifest.sun_yaw);
-    manifest.sun_pitch = config.GetFloatProperty("sunPitch", manifest.sun_pitch);
-    manifest.temperature = config.GetStringProperty("temperature", manifest.temperature);
-    manifest.weather = config.GetStringProperty("weather", manifest.weather);
-    manifest.time = config.GetStringProperty("time", manifest.time);
+	MapManifest manifest;
+	try {
+		ScriptConfig config( path );
+		manifest.name = config.GetStringProperty( "name", manifest.name );
+		manifest.author = config.GetStringProperty( "author", manifest.author );
+		manifest.description = config.GetStringProperty( "description", manifest.description );
+		manifest.tile_directory = config.GetStringProperty( "tileDirectory", manifest.tile_directory );
+		manifest.modes = config.GetArrayStrings( "modes" );
+		manifest.ambient_colour = config.GetColourProperty( "ambientColour", manifest.ambient_colour );
+		manifest.sky_colour_top = config.GetColourProperty( "skyColourTop", manifest.sky_colour_top );
+		manifest.sky_colour_bottom = config.GetColourProperty( "skyColourBottom", manifest.sky_colour_bottom );
+		manifest.sun_colour = config.GetColourProperty( "sunColour", manifest.sun_colour );
+		manifest.sun_yaw = config.GetFloatProperty( "sunYaw", manifest.sun_yaw );
+		manifest.sun_pitch = config.GetFloatProperty( "sunPitch", manifest.sun_pitch );
+		manifest.temperature = config.GetStringProperty( "temperature", manifest.temperature );
+		manifest.weather = config.GetStringProperty( "weather", manifest.weather );
+		manifest.time = config.GetStringProperty( "time", manifest.time );
 
-    // Fog
-    manifest.fog_colour = config.GetColourProperty("fogColour", manifest.fog_colour);
-    manifest.fog_intensity = config.GetFloatProperty("fogIntensity", manifest.fog_intensity);
-    manifest.fog_distance = config.GetFloatProperty("fogDistance", manifest.fog_distance);
-  } catch (const std::exception& e) {
-    LogWarn("Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what());
-  }
+		// Fog
+		manifest.fog_colour = config.GetColourProperty( "fogColour", manifest.fog_colour );
+		manifest.fog_intensity = config.GetFloatProperty( "fogIntensity", manifest.fog_intensity );
+		manifest.fog_distance = config.GetFloatProperty( "fogDistance", manifest.fog_distance );
+	} catch ( const std::exception& e ) {
+		LogWarn( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
+	}
 
-  char temp_buf[64];
-  plStripExtension(temp_buf, sizeof(temp_buf), plGetFileName(path.c_str()));
+	char temp_buf[64];
+	plStripExtension( temp_buf, sizeof( temp_buf ), plGetFileName( path.c_str() ) );
 
-  manifest.filepath = path;
-  manifest.filename = temp_buf;
+	manifest.filepath = path;
+	manifest.filename = temp_buf;
 
-  map_manifests_.insert(std::make_pair(temp_buf, manifest));
+	map_manifests_.insert( std::make_pair( temp_buf, manifest ) );
 }
 
-static void RegisterManifestInterface(const char* path) {
-  Engine::Game()->RegisterMapManifest(path);
+static void RegisterManifestInterface( const char* path ) {
+	Engine::Game()->RegisterMapManifest( path );
 }
 
 /**
  * Scans the campaigns directory for .map files and indexes them.
  */
 void GameManager::RegisterMapManifests() {
-  map_manifests_.clear();
-
-  std::string scan_path = std::string(u_get_base_path()) + "/campaigns/" + u_get_mod_path() + "/maps";
-  plScanDirectory(scan_path.c_str(), "map", RegisterManifestInterface, false);
+	map_manifests_.clear();
+	plScanDirectory( "maps/", "map", RegisterManifestInterface, false );
 }
 
 /**
@@ -269,14 +265,14 @@ void GameManager::RegisterMapManifests() {
  * @param name
  * @return Returns a pointer to the requested manifest, otherwise returns null.
  */
-MapManifest* GameManager::GetMapManifest(const std::string& name) {
-  auto manifest = map_manifests_.find(name);
-  if (manifest != map_manifests_.end()) {
-    return &manifest->second;
-  }
+MapManifest* GameManager::GetMapManifest( const std::string& name ) {
+	auto manifest = map_manifests_.find( name );
+	if ( manifest != map_manifests_.end() ) {
+		return &manifest->second;
+	}
 
-  LogWarn("Failed to get manifest for \"%s\"!\n", name.c_str());
-  return nullptr;
+	LogWarn( "Failed to get manifest for \"%s\"!\n", name.c_str() );
+	return nullptr;
 }
 
 /**
@@ -284,42 +280,43 @@ MapManifest* GameManager::GetMapManifest(const std::string& name) {
  * @param name
  * @return
  */
-MapManifest* GameManager::CreateManifest(const std::string& name) {
-  // ensure the map doesn't exist already
-  if(Engine::Game()->GetMapManifest(name) != nullptr) {
-    LogWarn("Unable to create map, it already exists!\n");
-    return nullptr;
-  }
+MapManifest* GameManager::CreateManifest( const std::string& name ) {
+	// ensure the map doesn't exist already
+	if ( Engine::Game()->GetMapManifest( name ) != nullptr ) {
+		LogWarn( "Unable to create map, it already exists!\n" );
+		return nullptr;
+	}
 
-  std::string path = std::string(u_get_full_path()) + "/maps/" + name + ".map";
-  std::ofstream output(path);
-  if(!output.is_open()) {
-    LogWarn("Failed to write to \"%s\", aborting!n\"\n", path.c_str());
-    return nullptr;
-  }
+	const modDirectory_t* currentMod = Mod_GetCurrentMod();
+	std::string path = "mods/" + currentMod->directory + "maps/" + name + ".map";
+	std::ofstream output( path );
+	if ( !output.is_open() ) {
+		LogWarn( "Failed to write to \"%s\", aborting!n\"\n", path.c_str() );
+		return nullptr;
+	}
 
-  MapManifest manifest;
-  output << manifest.Serialize();
-  output.close();
+	MapManifest manifest;
+	output << manifest.Serialize();
+	output.close();
 
-  LogInfo("Wrote \"%s\"!\n", path.c_str());
+	LogInfo( "Wrote \"%s\"!\n", path.c_str() );
 
-  Engine::Game()->RegisterMapManifest(path);
-  return Engine::Game()->GetMapManifest(name);
+	Engine::Game()->RegisterMapManifest( path );
+	return Engine::Game()->GetMapManifest( name );
 }
 
-void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
-  if(argc < 2) {
-    LogWarn("Invalid number of arguments, ignoring!\n");
-    return;
-  }
+void GameManager::CreateMapCommand( unsigned int argc, char** argv ) {
+	if ( argc < 2 ) {
+		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		return;
+	}
 
-  MapManifest* manifest = Engine::Game()->CreateManifest(argv[1]);
-  if(manifest == nullptr) {
-    return;
-  }
+	MapManifest* manifest = Engine::Game()->CreateManifest( argv[ 1 ] );
+	if ( manifest == nullptr ) {
+		return;
+	}
 
-  Engine::Game()->LoadMap(argv[1]);
+	Engine::Game()->LoadMap( argv[ 1 ] );
 }
 
 /**
@@ -327,7 +324,7 @@ void GameManager::CreateMapCommand(unsigned int argc, char** argv) {
  * @param argc
  * @param argv
  */
-void GameManager::MapCommand(unsigned int argc, char** argv) {
+void GameManager::MapCommand( unsigned int argc, char** argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
@@ -352,155 +349,157 @@ void GameManager::MapCommand(unsigned int argc, char** argv) {
  * @param argc
  * @param argv
  */
-void GameManager::MapsCommand(unsigned int argc, char** argv) {
-  if (Engine::Game()->map_manifests_.empty()) {
-    LogWarn("No maps available!\n");
-    return;
-  }
+void GameManager::MapsCommand( unsigned int argc, char** argv ) {
+	if ( Engine::Game()->map_manifests_.empty() ) {
+		LogWarn( "No maps available!\n" );
+		return;
+	}
 
-  for (auto manifest : Engine::Game()->map_manifests_) {
-    MapManifest* desc = &manifest.second;
-    std::string out =
-        desc->name + "/" + manifest.first +
-            " : " + desc->description +
-            " :";
-    // print out all the supported modes
-    for (size_t i = 0; i < desc->modes.size(); ++i) {
-      out += (i == 0 ? " " : ", ") + desc->modes[i];
-    }
-    LogInfo("%s\n", out.c_str());
-  }
+	for ( auto manifest : Engine::Game()->map_manifests_ ) {
+		MapManifest* desc = &manifest.second;
+		std::string out =
+			desc->name + "/" + manifest.first +
+				" : " + desc->description +
+				" :";
+		// print out all the supported modes
+		for ( size_t i = 0; i < desc->modes.size(); ++i ) {
+			out += ( i == 0 ? " " : ", " ) + desc->modes[ i ];
+		}
+		LogInfo( "%s\n", out.c_str() );
+	}
 
-  LogInfo("%u maps\n", Engine::Game()->map_manifests_.size());
+	LogInfo( "%u maps\n", Engine::Game()->map_manifests_.size() );
 }
 
-void GameManager::GiveItemCommand(unsigned int argc, char **argv) {
-  if (argc < 2) {
-    LogWarn("Invalid number of arguments, ignoring!\n");
-    return;
-  }
+void GameManager::GiveItemCommand( unsigned int argc, char** argv ) {
+	if ( argc < 2 ) {
+		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		return;
+	}
 
-  Player* player = Engine::Game()->mode_->GetCurrentPlayer();
-  if(player == nullptr) {
-    LogWarn("Failed to get current player!\n");
-    return;
-  }
+	Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+	if ( player == nullptr ) {
+		LogWarn( "Failed to get current player!\n" );
+		return;
+	}
 
-  Actor* actor = player->GetCurrentChild();
-  if(actor == nullptr) {
-    LogWarn("No actor currently active!\n");
-    return;
-  }
+	Actor* actor = player->GetCurrentChild();
+	if ( actor == nullptr ) {
+		LogWarn( "No actor currently active!\n" );
+		return;
+	}
 
-  APig* pig = dynamic_cast<APig*>(actor);
-  if(pig == nullptr) {
-    LogWarn("Actor is not a pig!\n");
-    return;
-  }
+	APig* pig = dynamic_cast<APig*>(actor);
+	if ( pig == nullptr ) {
+		LogWarn( "Actor is not a pig!\n" );
+		return;
+	}
 
-  auto item = static_cast<ItemIdentifier>(strtol(argv[1], nullptr, 10));
-  unsigned int quantity = 1;
-  if(argc > 2) {
-    quantity = strtol(argv[2], nullptr, 10);
-  }
+	auto item = static_cast<ItemIdentifier>(strtol( argv[ 1 ], nullptr, 10 ));
+	unsigned int quantity = 1;
+	if ( argc > 2 ) {
+		quantity = strtol( argv[ 2 ], nullptr, 10 );
+	}
 
-  pig->AddInventoryItem(item, quantity);
+	pig->AddInventoryItem( item, quantity );
 }
 
-void GameManager::SpawnModelCommand(unsigned int argc, char** argv) {
-  if(Engine::Game()->mode_ == nullptr) {
-    LogInfo("Command cannot function outside of game!\n");
-    return;
-  } else if(argc < 2) {
-    LogWarn("Invalid number of arguments, ignoring!\n");
-    return;
-  }
+void GameManager::SpawnModelCommand( unsigned int argc, char** argv ) {
+	if ( Engine::Game()->mode_ == nullptr ) {
+		LogInfo( "Command cannot function outside of game!\n" );
+		return;
+	} else if ( argc < 2 ) {
+		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		return;
+	}
 
-  Player* player = Engine::Game()->mode_->GetCurrentPlayer();
-  if(player == nullptr) {
-    LogWarn("Failed to get current player!\n");
-    return;
-  }
+	Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+	if ( player == nullptr ) {
+		LogWarn( "Failed to get current player!\n" );
+		return;
+	}
 
-  // Fetch the player's actor, so we can get their position
-  Actor* actor = player->GetCurrentChild();
-  if(actor == nullptr) {
-    LogWarn("No actor currently active!\n");
-    return;
-  }
+	// Fetch the player's actor, so we can get their position
+	Actor* actor = player->GetCurrentChild();
+	if ( actor == nullptr ) {
+		LogWarn( "No actor currently active!\n" );
+		return;
+	}
 
-  AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor("static_model"));
-  if(model_actor == nullptr) {
-    Error("Failed to create model actor!\n");
-  }
+	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "static_model" ));
+	if ( model_actor == nullptr ) {
+		Error( "Failed to create model actor!\n" );
+	}
 
-  model_actor->SetModel(argv[1]);
-  model_actor->SetPosition(actor->GetPosition());
-  model_actor->SetAngles(actor->GetAngles());
+	model_actor->SetModel( argv[ 1 ] );
+	model_actor->SetPosition( actor->GetPosition() );
+	model_actor->SetAngles( actor->GetAngles() );
 }
 
-void GameManager::StartMode(const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor) {
-  FrontEnd_SetState(FE_MODE_LOADING);
+void GameManager::StartMode( const std::string& map,
+							 const PlayerPtrVector& players,
+							 const GameModeDescriptor& descriptor ) {
+	FrontEnd_SetState( FE_MODE_LOADING );
 
-  Engine::Game()->LoadMap(map);
+	Engine::Game()->LoadMap( map );
 
-  if(map_ == nullptr) {
-    LogWarn("Failed to start mode, map wasn't loaded!\n");
-    EndMode();
-    return;
-  }
+	if ( map_ == nullptr ) {
+		LogWarn( "Failed to start mode, map wasn't loaded!\n" );
+		EndMode();
+		return;
+	}
 
-  std::string sample_ext = "d";
-  if (map_->GetManifest()->time != "day") {
-    sample_ext = "n";
-  }
+	std::string sample_ext = "d";
+	if ( map_->GetManifest()->time != "day" ) {
+		sample_ext = "n";
+	}
 
-  ambient_emit_delay_ = g_state.sim_ticks + plGenerateRandomd(100) + 1;
-  for (unsigned int i = 1, idx = 0; i < 4; ++i) {
-    std::string snum = std::to_string(i);
-    std::string path = "audio/amb_";
-    if (i < 3) {
-      path += snum + sample_ext + ".wav";
-      ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
-    }
+	ambient_emit_delay_ = g_state.sim_ticks + plGenerateRandomd( 100 ) + 1;
+	for ( unsigned int i = 1, idx = 0; i < 4; ++i ) {
+		std::string snum = std::to_string( i );
+		std::string path = "audio/amb_";
+		if ( i < 3 ) {
+			path += snum + sample_ext + ".wav";
+			ambient_samples_[ idx++ ] = Engine::Audio()->CacheSample( path, false );
+		}
 
-    path = "audio/batt_s" + snum + ".wav";
-    ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
-    path = "audio/batt_l" + snum + ".wav";
-    ambient_samples_[idx++] = Engine::Audio()->CacheSample(path, false);
-  }
+		path = "audio/batt_s" + snum + ".wav";
+		ambient_samples_[ idx++ ] = Engine::Audio()->CacheSample( path, false );
+		path = "audio/batt_l" + snum + ".wav";
+		ambient_samples_[ idx++ ] = Engine::Audio()->CacheSample( path, false );
+	}
 
-  FrontEnd_SetState(FE_MODE_GAME);
+	FrontEnd_SetState( FE_MODE_GAME );
 
-  // call StartRound; deals with spawning everything in and other mode specific logic
-  mode_ = new BaseGameMode(descriptor);
+	// call StartRound; deals with spawning everything in and other mode specific logic
+	mode_ = new BaseGameMode( descriptor );
 
-  SetupPlayers(players);
+	SetupPlayers( players );
 
-  mode_->StartRound();
+	mode_->StartRound();
 }
 
 /**
  * End the currently active mode and flush everything.
  */
 void GameManager::EndMode() {
-  delete mode_;
+	delete mode_;
 
-  // Clear out all the allocated players for this game
-  for(auto i : players_) {
-    delete i;
-  }
-  players_.clear();
+	// Clear out all the allocated players for this game
+	for ( auto i : players_ ) {
+		delete i;
+	}
+	players_.clear();
 
-  UnloadMap();
+	UnloadMap();
 
-  ActorManager::GetInstance()->DestroyActors();
+	ActorManager::GetInstance()->DestroyActors();
 
-  Engine::Resource()->ClearTextures();
-  Engine::Resource()->ClearModels();
+	Engine::Resource()->ClearTextures();
+	Engine::Resource()->ClearModels();
 
-  Engine::Audio()->FreeSources();
-  Engine::Audio()->FreeSamples();
+	Engine::Audio()->FreeSources();
+	Engine::Audio()->FreeSamples();
 }
 
 /**
@@ -508,5 +507,5 @@ void GameManager::EndMode() {
  * @return Returns true if a mode is currently active.
  */
 bool GameManager::IsModeActive() {
-  return (mode_ != nullptr);
+	return ( mode_ != nullptr );
 }

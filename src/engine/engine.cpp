@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,8 +43,6 @@ openhow::Engine::Engine() {
 	g_state.gfx.num_actors_drawn = 0;
 	g_state.gfx.num_chunks_drawn = 0;
 	g_state.gfx.num_triangles_total = 0;
-
-	u_init_paths();
 }
 
 openhow::Engine::~Engine() {
@@ -65,16 +63,17 @@ void openhow::Engine::Initialize() {
 
 	Console_Initialize();
 
+	// load in the manifests
+	Mod_RegisterMods();
+
 	// check for any command line arguments
-
 	const char* var;
-	if ( ( var = plGetCommandLineArgumentValue( "-path" ) ) != nullptr ) {
-		if ( !plPathExists( var ) ) {
-			LogWarn( "invalid path \"%s\", does not exist, ignoring!\n" );
-		}
-
-		u_set_base_path( var );
+	if ( ( var = plGetCommandLineArgumentValue( "-mod" ) ) == nullptr ) {
+		// otherwise default to base campaign
+		var = "how";
 	}
+
+	Mod_SetMod( var );
 
 	// Initialize the language manager
 	LanguageManager::GetInstance()->SetLanguage( "eng" );
@@ -83,19 +82,6 @@ void openhow::Engine::Initialize() {
 	 * initialized, otherwise, right now, certain
 	 * vars will not be loaded/saved! */
 	Config_Load( Config_GetUserConfigPath() );
-
-	plRegisterStandardPackageLoaders();
-
-	// load in the manifests
-
-	Mod_RegisterMods();
-
-	if ( ( var = plGetCommandLineArgumentValue( "-mod" ) ) == nullptr ) {
-		// otherwise default to base campaign
-		var = "how";
-	}
-
-	Mod_SetMod( var );
 
 	// now initialize all other sub-systems
 
@@ -112,6 +98,8 @@ void openhow::Engine::Initialize() {
 	// Ensure that our manifest list is updated
 	Game()->RegisterMapManifests();
 	Game()->RegisterTeamManifest( "scripts/teams.json" );
+
+	plParseConsoleString( "fsListMounted" );
 }
 
 std::string openhow::Engine::GetVersionString() {

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,11 +33,11 @@ VtxHandle* Vtx_LoadFile(const char* path) {
 
   /* load in the vertices */
 
-  typedef struct __attribute__((packed)) VtxCoord {
-    int16_t v[3];
-    uint16_t bone_index;
-  } VtxCoord;
-  unsigned int num_vertices = (unsigned int) (plGetLocalFileSize(vtx_file) / sizeof(VtxCoord));
+	typedef struct __attribute__((packed)) VtxCoord {
+		int16_t v[3];
+		uint16_t bone_index;
+	} VtxCoord;
+	unsigned int num_vertices = ( unsigned int ) ( plGetFileSize( vtx_file ) / sizeof( VtxCoord ) );
   if (num_vertices >= VTX_MAX_VERTICES) {
     plCloseFile(vtx_file);
     LogWarn("Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, VTX_MAX_VERTICES);
