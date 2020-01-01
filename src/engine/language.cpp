@@ -39,9 +39,9 @@ LanguageManager::LanguageManager() {
 			Index index;
 			manifest.EnterChildNode( i );
 			index.name = manifest.GetStringProperty( "name" );
-			LogDebug( "Language Name: %s\n", index.name.c_str() );
+			//LogDebug( "Language Name: %s\n", index.name.c_str() );
 			index.key = manifest.GetStringProperty( "key" );
-			LogDebug( "Language Key: %s\n", index.key.c_str() );
+			//LogDebug( "Language Key: %s\n", index.key.c_str() );
 			//index.font = manifest.GetStringProperty("font");
 			//LogDebug("Language Font: %s\n", index.font.c_str());
 			manifest.LeaveChildNode();
@@ -99,7 +99,7 @@ void LanguageManager::SetLanguage( const char* key ) {
 			current_language->keys.insert( std::pair<std::string, Key>( idx, {
 				manifest.GetStringProperty( idx )
 			} ) );
-			LogDebug( "Key: %s", idx.c_str() );
+			//LogDebug( "Key: %s", idx.c_str() );
 		}
 	} catch ( const std::exception& e ) {
 		Error( "Failed to load language manifest, \"%s\"!\n", filePath.c_str() );
