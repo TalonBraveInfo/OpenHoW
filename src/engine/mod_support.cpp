@@ -113,6 +113,8 @@ static void Mod_Unmount( modDirectory_t* mod ) {
 
 		mod->mountList.clear();
 	}
+
+	Engine::Resource()->ClearAll();
 }
 
 void Mod_SetMod( const char* name ) {
@@ -147,11 +149,16 @@ void Mod_SetMod( const char* name ) {
 			LogWarn( "Failed to fetch dependency for mod, \"%s\"!\n", i.c_str() );
 			return;
 		}
+
+		dirList.push_back( dependency->directory );
 	}
+	dirList.push_back( mod->directory );
 
 	// Now attempt to mount everything
 	for ( const auto& i : dirList ) {
-		PLFileSystemMount* mount = plMountLocalLocation( i.c_str() );
+		char mountPath[PL_SYSTEM_MAX_PATH];
+		snprintf( mountPath, sizeof( mountPath ), "mods/%s", i.c_str() );
+		PLFileSystemMount* mount = plMountLocation( mountPath );
 		if ( mount == nullptr ) {
 			Mod_Unmount( mod );
 			LogWarn( "Failed to mount location, \"%s\" (%s)!\n", i.c_str(), plGetError() );
@@ -159,9 +166,11 @@ void Mod_SetMod( const char* name ) {
 		}
 	}
 
-	Mod_Unmount( currentModification );
+	if ( currentModification != nullptr ) {
+		Mod_Unmount( currentModification );
+	}
 
-	Engine::Resource()->ClearAll();
+	currentModification = mod;
 
 	LogInfo( "Mod has been set to \"%s\" successfully!\n", mod->name.c_str() );
 }
