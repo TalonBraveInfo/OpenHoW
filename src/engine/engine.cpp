@@ -81,7 +81,7 @@ void openhow::Engine::Initialize() {
 	/* this MUST be done after all vars have been
 	 * initialized, otherwise, right now, certain
 	 * vars will not be loaded/saved! */
-	Config_Load( Config_GetUserConfigPath() );
+	Config_Load( CONFIG_FILENAME );
 
 	// now initialize all other sub-systems
 

@@ -17,7 +17,9 @@
 
 #pragma once
 
-const char *Config_GetUserConfigPath();
+#define CONFIG_FILENAME    "user.config"
 
-void Config_Save(const char *path);
-void Config_Load(const char *path);
+const char* Config_GetUserConfigPath();
+
+void Config_Save( const char* path );
+void Config_Load( const char* path );
