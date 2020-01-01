@@ -282,7 +282,7 @@ void AddFilePath( const char* path ) {
 
 void ScanDirectories() {
 	file_list.clear();
-	plScanDirectory( "/", nullptr, AddFilePath, true );
+	plScanDirectory( ".", nullptr, AddFilePath, true );
 }
 
 void UI_DisplayFileBox() {

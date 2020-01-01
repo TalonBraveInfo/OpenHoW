@@ -634,20 +634,23 @@ int main( int argc, char** argv ) {
 
 	plRegisterStandardPackageLoaders();
 
-	plMountLocation( plGetWorkingDirectory() );
+	// Mount the working directory first (./mods/...)
+	plMountLocalLocation( plGetWorkingDirectory() );
 
-	char app_dir[PL_SYSTEM_MAX_PATH];
-	plGetApplicationDataDirectory( ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH );
+	char appDataPath[PL_SYSTEM_MAX_PATH];
+	plGetApplicationDataDirectory( ENGINE_APP_NAME, appDataPath, PL_SYSTEM_MAX_PATH );
 
-	if ( !plCreatePath( app_dir ) ) {
+	if ( !plCreatePath( appDataPath ) ) {
 		System_DisplayMessageBox( PROMPT_LEVEL_WARNING,
 								  "Unable to create %s: %s\n"
-								  "Settings will not be saved.", app_dir, plGetError() );
+								  "Settings will not be saved.", appDataPath, plGetError() );
 	}
 
-	plMountLocation( app_dir );
+	// Then mount the app data dir so we can read from the config
+	// or load any mods that have been placed under there
+	plMountLocalLocation( appDataPath );
 
-	std::string log_path = std::string( app_dir ) + "/" + ENGINE_LOG;
+	std::string log_path = std::string( appDataPath ) + "/" + ENGINE_LOG;
 	u_init_logs( log_path.c_str() );
 
 	if ( SDL_Init( SDL_INIT_EVERYTHING ) != 0 ) {

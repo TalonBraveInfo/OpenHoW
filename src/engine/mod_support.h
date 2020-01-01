@@ -19,6 +19,7 @@
 
 struct modDirectory_t {
 	std::string fileName;
+	std::string internalName;
 	std::string directory;
 
 	// Modification Details

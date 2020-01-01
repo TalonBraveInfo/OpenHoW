@@ -47,11 +47,13 @@ static modDirectory_t* Mod_GetManifest( const std::string& name ) {
 		return &campaign->second;
 	}
 
-	LogWarn( "Failed to find campaign \"%s\"!\n" );
+	LogWarn( "Failed to find mod \"%s\"!\n" );
 	return nullptr;
 }
 
 static modDirectory_t Mod_LoadManifest( const char* path ) {
+	LogInfo( "Loading manifest \"%s\"...\n", path );
+
 	modDirectory_t slot;
 	try {
 		ScriptConfig config( path );
@@ -64,35 +66,36 @@ static modDirectory_t Mod_LoadManifest( const char* path ) {
 		char filename[64];
 		snprintf( filename, sizeof( filename ), "%s", plGetFileName( path ) );
 		slot.fileName = path;
-		slot.directory = std::string( filename, strlen( filename ) - 3 ) + "/";
+		slot.internalName = std::string( filename, strlen( filename ) - 4 );
+		slot.directory = slot.internalName + "/";
 
 		slot.dependencies = config.GetArrayStrings( "dependencies" );
 	} catch ( const std::exception& e ) {
-		Error( "Failed to read campaign config, \"%s\"!\n%s\n", path, e.what() );
+		Error( "Failed to read mod config, \"%s\"!\n%s\n", path, e.what() );
 	}
 
 	return slot;
 }
 
 /**
- * Load in the campaign manifest and store it into a buffer.
+ * Load in the mod manifest and store it into a buffer.
  * @param path Path to the manifest file.
  */
 void Mod_RegisterMod( const char* path ) {
 	modDirectory_t mod = Mod_LoadManifest( path );
-	modsList.emplace( mod.name, mod );
+	modsList.emplace( mod.internalName, mod );
 }
 
 /**
- * Registers all of the campaigns provided under the mods directory.
+ * Registers all of the mods provided under the mods directory.
  */
 void Mod_RegisterMods() {
-	plScanDirectory( "mods/", "mod", Mod_RegisterMod, false );
+	plScanDirectory( "mods", "mod", Mod_RegisterMod, false );
 }
 
 /**
- * Returns a pointer to the campaign that's currently active.
- * @return Pointer to the current campaign.
+ * Returns a pointer to the mod that's currently active.
+ * @return Pointer to the current mod.
  */
 const modDirectory_t* Mod_GetCurrentMod() {
 	return currentModification;
@@ -148,7 +151,7 @@ void Mod_SetMod( const char* name ) {
 
 	// Now attempt to mount everything
 	for ( const auto& i : dirList ) {
-		PLFileSystemMount* mount = plMountLocation( i.c_str() );
+		PLFileSystemMount* mount = plMountLocalLocation( i.c_str() );
 		if ( mount == nullptr ) {
 			Mod_Unmount( mod );
 			LogWarn( "Failed to mount location, \"%s\" (%s)!\n", i.c_str(), plGetError() );

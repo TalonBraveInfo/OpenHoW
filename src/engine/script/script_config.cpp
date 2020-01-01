@@ -258,19 +258,23 @@ std::string ScriptConfig::GetArrayStringProperty( const std::string& property, u
 	return str;
 }
 
-std::vector<std::string> ScriptConfig::GetArrayStrings( const std::string& property ) {
+std::vector<std::string> ScriptConfig::GetArrayStrings( const std::string& property, bool silent ) {
 	auto* context = static_cast<duk_context*>(ctx_);
 
 	const char* p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
-		LogMissingProperty( p );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
 		return {};
 	}
 
 	if ( !duk_is_array( context, -1 ) ) {
 		duk_pop( context );
-		LogInvalidArray( p );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
 		return {};
 	}
 

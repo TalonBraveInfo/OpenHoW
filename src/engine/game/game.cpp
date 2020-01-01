@@ -257,7 +257,7 @@ static void RegisterManifestInterface( const char* path ) {
  */
 void GameManager::RegisterMapManifests() {
 	map_manifests_.clear();
-	plScanDirectory( "maps/", "map", RegisterManifestInterface, false );
+	plScanDirectory( "maps", "map", RegisterManifestInterface, false );
 }
 
 /**
