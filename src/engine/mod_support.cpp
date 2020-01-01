@@ -117,6 +117,28 @@ static void Mod_Unmount( modDirectory_t* mod ) {
 	Engine::Resource()->ClearAll();
 }
 
+void Mod_FetchDependencies( modDirectory_t* mod, std::set<std::string>& dirSet ) {
+	const auto& dir = dirSet.find( mod->directory );
+	if ( dir != dirSet.end() ) {
+		LogInfo( "%s is already mounted, skipping\n", mod->directory );
+		return;
+	}
+
+	for ( const auto& i : mod->dependencies ) {
+		modDirectory_t* dependency = Mod_GetManifest( i );
+		if ( dependency == nullptr ) {
+			LogWarn( "Failed to fetch dependency for mod, \"%s\"!\n", i.c_str() );
+			return;
+		}
+
+		if ( !dependency->dependencies.empty() ) {
+			Mod_FetchDependencies( dependency, dirSet );
+		}
+
+		dirSet.emplace( dependency->directory );
+	}
+}
+
 void Mod_SetMod( const char* name ) {
 	// Attempt to fetch the manifest, if it doesn't exist then attempt to load it
 	modDirectory_t* mod = Mod_GetManifest( name );
@@ -142,20 +164,12 @@ void Mod_SetMod( const char* name ) {
 	}
 
 	// Generate a list of directories to mount based on the dependencies
-	std::list<std::string> dirList;
-	for ( const auto& i : mod->dependencies ) {
-		modDirectory_t* dependency = Mod_GetManifest( i );
-		if ( dependency == nullptr ) {
-			LogWarn( "Failed to fetch dependency for mod, \"%s\"!\n", i.c_str() );
-			return;
-		}
-
-		dirList.push_back( dependency->directory );
-	}
-	dirList.push_back( mod->directory );
+	std::set<std::string> dirSet;
+	Mod_FetchDependencies( mod, dirSet );
+	dirSet.emplace( mod->directory );
 
 	// Now attempt to mount everything
-	for ( const auto& i : dirList ) {
+	for ( const auto& i : dirSet ) {
 		char mountPath[PL_SYSTEM_MAX_PATH];
 		snprintf( mountPath, sizeof( mountPath ), "mods/%s", i.c_str() );
 		PLFileSystemMount* mount = plMountLocation( mountPath );
