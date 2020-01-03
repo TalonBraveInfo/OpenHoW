@@ -47,6 +47,8 @@ static PLCamera* imgui_camera = nullptr;
 
 using namespace openhow;
 
+#define IMGUI_POS_CENTER    ImVec2( 0, 0 ), ImGuiCond_Once, ImVec2( 0.5f, 0.5f )
+
 void ImGuiImpl_SetupCamera( void ) {
 	if ( ( imgui_camera = plCreateCamera() ) == nullptr ) {
 		Error( "failed to create ui camera, aborting!\n%s\n", plGetError() );
@@ -296,7 +298,7 @@ void UI_DisplayFileBox() {
 		has_scanned = true;
 	}
 
-	ImGui::SetNextWindowPosCenter( ImGuiCond_Once );
+	ImGui::SetNextWindowPos( IMGUI_POS_CENTER );
 	ImGui::SetNextWindowSize( ImVec2( 512, 512 ), ImGuiCond_Once );
 	ImGui::Begin( "Open File", &show_file );
 
@@ -379,7 +381,7 @@ void UI_DisplayFileBox() {
 class QuitWindow : public BaseWindow {
 public:
 	void Display() override {
-		ImGui::SetNextWindowPosCenter( ImGuiCond_Once );
+		ImGui::SetNextWindowPos( IMGUI_POS_CENTER );
 		ImGui::Begin( "Are you sure?", &show_quit, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
 			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings );
 		ImGui::Text( "Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n" );
@@ -582,7 +584,7 @@ void UI_DisplayDebugMenu( void ) {
 	// implementation done.
 	if ( !Engine::Game()->IsModeActive() ) {
 		ImGui::SetNextWindowSize( ImVec2( 320, 128 ) );
-		ImGui::SetNextWindowPosCenter();
+		ImGui::SetNextWindowPos( IMGUI_POS_CENTER );
 		static bool state = false;
 		if ( ImGui::Begin(
 			"InstructionMenu",
