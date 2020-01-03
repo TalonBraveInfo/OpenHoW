@@ -333,7 +333,24 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 	}
 
 	io.Fonts->Clear();
-	if ( io.Fonts->AddFontFromFileTTF( "fonts/OpenSans-SemiBold.ttf", 16.f, nullptr, nullptr ) == nullptr ) {
+
+	// Load in the default font
+
+	const char* fontPath = "fonts/OpenSans-SemiBold.ttf";
+	PLFile* fontFile = plOpenFile( fontPath, false );
+	if ( fontFile == nullptr ) {
+		LogWarn( "Failed to load font, \"%s\", for ImGui (%s)! Falling back to default...\n", fontPath, plGetError() );
+		io.Fonts->AddFontDefault();
+		return;
+	}
+
+	size_t fileSize = plGetFileSize( fontFile );
+	uint8_t* buf = new uint8_t[fileSize];
+	plReadFile( fontFile, buf, 1, fileSize );
+	plCloseFile( fontFile );
+
+	if ( io.Fonts->AddFontFromMemoryTTF( buf, fileSize, 16.f, nullptr, nullptr ) == nullptr ) {
+		LogWarn( "Failed to add font from memory! Falling back to default...\n" );
 		io.Fonts->AddFontDefault();
 	}
 }
@@ -597,17 +614,12 @@ void System_PollEvents() {
 				break;
 
 			case SDL_WINDOWEVENT: {
-				if ( event.window.event == SDL_WINDOWEVENT_RESIZED
-					|| event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
+				if ( event.window.event == SDL_WINDOWEVENT_RESIZED ||
+					event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
 					char buf[16];
-					plSetConsoleVariable( cv_display_width,
-										  pl_itoa( ( unsigned int ) event.window.data1, buf, 16, 10 ) );
-					plSetConsoleVariable( cv_display_height,
-										  pl_itoa( ( unsigned int ) event.window.data2, buf, 16, 10 ) );
-					Display_UpdateViewport( 0,
-											0,
-											( unsigned int ) event.window.data1,
-											( unsigned int ) event.window.data2 );
+					plSetConsoleVariable( cv_display_width, pl_itoa( event.window.data1, buf, 16, 10 ) );
+					plSetConsoleVariable( cv_display_height, pl_itoa( event.window.data2, buf, 16, 10 ) );
+					Display_UpdateViewport( 0, 0, event.window.data1, event.window.data2 );
 					ImGuiImpl_UpdateViewport( event.window.data1, event.window.data2 );
 					io.DisplaySize = ImVec2( event.window.data1, event.window.data2 );
 				}
