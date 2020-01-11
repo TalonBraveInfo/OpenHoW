@@ -99,7 +99,7 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
         Error("Failed to open index for writing at \"%s\", aborting!\n", index_path);
     }
 
-    size_t tim_size = (plGetFileSize(input_path) - sizeof(num_textures)) / num_textures;
+    size_t tim_size = ( plGetLocalFileSize( input_path ) - sizeof( num_textures ) ) / num_textures;
     for(unsigned int i = 0; i < num_textures; ++i) {
         fprintf(index, "%d\n", i);
 
@@ -212,8 +212,8 @@ int main(int argc, char **argv) {
         qsort(dir_textures[0], num_textures, PL_SYSTEM_MAX_PATH, PTG_SortTextures);
         for(unsigned int i = 0; i < num_textures; ++i) {
             LogInfo("Writing \"%s\" (%d)\n", dir_textures[i], i);
-            size_t tim_size = plGetFileSize(dir_textures[i]);
-            uint8_t buf[tim_size];
+			size_t tim_size = plGetLocalFileSize( dir_textures[ i ] );
+			uint8_t buf[tim_size];
             FILE *tim_fp = fopen(dir_textures[i], "rb");
             fread(buf, sizeof(uint8_t), tim_size, tim_fp);
             fwrite(buf, sizeof(uint8_t), tim_size, ptg_fp);
