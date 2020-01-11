@@ -36,10 +36,8 @@ using namespace openhow;
 /* Texture Cache */
 
 #define MAX_TEXTURES_PER_INDEX  1024
-#define MAX_VIDEO_PRESETS 32
 
-static int num_vid_presets;
-static VideoPreset vid_presets[MAX_VIDEO_PRESETS];
+static std::vector<VideoPreset> vidPresets;
 //static PLFrameBuffer* game_target;
 //static PLFrameBuffer* frontend_target;
 
@@ -128,33 +126,22 @@ PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() 
 #endif
 
 bool Display_AppendVideoPreset(int width, int height) {
-  if (num_vid_presets >= MAX_VIDEO_PRESETS) {
-    LogWarn("Cannot append video preset, hit max limit! Try increasing \"MAX_VIDEO_PRESETS\"");
-    return false;
-  }
-  vid_presets[num_vid_presets].width = width;
-  vid_presets[num_vid_presets].height = height;
-  num_vid_presets++;
+	vidPresets.push_back( { width, height } );
   LogInfo("Added %dx%d video preset", width, height);
   return true;
 }
 
-void Display_ClearVideoPresets() {
-  memset(vid_presets, 0, sizeof(VideoPreset) * MAX_VIDEO_PRESETS);
-  num_vid_presets = 0;
-  LogInfo("Cleared all video presets");
-}
-
 int Display_GetNumVideoPresets() {
-  return num_vid_presets;
+	return vidPresets.size();
 }
 
-const VideoPreset* Display_GetVideoPreset(int idx) {
-  if (idx < 0 || idx >= num_vid_presets) {
-    LogWarn("Attempted to get an out of range video preset \'%d\', current count is %d", idx, num_vid_presets);
-    return nullptr;
-  }
-  return &vid_presets[idx];
+const VideoPreset* Display_GetVideoPreset( unsigned int idx ) {
+	if ( idx >= vidPresets.size() ) {
+		LogWarn( "Attempted to get an out of range video preset \'%d\', current count is %d", idx, vidPresets.size() );
+		return nullptr;
+	}
+
+	return &vidPresets[ idx ];
 }
 
 /************************************************************/

@@ -30,9 +30,8 @@ void Display_Shutdown(void);
 void Display_UpdateState(void);
 
 bool Display_AppendVideoPreset(int width, int height);
-void Display_ClearVideoPresets();
 int Display_GetNumVideoPresets();
-const VideoPreset* Display_GetVideoPreset(int idx);
+const VideoPreset* Display_GetVideoPreset( unsigned int idx );
 
 void Display_UpdateViewport(int x, int y, int width, int height);
 
