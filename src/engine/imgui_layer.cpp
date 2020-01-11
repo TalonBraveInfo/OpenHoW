@@ -47,7 +47,12 @@ static PLCamera* imgui_camera = nullptr;
 
 using namespace openhow;
 
-#define IMGUI_POS_CENTER    ImVec2( 0, 0 ), ImGuiCond_Once, ImVec2( 0.5f, 0.5f )
+#define IMGUI_POS_CENTER \
+    ImVec2( \
+    static_cast<float>(cv_display_width->i_value) * 0.5f, \
+    static_cast<float>(cv_display_height->i_value) * 0.5f ), \
+    ImGuiCond_Once, \
+    ImVec2( 0.5f, 0.5f )
 
 void ImGuiImpl_SetupCamera( void ) {
 	if ( ( imgui_camera = plCreateCamera() ) == nullptr ) {
