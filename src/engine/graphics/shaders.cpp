@@ -92,7 +92,6 @@ static void Shaders_ClearPrograms() {
 static void Shaders_CachePrograms() {
 	Shaders_ClearPrograms();
 
-	// Recursive searches through dependencies... This needs revisiting!
 	plScanDirectory( "shaders", "program", Shaders_CacheShaderProgram, false );
 
 	Shaders_ValidateDefault();

@@ -179,25 +179,25 @@ void Map::LoadSpawns( const std::string& path ) {
 	};
 	static_assert( sizeof( PogIndex ) == 94, "Invalid size for PogIndex, should be 94 bytes!" );
 
-	std::ifstream ifs( path, std::ios_base::in | std::ios_base::binary );
-	if ( !ifs.is_open() ) {
-		LogWarn( "Failed to open actor data, \"%s\", aborting!\n", path.c_str() );
+	const char* cPath = path.c_str();
+	PLFile* fp = plOpenFile( cPath, false );
+	if ( fp == NULL ) {
+		LogWarn( "Failed to open actor data, \"%s\" (%s)!\n", cPath, plGetError() );
+		return;
 	}
 
-	uint16_t num_indices;
-	try {
-		ifs.read( reinterpret_cast<char*>(&num_indices), sizeof( uint16_t ) );
-	} catch ( const std::ifstream::failure& err ) {
-		Error( "Failed to read POG indices count, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value() );
+	bool status = false;
+	uint16_t num_indices = plReadInt16( fp, false, &status );
+	if ( !status ) {
+		Error( "Failed to read Pog indices count in \"%s\" (%s)!\n", cPath, plGetError() );
 	}
 
 	std::vector<PogIndex> spawns( num_indices );
-
-	try {
-		ifs.read( reinterpret_cast<char*>(spawns.data()), sizeof( PogIndex ) * num_indices );
-	} catch ( const std::ifstream::failure& err ) {
-		Error( "Failed to read POG spawns, \"%s\", aborting!\n%s (%d)\n", err.what(), err.code().value() );
+	if ( plReadFile( fp, spawns.data(), sizeof( PogIndex ), num_indices ) != num_indices ) {
+		Error( "Failed to read Pog spawns in \"%s\" (%s)!\n", cPath, plGetError() );
 	}
+
+	plCloseFile( fp );
 
 	spawns_.resize( num_indices );
 

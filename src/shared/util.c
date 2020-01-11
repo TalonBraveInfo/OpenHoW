@@ -82,7 +82,7 @@ const char* u_scan( const char* path, const char** preference ) {
 	while ( *preference != NULL ) {
 		snprintf( find, sizeof( find ), "%s.%s", path, *preference );
 		if ( plFileExists( find ) ) {
-			LogDebug( "Found \"%s\"\n", find );
+			//LogDebug( "Found \"%s\"\n", find );
 			return find;
 		}
 		preference++;
@@ -106,6 +106,6 @@ const char* u_find2( const char* path, const char** preference, bool abort_on_fa
 		return NULL;
 	}
 
-	LogDebug( "Found \"%s\"\n", out );
+	//LogDebug( "Found \"%s\"\n", out );
 	return out;
 }
