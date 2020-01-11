@@ -145,9 +145,11 @@ static void ConvertModelData( void ) {
 			strncpy( dir, out, strlen( out ) - strlen( filename ) );
 			dir[ strlen( out ) - strlen( filename ) ] = '\0';
 			if ( plCreatePath( dir ) ) {
-				if ( !plWriteFile( out, package->table[ j ].file.data, package->table[ j ].fileSize ) ) {
+				PLFile* fp = plLoadPackageFile( package, package->table[ j ].fileName );
+				if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
 					LogWarn( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
 				}
+				plCloseFile( fp );
 			} else {
 				LogWarn( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
 			}
@@ -211,9 +213,11 @@ static void ConvertModelData( void ) {
 #endif
 
 				if ( plCreatePath( dir ) ) {
-					if ( !plWriteFile( out, package->table[ j ].file.data, package->table[ j ].fileSize ) ) {
+					PLFile* fp = plLoadPackageFile( package, package->table[ j ].fileName );
+					if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
 						LogWarn( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
 					}
+					plCloseFile( fp );
 				} else {
 					LogWarn( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
 				}
@@ -356,9 +360,11 @@ static void ExtractMadPackage( const char* input_path, const char* output_path )
 	for ( unsigned int i = 0; i < package->table_size; i++ ) {
 		char out[PL_SYSTEM_MAX_PATH];
 		snprintf( out, sizeof( out ) - 1, "%s%s", output_path, pl_strtolower( package->table[ i ].fileName ) );
-		if ( !plWriteFile( out, package->table[ i ].file.data, package->table[ i ].fileSize ) ) {
+		PLFile* fp = plLoadPackageFile( package, package->table[ i ].fileName );
+		if ( !plWriteFile( out, plGetFileData( fp ), package->table[ i ].fileSize ) ) {
 			LogWarn( "Failed to write file, \"%s\" (%s)!\n", out, plGetError() );
 		}
+		plCloseFile( fp );
 
 		const char* ext = plGetFileExtension( out );
 		if ( strcmp( ext, "tim" ) == 0 ) {
@@ -583,8 +589,6 @@ int main( int argc, char** argv ) {
 	u_init_logs( log_path );
 
 	/* now deal with any arguments */
-
-	u_init_paths();
 
 #if 0
 	if(getcwd(output_path, sizeof(output_path) - 1) == NULL) {
