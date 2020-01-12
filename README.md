@@ -36,7 +36,7 @@ The current goal is to have the game in a rough playable state by the end of the
 Interested in contributing to the project? Know C/C++ and looking to get deep down
 into some code? Then what are you waiting for!?
 
-The best place right now to get in touch is through our [Discord](https://discord.gg/YMHJa6p),
+The best place right now to get in touch is through our [Discord](https://discord.gg/EdmwgVk),
 and makes things a hell of a lot easier to coordinate and collaborate as well. If you're
 interested then jump on in!
 
