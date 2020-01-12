@@ -89,31 +89,34 @@ int System_SetSwapInterval( int interval ) {
 	return SDL_GL_GetSwapInterval();
 }
 
-static SDL_Surface* SDL_LoadPNG( const char* path ) {
+static void System_SetWindowIcon( const char* path ) {
 	PLImage image;
 	if ( !plLoadImage( path, &image ) ) {
 		LogWarn( "Failed to load image, %s (%s)!\n", path, plGetError() );
-		return nullptr;
+		return;
 	}
 
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
 		image.data[ 0 ],
-		static_cast<int>( image.width ),
-		static_cast<int>( image.height ),
-		4,
-		image.width * 4,
-		0xFF000000,
-		0x00FF0000,
-		0x0000FF00,
-		0x000000FF
+		// Casting casting casting, why o why
+		static_cast<signed>( image.width ),
+		static_cast<signed>( image.height ),
+		32,
+		static_cast<signed>( image.width * 4 ),
+		0x000000ff,
+		0x0000ff00,
+		0x00ff0000,
+		0xff000000
 	);
 	if ( surface == nullptr ) {
+		plFreeImage( &image );
 		LogWarn( "Failed to create requested SDL surface, %s!\n", SDL_GetError() );
+		return;
 	}
 
+	SDL_SetWindowIcon( window, surface );
+	SDL_FreeSurface( surface );
 	plFreeImage( &image );
-
-	return surface;
 }
 
 void System_DisplayWindow( bool fullscreen, int width, int height ) {
@@ -155,11 +158,7 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 		System_Shutdown();
 	}
 
-	SDL_Surface* icon = SDL_LoadPNG( "icon.png" );
-	if ( icon != nullptr ) {
-		SDL_SetWindowIcon( window, icon );
-		SDL_FreeSurface( icon );
-	}
+	System_SetWindowIcon( "icon.png" );
 
 	{
 		//Gen list of video presets
