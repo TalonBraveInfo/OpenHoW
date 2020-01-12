@@ -27,9 +27,13 @@
 using namespace openhow;
 
 Actor::Actor() :
-  INIT_PROPERTY(input_forward, PROP_PUSH, 0.00),
-  INIT_PROPERTY(input_yaw,     PROP_PUSH, 0.00),
-  INIT_PROPERTY(input_pitch,   PROP_PUSH, 0.00) {}
+	INIT_PROPERTY( input_forward, PROP_PUSH, 0.00 ),
+	INIT_PROPERTY( input_yaw, PROP_PUSH, 0.00 ),
+	INIT_PROPERTY( input_pitch, PROP_PUSH, 0.00 ),
+	INIT_PROPERTY( position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
+	INIT_PROPERTY( fallback_position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
+	INIT_PROPERTY( angles_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
+	INIT_PROPERTY( bounds_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
 
 Actor::~Actor() {
   for(auto actor : children_) {
@@ -99,17 +103,25 @@ void Actor::Depossessed(const Player* player) {}
  * Drop the actor to the ground based on it's bounding box size.
  */
 void Actor::DropToFloor() {
-  Map* map = Engine::Game()->GetCurrentMap();
-  float height = map->GetTerrain()->GetHeight(PLVector2(position_.x, position_.z));
-  position_.y = height + bounds_.y;
+	Map* map = Engine::Game()->GetCurrentMap();
+	if ( map == nullptr ) {
+		Error( "Failed to get current map!\n" );
+	}
+
+	PLVector3 nPosition = position_;
+	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
+	nPosition.y = height + bounds_.GetValue().y;
+	position_ = nPosition;
 }
 
 PLVector3 Actor::GetForward() {
-  return plNormalizeVector3({
-  cosf(plDegreesToRadians(angles_.y)) * cosf(plDegreesToRadians(angles_.x)),
-  sinf(plDegreesToRadians(angles_.x)),
-  sinf(plDegreesToRadians(angles_.y)) * cosf(plDegreesToRadians(angles_.x))
-  });
+  return plNormalizeVector3( {
+								 cosf( plDegreesToRadians( angles_.GetValue().y ) )
+									 * cosf( plDegreesToRadians( angles_.GetValue().x ) ),
+								 sinf( plDegreesToRadians( angles_.GetValue().x ) ),
+								 sinf( plDegreesToRadians( angles_.GetValue().y ) )
+									 * cosf( plDegreesToRadians( angles_.GetValue().x ) )
+							 });
 }
 
 void Actor::HandleInput() {
@@ -170,7 +182,7 @@ void Actor::LinkChild(Actor* actor) {
  * @param other The touchee.
  */
 void Actor::Touch(Actor* other) {
-  LogDebug("actor (%s) touched actor (%s)\n",
-           plPrintVector3(&position_, pl_int_var),
-           plPrintVector3(&other->position_, pl_int_var));
+	LogDebug( "actor (%s) touched actor (%s)\n",
+			  plPrintVector3( &position_.GetValue(), pl_int_var ),
+			  plPrintVector3( &other->position_.GetValue(), pl_int_var ) );
 }

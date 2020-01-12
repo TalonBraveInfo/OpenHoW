@@ -71,18 +71,27 @@ void ActorTreeWindow::DisplayActorProperties(Actor* actor) {
   }
 
   for(const auto& i : property_map) {
-    Property* property = i.second;
-    ImGui::PushID(property);
+	  Property* property = i.second;
+	  ImGui::PushID( property );
 
-    auto* boolean_property = dynamic_cast<BooleanProperty*>(property);
-    if(boolean_property != nullptr) {
-      bool value = *boolean_property;
-      if(ImGui::Checkbox(property->name.c_str(), &value)) {
-        *boolean_property = value;
-      }
-    }
+	  auto* vectorProperty = dynamic_cast<Vector3Property*>(property);
+	  if ( vectorProperty != nullptr ) {
+		  PLVector3 value = *vectorProperty;
+		  float v[3] = { value.x, value.y, value.z };
+		  if ( ImGui::InputFloat3( property->name.c_str(), v ) ) {
+			  *vectorProperty = PLVector3( v[ 0 ], v[ 1 ], v[ 2 ] );
+		  }
+	  }
 
-    auto* numeric_property = dynamic_cast<NumericProperty<int>*>(property);
+	  auto* boolean_property = dynamic_cast<BooleanProperty*>(property);
+	  if ( boolean_property != nullptr ) {
+		  bool value = *boolean_property;
+		  if ( ImGui::Checkbox( property->name.c_str(), &value ) ) {
+			  *boolean_property = value;
+		  }
+	  }
+
+	  auto* numeric_property = dynamic_cast<NumericProperty<int>*>(property);
     if(numeric_property != nullptr) {
       int value = *numeric_property;
       if(ImGui::InputInt(property->name.c_str(), &value)) {

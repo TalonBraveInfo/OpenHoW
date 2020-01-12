@@ -23,226 +23,230 @@
 
 #include "actor_pig.h"
 
-REGISTER_ACTOR(ac_me, APig)    // Ace
-REGISTER_ACTOR(gr_me, APig)    // Grunt
-REGISTER_ACTOR(hv_me, APig)
-REGISTER_ACTOR(le_me, APig)    // Legend
-REGISTER_ACTOR(me_me, APig)    // Medic
-REGISTER_ACTOR(sa_me, APig)    // Saboteur
-REGISTER_ACTOR(sb_me, APig)    // Commando
-REGISTER_ACTOR(sn_me, APig)    // Sniper
-REGISTER_ACTOR(sp_me, APig)    // Spy
+REGISTER_ACTOR( ac_me, APig )    // Ace
+REGISTER_ACTOR( gr_me, APig )    // Grunt
+REGISTER_ACTOR( hv_me, APig )
+REGISTER_ACTOR( le_me, APig )    // Legend
+REGISTER_ACTOR( me_me, APig )    // Medic
+REGISTER_ACTOR( sa_me, APig )    // Saboteur
+REGISTER_ACTOR( sb_me, APig )    // Commando
+REGISTER_ACTOR( sn_me, APig )    // Sniper
+REGISTER_ACTOR( sp_me, APig )    // Spy
 
 using namespace openhow;
 
 APig::APig() : SuperClass() {
-  speech_ = Engine::Audio()->CreateSource();
+	speech_ = Engine::Audio()->CreateSource();
 }
 
 APig::~APig() {
-  delete speech_;
+	delete speech_;
 }
 
 void APig::HandleInput() {
-  SuperClass::HandleInput();
+	SuperClass::HandleInput();
 }
 
 void APig::Tick() {
-  SuperClass::Tick();
+	SuperClass::Tick();
 
-  // temp
-  DropToFloor();
+	// temp
+	DropToFloor();
 
-  // a dead piggy
-  if(GetHealth() <= 0) {
-    if(speech_->IsPlaying()) {
-      return;
-    }
+	// a dead piggy
+	if ( GetHealth() <= 0 ) {
+		if ( speech_->IsPlaying() ) {
+			return;
+		}
 
-    // TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
-    Engine::Audio()->PlayLocalSound("audio/e_1.wav", GetPosition(), {0, 0, 0}, true);
+		// TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
+		Engine::Audio()->PlayLocalSound( "audio/e_1.wav", GetPosition(), { 0, 0, 0 }, true );
 
-    Actor* boots = ActorManager::GetInstance()->CreateActor("boots");
-    boots->SetPosition(GetPosition());
-    boots->SetAngles(GetAngles());
-    boots->DropToFloor();
+		Actor* boots = ActorManager::GetInstance()->CreateActor( "boots" );
+		boots->SetPosition( GetPosition() );
+		boots->SetAngles( GetAngles() );
+		boots->DropToFloor();
 
-    // activate the boots (should begin smoke effect etc.)
-    boots->Activate();
+		// activate the boots (should begin smoke effect etc.)
+		boots->Activate();
 
-    // ensure our own destruction on next tick
-    ActorManager::GetInstance()->DestroyActor(this);
-    return;
-  }
+		// ensure our own destruction on next tick
+		ActorManager::GetInstance()->DestroyActor( this );
+		return;
+	}
 
-  PLVector3 forward = GetForward();
-  position_.x += input_forward * 100.0f * forward.x;
-  position_.y += input_forward * 100.0f * forward.y;
-  position_.z += input_forward * 100.0f * forward.z;
+	PLVector3 forward = GetForward();
+	PLVector3 nPosition = position_, nAngles = angles_;
+	nPosition.x += input_forward * 100.0f * forward.x;
+	nPosition.y += input_forward * 100.0f * forward.y;
+	nPosition.z += input_forward * 100.0f * forward.z;
 
-  aim_pitch_ += input_pitch * 2.0f;
-  angles_.y += input_yaw * 2.0f;
+	aim_pitch_ += input_pitch * 2.0f;
+	nAngles.y += input_yaw * 2.0f;
 
-  // Clamp height based on current tile pos
-  Map* map = Engine::Game()->GetCurrentMap();
-  float height = map->GetTerrain()->GetHeight({position_.x, position_.z});
-  if ((position_.y - 32.f) < height) {
-    position_.y = height + 32.f;
-  }
+	// Clamp height based on current tile pos
+	Map* map = Engine::Game()->GetCurrentMap();
+	float height = map->GetTerrain()->GetHeight( { nPosition.x, nPosition.z } );
+	if ( ( nPosition.y - 32.f ) < height ) {
+		nPosition.y = height + 32.f;
+	}
 
 #define MAX_PITCH 89.f
-  if (aim_pitch_ < -MAX_PITCH) aim_pitch_ = -MAX_PITCH;
-  if (aim_pitch_ > MAX_PITCH) aim_pitch_ = MAX_PITCH;
+	if ( aim_pitch_ < -MAX_PITCH ) aim_pitch_ = -MAX_PITCH;
+	if ( aim_pitch_ > MAX_PITCH ) aim_pitch_ = MAX_PITCH;
 
-  VecAngleClamp(&angles_);
+	VecAngleClamp( &nAngles );
 
-  speech_->SetPosition(GetPosition());
+	position_ = nPosition;
+	angles_ = nAngles;
+
+	speech_->SetPosition( GetPosition() );
 }
 
-void APig::SetClass(unsigned int pclass) {
-  // TODO: setup default inventory
+void APig::SetClass( unsigned int pclass ) {
+	// TODO: setup default inventory
 
-  SetHealth(100);
+	SetHealth( 100 );
 
 #if 0 // TODO: pass via json blob instead...
-  switch (pclass_) {
-    default:
+	switch (pclass_) {
+	  default:
 
 
-    case CLASS_ACE:
-      model_path = "pigs/ac_hi";
-      break;
-    case CLASS_LEGEND:
-      model_path = "pigs/le_hi";
-      break;
-    case CLASS_MEDIC:
-      model_path = "pigs/me_hi";
-      break;
-    case CLASS_COMMANDO:
-      model_path = "pigs/sb_hi";
-      break;
-    case CLASS_SPY:
-      model_path = "pigs/sp_hi";
-      break;
-    case CLASS_SNIPER:
-      model_path = "pigs/sn_hi";
-      break;
-    case CLASS_SABOTEUR:
-      model_path = "pigs/sa_hi";
-      break;
-    case CLASS_HEAVY:
-      model_path = "pigs/hv_hi";
-      break;
-    case CLASS_GRUNT:
+	  case CLASS_ACE:
+		model_path = "pigs/ac_hi";
+		break;
+	  case CLASS_LEGEND:
+		model_path = "pigs/le_hi";
+		break;
+	  case CLASS_MEDIC:
+		model_path = "pigs/me_hi";
+		break;
+	  case CLASS_COMMANDO:
+		model_path = "pigs/sb_hi";
+		break;
+	  case CLASS_SPY:
+		model_path = "pigs/sp_hi";
+		break;
+	  case CLASS_SNIPER:
+		model_path = "pigs/sn_hi";
+		break;
+	  case CLASS_SABOTEUR:
+		model_path = "pigs/sa_hi";
+		break;
+	  case CLASS_HEAVY:
+		model_path = "pigs/hv_hi";
+		break;
+	  case CLASS_GRUNT:
 
-  }
+	}
 #endif
 }
 
-void APig::SetPersonality(unsigned int personality) {
-  // TODO: ensure all the necessary sounds are cached...
+void APig::SetPersonality( unsigned int personality ) {
+	// TODO: ensure all the necessary sounds are cached...
 }
 
-void APig::SetPlayerOwner(Player* owner) {
-  IGameMode* mode = Engine::Game()->GetMode();
-  mode->AssignActorToPlayer(this, owner);
+void APig::SetPlayerOwner( Player* owner ) {
+	IGameMode* mode = Engine::Game()->GetMode();
+	mode->AssignActorToPlayer( this, owner );
 }
 
 const Player* APig::GetPlayerOwner() {
-  return nullptr;
+	return nullptr;
 }
 
-void APig::SetTeam(unsigned int team) {
-  team_ = team;
+void APig::SetTeam( unsigned int team ) {
+	team_ = team;
 
 #if 0
-  Player* player = Engine::Game()->GetPlayerByIndex(team);
-  if(player == nullptr) {
-    ActorManager::GetInstance()->DestroyActor(this);
-    LogWarn("Failed to set team for pig!\n");
-    return;
-  }
+	Player* player = Engine::Game()->GetPlayerByIndex(team);
+	if(player == nullptr) {
+	  ActorManager::GetInstance()->DestroyActor(this);
+	  LogWarn("Failed to set team for pig!\n");
+	  return;
+	}
 
-  Engine::Game()->GetMode()->AssignActorToPlayer(this, player);
+	Engine::Game()->GetMode()->AssignActorToPlayer(this, player);
 #endif
 }
 
-void APig::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
+void APig::Deserialize( const ActorSpawn& spawn ) {
+	SuperClass::Deserialize( spawn );
 
-  // Ensure pig is spawned up in the air for deployment
-  Map* map = Engine::Game()->GetCurrentMap();
-  SetPosition({position_.x, map->GetTerrain()->GetMaxHeight(), position_.z});
+	// Ensure pig is spawned up in the air for deployment
+	Map* map = Engine::Game()->GetCurrentMap();
+	SetPosition( { position_.GetValue().x, map->GetTerrain()->GetMaxHeight(), position_.GetValue().z } );
 
-  SetHealth(100);
-  SetModel("pigs/ac_hi"); // temp
-  SetTeam(spawn.team);
-  //SetClass(pig_class);
+	SetHealth( 100 );
+	SetModel( "pigs/ac_hi" ); // temp
+	SetTeam( spawn.team );
+	//SetClass(pig_class);
 
-  // Create and equip our parachute, and then
-  // link it to ensure it gets destroyed when we do
-  parachute_ = dynamic_cast<AParachuteWeapon*>(ActorManager::GetInstance()->CreateActor("weapon_parachute"));
-  if(parachute_ == nullptr) {
-    Error("Failed to create \"item_parachute\" actor, aborting!\n");
-  }
+	// Create and equip our parachute, and then
+	// link it to ensure it gets destroyed when we do
+	parachute_ = dynamic_cast<AParachuteWeapon*>(ActorManager::GetInstance()->CreateActor( "weapon_parachute" ));
+	if ( parachute_ == nullptr ) {
+		Error( "Failed to create \"item_parachute\" actor, aborting!\n" );
+	}
 
-  LinkChild(parachute_);
-  parachute_->Deploy();
+	LinkChild( parachute_ );
+	parachute_->Deploy();
 }
 
-bool APig::Possessed(const Player* player) {
-  // TODO
-  PlayVoiceSample(VoiceCategory::READY);
+bool APig::Possessed( const Player* player ) {
+	// TODO
+	PlayVoiceSample( VoiceCategory::READY );
 
-  return SuperClass::Possessed(player);
+	return SuperClass::Possessed( player );
 }
 
-void APig::Depossessed(const Player* player) {
-  // TODO
-  SuperClass::Depossessed(player);
+void APig::Depossessed( const Player* player ) {
+	// TODO
+	SuperClass::Depossessed( player );
 }
 
 void APig::Killed() {
-  // TODO: queue me until camera focus, if valid (in some cases we'll insta die)
-  //  Check if we're in water...
+	// TODO: queue me until camera focus, if valid (in some cases we'll insta die)
+	//  Check if we're in water...
 
-  PlayVoiceSample(VoiceCategory::DEATH);
+	PlayVoiceSample( VoiceCategory::DEATH );
 
-  ClearItems();
+	ClearItems();
 }
 
 /**
  * Play a randomised voice sample based on personality and team
  * @param category
  */
-void APig::PlayVoiceSample(VoiceCategory category) {
+void APig::PlayVoiceSample( VoiceCategory category ) {
 #if 0
-  const Player* player = GetPlayerOwner();
-  if(player == nullptr) {
-    return;
-  }
+	const Player* player = GetPlayerOwner();
+	if(player == nullptr) {
+	  return;
+	}
 
-  const Team* team = player->GetTeam();
-  if(team == nullptr) {
-    return;
-  }
+	const Team* team = player->GetTeam();
+	if(team == nullptr) {
+	  return;
+	}
 
-  char path[32];
-  snprintf(path, sizeof(path), "speech/eng/pig%0d/%0d%s%0d%0d.wav",
-      // this is horrible, will need to revisit it...
-      static_cast<int>(GetPersonality()),
-      static_cast<int>(GetPersonality()),
-      team->voice_set.c_str(),
-      static_cast<int>(category),
-      rand() % 6 + 1
-      );
+	char path[32];
+	snprintf(path, sizeof(path), "speech/eng/pig%0d/%0d%s%0d%0d.wav",
+		// this is horrible, will need to revisit it...
+		static_cast<int>(GetPersonality()),
+		static_cast<int>(GetPersonality()),
+		team->voice_set.c_str(),
+		static_cast<int>(category),
+		rand() % 6 + 1
+		);
 
-  const AudioSample* sample = Engine::Audio()->CacheSample(path);
-  if(sample == nullptr) {
-    return;
-  }
+	const AudioSample* sample = Engine::Audio()->CacheSample(path);
+	if(sample == nullptr) {
+	  return;
+	}
 
-  speech_->SetSample(sample);
-  speech_->StartPlaying();
+	speech_->SetSample(sample);
+	speech_->StartPlaying();
 #endif
 }

@@ -31,14 +31,10 @@ void AModel::Draw() {
     return;
   }
 
-  if (strstr(model_->name, "dummy") != nullptr) {
-    angles_.y += TICKS_PER_SECOND / 10.f;
-  }
-
   PLVector3 angles(
-      plDegreesToRadians(angles_.x),
-      plDegreesToRadians(angles_.y),
-      plDegreesToRadians(angles_.z));
+	  plDegreesToRadians( angles_.GetValue().x ),
+	  plDegreesToRadians( angles_.GetValue().y ),
+	  plDegreesToRadians( angles_.GetValue().z ) );
 
   PLMatrix4 translation =
       (

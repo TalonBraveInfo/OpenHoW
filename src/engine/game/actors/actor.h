@@ -124,30 +124,36 @@ class Actor: public PropertyOwner {
   
   // Physics
   virtual const IPhysicsBody* CreatePhysicsBody();
-  virtual void DestroyPhysicsBody();
+	virtual void DestroyPhysicsBody();
 
- protected:
-  bool is_visible_{false};
+protected:
+	bool is_visible_{ false };
 
-  NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
-  NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
-  NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
+	NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
+	NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
+	NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
 
-  PLVector3 velocity_{0, 0, 0}, old_velocity_{0, 0, 0};
-  PLVector3 position_{0, 0, 0}, old_position_{0, 0, 0};
-  PLVector3 fallback_position_{0, 0, 0};
-  PLVector3 angles_{0, 0, 0}, old_angles_{0, 0, 0};
-  PLVector3 bounds_{0, 0, 0};
+	PLVector3 velocity_{ 0, 0, 0 }, old_velocity_{ 0, 0, 0 };
 
-  // Use this if you want your actor to have a helpful descriptor in it's
-  std::string reference_name_{"actor"};
+	Vector3Property position_;
+	PLVector3 old_position_{ 0, 0, 0 };
 
- private:
-  int16_t health_{0};
+	Vector3Property fallback_position_;
 
-  IPhysicsBody* physics_body_{nullptr};
+	Vector3Property angles_;
+	PLVector3 old_angles_{ 0, 0, 0 };
 
-  bool is_activated_{false};
+	Vector3Property bounds_;
+
+	// Use this if you want your actor to have a helpful descriptor in it's
+	std::string reference_name_{ "actor" };
+
+private:
+	int16_t health_{ 0 };
+
+	IPhysicsBody* physics_body_{ nullptr };
+
+	bool is_activated_{ false };
 
   Actor* parent_{nullptr};
   std::vector<Actor*> children_;
