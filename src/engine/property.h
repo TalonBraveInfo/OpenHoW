@@ -37,7 +37,7 @@
 
 #define PROP_LOCAL      (1U << 3)  /**< Property value is not sync'd between peers */
 
-#define PROP_WRITE        (1U << 4)  /**< Property value can be modified locally */
+#define PROP_WRITE      (1U << 4)  /**< Property value can be modified locally */
 
 /*@}*/
 

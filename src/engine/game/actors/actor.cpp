@@ -111,7 +111,7 @@ void Actor::DropToFloor() {
 	PLVector3 nPosition = position_;
 	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
 	nPosition.y = height + bounds_.GetValue().y;
-	position_ = nPosition;
+	SetPosition( nPosition );
 }
 
 PLVector3 Actor::GetForward() {

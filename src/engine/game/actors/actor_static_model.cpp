@@ -31,7 +31,7 @@ void AStaticModel::Deserialize( const ActorSpawn& spawn ) {
 
 	// Some models are horrible special cases
 	if ( spawn.class_name == "brid2_s" ) {
-		angles_ = PLVector3( angles_.GetValue().x, plDegreesToRadians( 135.f ), angles_.GetValue().z );
+		SetAngles( PLVector3( angles_.GetValue().x, plDegreesToRadians( -45.f ), angles_.GetValue().z ) );
 	}
 }
 

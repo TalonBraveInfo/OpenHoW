@@ -69,8 +69,7 @@ void ASprite::SetSpriteTexture(PLTexture* texture) {
 void ASprite::Tick() {
 	SuperClass::Tick();
 
-	PLVector3 nAngles = angles_.GetValue() + 0.5f;
-	angles_ = nAngles;
+	SetAngles( angles_.GetValue() + 0.5f );
 
 	sprite_->SetPosition( position_ );
 	sprite_->SetAngles( angles_ );

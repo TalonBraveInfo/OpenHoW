@@ -20,13 +20,14 @@
 #include "base_window.h"
 
 class ActorTreeWindow : public BaseWindow {
- public:
-  ActorTreeWindow();
-  ~ActorTreeWindow() override;
+public:
+	ActorTreeWindow();
+	~ActorTreeWindow() override;
 
-  void Display() override;
-  void DisplayActorProperties(Actor* actor);
+	void Display() override;
+	void DisplayActorProperties( Actor* actor );
 
- protected:
- private:
+protected:
+private:
+	bool showReadOnly{ false };
 };

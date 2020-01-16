@@ -97,8 +97,8 @@ void APig::Tick() {
 
 	VecAngleClamp( &nAngles );
 
-	position_ = nPosition;
-	angles_ = nAngles;
+	SetPosition( nPosition );
+	SetAngles( nAngles );
 
 	speech_->SetPosition( GetPosition() );
 }
@@ -187,7 +187,7 @@ void APig::Deserialize( const ActorSpawn& spawn ) {
 	// link it to ensure it gets destroyed when we do
 	parachute_ = dynamic_cast<AParachuteWeapon*>(ActorManager::GetInstance()->CreateActor( "weapon_parachute" ));
 	if ( parachute_ == nullptr ) {
-		Error( "Failed to create \"item_parachute\" actor, aborting!\n" );
+		Error( "Failed to create \"weapon_parachute\" actor, aborting!\n" );
 	}
 
 	LinkChild( parachute_ );
