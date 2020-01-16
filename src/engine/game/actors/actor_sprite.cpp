@@ -67,17 +67,15 @@ void ASprite::SetSpriteTexture(PLTexture* texture) {
 }
 
 void ASprite::Tick() {
-  SuperClass::Tick();
+	SuperClass::Tick();
 
-  angles_.x += 0.5f;
-  angles_.y += 0.5f;
-  angles_.z += 0.5f;
+	SetAngles( angles_.GetValue() + 0.5f );
 
-  sprite_->SetPosition(position_);
-  sprite_->SetAngles(angles_);
+	sprite_->SetPosition( position_ );
+	sprite_->SetAngles( angles_ );
 
-  // increment animation etc.
-  sprite_->Tick();
+	// increment animation etc.
+	sprite_->Tick();
 }
 
 void ASprite::Draw() {

@@ -37,6 +37,8 @@
 
 #define PROP_LOCAL      (1U << 3)  /**< Property value is not sync'd between peers */
 
+#define PROP_WRITE      (1U << 4)  /**< Property value can be modified locally */
+
 /*@}*/
 
 /**
@@ -61,22 +63,22 @@ class PropertyOwner;
 /**
  * @brief Base class for all properties. Pure virtual.
 */
-class Property
-{
-	public:
-		const std::string name;
-		const unsigned flags;
-		
-		/* No copy/assignment c'tors. */
-		Property(const Property&) = delete;
-		Property& operator=(const Property&) = delete;
-		
-		/**
-		 * @brief Returns the serialised form of the property's value.
-		 *
-		 * Serialises the property's value using std::string as a container. The value may
-		 * or may not be a printable string; treat it as a byte array.
-		*/
+class Property {
+public:
+	const std::string name;
+	const std::string description;
+	const unsigned flags;
+
+	/* No copy/assignment c'tors. */
+	Property( const Property& ) = delete;
+	Property& operator=( const Property& ) = delete;
+
+	/**
+	 * @brief Returns the serialised form of the property's value.
+	 *
+	 * Serialises the property's value using std::string as a container. The value may
+	 * or may not be a printable string; treat it as a byte array.
+	*/
 		virtual std::string Serialise() const = 0;
 
         /**
@@ -316,25 +318,61 @@ class StringProperty : public Property {
     return value_;
   }
 
-  std::string SerialiseAsJson() const override {
-    return "\"" + value_ + "\"";
-  }
+	std::string SerialiseAsJson() const override {
+		return "\"" + value_ + "\"";
+	}
 
-  void Deserialise(const std::string& serialised) override {
-    value_ = serialised;
-    MarkDirty();
-  }
+	void Deserialise( const std::string& serialised ) override {
+		value_ = serialised;
+		MarkDirty();
+	}
+};
+
+/**
+ * @brief Property class for vector3 properties.
+ */
+class Vector3Property : public Property {
+private:
+	PLVector3 value_;
+
+public:
+	Vector3Property( PropertyOwner& po, const std::string& name, unsigned flags,
+					 PLVector3 value = PLVector3( 0, 0, 0 ) ) :
+		Property( po, name, flags ), value_( value ) {}
+
+	operator const PLVector3&() const {
+		return value_;
+	}
+
+	const PLVector3& GetValue() const {
+		return value_;
+	}
+
+	const PLVector3& operator=( const PLVector3& value ) {
+		value_ = value;
+		MarkDirty();
+		return value;
+	}
+
+	std::string SerialiseAsJson() const override {
+		return std::string(
+			std::to_string( value_.x ) + " " +
+				std::to_string( value_.y ) + " " +
+				std::to_string( value_.z ) );
+	}
+
+	std::string Serialise() const override { return ""; } // todo
+	void Deserialise( const std::string& serialised ) override {} // todo
 };
 
 /**
  * @brief Property class for boolean properties.
 */
-class BooleanProperty: public Property
-{
-	private:
-		bool value_;
-		
-	public:
+class BooleanProperty : public Property {
+private:
+	bool value_;
+
+public:
 		BooleanProperty(PropertyOwner &po, const std::string &name, unsigned flags, bool value = false):
 			Property(po, name, flags), value_(value) {}
 		

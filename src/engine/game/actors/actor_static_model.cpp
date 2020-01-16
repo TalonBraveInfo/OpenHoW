@@ -19,22 +19,22 @@
 #include "../actor_manager.h"
 #include "actor_static_model.h"
 
-REGISTER_ACTOR(static_model, AStaticModel);
+REGISTER_ACTOR( static_model, AStaticModel );
 
 AStaticModel::AStaticModel() : SuperClass() {}
 AStaticModel::~AStaticModel() = default;
 
-void AStaticModel::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
+void AStaticModel::Deserialize( const ActorSpawn& spawn ) {
+	SuperClass::Deserialize( spawn );
 
-  SetModel("scenery/" + spawn.class_name);
+	SetModel( "scenery/" + spawn.class_name );
 
-  // Some models are horrible special cases
-  if(spawn.class_name == "brid2_s") {
-    angles_.z = plDegreesToRadians(135.f);
-  }
+	// Some models are horrible special cases
+	if ( spawn.class_name == "brid2_s" ) {
+		SetAngles( PLVector3( angles_.GetValue().x, plDegreesToRadians( -45.f ), angles_.GetValue().z ) );
+	}
 }
 
 void AStaticModel::Draw() {
-  SuperClass::Draw();
+	SuperClass::Draw();
 }
