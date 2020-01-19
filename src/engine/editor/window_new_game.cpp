@@ -77,11 +77,11 @@ void NewGameWindow::Display() {
 
       Player* enemy = new Player(PlayerType::COMPUTER);
       unsigned int enemy_team = selected_team + 1;
-      if(enemy_team >= teams.size()) {
-        enemy->SetTeam(teams[enemy_team - 2]);
-      } else {
-        enemy->SetTeam(teams[enemy_team + 1]);
-      }
+      if ( enemy_team >= teams.size() ) {
+		  enemy->SetTeam( teams[ enemy_team - 2 ] );
+	  } else {
+		  enemy->SetTeam( teams[ enemy_team ] );
+	  }
 
       players.push_back(enemy);
     } else {
