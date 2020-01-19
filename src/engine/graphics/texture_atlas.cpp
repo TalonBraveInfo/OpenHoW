@@ -150,22 +150,23 @@ void TextureAtlas::Finalize() {
   static unsigned int gen_id = 0;
   if(plCreatePath("./debug/generated/")) {
     char buf[PL_SYSTEM_MAX_PATH];
-    snprintf(buf, sizeof(buf) - 1, "./debug/generated/%dx%d_%d.png",
-             cache->width, cache->height, gen_id++);
-    plWriteImage(cache, buf);
+	  snprintf( buf, sizeof( buf ) - 1, "./debug/generated/%dx%d_%d.png",
+				cache->width, cache->height, gen_id++ );
+	  plWriteImage( cache, buf );
   }
 #endif
 
-  if((texture_ = plCreateTexture()) == nullptr) {
-    Error("Failed to generate atlas texture (%s)!\n", plGetError());
-  }
+	if ( ( texture_ = plCreateTexture() ) == nullptr ) {
+		Error( "Failed to generate atlas texture (%s)!\n", plGetError() );
+	}
 
-  texture_->filter = cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_MIPMAP_LINEAR : PL_TEXTURE_FILTER_NEAREST;
-  if(!plUploadTextureImage(texture_, cache)) {
-    Error("Failed to upload texture atlas (%s)!\n", plGetError());
-  }
+	texture_->filter = cv_graphics_texture_filter->b_value ?
+					   PL_TEXTURE_FILTER_MIPMAP_LINEAR : PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR;
+	if ( !plUploadTextureImage( texture_, cache ) ) {
+		Error( "Failed to upload texture atlas (%s)!\n", plGetError() );
+	}
 
-  plFreeImage(cache);
+	plFreeImage( cache );
 }
 
 bool TextureAtlas::GetTextureCoords(const std::string &name, float *x, float *y, float *w, float *h) {
