@@ -87,7 +87,7 @@ void openhow::Engine::Initialize() {
 
 	Input_Initialize();
 	Display_Initialize();
-	resource_manager_ = new ResourceManager();
+	resource_manager_ = new hwResourceManager();
 	audio_manager_ = new AudioManager();
 	game_manager_ = new GameManager();
 	FE_Initialize();

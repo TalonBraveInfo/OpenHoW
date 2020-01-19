@@ -17,19 +17,18 @@
 
 #pragma once
 
-namespace openhow {
-class ResourceManager {
- private:
-  ResourceManager();
-  ~ResourceManager();
+class hwResourceManager {
+private:
+	hwResourceManager();
+	~hwResourceManager();
 
- public:
-  PLTexture* GetCachedTexture(const std::string& path);
-  PLModel* GetCachedModel(const std::string& path);
+public:
+	PLTexture* GetCachedTexture( const std::string& path );
+	PLModel* GetCachedModel( const std::string& path );
 
-  PLTexture* LoadTexture( const std::string& path,
-						  PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST,
-						  bool persist = false, bool abort_on_fail = false );
+	PLTexture* LoadTexture( const std::string& path,
+							PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST,
+							bool persist = false, bool abort_on_fail = false );
 	PLModel* LoadModel( const std::string& path, bool persist = false, bool abort_on_fail = false );
 
 	PLTexture* GetFallbackTexture();
@@ -49,35 +48,34 @@ private:
 		TextureHandle( PLTexture* texture_ptr, bool persist ) {
 			this->texture_ptr = texture_ptr;
 			this->persist = persist;
-    }
+		}
 
-    PLTexture* texture_ptr{nullptr};
-    bool persist{false};
-  };
-  std::map<std::string, TextureHandle> textures_;
-  inline PLTexture* CacheTexture(const std::string& path, PLTexture* texture_ptr, bool persist = false) {
-    textures_.insert(std::pair<std::string, TextureHandle>(path, { texture_ptr, persist }));
-    return texture_ptr;
-  }
+		PLTexture* texture_ptr{ nullptr };
+		bool persist{ false };
+	};
+	std::map<std::string, TextureHandle> textures_;
+	inline PLTexture* CacheTexture( const std::string& path, PLTexture* texture_ptr, bool persist = false ) {
+		textures_.insert( std::pair<std::string, TextureHandle>( path, { texture_ptr, persist } ) );
+		return texture_ptr;
+	}
 
-  struct ModelHandle {
-    ModelHandle(PLModel* model_ptr, bool persist) {
-      this->model_ptr = model_ptr;
-      this->persist = persist;
-    }
+	struct ModelHandle {
+		ModelHandle( PLModel* model_ptr, bool persist ) {
+			this->model_ptr = model_ptr;
+			this->persist = persist;
+		}
 
-    PLModel* model_ptr{nullptr};
-    bool persist{false};
-  };
-  std::map<std::string, ModelHandle> models_;
-  inline PLModel* CacheModel(const std::string& path, PLModel* model_ptr, bool persist = false) {
-    models_.insert(std::pair<std::string, ModelHandle>(path, { model_ptr, persist }));
-    return model_ptr;
-  }
+		PLModel* model_ptr{ nullptr };
+		bool persist{ false };
+	};
+	std::map<std::string, ModelHandle> models_;
+	inline PLModel* CacheModel( const std::string& path, PLModel* model_ptr, bool persist = false ) {
+		models_.insert( std::pair<std::string, ModelHandle>( path, { model_ptr, persist } ) );
+		return model_ptr;
+	}
 
-  PLTexture* fallback_texture_{nullptr};
-  PLModel* fallback_model_{nullptr};
+	PLTexture* fallback_texture_{ nullptr };
+	PLModel* fallback_model_{ nullptr };
 
-  friend class Engine;
+	friend class Engine;
 };
-}

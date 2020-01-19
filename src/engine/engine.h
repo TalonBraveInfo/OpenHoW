@@ -68,14 +68,14 @@ class Engine {
     return engine->audio_manager_;
   }
   static GameManager* Game() {
-    return engine->game_manager_;
+	  return engine->game_manager_;
   }
-  static ResourceManager* Resource() {
-    return engine->resource_manager_;
-  }
-  static IPhysicsInterface* Physics() {
-    return engine->physics_interface_;
-  }
+	static hwResourceManager* Resource() {
+		return engine->resource_manager_;
+	}
+	static IPhysicsInterface* Physics() {
+		return engine->physics_interface_;
+	}
 
   void Initialize();
 
@@ -85,9 +85,9 @@ class Engine {
 
  private:
   GameManager* game_manager_{nullptr};
-  AudioManager* audio_manager_{nullptr};
-  ResourceManager* resource_manager_{nullptr};
-  IPhysicsInterface* physics_interface_{nullptr};
+	AudioManager* audio_manager_{ nullptr };
+	hwResourceManager* resource_manager_{ nullptr };
+	IPhysicsInterface* physics_interface_{ nullptr };
 };
 }
 

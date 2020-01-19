@@ -29,19 +29,21 @@ PLModel* LoadObjModel( const char* path ); // see loaders/obj.cpp
 PLModel* Model_LoadVtxFile( const char* path );
 PLModel* Model_LoadMinFile( const char* path );
 
-ResourceManager::ResourceManager() {
+hwResourceManager::hwResourceManager() {
 	plRegisterModelLoader( "obj", LoadObjModel );
 	plRegisterModelLoader( "vtx", Model_LoadVtxFile );
 	plRegisterModelLoader( "min", Model_LoadMinFile );
 
 	plRegisterConsoleCommand( "ListCachedResources",
-							  &ResourceManager::ListCachedResources,
+							  &hwResourceManager::ListCachedResources,
 							  "List all cached resources." );
-	plRegisterConsoleCommand( "ClearModels", &ResourceManager::ClearModelsCommand, "Clears all cached models." );
-	plRegisterConsoleCommand( "ClearTextures", &ResourceManager::ClearTexturesCommand, "Clears all cached textures." );
+	plRegisterConsoleCommand( "ClearModels", &hwResourceManager::ClearModelsCommand, "Clears all cached models." );
+	plRegisterConsoleCommand( "ClearTextures",
+							  &hwResourceManager::ClearTexturesCommand,
+							  "Clears all cached textures." );
 }
 
-ResourceManager::~ResourceManager() {
+hwResourceManager::~hwResourceManager() {
 	ClearTextures( true );
 	ClearModels( true );
 
@@ -55,7 +57,7 @@ const char* supported_image_formats[] = { "png", "tga", "bmp", "tim", nullptr };
 //const char *supported_audio_formats[]={"wav", NULL};
 //const char *supported_video_formats[]={"bik", NULL};
 
-PLTexture* ResourceManager::GetCachedTexture( const std::string& path ) {
+PLTexture* hwResourceManager::GetCachedTexture( const std::string& path ) {
 	auto idx = textures_.find( path );
 	if ( idx != textures_.end() ) {
 		return idx->second.texture_ptr;
@@ -64,7 +66,7 @@ PLTexture* ResourceManager::GetCachedTexture( const std::string& path ) {
 	return nullptr;
 }
 
-PLModel* ResourceManager::GetCachedModel( const std::string& path ) {
+PLModel* hwResourceManager::GetCachedModel( const std::string& path ) {
 	auto idx = models_.find( path );
 	if ( idx != models_.end() ) {
 		return idx->second.model_ptr;
@@ -73,8 +75,8 @@ PLModel* ResourceManager::GetCachedModel( const std::string& path ) {
 	return nullptr;
 }
 
-PLTexture* ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist,
-										 bool abort_on_fail ) {
+PLTexture* hwResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist,
+										   bool abort_on_fail ) {
 	const char* ext = plGetFileExtension( path.c_str() );
 	if ( plIsEmptyString( ext ) ) {
 		const char* fp = u_find2( path.c_str(), supported_image_formats, abort_on_fail );
@@ -132,7 +134,7 @@ PLTexture* ResourceManager::LoadTexture( const std::string& path, PLTextureFilte
 	return CacheTexture( path, GetFallbackTexture(), persist );;
 }
 
-PLModel* ResourceManager::LoadModel( const std::string& path, bool persist, bool abort_on_fail ) {
+PLModel* hwResourceManager::LoadModel( const std::string& path, bool persist, bool abort_on_fail ) {
 	const char* fp = u_find2( path.c_str(), supported_model_formats, abort_on_fail );
 	if ( fp == nullptr ) {
 		return CacheModel( path, GetFallbackModel(), persist );
@@ -156,7 +158,7 @@ PLModel* ResourceManager::LoadModel( const std::string& path, bool persist, bool
 	return CacheModel( fp, model, persist );
 }
 
-PLTexture* ResourceManager::GetFallbackTexture() {
+PLTexture* hwResourceManager::GetFallbackTexture() {
 	if ( fallback_texture_ != nullptr ) {
 		return fallback_texture_;
 	}
@@ -179,7 +181,7 @@ PLTexture* ResourceManager::GetFallbackTexture() {
 	return fallback_texture_;
 }
 
-PLModel* ResourceManager::GetFallbackModel() {
+PLModel* hwResourceManager::GetFallbackModel() {
 	if ( fallback_model_ != nullptr ) {
 		return fallback_model_;
 	}
@@ -205,7 +207,7 @@ PLModel* ResourceManager::GetFallbackModel() {
 	return ( fallback_model_ = plCreateBasicStaticModel( mesh ) );
 }
 
-void ResourceManager::ClearTextures( bool force ) {
+void hwResourceManager::ClearTextures( bool force ) {
 	if ( textures_.empty() ) {
 		return;
 	}
@@ -224,7 +226,7 @@ void ResourceManager::ClearTextures( bool force ) {
 	}
 }
 
-void ResourceManager::ClearModels( bool force ) {
+void hwResourceManager::ClearModels( bool force ) {
 	if ( models_.empty() ) {
 		return;
 	}
@@ -243,12 +245,12 @@ void ResourceManager::ClearModels( bool force ) {
 	}
 }
 
-void ResourceManager::ClearAll() {
+void hwResourceManager::ClearAll() {
 	ClearModels();
 	ClearTextures();
 }
 
-void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
+void hwResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
 	u_unused( argc );
 	u_unused( argv );
 
@@ -268,14 +270,14 @@ void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
 	LogInfo( "Texture Memory: %dkb\n", plBytesToKilobytes( tsize ) );
 }
 
-void ResourceManager::ClearTexturesCommand( unsigned int argc, char** argv ) {
+void hwResourceManager::ClearTexturesCommand( unsigned int argc, char** argv ) {
 	u_unused( argc );
 	u_unused( argv );
 
 	Engine::Resource()->ClearTextures();
 }
 
-void ResourceManager::ClearModelsCommand( unsigned int argc, char** argv ) {
+void hwResourceManager::ClearModelsCommand( unsigned int argc, char** argv ) {
 	u_unused( argc );
 	u_unused( argv );
 
