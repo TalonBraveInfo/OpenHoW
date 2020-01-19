@@ -472,6 +472,16 @@ void UI_DisplayDebugMenu( void ) {
 		}
 
 		if ( ImGui::BeginMenu( "Debug" ) ) {
+			static bool simStatus = false;
+			if ( ImGui::MenuItem( "Toggle Simulation", "T", simStatus ) ) {
+				Engine::Game()->ToggleSimulation( ( simStatus = !simStatus ) );
+			}
+			if ( ImGui::MenuItem( "Step Simulation", "S" ) ) {
+				Engine::Game()->StepSimulation( 1 );
+			}
+
+			ImGui::Separator();
+
 			if ( ImGui::MenuItem( "Show Console", "`" ) ) {
 				windows.push_back( new ConsoleWindow() );
 			}

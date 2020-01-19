@@ -109,6 +109,10 @@ GameManager::~GameManager() {
 }
 
 void GameManager::Tick() {
+	if ( pauseSim && simSteps == 0 ) {
+		return;
+	}
+
 	FrontEnd_Tick();
 
 	if ( mode_ == nullptr ) {
@@ -138,6 +142,10 @@ void GameManager::Tick() {
 		case CameraMode::FLY:break;
 		case CameraMode::FOLLOW:break;
 		case CameraMode::FLYAROUND:break;
+	}
+
+	if ( simSteps > 0 ) {
+		simSteps--;
 	}
 }
 
