@@ -17,45 +17,49 @@
 
 #pragma once
 
+class hwShaderProgram;
+
 class Sprite {
- public:
-  enum SpriteType {
-    TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
-  } type_{TYPE_DEFAULT};
+public:
+	enum SpriteType {
+		TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
+	} type_{ TYPE_DEFAULT };
 
-  Sprite(SpriteType type, PLTexture* texture, PLColour colour = {255, 255, 255, 255}, float scale = 1.0f);
-  ~Sprite();
+	Sprite( SpriteType type, PLTexture* texture, PLColour colour = { 255, 255, 255, 255 }, float scale = 1.0f );
+	~Sprite();
 
-  float GetScale() { return scale_; }
-  void SetScale(float scale);
+	float GetScale() { return scale_; }
+	void SetScale( float scale );
 
-  PLVector3 GetPosition() { return position_; }
-  void SetPosition(const PLVector3& position);
+	PLVector3 GetPosition() { return position_; }
+	void SetPosition( const PLVector3& position );
 
-  PLVector3 GetAngles() { return angles_; }
-  void SetAngles(const PLVector3& angles);
+	PLVector3 GetAngles() { return angles_; }
+	void SetAngles( const PLVector3& angles );
 
-  PLColour GetColour() { return colour_; }
-  void SetColour(const PLColour& colour);
+	PLColour GetColour() { return colour_; }
+	void SetColour( const PLColour& colour );
 
-  void SetTexture(PLTexture* texture);
+	void SetTexture( PLTexture* texture );
 
-  //const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
-  //void SetAnimation(SpriteAnimation* anim);
+	//const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
+	//void SetAnimation(SpriteAnimation* anim);
 
-  void Tick();
-  void Draw();
+	void Tick();
+	void Draw();
 
- protected:
- private:
-  PLVector3 position_;
-  PLVector3 angles_;
-  PLColour colour_{255, 255, 255, 255};
-  float scale_{1.0f};
+protected:
+private:
+	PLVector3 position_;
+	PLVector3 angles_;
+	PLColour colour_{ 255, 255, 255, 255 };
+	float scale_{ 1.0f };
 
-  unsigned int current_frame_{0};
-  double frame_delay_{0};
+	hwShaderProgram* defaultProgram;
 
-  PLMesh* mesh_{nullptr};
-  PLMatrix4 matrix_{};
+	unsigned int current_frame_{ 0 };
+	double frame_delay_{ 0 };
+
+	PLMesh* mesh_{ nullptr };
+	PLMatrix4 matrix_{};
 };

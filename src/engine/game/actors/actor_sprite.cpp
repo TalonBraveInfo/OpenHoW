@@ -27,49 +27,49 @@
 // Can be used for very basic effects etc.
 
 class ASprite : public Actor {
-  IMPLEMENT_ACTOR(ASprite, Actor)
+	IMPLEMENT_ACTOR( ASprite, Actor )
 
- public:
-  ASprite();
-  ~ASprite() override;
+public:
+	ASprite();
+	~ASprite() override;
 
-  void Tick() override;
-  void Draw() override;
+	void Tick() override;
+	void Draw() override;
 
-  virtual void SetSpriteTexture(const std::string& path);
-  virtual void SetSpriteTexture(PLTexture* texture);
+	virtual void SetSpriteTexture( const std::string& path );
+	virtual void SetSpriteTexture( PLTexture* texture );
 
- protected:
- private:
-  Sprite* sprite_;
+protected:
+private:
+	Sprite* sprite_;
 };
 
-REGISTER_ACTOR(sprite, ASprite)
+REGISTER_ACTOR( sprite, ASprite )
 
 using namespace openhow;
 
 ASprite::ASprite() : SuperClass() {
-  sprite_ = new Sprite(Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture());
+	sprite_ = new Sprite( Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture() );
 }
 
 ASprite::~ASprite() {
-  delete sprite_;
+	delete sprite_;
 }
 
-void ASprite::SetSpriteTexture(const std::string& path) {
-  // TODO: resource manager aaaahhhh!!!
-  PLTexture* texture = Engine::Resource()->LoadTexture(path, PL_TEXTURE_FILTER_MIPMAP_LINEAR);
-  sprite_->SetTexture(texture);
+void ASprite::SetSpriteTexture( const std::string& path ) {
+	SetSpriteTexture( Engine::Resource()->LoadTexture( path,
+													   cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_LINEAR
+																						   : PL_TEXTURE_FILTER_NEAREST ) );
 }
 
-void ASprite::SetSpriteTexture(PLTexture* texture) {
-  sprite_->SetTexture(texture);
+void ASprite::SetSpriteTexture( PLTexture* texture ) {
+	sprite_->SetTexture( texture );
 }
 
 void ASprite::Tick() {
 	SuperClass::Tick();
 
-	SetAngles( angles_.GetValue() + 0.5f );
+	//SetAngles( angles_.GetValue() + 0.5f );
 
 	sprite_->SetPosition( position_ );
 	sprite_->SetAngles( angles_ );
@@ -79,7 +79,7 @@ void ASprite::Tick() {
 }
 
 void ASprite::Draw() {
-  SuperClass::Draw();
+	SuperClass::Draw();
 
-  sprite_->Draw();
+	sprite_->Draw();
 }
