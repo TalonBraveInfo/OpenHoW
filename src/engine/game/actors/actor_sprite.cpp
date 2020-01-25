@@ -49,11 +49,7 @@ REGISTER_ACTOR( sprite, ASprite )
 using namespace openhow;
 
 ASprite::ASprite() : SuperClass() {
-	sprite_ = new Sprite(
-		Sprite::TYPE_DEFAULT,
-		Engine::Resource()->GetFallbackTexture(),
-		PLColour( 255, 255, 255 ),
-		plGenerateRandomd( 10 ) + 1 );
+	sprite_ = new Sprite( Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture() );
 }
 
 ASprite::~ASprite() {

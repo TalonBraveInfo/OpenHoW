@@ -62,7 +62,8 @@ void Sprite::Draw() {
 	defaultProgram->Enable();
 
 	matrix_.Identity();
-	matrix_.Translate( { 32, 32, 0 } );
+	matrix_ *= PLVector3( scale_, scale_, scale_ );
+	matrix_.Translate( { 32 * scale_, 32 * scale_, 0 } );
 	matrix_.Rotate( angles_.x, { 1, 0, 0 } );
 	matrix_.Rotate( angles_.y, { 0, 1, 0 } );
 	matrix_.Rotate( angles_.z, { 0, 0, 1 } );
