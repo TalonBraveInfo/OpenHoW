@@ -136,26 +136,6 @@ void BaseGameMode::SpawnActors() {
 
 	// TEMP END
 
-#if 1 // debug sprites...
-	for ( unsigned int i = 0; i < 1024; ++i ) {
-		Actor* actor = ActorManager::GetInstance()->CreateActor( "sprite" );
-		if ( actor == nullptr ) {
-			break;
-		}
-
-		actor->SetPosition( {
-								static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-								static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-								static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
-							} );
-		actor->SetAngles( {
-							  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-							  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH),
-							  static_cast<float>(rand() % TERRAIN_PIXEL_WIDTH)
-						  } );
-	}
-#endif
-
 	ActorManager::GetInstance()->ActivateActors();
 }
 
