@@ -25,32 +25,32 @@ AModel::AModel() : SuperClass() {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
-  SuperClass::Draw();
+	SuperClass::Draw();
 
-  if(!show_model_ || model_ == nullptr) {
-    return;
-  }
+	if ( !show_model_ || model_ == nullptr ) {
+		return;
+	}
 
-  PLVector3 angles(
-	  plDegreesToRadians( angles_.GetValue().x ),
-	  plDegreesToRadians( angles_.GetValue().y ),
-	  plDegreesToRadians( angles_.GetValue().z ) );
+	PLVector3 angles(
+		plDegreesToRadians( angles_.GetValue().x ),
+		plDegreesToRadians( angles_.GetValue().y ),
+		plDegreesToRadians( angles_.GetValue().z ) );
 
-  PLMatrix4 translation =
-      (
-        plRotateMatrix4(angles.z, { 1, 0, 0 }) *
-        plRotateMatrix4(-angles.y, { 0, 1, 0 }) *
-        plRotateMatrix4(angles.x, { 0, 0, 1 })
-      ) * plTranslateMatrix4(position_);
+	PLMatrix4 mat;
+	mat.Identity();
+	mat.Rotate( angles.z, { 1, 0, 0 } );
+	mat.Rotate( -angles.y, { 0, 1, 0 } );
+	mat.Rotate( angles.x, { 0, 0, 1 } );
+	mat.Translate( position_ );
 
-  Model_Draw(model_, translation);
+	Model_Draw( model_, mat );
 }
 
-void AModel::SetModel(const std::string &path) {
-  model_ = Engine::Resource()->LoadModel("chars/" + path, false);
-  u_assert(model_ != nullptr);
+void AModel::SetModel( const std::string& path ) {
+	model_ = Engine::Resource()->LoadModel( "chars/" + path, false );
+	u_assert( model_ != nullptr );
 }
 
-void AModel::ShowModel(bool show) {
-  show_model_ = show;
+void AModel::ShowModel( bool show ) {
+	show_model_ = show;
 }

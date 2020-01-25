@@ -51,18 +51,24 @@ void Sprite::Tick() {
 }
 
 void Sprite::Draw() {
+	if ( !cv_graphics_draw_sprites->b_value ) {
+		return;
+	}
+
 	if ( scale_ <= 0 ) {
 		return;
 	}
 
 	defaultProgram->Enable();
 
-	PLMatrix4 mrot = plRotateMatrix4( angles_.x, PLVector3( 1, 0, 0 ) );
-	mrot = mrot * plRotateMatrix4( angles_.y, PLVector3( 0, 1, 0 ) );
-	mrot = mrot * plRotateMatrix4( angles_.z, PLVector3( 0, 0, 1 ) );
-	matrix_ = mrot * plTranslateMatrix4( position_ );
+	matrix_.Identity();
+	matrix_.Translate( { 32, 32, 0 } );
+	matrix_.Rotate( angles_.x, { 1, 0, 0 } );
+	matrix_.Rotate( angles_.y, { 0, 1, 0 } );
+	matrix_.Rotate( angles_.z, { 0, 0, 1 } );
+	matrix_.Translate( position_ );
 
-	matrix_ = matrix_ * PLVector3( scale_, scale_, scale_ );
+	//matrix_ = matrix_ * PLVector3( scale_, scale_, scale_ );
 
 	plSetTexture( mesh_->texture, 0 );
 

@@ -176,6 +176,7 @@ PLConsoleVariable* cv_display_vsync = nullptr;
 
 PLConsoleVariable* cv_graphics_cull = nullptr;
 PLConsoleVariable* cv_graphics_draw_world = nullptr;
+PLConsoleVariable* cv_graphics_draw_sprites = nullptr;
 PLConsoleVariable* cv_graphics_draw_audio_sources = nullptr;
 PLConsoleVariable* cv_graphics_texture_filter = nullptr;
 PLConsoleVariable* cv_graphics_alpha_to_coverage = nullptr;
@@ -236,26 +237,27 @@ void Console_Initialize(void) {
   rvar(cv_camera_near, false, "0.1", pl_float_var, nullptr, "");
   rvar(cv_camera_far, false, "999999", pl_float_var, nullptr, "");
 
-  rvar(cv_display_texture_cache, false, "-1", pl_int_var, nullptr, "");
-  rvar(cv_display_width, true, "1024", pl_int_var, nullptr, "");
-  rvar(cv_display_height, true, "768", pl_int_var, nullptr, "");
-  rvar(cv_display_fullscreen, true, "false", pl_bool_var, nullptr, "");
-  rvar(cv_display_use_window_aspect, false, "false", pl_bool_var, nullptr, "");
-  rvar(cv_display_ui_scale, true, "1", pl_int_var, nullptr, "0 = automatic scale");
-  rvar(cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync");
+	rvar( cv_display_texture_cache, false, "-1", pl_int_var, nullptr, "" );
+	rvar( cv_display_width, true, "1024", pl_int_var, nullptr, "" );
+	rvar( cv_display_height, true, "768", pl_int_var, nullptr, "" );
+	rvar( cv_display_fullscreen, true, "false", pl_bool_var, nullptr, "" );
+	rvar( cv_display_use_window_aspect, false, "false", pl_bool_var, nullptr, "" );
+	rvar( cv_display_ui_scale, true, "1", pl_int_var, nullptr, "0 = automatic scale" );
+	rvar( cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync" );
 
-  rvar(cv_graphics_cull, false, "false", pl_bool_var, nullptr, "toggles culling of visible objects");
-  rvar(cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world");
-  rvar(cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources");
-  rvar(cv_graphics_texture_filter, true, "false", pl_bool_var, nullptr, "Filter level/model textures?");
-  rvar(cv_graphics_alpha_to_coverage, true, "false", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage");
-  rvar(cv_graphics_debug_normals, false, "false", pl_bool_var, nullptr, "Forces normals to be displayed");
+	rvar( cv_graphics_cull, false, "false", pl_bool_var, nullptr, "toggles culling of visible objects" );
+	rvar( cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world" );
+	rvar( cv_graphics_draw_sprites, false, "true", pl_bool_var, nullptr, "Toggles rendering of sprites." );
+	rvar( cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources" );
+	rvar( cv_graphics_texture_filter, true, "false", pl_bool_var, nullptr, "Filter level/model textures?" );
+	rvar( cv_graphics_alpha_to_coverage, true, "false", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage" );
+	rvar( cv_graphics_debug_normals, false, "false", pl_bool_var, nullptr, "Forces normals to be displayed" );
 
-  rvar(cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume");
-  rvar(cv_audio_volume_sfx, true, "1", pl_float_var, nullptr, "set sfx audio volume");
-  rvar(cv_audio_volume_music, true, "1", pl_float_var, nullptr, "Set the music audio volume");
-  rvar(cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo");
-  rvar(cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices");
+	rvar( cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume" );
+	rvar( cv_audio_volume_sfx, true, "1", pl_float_var, nullptr, "set sfx audio volume" );
+	rvar( cv_audio_volume_music, true, "1", pl_float_var, nullptr, "Set the music audio volume" );
+	rvar( cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo" );
+	rvar( cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices" );
 
   plRegisterConsoleCommand("open", OpenCommand, "Opens the specified file");
   plRegisterConsoleCommand("exit", QuitCommand, "Closes the game");

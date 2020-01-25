@@ -49,7 +49,11 @@ REGISTER_ACTOR( sprite, ASprite )
 using namespace openhow;
 
 ASprite::ASprite() : SuperClass() {
-	sprite_ = new Sprite( Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture() );
+	sprite_ = new Sprite(
+		Sprite::TYPE_DEFAULT,
+		Engine::Resource()->GetFallbackTexture(),
+		PLColour( 255, 255, 255 ),
+		plGenerateRandomd( 10 ) + 1 );
 }
 
 ASprite::~ASprite() {
@@ -69,7 +73,7 @@ void ASprite::SetSpriteTexture( PLTexture* texture ) {
 void ASprite::Tick() {
 	SuperClass::Tick();
 
-	//SetAngles( angles_.GetValue() + 0.5f );
+	SetAngles( angles_.GetValue() + 0.2f );
 
 	sprite_->SetPosition( position_ );
 	sprite_->SetAngles( angles_ );
