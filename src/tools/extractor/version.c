@@ -35,7 +35,92 @@ void CheckGameVersion(const char *path) {
   if (plFileExists(fcheck)) {
     LogInfo("Detected system.cnf, assuming PSX version\n");
     version_info.platform = PLATFORM_PSX;
-    // todo: determine region for PSX ver (probably easier than on PC)
+
+    // NTSC-U:
+    // - SLUS-01195  HOGS OF WAR                          [E]
+    // PAL:   
+    // - SLES-01041  HOGS OF WAR                          [E]
+    // - SLES-02769  HOGS OF WAR                          [I]
+    // - SLES-02767  HOGS OF WAR [FRONTSCHWEINE]          [G]
+    // - SLES-02766  HOGS OF WAR [LES COCHONS DE GUERRE]  [F]
+    // - SLES-02768  HOGS OF WAR [MARRANOS EN GUERRA]     [S]
+
+    snprintf(fcheck, sizeof(fcheck), "%s/SLUS_011.95", path);
+    if (plFileExists(fcheck)) {
+      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+      //version_info.platform = PLATFORM_PSX_NTSC?;
+      version_info.region = REGION_ENG;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/SLES_010.95", path);
+    if (plFileExists(fcheck)) {
+      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+      //version_info.platform = PLATFORM_PSX_PAL?;
+      version_info.region = REGION_ENG;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.66", path);
+    if (plFileExists(fcheck)) {
+      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+      //version_info.platform = PLATFORM_PSX_PAL?;
+      version_info.region = REGION_FRE;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.67", path);
+    if (plFileExists(fcheck)) {
+      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+      //version_info.platform = PLATFORM_PSX_PAL?;
+      version_info.region = REGION_GER;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.68", path);
+    if (plFileExists(fcheck)) {
+      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+      //version_info.platform = PLATFORM_PSX_PAL?;
+      version_info.region = REGION_SPA;
+    }
+
+    snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.69", path);
+    if (plFileExists(fcheck)) {
+      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+      //version_info.platform = PLATFORM_PSX_PAL?;
+      version_info.region = REGION_ITA;
+    }
+
+#if false
+    // TODO: Alternative approach reading the language.lng file.    
+    // Language ids:
+    // 0 = ENG_GB
+    // 1 = ENG_US
+    // 2 = FRE (no proof)
+    // 3 = GER
+    // 4 = SPA (no proof)
+    // 5 = ITA (no proof)
+
+    snprintf(fcheck, sizeof(fcheck), "%s/language.lng", path);
+    if (!plFileExists(fcheck)) {
+      LogWarn("Failed to find language.lng, unable to determine language!\n");
+      return;
+    }
+
+    PLFile *lgn_file = plOpenFile(path, false);
+    if (lgn_file == NULL) {
+      LogWarn("Failed to load \"%s\", aborting!\n", path);
+      return NULL;
+    }
+
+    uint32_t language_id;
+    if (plReadFile(lgn_file, &language_id, sizeof(uint32_t), 1) != 1) {
+      LogWarn("Failed to get language code, \"%s\"!\n", path);
+    }
+
+    if(language_id == 0) {
+      version_info.region = REGION_ENG;
+    }
+    else if (language_id == 3) {
+      version_info.region = REGION_GER;
+    }
+#endif
     return;
   }
 
@@ -57,6 +142,8 @@ void CheckGameVersion(const char *path) {
     version_info.region = REGION_GER;
   } else if (fetext_size == 8102 && gtext_size == 4112) {
     version_info.region = REGION_ENG;
+  } else if (fetext_size == 8391 && gtext_size == 4513) {
+    version_info.region = REGION_RUS;
   }
 
   snprintf(fcheck, sizeof(fcheck), "%s/MUSIC/Track02.ogg", path);
