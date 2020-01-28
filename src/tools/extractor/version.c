@@ -36,6 +36,7 @@ void CheckGameVersion(const char *path) {
     LogInfo("Detected system.cnf, assuming PSX version\n");
     version_info.platform = PLATFORM_PSX;
 
+#if false
     // NTSC-U:
     // - SLUS-01195  HOGS OF WAR                          [E]
     // PAL:   
@@ -46,49 +47,47 @@ void CheckGameVersion(const char *path) {
     // - SLES-02768  HOGS OF WAR [MARRANOS EN GUERRA]     [S]
 
     snprintf(fcheck, sizeof(fcheck), "%s/SLUS_011.95", path);
-    if (plFileExists(fcheck)) {
-      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+    if (plFileExists(fcheck)) {      
       //version_info.platform = PLATFORM_PSX_NTSC?;
       version_info.region = REGION_ENG;
     }
 
     snprintf(fcheck, sizeof(fcheck), "%s/SLES_010.95", path);
-    if (plFileExists(fcheck)) {
-      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+    if (plFileExists(fcheck)) {      
       //version_info.platform = PLATFORM_PSX_PAL?;
       version_info.region = REGION_ENG;
     }
 
     snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.66", path);
-    if (plFileExists(fcheck)) {
-      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+    if (plFileExists(fcheck)) {      
       //version_info.platform = PLATFORM_PSX_PAL?;
       version_info.region = REGION_FRE;
     }
 
     snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.67", path);
-    if (plFileExists(fcheck)) {
-      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+    if (plFileExists(fcheck)) {      
       //version_info.platform = PLATFORM_PSX_PAL?;
       version_info.region = REGION_GER;
     }
 
     snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.68", path);
-    if (plFileExists(fcheck)) {
-      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+    if (plFileExists(fcheck)) {      
       //version_info.platform = PLATFORM_PSX_PAL?;
       version_info.region = REGION_SPA;
     }
 
     snprintf(fcheck, sizeof(fcheck), "%s/SLES_027.69", path);
-    if (plFileExists(fcheck)) {
-      LogWarn("Failed to find PS-X EXE, unable to determine region!\n");
+    if (plFileExists(fcheck)) {      
       //version_info.platform = PLATFORM_PSX_PAL?;
       version_info.region = REGION_ITA;
     }
 
-#if false
-    // TODO: Alternative approach reading the language.lng file.    
+    if (version_info.region == REGION_UNKNOWN) {
+      LogWarn("Failed to find any known PSX-EXE file, unable to determine region!\n");
+      return;
+    }
+#else
+    // Alternative approach reading the language.lng file.
     // Language ids:
     // 0 = ENG_GB
     // 1 = ENG_US
@@ -97,31 +96,33 @@ void CheckGameVersion(const char *path) {
     // 4 = SPA (no proof)
     // 5 = ITA (no proof)
 
-    snprintf(fcheck, sizeof(fcheck), "%s/language.lng", path);
-    if (!plFileExists(fcheck)) {
-      LogWarn("Failed to find language.lng, unable to determine language!\n");
-      return;
-    }
-
     PLFile *lgn_file = plOpenFile(path, false);
     if (lgn_file == NULL) {
-      LogWarn("Failed to load \"%s\", aborting!\n", path);
-      return NULL;
+      Error("Failed to load \"%s\", aborting (%s)!\n", path, plGetError());
+      return;
     }
 
     uint32_t language_id;
     if (plReadFile(lgn_file, &language_id, sizeof(uint32_t), 1) != 1) {
-      LogWarn("Failed to get language code, \"%s\"!\n", path);
+      Error("Failed to get language code, \"%s\" (%s)!\n", path, plGetError());
+      return;
     }
 
-    if(language_id == 0) {
+    if (language_id == 0 || language_id == 1) {
       version_info.region = REGION_ENG;
-    }
-    else if (language_id == 3) {
+    } else if (language_id == 2) {
+      version_info.region = REGION_FRE;
+    } else if (language_id == 3) {
       version_info.region = REGION_GER;
+    } else if (language_id == 4) {
+      version_info.region = REGION_SPA;
+    } else if (language_id == 5) {
+      version_info.region = REGION_ITA;
+    } else {
+      LogWarn("language id (%d) is unknown, unable to determine region!\n", language_id);
+      return;
     }
 #endif
-    return;
   }
 
   snprintf(fcheck, sizeof(fcheck), "%s/Data/foxscale.d3d", path);
