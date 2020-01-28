@@ -73,6 +73,14 @@ file(
 
 add_executable(OpenHoW ${OPENHOW_SOURCE_FILES})
 
+target_link_libraries(OpenHoW platform newton)
+#target_include_directories(OpenHoW PRIVATE 
+#	../3rdparty/newton-dynamics/sdk/dMath/
+#	../3rdparty/newton-dynamics/sdk/dgCore/
+#	../3rdparty/newton-dynamics/sdk/dNewton/
+#	../3rdparty/newton-dynamics/sdk/dgNewton/
+#	../3rdparty/newton-dynamics/sdk/dgPhysics/)
+
 if(WIN32)
     add_dependencies(OpenHoW OpenAL)
 
@@ -93,18 +101,10 @@ elseif(APPLE)
     target_include_directories(OpenHoW PRIVATE ../3rdparty/openal-soft/include/)
     target_link_libraries(OpenHoW OpenAL SDL2)
 else()
-    target_link_libraries(OpenHoW pthread openal SDL2)
+    target_link_libraries(OpenHoW openal SDL2 pthread dl)
 endif()
 
 #set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
 target_compile_options(OpenHoW PUBLIC -fPIC)
 target_include_directories(OpenHoW PUBLIC ../3rdparty/imgui/ script/duktape-2.2.0/)
-target_link_libraries(OpenHoW
-        platform
-
-        newton
-        #avformat
-        #avcodec
-        #avutil
-        )
