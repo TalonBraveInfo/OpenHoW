@@ -30,7 +30,7 @@ As of October 1st, 2019, the project is still in a very early phase of developme
 As we shift onto our next milestone (0.5.0) a lot of work will begin on actually getting
 the game into a basic playable form.
 
-The current goal is to have the game in a rough playable state by the end of the year.
+The current goal is to get the game into a rough playable state.
 
 ## Contributing :hammer:
 Interested in contributing to the project? Know C/C++ and looking to get deep down
@@ -80,5 +80,23 @@ This will be changing at a later point to make things a little easier.
 
 #### C/C++ Style Guide
 
-Please try to follow the [Google C++ guidelines](https://google.github.io/styleguide/cppguide.html), if possible.
-Otherwise please follow the style already used in the code you're editing and this will be sufficient.
+At the moment the project is a mess of different styles, which is very much an unfortunate side effect of
+experimenting with different styles throughout development.
+
+There will be a more absolute document outlining the coding conventions for the project very soon but I've outlined
+some basic bits below.
+
+* Use Tabs (tab size = 4)
+* If aligning items in a struct etc., using spaces is preferred
+* Use const wherever possible
+* Any classes derived from Actor, prefixed with 'A'; `class AMachineGunNest`
+* Any abstract interface classes are prefixed with 'I'; `class IPhysicsController`
+* `char *var` rather than `char* var`
+* Mixed case for variables; `bool isPigReady`
+* `class EffectManager`
+* `struct EffectContainer`
+* `enum class ItemType`
+* `enum class` is preferred to `enum`
+* Avoid function overloads if possible, instead `LoadFromMemory` or `LoadFromFile` for example
+
+Once the document is ready and published, it's recommended to refactor as you go until all the code follows the style guide.
