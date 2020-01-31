@@ -80,23 +80,7 @@ This will be changing at a later point to make things a little easier.
 
 #### C/C++ Style Guide
 
+A style guide is available [here](https://github.com/TalonBraveInfo/OpenHoW/tree/master/doc/coding_style.md).
+
 At the moment the project is a mess of different styles, which is very much an unfortunate side effect of
-experimenting with different styles throughout development.
-
-There will be a more absolute document outlining the coding conventions for the project very soon but I've outlined
-some basic bits below.
-
-* Use Tabs (tab size = 4)
-* If aligning items in a struct etc., using spaces is preferred
-* Use const wherever possible
-* Any classes derived from Actor, prefixed with 'A'; `class AMachineGunNest`
-* Any abstract interface classes are prefixed with 'I'; `class IPhysicsController`
-* `char *var` rather than `char* var`
-* Mixed case for variables; `bool isPigReady`
-* `class EffectManager`
-* `struct EffectContainer`
-* `enum class ItemType`
-* `enum class` is preferred to `enum`
-* Avoid function overloads if possible, instead `LoadFromMemory` or `LoadFromFile` for example
-
-Once the document is ready and published, it's recommended to refactor as you go until all the code follows the style guide.
+experimenting with different styles during earlier stages of development.
