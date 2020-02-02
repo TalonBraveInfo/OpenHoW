@@ -127,12 +127,6 @@ static void ConvertModelData( void ) {
 		char model_paths[package->table_size][PL_SYSTEM_MAX_PATH];
 		unsigned int num_models = 0;
 		for ( unsigned int j = 0; j < package->table_size; ++j ) {
-			const char* ext = plGetFileExtension( package->table[ j ].fileName );
-			if ( pl_strcasecmp( ext, "no2" ) == 0 ) {
-				// skip normals, since they suck!
-				continue;
-			}
-
 			char out[PL_SYSTEM_MAX_PATH];
 			snprintf( out,
 					  sizeof( out ),
@@ -159,6 +153,7 @@ static void ConvertModelData( void ) {
 				continue;
 			}
 
+			const char* ext = plGetFileExtension( package->table[ j ].fileName );
 			if ( pl_strcasecmp( ext, "fac" ) == 0 ) {
 				plStripExtension( model_paths[ num_models++ ], PL_SYSTEM_MAX_PATH - 1, out );
 			}
