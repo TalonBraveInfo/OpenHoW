@@ -622,6 +622,11 @@ void UI_DisplayDebugMenu( void ) {
 	UI_DisplayNewGame();
 	UI_DisplaySettings();
 
+#if 0
+	bool showDemoWindow = true;
+	ImGui::ShowDemoWindow( &showDemoWindow );
+#endif
+
 	for ( auto window = windows.begin(); window != windows.end(); ) {
 		if ( ( *window )->GetStatus() ) {
 			( *window )->Display();

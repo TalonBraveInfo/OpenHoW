@@ -239,6 +239,7 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 
 	ImGui_ImplOpenGL3_Init();
 
+#if 0
 	// https://github.com/ocornut/imgui/issues/707#issuecomment-468798935
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -330,6 +331,7 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 		}
 #endif
 	}
+#endif
 
 	io.Fonts->Clear();
 
