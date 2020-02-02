@@ -152,7 +152,11 @@ void FrontEnd_Tick(void) {}
 char loading_description[256];
 uint8_t loading_progress = 0;
 
-#define Redraw()   Display_DrawInterface();
+#if 0
+#	define Redraw()   Display_DrawInterface();
+#else
+#	define Redraw()
+#endif
 
 void FE_SetLoadingBackground(const char* name) {
   char screen_path[PL_SYSTEM_MAX_PATH];
