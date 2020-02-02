@@ -41,10 +41,7 @@ int Display_GetViewportHeight(const PLViewport *viewport);
 // debugging
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms);
 
-void Display_SetupDraw(double delta);
-void Display_DrawScene(void);
-void Display_DrawInterface(void);
-void Display_DrawDebug(void);
+void Display_Draw( double delta );
 void Display_Flush(void);
 
 extern const char *supported_model_formats[];

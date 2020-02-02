@@ -30,7 +30,7 @@
 
 EngineState g_state;
 
-openhow::Engine* openhow::engine;
+openhow::Engine *openhow::engine;
 
 openhow::Engine::Engine() {
 	g_state.draw_ticks = 0;
@@ -67,7 +67,7 @@ void openhow::Engine::Initialize() {
 	Mod_RegisterMods();
 
 	// check for any command line arguments
-	const char* var;
+	const char *var;
 	if ( ( var = plGetCommandLineArgumentValue( "-mod" ) ) == nullptr ) {
 		// otherwise default to base campaign
 		var = "how";
@@ -134,18 +134,8 @@ bool openhow::Engine::IsRunning() {
 		loops++;
 	}
 
-	ImGuiImpl_SetupFrame();
-
-	double delta_time = ( double ) ( System_GetTicks() + SKIP_TICKS - next_tick ) / ( double ) ( SKIP_TICKS );
-	Display_SetupDraw( delta_time );
-
-	Display_DrawScene();
-	Display_DrawInterface();
-	Display_DrawDebug();
-
-	ImGuiImpl_Draw();
-
-	Display_Flush();
+	double deltaTime = ( double ) ( System_GetTicks() + SKIP_TICKS - next_tick ) / ( double ) ( SKIP_TICKS );
+	Display_Draw( deltaTime );
 
 	return true;
 }
