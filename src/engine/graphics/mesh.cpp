@@ -67,9 +67,9 @@ void Mesh_GenerateFragmentedMeshNormals(const std::list<PLMesh*>& meshes) {
 
     for(auto &position : positions) {
         for(PLVertex *vertex : position.second.vertices) {
-          // vertex->normal = (position.second.sum_normals / position.second.num_faces).Normalize();
-          // vertex->normal = position.second.sum_normals / position.second.num_faces;
-          vertex->normal = position.second.sum_normals.Normalize();
+          //vertex->normal = (position.second.sum_normals / position.second.num_faces).Normalize();
+          vertex->normal = position.second.sum_normals / position.second.num_faces;
+          //vertex->normal = position.second.sum_normals.Normalize();
         }
     }
 }
