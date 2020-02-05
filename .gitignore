@@ -53,3 +53,8 @@ bin/mods/how/speech/
 bin/mods/how/streams/
 bin/mods/how/textures/
 bin/mods/base/debug/
+/.idea/
+/cmake-build-debug/
+/bin/extractor
+/bin/OpenHoW
+/bin/ptgtool
