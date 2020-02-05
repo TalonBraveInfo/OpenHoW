@@ -332,20 +332,18 @@ void UI_DisplayFileBox() {
 						}
 					}
 						break;
-
-					case FILE_TYPE_MODEL: {
+#if 0
+					case FILE_TYPE_MODEL:
 						try {
 							auto* viewer = new ModelViewer( i.path );
 							windows.push_back( viewer );
 						} catch ( const std::runtime_error& error ) {
 							LogWarn( "%s\n", error.what() );
 						}
-					}
 						break;
-
-					case FILE_TYPE_AUDIO: {
+#endif
+					case FILE_TYPE_AUDIO:
 						Engine::Audio()->PlayGlobalSound( i.path );
-					}
 						break;
 
 					default:break;
@@ -574,6 +572,7 @@ void UI_DisplayDebugMenu( void ) {
 				if ( ImGui::MenuItem( "Actor Inspector..." ) ) { windows.push_back( new ActorTreeWindow() ); }
 				if ( ImGui::MenuItem( "Map Config Editor..." ) ) { windows.push_back( new MapConfigEditor() ); }
 			}
+			if ( ImGui::MenuItem( "Model Viewer..." ) ) { windows.push_back( new ModelViewer() ); }
 			ImGui::EndMenu();
 		}
 

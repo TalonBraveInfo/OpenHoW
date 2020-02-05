@@ -15,19 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_model.h>
-
 #include "base_window.h"
 
 class ModelViewer : public BaseWindow {
- public:
-  explicit ModelViewer(const std::string &path);
-  ~ModelViewer() override;
+public:
+	explicit ModelViewer();
+	~ModelViewer() override;
 
-  void Display() override;
+	void Display() override;
 
- protected:
- private:
-  PLModel       *model_;
-  std::string   model_path_;
+protected:
+private:
+	struct PLModel *modelPtr{ nullptr };
+
+	bool viewRotate{ true };
+	bool viewDebugNormals{ false };
+
+	static void AppendModelList( const char *path );
+	static std::list<std::string> modelList;
 };

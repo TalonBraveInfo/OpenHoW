@@ -19,36 +19,61 @@
 
 #include "window_model_viewer.h"
 
-ModelViewer::ModelViewer(const std::string &path) {
-  model_ = plLoadModel(path.c_str());
-  if(model_ == nullptr) {
-    throw std::runtime_error("Failed to load model, \"" + path + "\"!");
-  }
-  
-  model_->model_matrix = plMatrix4Identity();
+std::list<std::string> ModelViewer::modelList;
+
+ModelViewer::ModelViewer() {
+	plScanDirectory( "chars", "vtx", &ModelViewer::AppendModelList, true );
+
+	modelList.sort();
+	modelList.unique();
 }
 
 ModelViewer::~ModelViewer() {
-  plDestroyModel(model_);
+	plDestroyModel( modelPtr );
 }
 
 void ModelViewer::Display() {
-  ImGui::SetNextWindowSize(ImVec2(256, 256), ImGuiCond_Once);
-  ImGui::Begin(dname("Model Viewer"), &status_,
-      ImGuiWindowFlags_MenuBar |
-      ImGuiWindowFlags_HorizontalScrollbar |
-      ImGuiWindowFlags_NoSavedSettings);
-  
-  if(ImGui::BeginMenuBar()) {
-    if(ImGui::BeginMenu("View")) {
-      ImGui::EndMenu();
-    }
-    ImGui::EndMenuBar();
-  }
+	ImGui::SetNextWindowSize( ImVec2( 512, 512 ), ImGuiCond_Once );
+	ImGui::Begin( dname( "Model Viewer" ), &status_,
+				  ImGuiWindowFlags_MenuBar |
+					  ImGuiWindowFlags_HorizontalScrollbar |
+					  ImGuiWindowFlags_NoSavedSettings );
 
-  float w = ImGui::GetWindowWidth() - 10;
-  ImGui::Image(0, ImVec2(w, w / 2));
-  
-  ImGui::Text("Path: %s", model_path_.c_str());
-  ImGui::End();
+	if ( ImGui::BeginMenuBar() ) {
+		if ( ImGui::BeginMenu( "View" ) ) {
+			if ( ImGui::MenuItem( "Rotate Model", nullptr, viewRotate ) ) {
+				viewRotate = !viewRotate;
+			}
+			if ( ImGui::MenuItem( "Debug Normals", nullptr, viewDebugNormals ) ) {
+				viewDebugNormals = !viewDebugNormals;
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
+	if ( ImGui::ListBoxHeader( "Models", modelList.size() ) ) {
+		for ( const auto& i : modelList ) {
+			if ( ImGui::Selectable( i.c_str() ) ) {
+				plDestroyModel( modelPtr );
+				modelPtr = nullptr;
+
+				modelPtr = plLoadModel( i.c_str() );
+				if ( modelPtr == nullptr ) {
+					LogWarn( "Failed to load \"%s\" (%s)!\n", i.c_str(), plGetError() );
+				}
+			}
+		}
+		ImGui::ListBoxFooter();
+	}
+
+	float w = ImGui::GetWindowWidth() - 10;
+	ImGui::Image( 0, ImVec2( w, w / 2 ) );
+
+	//ImGui::Text( "Path: %s", modelPath.c_str() );
+	ImGui::End();
+}
+
+void ModelViewer::AppendModelList( const char *path ) {
+	modelList.push_back( path );
 }
