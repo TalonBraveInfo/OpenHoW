@@ -16,6 +16,7 @@
  */
 
 #include "../engine.h"
+#include "../graphics/shaders.h"
 
 #include "window_model_viewer.h"
 
@@ -53,10 +54,13 @@ void ModelViewer::DrawViewport() {
 	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
 
 	if ( modelPtr == nullptr ) {
+		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 		return;
 	}
 
 	camera->MakeActive();
+
+	Shaders_SetProgramByName( "generic_textured" );
 
 	plDrawModel( modelPtr );
 
