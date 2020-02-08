@@ -35,7 +35,7 @@ TextureAtlas::~TextureAtlas() {
 
   if(texture_ != Engine::Resource()->GetFallbackTexture()) {
     // TODO: reintroduce once we have a wrapper around PLModel to hold this!
-    //plDestroyTexture(texture_, true);
+    //plDestroyTexture(texture_);
   }
 }
 

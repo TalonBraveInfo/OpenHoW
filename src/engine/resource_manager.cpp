@@ -47,7 +47,7 @@ hwResourceManager::~hwResourceManager() {
 	ClearTextures( true );
 	ClearModels( true );
 
-	plDestroyTexture( fallback_texture_, true );
+	plDestroyTexture( fallback_texture_ );
 	plDestroyModel( fallback_model_ );
 }
 
@@ -89,7 +89,7 @@ PLTexture* hwResourceManager::LoadTexture( const std::string& path, PLTextureFil
 			return texture;
 		}
 
-		texture = plLoadTextureImage( fp, filter );
+		texture = plLoadTextureFromImage( fp, filter );
 		if ( texture != nullptr ) {
 			return CacheTexture( fp, texture, persist );;
 		}
@@ -121,7 +121,7 @@ PLTexture* hwResourceManager::LoadTexture( const std::string& path, PLTextureFil
 				return CacheTexture( path, texture, persist );
 			}
 		}
-		plDestroyTexture( texture, true );
+		plDestroyTexture( texture );
 	}
 
 	if ( abort_on_fail ) {
@@ -218,7 +218,7 @@ void hwResourceManager::ClearTextures( bool force ) {
 			continue;
 		}
 
-		plDestroyTexture( i.second.texture_ptr, true );
+		plDestroyTexture( i.second.texture_ptr );
 	}
 
 	if ( force ) {

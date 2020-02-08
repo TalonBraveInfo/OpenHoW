@@ -35,7 +35,7 @@ class TextureViewer : public BaseWindow {
       return;
     }
 
-    plDestroyTexture(texture_, true);
+    plDestroyTexture(texture_);
     texture_ = openhow::Engine::Resource()->LoadTexture(texture_path, filter_mode);
     filter_mode_ = filter_mode;
   }

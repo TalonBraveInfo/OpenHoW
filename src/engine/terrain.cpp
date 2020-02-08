@@ -250,7 +250,7 @@ void Terrain::GenerateOverview() {
 #endif
 
 	// Allow rebuilding overview texture
-	plDestroyTexture( overview_, true );
+	plDestroyTexture( overview_ );
 
 	if ( ( overview_ = plCreateTexture() ) == nullptr ) {
 		Error( "Failed to generate overview texture slot!\n%s\n", plGetError() );

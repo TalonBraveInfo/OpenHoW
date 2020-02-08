@@ -17,6 +17,8 @@
 
 #include "base_window.h"
 
+class Camera;
+
 class ModelViewer : public BaseWindow {
 public:
 	explicit ModelViewer();
@@ -24,9 +26,15 @@ public:
 
 	void Display() override;
 
+	void DrawViewport();
+
 protected:
 private:
 	struct PLModel *modelPtr{ nullptr };
+	struct PLFrameBuffer *drawBuffer{ nullptr };
+	struct PLTexture *textureAttachment{ nullptr };
+
+	Camera *camera{ nullptr };
 
 	bool viewRotate{ true };
 	bool viewDebugNormals{ false };

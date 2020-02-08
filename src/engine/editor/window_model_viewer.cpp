@@ -26,13 +26,47 @@ ModelViewer::ModelViewer() {
 
 	modelList.sort();
 	modelList.unique();
+
+	drawBuffer = plCreateFrameBuffer( 640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+	if ( drawBuffer == nullptr ) {
+		Error( "Failed to create framebuffer for model viewer (%s)!\n", plGetError() );
+	}
+
+	textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer );
+	if ( textureAttachment == nullptr ) {
+		Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
+	}
+
+	camera = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
+	camera->SetViewport( { 0, 0 }, { 640, 480 } );
 }
 
 ModelViewer::~ModelViewer() {
 	plDestroyModel( modelPtr );
+	plDestroyFrameBuffer( drawBuffer );
+}
+
+void ModelViewer::DrawViewport() {
+	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
+
+	plSetClearColour( { 255, 0, 0, 255 } );
+	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+
+	if ( modelPtr == nullptr ) {
+		return;
+	}
+
+	camera->MakeActive();
+
+	plDrawModel( modelPtr );
+
+	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 }
 
 void ModelViewer::Display() {
+	// Draw the model view if there's a valid model
+	DrawViewport();
+
 	ImGui::SetNextWindowSize( ImVec2( 512, 512 ), ImGuiCond_Once );
 	ImGui::Begin( dname( "Model Viewer" ), &status_,
 				  ImGuiWindowFlags_MenuBar |
@@ -53,7 +87,7 @@ void ModelViewer::Display() {
 	}
 
 	if ( ImGui::ListBoxHeader( "Models", modelList.size() ) ) {
-		for ( const auto& i : modelList ) {
+		for ( const auto &i : modelList ) {
 			if ( ImGui::Selectable( i.c_str() ) ) {
 				plDestroyModel( modelPtr );
 				modelPtr = nullptr;
@@ -68,7 +102,7 @@ void ModelViewer::Display() {
 	}
 
 	float w = ImGui::GetWindowWidth() - 10;
-	ImGui::Image( 0, ImVec2( w, w / 2 ) );
+	ImGui::Image( reinterpret_cast<ImTextureID>(textureAttachment->internal.id), ImVec2( w, w / 2 ) );
 
 	//ImGui::Text( "Path: %s", modelPath.c_str() );
 	ImGui::End();
