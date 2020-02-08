@@ -41,9 +41,9 @@ static bool show_new_game = false;
 static bool show_console = false;
 static bool show_settings = false;
 
-static std::vector<BaseWindow*> windows;
+static std::vector<BaseWindow *> windows;
 
-static PLCamera* imgui_camera = nullptr;
+static PLCamera *imgui_camera = nullptr;
 
 using namespace openhow;
 
@@ -98,7 +98,7 @@ void UI_DisplaySettings() {
 
 	static int item_current = 0;
 	bool display_changed = false;
-	const VideoPreset* mode = Display_GetVideoPreset( item_current );
+	const VideoPreset *mode = Display_GetVideoPreset( item_current );
 	char s[32] = { 0 };
 	snprintf( s, 32, "%dx%d", mode->width, mode->height );
 	if ( ImGui::BeginCombo( "Resolution", s, 0 ) ) {
@@ -151,7 +151,7 @@ void UI_DisplaySettings() {
 
 	static int filter_textures = -1;
 	if ( filter_textures == -1 ) { filter_textures = cv_graphics_texture_filter->b_value; }
-	if ( ImGui::Checkbox( "Filter textures", reinterpret_cast<bool*>(&filter_textures) ) ) {
+	if ( ImGui::Checkbox( "Filter textures", reinterpret_cast<bool *>(&filter_textures) ) ) {
 		plSetConsoleVariable( cv_graphics_texture_filter, filter_textures ? "true" : "false" );
 	}
 
@@ -202,8 +202,8 @@ void UI_DisplayNewGame() {
 	);
 
 	GameManager::MapManifestMap maps = Engine::Game()->GetMapManifests();
-	std::vector<const char*> options;
-	for ( const auto& map : maps ) {
+	std::vector<const char *> options;
+	for ( const auto &map : maps ) {
 		options.push_back( LanguageManager::GetInstance()->GetTranslation( map.second.name.c_str() ) );
 	}
 
@@ -244,12 +244,12 @@ typedef struct FileDescriptor {
 
 static std::vector<FileDescriptor> file_list;
 
-void AddFilePath( const char* path ) {
+void AddFilePath( const char *path ) {
 	FileDescriptor descriptor;
 	strncpy( descriptor.path, path, sizeof( descriptor.path ) );
 	descriptor.type = FILE_TYPE_UNKNOWN;
 
-	const char* ext = plGetFileExtension( path );
+	const char *ext = plGetFileExtension( path );
 	if ( ext != nullptr ) {
 		if (
 			strcmp( ext, "tim" ) == 0 ||
@@ -319,15 +319,15 @@ void UI_DisplayFileBox() {
 	ImGui::PushStyleVar( ImGuiStyleVar_ButtonTextAlign, ImVec2( -1.f, 0 ) );
 	ImGui::BeginChild( "Child2", ImVec2( ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() - 64 ), true );
 	ImGui::Columns( 2 );
-	for ( auto& i : file_list ) {
+	for ( auto &i : file_list ) {
 		if ( filter.PassFilter( i.path ) ) {
 			if ( ImGui::Button( i.path ) ) {
 				switch ( i.type ) {
 					case FILE_TYPE_IMAGE: {
 						try {
-							auto* viewer = new TextureViewer( i.path );
+							auto *viewer = new TextureViewer( i.path );
 							windows.push_back( viewer );
-						} catch ( const std::runtime_error& error ) {
+						} catch ( const std::runtime_error &error ) {
 							LogWarn( "%s\n", error.what() );
 						}
 					}
@@ -342,8 +342,7 @@ void UI_DisplayFileBox() {
 						}
 						break;
 #endif
-					case FILE_TYPE_AUDIO:
-						Engine::Audio()->PlayGlobalSound( i.path );
+					case FILE_TYPE_AUDIO: Engine::Audio()->PlayGlobalSound( i.path );
 						break;
 
 					default:break;
@@ -352,7 +351,7 @@ void UI_DisplayFileBox() {
 
 			ImGui::NextColumn();
 
-			const char* type = "Unknown";
+			const char *type = "Unknown";
 			switch ( i.type ) {
 				case FILE_TYPE_AUDIO: type = "Audio";
 					break;
@@ -418,7 +417,7 @@ public:
 	}
 
 	void Display() override {
-		Camera* camera = Engine::Game()->GetCamera();
+		Camera *camera = Engine::Game()->GetCamera();
 		ImGui::SetNextWindowSize( ImVec2( ( float ) ( camera->GetViewportWidth() ) - 20, 128 ), ImGuiCond_Once );
 		ImGui::SetNextWindowPos( ImVec2( 10, ( float ) ( camera->GetViewportHeight() ) - 138 ) );
 		ImGui::Begin( "Console", &show_console );
@@ -452,7 +451,7 @@ void UI_DisplayDebugMenu( void ) {
 			if ( ImGui::MenuItem( "Multi-Player" ) ) {}  // todo
 			ImGui::Separator();
 			if ( ImGui::MenuItem( "Create Map" ) ) {
-				static NewMapWindow* popup = nullptr;
+				static NewMapWindow *popup = nullptr;
 				if ( popup == nullptr ) {
 					windows.push_back( ( popup = new NewMapWindow() ) );
 				}
@@ -514,10 +513,10 @@ void UI_DisplayDebugMenu( void ) {
 
 			if ( ImGui::BeginMenu( "Console Variables" ) ) {
 				size_t num_c;
-				PLConsoleVariable** vars;
+				PLConsoleVariable **vars;
 				plGetConsoleVariables( &vars, &num_c );
 
-				for ( PLConsoleVariable** var = vars; var < num_c + vars; ++var ) {
+				for ( PLConsoleVariable **var = vars; var < num_c + vars; ++var ) {
 					switch ( ( *var )->type ) {
 						case pl_float_var:
 							if ( ImGui::InputFloat( ( *var )->var, &( *var )->f_value, 0, 10, nullptr,
