@@ -36,6 +36,8 @@ private:
 
 	Camera *camera{ nullptr };
 
+	PLVector3 modelRotation;
+
 	bool viewRotate{ true };
 	bool viewDebugNormals{ false };
 

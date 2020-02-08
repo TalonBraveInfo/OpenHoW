@@ -32,6 +32,8 @@ class Camera {
   PLVector3 GetAngles() { return camera_->angles; }
   PLVector3 GetForward() { return camera_->forward; }
 
+  float GetFieldOfView() { return camera_->fov; }
+
   void SetViewport(const std::array<int, 2>& xy, const std::array<int, 2>& wh);
 
   int GetViewportWidth() { return camera_->viewport.w; }

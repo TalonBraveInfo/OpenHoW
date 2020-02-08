@@ -38,19 +38,22 @@ ModelViewer::ModelViewer() {
 		Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
 	}
 
-	camera = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
+	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
 	camera->SetViewport( { 0, 0 }, { 640, 480 } );
 }
 
 ModelViewer::~ModelViewer() {
 	plDestroyModel( modelPtr );
+	plDestroyTexture( textureAttachment );
 	plDestroyFrameBuffer( drawBuffer );
 }
 
 void ModelViewer::DrawViewport() {
 	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
 
-	plSetClearColour( { 255, 0, 0, 255 } );
+	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
+
+	plSetClearColour( { 0, 0, 0, 0 } );
 	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
 
 	if ( modelPtr == nullptr ) {
@@ -60,7 +63,18 @@ void ModelViewer::DrawViewport() {
 
 	camera->MakeActive();
 
-	Shaders_SetProgramByName( "generic_textured" );
+	Shaders_SetProgramByName( viewDebugNormals ? "debug_normals" : "generic_textured_lit" );
+
+	PLVector3 angles(
+		plDegreesToRadians( modelRotation.x ),
+		plDegreesToRadians( modelRotation.y ),
+		plDegreesToRadians( modelRotation.z ) );
+
+	PLMatrix4 *matrixPtr = &modelPtr->model_matrix;
+	matrixPtr->Identity();
+	matrixPtr->Rotate( angles.z, { 1, 0, 0 } );
+	matrixPtr->Rotate( angles.y, { 0, 1, 0 } );
+	matrixPtr->Rotate( angles.x, { 0, 0, 1 } );
 
 	plDrawModel( modelPtr );
 
@@ -71,13 +85,38 @@ void ModelViewer::Display() {
 	// Draw the model view if there's a valid model
 	DrawViewport();
 
-	ImGui::SetNextWindowSize( ImVec2( 512, 512 ), ImGuiCond_Once );
+	if ( viewRotate ) {
+		modelRotation.y += 0.005f;
+	}
+
+	ImGui::SetNextWindowSize( ImVec2( 640, 480 ), ImGuiCond_Once );
 	ImGui::Begin( dname( "Model Viewer" ), &status_,
 				  ImGuiWindowFlags_MenuBar |
+					  ImGuiWindowFlags_AlwaysAutoResize |
 					  ImGuiWindowFlags_HorizontalScrollbar |
 					  ImGuiWindowFlags_NoSavedSettings );
 
 	if ( ImGui::BeginMenuBar() ) {
+		if ( ImGui::BeginMenu( "Models" ) ) {
+			for ( const auto &i : modelList ) {
+				bool selected = false;
+				if ( modelPtr != nullptr ) {
+					selected = ( i == modelPtr->path );
+				}
+
+				if ( ImGui::Selectable( i.c_str(), selected ) ) {
+					plDestroyModel( modelPtr );
+					modelPtr = nullptr;
+
+					modelPtr = plLoadModel( i.c_str() );
+					if ( modelPtr == nullptr ) {
+						LogWarn( "Failed to load \"%s\" (%s)!\n", i.c_str(), plGetError() );
+					}
+				}
+			}
+			ImGui::EndMenu();
+		}
+
 		if ( ImGui::BeginMenu( "View" ) ) {
 			if ( ImGui::MenuItem( "Rotate Model", nullptr, viewRotate ) ) {
 				viewRotate = !viewRotate;
@@ -85,30 +124,48 @@ void ModelViewer::Display() {
 			if ( ImGui::MenuItem( "Debug Normals", nullptr, viewDebugNormals ) ) {
 				viewDebugNormals = !viewDebugNormals;
 			}
+
+			ImGui::Separator();
+
+			ImGui::Text( "Camera Properties" );
+			float fov = camera->GetFieldOfView();
+			if ( ImGui::SliderFloat( "Fov", &fov, 0.0f, 180.0f, "%.f" ) ) {
+				camera->SetFieldOfView( 10 );
+			}
+
 			ImGui::EndMenu();
 		}
+
 		ImGui::EndMenuBar();
 	}
 
+#if 0
 	if ( ImGui::ListBoxHeader( "Models", modelList.size() ) ) {
-		for ( const auto &i : modelList ) {
-			if ( ImGui::Selectable( i.c_str() ) ) {
-				plDestroyModel( modelPtr );
-				modelPtr = nullptr;
 
-				modelPtr = plLoadModel( i.c_str() );
-				if ( modelPtr == nullptr ) {
-					LogWarn( "Failed to load \"%s\" (%s)!\n", i.c_str(), plGetError() );
-				}
-			}
-		}
 		ImGui::ListBoxFooter();
 	}
 
-	float w = ImGui::GetWindowWidth() - 10;
-	ImGui::Image( reinterpret_cast<ImTextureID>(textureAttachment->internal.id), ImVec2( w, w / 2 ) );
+	ImGui::SameLine();
+#endif
 
-	//ImGui::Text( "Path: %s", modelPath.c_str() );
+	ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0, 0, 0, 0 ) );
+	ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 0, 0, 0, 0 ) );
+	ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0, 0, 0, 0 ) );
+
+	ImGui::ImageButton( reinterpret_cast<ImTextureID>(textureAttachment->internal.id), ImVec2( 640, 480 ) );
+	if ( ImGui::IsItemHovered() ) {
+		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) {
+			modelRotation.x += 0.05f;
+		}
+
+		// Handle mouse wheel movements
+		PLVector3 position = camera->GetPosition();
+		position.x += ImGui::GetIO().MouseWheel * 10;
+		camera->SetPosition( position );
+	}
+
+	ImGui::PopStyleColor( 3 );
+
 	ImGui::End();
 }
 
