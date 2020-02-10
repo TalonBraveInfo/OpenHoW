@@ -109,10 +109,6 @@ static ModelConversionData pc_conversion_data[] = {
 	{ "/Chars/SKYDOME.MAD", NULL, "mods/how/skys/" },
 };
 
-static void ConvertModelToObj( VtxHandle* vtx, FacHandle* fac ) {
-
-}
-
 static void ConvertModelData( void ) {
 	for ( unsigned long i = 0; i < plArrayElements( pc_conversion_data ); ++i ) {
 		char path[PL_SYSTEM_MAX_PATH];

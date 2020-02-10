@@ -88,8 +88,7 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
 
     uint32_t num_textures;
     if(fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
-        LogInfo("invalid PTG file, failed to get number of textures!\n");
-        goto ABORT_PTG;
+        Error("invalid PTG file, failed to get number of textures!\n");
     }
 
     char index_path[PL_SYSTEM_MAX_PATH];
