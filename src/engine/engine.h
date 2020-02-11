@@ -30,6 +30,7 @@
 #include <string>
 #include <sstream>
 #include <list>
+#include <array>
 #endif
 
 #include "../shared/util.h"

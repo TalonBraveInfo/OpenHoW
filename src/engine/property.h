@@ -48,7 +48,7 @@
  * @param flags  PROP_XXX flags
  * @param ...    Extra parameters to property constructor
 */
-#define INIT_PROPERTY(name, flags, ...) name(*this, #name, flags, ##__VA_ARGS__)
+#define INIT_PROPERTY(name, flags, ...) name(*(PropertyOwner*)this, #name, flags, ##__VA_ARGS__)
 
 /**
  * @brief Helper macro for copying-constructing properties.
@@ -56,7 +56,7 @@
  * @param name  Name of member (bareword)
  * @param src   Name of source structure (bareword)
 */
-#define COPY_PROPERTY(name, src) name(*this, src.name)
+#define COPY_PROPERTY(name, src) name(*(PropertyOwner*)this, src.name)
 
 class PropertyOwner;
 
