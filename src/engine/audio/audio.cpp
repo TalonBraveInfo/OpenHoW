@@ -156,6 +156,11 @@ void AudioSource::SetPitch( float pitch ) {
 	pitch_ = pitch;
 }
 
+void AudioSource::SetLooping(bool looping) {
+	alSourcef(al_source_id_, AL_LOOPING, looping);
+	OALCheckErrors();
+}
+
 void AudioSource::StartPlaying() {
 	alSourcePlay( al_source_id_ );
 	OALCheckErrors();
