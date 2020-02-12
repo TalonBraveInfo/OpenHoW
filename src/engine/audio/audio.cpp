@@ -20,7 +20,6 @@
 #include "../model.h"
 
 #include "stb_vorbis.c"
-#include "../../3rdparty/platform/platform/filesystem_private.h"
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -28,9 +27,8 @@
 #include <AL/efx-presets.h>
 
 #include <SDL2/SDL_audio.h>
-#include <PL/platform_graphics_camera.h>
 
-#include <list>
+#include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
 
 using namespace openhow;
