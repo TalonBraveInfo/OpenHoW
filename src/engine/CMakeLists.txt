@@ -96,9 +96,8 @@ if(WIN32)
             # Window Libraries
             Version SetupAPI Winmm Imm32)
 elseif(APPLE)
-    add_dependencies(OpenHoW OpenAL)
-
-    target_include_directories(OpenHoW PRIVATE ../3rdparty/openal-soft/include/)
+    target_include_directories(OpenHoW PRIVATE
+            ../3rdparty/platform/platform/3rdparty/glew-2.2.0/include/)
     target_link_libraries(OpenHoW OpenAL SDL2)
 else()
     target_link_libraries(OpenHoW openal SDL2 pthread dl)
