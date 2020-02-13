@@ -38,6 +38,8 @@ private:
 
 	PLVector3 modelRotation;
 
+	float oldMousePos[2]{ 0, 0 };
+
 	bool viewRotate{ true };
 	bool viewDebugNormals{ false };
 

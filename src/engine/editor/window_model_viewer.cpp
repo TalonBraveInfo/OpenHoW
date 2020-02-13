@@ -17,13 +17,18 @@
 
 #include "../engine.h"
 #include "../graphics/shaders.h"
+#include "../graphics/display.h"
 
 #include "window_model_viewer.h"
 
 std::list<std::string> ModelViewer::modelList;
 
 ModelViewer::ModelViewer() {
-	plScanDirectory( "chars", "vtx", &ModelViewer::AppendModelList, true );
+	const char **formatExtensions = supported_model_formats;
+	while( *formatExtensions != nullptr ) {
+		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true );
+		formatExtensions++;
+	}
 
 	modelList.sort();
 	modelList.unique();
@@ -63,7 +68,18 @@ void ModelViewer::DrawViewport() {
 
 	camera->MakeActive();
 
-	Shaders_SetProgramByName( viewDebugNormals ? "debug_normals" : "generic_textured_lit" );
+	std::string programName = viewDebugNormals ? "debug_normals" : "generic_textured_lit";
+	Shaders_SetProgramByName( programName );
+
+	if ( !viewDebugNormals ) {
+		hwShaderProgram *shaderProgram = Shaders_GetProgram( programName );
+		plSetNamedShaderUniformVector3( shaderProgram->GetInternalProgram(), "sun_position",
+			PLVector3( 0.5f, 0.2f, 0.6f ) );
+		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "sun_colour",
+			PLColour( 255, 255, 255, 255 ).ToVec4() );
+		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "ambient_colour",
+			PLColour( 128, 128, 128, 255 ).ToVec4() );
+	}
 
 	PLVector3 angles(
 		plDegreesToRadians( modelRotation.x ),
@@ -86,7 +102,7 @@ void ModelViewer::Display() {
 	DrawViewport();
 
 	if ( viewRotate ) {
-		modelRotation.y += 0.005f;
+		modelRotation.y += 0.05f;
 	}
 
 	ImGui::SetNextWindowSize( ImVec2( 640, 480 ), ImGuiCond_Once );
@@ -130,7 +146,7 @@ void ModelViewer::Display() {
 			ImGui::Text( "Camera Properties" );
 			float fov = camera->GetFieldOfView();
 			if ( ImGui::SliderFloat( "Fov", &fov, 0.0f, 180.0f, "%.f" ) ) {
-				camera->SetFieldOfView( 10 );
+				camera->SetFieldOfView( fov );
 			}
 
 			ImGui::EndMenu();
@@ -154,8 +170,19 @@ void ModelViewer::Display() {
 
 	ImGui::ImageButton( reinterpret_cast<ImTextureID>(textureAttachment->internal.id), ImVec2( 640, 480 ) );
 	if ( ImGui::IsItemHovered() ) {
-		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) {
-			modelRotation.x += 0.05f;
+		float newXPos = ImGui::GetMousePos().x - oldMousePos[0];
+		float newYPos = ImGui::GetMousePos().y - oldMousePos[1];
+		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) { // Rotation
+			modelRotation.x += static_cast<float>( newYPos ) / 50.0f;
+			modelRotation.y += static_cast<float>( newXPos ) / 50.0f;
+		} else if ( ImGui::IsMouseDown( ImGuiMouseButton_Middle ) ) { // Panning
+			PLVector3 position = camera->GetPosition();
+			position.z += static_cast<float>( newXPos ) / 50.0f;
+			position.y += static_cast<float>( newYPos ) / 50.0f;
+			camera->SetPosition( position );
+		} else {
+			oldMousePos[0] = ImGui::GetMousePos().x;
+			oldMousePos[1] = ImGui::GetMousePos().y;
 		}
 
 		// Handle mouse wheel movements

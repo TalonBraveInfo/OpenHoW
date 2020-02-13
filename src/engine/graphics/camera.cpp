@@ -65,7 +65,7 @@ void Camera::SetViewport(const std::array<int, 2>& xy, const std::array<int, 2>&
 
 void Camera::MakeActive() {
   // ensure camera matches current vars
-  camera_->fov = cv_camera_fov->f_value;
+  //camera_->fov = cv_camera_fov->f_value;
   camera_->near = cv_camera_near->f_value;
   camera_->far = cv_camera_far->f_value;
 
