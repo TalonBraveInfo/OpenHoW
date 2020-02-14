@@ -18,70 +18,74 @@
 #include "base_window.h"
 
 class TextureViewer : public BaseWindow {
- public:
-  explicit TextureViewer(const std::string &path) {
-    texture_ = openhow::Engine::Resource()->LoadTexture(path, PL_TEXTURE_FILTER_LINEAR);
-    if (texture_ == nullptr) {
-      throw std::runtime_error("Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!");
-    }
+public:
+	TextureViewer( PLTexture *texture ) : BaseWindow() {
+		texturePtr = texture;
+	}
 
-    texture_path = path;
-  }
+	TextureViewer( const std::string &path ) {
+		texturePtr = openhow::Engine::Resource()->LoadTexture( path, PL_TEXTURE_FILTER_LINEAR );
+		if ( texturePtr == nullptr ) {
+			throw std::runtime_error( "Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!" );
+		}
 
-  ~TextureViewer() override = default;
+		texturePath = path;
+	}
 
-  void ReloadTexture(PLTextureFilter filter_mode) {
-    if (filter_mode == filter_mode_) {
-      return;
-    }
+	~TextureViewer() override = default;
 
-    plDestroyTexture(texture_);
-    texture_ = openhow::Engine::Resource()->LoadTexture(texture_path, filter_mode);
-    filter_mode_ = filter_mode;
-  }
+	void ReloadTexture( PLTextureFilter filter_mode ) {
+		if ( texturePath.empty() || filter_mode == filterMode ) {
+			return;
+		}
 
-  void Display() override {
-    ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
-    ImGui::Begin(dname("Texture Viewer"), &status_,
-                 ImGuiWindowFlags_MenuBar |
-                     ImGuiWindowFlags_HorizontalScrollbar |
-                     ImGuiWindowFlags_NoSavedSettings
-    );
+		plDestroyTexture( texturePtr );
+		texturePtr = openhow::Engine::Resource()->LoadTexture( texturePath, filter_mode );
+		filterMode = filter_mode;
+	}
 
-    if (ImGui::BeginMenuBar()) {
-      if (ImGui::BeginMenu("View")) {
-        ImGui::SliderInt("Scale", &scale_, 1, 8);
-        if (ImGui::BeginMenu("Filter Mode")) {
-          if (ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
-            ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
-          }
-          if (ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
-            ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
-          }
-          ImGui::EndMenu();
-        }
-        ImGui::EndMenu();
-      }
-      ImGui::EndMenuBar();
-    }
+	void Display() override {
+		ImGui::SetNextWindowSize( ImVec2( texturePtr->w + 64, texturePtr->h + 128 ), ImGuiCond_Once );
+		ImGui::Begin( dname( "Texture Viewer" ), &status_,
+					  ImGuiWindowFlags_MenuBar |
+						  ImGuiWindowFlags_HorizontalScrollbar |
+						  ImGuiWindowFlags_NoSavedSettings
+		);
 
-    ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
-        texture_->w * scale_, texture_->h * scale_));
-    ImGui::Separator();
-    ImGui::Text("Path: %s", texture_path.c_str());
-    ImGui::Text("%dx%d", texture_->w, texture_->h);
-    ImGui::Text("Size: %ukB (%luB)", (unsigned int) plBytesToKilobytes(texture_->size),
-                (long unsigned) texture_->size);
+		if ( ImGui::BeginMenuBar() ) {
+			if ( ImGui::BeginMenu( "View" ) ) {
+				ImGui::SliderInt( "Scale", &scale_, 1, 8 );
+				if ( ImGui::BeginMenu( "Filter Mode" ) ) {
+					if ( ImGui::MenuItem( "Linear", nullptr, ( filterMode == PL_TEXTURE_FILTER_LINEAR ) ) ) {
+						ReloadTexture( PL_TEXTURE_FILTER_LINEAR );
+					}
+					if ( ImGui::MenuItem( "Nearest", nullptr, ( filterMode == PL_TEXTURE_FILTER_NEAREST ) ) ) {
+						ReloadTexture( PL_TEXTURE_FILTER_NEAREST );
+					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 
-    ImGui::End();
-  }
+		ImGui::Image( reinterpret_cast<ImTextureID>(texturePtr->internal.id), ImVec2(
+			texturePtr->w * scale_, texturePtr->h * scale_ ) );
+		ImGui::Separator();
+		ImGui::Text( "Path: %s", texturePath.c_str() );
+		ImGui::Text( "%dx%d", texturePtr->w, texturePtr->h );
+		ImGui::Text( "Size: %ukB (%luB)", ( unsigned int ) plBytesToKilobytes( texturePtr->size ),
+					 ( long unsigned ) texturePtr->size );
 
- protected:
- private:
-  PLTexture *texture_{nullptr};
-  std::string texture_path;
+		ImGui::End();
+	}
 
-  PLTextureFilter filter_mode_{PL_TEXTURE_FILTER_LINEAR};
+protected:
+private:
+	PLTexture *texturePtr{ nullptr };
+	std::string texturePath;
 
-  int scale_{1};
+	PLTextureFilter filterMode{ PL_TEXTURE_FILTER_LINEAR };
+
+	int scale_{ 1 };
 };

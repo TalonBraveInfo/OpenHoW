@@ -19,10 +19,10 @@
 
 typedef struct PLShaderProgram PLShaderProgram;
 
-class hwShaderProgram {
+class ShaderProgram {
 public:
-	hwShaderProgram( const std::string& vertPath, const std::string& fragPath );
-	~hwShaderProgram();
+	ShaderProgram( const std::string& vertPath, const std::string& fragPath );
+	~ShaderProgram();
 
 	void Rebuild();
 
@@ -42,7 +42,7 @@ private:
 	PLShaderProgram* shaderProgram{ nullptr };
 };
 
-hwShaderProgram* Shaders_GetProgram( const std::string& name );
+ShaderProgram* Shaders_GetProgram( const std::string& name );
 
 void Shaders_SetProgramByName( const std::string& name );
 

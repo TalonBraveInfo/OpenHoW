@@ -19,8 +19,8 @@
 #include "../script/script_config.h"
 #include "shaders.h"
 
-static std::map<std::string, hwShaderProgram*> programs;
-static hwShaderProgram* fallbackShaderProgram = nullptr;
+static std::map<std::string, ShaderProgram*> programs;
+static ShaderProgram* fallbackShaderProgram = nullptr;
 
 // For resetting following rebuild
 static std::string lastProgramName;
@@ -39,7 +39,7 @@ static void Shaders_ValidateDefault() {
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( defaultShadersStrings ); ++i ) {
-		hwShaderProgram* program = Shaders_GetProgram( defaultShadersStrings[ i ] );
+		ShaderProgram* program = Shaders_GetProgram( defaultShadersStrings[ i ] );
 		if ( program == nullptr ) {
 			Error( "Failed to fetch default shader, \"%s\"!\n", defaultShadersStrings[ i ] );
 		}
@@ -73,8 +73,8 @@ static void Shaders_CacheShaderProgram( const char* path ) {
 			return;
 		}
 
-		hwShaderProgram* program = new hwShaderProgram( vertPath, fragPath );
-		programs.insert( std::pair<std::string, hwShaderProgram*>( shortFileName, program ));
+		ShaderProgram* program = new ShaderProgram( vertPath, fragPath );
+		programs.insert( std::pair<std::string, ShaderProgram*>( shortFileName, program ));
 	} catch ( const std::exception& error ) {
 		LogWarn( "Failed to register shader program (%s)!\n", error.what());
 	}
@@ -146,7 +146,7 @@ static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
 		return;
 	}
 
-	hwShaderProgram* shaderProgram = Shaders_GetProgram( shaderProgramArg );
+	ShaderProgram* shaderProgram = Shaders_GetProgram( shaderProgramArg );
 	if( shaderProgram == nullptr ) {
 		return;
 	}
@@ -172,7 +172,7 @@ void Shaders_Shutdown() {
 	Shaders_ClearPrograms();
 }
 
-hwShaderProgram* Shaders_GetProgram( const std::string& name ) {
+ShaderProgram* Shaders_GetProgram( const std::string& name ) {
 	const auto& i = programs.find( name );
 	if ( i == programs.end()) {
 		LogWarn( "Failed to find shader program, \"%s\"!\n", name.c_str());
@@ -183,7 +183,7 @@ hwShaderProgram* Shaders_GetProgram( const std::string& name ) {
 }
 
 void Shaders_SetProgramByName( const std::string& name ) {
-	hwShaderProgram* shaderProgram = Shaders_GetProgram( name );
+	ShaderProgram* shaderProgram = Shaders_GetProgram( name );
 	if ( shaderProgram == nullptr ) {
 		shaderProgram = fallbackShaderProgram;
 	}
@@ -191,7 +191,7 @@ void Shaders_SetProgramByName( const std::string& name ) {
 	shaderProgram->Enable();
 }
 
-hwShaderProgram::hwShaderProgram( const std::string& vertPath, const std::string& fragPath ) {
+ShaderProgram::ShaderProgram( const std::string& vertPath, const std::string& fragPath ) {
 	shaderProgram = plCreateShaderProgram();
 	if ( shaderProgram == nullptr ) {
 		throw std::runtime_error( plGetError());
@@ -211,11 +211,11 @@ hwShaderProgram::hwShaderProgram( const std::string& vertPath, const std::string
 	this->fragPath = fragPath;
 }
 
-hwShaderProgram::~hwShaderProgram() {
+ShaderProgram::~ShaderProgram() {
 	plDestroyShaderProgram( shaderProgram, true );
 }
 
-void hwShaderProgram::Rebuild() {
+void ShaderProgram::Rebuild() {
 	PLShaderProgram* newShaderProgram = plCreateShaderProgram();
 	if ( newShaderProgram ) {
 		throw std::runtime_error( plGetError());
@@ -238,15 +238,15 @@ void hwShaderProgram::Rebuild() {
 	plDestroyShaderProgram( oldProgram, true );
 }
 
-void hwShaderProgram::Enable() {
+void ShaderProgram::Enable() {
 	plSetShaderProgram( shaderProgram );
 }
 
-void hwShaderProgram::Disable() {
+void ShaderProgram::Disable() {
 	plSetShaderProgram( nullptr );
 }
 
-void hwShaderProgram::RegisterShaderStage( const char* path, PLShaderType type ) {
+void ShaderProgram::RegisterShaderStage( const char* path, PLShaderType type ) {
 	if ( !plRegisterShaderStageFromDisk( shaderProgram, path, type ) ) {
 		throw std::runtime_error( plGetError() );
 	}

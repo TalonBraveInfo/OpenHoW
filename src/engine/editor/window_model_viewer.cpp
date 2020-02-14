@@ -18,8 +18,10 @@
 #include "../engine.h"
 #include "../graphics/shaders.h"
 #include "../graphics/display.h"
+#include "../imgui_layer.h"
 
 #include "window_model_viewer.h"
+#include "window_texture_viewer.h"
 
 std::list<std::string> ModelViewer::modelList;
 
@@ -68,11 +70,10 @@ void ModelViewer::DrawViewport() {
 
 	camera->MakeActive();
 
-	std::string programName = viewDebugNormals ? "debug_normals" : "generic_textured_lit";
-	Shaders_SetProgramByName( programName );
+	ShaderProgram *shaderProgram = Shaders_GetProgram( viewDebugNormals ? "debug_normals" : "generic_textured_lit" );
+	shaderProgram->Enable();
 
 	if ( !viewDebugNormals ) {
-		hwShaderProgram *shaderProgram = Shaders_GetProgram( programName );
 		plSetNamedShaderUniformVector3( shaderProgram->GetInternalProgram(), "sun_position",
 			PLVector3( 0.5f, 0.2f, 0.6f ) );
 		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "sun_colour",
@@ -141,6 +142,22 @@ void ModelViewer::Display() {
 				viewDebugNormals = !viewDebugNormals;
 			}
 
+			if ( modelPtr != nullptr ) {
+				ImGui::Separator();
+
+				if ( ImGui::BeginMenu( "Textures" ) ) {
+					for ( unsigned int i = 0; i < modelPtr->levels[0].num_meshes; ++i ) {
+						PLMesh *mesh = modelPtr->levels[0].meshes[i];
+						if ( ImGui::ImageButton( reinterpret_cast<ImTextureID>( mesh->texture->internal.id ),
+							ImVec2( 128, 128 ) ) ) {
+							ImGuiImpl_RegisterWindow( new TextureViewer( mesh->texture ) );
+						}
+					}
+
+					ImGui::EndMenu();
+				}
+			}
+
 			ImGui::Separator();
 
 			ImGui::Text( "Camera Properties" );
@@ -173,12 +190,12 @@ void ModelViewer::Display() {
 		float newXPos = ImGui::GetMousePos().x - oldMousePos[0];
 		float newYPos = ImGui::GetMousePos().y - oldMousePos[1];
 		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) { // Rotation
-			modelRotation.x += static_cast<float>( newYPos ) / 50.0f;
-			modelRotation.y += static_cast<float>( newXPos ) / 50.0f;
+			modelRotation.x += newYPos / 50.0f;
+			modelRotation.y += newXPos / 50.0f;
 		} else if ( ImGui::IsMouseDown( ImGuiMouseButton_Middle ) ) { // Panning
 			PLVector3 position = camera->GetPosition();
-			position.z += static_cast<float>( newXPos ) / 50.0f;
-			position.y += static_cast<float>( newYPos ) / 50.0f;
+			position.z += newXPos / 50.0f;
+			position.y += newYPos / 50.0f;
 			camera->SetPosition( position );
 		} else {
 			oldMousePos[0] = ImGui::GetMousePos().x;

@@ -17,7 +17,7 @@
 
 #pragma once
 
-class hwShaderProgram;
+class ShaderProgram;
 
 class Sprite {
 public:
@@ -55,7 +55,7 @@ private:
 	PLColour colour_{ 255, 255, 255, 255 };
 	float scale_{ 1.0f };
 
-	hwShaderProgram* defaultProgram;
+	ShaderProgram* defaultProgram;
 
 	unsigned int current_frame_{ 0 };
 	double frame_delay_{ 0 };

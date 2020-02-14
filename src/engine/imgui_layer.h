@@ -25,13 +25,13 @@
 
 /************************************************************/
 
-PL_EXTERN_C
+class BaseWindow;
 
-void ImGuiImpl_SetupCamera(void);
-void ImGuiImpl_SetupFrame(void);
-void ImGuiImpl_Draw(void);
+void ImGuiImpl_SetupCamera();
+void ImGuiImpl_SetupFrame();
+void ImGuiImpl_Draw();
 void ImGuiImpl_UpdateViewport(int w, int h);
 
-void UI_DisplayDebugMenu(void);
+void ImGuiImpl_RegisterWindow( BaseWindow *window );
 
-PL_EXTERN_C_END
+void UI_DisplayDebugMenu(void);

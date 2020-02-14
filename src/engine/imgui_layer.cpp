@@ -636,3 +636,7 @@ void UI_DisplayDebugMenu( void ) {
 		window = windows.erase( window );
 	}
 }
+
+void ImGuiImpl_RegisterWindow( BaseWindow *window ) {
+	windows.push_back( window );
+}
