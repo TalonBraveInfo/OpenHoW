@@ -103,7 +103,7 @@ void ModelViewer::Display() {
 	DrawViewport();
 
 	if ( viewRotate ) {
-		modelRotation.y += 0.05f;
+		modelRotation.y += 0.01f * g_state.last_draw_ms;
 	}
 
 	ImGui::SetNextWindowSize( ImVec2( 640, 480 ), ImGuiCond_Once );
@@ -189,13 +189,14 @@ void ModelViewer::Display() {
 	if ( ImGui::IsItemHovered() ) {
 		float newXPos = ImGui::GetMousePos().x - oldMousePos[0];
 		float newYPos = ImGui::GetMousePos().y - oldMousePos[1];
+		const static float posMod = 200.0f;
 		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) { // Rotation
-			modelRotation.x += newYPos / 50.0f;
-			modelRotation.y += newXPos / 50.0f;
+			modelRotation.x += newYPos / posMod * g_state.last_draw_ms;
+			modelRotation.y += newXPos / posMod * g_state.last_draw_ms;
 		} else if ( ImGui::IsMouseDown( ImGuiMouseButton_Middle ) ) { // Panning
 			PLVector3 position = camera->GetPosition();
-			position.z += newXPos / 50.0f;
-			position.y += newYPos / 50.0f;
+			position.z += newXPos / posMod * g_state.last_draw_ms;
+			position.y += newYPos / posMod * g_state.last_draw_ms;
 			camera->SetPosition( position );
 		} else {
 			oldMousePos[0] = ImGui::GetMousePos().x;
