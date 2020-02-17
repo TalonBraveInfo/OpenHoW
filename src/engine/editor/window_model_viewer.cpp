@@ -19,13 +19,14 @@
 #include "../graphics/shaders.h"
 #include "../graphics/display.h"
 #include "../imgui_layer.h"
+#include "../model.h"
 
 #include "window_model_viewer.h"
 #include "window_texture_viewer.h"
 
 std::list<std::string> ModelViewer::modelList;
 
-ModelViewer::ModelViewer() {
+ModelViewer::ModelViewer() : BaseWindow() {
 	const char **formatExtensions = supported_model_formats;
 	while( *formatExtensions != nullptr ) {
 		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true );
@@ -134,7 +135,34 @@ void ModelViewer::Display() {
 			ImGui::EndMenu();
 		}
 
+		// Urgh, yeah this will eventually need to change
+		if ( ImGui::BeginMenu( "Animations" ) ) {
+			for ( unsigned int i = 0; static_cast<AnimationIndex>(i) < AnimationIndex::MAX_ANIMATIONS; ++i ) {
+				const char *animationName = Model_GetAnimationDescription( i );
+				if ( animationName == nullptr ) {
+					continue;
+				}
+
+				bool selected = false;
+				if ( ImGui::Selectable( animationName, selected ) ) {
+					// todo
+				}
+			}
+			ImGui::EndMenu();
+		}
+
 		if ( ImGui::BeginMenu( "View" ) ) {
+			if ( ImGui::MenuItem( "Fullscreen", nullptr, viewFullscreen ) ) {
+				viewFullscreen = !viewFullscreen;
+
+				//plDestroyTexture( textureAttachment );
+				//plDestroyFrameBuffer( drawBuffer );
+
+				if ( viewFullscreen ) {
+
+				}
+			}
+			ImGui::Separator();
 			if ( ImGui::MenuItem( "Rotate Model", nullptr, viewRotate ) ) {
 				viewRotate = !viewRotate;
 			}

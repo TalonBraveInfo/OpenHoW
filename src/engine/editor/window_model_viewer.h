@@ -40,6 +40,7 @@ private:
 
 	float oldMousePos[2]{ 0, 0 };
 
+	bool viewFullscreen{ false };
 	bool viewRotate{ true };
 	bool viewDebugNormals{ false };
 

@@ -158,4 +158,6 @@ enum class AnimationIndex {
   MAX_ANIMATIONS
 };
 
+const char *Model_GetAnimationDescription( unsigned int i );
+
 void Model_Draw(PLModel* model, PLMatrix4 translation);

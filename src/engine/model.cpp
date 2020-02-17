@@ -30,6 +30,76 @@
 
 using namespace openhow;
 
+const char *Model_GetAnimationDescription( unsigned int i ) {
+	static const char *animationNames[] = {
+		"Run cycle (normal)",
+		"Run cycle (wounded)",
+		"Run cycle (more wounded)",
+		"Walk cycle (backwards)",
+		"Turning on Spot",
+		"Swimming",
+		"Swimming like Rick",
+		"Getting into Vehicles",
+		"Jumping - Start",
+		"Jumping - Middle",
+		"Jumping - End",
+		"Scramble",
+		"Getting out Handgun",
+		"Getting out Rifle",
+		"Getting out Machine gun",
+		"Getting out Heavy weapon",
+		"Getting out Punch",
+		"Getting out Grenade",
+		"Getting out Sword / Knife",
+		"Using Grenade",
+		"Using Punch",
+		"Sword / Knife",
+		"Bayonet",
+		"Aiming Handgun",
+		"Aiming Rifle",
+		"Aiming Machine gun",
+		"Aiming Heavy weapon",
+		"Standing around cycle 1",
+		"Standing around cycle 2",
+		"Very Wounded",
+		"Lord Flash-Heart Pose",
+		"Looking around",
+		"Looking gormless",
+		"Cowering",
+		"Brushoff 1",
+		"Brushoff 2",
+		"Brushoff 3",
+		"Sneeze",
+		"Flying through air/falling",
+		"Bouncing on B-Hind",
+		"Getting to feet",
+		"Celebration #1",
+		"Celebration #2",
+		"Celebration #3",
+		"Salute",
+		"Look back",
+		"Thinking",
+		"Dying #1",
+		"Dying #2",
+		"Dying #3",
+		"Drowning",
+		"Idle Cold",
+		"Idle Hot",
+		"Lay Mine",
+		"Heal",
+		"Pick pocket",
+		"Air strike",
+		"Hari Kiri",
+		"Parachuting",
+	};
+
+	if ( i >= plArrayElements( animationNames ) ) {
+		return nullptr;
+	}
+
+	return animationNames[ i ];
+}
+
 PLModel *Model_LoadVtxFile( const char *path ) {
 	VtxHandle *vtx = Vtx_LoadFile( path );
 	if ( vtx == nullptr ) {
