@@ -75,9 +75,8 @@ AudioSource::AudioSource( const AudioSample* sample, PLVector3 pos, PLVector3 ve
 	SetVelocity( vel );
 	SetGain( gain );
 	SetPitch( pitch );
+	SetLooping( looping );
 
-	alSourcei( al_source_id_, AL_LOOPING, looping );
-	OALCheckErrors();
 	alSourcef( al_source_id_, AL_REFERENCE_DISTANCE, 300.0f );
 	OALCheckErrors();
 	alSourcef( al_source_id_, AL_ROLLOFF_FACTOR, 1.0f );
@@ -156,8 +155,8 @@ void AudioSource::SetPitch( float pitch ) {
 	pitch_ = pitch;
 }
 
-void AudioSource::SetLooping(bool looping) {
-	alSourcef(al_source_id_, AL_LOOPING, looping);
+void AudioSource::SetLooping( bool looping ) {
+	alSourcef( al_source_id_, AL_LOOPING, looping );
 	OALCheckErrors();
 }
 
