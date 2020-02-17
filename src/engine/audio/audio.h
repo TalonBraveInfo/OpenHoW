@@ -152,6 +152,7 @@ class AudioSource {
   void SetVelocity(PLVector3 velocity);
   void SetGain(float gain);
   void SetPitch(float pitch);
+  void SetLooping(bool looping);
 
   PLVector3 GetPosition() { return position_; }
   PLVector3 GetVelocity() { return velocity_; }
