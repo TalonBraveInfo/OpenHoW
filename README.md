@@ -5,6 +5,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW?ref=badge_shield)
 [![CodeFactor](https://www.codefactor.io/repository/github/talonbraveinfo/openhow/badge)](https://www.codefactor.io/repository/github/talonbraveinfo/openhow)
 [![Build Status](https://badge.buildkite.com/91e09e49d899659cf45b4898c8aaeb9d5927f2a7b23eaafb28.svg)](https://buildkite.com/solemnwarning/openhow)
+[![version](https://img.shields.io/github/release-pre/TalonBraveInfo/OpenHoW)](https://github.com/TalonBraveInfo/OpenHoW/releases/latest)
 
 ## What's this? :pig:
 OpenHoW aims to be an open-source reimplementation of [Hogs of War](https://en.wikipedia.org/wiki/Hogs_of_War),
