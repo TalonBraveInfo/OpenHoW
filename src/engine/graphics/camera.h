@@ -20,28 +20,28 @@
 #include <PL/platform_graphics_camera.h>
 
 class Camera {
- public:
-  Camera(const PLVector3& pos, const PLVector3& angles);
-  ~Camera();
+public:
+	Camera( const PLVector3 &pos, const PLVector3 &angles );
+	~Camera();
 
-  void SetPosition(const PLVector3& pos);
-  void SetAngles(const PLVector3& angles);
-  void SetFieldOfView(float fov);
+	void SetPosition( const PLVector3 &pos );
+	void SetAngles( const PLVector3 &angles );
+	void SetFieldOfView( float fov );
 
-  PLVector3 GetPosition() { return camera_->position; }
-  PLVector3 GetAngles() { return camera_->angles; }
-  PLVector3 GetForward() { return camera_->forward; }
+	PLVector3 GetPosition() { return camera_->position; }
+	PLVector3 GetAngles() { return camera_->angles; }
+	PLVector3 GetForward() { return camera_->forward; }
 
-  float GetFieldOfView() { return camera_->fov; }
+	float GetFieldOfView() { return camera_->fov; }
 
-  void SetViewport(const std::array<int, 2>& xy, const std::array<int, 2>& wh);
+	void SetViewport( const std::array<int, 2> &xy, const std::array<unsigned int, 2> &wh );
 
-  int GetViewportWidth() { return camera_->viewport.w; }
-  int GetViewportHeight() { return camera_->viewport.h; }
+	int GetViewportWidth() { return camera_->viewport.w; }
+	int GetViewportHeight() { return camera_->viewport.h; }
 
-  void MakeActive();
+	void MakeActive();
 
- protected:
- private:
-  PLCamera* camera_{nullptr};
+protected:
+private:
+	PLCamera *camera_{ nullptr };
 };

@@ -24,11 +24,14 @@
 #include "window_model_viewer.h"
 #include "window_texture_viewer.h"
 
+#define VIEWER_WIDTH  640
+#define VIEWER_HEIGHT 480
+
 std::list<std::string> ModelViewer::modelList;
 
 ModelViewer::ModelViewer() : BaseWindow() {
 	const char **formatExtensions = supported_model_formats;
-	while( *formatExtensions != nullptr ) {
+	while ( *formatExtensions != nullptr ) {
 		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true );
 		formatExtensions++;
 	}
@@ -36,15 +39,7 @@ ModelViewer::ModelViewer() : BaseWindow() {
 	modelList.sort();
 	modelList.unique();
 
-	drawBuffer = plCreateFrameBuffer( 640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
-	if ( drawBuffer == nullptr ) {
-		Error( "Failed to create framebuffer for model viewer (%s)!\n", plGetError() );
-	}
-
-	textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer );
-	if ( textureAttachment == nullptr ) {
-		Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
-	}
+	//GenerateFrameBuffer( VIEWER_WIDTH, VIEWER_HEIGHT );
 
 	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
 	camera->SetViewport( { 0, 0 }, { 640, 480 } );
@@ -69,6 +64,9 @@ void ModelViewer::DrawViewport() {
 		return;
 	}
 
+	unsigned int bufferWidth = 0, bufferHeight = 0;
+	plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
+	camera->SetViewport( { 0, 0 }, { bufferWidth, bufferHeight } );
 	camera->MakeActive();
 
 	ShaderProgram *shaderProgram = Shaders_GetProgram( viewDebugNormals ? "debug_normals" : "generic_textured_lit" );
@@ -76,11 +74,11 @@ void ModelViewer::DrawViewport() {
 
 	if ( !viewDebugNormals ) {
 		plSetNamedShaderUniformVector3( shaderProgram->GetInternalProgram(), "sun_position",
-			PLVector3( 0.5f, 0.2f, 0.6f ) );
+										PLVector3( 0.5f, 0.2f, 0.6f ) );
 		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "sun_colour",
-			PLColour( 255, 255, 255, 255 ).ToVec4() );
+										PLColour( 255, 255, 255, 255 ).ToVec4() );
 		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "ambient_colour",
-			PLColour( 128, 128, 128, 255 ).ToVec4() );
+										PLColour( 128, 128, 128, 255 ).ToVec4() );
 	}
 
 	PLVector3 angles(
@@ -107,13 +105,27 @@ void ModelViewer::Display() {
 		modelRotation.y += 0.01f * g_state.last_draw_ms;
 	}
 
-	ImGui::SetNextWindowSize( ImVec2( 640, 480 ), ImGuiCond_Once );
-	ImGui::Begin( dname( "Model Viewer" ), &status_,
-				  ImGuiWindowFlags_MenuBar |
-					  ImGuiWindowFlags_AlwaysAutoResize |
-					  ImGuiWindowFlags_HorizontalScrollbar |
-					  ImGuiWindowFlags_NoSavedSettings );
+	unsigned int flags =
+		ImGuiWindowFlags_MenuBar |
+			ImGuiWindowFlags_NoScrollWithMouse |
+			ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoSavedSettings;
+	if ( viewFullscreen ) {
+		flags |= ImGuiWindowFlags_NoDecoration;
 
+		int width, height;
+		bool fullscreen;
+		System_GetWindowDrawableSize( &width, &height, &fullscreen );
+
+		ImGui::SetNextWindowPos( ImVec2( 0, 0 ) );
+		ImGui::SetNextWindowSize( ImVec2(
+			static_cast< float >( width ),
+			static_cast< float >( height ) ), ImGuiCond_Always );
+	} else {
+		ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
+	}
+
+	ImGui::Begin( dname( "Model Viewer" ), &status_, flags );
 	if ( ImGui::BeginMenuBar() ) {
 		if ( ImGui::BeginMenu( "Models" ) ) {
 			for ( const auto &i : modelList ) {
@@ -154,13 +166,6 @@ void ModelViewer::Display() {
 		if ( ImGui::BeginMenu( "View" ) ) {
 			if ( ImGui::MenuItem( "Fullscreen", nullptr, viewFullscreen ) ) {
 				viewFullscreen = !viewFullscreen;
-
-				//plDestroyTexture( textureAttachment );
-				//plDestroyFrameBuffer( drawBuffer );
-
-				if ( viewFullscreen ) {
-
-				}
 			}
 			ImGui::Separator();
 			if ( ImGui::MenuItem( "Rotate Model", nullptr, viewRotate ) ) {
@@ -174,10 +179,10 @@ void ModelViewer::Display() {
 				ImGui::Separator();
 
 				if ( ImGui::BeginMenu( "Textures" ) ) {
-					for ( unsigned int i = 0; i < modelPtr->levels[0].num_meshes; ++i ) {
-						PLMesh *mesh = modelPtr->levels[0].meshes[i];
+					for ( unsigned int i = 0; i < modelPtr->levels[ 0 ].num_meshes; ++i ) {
+						PLMesh *mesh = modelPtr->levels[ 0 ].meshes[ i ];
 						if ( ImGui::ImageButton( reinterpret_cast<ImTextureID>( mesh->texture->internal.id ),
-							ImVec2( 128, 128 ) ) ) {
+												 ImVec2( 128, 128 ) ) ) {
 							ImGuiImpl_RegisterWindow( new TextureViewer( mesh->texture ) );
 						}
 					}
@@ -213,10 +218,14 @@ void ModelViewer::Display() {
 	ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 0, 0, 0, 0 ) );
 	ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0, 0, 0, 0 ) );
 
-	ImGui::ImageButton( reinterpret_cast<ImTextureID>(textureAttachment->internal.id), ImVec2( 640, 480 ) );
+	ImVec2 region = ImGui::GetContentRegionAvail();
+	GenerateFrameBuffer( static_cast< unsigned int>( region.x ), static_cast< unsigned int>( region.y ) );
+	ImGui::ImageButton(
+		reinterpret_cast<ImTextureID>(textureAttachment->internal.id),
+		region, ImVec2( 0, 0 ), ImVec2( 1, 1 ), 0 );
 	if ( ImGui::IsItemHovered() ) {
-		float newXPos = ImGui::GetMousePos().x - oldMousePos[0];
-		float newYPos = ImGui::GetMousePos().y - oldMousePos[1];
+		float newXPos = ImGui::GetMousePos().x - oldMousePos[ 0 ];
+		float newYPos = ImGui::GetMousePos().y - oldMousePos[ 1 ];
 		const static float posMod = 200.0f;
 		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) { // Rotation
 			modelRotation.x += newYPos / posMod * g_state.last_draw_ms;
@@ -227,8 +236,8 @@ void ModelViewer::Display() {
 			position.y += newYPos / posMod * g_state.last_draw_ms;
 			camera->SetPosition( position );
 		} else {
-			oldMousePos[0] = ImGui::GetMousePos().x;
-			oldMousePos[1] = ImGui::GetMousePos().y;
+			oldMousePos[ 0 ] = ImGui::GetMousePos().x;
+			oldMousePos[ 1 ] = ImGui::GetMousePos().y;
 		}
 
 		// Handle mouse wheel movements
@@ -244,4 +253,25 @@ void ModelViewer::Display() {
 
 void ModelViewer::AppendModelList( const char *path ) {
 	modelList.push_back( path );
+}
+
+void ModelViewer::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
+	unsigned int bufferWidth = 0, bufferHeight = 0;
+	if ( drawBuffer != nullptr ) {
+		plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
+	}
+
+	if ( bufferWidth != width || bufferHeight != height ) {
+		plDestroyFrameBuffer( drawBuffer );
+		drawBuffer = plCreateFrameBuffer( width, height, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+		if ( drawBuffer == nullptr ) {
+			Error( "Failed to create framebuffer for model viewer (%s)!\n", plGetError() );
+		}
+
+		plDestroyTexture( textureAttachment );
+		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer );
+		if ( textureAttachment == nullptr ) {
+			Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
+		}
+	}
 }
