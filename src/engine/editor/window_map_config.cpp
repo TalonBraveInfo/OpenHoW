@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <imgui.h>
+
 #include "../engine.h"
 #include "../mod_support.h"
 
@@ -126,7 +128,8 @@ void MapConfigEditor::DisplayTime() {
 
 void MapConfigEditor::Display() {
 	ImGui::SetNextWindowSize( ImVec2( 310, 512 ), ImGuiCond_Once );
-	ImGui::Begin( dname( "Map Config Editor" ), &status_, ED_DEFAULT_WINDOW_FLAGS );
+	Begin( "Map Config Editor", ED_DEFAULT_WINDOW_FLAGS );
+
 	ImGui::InputText( "Name", name_buffer, sizeof( name_buffer ) );
 	ImGui::InputText( "Author", author_buffer, sizeof( author_buffer ) );
 

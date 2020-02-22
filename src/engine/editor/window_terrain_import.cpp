@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <imgui.h>
+
 #include "../engine.h"
 #include "../Map.h"
 #include "../terrain.h"
@@ -27,30 +29,30 @@ WindowTerrainImport::WindowTerrainImport() = default;
 WindowTerrainImport::~WindowTerrainImport() = default;
 
 void WindowTerrainImport::Display() {
-  ImGui::SetNextWindowSize(ImVec2(310, 128), ImGuiCond_Once);
-  ImGui::Begin(dname("Import Heightmap"), &status_, ED_DEFAULT_WINDOW_FLAGS);
-  ImGui::InputText("Path", path_buffer, sizeof(path_buffer));
-  ImGui::InputInt("Multiplier", &multiplier_);
-  if(ImGui::Button("Import")) {
-    ImportTerrain();
-  }
-  ImGui::SameLine();
-  if(ImGui::Button("Cancel")) {
-    SetStatus(false);
-  }
-  ImGui::End();
+	ImGui::SetNextWindowSize( ImVec2( 310, 128 ), ImGuiCond_Once );
+	Begin( "Import Heightmap", ED_DEFAULT_WINDOW_FLAGS );
+	ImGui::InputText( "Path", path_buffer, sizeof( path_buffer ) );
+	ImGui::InputInt( "Multiplier", &multiplier_ );
+	if ( ImGui::Button( "Import" ) ) {
+		ImportTerrain();
+	}
+	ImGui::SameLine();
+	if ( ImGui::Button( "Cancel" ) ) {
+		SetStatus( false );
+	}
+	ImGui::End();
 }
 
 void WindowTerrainImport::ImportTerrain() {
-  Map* map = Engine::Game()->GetCurrentMap();
-  if(map == nullptr) {
-    return;
-  }
+	Map *map = Engine::Game()->GetCurrentMap();
+	if ( map == nullptr ) {
+		return;
+	}
 
-  Terrain* terrain = map->GetTerrain();
-  if(terrain == nullptr) {
-    return;
-  }
+	Terrain *terrain = map->GetTerrain();
+	if ( terrain == nullptr ) {
+		return;
+	}
 
-  terrain->LoadHeightmap(path_buffer, multiplier_);
+	terrain->LoadHeightmap( path_buffer, multiplier_ );
 }

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <imgui.h>
+
 #include "../engine.h"
 #include "window_actor_tree.h"
 #include "../game/actor_manager.h"
@@ -26,7 +28,7 @@ ActorTreeWindow::~ActorTreeWindow() = default;
 
 void ActorTreeWindow::Display() {
 	ImGui::SetNextWindowSize( ImVec2( 310, 512 ), ImGuiCond_Once );
-	ImGui::Begin( dname( "Actor Tree" ), &status_, ED_DEFAULT_WINDOW_FLAGS );
+	Begin( "Actor Tree", ED_DEFAULT_WINDOW_FLAGS );
 
 	const ActorSet actors = ActorManager::GetInstance()->GetActors();
 	if ( actors.empty() ) {

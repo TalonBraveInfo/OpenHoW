@@ -81,6 +81,10 @@ void ModelViewer::DrawViewport() {
 										PLColour( 128, 128, 128, 255 ).ToVec4() );
 	}
 
+	if ( viewRotate ) {
+		modelRotation.y += 0.01f * g_state.last_draw_ms;
+	}
+
 	PLVector3 angles(
 		plDegreesToRadians( modelRotation.x ),
 		plDegreesToRadians( modelRotation.y ),
@@ -101,31 +105,14 @@ void ModelViewer::Display() {
 	// Draw the model view if there's a valid model
 	DrawViewport();
 
-	if ( viewRotate ) {
-		modelRotation.y += 0.01f * g_state.last_draw_ms;
-	}
-
 	unsigned int flags =
 		ImGuiWindowFlags_MenuBar |
 			ImGuiWindowFlags_NoScrollWithMouse |
 			ImGuiWindowFlags_NoScrollbar |
 			ImGuiWindowFlags_NoSavedSettings;
-	if ( viewFullscreen ) {
-		flags |= ImGuiWindowFlags_NoDecoration;
+	ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
 
-		int width, height;
-		bool fullscreen;
-		System_GetWindowDrawableSize( &width, &height, &fullscreen );
-
-		ImGui::SetNextWindowPos( ImVec2( 0, 0 ) );
-		ImGui::SetNextWindowSize( ImVec2(
-			static_cast< float >( width ),
-			static_cast< float >( height ) ), ImGuiCond_Always );
-	} else {
-		ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
-	}
-
-	ImGui::Begin( dname( "Model Viewer" ), &status_, flags );
+	Begin( "Model Viewer", flags );
 	if ( ImGui::BeginMenuBar() ) {
 		if ( ImGui::BeginMenu( "Models" ) ) {
 			for ( const auto &i : modelList ) {
@@ -164,8 +151,8 @@ void ModelViewer::Display() {
 		}
 
 		if ( ImGui::BeginMenu( "View" ) ) {
-			if ( ImGui::MenuItem( "Fullscreen", nullptr, viewFullscreen ) ) {
-				viewFullscreen = !viewFullscreen;
+			if ( ImGui::MenuItem( "Fullscreen", nullptr, IsFullscreen() ) ) {
+				ToggleFullscreen();
 			}
 			ImGui::Separator();
 			if ( ImGui::MenuItem( "Rotate Model", nullptr, viewRotate ) ) {
@@ -175,6 +162,7 @@ void ModelViewer::Display() {
 				viewDebugNormals = !viewDebugNormals;
 			}
 
+#if 0 // Once we have reference counting for resources, add this back
 			if ( modelPtr != nullptr ) {
 				ImGui::Separator();
 
@@ -190,6 +178,7 @@ void ModelViewer::Display() {
 					ImGui::EndMenu();
 				}
 			}
+#endif
 
 			ImGui::Separator();
 
@@ -247,6 +236,12 @@ void ModelViewer::Display() {
 	}
 
 	ImGui::PopStyleColor( 3 );
+
+	ImGui::SetItemAllowOverlap();
+
+	if ( modelPtr != nullptr ) {
+		ImGui::Text( "%s", modelPtr->path );
+	}
 
 	ImGui::End();
 }

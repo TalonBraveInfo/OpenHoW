@@ -16,7 +16,6 @@
  */
 
 #include <PL/platform_filesystem.h>
-#include <PL/platform_mesh.h>
 
 #include "util.h"
 #include "fac.h"

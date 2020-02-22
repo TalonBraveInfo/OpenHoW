@@ -46,10 +46,10 @@ public:
 
 	void Display() override {
 		ImGui::SetNextWindowSize( ImVec2( texturePtr->w + 64, texturePtr->h + 128 ), ImGuiCond_Once );
-		ImGui::Begin( dname( "Texture Viewer" ), &status_,
-					  ImGuiWindowFlags_MenuBar |
-						  ImGuiWindowFlags_HorizontalScrollbar |
-						  ImGuiWindowFlags_NoSavedSettings
+		Begin( "Texture Viewer",
+			   ImGuiWindowFlags_MenuBar |
+				   ImGuiWindowFlags_HorizontalScrollbar |
+				   ImGuiWindowFlags_NoSavedSettings
 		);
 
 		if ( ImGui::BeginMenuBar() ) {
