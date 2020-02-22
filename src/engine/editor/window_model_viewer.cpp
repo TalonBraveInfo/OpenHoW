@@ -115,7 +115,14 @@ void ModelViewer::Display() {
 	Begin( "Model Viewer", flags );
 	if ( ImGui::BeginMenuBar() ) {
 		if ( ImGui::BeginMenu( "Models" ) ) {
+			static ImGuiTextFilter filter;
+			filter.Draw();
+
 			for ( const auto &i : modelList ) {
+				if ( !filter.PassFilter( i.c_str() ) ) {
+					continue;
+				}
+
 				bool selected = false;
 				if ( modelPtr != nullptr ) {
 					selected = ( i == modelPtr->path );
@@ -236,12 +243,6 @@ void ModelViewer::Display() {
 	}
 
 	ImGui::PopStyleColor( 3 );
-
-	ImGui::SetItemAllowOverlap();
-
-	if ( modelPtr != nullptr ) {
-		ImGui::Text( "%s", modelPtr->path );
-	}
 
 	ImGui::End();
 }
