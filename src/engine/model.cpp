@@ -173,6 +173,8 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 			}
 		}
 		atlas.Finalize();
+	} else {
+		LogWarn( "No texture table for \"%s\"!\n", path );
 	}
 
 	PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, fac->num_triangles * 3 );
