@@ -179,7 +179,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 		handle->texture_table = texture_table;
 		handle->texture_table_size = num_textures;
 	} else {
-		LogWarn( "No texture table for \"%s\"!\n", plGetFilePath( fac_file ) );
+		LogWarn( "No texture table for \"%s\"!\n", path );
 	}
 
 	return handle;
