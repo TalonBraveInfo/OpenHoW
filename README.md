@@ -25,7 +25,7 @@ Consider this more of a wish-list at this  point in time ;)
 * Enhanced graphics over the original game
 
 ## Status :mag:
-![Screenshot](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
+![Screenshot](./preview/preview00.png?raw=true)
 
 As of October 1st, 2019, the project is still in a very early phase of development.
 As we shift onto our next milestone (0.5.0) a lot of work will begin on actually getting
@@ -55,18 +55,20 @@ have been listed below.
 * [SDL2](https://www.libsdl.org/) (needed for input, window creation and audio)
 * [OpenAL Soft](https://github.com/kcat/openal-soft) (needed for audio)
 
-At this time the project should compile for Linux (_Ubuntu 18.10_) with these dependencies 100%
+At this time the project should compile for Linux (_Ubuntu 19.10_) with these dependencies 100%
 but Windows needs some further care before it will be up and running correctly (see Windows section below).
 
-Once you've got everything you need, you'll need to compile the [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility. In order to do this you'll need to generate your project files
-using the CMakeLists found under 'src/tools/'.
+Once compiled, you need to use te [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility: point it to your Hogs of War installation directory and the tool will then copy across and update any of the original Hogs of War's files and assets as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory, but the default ```bin``` directory is required to get OpenHoW up and running.
 
-Using the extraction tool, you'll need to point it to your Hogs of War installation directory and the tool will then copy across and update any of Hogs of War's files as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory.
 
-It's advised that you point the extractor to the 'bin' directory, otherwise you won't be able to get OpenHoW up and running.
+#### Linux
 
-Once that's done, you're now set to generate the project files via the 
-CMakeLists found under the root OpenHoW directory and compile the rest of the project.
+```
+git clone https://github.com/TalonBraveInfo/OpenHoW.git
+cd OpenHoW
+git submodule update --init
+cmake .
+```
 
 #### Windows
 
@@ -85,3 +87,4 @@ A style guide is available [here](https://github.com/TalonBraveInfo/OpenHoW/tree
 
 At the moment the project is a mess of different styles, which is very much an unfortunate side effect of
 experimenting with different styles during earlier stages of development.
+
