@@ -58,7 +58,7 @@ have been listed below.
 At this time the project should compile for Linux (_Ubuntu 19.10_) with these dependencies 100%
 but Windows needs some further care before it will be up and running correctly (see Windows section below).
 
-Once compiled, you need to use te [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility: point it to your Hogs of War installation directory and the tool will then copy across and update any of the original Hogs of War's files and assets as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory, but the default ```bin``` directory is required to get OpenHoW up and running.
+Once compiled, you need to use the [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility: point it to your Hogs of War installation directory. The tool will then copy across and update any of the original Hogs of War's assets as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory, but the default ```bin``` directory is required to get OpenHoW up and running.
 
 
 #### Linux
@@ -67,7 +67,9 @@ Once compiled, you need to use te [extraction](https://github.com/TalonBraveInfo
 git clone https://github.com/TalonBraveInfo/OpenHoW.git
 cd OpenHoW
 git submodule update --init
-cmake .
+mkdir build
+cd build
+cmake ../
 ```
 
 #### Windows
