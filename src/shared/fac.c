@@ -186,7 +186,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 void Fac_WriteFile( FacHandle *handle, const char *path ) {
 	FILE *fp = fopen( path, "wb" );
 	if ( fp == NULL ) {
-		LogWarn( "Failed to open, \"%s\"!\n" );
+		LogWarn( "Failed to open, \"%s\"!\n", path );
 		return;
 	}
 
