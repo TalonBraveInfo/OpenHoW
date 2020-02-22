@@ -31,6 +31,8 @@ FacHandle *Fac_LoadFile( const char *path ) {
 		return NULL;
 	}
 
+	LogDebug( "Opened Fac \"%s\"...\n", plGetFilePath( fac_file ) );
+
 	/* 16 bytes of unknown data, just skip it for now */
 	plFileSeek( fac_file, 16, PL_SEEK_CUR );
 
