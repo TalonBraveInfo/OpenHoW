@@ -25,7 +25,7 @@
 
 using namespace openhow;
 
-Map::Map( MapManifest* manifest ) : manifest_( manifest ) {
+Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	std::string base_path = "maps/" + manifest_->filename + "/";
 
 	std::string tilePath = manifest_->tile_directory;
@@ -62,18 +62,18 @@ void Map::LoadSky() {
 	}
 }
 
-PLModel* Map::LoadSkyModel( const std::string& path ) {
-	PLModel* model = Engine::Resource()->LoadModel( path, true, true );
+PLModel *Map::LoadSkyModel( const std::string &path ) {
+	PLModel *model = Engine::Resource()->LoadModel( path, true, true );
 	model->model_matrix = plTranslateMatrix4( PLVector3( TERRAIN_PIXEL_WIDTH / 2, 0, TERRAIN_PIXEL_WIDTH / 2 ) );
 	// Default skydome is smaller than the map, so we'll scale it
 	model->model_matrix = plScaleMatrix4( model->model_matrix, PLVector3( 5, 5, 5 ) );
 
-	PLModelLod* lod = plGetModelLodLevel( model, 0 );
+	PLModelLod *lod = plGetModelLodLevel( model, 0 );
 	if ( lod == nullptr ) {
 		Error( "Failed to get first lod for sky mesh!\n" );
 	}
 
-	PLMesh* mesh = lod->meshes[ 0 ];
+	PLMesh *mesh = lod->meshes[ 0 ];
 	// This is a really crap hardcoded limit, just to ensure it's what we're expecting
 	if ( mesh->num_verts != 257 ) {
 		Error( "Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts );
@@ -87,16 +87,16 @@ void Map::UpdateSky() {
 	UpdateSkyModel( sky_model_bottom_ );
 }
 
-void Map::UpdateSkyModel( PLModel* model ) {
+void Map::UpdateSkyModel( PLModel *model ) {
 	u_assert( model != nullptr, "attempted to apply sky colours prior to loading sky dome" );
 
-	PLModelLod* lod = plGetModelLodLevel( model, 0 );
+	PLModelLod *lod = plGetModelLodLevel( model, 0 );
 	if ( lod == nullptr ) {
 		LogWarn( "Failed to get first lod for sky mesh!\n" );
 		return;
 	}
 
-	PLMesh* mesh = lod->meshes[ 0 ];
+	PLMesh *mesh = lod->meshes[ 0 ];
 	// Below is a PSX-style gradient sky implementation
 	const unsigned int solid_steps = 3;
 	const unsigned int grad_steps = 6;
@@ -127,7 +127,7 @@ void Map::UpdateSkyModel( PLModel* model ) {
 	plUploadMesh( mesh );
 }
 
-void Map::LoadSpawns( const std::string& path ) {
+void Map::LoadSpawns( const std::string &path ) {
 	struct PogIndex {
 		char name[16];               // class name
 		char unused0[16];
@@ -152,8 +152,8 @@ void Map::LoadSpawns( const std::string& path ) {
 	};
 	static_assert( sizeof( PogIndex ) == 94, "Invalid size for PogIndex, should be 94 bytes!" );
 
-	const char* cPath = path.c_str();
-	PLFile* fp = plOpenFile( cPath, false );
+	const char *cPath = path.c_str();
+	PLFile *fp = plOpenFile( cPath, false );
 	if ( fp == NULL ) {
 		LogWarn( "Failed to open actor data, \"%s\" (%s)!\n", cPath, plGetError() );
 		return;
@@ -192,7 +192,7 @@ void Map::LoadSpawns( const std::string& path ) {
 
 		try {
 			spawns_[ i ].attachment = &spawns_.at( spawns[ i ].attached_actor_num );
-		} catch ( const std::out_of_range& e ) {
+		} catch ( const std::out_of_range &e ) {
 			LogWarn( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
 					 plPrintVector3( &spawns_[ i ].position, pl_int_var ) );
 		}
@@ -215,42 +215,39 @@ void Map::Draw() {
 	plDrawModel( sky_model_bottom_ );
 
 	// TODO: move this somewhere else???
-	{
-		PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();
-		if ( program == nullptr ) {
-			return;
-		}
-
-		plSetNamedShaderUniformVector4( program, "fog_colour", manifest_->fog_colour.ToVec4() );
-		plSetNamedShaderUniformFloat( program, "fog_near", manifest_->fog_intensity );
-		plSetNamedShaderUniformFloat( program, "fog_far", manifest_->fog_distance );
-
-		PLVector3 sun_position( 1.0f, -manifest_->sun_pitch, 0 );
-		PLMatrix4 sun_matrix =
-			plMultiplyMatrix4(
-				plTranslateMatrix4( sun_position ),
-				plRotateMatrix4( manifest_->sun_yaw, PLVector3( 0, 1.0f, 0 ) ) );
-		sun_position.x = sun_matrix.m[ 0 ];
-		sun_position.z = sun_matrix.m[ 8 ];
-
-		plSetNamedShaderUniformVector3( program, "sun_position", sun_position );
-		plSetNamedShaderUniformVector4( program, "sun_colour", manifest_->sun_colour.ToVec4() );
-		plSetNamedShaderUniformVector4( program, "ambient_colour", manifest_->ambient_colour.ToVec4() );
+	PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();
+	if ( program == nullptr ) {
+		return;
 	}
+
+	plSetNamedShaderUniformVector4( program, "fog_colour", manifest_->fog_colour.ToVec4() );
+	plSetNamedShaderUniformFloat( program, "fog_near", manifest_->fog_intensity );
+	plSetNamedShaderUniformFloat( program, "fog_far", manifest_->fog_distance );
+
+	PLVector3 sun_position( 1.0f, -manifest_->sun_pitch, 0 );
+	PLMatrix4 sun_matrix;
+	sun_matrix.Identity();
+	sun_matrix.Translate( sun_position );
+	sun_matrix.Rotate( manifest_->sun_yaw, PLVector3( 0.0f, 1.0f, 0.0f ) );
+	sun_position.x = sun_matrix.m[ 0 ];
+	sun_position.z = sun_matrix.m[ 8 ];
+
+	plSetNamedShaderUniformVector3( program, "sun_position", sun_position );
+	plSetNamedShaderUniformVector4( program, "sun_colour", manifest_->sun_colour.ToVec4() );
+	plSetNamedShaderUniformVector4( program, "ambient_colour", manifest_->ambient_colour.ToVec4() );
 
 	terrain_->Draw();
 
 #if 0 // debug sun position
-	debug_sun_position = sun_position;
-	Shaders_SetProgram(SHADER_GenericUntextured);
-	PLModel *sprite = ModelManager::GetInstance()->GetFallbackModel();
-	PLMesh *mesh = sprite->levels[0].meshes[0];
-	plSetMeshUniformColour(mesh, PLColour(0, 255, 0, 255));
-	sprite->model_matrix = plTranslateMatrix4(debug_sun_position);
-	plDrawModel(sprite);
-	plSetMeshUniformColour(mesh, PLColour(255, 255, 0, 255));
-	sprite->model_matrix = plTranslateMatrix4(PLVector3(0, 0, 0));
-	plDrawModel(sprite);
-	plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+	Shaders_SetProgramByName( "generic_untextured" );
+	PLModel *sprite = engine->Resource()->GetFallbackModel();
+	PLMesh *mesh = sprite->levels[ 0 ].meshes[ 0 ];
+	plSetMeshUniformColour( mesh, PLColour( 0, 255, 0, 255 ) );
+	sprite->model_matrix = plTranslateMatrix4( sun_position );
+	plDrawModel( sprite );
+	plSetMeshUniformColour( mesh, PLColour( 255, 255, 0, 255 ) );
+	sprite->model_matrix = plTranslateMatrix4( PLVector3( 0, 0, 0 ) );
+	plDrawModel( sprite );
+	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ) );
 #endif
 }
