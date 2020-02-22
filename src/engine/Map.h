@@ -38,7 +38,6 @@ class Map {
   const std::vector<ActorSpawn>& GetSpawns() { return spawns_; }
 
   void UpdateSky();
-  void UpdateLighting();
 
  protected:
  private:

@@ -170,12 +170,8 @@ void MapConfigEditor::Display() {
 
 	ImGui::Text( "Lighting Settings" );
 
-	if ( ImGui::SliderAngle( "Sun Pitch", &manifest_->sun_pitch, -90, 90, nullptr ) ) {
-		map_->UpdateLighting();
-	}
-	if ( ImGui::SliderAngle( "Sun Yaw", &manifest_->sun_yaw, -180, 180, nullptr ) ) {
-		map_->UpdateLighting();
-	}
+	ImGui::SliderAngle( "Sun Pitch", &manifest_->sun_pitch, -90, 90, nullptr );
+	ImGui::SliderAngle( "Sun Yaw", &manifest_->sun_yaw, -180, 180, nullptr );
 
 	rgb[ 0 ] = plByteToFloat( manifest_->sun_colour.r );
 	rgb[ 1 ] = plByteToFloat( manifest_->sun_colour.g );
@@ -184,7 +180,6 @@ void MapConfigEditor::Display() {
 		manifest_->sun_colour.r = plFloatToByte( rgb[ 0 ] );
 		manifest_->sun_colour.g = plFloatToByte( rgb[ 1 ] );
 		manifest_->sun_colour.b = plFloatToByte( rgb[ 2 ] );
-		map_->UpdateLighting();
 	}
 
 	rgb[ 0 ] = plByteToFloat( manifest_->ambient_colour.r );
@@ -194,7 +189,6 @@ void MapConfigEditor::Display() {
 		manifest_->ambient_colour.r = plFloatToByte( rgb[ 0 ] );
 		manifest_->ambient_colour.g = plFloatToByte( rgb[ 1 ] );
 		manifest_->ambient_colour.b = plFloatToByte( rgb[ 2 ] );
-		map_->UpdateLighting();
 	}
 
 	ImGui::Separator();
@@ -210,16 +204,10 @@ void MapConfigEditor::Display() {
 			manifest_->fog_colour.r = plFloatToByte( rgb[ 0 ] );
 			manifest_->fog_colour.g = plFloatToByte( rgb[ 1 ] );
 			manifest_->fog_colour.b = plFloatToByte( rgb[ 2 ] );
-			map_->UpdateLighting();
 		}
 
-		if ( ImGui::SliderFloat( "Fog Intensity", &manifest_->fog_intensity, -100.0f, 100.0f, "%.0f" ) ) {
-			map_->UpdateLighting();
-		}
-
-		if ( ImGui::SliderFloat( "Fog Distance", &manifest_->fog_distance, 0, 300.0f, "%.0f" ) ) {
-			map_->UpdateLighting();
-		}
+		ImGui::SliderFloat( "Fog Intensity", &manifest_->fog_intensity, -100.0f, 100.0f, "%.0f" );
+		ImGui::SliderFloat( "Fog Distance", &manifest_->fog_distance, 0, 300.0f, "%.0f" );
 	}
 
 	ImGui::Separator();
@@ -259,5 +247,4 @@ void MapConfigEditor::RestoreManifest() {
 	*manifest_ = backup_;
 
 	map_->UpdateSky();
-	map_->UpdateLighting();
 }

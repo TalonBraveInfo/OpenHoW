@@ -46,7 +46,6 @@ Map::Map( MapManifest* manifest ) : manifest_( manifest ) {
 	LoadSky();
 
 	UpdateSky();
-	UpdateLighting();
 }
 
 Map::~Map() {
@@ -126,32 +125,6 @@ void Map::UpdateSkyModel( PLModel* model ) {
 	}
 
 	plUploadMesh( mesh );
-}
-
-void Map::UpdateLighting() {
-	PLShaderProgram* program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();
-	if ( program == nullptr ) {
-		return;
-	}
-
-	plSetNamedShaderUniformVector4( program, "fog_colour", manifest_->fog_colour.ToVec4() );
-	plSetNamedShaderUniformFloat( program, "fog_near", manifest_->fog_intensity );
-	plSetNamedShaderUniformFloat( program, "fog_far", manifest_->fog_distance );
-
-	PLVector3 sun_position( 1.0f, -manifest_->sun_pitch, 0 );
-	PLMatrix4 sun_matrix =
-		plMultiplyMatrix4(
-			plTranslateMatrix4( sun_position ),
-			plRotateMatrix4( manifest_->sun_yaw, PLVector3( 0, 1.0f, 0 ) ) );
-	sun_position.x = sun_matrix.m[ 0 ];
-	sun_position.z = sun_matrix.m[ 8 ];
-#if 0
-	debug_sun_position = sun_position;
-#endif
-	plSetNamedShaderUniformVector3( program, "sun_position", sun_position );
-	plSetNamedShaderUniformVector4( program, "sun_colour", manifest_->sun_colour.ToVec4() );
-
-	plSetNamedShaderUniformVector4( program, "ambient_colour", manifest_->ambient_colour.ToVec4() );
 }
 
 void Map::LoadSpawns( const std::string& path ) {
@@ -241,9 +214,34 @@ void Map::Draw() {
 	plDrawModel( sky_model_top_ );
 	plDrawModel( sky_model_bottom_ );
 
+	// TODO: move this somewhere else???
+	{
+		PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();
+		if ( program == nullptr ) {
+			return;
+		}
+
+		plSetNamedShaderUniformVector4( program, "fog_colour", manifest_->fog_colour.ToVec4() );
+		plSetNamedShaderUniformFloat( program, "fog_near", manifest_->fog_intensity );
+		plSetNamedShaderUniformFloat( program, "fog_far", manifest_->fog_distance );
+
+		PLVector3 sun_position( 1.0f, -manifest_->sun_pitch, 0 );
+		PLMatrix4 sun_matrix =
+			plMultiplyMatrix4(
+				plTranslateMatrix4( sun_position ),
+				plRotateMatrix4( manifest_->sun_yaw, PLVector3( 0, 1.0f, 0 ) ) );
+		sun_position.x = sun_matrix.m[ 0 ];
+		sun_position.z = sun_matrix.m[ 8 ];
+
+		plSetNamedShaderUniformVector3( program, "sun_position", sun_position );
+		plSetNamedShaderUniformVector4( program, "sun_colour", manifest_->sun_colour.ToVec4() );
+		plSetNamedShaderUniformVector4( program, "ambient_colour", manifest_->ambient_colour.ToVec4() );
+	}
+
 	terrain_->Draw();
 
 #if 0 // debug sun position
+	debug_sun_position = sun_position;
 	Shaders_SetProgram(SHADER_GenericUntextured);
 	PLModel *sprite = ModelManager::GetInstance()->GetFallbackModel();
 	PLMesh *mesh = sprite->levels[0].meshes[0];

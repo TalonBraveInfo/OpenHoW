@@ -270,4 +270,6 @@ void ModelViewer::GenerateFrameBuffer( unsigned int width, unsigned int height )
 			Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
 		}
 	}
+
+	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 }
