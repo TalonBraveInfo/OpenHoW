@@ -22,29 +22,30 @@
 
 using namespace openhow;
 
-PLModel *LoadObjModel(const char *path) {
-    WaveFrontReader obj;
-    if(!obj.Load(path, false)) {
-        return nullptr;
-    }
+PLModel *LoadObjModel( const char *path ) {
+	WaveFrontReader obj;
+	if ( !obj.Load( path, true ) ) {
+		return nullptr;
+	}
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, obj.indices.size(), obj.vertices.size());
-    if(mesh == nullptr) {
-        LogWarn("Failed to create mesh! (%s)\n", plGetError());
-        return nullptr;
-    }
+	PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, obj.indices.size(), obj.vertices.size() );
+	if ( mesh == nullptr ) {
+		LogWarn( "Failed to create mesh! (%s)\n", plGetError() );
+		return nullptr;
+	}
 
-    static_assert(sizeof(*mesh->indices) == sizeof(*obj.indices.data()), "mismatch");
-    memcpy(mesh->indices, obj.indices.data(), sizeof(unsigned int) * obj.indices.size());
-    memcpy(mesh->vertices, obj.vertices.data(), sizeof(PLVertex) * obj.vertices.size());
+	static_assert( sizeof( *mesh->indices ) == sizeof( *obj.indices.data() ), "mismatch" );
+	memcpy( mesh->indices, obj.indices.data(), sizeof( unsigned int ) * obj.indices.size() );
+	memcpy( mesh->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
 
-    plSetMeshUniformColour(mesh, PLColour(255, 255, 255));
+	plSetMeshUniformColour( mesh, PLColour( 255, 255, 255 ) );
 
-    if(!obj.materials.empty()) {
-        mesh->texture = Engine::Resource()->LoadTexture(obj.materials[1].strTexture, PL_TEXTURE_FILTER_MIPMAP_NEAREST);
-    } else {
-        mesh->texture = Engine::Resource()->GetFallbackTexture();
-    }
+	if ( !obj.materials.empty() ) {
+		mesh->texture =
+			Engine::Resource()->LoadTexture( obj.materials[ 1 ].strTexture, PL_TEXTURE_FILTER_MIPMAP_NEAREST );
+	} else {
+		mesh->texture = Engine::Resource()->GetFallbackTexture();
+	}
 
-    return plCreateBasicStaticModel(mesh);
+	return plCreateBasicStaticModel( mesh );
 }

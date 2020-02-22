@@ -18,6 +18,7 @@
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
+#include <PL/platform_filesystem.h>
 
 class WaveFrontReader {
 public:
@@ -30,11 +31,16 @@ public:
 
         static const size_t MAX_POLY = 64;
 
-        std::ifstream InFile(szFilePath);
-        if (!InFile) {
-            LogWarn("Failed to open \"%s\"!\n", szFilePath.c_str());
-            return false;
+        // For now just read the whole thing into memory...
+        PLFile *filePtr = plOpenFile( szFilePath.c_str(), true );
+        if ( filePtr == nullptr ) {
+			LogWarn("Failed to open \"%s\"!\n", szFilePath.c_str());
+			return false;
         }
+
+        std::stringstream InFile;
+        InFile << plGetFileData( filePtr );
+        plCloseFile( filePtr );
 
         name = szFilePath;
 
@@ -280,9 +286,6 @@ public:
             return false;
         }
 
-        // Cleanup
-        InFile.close();
-
         // If an associated material file was found, read that in as well.
         if (!strMaterialFilename.empty()) {
             const std::string& strMaterialFilePath = szFilePath.substr(0, szFilePath.find_last_of("\\/")) +
@@ -297,11 +300,15 @@ public:
 
     bool LoadMTL(const std::string &szFilePath) {
         // Assumes MTL is in CWD along with OBJ
-        std::ifstream InFile(szFilePath);
-        if (!InFile) {
-            LogWarn("Failed to open material, \"%s\"!\n", szFilePath.c_str());
-            return false;
+        PLFile *filePtr = plOpenFile( szFilePath.c_str(), true );
+        if ( filePtr == nullptr ) {
+			LogWarn("Failed to open material, \"%s\"!\n", szFilePath.c_str());
+			return false;
         }
+
+		std::stringstream InFile;
+		InFile << plGetFileData( filePtr );
+		plCloseFile( filePtr );
 
         auto curMaterial = materials.end();
 
@@ -399,8 +406,6 @@ public:
             InFile.ignore(1000, L'\n');
         }
 
-        InFile.close();
-
         return true;
     }
 
@@ -478,7 +483,7 @@ private:
         return index;
     }
 
-    static std::string LoadTexturePath(std::ifstream &InFile) {
+    static std::string LoadTexturePath(std::stringstream &InFile) {
         char buff[1024] = {};
         InFile.getline(buff, 1024, L'\n');
         InFile.putback(L'\n');
