@@ -131,7 +131,7 @@ PLTexture* hwResourceManager::LoadTexture( const std::string& path, PLTextureFil
 	LogWarn( "Failed to load texture, \"%s\" (%s)!\n", path.c_str(), plGetError() );
 	plFreeImage( &img );
 
-	return CacheTexture( path, GetFallbackTexture(), persist );;
+	return CacheTexture( path, GetFallbackTexture(), persist );
 }
 
 PLModel* hwResourceManager::LoadModel( const std::string& path, bool persist, bool abort_on_fail ) {
