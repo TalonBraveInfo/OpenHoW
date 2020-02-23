@@ -198,6 +198,14 @@ void ModelViewer::Display() {
 			ImGui::EndMenu();
 		}
 
+		ImGui::Separator();
+
+		const char *labelStr = "No model loaded";
+		if ( modelPtr != nullptr ) {
+			labelStr = modelPtr->path;
+		}
+		ImGui::Text( "%s", labelStr );
+
 		ImGui::EndMenuBar();
 	}
 
