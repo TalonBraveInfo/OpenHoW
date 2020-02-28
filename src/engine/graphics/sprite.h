@@ -45,7 +45,6 @@ public:
 	//const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
 	//void SetAnimation(SpriteAnimation* anim);
 
-	void Tick();
 	void Draw();
 
 protected:

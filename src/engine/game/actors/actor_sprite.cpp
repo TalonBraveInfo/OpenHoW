@@ -73,9 +73,6 @@ void ASprite::Tick() {
 
 	sprite_->SetPosition( position_ );
 	sprite_->SetAngles( angles_ );
-
-	// increment animation etc.
-	sprite_->Tick();
 }
 
 void ASprite::Draw() {

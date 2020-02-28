@@ -21,7 +21,6 @@
 #include "engine.h"
 #include "input.h"
 #include "language.h"
-#include "particle.h"
 #include "frontend.h"
 #include "graphics/display.h"
 #include "graphics/font.h"
@@ -104,8 +103,6 @@ static void OpenCommand(unsigned int argc, char* argv[]) {
         pl_strncasecmp(ext, "pog", 3) == 0 ||
         pl_strncasecmp(ext, "map", 3) == 0) {
       type = TYPE_MAP;
-    } else if (pl_strncasecmp(ext, PPS_EXTENSION, 3) == 0) {
-      type = TYPE_PARTICLE;
     }
   }
 

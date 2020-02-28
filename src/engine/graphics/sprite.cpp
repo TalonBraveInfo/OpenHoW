@@ -35,21 +35,6 @@ Sprite::Sprite( SpriteType type, PLTexture* texture, PLColour colour, float scal
 
 Sprite::~Sprite() = default;
 
-void Sprite::Tick() {
-#if 0
-	if (current_animation_ == nullptr) {
-	  return;
-	}
-
-	if (frame_delay_ < g_state.sim_ticks + TICKS_PER_SECOND) {
-	  current_frame_++;
-	  if (current_frame_ > (current_animation_->h_frames + current_animation_->v_frames)) {
-		current_frame_ = 0;
-	  }
-	}
-#endif
-}
-
 void Sprite::Draw() {
 	if ( !cv_graphics_draw_sprites->b_value ) {
 		return;

@@ -16,32 +16,41 @@
  */
 
 #include "../../engine.h"
+#include "../../graphics/particles.h"
+
 #include "../actor_manager.h"
-#include "weapon_parachute.h"
 
-// Parachute, not really a weapon but hey ho!
+#include "actor.h"
 
-REGISTER_ACTOR( weapon_parachute, AParachuteWeapon )
+class AParticleEffect : public Actor {
+	IMPLEMENT_ACTOR( AParticleEffect, Actor )
 
-AParachuteWeapon::AParachuteWeapon() : SuperClass() {
-  SetModel("weapons/we_para");
-  ShowModel(false);
+ public:
+	AParticleEffect();
+	~AParticleEffect() override;
+
+	void Tick() override;
+	void Draw() override;
+
+	ActorSpawn Serialize() override { return ActorSpawn(); }
+	void Deserialize(const ActorSpawn& spawn) override {}
+
+ protected:
+ private:
+	ParticleEffect effect;
+};
+
+REGISTER_ACTOR_BASIC( AParticleEffect )
+
+AParticleEffect::AParticleEffect() : SuperClass() {}
+AParticleEffect::~AParticleEffect() = default;
+
+void AParticleEffect::Tick() {
+	SuperClass::Tick();
+
+	effect.Tick();
 }
 
-AParachuteWeapon::~AParachuteWeapon() = default;
-
-void AParachuteWeapon::Tick() {
-  SuperClass::Tick();
-
-  if(!is_deployed_) {
-    return;
-  }
-}
-
-void AParachuteWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
-  SuperClass::Fire(pos, dir);
-}
-
-void AParachuteWeapon::Deploy() {
-  SuperClass::Deploy();
+void AParticleEffect::Draw() {
+	effect.Draw();
 }
