@@ -241,10 +241,11 @@ public:
 
 protected:
 private:
-	static void MapCommand( unsigned int argc, char* argv[] );
+	static void OpenMapCommand( unsigned int argc, char* argv[] );
 	static void CreateMapCommand( unsigned int argc, char* argv[] );
-	static void MapsCommand( unsigned int argc, char* argv[] );
+	static void ListMapsCommand( unsigned int argc, char **argv );
 	static void GiveItemCommand( unsigned int argc, char* argv[] );
+	static void KillSelfCommand( unsigned int argc, char **argv );
 	static void SpawnModelCommand( unsigned int argc, char** argv );
 
 	bool pauseSim{ false };

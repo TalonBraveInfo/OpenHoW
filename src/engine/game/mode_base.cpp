@@ -103,7 +103,7 @@ void BaseGameMode::SpawnActors() {
 	for ( const auto& spawn : spawns ) {
 		Actor* actor = ActorManager::GetInstance()->CreateActor( spawn.class_name );
 		if ( actor == nullptr ) {
-			actor = ActorManager::GetInstance()->CreateActor( "static_model" );
+			actor = ActorManager::GetInstance()->CreateActor( "AStaticModel" );
 		}
 
 		actor->Deserialize( spawn );
@@ -124,7 +124,7 @@ void BaseGameMode::SpawnActors() {
 
 	// TEMP START
 
-	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "static_model" ));
+	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}

@@ -57,6 +57,7 @@ class ActorManager {
 
  private:
   static ActorSet actors_;
+  static std::vector< Actor* > destructionQueue;
 };
 
 #define REGISTER_ACTOR(NAME, CLASS) \

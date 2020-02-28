@@ -54,7 +54,9 @@ void APig::Tick() {
 	DropToFloor();
 
 	// a dead piggy
-	if ( GetHealth() <= 0 ) {
+	if ( lifeState == LifeState::DEAD ) {
+		return;
+	} else if ( lifeState == LifeState::DYING ) {
 		if ( speech_->IsPlaying() ) {
 			return;
 		}
@@ -62,16 +64,11 @@ void APig::Tick() {
 		// TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
 		Engine::Audio()->PlayLocalSound( "audio/e_1.wav", GetPosition(), { 0, 0, 0 }, true );
 
-		Actor* boots = ActorManager::GetInstance()->CreateActor( "boots" );
-		boots->SetPosition( GetPosition() );
-		boots->SetAngles( GetAngles() );
-		boots->DropToFloor();
+		SetModel( "scenery/boots" );
+		DropToFloor();
 
-		// activate the boots (should begin smoke effect etc.)
-		boots->Activate();
-
-		// ensure our own destruction on next tick
-		ActorManager::GetInstance()->DestroyActor( this );
+		// todo; create particle emitter and link as child to the boots!
+		lifeState = LifeState::DEAD;
 		return;
 	}
 
@@ -209,10 +206,15 @@ void APig::Depossessed( const Player* player ) {
 void APig::Killed() {
 	// TODO: queue me until camera focus, if valid (in some cases we'll insta die)
 	//  Check if we're in water...
+	if ( lifeState != LifeState::ALIVE ) {
+		return;
+	}
 
 	PlayVoiceSample( VoiceCategory::DEATH );
 
 	ClearItems();
+
+	lifeState = LifeState::DYING;
 }
 
 /**

@@ -57,7 +57,12 @@ class APig : public AAnimatedModel, public InventoryManager {
   };
   void PlayVoiceSample(VoiceCategory category);
 
-  void Killed();
+  enum class LifeState {
+  	ALIVE,
+  	DYING,
+  	DEAD
+  };
+  void Killed() override;
 
   void Deserialize(const ActorSpawn& spawn) override;
 
@@ -72,6 +77,8 @@ class APig : public AAnimatedModel, public InventoryManager {
   unsigned int team_{ 0 };
   unsigned int personality_{ 0 };
   unsigned int class_{ 0 };
+
+  LifeState lifeState{ LifeState::ALIVE };
 
   enum {
     EYES_OPEN,

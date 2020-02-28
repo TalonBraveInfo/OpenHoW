@@ -83,10 +83,11 @@ std::string MapManifest::Serialize() {
 
 GameManager::GameManager() {
 	plRegisterConsoleCommand( "CreateMap", CreateMapCommand, "Creates a new named map." );
-	plRegisterConsoleCommand( "map", MapCommand, "" );
-	plRegisterConsoleCommand( "maps", MapsCommand, "" );
+	plRegisterConsoleCommand( "OpenMap", OpenMapCommand, "" );
+	plRegisterConsoleCommand( "ListMaps", ListMapsCommand, "" );
 	plRegisterConsoleCommand( "GiveItem", GiveItemCommand, "Gives a specified item to the current occupied pig." );
 	plRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
+	plRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied pig." );
 
 	// Load in all the data we'll retain in memory
 	Engine::Resource()->LoadModel( "chars/pigs/ac_hi", true, true );
@@ -332,7 +333,7 @@ void GameManager::CreateMapCommand( unsigned int argc, char** argv ) {
  * @param argc
  * @param argv
  */
-void GameManager::MapCommand( unsigned int argc, char** argv ) {
+void GameManager::OpenMapCommand( unsigned int argc, char** argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
@@ -357,7 +358,7 @@ void GameManager::MapCommand( unsigned int argc, char** argv ) {
  * @param argc
  * @param argv
  */
-void GameManager::MapsCommand( unsigned int argc, char** argv ) {
+void GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->map_manifests_.empty() ) {
 		LogWarn( "No maps available!\n" );
 		return;
@@ -412,6 +413,27 @@ void GameManager::GiveItemCommand( unsigned int argc, char** argv ) {
 	pig->AddInventoryItem( item, quantity );
 }
 
+void GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
+	if ( Engine::Game()->mode_ == nullptr ) {
+		LogWarn( "Command cannot function outside of game!\n" );
+		return;
+	}
+
+	Player *player = Engine::Game()->mode_->GetCurrentPlayer();
+	if ( player == nullptr ) {
+		LogWarn( "Failed to get current player!\n" );
+		return;
+	}
+
+	Actor *actor = player->GetCurrentChild();
+	if ( actor == nullptr ) {
+		LogWarn( "No actor currently active!\n" );
+		return;
+	}
+
+	actor->Damage( nullptr, 9999 );
+}
+
 void GameManager::SpawnModelCommand( unsigned int argc, char** argv ) {
 	if ( Engine::Game()->mode_ == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
@@ -434,7 +456,7 @@ void GameManager::SpawnModelCommand( unsigned int argc, char** argv ) {
 		return;
 	}
 
-	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "static_model" ));
+	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}

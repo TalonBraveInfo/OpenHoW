@@ -85,6 +85,32 @@ void Actor::DestroyPhysicsBody() {
   physics_body_ = nullptr;
 }
 
+/**
+ * Used for inflicting damage upon the actor.
+ * @param attacker The actor inflicting the damage.
+ * @param damageInflicted The amout of health to subtract.
+ * @param direction The direction of the damage.
+ * @param velocity Velocity of the damage, for physics.
+ * @return Returns true if the actor is killed.
+ */
+bool Actor::Damage(const Actor *attacker, uint16_t damageInflicted, PLVector3 direction, PLVector3 velocity) {
+	if ( health_ <= 0 ) {
+		return true;
+	}
+
+	health_ -= damageInflicted;
+	if ( health_ <= 0 ) {
+		Killed();
+		return true;
+	}
+
+	return false;
+}
+
+void Actor::Killed() {
+	ActorManager::GetInstance()->DestroyActor( this );
+}
+
 void Actor::AddHealth(int16_t health) {
   if(health <= 0) {
     return;

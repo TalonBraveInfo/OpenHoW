@@ -24,6 +24,7 @@
 /************************************************************/
 
 ActorSet ActorManager::actors_;
+std::vector< Actor* > ActorManager::destructionQueue;
 std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
     __attribute__((init_priority (1000)));
 
@@ -42,8 +43,15 @@ Actor* ActorManager::CreateActor(const std::string& class_name) {
 
 void ActorManager::DestroyActor(Actor* actor) {
   u_assert(actor != nullptr, "attempted to delete a null actor!\n");
-  actors_.erase(actor);
-  delete actor;
+
+  // Ensure it's not already queued for destruction
+  if ( std::find( destructionQueue.begin(), destructionQueue.end(), actor ) != destructionQueue.end() ) {
+  	LogDebug( "Attempted to queue actor for deletion twice, ignoring...\n" );
+  	return;
+  }
+
+  // Move it into a queue for destruction
+  destructionQueue.push_back( actor );
 }
 
 void ActorManager::TickActors() {
@@ -54,6 +62,13 @@ void ActorManager::TickActors() {
 
     actor->Tick();
   }
+
+  // Now clean everything up that was marked for destruction
+  for ( auto &i : destructionQueue ) {
+  	actors_.erase( i );
+  	delete i;
+  }
+  destructionQueue.clear();
 }
 
 void ActorManager::DrawActors() {
