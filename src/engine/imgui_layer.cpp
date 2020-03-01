@@ -597,7 +597,11 @@ void UI_DisplayDebugMenu( void ) {
 	// implementation done.
 	if ( !Engine::Game()->IsModeActive() ) {
 		ImGui::SetNextWindowSize( ImVec2( 320, 128 ) );
-		ImGui::SetNextWindowPos( IMGUI_POS_CENTER );
+		ImGui::SetNextWindowPos( ImVec2(
+			static_cast<float>(cv_display_width->i_value) * 0.5f,
+			static_cast<float>(cv_display_height->i_value) * 0.5f ),
+								 ImGuiCond_Always,
+								 ImVec2( 0.5f, 0.5f ) );
 		static bool state = false;
 		if ( ImGui::Begin(
 			"InstructionMenu",
