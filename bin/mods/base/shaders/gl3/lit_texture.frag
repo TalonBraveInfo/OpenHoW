@@ -42,16 +42,18 @@ void main() {
     vec3 light_direction = normalize(-sun_position);
     vec4 sun_term = (max(dot(normal, light_direction), 0.0)) * sun_colour + ambient_colour;
     vec4 diffuse_colour = sun_term * interp_colour * dsample;
-    // uncomment to check normals...
-    //diffuse_colour = vec4(normal, 1.0);
 
     // rim term
-    //vec3 rnormal = normalize(mat3(pl_view) * interp_normal);
-    //vec3 vpos = vec3(pl_view * )
+    vec3 rnormal = normalize(mat3(pl_view) * interp_normal);
+    rnormal.x *= -1;
+    rnormal.z *= -1;
+    vec4 rim_term = ( dot(normal, rnormal) * vec4(1, 1, 1, 1) );
+    rim_term.a = 1;
 
     float fog_distance = (gl_FragCoord.z / gl_FragCoord.w) / (fog_far * 100.0);
     float fog_amount = 1.0 - fog_distance;
     fog_amount *= -(fog_near / 100.0);
 
+    //pl_frag = rim_term;
     pl_frag = mix(diffuse_colour, fog_colour, clamp(fog_amount, 0.0, 1.0));
 }
