@@ -17,28 +17,16 @@
  */
 
 /* pigs */
-{
-"/Chars/british.mad", "/mods/how/chars/pigs/"},        /* actually contains all the pig models */
-{
-"/Chars/FACES.MTD", "/mods/how/chars/pigs/faces/"},  /* contains all the face textures       */
-{
-"/Chars/AMERICAN.MTD", "/mods/how/chars/pigs/american/"},
-{
-"/Chars/british.mtd", "/mods/how/chars/pigs/british/"},
-{
-"/Chars/FRENCH.MTD", "/mods/how/chars/pigs/french/"},
-{
-"/Chars/GERMAN.MTD", "/mods/how/chars/pigs/german/"},
-{
-"/Chars/JAPANESE.MTD", "/mods/how/chars/pigs/japanese/"},
-{
-"/Chars/RUSSIAN.MTD", "/mods/how/chars/pigs/russian/"},
-{
-"/Chars/TEAMLARD.MTD", "/mods/how/chars/pigs/teamlard/"},
-{
-"/Chars/BRITHATS.MAD", "/mods/how/chars/pigs/hats/"},
-{
-"/Chars/FHATS.MAD", "/mods/how/chars/pigs/hats/"},
+{"/Chars/FACES.MTD", "/mods/how/chars/pigs/faces/"},  /* contains all the face textures       */
+{"/Chars/AMERICAN.MTD", "/mods/how/chars/pigs/american/"},
+{"/Chars/british.mtd", "/mods/how/chars/pigs/british/"},
+{"/Chars/FRENCH.MTD", "/mods/how/chars/pigs/french/"},
+{"/Chars/GERMAN.MTD", "/mods/how/chars/pigs/german/"},
+{"/Chars/JAPANESE.MTD", "/mods/how/chars/pigs/japanese/"},
+{"/Chars/RUSSIAN.MTD", "/mods/how/chars/pigs/russian/"},
+{"/Chars/TEAMLARD.MTD", "/mods/how/chars/pigs/teamlard/"},
+{"/Chars/BRITHATS.MAD", "/mods/how/chars/pigs/hats/"},
+{"/Chars/FHATS.MAD", "/mods/how/chars/pigs/hats/"},
 
 /* sky */
 {

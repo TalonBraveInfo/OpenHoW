@@ -104,7 +104,9 @@ static ModelConversionData pc_conversion_data[] = {
 	{ "/Chars/TOP.MAD", "/Chars/TOP.MTD", "mods/how/chars/top/" },
 	{ "/Chars/SIGHT.MAD", "/Chars/SIGHT.MTD", "mods/how/chars/sight/" },
 
-	{ "/Chars/SKYDOME.MAD", NULL, "mods/how/skys/" },
+	{ "/Chars/british.mad", "/Chars/british.mtd", "mods/how/chars/pigs/" }, /* pig models */
+
+	{ "/Chars/SKYDOME.MAD", "/Chars/SKYDOME.MTD", "mods/how/skys/" },
 };
 
 static void ConvertModelData( void ) {
@@ -157,13 +159,14 @@ static void ConvertModelData( void ) {
 		/* Now we need to load each fac, fetch each index for each texture and figure out
 		 * the true name for that texture by comparing against the mtd. */
 
-		if ( pc_conversion_data[ i ].mtd != NULL ) {
-			snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mtd );
-			package = plLoadPackage( path );
-			if ( package == NULL ) {
-				Error( "Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[ i ].mtd, plGetError() );
-			}
+		snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mtd );
+		package = plLoadPackage( path );
+		if ( package == NULL ) {
+			Error( "Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[ i ].mtd, plGetError() );
+		}
 
+		/* pigs are a special case... */
+		if ( strcmp( pc_conversion_data[ i ].mad, "/Chars/british.mad" ) != 0 ) {
 			// write all the textures out
 			for ( unsigned int j = 0; j < package->table_size; ++j ) {
 				char out[PL_SYSTEM_MAX_PATH];
