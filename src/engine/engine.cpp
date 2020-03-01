@@ -88,7 +88,10 @@ void openhow::Engine::Initialize() {
 	Input_Initialize();
 	Display_Initialize();
 	resource_manager_ = new hwResourceManager();
+
 	audio_manager_ = new AudioManager();
+	audio_manager_->SetupMusicSource();
+
 	game_manager_ = new GameManager();
 	FE_Initialize();
 
@@ -134,7 +137,7 @@ bool openhow::Engine::IsRunning() {
 		loops++;
 	}
 
-	double deltaTime = ( double ) ( System_GetTicks() + SKIP_TICKS - next_tick ) / ( double ) ( SKIP_TICKS );
+	deltaTime = ( double ) ( System_GetTicks() + SKIP_TICKS - next_tick ) / ( double ) ( SKIP_TICKS );
 	Display_Draw( deltaTime );
 
 	return true;

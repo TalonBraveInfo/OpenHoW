@@ -63,12 +63,12 @@ unsigned int reverb_sound_slot = 0;
 
 AudioSource::AudioSource( const AudioSample* sample, float gain, float pitch, bool looping ) :
 	AudioSource( sample, PLVector3( 0, 0, 0 ), PLVector3( 0, 0, 0 ), false, gain, pitch, looping ) {
-	alSourcei( al_source_id_, AL_SOURCE_RELATIVE, AL_TRUE );
+	alSourcei( alSourceId, AL_SOURCE_RELATIVE, AL_TRUE );
 }
 
 AudioSource::AudioSource( const AudioSample* sample, PLVector3 pos, PLVector3 vel,
 						  bool reverb, float gain, float pitch, bool looping ) {
-	alGenSources( 1, &al_source_id_ );
+	alGenSources( 1, &alSourceId );
 	OALCheckErrors();
 
 	SetPosition( pos );
@@ -77,13 +77,13 @@ AudioSource::AudioSource( const AudioSample* sample, PLVector3 pos, PLVector3 ve
 	SetPitch( pitch );
 	SetLooping( looping );
 
-	alSourcef( al_source_id_, AL_REFERENCE_DISTANCE, 300.0f );
+	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, 300.0f );
 	OALCheckErrors();
-	alSourcef( al_source_id_, AL_ROLLOFF_FACTOR, 1.0f );
+	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, 1.0f );
 	OALCheckErrors();
 
 	if ( reverb && Engine::Audio()->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX ) ) {
-		alSource3i( al_source_id_, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
+		alSource3i( alSourceId, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
 		OALCheckErrors();
 	}
 
@@ -98,12 +98,12 @@ AudioSource::~AudioSource() {
 	StopPlaying();
 
 	if ( current_sample_ != nullptr ) {
-		unsigned int buf = current_sample_->al_buffer_id_;
-		alSourceUnqueueBuffers( al_source_id_, 1, &buf );
+		unsigned int buf = current_sample_->alBufferId;
+		alSourceUnqueueBuffers( alSourceId, 1, &buf );
 	}
 
-	alSourcei( al_source_id_, AL_BUFFER, 0 );
-	alDeleteSources( 1, &al_source_id_ );
+	alSourcei( alSourceId, AL_BUFFER, 0 );
+	alDeleteSources( 1, &alSourceId );
 
 	Engine::Audio()->sources_.erase( this );
 }
@@ -119,72 +119,77 @@ void AudioSource::SetSample( const AudioSample* sample ) {
 	}
 
 	if ( current_sample_ != nullptr && sample != current_sample_ ) {
-		unsigned int buf = current_sample_->al_buffer_id_;
-		alSourceUnqueueBuffers( al_source_id_, 1, &buf );
-		u_assert( buf == current_sample_->al_buffer_id_ );
+		unsigned int buf = current_sample_->alBufferId;
+		alSourceUnqueueBuffers( alSourceId, 1, &buf );
+		u_assert( buf == current_sample_->alBufferId );
 		OALCheckErrors();
 	}
 
-	alSourceQueueBuffers( al_source_id_, 1, &sample->al_buffer_id_ );
+	alSourceQueueBuffers( alSourceId, 1, &sample->alBufferId );
 	OALCheckErrors();
 
 	current_sample_ = sample;
 }
 
 void AudioSource::SetPosition( PLVector3 position ) {
-	alSource3f( al_source_id_, AL_POSITION, position.x, position.y, position.z );
+	alSource3f( alSourceId, AL_POSITION, position.x, position.y, position.z );
 	OALCheckErrors();
 	position_ = position;
 }
 
 void AudioSource::SetVelocity( PLVector3 velocity ) {
-	alSource3f( al_source_id_, AL_VELOCITY, velocity.x, velocity.y, velocity.z );
+	alSource3f( alSourceId, AL_VELOCITY, velocity.x, velocity.y, velocity.z );
 	OALCheckErrors();
 	velocity_ = velocity;
 }
 
 void AudioSource::SetGain( float gain ) {
-	alSourcef( al_source_id_, AL_GAIN, gain );
+	alSourcef( alSourceId, AL_GAIN, gain );
 	OALCheckErrors();
 	gain_ = gain;
 }
 
 void AudioSource::SetPitch( float pitch ) {
-	alSourcef( al_source_id_, AL_PITCH, pitch );
+	alSourcef( alSourceId, AL_PITCH, pitch );
 	OALCheckErrors();
 	pitch_ = pitch;
 }
 
 void AudioSource::SetLooping( bool looping ) {
-	alSourcef( al_source_id_, AL_LOOPING, looping );
+	alSourcef( alSourceId, AL_LOOPING, looping );
 	OALCheckErrors();
 }
 
 void AudioSource::StartPlaying() {
-	alSourcePlay( al_source_id_ );
+	alSourcePlay( alSourceId );
 	OALCheckErrors();
 }
 
 void AudioSource::StopPlaying() {
 	int state;
-	alGetSourcei( al_source_id_, AL_SOURCE_STATE, &state );
+	alGetSourcei( alSourceId, AL_SOURCE_STATE, &state );
 	OALCheckErrors();
 	if ( state != AL_PLAYING ) {
 		return;
 	}
 
-	alSourceStop( al_source_id_ );
+	alSourceStop( alSourceId );
+
+	unsigned int buf = current_sample_->alBufferId;
+	alSourceUnqueueBuffers( alSourceId, 1, &buf );
+	u_assert( buf == current_sample_->alBufferId );
+	OALCheckErrors();
 }
 
 bool AudioSource::IsPlaying() {
 	int state;
-	alGetSourcei( al_source_id_, AL_SOURCE_STATE, &state );
+	alGetSourcei( alSourceId, AL_SOURCE_STATE, &state );
 	return ( state == AL_PLAYING );
 }
 
 bool AudioSource::IsPaused() {
 	int state;
-	alGetSourcei( al_source_id_, AL_SOURCE_STATE, &state );
+	alGetSourcei( alSourceId, AL_SOURCE_STATE, &state );
 	return ( state == AL_PAUSED );
 }
 
@@ -194,7 +199,7 @@ void AudioSource::Pause() {
 		return;
 	}
 
-	alSourcePause( al_source_id_ );
+	alSourcePause( alSourceId );
 }
 
 /************************************************************/
@@ -452,6 +457,11 @@ AudioSource* AudioManager::CreateSource( const AudioSample* sample, PLVector3 po
 	return new AudioSource( sample, pos, vel, reverb, gain, pitch, looping );
 }
 
+void AudioManager::SetupMusicSource() {
+	// Setup our global music source
+	musicSource = new AudioSource( nullptr, cv_audio_volume_music->f_value, 1.0f, false );
+}
+
 void AudioManager::Tick() {
 	PLVector3 position = { 0, 0, 0 }, angles = { 0, 0, 0 };
 
@@ -533,17 +543,21 @@ void AudioManager::FreeSources() {
 	LogInfo( "Freeing all audio sources...\n" );
 
 	for ( auto source : sources_ ) {
+		// Don't destroy our music source, it needs to be preserved!
+		if ( source == musicSource ) {
+			continue;
+		}
+
+		sources_.erase( source );
+
 		source->StopPlaying();
 		delete source;
 	}
 
-	sources_.clear();
 	temp_sources_.clear();
 }
 
 void AudioManager::FreeSamples( bool force ) {
-	u_assert( sources_.empty(), "audio sources weren't emptied!\n" );
-
 	LogInfo( "Freeing all audio samples...\n" );
 
 	if ( force ) {
@@ -593,39 +607,22 @@ void AudioManager::PlayMusic( const std::string& path ) {
 		return;
 	}
 
-	if ( music_source_ == nullptr ) {
-		// Setup our global music source
-		music_source_ = new AudioSource( sample, cv_audio_volume_music->f_value, 1.0f, false );
-	} else {
-		music_source_->StopPlaying();
-		music_source_->SetSample( sample );
-	}
+	musicSource->StopPlaying();
 
-	music_source_->StartPlaying();
+	musicSource->SetSample( sample );
+	musicSource->StartPlaying();
 }
 
 void AudioManager::PauseMusic() {
-	if ( music_source_ == nullptr ) {
-		return;
-	}
-
-	music_source_->Pause();
+	musicSource->Pause();
 }
 
 void AudioManager::StopMusic() {
-	if ( music_source_ == nullptr ) {
-		return;
-	}
-
-	music_source_->StopPlaying();
+	musicSource->StopPlaying();
 }
 
 void AudioManager::SetMusicVolume( float gain ) {
-	if ( music_source_ == nullptr ) {
-		return;
-	}
-
-	music_source_->SetGain( gain );
+	musicSource->SetGain( gain );
 }
 
 void AudioManager::SetMusicVolumeCommand( const PLConsoleVariable* var ) {
@@ -643,15 +640,15 @@ void AudioManager::StopMusicCommand( unsigned int argc, char* argv[] ) {
 /* Audio Sample */
 
 AudioSample::~AudioSample() {
-	alDeleteBuffers( 1, &al_buffer_id_ );
+	alDeleteBuffers( 1, &alBufferId );
 	OALCheckErrors();
 
 	SDL_FreeWAV( data_ );
 }
 
 AudioSample::AudioSample( uint8_t* data, unsigned int freq, unsigned int format, unsigned int length, bool preserve ) {
-	alGenBuffers( 1, &al_buffer_id_ );
+	alGenBuffers( 1, &alBufferId );
 	OALCheckErrors();
-	alBufferData( al_buffer_id_, format, data, length, freq );
+	alBufferData( alBufferId, format, data, length, freq );
 	OALCheckErrors();
 }

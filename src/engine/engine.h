@@ -59,36 +59,40 @@
 
 namespace openhow {
 class Engine;
-extern Engine* engine;
+extern Engine *engine;
 class Engine {
- public:
-  Engine();
-  ~Engine();
+public:
+	Engine();
+	~Engine();
 
-  static AudioManager* Audio() {
-    return engine->audio_manager_;
-  }
-  static GameManager* Game() {
-	  return engine->game_manager_;
-  }
-	static hwResourceManager* Resource() {
+	static AudioManager *Audio() {
+		return engine->audio_manager_;
+	}
+	static GameManager *Game() {
+		return engine->game_manager_;
+	}
+	static hwResourceManager *Resource() {
 		return engine->resource_manager_;
 	}
-	static IPhysicsInterface* Physics() {
+	static IPhysicsInterface *Physics() {
 		return engine->physics_interface_;
 	}
 
-  void Initialize();
+	void Initialize();
 
-  std::string GetVersionString();
+	std::string GetVersionString();
 
-  bool IsRunning();
+	bool IsRunning();
 
- private:
-  GameManager* game_manager_{nullptr};
-	AudioManager* audio_manager_{ nullptr };
-	hwResourceManager* resource_manager_{ nullptr };
-	IPhysicsInterface* physics_interface_{ nullptr };
+	double GetDeltaTime() { return deltaTime; }
+
+private:
+	GameManager *game_manager_{ nullptr };
+	AudioManager *audio_manager_{ nullptr };
+	hwResourceManager *resource_manager_{ nullptr };
+	IPhysicsInterface *physics_interface_{ nullptr };
+
+	double deltaTime{ 0 };
 };
 }
 
@@ -99,21 +103,21 @@ typedef struct BaseGameMode BaseGameMode;
 #endif // __cplusplus; todo: remove this once all code is compiled as C++
 
 typedef struct EngineState {
-  struct PLCamera* ui_camera;    // camera used for UI elements, orthographic
+	struct PLCamera *ui_camera;    // camera used for UI elements, orthographic
 
-  unsigned int sys_ticks;
-  unsigned int last_sys_tick;
+	unsigned int sys_ticks;
+	unsigned int last_sys_tick;
 
-  unsigned int sim_ticks;
+	unsigned int sim_ticks;
 
-  unsigned int draw_ticks;
-  unsigned int last_draw_ms;
+	unsigned int draw_ticks;
+	unsigned int last_draw_ms;
 
-  struct {
-    unsigned int num_chunks_drawn;
-    unsigned int num_actors_drawn;
-    unsigned int num_triangles_total;
-  } gfx;
+	struct {
+		unsigned int num_chunks_drawn;
+		unsigned int num_actors_drawn;
+		unsigned int num_triangles_total;
+	} gfx;
 } EngineState;
 extern EngineState g_state;
 
@@ -122,27 +126,27 @@ PL_EXTERN_C
 /************************************************************/
 /* System */
 
-unsigned int System_GetTicks(void);
+unsigned int System_GetTicks( void );
 
 enum PromptLevel {
-  PROMPT_LEVEL_DEFAULT,
-  PROMPT_LEVEL_WARNING,
-  PROMPT_LEVEL_ERROR,
+	PROMPT_LEVEL_DEFAULT,
+	PROMPT_LEVEL_WARNING,
+	PROMPT_LEVEL_ERROR,
 };
 
-void System_DisplayMessageBox(unsigned int level, const char* msg, ...);
-void System_DisplayWindow(bool fullscreen, int width, int height);
+void System_DisplayMessageBox( unsigned int level, const char *msg, ... );
+void System_DisplayWindow( bool fullscreen, int width, int height );
 
-int System_SetSwapInterval(int interval);
-void System_SwapDisplay(void);
+int System_SetSwapInterval( int interval );
+void System_SwapDisplay( void );
 
-void System_SetWindowTitle(const char* title);
-void System_GetWindowSize(int* width, int* height, bool* fs);
-void System_GetWindowDrawableSize(int* width, int* height, bool* fs);
-bool System_SetWindowSize(int width, int height, bool fs);
+void System_SetWindowTitle( const char *title );
+void System_GetWindowSize( int *width, int *height, bool *fs );
+void System_GetWindowDrawableSize( int *width, int *height, bool *fs );
+bool System_SetWindowSize( int width, int height, bool fs );
 
 void System_PollEvents();
 
-void System_Shutdown(void);
+void System_Shutdown( void );
 
 PL_EXTERN_C_END
