@@ -26,7 +26,7 @@
 using namespace openhow;
 
 void NewGameWindow::Display() {
-	ImGui::SetNextWindowSize( ImVec2( 320, 320 ), ImGuiCond_Once );
+	ImGui::SetNextWindowSize( ImVec2( 320, 400 ), ImGuiCond_Once );
 	ImGui::Begin( "New Game", &status_, ED_DEFAULT_WINDOW_FLAGS );
 
 	// Team Selection
