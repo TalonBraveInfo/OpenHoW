@@ -21,8 +21,8 @@
 #define MIN_DISPLAY_HEIGHT  480
 
 typedef struct VideoPreset{
-    int width;
-    int height;
+    int width{ 0 };
+    int height{ 0 };
 } VideoPreset;
 
 void Display_Initialize(void);

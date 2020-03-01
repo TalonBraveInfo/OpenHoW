@@ -160,29 +160,27 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 
 	System_SetWindowIcon( "icon.png" );
 
-	{
-		//Gen list of video presets
-		VideoPreset tmp_preset;
-		int num_display_modes = SDL_GetNumDisplayModes( 0 );
-		if ( num_display_modes > 0 ) {
-			LogInfo( "Generating video presets from %d display modes", num_display_modes );
-			for ( int i = 0; i < num_display_modes; ++i ) {
-				SDL_DisplayMode tmp_mode;
-				if ( SDL_GetDisplayMode( 0, i, &tmp_mode ) != 0 ) {
-					LogInfo( "Failed to get an SDL display mode: %s", SDL_GetError() );
-					continue;
-				}
-
-				//Presets enumerated in order, avoid duplicates with differing refresh rates
-				if ( tmp_preset.width != tmp_mode.w || tmp_preset.height != tmp_mode.h ) {
-					Display_AppendVideoPreset( tmp_mode.w, tmp_mode.h );
-					tmp_preset.width = tmp_mode.w;
-					tmp_preset.height = tmp_mode.h;
-				}
+	//Gen list of video presets
+	VideoPreset tmp_preset;
+	int num_display_modes = SDL_GetNumDisplayModes( 0 );
+	if ( num_display_modes > 0 ) {
+		LogInfo( "Generating video presets from %d display modes", num_display_modes );
+		for ( int i = 0; i < num_display_modes; ++i ) {
+			SDL_DisplayMode tmp_mode;
+			if ( SDL_GetDisplayMode( 0, i, &tmp_mode ) != 0 ) {
+				LogInfo( "Failed to get an SDL display mode: %s", SDL_GetError() );
+				continue;
 			}
-		} else {
-			LogInfo( "No display modes founds, failed to generate video presets" );
+
+			//Presets enumerated in order, avoid duplicates with differing refresh rates
+			if ( tmp_preset.width != tmp_mode.w || tmp_preset.height != tmp_mode.h ) {
+				Display_AppendVideoPreset( tmp_mode.w, tmp_mode.h );
+				tmp_preset.width = tmp_mode.w;
+				tmp_preset.height = tmp_mode.h;
+			}
 		}
+	} else {
+		LogInfo( "No display modes founds, failed to generate video presets" );
 	}
 
 	SDL_SetWindowMinimumSize( window, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT );
