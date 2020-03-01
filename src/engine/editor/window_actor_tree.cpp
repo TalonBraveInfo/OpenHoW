@@ -87,6 +87,16 @@ void ActorTreeWindow::DisplayActorProperties( Actor* actor ) {
 			name = property->description.c_str();
 		}
 
+		auto* stringProperty = dynamic_cast< StringProperty* >( property );
+		if ( stringProperty != nullptr ) {
+			char *buf = new char[ stringProperty->length() + 1 ];
+			strcpy( buf, stringProperty->c_str() );
+			if ( ImGui::InputText( name, buf, sizeof( buf ) ) ) {
+				*stringProperty = buf;
+			}
+			delete []buf;
+		}
+
 		auto* vectorProperty = dynamic_cast<Vector3Property*>(property);
 		if ( vectorProperty != nullptr ) {
 			PLVector3 value = *vectorProperty;
