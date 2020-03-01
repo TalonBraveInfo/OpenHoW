@@ -302,6 +302,10 @@ class StringProperty : public Property {
     return value_.c_str();
   }
 
+  size_t length() const {
+  	return value_.length();
+  }
+
   const std::string& operator=(const StringProperty& value) {
     value_ = value;
     MarkDirty();
