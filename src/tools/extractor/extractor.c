@@ -31,7 +31,7 @@ static char g_output_path[PL_SYSTEM_MAX_PATH];
 /************************************************************/
 /* Data Conversion */
 
-static void ConvertImageToPng( const char* path ) {
+static void ConvertImageToPng( const char *path ) {
 	LogInfo( "Converting %s...\n", path );
 
 	// figure out if the file already exists before
@@ -50,7 +50,7 @@ static void ConvertImageToPng( const char* path ) {
 		return;
 	}
 
-	const char* ext = plGetFileExtension( path );
+	const char *ext = plGetFileExtension( path );
 	if ( ext != NULL && ext[ 0 ] != '\0' && strcmp( ext, "tim" ) == 0 ) {
 		// ensure that it's a format we're able to convert from
 		if ( image.format == PL_IMAGEFORMAT_RGB5A1 ) {
@@ -75,9 +75,9 @@ static void ConvertImageToPng( const char* path ) {
 }
 
 typedef struct ModelConversionData {
-	const char* mad;
-	const char* mtd;
-	const char* out;
+	const char *mad;
+	const char *mtd;
+	const char *out;
 } ModelConversionData;
 static ModelConversionData pc_conversion_data[] = {
 	{ "/Maps/BAY.MAD", "/Maps/bay.mtd", "mods/how/chars/scenery/" },
@@ -111,7 +111,7 @@ static void ConvertModelData( void ) {
 	for ( unsigned long i = 0; i < plArrayElements( pc_conversion_data ); ++i ) {
 		char path[PL_SYSTEM_MAX_PATH];
 		snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mad );
-		PLPackage* package = plLoadPackage( path );
+		PLPackage *package = plLoadPackage( path );
 		if ( package == NULL ) {
 			Error( "Failed to load MAD package, \"%s\" (%s)!\n", path, plGetError() );
 		}
@@ -128,11 +128,11 @@ static void ConvertModelData( void ) {
 					  pl_strtolower( package->table[ j ].fileName ) );
 
 			char dir[PL_SYSTEM_MAX_PATH];
-			const char* filename = plGetFileName( out );
+			const char *filename = plGetFileName( out );
 			strncpy( dir, out, strlen( out ) - strlen( filename ) );
 			dir[ strlen( out ) - strlen( filename ) ] = '\0';
 			if ( plCreatePath( dir ) ) {
-				PLFile* fp = plLoadPackageFile( package, package->table[ j ].fileName );
+				PLFile *fp = plLoadPackageFile( package, package->table[ j ].fileName );
 				if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
 					Error( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
 				}
@@ -146,7 +146,7 @@ static void ConvertModelData( void ) {
 				continue;
 			}
 
-			const char* ext = plGetFileExtension( package->table[ j ].fileName );
+			const char *ext = plGetFileExtension( package->table[ j ].fileName );
 			if ( pl_strcasecmp( ext, "fac" ) == 0 ) {
 				plStripExtension( model_paths[ num_models++ ], PL_SYSTEM_MAX_PATH - 1, out );
 			}
@@ -173,7 +173,7 @@ static void ConvertModelData( void ) {
 						  pc_conversion_data[ i ].out,
 						  pl_strtolower( package->table[ j ].fileName ) );
 				char dir[PL_SYSTEM_MAX_PATH];
-				const char* filename = plGetFileName( out );
+				const char *filename = plGetFileName( out );
 				strncpy( dir, out, strlen( out ) - strlen( filename ) );
 				dir[ strlen( out ) - strlen( filename ) ] = '\0';
 
@@ -201,7 +201,7 @@ static void ConvertModelData( void ) {
 #endif
 
 				if ( plCreatePath( dir ) ) {
-					PLFile* fp = plLoadPackageFile( package, package->table[ j ].fileName );
+					PLFile *fp = plLoadPackageFile( package, package->table[ j ].fileName );
 					if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
 						Error( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
 					}
@@ -223,10 +223,10 @@ static void ConvertModelData( void ) {
 			}
 
 			// we'll resize this later...
-			FacTextureIndex* table = u_alloc( package->table_size, sizeof( FacTextureIndex ), true );
+			FacTextureIndex *table = u_alloc( package->table_size, sizeof( FacTextureIndex ), true );
 			unsigned int table_size = 0;
 
-			FacHandle* fac = Fac_LoadFile( fac_path );
+			FacHandle *fac = Fac_LoadFile( fac_path );
 			for ( unsigned int k = 0; k < fac->num_triangles; ++k ) {
 				uint32_t texture_index = fac->triangles[ k ].texture_index;
 				if ( texture_index >= package->table_size ) {
@@ -273,12 +273,12 @@ static void ConvertModelData( void ) {
 /////////////////////////////////////////////////////////////
 /* Extraction process for initial setup */
 
-static void ExtractPtgPackage( const char* input_path, const char* output_path ) {
+static void ExtractPtgPackage( const char *input_path, const char *output_path ) {
 	if ( !plCreatePath( output_path ) ) {
 		Error( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
 	}
 
-	FILE* file = fopen( input_path, "rb" );
+	FILE *file = fopen( input_path, "rb" );
 	if ( file == NULL ) {
 		Error( "Failed to load PTG package, \"%s\"!\n", input_path );
 	}
@@ -307,12 +307,12 @@ static void ExtractPtgPackage( const char* input_path, const char* output_path )
 	u_fclose( file );
 }
 
-static void ExtractMadPackage( const char* input_path, const char* output_path ) {
+static void ExtractMadPackage( const char *input_path, const char *output_path ) {
 	if ( !plCreatePath( output_path ) ) {
 		Error( "Failed to create output directory,  \"%s\"!\nPL: %s\n", output_path, plGetError() );
 	}
 
-	PLPackage* package = plLoadPackage( input_path );
+	PLPackage *package = plLoadPackage( input_path );
 	if ( package == NULL ) {
 		Error( "Failed to load %s, aborting!\nPL: %s\n", input_path, plGetError() );
 	}
@@ -320,13 +320,13 @@ static void ExtractMadPackage( const char* input_path, const char* output_path )
 	for ( unsigned int i = 0; i < package->table_size; i++ ) {
 		char out[PL_SYSTEM_MAX_PATH];
 		snprintf( out, sizeof( out ) - 1, "%s%s", output_path, pl_strtolower( package->table[ i ].fileName ) );
-		PLFile* fp = plLoadPackageFile( package, package->table[ i ].fileName );
+		PLFile *fp = plLoadPackageFile( package, package->table[ i ].fileName );
 		if ( !plWriteFile( out, plGetFileData( fp ), package->table[ i ].fileSize ) ) {
 			Error( "Failed to write file, \"%s\" (%s)!\n", out, plGetError() );
 		}
 		plCloseFile( fp );
 
-		const char* ext = plGetFileExtension( out );
+		const char *ext = plGetFileExtension( out );
 		if ( strcmp( ext, "tim" ) == 0 ) {
 			ConvertImageToPng( out );
 		}
@@ -339,11 +339,11 @@ static void ExtractMadPackage( const char* input_path, const char* output_path )
 /* Texture Merger */
 
 typedef struct TextureMerge {
-	const char* output;
+	const char *output;
 	unsigned int num_textures;
 	unsigned int width, height;
 	struct {
-		const char* path;
+		const char *path;
 		unsigned int x, y;
 	} targets[10];
 } TextureMerge;
@@ -423,10 +423,10 @@ static void MergeTextureTargets( void ) {
 	unsigned int num_texture_targets = plArrayElements( texture_targets );
 	LogInfo( "Merging %d texture targets...\n", num_texture_targets );
 	for ( unsigned int i = 0; i < num_texture_targets; ++i ) {
-		TextureMerge* merge = &texture_targets[ i ];
+		TextureMerge *merge = &texture_targets[ i ];
 		LogInfo( "Generating %s\n", merge->output );
 		PLImage
-			* output = plCreateImage( NULL, merge->width, merge->height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+			*output = plCreateImage( NULL, merge->width, merge->height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 		if ( output == NULL ) {
 			LogWarn( "Failed to generate texture target (%s)!\n", plGetError() );
 			continue;
@@ -434,7 +434,7 @@ static void MergeTextureTargets( void ) {
 
 		for ( unsigned int j = 0; j < merge->num_textures; ++j ) {
 			PLImage image;
-			const char* path = merge->targets[ j ].path;
+			const char *path = merge->targets[ j ].path;
 			if ( !plLoadImage( path, &image ) ) {
 				LogWarn( "Failed to find image, \"%s\", for merge!\n", merge->targets[ j ].path );
 				continue;
@@ -443,8 +443,8 @@ static void MergeTextureTargets( void ) {
 			LogInfo( "Writing %s into %s\n", merge->targets[ j ].path, merge->output );
 
 			uint8_t
-				* pos = output->data[ 0 ] + ( ( merge->targets[ j ].y * output->width ) + merge->targets[ j ].x ) * 4;
-			uint8_t* src = image.data[ 0 ];
+				*pos = output->data[ 0 ] + ( ( merge->targets[ j ].y * output->width ) + merge->targets[ j ].x ) * 4;
+			uint8_t *src = image.data[ 0 ];
 			for ( unsigned int y = 0; y < image.height; ++y ) {
 				memcpy( pos, src, ( image.width * 4 ) );
 				src += image.width * 4;
@@ -464,7 +464,7 @@ static void MergeTextureTargets( void ) {
 /************************************************************/
 
 typedef struct IOPath {
-	const char* input, * output;
+	const char *input, *output;
 } IOPath;
 
 static IOPath pc_music_paths[] = {
@@ -479,7 +479,7 @@ static IOPath pc_package_paths[] = {
 #include "pc_package_paths.h"
 };
 
-static void ProcessPackagePaths( const char* in, const char* out, const IOPath* paths, unsigned int length ) {
+static void ProcessPackagePaths( const char *in, const char *out, const IOPath *paths, unsigned int length ) {
 	for ( unsigned int i = 0; i < length; ++i ) {
 		char output_path[PL_SYSTEM_MAX_PATH];
 		snprintf( output_path, sizeof( output_path ), "%s%s", out, paths[ i ].output );
@@ -491,7 +491,7 @@ static void ProcessPackagePaths( const char* in, const char* out, const IOPath* 
 		char input_path[PL_SYSTEM_MAX_PATH];
 		snprintf( input_path, sizeof( input_path ), "%s%s", in, paths[ i ].input );
 		LogInfo( "Copying %s to %s\n", input_path, output_path );
-		const char* ext = plGetFileExtension( input_path );
+		const char *ext = plGetFileExtension( input_path );
 		if ( pl_strncasecmp( ext, "PTG", 3 ) == 0 ) {
 			ExtractPtgPackage( input_path, output_path );
 		} else {
@@ -500,13 +500,13 @@ static void ProcessPackagePaths( const char* in, const char* out, const IOPath* 
 	}
 }
 
-static void ProcessCopyPaths( const char* in, const char* out, const IOPath* paths, unsigned int length ) {
+static void ProcessCopyPaths( const char *in, const char *out, const IOPath *paths, unsigned int length ) {
 	for ( unsigned int i = 0; i < length; ++i ) {
 		char output_path[PL_SYSTEM_MAX_PATH];
 		snprintf( output_path, sizeof( output_path ), "%s%s", out, paths[ i ].output );
 
 		// Fudge the path if it's one of the audio tracks
-		char* p = strstr( output_path, "sku1/" );
+		char *p = strstr( output_path, "sku1/" );
 		if ( p != NULL ) {
 			strncpy( p, region_idents[ version_info.region ], 3 );
 			memmove( p + 3, p + 4, strlen( p + 4 ) + 1 );
@@ -526,7 +526,7 @@ static void ProcessCopyPaths( const char* in, const char* out, const IOPath* pat
 	}
 }
 
-int main( int argc, char** argv ) {
+int main( int argc, char **argv ) {
 	if ( argc == 1 ) {
 		printf( "Invalid number of arguments ...\n"
 				"  extractor <game_path> -<out_path>\n" );
