@@ -159,10 +159,10 @@ static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
 }
 
 void Shaders_Initialize() {
-	plRegisterConsoleCommand( "listShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
-	plRegisterConsoleCommand( "rebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
-	plRegisterConsoleCommand( "rebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
-	plRegisterConsoleCommand( "rebuildShaderProgramCache", Cmd_RebuildShaderProgramCache,
+	plRegisterConsoleCommand( "ListShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
+	plRegisterConsoleCommand( "RebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
+	plRegisterConsoleCommand( "RebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
+	plRegisterConsoleCommand( "RebuildShaderProgramCache", Cmd_RebuildShaderProgramCache,
 		"Rebuild shader program cache" );
 
 	Shaders_CachePrograms();
@@ -217,7 +217,7 @@ ShaderProgram::~ShaderProgram() {
 
 void ShaderProgram::Rebuild() {
 	PLShaderProgram* newShaderProgram = plCreateShaderProgram();
-	if ( newShaderProgram ) {
+	if ( newShaderProgram == nullptr ) {
 		throw std::runtime_error( plGetError());
 	}
 

@@ -511,6 +511,12 @@ void UI_DisplayDebugMenu( void ) {
 
 			ImGui::Separator();
 
+			if ( ImGui::MenuItem( "Rebuild Shaders" ) ) {
+				plParseConsoleString( "rebuildShaderPrograms" );
+			}
+
+			ImGui::Separator();
+
 			if ( ImGui::BeginMenu( "Console Variables" ) ) {
 				size_t num_c;
 				PLConsoleVariable **vars;
@@ -549,12 +555,6 @@ void UI_DisplayDebugMenu( void ) {
 				}
 
 				ImGui::EndMenu();
-			}
-
-			ImGui::Separator();
-
-			if ( ImGui::MenuItem( "Rebuild Shaders" ) ) {
-				plParseConsoleString( "rebuildShaders" );
 			}
 
 			ImGui::EndMenu();
