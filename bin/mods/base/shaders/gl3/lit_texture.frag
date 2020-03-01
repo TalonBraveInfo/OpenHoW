@@ -44,11 +44,13 @@ void main() {
     vec4 diffuse_colour = sun_term * interp_colour * dsample;
 
     // rim term
+    /*
     vec3 rnormal = normalize(mat3(pl_view) * interp_normal);
     rnormal.x *= -1;
     rnormal.z *= -1;
     vec4 rim_term = ( dot(normal, rnormal) * vec4(1, 1, 1, 1) );
     rim_term.a = 1;
+    */
 
     float fog_distance = (gl_FragCoord.z / gl_FragCoord.w) / (fog_far * 100.0);
     float fog_amount = 1.0 - fog_distance;

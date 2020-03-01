@@ -21,8 +21,6 @@
 #include "extractor.h"
 
 #include "../../shared/fac.h"
-#include "../../shared/vtx.h"
-#include "../../shared/no2.h"
 
 static char g_input_path[PL_SYSTEM_MAX_PATH] = { '\0' };
 static char g_output_path[PL_SYSTEM_MAX_PATH];
@@ -115,8 +113,7 @@ static void ConvertModelData( void ) {
 		snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mad );
 		PLPackage* package = plLoadPackage( path );
 		if ( package == NULL ) {
-			LogWarn( "Failed to load MAD package, \"%s\" (%s)!\n", path, plGetError() );
-			continue;
+			Error( "Failed to load MAD package, \"%s\" (%s)!\n", path, plGetError() );
 		}
 
 		/* Write the files out to the destination. I'm lazy and we'll delete it once we're done anyway. */
@@ -137,11 +134,11 @@ static void ConvertModelData( void ) {
 			if ( plCreatePath( dir ) ) {
 				PLFile* fp = plLoadPackageFile( package, package->table[ j ].fileName );
 				if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
-					LogWarn( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
+					Error( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
 				}
 				plCloseFile( fp );
 			} else {
-				LogWarn( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
+				Error( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
 			}
 
 			// skydome is a special case
@@ -164,7 +161,7 @@ static void ConvertModelData( void ) {
 			snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mtd );
 			package = plLoadPackage( path );
 			if ( package == NULL ) {
-				LogWarn( "Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[ i ].mtd, plGetError() );
+				Error( "Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[ i ].mtd, plGetError() );
 			}
 
 			// write all the textures out
@@ -206,11 +203,11 @@ static void ConvertModelData( void ) {
 				if ( plCreatePath( dir ) ) {
 					PLFile* fp = plLoadPackageFile( package, package->table[ j ].fileName );
 					if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
-						LogWarn( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
+						Error( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
 					}
 					plCloseFile( fp );
 				} else {
-					LogWarn( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
+					Error( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
 				}
 
 				ConvertImageToPng( out );
@@ -222,31 +219,8 @@ static void ConvertModelData( void ) {
 			char fac_path[PL_SYSTEM_MAX_PATH];
 			snprintf( fac_path, PL_SYSTEM_MAX_PATH, "%s.fac", model_paths[ j ] );
 			if ( !plFileExists( fac_path ) ) {
-				LogWarn( "Failed to find FAC file, \"%s\"!\n", fac_path );
-				continue;
+				Error( "Failed to find FAC file, \"%s\"!\n", fac_path );
 			}
-
-#if defined( EXPORT_NORMALS )
-			char vtx_path[PL_SYSTEM_MAX_PATH];
-			snprintf( vtx_path, PL_SYSTEM_MAX_PATH, "%s.vtx", model_paths[ j ] );
-			if ( !plFileExists( vtx_path ) ) {
-				LogWarn( "Failed to find VTX file, \"%s\"!\n", vtx_path );
-				continue;
-			}
-
-			char no2_path[PL_SYSTEM_MAX_PATH];
-			snprintf( no2_path, PL_SYSTEM_MAX_PATH, "%s.no2", model_paths[ j ] );
-			if ( !plFileExists( no2_path ) ) {
-				LogWarn( "Failed to find NO2 file, \"%s\"!\n", no2_path );
-				continue;
-			}
-
-			bool generate_normals = false;
-			VtxHandle* vtx = Vtx_LoadFile( vtx_path );
-			if ( No2_LoadFile( no2_path, vtx ) == NULL ) {
-				generate_normals = true;
-			}
-#endif
 
 			// we'll resize this later...
 			FacTextureIndex* table = u_alloc( package->table_size, sizeof( FacTextureIndex ), true );
@@ -256,8 +230,7 @@ static void ConvertModelData( void ) {
 			for ( unsigned int k = 0; k < fac->num_triangles; ++k ) {
 				uint32_t texture_index = fac->triangles[ k ].texture_index;
 				if ( texture_index >= package->table_size ) {
-					LogWarn( "Out of bounds texture index, \"%s\"!\n", fac_path );
-					continue;
+					Error( "Out of bounds texture index, \"%s\"!\n", fac_path );
 				}
 
 				// attempt to add it to the table
@@ -302,19 +275,17 @@ static void ConvertModelData( void ) {
 
 static void ExtractPtgPackage( const char* input_path, const char* output_path ) {
 	if ( !plCreatePath( output_path ) ) {
-		LogWarn( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
-		return;
+		Error( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
 	}
 
 	FILE* file = fopen( input_path, "rb" );
 	if ( file == NULL ) {
-		LogWarn( "Failed to load PTG package, \"%s\"!\n", input_path );
-		return;
+		Error( "Failed to load PTG package, \"%s\"!\n", input_path );
 	}
 
 	uint32_t num_textures = 0;
 	if ( fread( &num_textures, sizeof( uint32_t ), 1, file ) != 1 ) {
-		LogWarn( "Invalid PTG file, failed to get number of textures!\n" );
+		Error( "Invalid PTG file, failed to get number of textures!\n" );
 	}
 
 	size_t tim_size = ( plGetLocalFileSize( input_path ) - sizeof( num_textures ) ) / num_textures;
@@ -338,14 +309,12 @@ static void ExtractPtgPackage( const char* input_path, const char* output_path )
 
 static void ExtractMadPackage( const char* input_path, const char* output_path ) {
 	if ( !plCreatePath( output_path ) ) {
-		LogInfo( "Failed to create output directory,  \"%s\"!\n", output_path );
-		return;
+		Error( "Failed to create output directory,  \"%s\"!\nPL: %s\n", output_path, plGetError() );
 	}
 
 	PLPackage* package = plLoadPackage( input_path );
 	if ( package == NULL ) {
-		LogInfo( "Failed to load %s, aborting!\n", input_path );
-		return;
+		Error( "Failed to load %s, aborting!\nPL: %s\n", input_path, plGetError() );
 	}
 
 	for ( unsigned int i = 0; i < package->table_size; i++ ) {
@@ -353,7 +322,7 @@ static void ExtractMadPackage( const char* input_path, const char* output_path )
 		snprintf( out, sizeof( out ) - 1, "%s%s", output_path, pl_strtolower( package->table[ i ].fileName ) );
 		PLFile* fp = plLoadPackageFile( package, package->table[ i ].fileName );
 		if ( !plWriteFile( out, plGetFileData( fp ), package->table[ i ].fileSize ) ) {
-			LogWarn( "Failed to write file, \"%s\" (%s)!\n", out, plGetError() );
+			Error( "Failed to write file, \"%s\" (%s)!\n", out, plGetError() );
 		}
 		plCloseFile( fp );
 
@@ -544,8 +513,7 @@ static void ProcessCopyPaths( const char* in, const char* out, const IOPath* pat
 		}
 
 		if ( !plCreatePath( output_path ) ) {
-			LogWarn( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
-			continue;
+			Error( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
 		}
 
 		strncat( output_path, plGetFileName( paths[ i ].input ), sizeof( output_path ) - strlen( output_path ) - 1 );
