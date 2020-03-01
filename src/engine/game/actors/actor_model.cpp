@@ -21,7 +21,8 @@
 
 using namespace openhow;
 
-AModel::AModel() : SuperClass() {}
+AModel::AModel() : SuperClass(),
+	INIT_PROPERTY( modelPath, PROP_LOCAL ) {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
@@ -49,6 +50,9 @@ void AModel::Draw() {
 void AModel::SetModel( const std::string& path ) {
 	model_ = Engine::Resource()->LoadModel( "chars/" + path, false );
 	u_assert( model_ != nullptr );
+
+	// Keep model path up-to-date
+	modelPath = model_->path;
 }
 
 void AModel::ShowModel( bool show ) {

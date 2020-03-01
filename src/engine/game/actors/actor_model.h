@@ -20,20 +20,22 @@
 #include "actor.h"
 
 class AModel : public Actor {
-  IMPLEMENT_ACTOR(AModel, Actor)
+	IMPLEMENT_ACTOR( AModel, Actor )
 
- public:
-  AModel();
-  ~AModel() override;
+public:
+	AModel();
+	~AModel() override;
 
-  void Draw() override;
-  void ShowModel(bool show = true);
+	void Draw() override;
+	void ShowModel( bool show = true );
 
-  virtual void SetModel(const std::string &path);
+	virtual void SetModel( const std::string &path );
 
- protected:
-  PLModel *model_{nullptr};
+protected:
+	PLModel *model_{ nullptr };
 
- private:
-  bool show_model_{true};
+private:
+	bool show_model_{ true };
+
+	StringProperty modelPath;
 };

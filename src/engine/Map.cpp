@@ -184,8 +184,8 @@ void Map::LoadSpawns( const std::string &path ) {
 		spawns_[ i ].fallback_position.z = ( spawns[ i ].fallback_position[ 2 ] += ( TERRAIN_PIXEL_WIDTH / 2 ) * -1 );
 
 		spawns_[ i ].angles.x = ( float ) ( spawns[ i ].angles[ 0 ] ) * ( 360.f / 4096.f );
-		spawns_[ i ].angles.y = ( float ) ( spawns[ i ].angles[ 1 ] ) * ( 360.f / 4096.f ) + 90.f;
-		spawns_[ i ].angles.z = ( float ) ( spawns[ i ].angles[ 2 ] ) * ( 360.f / 4096.f );
+		spawns_[ i ].angles.y = ( float ) ( spawns[ i ].angles[ 1 ] ) * ( 360.f / 4096.f ) - 90.0f;
+		spawns_[ i ].angles.z = ( float ) ( spawns[ i ].angles[ 2 ] ) * ( 360.f / 4096.f ) + 180.0f;
 
 		spawns_[ i ].class_name = u_stringtolower( spawns[ i ].name );
 		spawns_[ i ].appearance = spawns[ i ].appearance;
