@@ -19,6 +19,7 @@
 #include "../frontend.h"
 #include "../Map.h"
 #include "../language.h"
+#include "../mod_support.h"
 
 #include "actor_manager.h"
 #include "mode_base.h"
@@ -29,7 +30,6 @@
 
 #include "actors/actor_pig.h"
 #include "actors/actor_static_model.h"
-#include "../mod_support.h"
 
 using namespace openhow;
 

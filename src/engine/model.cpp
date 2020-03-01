@@ -100,6 +100,39 @@ const char *Model_GetAnimationDescription( unsigned int i ) {
 	return animationNames[ i ];
 }
 
+static TextureAtlas *Model_GenerateTextureAtlas( const std::string &facPath, const std::string &texturePath = "" ) {
+	FacHandle *facHandle = Fac_LoadFile( facPath.c_str() );
+	if ( facHandle == nullptr ) {
+		Fac_DestroyHandle( facHandle );
+		LogWarn( "Failed to generate texture sheet for pig, \"%s\"!\n", facPath.c_str() );
+		return nullptr;
+	} else if( facHandle->texture_table_size == 0 ) {
+		Fac_DestroyHandle( facHandle );
+		LogWarn( "Empty texture table for pig, \"%s\"!\n", facPath.c_str() );
+		return nullptr;
+	}
+
+	TextureAtlas *atlas = new TextureAtlas( 128, 8 );
+
+	for ( unsigned int i = 0; i < facHandle->texture_table_size; ++i ) {
+		if ( facHandle->texture_table[ i ].name[ 0 ] == '\0' ) {
+			LogWarn( "Invalid texture name in table, skipping (%d)!\n", i );
+			continue;
+		}
+
+		std::string str = facPath;
+		std::string texture_path = str.erase( str.find_last_of( '/' ) ) + "/" + texturePath;
+
+		if ( !atlas->AddImage( texture_path + facHandle->texture_table[ i ].name + ".png", true ) ) {
+			LogWarn( "Failed to add texture \"%s\" to atlas!\n", facHandle->texture_table[ i ].name );
+		}
+	}
+
+	atlas->Finalize();
+
+	return atlas;
+}
+
 PLModel *Model_LoadVtxFile( const char *path ) {
 	VtxHandle *vtx = Vtx_LoadFile( path );
 	if ( vtx == nullptr ) {
@@ -157,26 +190,6 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 		return model;
 	}
 
-	TextureAtlas atlas( 128, 8 );
-	if ( fac->texture_table_size > 0 ) {
-		for ( unsigned int i = 0; i < fac->texture_table_size; ++i ) {
-			if ( fac->texture_table[ i ].name[ 0 ] == '\0' ) {
-				LogWarn( "Invalid texture name in table, skipping (%d)!\n", i );
-				continue;
-			}
-
-			std::string str = path;
-			size_t pos = str.find_last_of( '/' );
-			std::string texture_path = str.erase( pos ) + "/";
-			if ( !atlas.AddImage( texture_path + fac->texture_table[ i ].name + ".png", true ) ) {
-				LogWarn( "Failed to add texture \"%s\" to atlas!\n", fac->texture_table[ i ].name );
-			}
-		}
-		atlas.Finalize();
-	} else {
-		LogWarn( "No texture table for \"%s\"!\n", path );
-	}
-
 	PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, fac->num_triangles, fac->num_triangles * 3 );
 	if ( mesh == nullptr ) {
 		Vtx_DestroyHandle( vtx );
@@ -186,11 +199,12 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 	}
 
 	for ( unsigned int j = 0; j < vtx->num_vertices; ++j ) {
-		vtx->vertices[ j ].position *= .5f;
+		vtx->vertices[ j ].position *= 0.5f;
 	}
 
 	// automatically returns default if failed
-	mesh->texture = atlas.GetTexture();
+	TextureAtlas *textureAtlas =  Model_GenerateTextureAtlas( fac_path );
+	mesh->texture = textureAtlas->GetTexture();
 
 	unsigned int cur_index = 0;
 	for ( unsigned int j = 0, next_vtx_i = 0; j < fac->num_triangles; ++j ) {
@@ -210,14 +224,14 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 
 		if ( fac->texture_table != nullptr ) {
 			float tx_x, tx_y, tx_w, tx_h;
-			atlas.GetTextureCoords( fac->texture_table[ fac->triangles[ j ].texture_index ].name,
+			textureAtlas->GetTextureCoords( fac->texture_table[ fac->triangles[ j ].texture_index ].name,
 									&tx_x,
 									&tx_y,
 									&tx_w,
 									&tx_h );
 
 			std::pair<unsigned int, unsigned int>
-				texture_size = atlas.GetTextureSize( fac->texture_table[ fac->triangles[ j ].texture_index ].name );
+				texture_size = textureAtlas->GetTextureSize( fac->texture_table[ fac->triangles[ j ].texture_index ].name );
 
 			for ( unsigned int k = 0, u = 0; k < 3; ++k, u += 2 ) {
 				plSetMeshVertexST( mesh, next_vtx_i - ( 3 - k ),
@@ -228,6 +242,8 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 			}
 		}
 	}
+
+	delete textureAtlas;
 
 	std::list<PLMesh *> meshes( &mesh, &mesh + 1 );
 	Mesh_GenerateFragmentedMeshNormals( meshes );
