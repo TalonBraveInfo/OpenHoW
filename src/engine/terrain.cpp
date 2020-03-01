@@ -311,20 +311,31 @@ void Terrain::LoadPmg( const std::string& path ) {
 				uint16_t z{ 0 };
 				uint16_t unknown0{ 0 };
 			} chunk;
-			if ( plReadFile( fh, &chunk, sizeof( chunk ), 1 ) != 1 ) {
-				Error( "unexpected end of file, aborting!\n" );
+
+			bool status;
+			chunk.x = plReadInt16( fh, false, &status );
+			chunk.y = plReadInt16( fh, false, &status );
+			chunk.z = plReadInt16( fh, false, &status );
+			chunk.unknown0 = plReadInt16( fh, false, &status );
+
+			if ( !status ) {
+				Error( "Failed to read in chunk descriptor in \"%s\"!\n", plGetFilePath( fh ) );
 			}
 
 			struct __attribute__((packed)) {
 				int16_t height{ 0 };
 				uint16_t lighting{ 0 };
 			} vertices[25];
-			if ( plReadFile( fh, vertices, sizeof( *vertices ), 25 ) != 25 ) {
-				Error( "Unexpected end of file, aborting!\n" );
-			}
 
 			// Find the maximum and minimum points
 			for ( auto& vertex : vertices ) {
+				vertex.height = plReadInt16( fh, false, &status );
+				vertex.lighting = plReadInt16( fh, false, &status );
+
+				if ( !status ) {
+					Error( "Failed to read in vertex descriptor in \"%s\"!\n", plGetFilePath( fh ) );
+				}
+
 				if ( static_cast<float>(vertex.height) > max_height_ ) {
 					max_height_ = vertex.height;
 				}
@@ -346,8 +357,21 @@ void Terrain::LoadPmg( const std::string& path ) {
 						uint32_t texture{ 0 };
 						uint8_t unused2{ 0 };
 					} tile;
-					if ( plReadFile( fh, &tile, sizeof( tile ), 1 ) != 1 ) {
-						Error( "unexpected end of file, aborting!\n" );
+
+					// Skip unused data
+					if ( plReadFile( fh, tile.unused0, 6, 1 ) != 1 ) {
+						Error( "Failed to skip unused bytes in \"%s\"!\n", plGetFilePath( fh ) );
+					}
+
+					tile.type = plReadInt8( fh, &status );
+					tile.slip = plReadInt8( fh, &status );
+					tile.unused1 = plReadInt16( fh, false, &status );
+					tile.rotation = plReadInt8( fh, &status );
+					tile.texture = plReadInt32( fh, false, &status );
+					tile.unused2 = plReadInt8( fh, &status );
+
+					if ( !status ) {
+						Error( "Failed to read in tile descriptor in \"%s\"!\n", plGetFilePath( fh ) );
 					}
 
 					Tile* current_tile = &current_chunk.tiles[ tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES ];
