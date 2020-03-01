@@ -121,7 +121,7 @@ void GameManager::Tick() {
 	}
 
 	if ( ambient_emit_delay_ < g_state.sim_ticks ) {
-		const AudioSample* sample = ambient_samples_[ rand() % MAX_AMBIENT_SAMPLES ];
+		const AudioSample *sample = ambient_samples_[ rand() % MAX_AMBIENT_SAMPLES ];
 		if ( sample != nullptr ) {
 			PLVector3 position = {
 				plGenerateRandomf( TERRAIN_PIXEL_WIDTH ),
@@ -150,7 +150,7 @@ void GameManager::Tick() {
 	}
 }
 
-void GameManager::SetupPlayers( const PlayerPtrVector& players ) {
+void GameManager::SetupPlayers( const PlayerPtrVector &players ) {
 	for ( auto i : players ) {
 		GetMode()->PlayerJoined( i );
 	}
@@ -158,7 +158,7 @@ void GameManager::SetupPlayers( const PlayerPtrVector& players ) {
 	players_ = players;
 }
 
-Player* GameManager::GetPlayerByIndex( unsigned int i ) {
+Player *GameManager::GetPlayerByIndex( unsigned int i ) {
 	if ( i >= players_.size() ) {
 		LogWarn( "Invalid player index, \"%d\"!\n", i );
 		return nullptr;
@@ -167,14 +167,14 @@ Player* GameManager::GetPlayerByIndex( unsigned int i ) {
 	return players_[ i ];
 }
 
-void GameManager::LoadMap( const std::string& name ) {
-	MapManifest* manifest = Engine::Game()->GetMapManifest( name );
+void GameManager::LoadMap( const std::string &name ) {
+	MapManifest *manifest = Engine::Game()->GetMapManifest( name );
 	if ( manifest == nullptr ) {
 		LogWarn( "Failed to get map descriptor, \"%s\"\n", name.c_str() );
 		return;
 	}
 
-	Map* map = new Map( manifest );
+	Map *map = new Map( manifest );
 	if ( map_ != nullptr ) {
 		EndMode();
 	}
@@ -190,7 +190,7 @@ void GameManager::UnloadMap() {
 	delete map_;
 }
 
-void GameManager::RegisterTeamManifest( const std::string& path ) {
+void GameManager::RegisterTeamManifest( const std::string &path ) {
 	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
 
 	try {
@@ -214,12 +214,12 @@ void GameManager::RegisterTeamManifest( const std::string& path ) {
 
 			config.LeaveChildNode();
 		}
-	} catch ( const std::exception& e ) {
+	} catch ( const std::exception &e ) {
 		LogWarn( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
 	}
 }
 
-void GameManager::RegisterMapManifest( const std::string& path ) {
+void GameManager::RegisterMapManifest( const std::string &path ) {
 	LogInfo( "Registering map \"%s\"...\n", path.c_str() );
 
 	MapManifest manifest;
@@ -244,7 +244,7 @@ void GameManager::RegisterMapManifest( const std::string& path ) {
 		manifest.fog_colour = config.GetColourProperty( "fogColour", manifest.fog_colour );
 		manifest.fog_intensity = config.GetFloatProperty( "fogIntensity", manifest.fog_intensity );
 		manifest.fog_distance = config.GetFloatProperty( "fogDistance", manifest.fog_distance );
-	} catch ( const std::exception& e ) {
+	} catch ( const std::exception &e ) {
 		LogWarn( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
 	}
 
@@ -257,7 +257,7 @@ void GameManager::RegisterMapManifest( const std::string& path ) {
 	map_manifests_.insert( std::make_pair( temp_buf, manifest ) );
 }
 
-static void RegisterManifestInterface( const char* path ) {
+static void RegisterManifestInterface( const char *path ) {
 	Engine::Game()->RegisterMapManifest( path );
 }
 
@@ -274,7 +274,7 @@ void GameManager::RegisterMapManifests() {
  * @param name
  * @return Returns a pointer to the requested manifest, otherwise returns null.
  */
-MapManifest* GameManager::GetMapManifest( const std::string& name ) {
+MapManifest *GameManager::GetMapManifest( const std::string &name ) {
 	auto manifest = map_manifests_.find( name );
 	if ( manifest != map_manifests_.end() ) {
 		return &manifest->second;
@@ -289,14 +289,14 @@ MapManifest* GameManager::GetMapManifest( const std::string& name ) {
  * @param name
  * @return
  */
-MapManifest* GameManager::CreateManifest( const std::string& name ) {
+MapManifest *GameManager::CreateManifest( const std::string &name ) {
 	// ensure the map doesn't exist already
 	if ( Engine::Game()->GetMapManifest( name ) != nullptr ) {
 		LogWarn( "Unable to create map, it already exists!\n" );
 		return nullptr;
 	}
 
-	const modDirectory_t* currentMod = Mod_GetCurrentMod();
+	const modDirectory_t *currentMod = Mod_GetCurrentMod();
 	std::string path = "mods/" + currentMod->directory + "maps/" + name + ".map";
 	std::ofstream output( path );
 	if ( !output.is_open() ) {
@@ -314,13 +314,13 @@ MapManifest* GameManager::CreateManifest( const std::string& name ) {
 	return Engine::Game()->GetMapManifest( name );
 }
 
-void GameManager::CreateMapCommand( unsigned int argc, char** argv ) {
+void GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
-	MapManifest* manifest = Engine::Game()->CreateManifest( argv[ 1 ] );
+	MapManifest *manifest = Engine::Game()->CreateManifest( argv[ 1 ] );
 	if ( manifest == nullptr ) {
 		return;
 	}
@@ -333,7 +333,7 @@ void GameManager::CreateMapCommand( unsigned int argc, char** argv ) {
  * @param argc
  * @param argv
  */
-void GameManager::OpenMapCommand( unsigned int argc, char** argv ) {
+void GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
@@ -343,7 +343,7 @@ void GameManager::OpenMapCommand( unsigned int argc, char** argv ) {
 	Engine::Game()->EndMode();
 
 	std::string mode = "singleplayer";
-	const MapManifest* desc = Engine::Game()->GetMapManifest( argv[ 1 ] );
+	const MapManifest *desc = Engine::Game()->GetMapManifest( argv[ 1 ] );
 	if ( desc != nullptr && !desc->modes.empty() ) {
 		mode = desc->modes[ 0 ];
 	}
@@ -365,7 +365,7 @@ void GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	}
 
 	for ( auto manifest : Engine::Game()->map_manifests_ ) {
-		MapManifest* desc = &manifest.second;
+		MapManifest *desc = &manifest.second;
 		std::string out =
 			desc->name + "/" + manifest.first +
 				" : " + desc->description +
@@ -380,25 +380,25 @@ void GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	LogInfo( "%u maps\n", Engine::Game()->map_manifests_.size() );
 }
 
-void GameManager::GiveItemCommand( unsigned int argc, char** argv ) {
+void GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
-	Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+	Player *player = Engine::Game()->mode_->GetCurrentPlayer();
 	if ( player == nullptr ) {
 		LogWarn( "Failed to get current player!\n" );
 		return;
 	}
 
-	Actor* actor = player->GetCurrentChild();
+	Actor *actor = player->GetCurrentChild();
 	if ( actor == nullptr ) {
 		LogWarn( "No actor currently active!\n" );
 		return;
 	}
 
-	APig* pig = dynamic_cast<APig*>(actor);
+	APig *pig = dynamic_cast<APig *>(actor);
 	if ( pig == nullptr ) {
 		LogWarn( "Actor is not a pig!\n" );
 		return;
@@ -434,7 +434,7 @@ void GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
 	actor->Damage( nullptr, 9999 );
 }
 
-void GameManager::SpawnModelCommand( unsigned int argc, char** argv ) {
+void GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->mode_ == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
 		return;
@@ -443,20 +443,21 @@ void GameManager::SpawnModelCommand( unsigned int argc, char** argv ) {
 		return;
 	}
 
-	Player* player = Engine::Game()->mode_->GetCurrentPlayer();
+	Player *player = Engine::Game()->mode_->GetCurrentPlayer();
 	if ( player == nullptr ) {
 		LogWarn( "Failed to get current player!\n" );
 		return;
 	}
 
 	// Fetch the player's actor, so we can get their position
-	Actor* actor = player->GetCurrentChild();
+	Actor *actor = player->GetCurrentChild();
 	if ( actor == nullptr ) {
 		LogWarn( "No actor currently active!\n" );
 		return;
 	}
 
-	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
+	AStaticModel
+		*model_actor = dynamic_cast<AStaticModel *>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}
@@ -466,9 +467,9 @@ void GameManager::SpawnModelCommand( unsigned int argc, char** argv ) {
 	model_actor->SetAngles( actor->GetAngles() );
 }
 
-void GameManager::StartMode( const std::string& map,
-							 const PlayerPtrVector& players,
-							 const GameModeDescriptor& descriptor ) {
+void GameManager::StartMode( const std::string &map,
+							 const PlayerPtrVector &players,
+							 const GameModeDescriptor &descriptor ) {
 	FrontEnd_SetState( FE_MODE_LOADING );
 
 	Engine::Game()->LoadMap( map );
