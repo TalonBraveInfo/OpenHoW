@@ -56,7 +56,7 @@ void Camera::SetFieldOfView( float fov ) {
  * @param xy X and Y.
  * @param wh Width and height.
  */
-void Camera::SetViewport( const std::array<int, 2> &xy, const std::array<unsigned int, 2> &wh ) {
+void Camera::SetViewport( const std::array<int, 2> &xy, const std::array<int, 2> &wh ) {
 	camera_->viewport.x = xy[ 0 ];
 	camera_->viewport.y = xy[ 1 ];
 	camera_->viewport.w = wh[ 0 ];

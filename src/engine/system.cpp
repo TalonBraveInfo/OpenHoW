@@ -161,7 +161,7 @@ void System_DisplayWindow( bool fullscreen, int width, int height ) {
 	System_SetWindowIcon( "icon.png" );
 
 	//Gen list of video presets
-	VideoPreset tmp_preset;
+	VideoPreset tmp_preset( 0, 0 );
 	int num_display_modes = SDL_GetNumDisplayModes( 0 );
 	if ( num_display_modes > 0 ) {
 		LogInfo( "Generating video presets from %d display modes", num_display_modes );

@@ -20,10 +20,12 @@
 #define MIN_DISPLAY_WIDTH   640
 #define MIN_DISPLAY_HEIGHT  480
 
-typedef struct VideoPreset{
+struct VideoPreset {
+	VideoPreset( int w, int h ) : width( w ), height( h ) {}
+
     int width{ 0 };
     int height{ 0 };
-} VideoPreset;
+};
 
 void Display_Initialize(void);
 void Display_Shutdown(void);
