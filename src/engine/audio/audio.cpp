@@ -109,26 +109,29 @@ AudioSource::~AudioSource() {
 }
 
 void AudioSource::SetSample( const AudioSample* sample ) {
-	if ( sample == nullptr ) {
-		LogWarn( "Invalid sample passed, aborting!\n" );
-		return;
-	}
-
 	if ( sample == current_sample_ ) {
 		return;
 	}
+	
+	if ( current_sample_ != nullptr ) {
+		StopPlaying();
 
-	if ( current_sample_ != nullptr && sample != current_sample_ ) {
 		unsigned int buf = current_sample_->alBufferId;
 		alSourceUnqueueBuffers( alSourceId, 1, &buf );
 		u_assert( buf == current_sample_->alBufferId );
 		OALCheckErrors();
 	}
-
-	alSourceQueueBuffers( alSourceId, 1, &sample->alBufferId );
-	OALCheckErrors();
+	
+	if ( sample != nullptr ) {
+		alSourceQueueBuffers( alSourceId, 1, &sample->alBufferId );
+		OALCheckErrors();
+	}
 
 	current_sample_ = sample;
+}
+
+const AudioSample *AudioSource::GetSample() const {
+	return current_sample_;
 }
 
 void AudioSource::SetPosition( PLVector3 position ) {
@@ -174,11 +177,6 @@ void AudioSource::StopPlaying() {
 	}
 
 	alSourceStop( alSourceId );
-
-	unsigned int buf = current_sample_->alBufferId;
-	alSourceUnqueueBuffers( alSourceId, 1, &buf );
-	u_assert( buf == current_sample_->alBufferId );
-	OALCheckErrors();
 }
 
 bool AudioSource::IsPlaying() {
@@ -297,6 +295,10 @@ AudioManager::~AudioManager() {
 	LogInfo( "Shutting down audio sub-system...\n" );
 
 	FreeSources();
+
+	/* FreeSources() doesn't delete musicSource. */
+	delete musicSource;
+	musicSource = NULL;
 
 	if ( al_extensions_[ AUDIO_EXT_EFX ] ) {
 		alDeleteAuxiliaryEffectSlots( 1, &reverb_sound_slot );
@@ -542,13 +544,15 @@ void AudioManager::SilenceSources() {
 void AudioManager::FreeSources() {
 	LogInfo( "Freeing all audio sources...\n" );
 
-	for ( auto source : sources_ ) {
+	for(auto s = sources_.begin(); s != sources_.end(); )
+	{
+		AudioSource *source = *s;
+		++s;
+
 		// Don't destroy our music source, it needs to be preserved!
 		if ( source == musicSource ) {
 			continue;
 		}
-
-		sources_.erase( source );
 
 		source->StopPlaying();
 		delete source;
@@ -640,6 +644,17 @@ void AudioManager::StopMusicCommand( unsigned int argc, char* argv[] ) {
 /* Audio Sample */
 
 AudioSample::~AudioSample() {
+	/* Unbind any AudioSource objects which are using this sample.
+	 * Scanning all sources is slow, but this is only expected to be called
+	 * during game teardown.
+	*/
+	for(auto &source: Engine::Audio()->sources_) {
+		if(source->GetSample() == this)
+		{
+			source->SetSample(NULL);
+		}
+	}
+
 	alDeleteBuffers( 1, &alBufferId );
 	OALCheckErrors();
 
