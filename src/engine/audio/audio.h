@@ -70,6 +70,7 @@ class Engine;
 }
 
 class AudioManager {
+	friend class AudioSample;
 	friend class AudioSource;
 
 private:
@@ -155,6 +156,7 @@ public:
 	~AudioSource();
 
 	void SetSample( const AudioSample *sample );
+	const AudioSample *GetSample() const;
 	void SetPosition( PLVector3 position );
 	void SetVelocity( PLVector3 velocity );
 	void SetGain( float gain );

@@ -65,8 +65,10 @@ void ActorManager::TickActors() {
 
   // Now clean everything up that was marked for destruction
   for ( auto &i : destructionQueue ) {
-  	actors_.erase( i );
-  	delete i;
+    assert(actors_.find(i) != actors_.end());
+
+    actors_.erase( i );
+    delete i;
   }
   destructionQueue.clear();
 }
@@ -93,6 +95,7 @@ void ActorManager::DestroyActors() {
     delete actor;
   }
 
+  destructionQueue.clear();
   actors_.clear();
 }
 
