@@ -37,7 +37,6 @@
 
 static bool show_quit = false;
 static bool show_file = false;
-static bool show_new_game = false;
 static bool show_console = false;
 static bool show_settings = false;
 
@@ -176,49 +175,6 @@ void UI_DisplaySettings() {
 
 	if ( ImGui::Button( "Cancel" ) ) {
 		show_settings = false;
-	}
-
-	ImGui::End();
-}
-
-/************************************************************/
-/* New Game */
-
-void UI_DisplayNewGame() {
-	if ( !show_new_game ) {
-		return;
-	}
-
-	ImGui::SetNextWindowSize( ImVec2(
-		static_cast<float>(plGetCurrentViewport()->w),
-		static_cast<float>(plGetCurrentViewport()->h) ) );
-	ImGui::SetNextWindowBgAlpha( 1.0f );
-	ImGui::SetNextWindowPos( ImVec2( 0, 0 ) );
-	ImGui::Begin( "Select Team", &show_new_game,
-				  ImGuiWindowFlags_NoResize |
-					  ImGuiWindowFlags_NoTitleBar |
-					  ImGuiWindowFlags_NoDecoration |
-					  ED_DEFAULT_WINDOW_FLAGS
-	);
-
-	GameManager::MapManifestMap maps = Engine::Game()->GetMapManifests();
-	std::vector<const char *> options;
-	for ( const auto &map : maps ) {
-		options.push_back( lm_gtr( map.second.name.c_str() ) );
-	}
-
-	static int selected_map = 1;
-	ImGui::ListBox( "Maps", &selected_map, &options[ 0 ], options.size(), 10 );
-
-	ImGui::SetCursorPosY( ImGui::GetWindowHeight() - 32 );
-
-	if ( ImGui::Button( "Start Game!" ) ) {
-		Engine::Game()->LoadMap( std::next( maps.begin(), selected_map )->second.filename );
-		show_new_game = false;
-	}
-	ImGui::SameLine();
-	if ( ImGui::Button( "Cancel" ) ) {
-		show_new_game = false;
 	}
 
 	ImGui::End();
@@ -621,7 +577,6 @@ void UI_DisplayDebugMenu( void ) {
 	}
 
 	UI_DisplayFileBox();
-	UI_DisplayNewGame();
 	UI_DisplaySettings();
 
 #if 0
