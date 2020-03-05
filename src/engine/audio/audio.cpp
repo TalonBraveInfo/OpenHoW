@@ -42,7 +42,7 @@ static void OALCheckErrors() {
 		/* alut is apparently deprecated in OpenAL Soft, yay... */
 		/*Error("%s\n", alutGetErrorString(err));*/
 
-		LogWarn( "OpenAL: %s\n", alGetString( err ) );
+		LogWarn( "OpenAL: %s\n", alGetString( err ));
 
 		switch ( err ) {
 			default: Error( "Unknown openal error, aborting!\n" );
@@ -61,12 +61,12 @@ unsigned int reverb_sound_slot = 0;
 /************************************************************/
 /* Audio Source */
 
-AudioSource::AudioSource( const AudioSample* sample, float gain, float pitch, bool looping ) :
+AudioSource::AudioSource( const AudioSample *sample, float gain, float pitch, bool looping ) :
 	AudioSource( sample, PLVector3( 0, 0, 0 ), PLVector3( 0, 0, 0 ), false, gain, pitch, looping ) {
 	alSourcei( alSourceId, AL_SOURCE_RELATIVE, AL_TRUE );
 }
 
-AudioSource::AudioSource( const AudioSample* sample, PLVector3 pos, PLVector3 vel,
+AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 vel,
 						  bool reverb, float gain, float pitch, bool looping ) {
 	alGenSources( 1, &alSourceId );
 	OALCheckErrors();
@@ -82,7 +82,7 @@ AudioSource::AudioSource( const AudioSample* sample, PLVector3 pos, PLVector3 ve
 	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, 1.0f );
 	OALCheckErrors();
 
-	if ( reverb && Engine::Audio()->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX ) ) {
+	if ( reverb && Engine::Audio()->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX )) {
 		alSource3i( alSourceId, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
 		OALCheckErrors();
 	}
@@ -108,27 +108,30 @@ AudioSource::~AudioSource() {
 	Engine::Audio()->sources_.erase( this );
 }
 
-void AudioSource::SetSample( const AudioSample* sample ) {
-	if ( sample == nullptr ) {
-		LogWarn( "Invalid sample passed, aborting!\n" );
-		return;
-	}
-
+void AudioSource::SetSample( const AudioSample *sample ) {
 	if ( sample == current_sample_ ) {
 		return;
 	}
 
-	if ( current_sample_ != nullptr && sample != current_sample_ ) {
+	if ( current_sample_ != nullptr ) {
+		StopPlaying();
+
 		unsigned int buf = current_sample_->alBufferId;
 		alSourceUnqueueBuffers( alSourceId, 1, &buf );
 		u_assert( buf == current_sample_->alBufferId );
 		OALCheckErrors();
 	}
 
-	alSourceQueueBuffers( alSourceId, 1, &sample->alBufferId );
-	OALCheckErrors();
+	if ( sample != nullptr ) {
+		alSourceQueueBuffers( alSourceId, 1, &sample->alBufferId );
+		OALCheckErrors();
+	}
 
 	current_sample_ = sample;
+}
+
+const AudioSample *AudioSource::GetSample() const {
+	return current_sample_;
 }
 
 void AudioSource::SetPosition( PLVector3 position ) {
@@ -174,11 +177,6 @@ void AudioSource::StopPlaying() {
 	}
 
 	alSourceStop( alSourceId );
-
-	unsigned int buf = current_sample_->alBufferId;
-	alSourceUnqueueBuffers( alSourceId, 1, &buf );
-	u_assert( buf == current_sample_->alBufferId );
-	OALCheckErrors();
 }
 
 bool AudioSource::IsPlaying() {
@@ -194,7 +192,7 @@ bool AudioSource::IsPaused() {
 }
 
 void AudioSource::Pause() {
-	if ( !IsPlaying() ) {
+	if ( !IsPlaying()) {
 		// nothing to pause
 		return;
 	}
@@ -229,14 +227,14 @@ static LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
 //static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
 AudioManager::AudioManager() {
-	ALCdevice* device = alcOpenDevice( nullptr );
+	ALCdevice *device = alcOpenDevice( nullptr );
 	if ( device == nullptr ) {
 		Error( "failed to open audio device, aborting audio initialisation!\n" );
 	}
 
-	memset( al_extensions_, 0, sizeof( al_extensions_ ) );
+	memset( al_extensions_, 0, sizeof( al_extensions_ ));
 
-	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" ) ) {
+	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" )) {
 		LogInfo( "ALC_EXT_EFX detected\n" );
 
 		alGenEffects = ( LPALGENEFFECTS ) alGetProcAddress( "alGenEffects" );
@@ -254,12 +252,12 @@ AudioManager::AudioManager() {
 		al_extensions_[ AUDIO_EXT_EFX ] = true;
 	}
 
-	ALCcontext* context = alcCreateContext( device, nullptr );
-	if ( context == nullptr || !alcMakeContextCurrent( context ) ) {
+	ALCcontext *context = alcCreateContext( device, nullptr );
+	if ( context == nullptr || !alcMakeContextCurrent( context )) {
 		Error( "Failed to create audio context, aborting audio initialisation!\n" );
 	}
 
-	if ( alIsExtensionPresent( "AL_SOFT_buffer_samples" ) ) {
+	if ( alIsExtensionPresent( "AL_SOFT_buffer_samples" )) {
 		LogInfo( "AL_SOFT_buffer_samples detected\n" );
 		al_extensions_[ AUDIO_EXT_SOFT_BUFFER_SAMPLES ] = true;
 	}
@@ -298,6 +296,10 @@ AudioManager::~AudioManager() {
 
 	FreeSources();
 
+	/* FreeSources() doesn't delete musicSource. */
+	delete musicSource;
+	musicSource = nullptr;
+
 	if ( al_extensions_[ AUDIO_EXT_EFX ] ) {
 		alDeleteAuxiliaryEffectSlots( 1, &reverb_sound_slot );
 		alDeleteEffects( 1, &reverb_effect_slot );
@@ -305,9 +307,9 @@ AudioManager::~AudioManager() {
 
 	FreeSamples( true );
 
-	ALCcontext* context = alcGetCurrentContext();
+	ALCcontext *context = alcGetCurrentContext();
 	if ( context != nullptr ) {
-		ALCdevice* device = alcGetContextsDevice( context );
+		ALCdevice *device = alcGetContextsDevice( context );
 		if ( device != nullptr ) {
 			alcCloseDevice( device );
 		}
@@ -317,33 +319,33 @@ AudioManager::~AudioManager() {
 	}
 }
 
-const AudioSample* AudioManager::CacheSample( const std::string& path, bool preserve ) {
+const AudioSample *AudioManager::CacheSample( const std::string &path, bool preserve ) {
 	auto i = samples_.find( path );
-	if ( i != samples_.end() ) {
+	if ( i != samples_.end()) {
 		return &( i->second );
 	}
 
-	const char* ext = plGetFileExtension( path.c_str() );
+	const char *ext = plGetFileExtension( path.c_str());
 	if ( ext == nullptr ) {
-		LogWarn( "Unable to identify audio format, \"%s\"!\n", path.c_str() );
+		LogWarn( "Unable to identify audio format, \"%s\"!\n", path.c_str());
 		return nullptr;
 	}
 
 	unsigned int format = 0;
 	int freq = 0;
 	uint32_t length;
-	uint8_t* buffer;
+	uint8_t *buffer;
 	if ( pl_strcasecmp( ext, "wav" ) == 0 ) {
 		// Attempt to load the Wav file
-		PLFile* wavFile = plOpenFile( path.c_str(), false );
+		PLFile *wavFile = plOpenFile( path.c_str(), false );
 		if ( wavFile == nullptr ) {
-			LogWarn( "Failed to load \"%s\"!\n", path.c_str() );
+			LogWarn( "Failed to load \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
 		// Allocate buffer
 		int len = plGetFileSize( wavFile );
-		uint8_t* buf = static_cast<uint8_t*>(u_alloc( len, 1, true ));
+		uint8_t *buf = static_cast<uint8_t *>(u_alloc( len, 1, true ));
 
 		// For now, read the whole thing into memory
 		// todo: stream!!!
@@ -352,7 +354,7 @@ const AudioSample* AudioManager::CacheSample( const std::string& path, bool pres
 
 		SDL_AudioSpec spec;
 		if ( SDL_LoadWAV_RW( SDL_RWFromMem( buf, len ), 1, &spec, &buffer, &length ) == nullptr ) {
-			LogWarn( "Failed to load \"%s\"!\n", path.c_str() );
+			LogWarn( "Failed to load \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
@@ -380,7 +382,7 @@ const AudioSample* AudioManager::CacheSample( const std::string& path, bool pres
 		}
 
 		if ( format == 0 ) {
-			LogWarn( "Invalid audio format for \"%s\"!\n", path.c_str() );
+			LogWarn( "Invalid audio format for \"%s\"!\n", path.c_str());
 			SDL_FreeWAV( buffer );
 			return nullptr;
 		}
@@ -388,15 +390,15 @@ const AudioSample* AudioManager::CacheSample( const std::string& path, bool pres
 		freq = spec.freq;
 	} else if ( pl_strcasecmp( ext, "ogg" ) == 0 ) {
 		// Attempt to load the Ogg file
-		PLFile* oggFile = plOpenFile( path.c_str(), false );
+		PLFile *oggFile = plOpenFile( path.c_str(), false );
 		if ( oggFile == nullptr ) {
-			LogWarn( "Failed to load \"%s\"!\n", path.c_str() );
+			LogWarn( "Failed to load \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
 		// Allocate buffer
 		int len = plGetFileSize( oggFile );
-		uint8_t* buf = static_cast<uint8_t*>(u_alloc( len, 1, true ));
+		uint8_t *buf = static_cast<uint8_t *>(u_alloc( len, 1, true ));
 
 		// For now, read the whole thing into memory (todo: stream!!!)
 		plReadFile( oggFile, buf, 1, len );
@@ -404,9 +406,9 @@ const AudioSample* AudioManager::CacheSample( const std::string& path, bool pres
 
 		int vchan;
 		int samples = stb_vorbis_decode_memory( buf, len, &vchan, &freq,
-												reinterpret_cast<short**>(&buffer) );
+												reinterpret_cast<short **>(&buffer));
 		if ( samples == -1 ) {
-			LogWarn( "Failed to decode ogg audio data, \"%s\"!\n", path.c_str() );
+			LogWarn( "Failed to decode ogg audio data, \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
@@ -429,13 +431,13 @@ const AudioSample* AudioManager::CacheSample( const std::string& path, bool pres
 	return &( sample.first->second );
 }
 
-const AudioSample* AudioManager::GetCachedSample( const std::string& path ) {
+const AudioSample *AudioManager::GetCachedSample( const std::string &path ) {
 	auto i = samples_.find( path );
-	if ( i == samples_.end() ) {
+	if ( i == samples_.end()) {
 		CacheSample( path, false );
 		i = samples_.find( path );
-		if ( i == samples_.end() ) {
-			Error( "Failed to load sample, \"%s\"!\n", path.c_str() );
+		if ( i == samples_.end()) {
+			Error( "Failed to load sample, \"%s\"!\n", path.c_str());
 			/* todo: in future, fall back to first loaded sound and continue? if it exists... */
 		}
 	}
@@ -443,16 +445,16 @@ const AudioSample* AudioManager::GetCachedSample( const std::string& path ) {
 	return &( i->second );
 }
 
-AudioSource* AudioManager::CreateSource( const std::string& path, float gain, float pitch, bool looping ) {
+AudioSource *AudioManager::CreateSource( const std::string &path, float gain, float pitch, bool looping ) {
 	return new AudioSource( GetCachedSample( path ), gain, pitch, looping );
 }
 
-AudioSource* AudioManager::CreateSource( const std::string& path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+AudioSource *AudioManager::CreateSource( const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
 										 float pitch, bool looping ) {
 	return new AudioSource( GetCachedSample( path ), pos, vel, reverb, gain, pitch, looping );
 }
 
-AudioSource* AudioManager::CreateSource( const AudioSample* sample, PLVector3 pos, PLVector3 vel, bool reverb,
+AudioSource *AudioManager::CreateSource( const AudioSample *sample, PLVector3 pos, PLVector3 vel, bool reverb,
 										 float gain, float pitch, bool looping ) {
 	return new AudioSource( sample, pos, vel, reverb, gain, pitch, looping );
 }
@@ -465,7 +467,7 @@ void AudioManager::SetupMusicSource() {
 void AudioManager::Tick() {
 	PLVector3 position = { 0, 0, 0 }, angles = { 0, 0, 0 };
 
-	Camera* camera = Engine::Game()->GetCamera();
+	Camera *camera = Engine::Game()->GetCamera();
 	if ( FrontEnd_GetState() == FE_MODE_GAME && camera != nullptr ) {
 		position = camera->GetPosition();
 		angles = camera->GetAngles();
@@ -488,7 +490,7 @@ void AudioManager::Tick() {
 
 	// ensure destruction of temporary sources
 	for ( auto source = temp_sources_.begin(); source != temp_sources_.end(); ) {
-		if ( ( *source )->IsPlaying() || ( *source )->IsPaused() ) {
+		if (( *source )->IsPlaying() || ( *source )->IsPaused()) {
 			++source;
 			continue;
 		}
@@ -499,34 +501,34 @@ void AudioManager::Tick() {
 	}
 }
 
-void AudioManager::PlayGlobalSound( const std::string& path ) {
-	const AudioSample* sample = GetCachedSample( path );
+void AudioManager::PlayGlobalSound( const std::string &path ) {
+	const AudioSample *sample = GetCachedSample( path );
 	PlayGlobalSound( sample );
 }
 
-void AudioManager::PlayGlobalSound( const AudioSample* sample ) {
+void AudioManager::PlayGlobalSound( const AudioSample *sample ) {
 	if ( sample == nullptr ) {
 		return;
 	}
 
-	auto* source = new AudioSource( sample );
+	auto *source = new AudioSource( sample );
 	temp_sources_.insert( source );
 	source->StartPlaying();
 }
 
-void AudioManager::PlayLocalSound( const std::string& path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+void AudioManager::PlayLocalSound( const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
 								   float pitch ) {
-	const AudioSample* sample = GetCachedSample( path );
+	const AudioSample *sample = GetCachedSample( path );
 	PlayLocalSound( sample, pos, vel, reverb, gain, pitch );
 }
 
-void AudioManager::PlayLocalSound( const AudioSample* sample, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
+void AudioManager::PlayLocalSound( const AudioSample *sample, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
 								   float pitch ) {
 	if ( sample == nullptr ) {
 		return;
 	}
 
-	auto* source = new AudioSource( sample, pos, vel, reverb, gain, pitch );
+	auto *source = new AudioSource( sample, pos, vel, reverb, gain, pitch );
 	temp_sources_.insert( source );
 	source->StartPlaying();
 }
@@ -542,13 +544,14 @@ void AudioManager::SilenceSources() {
 void AudioManager::FreeSources() {
 	LogInfo( "Freeing all audio sources...\n" );
 
-	for ( auto source : sources_ ) {
+	for ( auto s = sources_.begin(); s != sources_.end(); ) {
+		AudioSource *source = *s;
+		++s;
+
 		// Don't destroy our music source, it needs to be preserved!
 		if ( source == musicSource ) {
 			continue;
 		}
-
-		sources_.erase( source );
 
 		source->StopPlaying();
 		delete source;
@@ -583,26 +586,26 @@ void AudioManager::DrawSources() {
 		return;
 	}
 
-	PLModel* sprite = Engine::Resource()->GetFallbackModel();
-	PLMesh* mesh = sprite->levels[ 0 ].meshes[ 0 ];
-	plSetMeshUniformColour( mesh, PLColour( 0, 255, 255, 255 ) );
+	PLModel *sprite = Engine::Resource()->GetFallbackModel();
+	PLMesh *mesh = sprite->levels[ 0 ].meshes[ 0 ];
+	plSetMeshUniformColour( mesh, PLColour( 0, 255, 255, 255 ));
 	for ( auto source : sources_ ) {
-		if ( !source->IsPlaying() || source->IsPaused() ) {
+		if ( !source->IsPlaying() || source->IsPaused()) {
 			continue;
 		}
 
-		sprite->model_matrix = plTranslateMatrix4( source->GetPosition() );
+		sprite->model_matrix = plTranslateMatrix4( source->GetPosition());
 		plDrawModel( sprite );
 	}
-	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ) );
+	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ));
 }
 
 /**
  * Play the specified music globally.
  * @param path Path to the sample to be played.
  */
-void AudioManager::PlayMusic( const std::string& path ) {
-	const AudioSample* sample = CacheSample( path );
+void AudioManager::PlayMusic( const std::string &path ) {
+	const AudioSample *sample = CacheSample( path );
 	if ( sample == nullptr ) {
 		return;
 	}
@@ -625,11 +628,11 @@ void AudioManager::SetMusicVolume( float gain ) {
 	musicSource->SetGain( gain );
 }
 
-void AudioManager::SetMusicVolumeCommand( const PLConsoleVariable* var ) {
+void AudioManager::SetMusicVolumeCommand( const PLConsoleVariable *var ) {
 	Engine::Audio()->SetMusicVolume( var->f_value );
 }
 
-void AudioManager::StopMusicCommand( unsigned int argc, char* argv[] ) {
+void AudioManager::StopMusicCommand( unsigned int argc, char *argv[] ) {
 	u_unused( argc );
 	u_unused( argv );
 
@@ -640,13 +643,23 @@ void AudioManager::StopMusicCommand( unsigned int argc, char* argv[] ) {
 /* Audio Sample */
 
 AudioSample::~AudioSample() {
+	/* Unbind any AudioSource objects which are using this sample.
+	 * Scanning all sources is slow, but this is only expected to be called
+	 * during game teardown.
+	*/
+	for ( auto &source: Engine::Audio()->sources_ ) {
+		if ( source->GetSample() == this ) {
+			source->SetSample( nullptr );
+		}
+	}
+
 	alDeleteBuffers( 1, &alBufferId );
 	OALCheckErrors();
 
 	SDL_FreeWAV( data_ );
 }
 
-AudioSample::AudioSample( uint8_t* data, unsigned int freq, unsigned int format, unsigned int length, bool preserve ) {
+AudioSample::AudioSample( uint8_t *data, unsigned int freq, unsigned int format, unsigned int length, bool preserve ) {
 	alGenBuffers( 1, &alBufferId );
 	OALCheckErrors();
 	alBufferData( alBufferId, format, data, length, freq );

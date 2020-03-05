@@ -231,17 +231,15 @@ void hwResourceManager::ClearModels( bool force ) {
 		return;
 	}
 
-	for ( auto& i : models_ ) {
-		if ( ( i.second.persist && !force )
-			|| ( fallback_model_ != nullptr && i.second.model_ptr == fallback_model_ ) ) {
+	for ( auto i = models_.begin(); i != models_.end(); ) {
+		if ( ( i->second.persist && !force )
+			|| ( fallback_model_ != nullptr && i->second.model_ptr == fallback_model_ ) ) {
+			++i;
 			continue;
 		}
 
-		plDestroyModel( i.second.model_ptr );
-	}
-
-	if ( force ) {
-		models_.clear();
+		plDestroyModel( i->second.model_ptr );
+		i = models_.erase(i);
 	}
 }
 

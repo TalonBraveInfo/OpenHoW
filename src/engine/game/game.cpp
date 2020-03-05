@@ -339,9 +339,6 @@ void GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	// End the current mode
-	Engine::Game()->EndMode();
-
 	std::string mode = "singleplayer";
 	const MapManifest *desc = Engine::Game()->GetMapManifest( argv[ 1 ] );
 	if ( desc != nullptr && !desc->modes.empty() ) {
