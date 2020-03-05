@@ -20,7 +20,7 @@
 #include "engine.h"
 #include "language.h"
 
-#include "script/script_config.h"
+#include "script/json_reader.h"
 
 #define LNG_MANIFEST_PATH    "languages.manifest"
 
@@ -33,7 +33,7 @@ LanguageManager::LanguageManager() {
 
 	// Load in the languages manifest
 	try {
-		ScriptConfig manifest( LNG_MANIFEST_PATH );
+		JsonReader manifest( LNG_MANIFEST_PATH );
 		unsigned int num_keys = manifest.GetArrayLength();
 		for ( unsigned int i = 0; i < num_keys; ++i ) {
 			Index index;
@@ -93,7 +93,7 @@ void LanguageManager::SetLanguage( const char* key ) {
 
 	std::string filePath = "languages/" + current_language->key + ".language";
 	try {
-		ScriptConfig manifest( filePath );
+		JsonReader manifest( filePath );
 		std::list<std::string> keys = manifest.GetObjectKeys();
 		for ( const auto& idx : keys ) {
 			current_language->keys.insert( std::pair<std::string, Key>( idx, {

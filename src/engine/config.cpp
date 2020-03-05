@@ -18,7 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "script/script_config.h"
+#include "script/json_reader.h"
 
 const char* Config_GetUserConfigPath() {
 	static std::string config_path;
@@ -69,7 +69,7 @@ void Config_Save( const char* path ) {
 
 void Config_Load( const char* path ) {
 	try {
-		ScriptConfig config( path );
+		JsonReader config( path );
 
 		size_t num_c;
 		PLConsoleVariable** vars;

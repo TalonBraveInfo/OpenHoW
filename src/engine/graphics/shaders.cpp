@@ -16,7 +16,7 @@
  */
 
 #include "../engine.h"
-#include "../script/script_config.h"
+#include "../script/json_reader.h"
 #include "shaders.h"
 
 static std::map<std::string, ShaderProgram*> programs;
@@ -61,7 +61,7 @@ static void Shaders_CacheShaderProgram( const char* path ) {
 	std::string shortFileName( fileName, 0, strlen( fileName ) - 8 );
 
 	try {
-		ScriptConfig config( path );
+		JsonReader config( path );
 
 		config.EnterChildNode( "gl3" );
 

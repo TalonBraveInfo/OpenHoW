@@ -20,17 +20,17 @@
 #include <sstream>
 
 #include "../engine.h"
-#include "script_config.h"
+#include "json_reader.h"
 
 #define LogMissingProperty( P )   LogWarn("Failed to get JSON property \"%s\"!\n", (P))
 #define LogInvalidArray( P )      LogWarn("Invalid JSON array for property \"%s\"!\n", (P))
 
-ScriptConfig::ScriptConfig( const std::string& path ) : ScriptConfig() {
+JsonReader::JsonReader( const std::string &path ) : JsonReader() {
 	if ( path.empty() ) {
 		throw std::runtime_error( "Empty path for config, aborting!\n" );
 	}
 
-	PLFile* filePtr = plOpenFile( path.c_str(), false );
+	PLFile *filePtr = plOpenFile( path.c_str(), false );
 	if ( filePtr == nullptr ) {
 		throw std::runtime_error( "Failed to load file!\n" );
 	}
@@ -48,22 +48,22 @@ ScriptConfig::ScriptConfig( const std::string& path ) : ScriptConfig() {
 	ParseBuffer( buf.data() );
 }
 
-ScriptConfig::ScriptConfig() {
+JsonReader::JsonReader() {
 	if ( ( ctx_ = duk_create_heap_default() ) == nullptr ) {
 		throw std::bad_alloc();
 	}
 }
 
-ScriptConfig::~ScriptConfig() {
+JsonReader::~JsonReader() {
 	if ( ctx_ != nullptr ) {
-		duk_destroy_heap( static_cast<duk_context*>(ctx_) );
+		duk_destroy_heap( static_cast<duk_context *>(ctx_) );
 	}
 }
 
-std::string ScriptConfig::GetStringProperty( const std::string& property, const std::string& def, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+std::string JsonReader::GetStringProperty( const std::string &property, const std::string &def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -78,10 +78,10 @@ std::string ScriptConfig::GetStringProperty( const std::string& property, const 
 	return str;
 }
 
-int ScriptConfig::GetIntegerProperty( const std::string& property, int def, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+int JsonReader::GetIntegerProperty( const std::string &property, int def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -96,10 +96,10 @@ int ScriptConfig::GetIntegerProperty( const std::string& property, int def, bool
 	return var;
 }
 
-bool ScriptConfig::GetBooleanProperty( const std::string& property, bool def, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+bool JsonReader::GetBooleanProperty( const std::string &property, bool def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -114,10 +114,10 @@ bool ScriptConfig::GetBooleanProperty( const std::string& property, bool def, bo
 	return var;
 }
 
-float ScriptConfig::GetFloatProperty( const std::string& property, float def, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+float JsonReader::GetFloatProperty( const std::string &property, float def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -134,7 +134,7 @@ float ScriptConfig::GetFloatProperty( const std::string& property, float def, bo
 
 // https://stackoverflow.com/a/23305012
 template< char C >
-std::istream& expect( std::istream& in ) {
+std::istream &expect( std::istream &in ) {
 	if ( in.peek() == C ) {
 		in.ignore();
 	} else {
@@ -143,10 +143,10 @@ std::istream& expect( std::istream& in ) {
 	return in;
 }
 
-PLColour ScriptConfig::GetColourProperty( const std::string& property, PLColour def, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+PLColour JsonReader::GetColourProperty( const std::string &property, PLColour def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -174,10 +174,10 @@ PLColour ScriptConfig::GetColourProperty( const std::string& property, PLColour 
 	return { r, g, b, a };
 }
 
-PLVector3 ScriptConfig::GetVector3Property( const std::string& property, PLVector3 def, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+PLVector3 JsonReader::GetVector3Property( const std::string &property, PLVector3 def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -199,11 +199,11 @@ PLVector3 ScriptConfig::GetVector3Property( const std::string& property, PLVecto
 	return out;
 }
 
-unsigned int ScriptConfig::GetArrayLength( const std::string& property ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+unsigned int JsonReader::GetArrayLength( const std::string &property ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
 	if ( !property.empty() ) {
-		const char* p = property.c_str();
+		const char *p = property.c_str();
 		if ( !duk_get_prop_string( context, -1, p ) ) {
 			duk_pop( context );
 			LogMissingProperty( p );
@@ -228,10 +228,10 @@ unsigned int ScriptConfig::GetArrayLength( const std::string& property ) {
 	return static_cast<unsigned int>(len);
 }
 
-std::string ScriptConfig::GetArrayStringProperty( const std::string& property, unsigned int index ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+std::string JsonReader::GetArrayStringProperty( const std::string &property, unsigned int index ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		LogMissingProperty( p );
@@ -252,16 +252,16 @@ std::string ScriptConfig::GetArrayStringProperty( const std::string& property, u
 
 	duk_get_prop_string( context, -1, p );
 	duk_get_prop_index( context, -1, index );
-	const char* str = duk_get_string( context, index );
+	const char *str = duk_get_string( context, index );
 	duk_pop( context );
 
 	return str;
 }
 
-std::vector<std::string> ScriptConfig::GetArrayStrings( const std::string& property, bool silent ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+std::vector<std::string> JsonReader::GetArrayStrings( const std::string &property, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 
-	const char* p = property.c_str();
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		if ( !silent ) {
@@ -285,7 +285,7 @@ std::vector<std::string> ScriptConfig::GetArrayStrings( const std::string& prope
 
 	for ( size_t i = 0; i < length; ++i ) {
 		duk_get_prop_index( context, -1, i );
-		const char* c = duk_get_string( context, -1 );
+		const char *c = duk_get_string( context, -1 );
 		u_assert( c != nullptr, "Null string passed by duk_get_string!\n" );
 		strings.emplace_back( c );
 		duk_pop( context );
@@ -296,19 +296,19 @@ std::vector<std::string> ScriptConfig::GetArrayStrings( const std::string& prope
 	return strings;
 }
 
-void ScriptConfig::ParseBuffer( const char* buf ) {
+void JsonReader::ParseBuffer( const char *buf ) {
 	if ( buf == nullptr ) {
 		Error( "Invalid buffer length!\n" );
 	}
 
-	auto* context = static_cast<duk_context*>(ctx_);
+	auto *context = static_cast<duk_context *>(ctx_);
 	duk_push_string( context, buf );
 	duk_json_decode( context, -1 );
 }
 
-void ScriptConfig::EnterChildNode( const std::string& property ) {
-	auto* context = static_cast<duk_context*>(ctx_);
-	const char* p = property.c_str();
+void JsonReader::EnterChildNode( const std::string &property ) {
+	auto *context = static_cast<duk_context *>(ctx_);
+	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
 		LogMissingProperty( p );
@@ -316,8 +316,8 @@ void ScriptConfig::EnterChildNode( const std::string& property ) {
 	}
 }
 
-void ScriptConfig::EnterChildNode( unsigned int index ) {
-	auto* context = static_cast<duk_context*>(ctx_);
+void JsonReader::EnterChildNode( unsigned int index ) {
+	auto *context = static_cast<duk_context *>(ctx_);
 	if ( !duk_is_array( context, -1 ) ) {
 		duk_pop( context );
 		LogWarn( "Node is not an array!\n" );
@@ -333,15 +333,15 @@ void ScriptConfig::EnterChildNode( unsigned int index ) {
 	duk_get_prop_index( context, -1, index );
 }
 
-void ScriptConfig::LeaveChildNode() {
-	auto* context = static_cast<duk_context*>(ctx_);
+void JsonReader::LeaveChildNode() {
+	auto *context = static_cast<duk_context *>(ctx_);
 	duk_pop( context );
 }
 
-std::list<std::string> ScriptConfig::GetObjectKeys() {
+std::list<std::string> JsonReader::GetObjectKeys() {
 	std::list<std::string> lst;
 
-	auto* context = static_cast<duk_context*>(ctx_);
+	auto *context = static_cast<duk_context *>(ctx_);
 	duk_enum( context, -1, 0 );
 	while ( duk_next( context, -1, 1 ) ) {
 		lst.emplace_back( duk_safe_to_string( context, -2 ) );

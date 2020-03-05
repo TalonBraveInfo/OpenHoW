@@ -26,7 +26,7 @@
 #include "player.h"
 #include "game.h"
 
-#include "../script/script_config.h"
+#include "../script/json_reader.h"
 
 #include "actors/actor_pig.h"
 #include "actors/actor_static_model.h"
@@ -194,7 +194,7 @@ void GameManager::RegisterTeamManifest( const std::string &path ) {
 	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
 
 	try {
-		ScriptConfig config( path );
+		JsonReader config( path );
 		unsigned int num_teams = config.GetArrayLength();
 		if ( num_teams == 0 ) {
 			Error( "Failed to register teams, no teams available in \"%s\"!\n", path.c_str() );
@@ -224,7 +224,7 @@ void GameManager::RegisterMapManifest( const std::string &path ) {
 
 	MapManifest manifest;
 	try {
-		ScriptConfig config( path );
+		JsonReader config( path );
 		manifest.name = config.GetStringProperty( "name", manifest.name );
 		manifest.author = config.GetStringProperty( "author", manifest.author );
 		manifest.description = config.GetStringProperty( "description", manifest.description );

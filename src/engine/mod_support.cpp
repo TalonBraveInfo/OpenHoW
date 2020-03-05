@@ -19,7 +19,7 @@
 
 #include "engine.h"
 #include "mod_support.h"
-#include "script/script_config.h"
+#include "script/json_reader.h"
 
 using namespace openhow;
 
@@ -56,7 +56,7 @@ static modDirectory_t Mod_LoadManifest( const char* path ) {
 
 	modDirectory_t slot;
 	try {
-		ScriptConfig config( path );
+		JsonReader config( path );
 
 		slot.name = config.GetStringProperty( "name" );
 		slot.version = config.GetStringProperty( "version", "Unknown", true );
