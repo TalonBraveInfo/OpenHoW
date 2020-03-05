@@ -204,7 +204,7 @@ void UI_DisplayNewGame() {
 	GameManager::MapManifestMap maps = Engine::Game()->GetMapManifests();
 	std::vector<const char *> options;
 	for ( const auto &map : maps ) {
-		options.push_back( LanguageManager::GetInstance()->GetTranslation( map.second.name.c_str() ) );
+		options.push_back( lm_gtr( map.second.name.c_str() ) );
 	}
 
 	static int selected_map = 1;
@@ -612,10 +612,10 @@ void UI_DisplayDebugMenu( void ) {
 				ImGuiWindowFlags_NoBackground
 		) ) {
 			ImGui::PushStyleColor( ImGuiCol_Text, ImVec4( 1.0f, 0.0f, 0.0f, 1.0f ) );
-			ImGui::TextWrapped( "%s", LanguageManager::GetInstance()->GetTranslation( "$dbt0" ) );
+			ImGui::TextWrapped( "%s", lm_gtr( "$dbt0" ) );
 			ImGui::PopStyleColor();
-			ImGui::TextWrapped( "%s", LanguageManager::GetInstance()->GetTranslation( "$dbt1" ) );
-			ImGui::Text( "%s", LanguageManager::GetInstance()->GetTranslation( "$dbt2" ) );
+			ImGui::TextWrapped( "%s", lm_gtr( "$dbt1" ) );
+			ImGui::Text( "%s", lm_gtr( "$dbt2" ) );
 			ImGui::End();
 		}
 	}

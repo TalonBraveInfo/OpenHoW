@@ -223,7 +223,7 @@ public:
 	//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
 	typedef std::vector<Team> TeamVector;
-	const TeamVector& GetDefaultTeams() { return default_teams_; }
+	const TeamVector& GetDefaultTeams() { return defaultTeams; }
 
 	Map* GetCurrentMap() { return map_; }
 
@@ -277,7 +277,7 @@ private:
 
 	std::map<std::string, MapManifest> map_manifests_;
 
-	TeamVector default_teams_;
+	TeamVector defaultTeams;
 	PlayerPtrVector players_;
 
 #define MAX_AMBIENT_SAMPLES 8

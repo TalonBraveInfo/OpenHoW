@@ -204,18 +204,18 @@ void GameManager::RegisterTeamManifest( const std::string &path ) {
 			config.EnterChildNode( i );
 
 			Team team;
-			team.name =
-				LanguageManager::GetInstance()->GetTranslation( config.GetStringProperty( "name", team.name ).c_str() );
+			team.name = lm_gtr( config.GetStringProperty( "name", team.name ).c_str() );
 			team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
 			team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
 			team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures );
 			team.voice_set = config.GetStringProperty( "voiceSet", team.voice_set );
-			default_teams_.push_back( team );
+			defaultTeams.push_back( team );
 
 			config.LeaveChildNode();
 		}
 	} catch ( const std::exception &e ) {
-		LogWarn( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
+		LogWarn( "Failed to read team config, \"%s\"!\n%s\n", path.c_str(), e.what() );
+		return;
 	}
 }
 
