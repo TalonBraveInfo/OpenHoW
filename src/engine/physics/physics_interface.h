@@ -18,42 +18,42 @@
 #pragma once
 
 enum class PhysicsPrimitiveType {
-  SPHERE,
-  BOX,
-  CAPSULE,
-  CYLINDER,
-  CONE,
-  CHAMFER_CYLINDER,
-  RANDOM_CONVEX_HULL,
-  REGULAR_CONVEX_HULL,
-  COMPOUND_CONVEX_CRUZ,
+	SPHERE,
+	BOX,
+	CAPSULE,
+	CYLINDER,
+	CONE,
+	CHAMFER_CYLINDER,
+	RANDOM_CONVEX_HULL,
+	REGULAR_CONVEX_HULL,
+	COMPOUND_CONVEX_CRUZ,
 };
 
 class IPhysicsBody {
- public:
- protected:
-  IPhysicsBody() = default;
-  virtual ~IPhysicsBody() = default;
+public:
+protected:
+	IPhysicsBody() = default;
+	virtual ~IPhysicsBody() = default;
 
- private:
+private:
 };
 
 class IPhysicsInterface {
- public:
-  static IPhysicsInterface* CreateInstance();
-  static void DestroyInstance(IPhysicsInterface* instance);
+public:
+	static IPhysicsInterface *CreateInstance();
+	static void DestroyInstance( IPhysicsInterface *instance );
 
-  virtual void Tick() = 0;
+	virtual void Tick() = 0;
 
-  virtual IPhysicsBody* CreatePhysicsBody() = 0;
-  virtual void DestroyPhysicsBody(IPhysicsBody* body) = 0;
+	virtual IPhysicsBody *CreatePhysicsBody() = 0;
+	virtual void DestroyPhysicsBody( IPhysicsBody *body ) = 0;
 
-  virtual void GenerateTerrainCollision(std::vector<float> vertices) = 0;
-  virtual void DestroyTerrainCollision() = 0;
+	virtual void GenerateTerrainCollision( std::vector<float> vertices ) = 0;
+	virtual void DestroyTerrainCollision() = 0;
 
- protected:
-  IPhysicsInterface() = default;
-  virtual ~IPhysicsInterface() = default;
+protected:
+	IPhysicsInterface() = default;
+	virtual ~IPhysicsInterface() = default;
 
- private:
+private:
 };

@@ -24,97 +24,97 @@
 #include <Newton.h>
 
 class NTPhysicsBody : public IPhysicsBody {
- public:
-  NTPhysicsBody() {}
-  ~NTPhysicsBody() override {
-    NewtonDestroyCollision(newton_collision_);
-  }
+public:
+	NTPhysicsBody() {}
+	~NTPhysicsBody() override {
+		NewtonDestroyCollision( newtonCollision );
+	}
 
- protected:
- private:
-  NewtonCollision*  newton_collision_{nullptr};
-  NewtonBody*       newton_body_{nullptr};
+protected:
+private:
+	NewtonCollision *newtonCollision{ nullptr };
+	NewtonBody *newtonBody{ nullptr };
 };
 
 class NTPhysicsInterface : public IPhysicsInterface {
- public:
-  NTPhysicsInterface();
-  ~NTPhysicsInterface() override;
+public:
+	NTPhysicsInterface();
+	~NTPhysicsInterface() override;
 
-  void Tick() override;
+	void Tick() override;
 
-  IPhysicsBody* CreatePhysicsBody() override;
-  void DestroyPhysicsBody(IPhysicsBody* body) override;
+	IPhysicsBody *CreatePhysicsBody() override;
+	void DestroyPhysicsBody( IPhysicsBody *body ) override;
 
-  void GenerateTerrainCollision(std::vector<float> vertices) override;
-  void DestroyTerrainCollision() override;
+	void GenerateTerrainCollision( std::vector<float> vertices ) override;
+	void DestroyTerrainCollision() override;
 
- protected:
- private:
-  static void* AllocMemory(int size);
-  static void FreeMemory(void* ptr, int size);
+protected:
+private:
+	static void *AllocMemory( int size );
+	static void FreeMemory( void *ptr, int size );
 
-  NewtonWorld* newton_world_{nullptr};
-  NewtonCollision* terrain_collision_{nullptr};
+	NewtonWorld *newtonWorld{ nullptr };
+	NewtonCollision *terrainCollision{ nullptr };
 };
 
-IPhysicsInterface* IPhysicsInterface::CreateInstance() {
-  return new NTPhysicsInterface();
+IPhysicsInterface *IPhysicsInterface::CreateInstance() {
+	return new NTPhysicsInterface();
 }
 
-void IPhysicsInterface::DestroyInstance(IPhysicsInterface* instance) {
-  delete instance;
+void IPhysicsInterface::DestroyInstance( IPhysicsInterface *instance ) {
+	delete instance;
 }
 
 /////////////////////////////////////////////////////////////
 
-void* NTPhysicsInterface::AllocMemory(int size) {
-  return u_alloc(1, size, true);
+void *NTPhysicsInterface::AllocMemory( int size ) {
+	return u_alloc( 1, size, true );
 }
 
-void NTPhysicsInterface::FreeMemory(void* ptr, int size) {
-  u_unused(size);
-  u_free(ptr);
+void NTPhysicsInterface::FreeMemory( void *ptr, int size ) {
+	u_unused( size );
+	u_free( ptr );
 }
 
 NTPhysicsInterface::NTPhysicsInterface() {
-  newton_world_ = NewtonCreate();
-  NewtonSetMemorySystem(NTPhysicsInterface::AllocMemory, NTPhysicsInterface::FreeMemory);
+	newtonWorld = NewtonCreate();
+	NewtonSetMemorySystem( NTPhysicsInterface::AllocMemory, NTPhysicsInterface::FreeMemory );
 }
 
 NTPhysicsInterface::~NTPhysicsInterface() {
-  NewtonDestroyAllBodies(newton_world_);
-  NewtonDestroy(newton_world_);
+	NewtonDestroyAllBodies( newtonWorld );
+	NewtonDestroy( newtonWorld );
 }
 
 void NTPhysicsInterface::Tick() {
-  NewtonUpdate(newton_world_, 1.0f / 25.0f); // todo: double check this...
+	NewtonUpdate( newtonWorld, 1.0f / 25.0f ); // todo: double check this...
 }
 
-IPhysicsBody* NTPhysicsInterface::CreatePhysicsBody() {
-  auto* body = new NTPhysicsBody();
-  return body;
+IPhysicsBody *NTPhysicsInterface::CreatePhysicsBody() {
+	auto *body = new NTPhysicsBody();
+	return body;
 }
 
-void NTPhysicsInterface::DestroyPhysicsBody(IPhysicsBody* body) {
-  delete dynamic_cast<NTPhysicsBody*>(body);
+void NTPhysicsInterface::DestroyPhysicsBody( IPhysicsBody *body ) {
+	delete dynamic_cast<NTPhysicsBody *>(body);
 }
 
 /////////////////////////////////////////////////////////////
 // Terrain
 
-void NTPhysicsInterface::GenerateTerrainCollision(std::vector<float> vertices) {
+void NTPhysicsInterface::GenerateTerrainCollision( std::vector<float> vertices ) {
 #if 0
-  const unsigned int size = 65;
-  terrain_collision_ = NewtonCreateHeightFieldCollision(
-      newton_world_,
-      size, size,
-      0, 0,
-      vertices.data(),
-      );
+	const unsigned int size = 65;
+	terrain_collision_ = NewtonCreateHeightFieldCollision(
+		newton_world_,
+		size, size,
+		0, 0,
+		vertices.data(),
+		);
 #endif
 }
 
 void NTPhysicsInterface::DestroyTerrainCollision() {
-  NewtonDestroyCollision(terrain_collision_);
+	NewtonDestroyCollision( terrainCollision );
 }

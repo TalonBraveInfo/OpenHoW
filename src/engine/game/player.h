@@ -43,15 +43,15 @@ class Player {
   void SetControllerSlot(unsigned int slot) { input_slot = slot; }
   unsigned int GetControllerSlot() { return input_slot; }
 
-  void SetTeam(const Team& team) { team_ = team; }
-  Team* GetTeam() { return &team_; }
+  void SetTeam(const PlayerTeam& team) { team_ = team; }
+  PlayerTeam* GetTeam() { return &team_; }
 
  protected:
  private:
   unsigned int  input_slot{ 0 }; // Controller slot
 
   PlayerType type_;
-  Team team_;
+  PlayerTeam team_;
 
   std::vector<Actor*> children_;
   unsigned int current_child_{ 0 };

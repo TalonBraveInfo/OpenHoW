@@ -29,5 +29,5 @@ class NewGameWindow : public BaseWindow {
   char  team_name_[32]{'\0'};
   bool  training_mission_{true};
 
-  Team  team_;
+  PlayerTeam  team_;
 };

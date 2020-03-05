@@ -17,7 +17,7 @@
 
 #pragma once
 
-struct Team;
+struct PlayerTeam;
 class Player;
 
 class IGameMode {

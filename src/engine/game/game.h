@@ -72,7 +72,7 @@ struct CharacterClass : PropertyOwner {
 	NumericProperty<unsigned int> cost;
 	NumericProperty<unsigned int> health;
 
-	struct Item {
+	struct Item : PropertyOwner {
 		std::string key;
 		std::string classname;
 		unsigned int quantity{ 0 };
@@ -115,8 +115,8 @@ struct CharacterSlot : PropertyOwner {
 	unsigned int death_count{ 0 };                   // Number of times we've died
 };
 
-struct Team : PropertyOwner {
-	Team() :
+struct PlayerTeam : PropertyOwner {
+	PlayerTeam() :
 		INIT_PROPERTY( name, 0 ),
 		INIT_PROPERTY( description, 0 ),
 		INIT_PROPERTY( pig_textures, 0 ),
@@ -124,7 +124,7 @@ struct Team : PropertyOwner {
 		INIT_PROPERTY( debrief_texture, 0 ),
 		INIT_PROPERTY( voice_set, 0 ) {}
 
-	Team( const Team& src ) :
+	PlayerTeam( const PlayerTeam& src ) :
 		COPY_PROPERTY( name, src ),
 		COPY_PROPERTY( description, src ),
 		COPY_PROPERTY( pig_textures, src ),
@@ -222,7 +222,7 @@ public:
 	MapManifest* CreateManifest( const std::string& name );
 	//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
-	typedef std::vector<Team> TeamVector;
+	typedef std::vector<PlayerTeam> TeamVector;
 	const TeamVector& GetDefaultTeams() { return defaultTeams; }
 
 	Map* GetCurrentMap() { return map_; }

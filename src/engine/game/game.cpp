@@ -203,7 +203,7 @@ void GameManager::RegisterTeamManifest( const std::string &path ) {
 		for ( unsigned int i = 0; i < num_teams; ++i ) {
 			config.EnterChildNode( i );
 
-			Team team;
+			PlayerTeam team;
 			team.name = lm_gtr( config.GetStringProperty( "name", team.name ).c_str() );
 			team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
 			team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
