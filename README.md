@@ -55,7 +55,7 @@ have been listed below.
 * [SDL2](https://www.libsdl.org/) (needed for input, window creation and audio)
 * [OpenAL Soft](https://github.com/kcat/openal-soft) (needed for audio)
 
-At this time the project should compile for Linux (_Ubuntu 19.10_) with these dependencies 100%
+At this time with these dependencies the project should compile for Linux (_Ubuntu 19.10_: ```apt install cmake libglew-dev libopenal-dev libsdl2-dev```)
 but Windows needs some further care before it will be up and running correctly (see Windows section below).
 
 Once compiled, you need to use the [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility: point it to your Hogs of War installation directory. The tool will then copy across and update any of the original Hogs of War's assets as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory, but the default ```bin``` directory is required to get OpenHoW up and running.
