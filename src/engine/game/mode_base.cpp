@@ -22,6 +22,7 @@
 #include "actor_manager.h"
 #include "player.h"
 #include "actors/actor_pig.h"
+#include "actors/actor_airship.h"
 #include "actors/actor_static_model.h"
 
 using namespace openhow;
@@ -123,17 +124,16 @@ void BaseGameMode::SpawnActors() {
 	}
 
 	// TEMP START
+	// AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
+	// if ( model_actor == nullptr ) {
+	// 	Error( "Failed to create model actor!\n" );
+	// }
 
-	AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
+	AAirship* model_actor = dynamic_cast<AAirship*>(ActorManager::GetInstance()->CreateActor( "airship" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}
-
-	model_actor->SetModel( "scenery/airship1" );
-	model_actor->SetPosition( {
-								  TERRAIN_PIXEL_WIDTH / 2, TERRAIN_PIXEL_WIDTH / 2,
-								  Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight() } );
-
+	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(),  TERRAIN_PIXEL_WIDTH / 2, } );
 	// TEMP END
 
 	ActorManager::GetInstance()->ActivateActors();

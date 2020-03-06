@@ -36,23 +36,25 @@ using namespace openhow;
 /* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL??
  * todo: stream music and large samples */
 
-static void OALCheckErrors() {
-	ALenum err = alGetError();
-	if ( err != AL_NO_ERROR ) {
-		/* alut is apparently deprecated in OpenAL Soft, yay... */
-		/*Error("%s\n", alutGetErrorString(err));*/
+/* Why the hell isn't this in OpenAL?! */
+static const char *OALErrorString(ALenum err) {
+	switch ( err ) {
+		case AL_OUT_OF_MEMORY:     return "OpenAL ran out of memory";
+		case AL_INVALID_VALUE:     return "Invalid value passed to OpenAL";
+		case AL_INVALID_OPERATION: return "Invalid operation performed with OpenAL";
+		case AL_INVALID_ENUM:      return "Invalid enum passed to OpenAL";
+		case AL_INVALID_NAME:      return "Invalid name passed to OpenAL";
 
-		LogWarn( "OpenAL: %s\n", alGetString( err ));
-
-		switch ( err ) {
-			default: Error( "Unknown openal error, aborting!\n" );
-			case AL_OUT_OF_MEMORY: Error( "Openal ran out of memory, aborting!\n" );
-			case AL_INVALID_VALUE: Error( "Invalid value passed to openal, aborting!\n" );
-			case AL_INVALID_OPERATION: Error( "Invalid operation performed with openal, aborting!\n" );
-			case AL_INVALID_ENUM: Error( "Invalid enum passed to openal, aborting!\n" );
-			case AL_INVALID_NAME: Error( "Invalid name passed to openal, aborting!\n" );
-		}
+		default: return "Unknown OpenAL error";
 	}
+}
+
+#define OALCheckErrors() \
+{ \
+	ALenum err = alGetError(); \
+	if ( err != AL_NO_ERROR ) { \
+		Error( "%s, aborting!\n", OALErrorString(err) ); \
+	} \
 }
 
 unsigned int reverb_effect_slot = 0;
@@ -76,11 +78,8 @@ AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 ve
 	SetGain( gain );
 	SetPitch( pitch );
 	SetLooping( looping );
-
-	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, 300.0f );
-	OALCheckErrors();
-	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, 1.0f );
-	OALCheckErrors();
+	SetReferenceDistance( 300.0F );
+	SetRolloffFactor( 0.1F );
 
 	if ( reverb && Engine::Audio()->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX )) {
 		alSource3i( alSourceId, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
@@ -98,12 +97,20 @@ AudioSource::~AudioSource() {
 	StopPlaying();
 
 	if ( current_sample_ != nullptr ) {
+		/* Need to clear AL_LOOPING flag before unqueueing buffer. */
+		alSourcei( alSourceId, AL_LOOPING, AL_FALSE );
+		OALCheckErrors();
+
 		unsigned int buf = current_sample_->alBufferId;
 		alSourceUnqueueBuffers( alSourceId, 1, &buf );
+		OALCheckErrors();
 	}
 
 	alSourcei( alSourceId, AL_BUFFER, 0 );
+	OALCheckErrors();
+
 	alDeleteSources( 1, &alSourceId );
+	OALCheckErrors();
 
 	Engine::Audio()->sources_.erase( this );
 }
@@ -115,6 +122,10 @@ void AudioSource::SetSample( const AudioSample *sample ) {
 
 	if ( current_sample_ != nullptr ) {
 		StopPlaying();
+
+		/* Need to clear AL_LOOPING flag before unqueueing buffer. */
+		alSourcei( alSourceId, AL_LOOPING, AL_FALSE );
+		OALCheckErrors();
 
 		unsigned int buf = current_sample_->alBufferId;
 		alSourceUnqueueBuffers( alSourceId, 1, &buf );
@@ -128,6 +139,12 @@ void AudioSource::SetSample( const AudioSample *sample ) {
 	}
 
 	current_sample_ = sample;
+
+	if ( sample != nullptr ) {
+		/* Need to reset looping flag after queueing buffer as it can't
+		 * be set when no buffer is queued. */
+		SetLooping(looping);
+	}
 }
 
 const AudioSample *AudioSource::GetSample() const {
@@ -159,7 +176,26 @@ void AudioSource::SetPitch( float pitch ) {
 }
 
 void AudioSource::SetLooping( bool looping ) {
-	alSourcef( alSourceId, AL_LOOPING, looping );
+	this->looping = looping;
+
+	if( current_sample_ != nullptr ) {
+		alSourcei( alSourceId, AL_LOOPING, looping ? AL_TRUE : AL_FALSE );
+		OALCheckErrors();
+	}
+}
+
+void AudioSource::SetReferenceDistance( float value ) {
+	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, value );	
+	OALCheckErrors();
+}
+
+void AudioSource::SetMaximumDistance( float value ) {
+	alSourcef( alSourceId, AL_MAX_DISTANCE, value );	
+	OALCheckErrors();
+}
+
+void AudioSource::SetRolloffFactor( float value ) {
+	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, value );	
 	OALCheckErrors();
 }
 
@@ -177,17 +213,22 @@ void AudioSource::StopPlaying() {
 	}
 
 	alSourceStop( alSourceId );
+	OALCheckErrors();
 }
 
 bool AudioSource::IsPlaying() {
 	int state;
 	alGetSourcei( alSourceId, AL_SOURCE_STATE, &state );
+	OALCheckErrors();
+
 	return ( state == AL_PLAYING );
 }
 
 bool AudioSource::IsPaused() {
 	int state;
 	alGetSourcei( alSourceId, AL_SOURCE_STATE, &state );
+	OALCheckErrors();
+
 	return ( state == AL_PAUSED );
 }
 
@@ -198,6 +239,7 @@ void AudioSource::Pause() {
 	}
 
 	alSourcePause( alSourceId );
+	OALCheckErrors();
 }
 
 /************************************************************/
@@ -231,7 +273,7 @@ AudioManager::AudioManager() {
 	if ( device == nullptr ) {
 		Error( "failed to open audio device, aborting audio initialisation!\n" );
 	}
-
+		
 	memset( al_extensions_, 0, sizeof( al_extensions_ ));
 
 	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" )) {
@@ -287,6 +329,7 @@ AudioManager::AudioManager() {
 		alGenAuxiliaryEffectSlots( 1, &reverb_sound_slot );
 		alAuxiliaryEffectSloti( reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot );
 	}
+	alDistanceModel(AL_EXPONENT_DISTANCE);
 
 	plRegisterConsoleCommand( "stopMusic", StopMusicCommand, "Stops the current music track." );
 }

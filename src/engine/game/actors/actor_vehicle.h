@@ -28,7 +28,11 @@ class AVehicle : public AModel {
 
   virtual void Occupy(Actor* occupant);
   virtual void Unoccupy();
+  bool IsOccupied() { return isOccupied_; } //occupant_ == nullptr instead?
+  Actor* GetOccupant() { return occupant_; }
 
  protected:
  private:
+  bool isOccupied_;
+  Actor* occupant_;
 };
