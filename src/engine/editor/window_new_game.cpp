@@ -31,7 +31,7 @@ void NewGameWindow::Display() {
 
 	// Team Selection
 	ImGui::Text( "Select Team" );
-	GameManager::TeamVector teams = Engine::Game()->GetDefaultTeams();
+	GameManager::PlayerTeamVector teams = Engine::Game()->GetDefaultTeams();
 	std::vector<const char *> options;
 	for ( const auto &team : teams ) {
 		options.push_back( team.name.c_str() );

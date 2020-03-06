@@ -89,17 +89,6 @@ GameManager::GameManager() {
 	plRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
 	plRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied pig." );
 
-	// Load in all the data we'll retain in memory
-	Engine::Resource()->LoadModel( "chars/pigs/ac_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/sb_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/gr_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/hv_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/le_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/me_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/sa_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/sn_hi", true, true );
-	Engine::Resource()->LoadModel( "chars/pigs/sp_hi", true, true );
-
 	camera_ = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
 }
 
@@ -190,32 +179,65 @@ void GameManager::UnloadMap() {
 	delete map_;
 }
 
+void GameManager::CachePersistentData() {
+	// Cache all of the pig models we need
+	for ( const PlayerClass &playerClass : defaultClasses ) {
+		Engine::Resource()->LoadModel( playerClass.model, true, true );
+
+		// Now cache all the colour variations for this class
+		/*
+		for ( const PlayerTeam &playerTeam : defaultTeams ) {
+
+		}
+		 */
+	}
+}
+
 void GameManager::RegisterTeamManifest( const std::string &path ) {
 	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
 
-	try {
-		JsonReader config( path );
-		unsigned int num_teams = config.GetArrayLength();
-		if ( num_teams == 0 ) {
-			Error( "Failed to register teams, no teams available in \"%s\"!\n", path.c_str() );
-		}
+	JsonReader config( path );
+	unsigned int numTeams = config.GetArrayLength();
+	if ( numTeams == 0 ) {
+		Error( "Failed to register teams, no teams available in \"%s\"!\n", path.c_str() );
+	}
 
-		for ( unsigned int i = 0; i < num_teams; ++i ) {
-			config.EnterChildNode( i );
+	for ( unsigned int i = 0; i < numTeams; ++i ) {
+		config.EnterChildNode( i );
 
-			PlayerTeam team;
-			team.name = lm_gtr( config.GetStringProperty( "name", team.name ).c_str() );
-			team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
-			team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
-			team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures );
-			team.voice_set = config.GetStringProperty( "voiceSet", team.voice_set );
-			defaultTeams.push_back( team );
+		PlayerTeam team;
+		team.name = lm_gtr( config.GetStringProperty( "name", team.name ).c_str() );
+		team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
+		team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
+		team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures );
+		team.voice_set = config.GetStringProperty( "voiceSet", team.voice_set );
 
-			config.LeaveChildNode();
-		}
-	} catch ( const std::exception &e ) {
-		LogWarn( "Failed to read team config, \"%s\"!\n%s\n", path.c_str(), e.what() );
-		return;
+		defaultTeams.push_back( team );
+
+		config.LeaveChildNode();
+	}
+}
+
+void GameManager::RegisterClassManifest( const std::string &path ) {
+	JsonReader config( path );
+	unsigned int numClasses = config.GetArrayLength();
+	if ( numClasses == 0 ) {
+		Error( "Failed to register classes, no classes available in \"%s\"!\n", path.c_str() );
+	}
+
+	for ( unsigned int i = 0; i < numClasses; ++i ) {
+		config.EnterChildNode( i );
+
+		PlayerClass playerClass;
+		playerClass.key = config.GetStringProperty( "key" );
+		playerClass.cost = config.GetIntegerProperty( "cost" );
+		playerClass.health = config.GetIntegerProperty( "health" );
+		playerClass.model = config.GetStringProperty( "model" );
+		playerClass.label = lm_gtr( config.GetStringProperty( "label" ).c_str() );
+
+		defaultClasses.push_back( playerClass );
+
+		config.LeaveChildNode();
 	}
 }
 

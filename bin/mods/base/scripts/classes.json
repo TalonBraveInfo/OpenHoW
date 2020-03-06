@@ -1,10 +1,16 @@
 [
   {
+    "model": "chars/pigs/ac_hi"
+  },
+  {
+    "model": "chars/pigs/sb_hi"
+  },
+  {
     "key": "gr",
     "label": "$gruntClass",
     "health": "50",
     "cost": "0",
-    "model": "pigs/gr_hi",
+    "model": "chars/pigs/gr_hi",
     "items": [
       {
         "id": "0",
@@ -16,7 +22,7 @@
     "label": "$gunnerClass",
     "health": "75",
     "cost": "1",
-    "model": "pigs/hv_hi",
+    "model": "chars/pigs/hv_hi",
     "nextStage": "$bombardierClass",
     "items": [
       {
@@ -26,10 +32,25 @@
     ]
   },
   {
+    "model": "chars/pigs/le_hi"
+  },
+  {
+    "model": "chars/pigs/me_hi"
+  },
+  {
+    "model": "chars/pigs/sa_hi"
+  },
+  {
+    "model": "chars/pigs/sn_hi"
+  },
+  {
+    "model": "chars/pigs/sp_hi"
+  },
+  {
     "label": "$bombardierClass",
     "health": "90",
     "cost": "",
-    "model": "pigs/hv_hi",
+    "model": "chars/pigs/hv_hi",
     "nextStage": "$pyrotechnicClass",
     "items": [
       {

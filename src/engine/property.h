@@ -58,6 +58,7 @@
 */
 #define COPY_PROPERTY(name, src) name(*(PropertyOwner*)this, src.name)
 
+class JsonReader;
 class PropertyOwner;
 
 /**

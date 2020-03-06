@@ -71,7 +71,7 @@ public:
 	static GameManager *Game() {
 		return engine->game_manager_;
 	}
-	static hwResourceManager *Resource() {
+	static ResourceManager *Resource() {
 		return engine->resource_manager_;
 	}
 	static IPhysicsInterface *Physics() {
@@ -89,7 +89,7 @@ public:
 private:
 	GameManager *game_manager_{ nullptr };
 	AudioManager *audio_manager_{ nullptr };
-	hwResourceManager *resource_manager_{ nullptr };
+	ResourceManager *resource_manager_{ nullptr };
 	IPhysicsInterface *physics_interface_{ nullptr };
 
 	double deltaTime{ 0 };

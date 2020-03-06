@@ -58,13 +58,19 @@ enum class CharacterStatus {
   GRENADIER,
  */
 
-struct CharacterClass : PropertyOwner {
-	CharacterClass() :
+struct PlayerClass : PropertyOwner {
+	PlayerClass() :
 		INIT_PROPERTY( key, 0 ),
 		INIT_PROPERTY( label, 0 ),
 		INIT_PROPERTY( model, 0 ),
 		INIT_PROPERTY( cost, 0, 0 ),
 		INIT_PROPERTY( health, 0, 0 ) {}
+	PlayerClass( const PlayerClass &src ) :
+		COPY_PROPERTY( key, src ),
+		COPY_PROPERTY( label, src ),
+		COPY_PROPERTY( model, src ),
+		COPY_PROPERTY( cost, src ),
+		COPY_PROPERTY( health, src ) {}
 
 	StringProperty key;
 	StringProperty label;
@@ -72,7 +78,7 @@ struct CharacterClass : PropertyOwner {
 	NumericProperty<unsigned int> cost;
 	NumericProperty<unsigned int> health;
 
-	struct Item : PropertyOwner {
+	struct Item {
 		std::string key;
 		std::string classname;
 		unsigned int quantity{ 0 };
@@ -87,8 +93,7 @@ struct CharacterSlot : PropertyOwner {
 		INIT_PROPERTY( portrait_wounded, 0 ),
 		INIT_PROPERTY( voice_language, 0 ),
 		INIT_PROPERTY( voice_set, 0, 0 ) {}
-
-	CharacterSlot( const CharacterSlot& src ) :
+	CharacterSlot( const CharacterSlot &src ) :
 		COPY_PROPERTY( portrait, src ),
 		COPY_PROPERTY( portrait_selected, src ),
 		COPY_PROPERTY( portrait_wounded, src ),
@@ -109,7 +114,7 @@ struct CharacterSlot : PropertyOwner {
 
 	// Dynamic
 	std::string name;                               // Assigned name, e.g. Herman
-	const CharacterClass* classname{ nullptr };               // Ace, gunner, sapper etc.
+	const PlayerClass *classname{ nullptr };               // Ace, gunner, sapper etc.
 	CharacterStatus status{ CharacterStatus::ALIVE };   // Pig's status (alive / dead)
 	unsigned int kill_count{ 0 };                    // Number of other pigs we've killed
 	unsigned int death_count{ 0 };                   // Number of times we've died
@@ -123,8 +128,7 @@ struct PlayerTeam : PropertyOwner {
 		INIT_PROPERTY( paper_texture, 0 ),
 		INIT_PROPERTY( debrief_texture, 0 ),
 		INIT_PROPERTY( voice_set, 0 ) {}
-
-	PlayerTeam( const PlayerTeam& src ) :
+	PlayerTeam( const PlayerTeam &src ) :
 		COPY_PROPERTY( name, src ),
 		COPY_PROPERTY( description, src ),
 		COPY_PROPERTY( pig_textures, src ),
@@ -186,7 +190,7 @@ struct GameModeDescriptor {
 	unsigned int deathmatch_limit{ 5 };
 };
 
-typedef std::vector<Player*> PlayerPtrVector;
+typedef std::vector<Player *> PlayerPtrVector;
 
 class Map;
 
@@ -198,36 +202,41 @@ private:
 public:
 	void Tick();
 
-	Camera* GetCamera() { return camera_; }
+	Camera *GetCamera() { return camera_; }
 
-	void StartMode( const std::string& map, const PlayerPtrVector& players, const GameModeDescriptor& descriptor );
+	void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
 	void EndMode();
 
-	void SetupPlayers( const PlayerPtrVector& teams );
-	Player* GetPlayerByIndex( unsigned int i );
-	const PlayerPtrVector& GetPlayers() { return players_; }
+	void SetupPlayers( const PlayerPtrVector &teams );
+	Player *GetPlayerByIndex( unsigned int i );
+	const PlayerPtrVector &GetPlayers() { return players_; }
 
 	// Map
-
-	void LoadMap( const std::string& name );
+	void LoadMap( const std::string &name );
 	void UnloadMap();
 
-	void RegisterTeamManifest( const std::string& path );
-	void RegisterMapManifest( const std::string& path );
+	void CachePersistentData();
+
+	void RegisterTeamManifest( const std::string &path );
+	void RegisterClassManifest( const std::string &path );
+	void RegisterMapManifest( const std::string &path );
 	void RegisterMapManifests();
 
 	typedef std::map<std::string, MapManifest> MapManifestMap;
-	MapManifest* GetMapManifest( const std::string& name );
-	const MapManifestMap& GetMapManifests() { return map_manifests_; };
-	MapManifest* CreateManifest( const std::string& name );
+	MapManifest *GetMapManifest( const std::string &name );
+	const MapManifestMap &GetMapManifests() { return map_manifests_; };
+	MapManifest *CreateManifest( const std::string &name );
 	//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
-	typedef std::vector<PlayerTeam> TeamVector;
-	const TeamVector& GetDefaultTeams() { return defaultTeams; }
+	typedef std::vector<PlayerTeam> PlayerTeamVector;
+	typedef std::vector<PlayerClass> PlayerClassVector;
 
-	Map* GetCurrentMap() { return map_; }
+	const PlayerTeamVector &GetDefaultTeams() const { return defaultTeams; }
+	const PlayerClassVector &GetDefaultClasses() const { return defaultClasses; }
 
-	IGameMode* GetMode() { return mode_; }
+	Map *GetCurrentMap() { return map_; }
+
+	IGameMode *GetMode() { return mode_; }
 
 	bool IsModeActive();
 
@@ -241,12 +250,12 @@ public:
 
 protected:
 private:
-	static void OpenMapCommand( unsigned int argc, char* argv[] );
-	static void CreateMapCommand( unsigned int argc, char* argv[] );
+	static void OpenMapCommand( unsigned int argc, char *argv[] );
+	static void CreateMapCommand( unsigned int argc, char *argv[] );
 	static void ListMapsCommand( unsigned int argc, char **argv );
-	static void GiveItemCommand( unsigned int argc, char* argv[] );
+	static void GiveItemCommand( unsigned int argc, char *argv[] );
 	static void KillSelfCommand( unsigned int argc, char **argv );
-	static void SpawnModelCommand( unsigned int argc, char** argv );
+	static void SpawnModelCommand( unsigned int argc, char **argv );
 
 	bool pauseSim{ false };
 	unsigned int simSteps{ 0 };
@@ -266,23 +275,25 @@ private:
 		FLYAROUND,
 	};
 
-	Camera* camera_{ nullptr };
+	Camera *camera_{ nullptr };
 	CameraMode camera_mode_{ CameraMode::FOLLOW };
 
 	/////////////////////////////////////////////////////////////
 
-	Map* map_{ nullptr };
+	Map *map_{ nullptr };
 
-	IGameMode* mode_{ nullptr };
+	IGameMode *mode_{ nullptr };
 
 	std::map<std::string, MapManifest> map_manifests_;
 
-	TeamVector defaultTeams;
+	PlayerTeamVector defaultTeams;
+	PlayerClassVector defaultClasses;
+
 	PlayerPtrVector players_;
 
 #define MAX_AMBIENT_SAMPLES 8
 	double ambient_emit_delay_{ 0 };
-	const struct AudioSample* ambient_samples_[MAX_AMBIENT_SAMPLES]{};
+	const struct AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
 
 	friend class openhow::Engine;
 };

@@ -100,19 +100,15 @@ const char *Model_GetAnimationDescription( unsigned int i ) {
 	return animationNames[ i ];
 }
 
-static TextureAtlas *Model_GenerateTextureAtlas( const std::string &facPath, const std::string &texturePath = "" ) {
+TextureAtlas *Model_GenerateTextureAtlas( const std::string &facPath, const std::string &texturePath ) {
 	FacHandle *facHandle = Fac_LoadFile( facPath.c_str() );
 	if ( facHandle == nullptr ) {
-		Fac_DestroyHandle( facHandle );
-		LogWarn( "Failed to generate texture sheet for pig, \"%s\"!\n", facPath.c_str() );
-		return nullptr;
+		Error( "Failed to generate texture sheet for pig, \"%s\"!\n", facPath.c_str() );
 	} else if( facHandle->texture_table_size == 0 ) {
-		Fac_DestroyHandle( facHandle );
-		LogWarn( "Empty texture table for pig, \"%s\"!\n", facPath.c_str() );
-		return nullptr;
+		Error( "Empty texture table for pig, \"%s\"!\n", facPath.c_str() );
 	}
 
-	TextureAtlas *atlas = new TextureAtlas( 128, 8 );
+	TextureAtlas *atlas = new TextureAtlas( 128, 128 );
 
 	for ( unsigned int i = 0; i < facHandle->texture_table_size; ++i ) {
 		if ( facHandle->texture_table[ i ].name[ 0 ] == '\0' ) {
@@ -203,8 +199,7 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 	}
 
 	// automatically returns default if failed
-	TextureAtlas *textureAtlas =  Model_GenerateTextureAtlas( fac_path );
-	mesh->texture = textureAtlas->GetTexture();
+	TextureAtlas *textureAtlas = Model_GenerateTextureAtlas( fac_path );
 
 	unsigned int cur_index = 0;
 	for ( unsigned int j = 0, next_vtx_i = 0; j < fac->num_triangles; ++j ) {
@@ -222,7 +217,7 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 
 		plSetMeshTrianglePosition( mesh, &cur_index, next_vtx_i - 1, next_vtx_i - 2, next_vtx_i - 3 );
 
-		if ( fac->texture_table != nullptr ) {
+		if ( fac->texture_table != nullptr && textureAtlas != nullptr ) {
 			float tx_x, tx_y, tx_w, tx_h;
 			textureAtlas->GetTextureCoords( fac->texture_table[ fac->triangles[ j ].texture_index ].name,
 									&tx_x,
@@ -241,6 +236,12 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 									   * ( float ) ( fac->triangles[ j ].uv_coords[ u + 1 ] ) ) );
 			}
 		}
+	}
+
+	if ( textureAtlas != nullptr ) {
+		mesh->texture = textureAtlas->GetTexture();
+	} else {
+		mesh->texture = Engine::Resource()->GetFallbackTexture();
 	}
 
 	delete textureAtlas;

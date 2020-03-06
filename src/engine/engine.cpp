@@ -87,7 +87,7 @@ void openhow::Engine::Initialize() {
 
 	Input_Initialize();
 	Display_Initialize();
-	resource_manager_ = new hwResourceManager();
+	resource_manager_ = new ResourceManager();
 
 	audio_manager_ = new AudioManager();
 	audio_manager_->SetupMusicSource();
@@ -98,11 +98,19 @@ void openhow::Engine::Initialize() {
 	// Setup our interface to the physics engine, this handles the abstraction
 	physics_interface_ = IPhysicsInterface::CreateInstance();
 
+	plParseConsoleString( "fsListMounted" );
+
 	// Ensure that our manifest list is updated
 	Game()->RegisterMapManifests();
-	Game()->RegisterTeamManifest( "scripts/teams.json" );
 
-	plParseConsoleString( "fsListMounted" );
+	try {
+		Game()->RegisterTeamManifest( "scripts/teams.json" );
+		Game()->RegisterClassManifest( "scripts/classes.json" );
+	} catch( const std::exception &exception ) {
+		Error( "Failed to read manifest data (%s)!\n", exception.what() );
+	}
+
+	Game()->CachePersistentData();
 }
 
 std::string openhow::Engine::GetVersionString() {

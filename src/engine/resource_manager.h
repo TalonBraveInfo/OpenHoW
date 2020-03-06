@@ -21,10 +21,10 @@ namespace openhow {
 class Engine;
 }
 
-class hwResourceManager {
+class ResourceManager {
 private:
-	hwResourceManager();
-	~hwResourceManager();
+	ResourceManager();
+	~ResourceManager();
 
 public:
 	PLTexture* GetCachedTexture( const std::string& path );
