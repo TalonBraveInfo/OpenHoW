@@ -187,4 +187,5 @@ private:
 
 	unsigned int alSourceId{ 0 };
 	const AudioSample *current_sample_{ nullptr };
+	bool looping{ false };
 };
