@@ -76,11 +76,8 @@ AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 ve
 	SetGain( gain );
 	SetPitch( pitch );
 	SetLooping( looping );
-
-	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, 300.0f );
-	OALCheckErrors();
-	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, 1.0f );
-	OALCheckErrors();
+	SetReferenceDistance( 300.0F );
+	SetRolloffFactor( 0.1F );
 
 	if ( reverb && Engine::Audio()->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX )) {
 		alSource3i( alSourceId, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
@@ -101,7 +98,7 @@ AudioSource::~AudioSource() {
 		unsigned int buf = current_sample_->alBufferId;
 		alSourceUnqueueBuffers( alSourceId, 1, &buf );
 	}
-
+	
 	alSourcei( alSourceId, AL_BUFFER, 0 );
 	alDeleteSources( 1, &alSourceId );
 
@@ -159,7 +156,22 @@ void AudioSource::SetPitch( float pitch ) {
 }
 
 void AudioSource::SetLooping( bool looping ) {
-	alSourcef( alSourceId, AL_LOOPING, looping );
+	alSourcei( alSourceId, AL_LOOPING, looping );	
+	OALCheckErrors();
+}
+
+void AudioSource::SetReferenceDistance( float value ) {
+	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, value );	
+	OALCheckErrors();
+}
+
+void AudioSource::SetMaximumDistance( float value ) {
+	alSourcef( alSourceId, AL_MAX_DISTANCE, value );	
+	OALCheckErrors();
+}
+
+void AudioSource::SetRolloffFactor( float value ) {
+	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, value );	
 	OALCheckErrors();
 }
 
@@ -231,7 +243,7 @@ AudioManager::AudioManager() {
 	if ( device == nullptr ) {
 		Error( "failed to open audio device, aborting audio initialisation!\n" );
 	}
-
+		
 	memset( al_extensions_, 0, sizeof( al_extensions_ ));
 
 	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" )) {
@@ -287,6 +299,7 @@ AudioManager::AudioManager() {
 		alGenAuxiliaryEffectSlots( 1, &reverb_sound_slot );
 		alAuxiliaryEffectSloti( reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot );
 	}
+	alDistanceModel(AL_EXPONENT_DISTANCE);
 
 	plRegisterConsoleCommand( "stopMusic", StopMusicCommand, "Stops the current music track." );
 }

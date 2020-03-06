@@ -162,6 +162,9 @@ public:
 	void SetGain( float gain );
 	void SetPitch( float pitch );
 	void SetLooping( bool looping );
+	void SetReferenceDistance( float value );
+	void SetMaximumDistance( float value );
+	void SetRolloffFactor( float value );
 
 	PLVector3 GetPosition() { return position_; }
 	PLVector3 GetVelocity() { return velocity_; }

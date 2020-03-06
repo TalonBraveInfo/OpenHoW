@@ -19,4 +19,17 @@
 #include "../actor_manager.h"
 #include "actor_vehicle.h"
 
+AVehicle::AVehicle() : SuperClass() {}
+AVehicle::~AVehicle() = default;
 
+void AVehicle::Occupy(Actor* occupant) 
+{
+    occupant_ = occupant;
+    isOccupied_ = true;
+};
+
+void AVehicle::Unoccupy() 
+{   
+    occupant_ = nullptr;
+    isOccupied_ = false;
+};
