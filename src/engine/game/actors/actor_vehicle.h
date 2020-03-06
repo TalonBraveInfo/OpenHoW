@@ -20,19 +20,19 @@
 #include "actor_model.h"
 
 class AVehicle : public AModel {
-  IMPLEMENT_ACTOR(AVehicle, AModel)
+	IMPLEMENT_ACTOR( AVehicle, AModel )
 
- public:
-  AVehicle();
-  ~AVehicle();
+public:
+	AVehicle();
+	~AVehicle();
 
-  virtual void Occupy(Actor* occupant);
-  virtual void Unoccupy();
-  bool IsOccupied() { return isOccupied_; } //occupant_ == nullptr instead?
-  Actor* GetOccupant() { return occupant_; }
+	virtual void Occupy( Actor *occupant );
+	virtual void Unoccupy();
+	bool IsOccupied() { return isOccupied_; } //occupant_ == nullptr instead?
+	Actor *GetOccupant() { return occupant_; }
 
- protected:
- private:
-  bool isOccupied_;
-  Actor* occupant_;
+protected:
+private:
+	bool isOccupied_;
+	Actor *occupant_;
 };

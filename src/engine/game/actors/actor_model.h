@@ -29,7 +29,7 @@ public:
 	void Draw() override;
 	void ShowModel( bool show = true );
 
-	virtual void SetModel( const std::string &path );
+	void SetModel( const std::string &path );
 
 protected:
 	PLModel *model_{ nullptr };

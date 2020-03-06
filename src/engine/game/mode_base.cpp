@@ -102,12 +102,10 @@ void BaseGameMode::SpawnActors() {
 
 	std::vector<ActorSpawn> spawns = map->GetSpawns();
 	for ( const auto& spawn : spawns ) {
-		Actor* actor = ActorManager::GetInstance()->CreateActor( spawn.class_name );
+		Actor* actor = ActorManager::GetInstance()->CreateActor( spawn.class_name, spawn );
 		if ( actor == nullptr ) {
-			actor = ActorManager::GetInstance()->CreateActor( "AStaticModel" );
+			actor = ActorManager::GetInstance()->CreateActor( "AStaticModel", spawn );
 		}
-
-		actor->Deserialize( spawn );
 
 		APig* pig = dynamic_cast<APig*>(actor);
 		if ( pig == nullptr ) {
@@ -123,18 +121,12 @@ void BaseGameMode::SpawnActors() {
 		AssignActorToPlayer( pig, player );
 	}
 
-	// TEMP START
-	// AStaticModel* model_actor = dynamic_cast<AStaticModel*>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
-	// if ( model_actor == nullptr ) {
-	// 	Error( "Failed to create model actor!\n" );
-	// }
-
 	AAirship* model_actor = dynamic_cast<AAirship*>(ActorManager::GetInstance()->CreateActor( "airship" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}
+
 	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(),  TERRAIN_PIXEL_WIDTH / 2, } );
-	// TEMP END
 
 	ActorManager::GetInstance()->ActivateActors();
 }

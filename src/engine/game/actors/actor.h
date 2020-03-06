@@ -100,10 +100,10 @@ class Actor : public PropertyOwner {
 
 	virtual bool IsVisible() { return is_visible_; }
 
-	virtual PLVector3 GetPosition() { return position_; }
+	PLVector3 GetPosition() { return position_; }
 	virtual void SetPosition( PLVector3 position );
 
-	virtual PLVector3 GetAngles() { return angles_; }
+	PLVector3 GetAngles() { return angles_; }
 	virtual void SetAngles( PLVector3 angles );
 
 	virtual bool Possessed( const Player *player );

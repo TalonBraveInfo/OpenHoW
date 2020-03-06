@@ -3,16 +3,17 @@
 #include "actor_vehicle.h"
 
 class AAirship : public AVehicle {
-    IMPLEMENT_ACTOR(AAirship, AVehicle)
+	IMPLEMENT_ACTOR( AAirship, AVehicle )
 
 public:
-    AAirship();
-    ~AAirship() override;
+	AAirship();
+	~AAirship() override;
 
-    void Tick() override;
+	void Tick() override;
 
+	void Deserialize( const ActorSpawn &spawn ) override;
 
 protected:
-private:    
-    AudioSource* noise_{nullptr};
+private:
+	AudioSource *ambientSource{ nullptr };
 };
