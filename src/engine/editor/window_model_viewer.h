@@ -44,6 +44,7 @@ private:
 
 	bool viewRotate{ true };
 	bool viewDebugNormals{ false };
+	bool viewGrid{ true };
 
 	static void AppendModelList( const char *path );
 	static std::list<std::string> modelList;

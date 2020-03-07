@@ -43,6 +43,8 @@ ModelViewer::ModelViewer() : BaseWindow() {
 
 	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
 	camera->SetViewport( { 0, 0 }, { 640, 480 } );
+
+	GenerateFrameBuffer( 640, 480 );
 }
 
 ModelViewer::~ModelViewer() {
@@ -59,15 +61,33 @@ void ModelViewer::DrawViewport() {
 	plSetClearColour( { 0, 0, 0, 0 } );
 	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
 
-	if ( modelPtr == nullptr ) {
-		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
-		return;
-	}
-
 	unsigned int bufferWidth = 0, bufferHeight = 0;
 	plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
 	camera->SetViewport( { 0, 0 }, { bufferWidth, bufferHeight } );
 	camera->MakeActive();
+
+	PLVector3 angles(
+		plDegreesToRadians( modelRotation.x ),
+		plDegreesToRadians( modelRotation.y ),
+		plDegreesToRadians( modelRotation.z ) );
+
+	if ( viewGrid ) {
+		ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
+		shaderProgram->Enable();
+
+		PLMatrix4 matrix;
+		matrix.Identity();
+		matrix.Rotate( plDegreesToRadians( modelRotation.z + 90.0f ), { 1, 0, 0 } );
+		matrix.Rotate( angles.y, { 0, 1, 0 } );
+		matrix.Rotate( angles.x, { 0, 0, 1 } );
+
+		plDrawGrid( &matrix, -512, -512, 1024, 1024, 32 );
+	}
+
+	if ( modelPtr == nullptr ) {
+		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+		return;
+	}
 
 	ShaderProgram *shaderProgram = Shaders_GetProgram( viewDebugNormals ? "debug_normals" : "generic_textured_lit" );
 	shaderProgram->Enable();
@@ -84,11 +104,6 @@ void ModelViewer::DrawViewport() {
 	if ( viewRotate ) {
 		modelRotation.y += 0.01f * g_state.last_draw_ms;
 	}
-
-	PLVector3 angles(
-		plDegreesToRadians( modelRotation.x ),
-		plDegreesToRadians( modelRotation.y ),
-		plDegreesToRadians( modelRotation.z ) );
 
 	PLMatrix4 *matrixPtr = &modelPtr->model_matrix;
 	matrixPtr->Identity();
@@ -167,6 +182,9 @@ void ModelViewer::Display() {
 			}
 			if ( ImGui::MenuItem( "Debug Normals", nullptr, viewDebugNormals ) ) {
 				viewDebugNormals = !viewDebugNormals;
+			}
+			if ( ImGui::MenuItem( "Show Grid", nullptr, viewGrid ) ) {
+				viewGrid = !viewGrid;
 			}
 
 #if 0 // Once we have reference counting for resources, add this back
