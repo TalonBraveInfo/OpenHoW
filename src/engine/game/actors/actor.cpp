@@ -36,53 +36,53 @@ Actor::Actor() :
 	INIT_PROPERTY( bounds_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
 
 Actor::~Actor() {
-  for(auto actor : children_) {
-    ActorManager::GetInstance()->DestroyActor(actor);
-    actor = nullptr;
-  }
+	for ( auto actor : children_ ) {
+		ActorManager::GetInstance()->DestroyActor( actor );
+		actor = nullptr;
+	}
 
-  children_.clear();
-  children_.shrink_to_fit();
+	children_.clear();
+	children_.shrink_to_fit();
 
-  DestroyPhysicsBody();
+	DestroyPhysicsBody();
 }
 
-void Actor::SetAngles(PLVector3 angles) {
-  VecAngleClamp(&angles);
-  old_angles_ = angles_;
-  angles_ = angles;
+void Actor::SetAngles( PLVector3 angles ) {
+	VecAngleClamp( &angles );
+	old_angles_ = angles_;
+	angles_ = angles;
 }
 
-void Actor::SetPosition(PLVector3 position) {
-  old_position_ = position_;
-  position_ = position;
+void Actor::SetPosition( PLVector3 position ) {
+	old_position_ = position_;
+	position_ = position;
 }
 
-void Actor::Deserialize(const ActorSpawn& spawn){
-  SetPosition(spawn.position);
-  SetAngles(spawn.angles);
+void Actor::Deserialize( const ActorSpawn &spawn ) {
+	SetPosition( spawn.position );
+	SetAngles( spawn.angles );
 }
 
-const IPhysicsBody* Actor::CreatePhysicsBody() {
-  if(physics_body_ != nullptr) {
-    return physics_body_;
-  }
+const IPhysicsBody *Actor::CreatePhysicsBody() {
+	if ( physics_body_ != nullptr ) {
+		return physics_body_;
+	}
 
-  physics_body_ = Engine::Physics()->CreatePhysicsBody();
-  if(physics_body_ == nullptr) {
-    return nullptr;
-  }
+	physics_body_ = Engine::Physics()->CreatePhysicsBody();
+	if ( physics_body_ == nullptr ) {
+		return nullptr;
+	}
 
-  return physics_body_;
+	return physics_body_;
 }
 
 void Actor::DestroyPhysicsBody() {
-  if(physics_body_ == nullptr) {
-    return;
-  }
+	if ( physics_body_ == nullptr ) {
+		return;
+	}
 
-  Engine::Physics()->DestroyPhysicsBody(physics_body_);
-  physics_body_ = nullptr;
+	Engine::Physics()->DestroyPhysicsBody( physics_body_ );
+	physics_body_ = nullptr;
 }
 
 /**
@@ -93,7 +93,7 @@ void Actor::DestroyPhysicsBody() {
  * @param velocity Velocity of the damage, for physics.
  * @return Returns true if the actor is killed.
  */
-bool Actor::Damage(const Actor *attacker, uint16_t damageInflicted, PLVector3 direction, PLVector3 velocity) {
+bool Actor::Damage( const Actor *attacker, uint16_t damageInflicted, PLVector3 direction, PLVector3 velocity ) {
 	if ( health_ <= 0 ) {
 		return true;
 	}
@@ -111,25 +111,25 @@ void Actor::Killed() {
 	ActorManager::GetInstance()->DestroyActor( this );
 }
 
-void Actor::AddHealth(int16_t health) {
-  if(health <= 0) {
-    return;
-  }
+void Actor::AddHealth( int16_t health ) {
+	if ( health <= 0 ) {
+		return;
+	}
 
-  health_ += health;
+	health_ += health;
 }
 
-bool Actor::Possessed(const Player* player) {
-  return true;
+bool Actor::Possessed( const Player *player ) {
+	return true;
 }
 
-void Actor::Depossessed(const Player* player) {}
+void Actor::Depossessed( const Player *player ) {}
 
 /**
  * Drop the actor to the ground based on it's bounding box size.
  */
 void Actor::DropToFloor() {
-	Map* map = Engine::Game()->GetCurrentMap();
+	Map *map = Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		Error( "Failed to get current map!\n" );
 	}
@@ -141,73 +141,73 @@ void Actor::DropToFloor() {
 }
 
 PLVector3 Actor::GetForward() {
-  return plNormalizeVector3( {
-								 cosf( plDegreesToRadians( angles_.GetValue().y ) )
-									 * cosf( plDegreesToRadians( angles_.GetValue().x ) ),
-								 sinf( plDegreesToRadians( angles_.GetValue().x ) ),
-								 sinf( plDegreesToRadians( angles_.GetValue().y ) )
-									 * cosf( plDegreesToRadians( angles_.GetValue().x ) )
-							 });
+	return plNormalizeVector3( {
+								   cosf( plDegreesToRadians( angles_.GetValue().y ) )
+									   * cosf( plDegreesToRadians( angles_.GetValue().x ) ),
+								   sinf( plDegreesToRadians( angles_.GetValue().x ) ),
+								   sinf( plDegreesToRadians( angles_.GetValue().y ) )
+									   * cosf( plDegreesToRadians( angles_.GetValue().x ) )
+							   } );
 }
 
 void Actor::HandleInput() {
-  IGameMode* mode = Engine::Game()->GetMode();
-  if (mode == nullptr) {
-    return;
-  }
+	IGameMode *mode = Engine::Game()->GetMode();
+	if ( mode == nullptr ) {
+		return;
+	}
 
-  Player* player = mode->GetCurrentPlayer();
-  if (player == nullptr) {
-    return;
-  }
+	Player *player = mode->GetCurrentPlayer();
+	if ( player == nullptr ) {
+		return;
+	}
 
-  PLVector2 cl = Input_GetJoystickState(player->GetControllerSlot(), INPUT_JOYSTICK_LEFT);
-  PLVector2 cr = Input_GetJoystickState(player->GetControllerSlot(), INPUT_JOYSTICK_RIGHT);
+	PLVector2 cl = Input_GetJoystickState( player->GetControllerSlot(), INPUT_JOYSTICK_LEFT );
+	PLVector2 cr = Input_GetJoystickState( player->GetControllerSlot(), INPUT_JOYSTICK_RIGHT );
 
-  if (Input_GetActionState(player->GetControllerSlot(), ACTION_MOVE_FORWARD)) {
-    input_forward = 1.0f;
-  } else if (Input_GetActionState(player->GetControllerSlot(), ACTION_MOVE_BACKWARD)) {
-    input_forward = -1.0f;
-  } else {
-    input_forward = -cl.y / 327.0f;
-  }
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_MOVE_FORWARD ) ) {
+		input_forward = 1.0f;
+	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_MOVE_BACKWARD ) ) {
+		input_forward = -1.0f;
+	} else {
+		input_forward = -cl.y / 327.0f;
+	}
 
-  if (Input_GetActionState(player->GetControllerSlot(), ACTION_TURN_LEFT)) {
-    input_yaw = -1.0f;
-  } else if (Input_GetActionState(player->GetControllerSlot(), ACTION_TURN_RIGHT)) {
-    input_yaw = 1.0f;
-  } else {
-    input_yaw = cr.x / 327.0f;
-  }
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_TURN_LEFT ) ) {
+		input_yaw = -1.0f;
+	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_TURN_RIGHT ) ) {
+		input_yaw = 1.0f;
+	} else {
+		input_yaw = cr.x / 327.0f;
+	}
 
-  if (Input_GetActionState(player->GetControllerSlot(), ACTION_AIM_UP)) {
-    input_pitch = 1.0f;
-  } else if (Input_GetActionState(player->GetControllerSlot(), ACTION_AIM_DOWN)) {
-    input_pitch = -1.0f;
-  } else {
-    input_pitch = -cr.y / 327.0f;
-  }
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_AIM_UP ) ) {
+		input_pitch = 1.0f;
+	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_AIM_DOWN ) ) {
+		input_pitch = -1.0f;
+	} else {
+		input_pitch = -cr.y / 327.0f;
+	}
 }
 
 /**
  * Attach actor to self, and set self as parent. Children are automatically destroyed.
  * @param actor Child actor to link.
  */
-void Actor::LinkChild(Actor* actor) {
-  if(actor == nullptr) {
-    LogWarn("Attempted to attach an invalid actor to self!\n");
-    return;
-  }
+void Actor::LinkChild( Actor *actor ) {
+	if ( actor == nullptr ) {
+		LogWarn( "Attempted to attach an invalid actor to self!\n" );
+		return;
+	}
 
-  children_.push_back(actor);
-  actor->parent_ = this;
+	children_.push_back( actor );
+	actor->parent_ = this;
 }
 
 /**
  * Called when one actor collides with another.
  * @param other The touchee.
  */
-void Actor::Touch(Actor* other) {
+void Actor::Touch( Actor *other ) {
 	LogDebug( "actor (%s) touched actor (%s)\n",
 			  plPrintVector3( &position_.GetValue(), pl_int_var ),
 			  plPrintVector3( &other->position_.GetValue(), pl_int_var ) );
