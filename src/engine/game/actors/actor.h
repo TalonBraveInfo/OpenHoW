@@ -129,8 +129,8 @@ class Actor : public PropertyOwner {
 	PLVector3 GetForward();
 
 	// Physics
-	virtual const IPhysicsBody *CreatePhysicsBody();
-	virtual void DestroyPhysicsBody();
+	const IPhysicsBody *CreatePhysicsBody();
+	void DestroyPhysicsBody();
 
  protected:
 	bool is_visible_{ false };
