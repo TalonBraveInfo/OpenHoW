@@ -39,8 +39,6 @@ ModelViewer::ModelViewer() : BaseWindow() {
 	modelList.sort();
 	modelList.unique();
 
-	//GenerateFrameBuffer( VIEWER_WIDTH, VIEWER_HEIGHT );
-
 	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
 	camera->SetViewport( { 0, 0 }, { 640, 480 } );
 
@@ -128,6 +126,10 @@ void ModelViewer::Display() {
 	ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
 
 	Begin( "Model Viewer", flags );
+	if ( ImGui::BeginMenuBar() ) {
+		ImGui::EndMenuBar();
+	}
+
 	if ( ImGui::BeginMenuBar() ) {
 		if ( ImGui::BeginMenu( "Models" ) ) {
 			static ImGuiTextFilter filter;
@@ -223,6 +225,22 @@ void ModelViewer::Display() {
 			labelStr = modelPtr->path;
 		}
 		ImGui::Text( "%s", labelStr );
+
+		ImGui::Separator();
+
+		unsigned int numTriangles = 0;
+		unsigned int numVertices = 0;
+		unsigned int numDrawCalls = 0;
+		if ( modelPtr != nullptr ) {
+			numDrawCalls = modelPtr->levels[ 0 ].num_meshes;
+			for ( unsigned int i = 0; i < modelPtr->levels[ 0 ].num_meshes; ++i ) {
+				numTriangles += modelPtr->levels[ 0 ].meshes[ i ]->num_triangles;
+				numVertices += modelPtr->levels[ 0 ].meshes[ i ]->num_verts;
+			}
+		}
+		ImGui::Text( "Draw Calls: %d", numDrawCalls );
+		ImGui::Text( "Vertices: %d", numVertices );
+		ImGui::Text( "Triangles: %d", numTriangles );
 
 		ImGui::EndMenuBar();
 	}
