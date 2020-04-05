@@ -244,9 +244,11 @@ static void DrawMinimap() {
 
 	plSetTexture(nullptr, 0);
 #else
+	PLMatrix4 transform = plMatrix4Identity();
+
 	/* for debugging... */
 	unsigned int scr_h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
-	plDrawTexturedRectangle( 0, scr_h - 128, 128, 128, map->GetTerrain()->GetOverview() );
+	plDrawTexturedRectangle( &transform, 0, scr_h - 128, 128, 128, map->GetTerrain()->GetOverview() );
 #endif
 }
 
@@ -258,7 +260,8 @@ static void DrawMinimap() {
  * later. */
 
 static void DrawLoadingScreen() {
-	plDrawTexturedRectangle( 0, 0, frontend_width, frontend_height, fe_background );
+	PLMatrix4 transform = plMatrix4Identity();
+	plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background );
 
 	/* originally I wrote some code ensuring the menu bar
 	 * was centered... that was until I found out that on
@@ -293,6 +296,8 @@ void FE_Draw( void ) {
 	frontend_width = Display_GetViewportWidth( &g_state.ui_camera->viewport );
 	frontend_height = Display_GetViewportHeight( &g_state.ui_camera->viewport );
 
+	PLMatrix4 transform = plMatrix4Identity();
+
 	/* render and handle the main menu */
 	switch ( frontend_state ) {
 		default:break;
@@ -300,7 +305,7 @@ void FE_Draw( void ) {
 		case FE_MODE_INIT:
 		case FE_MODE_START:
 		case FE_MODE_MAIN_MENU:
-			plDrawTexturedRectangle( 0, 0, frontend_width, frontend_height, fe_background );
+			plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background );
 			break;
 
 		case FE_MODE_LOADING:
