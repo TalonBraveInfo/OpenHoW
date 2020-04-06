@@ -214,7 +214,7 @@ static void DrawTimer() {
 }
 
 /**
- * Draw the minimap on the button left corner of the screen.
+ * Draw the minimap on the bottom left corner of the screen.
  */
 static void DrawMinimap() {
 	Camera *camera = Engine::Game()->GetCamera();
@@ -272,14 +272,15 @@ static void DrawLoadingScreen() {
 	int bar_x = 151; //c_x + (FRONTEND_MENU_WIDTH / 2) - bar_w / 2;
 	int bar_y = 450;
 	if ( loading_progress > 0 ) {
-		plDrawFilledRectangle( plCreateRectangle(
+		PLRectangle2D box = plCreateRectangle(
 			PLVector2( bar_x, bar_y ),
 			PLVector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
 			PL_COLOUR_INDIAN_RED,
 			PL_COLOUR_INDIAN_RED,
 			PL_COLOUR_RED,
 			PL_COLOUR_RED
-		) );
+		);
+		plDrawFilledRectangle( &box );
 	}
 
 	if ( loading_description[ 0 ] != ' ' && loading_description[ 0 ] != '\0' ) {
@@ -352,8 +353,7 @@ void FrontEnd_SetState( unsigned int state ) {
 			Engine::Audio()->PlayMusic( AUDIO_MUSIC_MENU );
 			break;
 
-		case FE_MODE_START: break;
-
+		case FE_MODE_START:
 		case FE_MODE_GAME:
 			// game mode handles music from here?
 			break;

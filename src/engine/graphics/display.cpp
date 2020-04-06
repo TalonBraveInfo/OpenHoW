@@ -363,15 +363,19 @@ static void DrawFPSOverlay() {
 		colour = PL_COLOUR_GREEN;
 	}
 
-	int x = w - str_w;
-	int y = h - ( font->chars[ 0 ].h * 2 );
-	plDrawFilledRectangle( plCreateRectangle(
-		PLVector2( x, y ),
-		PLVector2( str_w, font->chars[ 0 ].h ),
-		PL_COLOUR_BLACK, PL_COLOUR_BLACK,
-		PL_COLOUR_BLACK, PL_COLOUR_BLACK
-	) );
-	Font_DrawBitmapString( font, x, y, 0, 1.f, colour, ms_count );
+	PLVector2 position = PLVector2(
+		static_cast< float >( w - str_w ),
+		static_cast< float >( h - ( font->chars[ 0 ].h * 2 ) ) );
+	PLVector2 size = PLVector2(
+		static_cast< float >( str_w ),
+		static_cast< float >( font->chars[ 0 ].h )
+	);
+
+	PLRectangle2D box = plCreateRectangle( position, size, PL_COLOUR_BLACK, PL_COLOUR_BLACK, PL_COLOUR_BLACK,
+										   PL_COLOUR_BLACK );
+	plDrawFilledRectangle( &box );
+
+	Font_DrawBitmapString( font, position.x, position.y, 0, 1.f, colour, ms_count );
 }
 
 static void DrawCameraInfoOverlay() {
