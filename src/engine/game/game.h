@@ -58,14 +58,14 @@ enum class CharacterStatus {
   GRENADIER,
  */
 
-struct PlayerClass : PropertyOwner {
-	PlayerClass() :
+struct CharacterClass : PropertyOwner {
+	CharacterClass() :
 		INIT_PROPERTY( key, 0 ),
 		INIT_PROPERTY( label, 0 ),
 		INIT_PROPERTY( model, 0 ),
 		INIT_PROPERTY( cost, 0, 0 ),
 		INIT_PROPERTY( health, 0, 0 ) {}
-	PlayerClass( const PlayerClass &src ) :
+	CharacterClass( const CharacterClass &src ) :
 		COPY_PROPERTY( key, src ),
 		COPY_PROPERTY( label, src ),
 		COPY_PROPERTY( model, src ),
@@ -114,7 +114,7 @@ struct CharacterSlot : PropertyOwner {
 
 	// Dynamic
 	std::string name;                               // Assigned name, e.g. Herman
-	const PlayerClass *classname{ nullptr };               // Ace, gunner, sapper etc.
+	const CharacterClass *classname{ nullptr };               // Ace, gunner, sapper etc.
 	CharacterStatus status{ CharacterStatus::ALIVE };   // Pig's status (alive / dead)
 	unsigned int kill_count{ 0 };                    // Number of other pigs we've killed
 	unsigned int death_count{ 0 };                   // Number of times we've died
@@ -229,7 +229,7 @@ public:
 	//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
 	typedef std::vector<PlayerTeam> PlayerTeamVector;
-	typedef std::vector<PlayerClass> PlayerClassVector;
+	typedef std::vector<CharacterClass> PlayerClassVector;
 
 	const PlayerTeamVector &GetDefaultTeams() const { return defaultTeams; }
 	const PlayerClassVector &GetDefaultClasses() const { return defaultClasses; }

@@ -181,7 +181,7 @@ void GameManager::UnloadMap() {
 
 void GameManager::CachePersistentData() {
 	// Cache all of the pig models we need
-	for ( const PlayerClass &playerClass : defaultClasses ) {
+	for ( const CharacterClass &playerClass : defaultClasses ) {
 		Engine::Resource()->LoadModel( playerClass.model, true, true );
 
 		// Now cache all the colour variations for this class
@@ -228,7 +228,7 @@ void GameManager::RegisterClassManifest( const std::string &path ) {
 	for ( unsigned int i = 0; i < numClasses; ++i ) {
 		config.EnterChildNode( i );
 
-		PlayerClass playerClass;
+		CharacterClass playerClass;
 		playerClass.key = config.GetStringProperty( "key" );
 		playerClass.cost = config.GetIntegerProperty( "cost" );
 		playerClass.health = config.GetIntegerProperty( "health" );
