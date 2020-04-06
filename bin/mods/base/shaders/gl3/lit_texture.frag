@@ -45,10 +45,8 @@ void main() {
 
     // rim term
     /*
-    vec3 rnormal = normalize(mat3(pl_view) * interp_normal);
-    rnormal.x *= -1;
-    rnormal.z *= -1;
-    vec4 rim_term = ( dot(normal, rnormal) * vec4(1, 1, 1, 1) );
+    vec3 viewDirection = vec3( normal * mat3( pl_proj ) );
+    vec4 rim_term = exp( ( dot( -normal, viewDirection ) * vec4( 1, 1, 1, 1) ) ); // 5.0;
     rim_term.a = 1;
     */
 
@@ -56,6 +54,6 @@ void main() {
     float fog_amount = 1.0 - fog_distance;
     fog_amount *= -(fog_near / 100.0);
 
-    //pl_frag = rim_term;
+    //pl_frag = rim_term * diffuse_colour; //mix(rim_term + diffuse_colour, fog_colour, clamp(fog_amount, 0.0, 1.0));
     pl_frag = mix(diffuse_colour, fog_colour, clamp(fog_amount, 0.0, 1.0));
 }
