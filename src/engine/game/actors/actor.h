@@ -117,6 +117,8 @@ class Actor : public PropertyOwner {
 	virtual void Deactivate() { is_activated_ = false; }
 	virtual bool IsActivated() { return is_activated_; }
 
+	virtual bool IsVisibleOnMinimap() { return false; }
+
 	Actor *GetParent() { return parent_; }
 	void LinkChild( Actor *actor );
 	unsigned int GetNumOfChildren() { return children_.size(); }

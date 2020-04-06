@@ -203,6 +203,11 @@ void APig::Depossessed( const Player* player ) {
 	SuperClass::Depossessed( player );
 }
 
+bool APig::IsVisibleOnMinimap() {
+	// TODO: handle special cases
+	return true;
+}
+
 void APig::Killed() {
 	// TODO: queue me until camera focus, if valid (in some cases we'll insta die)
 	//  Check if we're in water...
