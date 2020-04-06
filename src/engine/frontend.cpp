@@ -28,6 +28,7 @@
 #include "graphics/display.h"
 #include "graphics/video.h"
 #include "graphics/shaders.h"
+#include "game/actor_manager.h"
 
 using namespace openhow;
 
@@ -216,40 +217,40 @@ static void DrawTimer() {
  * Draw the minimap on the button left corner of the screen.
  */
 static void DrawMinimap() {
-	if ( FrontEnd_GetState() != FE_MODE_GAME ) {
+	Camera *camera = Engine::Game()->GetCamera();
+	if ( camera == nullptr ) {
 		return;
 	}
 
-	Map *map = openhow::Engine::Game()->GetCurrentMap();
+	Map *map = Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
 
-#if 0
-	static PLMesh* pane = nullptr;
-	if(pane == nullptr) {
-		pane = plNewMeshRectangle(0, 0, 256, 256, PL_COLOUR_WHITE);
-		if(pane == nullptr) {
-			Error("Failed to create pane mesh!\n");
+	float height = static_cast<float>( camera->GetViewportHeight() );
+
+	PLMatrix4 transform;
+	transform.Identity();
+	transform.Rotate( plDegreesToRadians( -camera->GetAngles().y + 90.0f ), PLVector3( 0, 0, 1 ) );
+	transform.Translate( PLVector3( 128, height - 128, 0 ) );
+
+	plDrawTexturedRectangle( &transform, -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
+
+	// Now draw everything on top
+	for ( const auto &actor : ActorManager::GetInstance()->GetActors() ) {
+		if ( !actor->IsVisibleOnMinimap() ) {
+			continue;
 		}
+
+		// And now figure out where relatively speaking they should be
+
+		PLVector3 curPosition = actor->GetPosition();
+
+		int x = static_cast< int >( curPosition.x / 256 ) - 64;
+		int y = static_cast< int >( curPosition.z / 256 ) - 64;
+
+		plDrawTexturedRectangle( &transform, x, y, 8, 8, Engine::Resource()->GetFallbackTexture() );
 	}
-
-	plSetTexture(map->GetOverviewTexture(), 0);
-
-	PLMatrix4x4 mat = plMatrix4x4Identity();
-	plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", mat, false);
-
-	plUploadMesh(pane);
-	plDrawMesh(pane);
-
-	plSetTexture(nullptr, 0);
-#else
-	PLMatrix4 transform = plMatrix4Identity();
-
-	/* for debugging... */
-	unsigned int scr_h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
-	plDrawTexturedRectangle( &transform, 0, scr_h - 128, 128, 128, map->GetTerrain()->GetOverview() );
-#endif
 }
 
 /* Hogs of War's menu was designed
