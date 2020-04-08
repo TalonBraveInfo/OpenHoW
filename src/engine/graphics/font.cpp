@@ -194,7 +194,7 @@ BitmapFont* LoadBitmapFont( const char* name, const char* tab_name ) {
 
 //////////////////////////////////////////////////////////////////////////
 
-void CacheFontData() {
+void FrontEnd_CacheFontData() {
 	font_mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
 	if ( font_mesh == nullptr ) {
 		Error( "failed to create font mesh, %s, aborting!\n", plGetError() );

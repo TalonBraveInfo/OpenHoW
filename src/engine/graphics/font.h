@@ -64,7 +64,7 @@ enum {
 
 extern BitmapFont *g_fonts[NUM_FONTS];
 
-void CacheFontData();
+void FrontEnd_CacheFontData();
 void ClearFontData();
 
 void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character);

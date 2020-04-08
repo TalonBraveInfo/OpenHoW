@@ -94,7 +94,7 @@ static void FrontendInputCallback( int key, bool is_pressed ) {
 	}
 }
 
-static void CacheFEGameData() {
+static void FrontEnd_CacheGameData() {
 	fe_tx_game_textures[ FE_TEXTURE_ANG ] =
 		Engine::Resource()->LoadTexture( "frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR, true );
 	fe_tx_game_textures[ FE_TEXTURE_ANGPOINT ] =
@@ -107,7 +107,7 @@ static void CacheFEGameData() {
 		Engine::Resource()->LoadTexture( "frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR, true );
 }
 
-static void CacheFEMenuData() {
+static void FrontEnd_CacheMenuData() {
 	fe_background = Engine::Resource()->LoadTexture( "frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR, true );
 	for ( unsigned int i = 0; i < MAX_TEAMS; ++i ) {
 		fe_papers_teams[ i ] =
@@ -118,9 +118,9 @@ static void CacheFEMenuData() {
 /************************************************************/
 
 void FE_Initialize( void ) {
-	CacheFontData();
-	CacheFEMenuData();
-	CacheFEGameData();
+	FrontEnd_CacheFontData();
+	FrontEnd_CacheMenuData();
+	FrontEnd_CacheGameData();
 }
 
 void FE_Shutdown( void ) {
@@ -131,19 +131,17 @@ void FE_ProcessInput( void ) {
 	switch ( frontend_state ) {
 		default:break;
 
-		case FE_MODE_START: {
+		case FE_MODE_START:
 			/* this is... kind of a hack... but ensures that
 			 * nothing will take away our check for a key during
 			 * the 'start' screen, e.g. bringing the console up */
 			Input_SetKeyboardFocusCallback( FrontendInputCallback );
-		}
 			break;
 
-		case FE_MODE_VIDEO: {
+		case FE_MODE_VIDEO:
 			if ( Input_GetKeyState( INPUT_KEY_SPACE ) || Input_GetKeyState( INPUT_KEY_ESCAPE ) ) {
 				Video_SkipCurrent();
 			}
-		}
 			break;
 	}
 }
@@ -214,25 +212,47 @@ static void DrawTimer() {
 }
 
 /**
- * Draw the minimap on the bottom left corner of the screen.
+ * Draw the 3D minimap on the bottom left corner of the screen.
  */
-static void DrawMinimap() {
-	Camera *camera = Engine::Game()->GetCamera();
-	if ( camera == nullptr ) {
-		return;
-	}
-
+static void FrontEnd_DrawMinimap() {
 	Map *map = Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
 
-	float height = static_cast<float>( camera->GetViewportHeight() );
+	Camera *camera = Engine::Game()->GetCamera();
+	if ( camera == nullptr ) {
+		return;
+	}
+
+	// So, we need to render the minimap from the perspective here. So swap things round
+	PLCamera *uiCamera = g_state.ui_camera;
+	PLCamera save = *uiCamera;
+
+	// Set up the camera so we can render the minimap how it needs to be
+	uiCamera->mode 			= PL_CAMERA_MODE_PERSPECTIVE;
+	uiCamera->near			= 0.1f;
+	uiCamera->far			= 1000.0f;
+	uiCamera->fov			= 65.0f;
+	uiCamera->position		= PLVector3( -120.0f, 64.0f, 0.0f );
+	uiCamera->angles		= PLVector3( -45.0f, 0.0f, 0.0f );
+	uiCamera->viewport.x	= 10;
+	uiCamera->viewport.y	= 10;
+
+	uiCamera->viewport.w = camera->GetViewportWidth() / 6;
+	if( uiCamera->viewport.w < 128 ) {
+		uiCamera->viewport.w = 128;
+	}
+	uiCamera->viewport.h = uiCamera->viewport.w;
+
+	plSetupCamera( uiCamera );
+
+	plSetCullMode( PL_CULL_NONE );
 
 	PLMatrix4 transform;
 	transform.Identity();
-	transform.Rotate( plDegreesToRadians( -camera->GetAngles().y + 90.0f ), PLVector3( 0, 0, 1 ) );
-	transform.Translate( PLVector3( 128, height - 128, 0 ) );
+	transform.Rotate( plDegreesToRadians( 90.0f ), PLVector3( 1, 0, 0 ) );
+	transform.Rotate( plDegreesToRadians( -camera->GetAngles().y + 90.0f ), PLVector3( 0, 1, 0 ) );
 
 	plDrawTexturedRectangle( &transform, -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
 
@@ -251,6 +271,10 @@ static void DrawMinimap() {
 
 		plDrawTexturedRectangle( &transform, x, y, 8, 8, Engine::Resource()->GetFallbackTexture() );
 	}
+
+	// Restore what we originally had for the camera
+	*uiCamera = save;
+	plSetupCamera( uiCamera );
 }
 
 /* Hogs of War's menu was designed
@@ -318,8 +342,7 @@ void FE_Draw( void ) {
 			Video_Draw();
 			break;
 
-		case FE_MODE_GAME:
-			DrawMinimap();
+		case FE_MODE_GAME: FrontEnd_DrawMinimap();
 			DrawTimer();
 			break;
 	}
