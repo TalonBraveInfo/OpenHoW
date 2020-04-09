@@ -210,7 +210,7 @@ static void DrawTimer() {
 	}
 
 	char str[64];
-	snprintf( str, sizeof( str ), "%0d / %0d", mode->GetTurnTimeSeconds(), mode->GetMaxTurnTimeSeconds() );
+	snprintf( str, sizeof( str ), "%0d", mode->GetMaxTurnTimeSeconds() - mode->GetTurnTimeSeconds() );
 	Font_DrawBitmapString( g_fonts[ FONT_BIG ],
 						   frontend_width - 256,
 						   frontend_height - 100,
