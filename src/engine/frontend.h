@@ -31,6 +31,16 @@
  *      Load Game
  */
 
+enum MinimapIcon {
+	MINIMAP_ICON_BOMB,	// Unused?
+	MINIMAP_ICON_HEALTH,
+	MINIMAP_ICON_PIG,
+	MINIMAP_ICON_PICKUP,
+	MINIMAP_ICON_PROP,	// Unused?
+
+	MAX_MINIMAP_ICONS
+};
+
 enum {
   FE_MODE_INIT,       /* menu shown during initialization */
   FE_MODE_START,      /* start screen, e.g. press any key */

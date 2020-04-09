@@ -77,6 +77,8 @@ enum {
 static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
 //static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
 
+static PLTexture *minimapIcons[ MAX_MINIMAP_ICONS ];
+
 static int frontend_width = 0;
 static int frontend_height = 0;
 
@@ -121,6 +123,13 @@ void FE_Initialize( void ) {
 	FrontEnd_CacheFontData();
 	FrontEnd_CacheMenuData();
 	FrontEnd_CacheGameData();
+
+	// Cache all the minimap icons
+	minimapIcons[ MINIMAP_ICON_BOMB ] = Engine::Resource()->LoadTexture( "frontend/map/bomb", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_PIG ] = Engine::Resource()->LoadTexture( "frontend/map/iconpig", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_PROP ] = Engine::Resource()->LoadTexture( "frontend/map/iconprop", PL_TEXTURE_FILTER_NEAREST, true );
 }
 
 void FE_Shutdown( void ) {
@@ -232,27 +241,21 @@ static void FrontEnd_DrawMinimap() {
 	// Set up the camera so we can render the minimap how it needs to be
 	uiCamera->mode 			= PL_CAMERA_MODE_PERSPECTIVE;
 	uiCamera->near			= 0.1f;
-	uiCamera->far			= 1000.0f;
+	uiCamera->far			= 100.0f;
 	uiCamera->fov			= 65.0f;
 	uiCamera->position		= PLVector3( -120.0f, 64.0f, 0.0f );
 	uiCamera->angles		= PLVector3( -45.0f, 0.0f, 0.0f );
-	uiCamera->viewport.x	= 10;
-	uiCamera->viewport.y	= 10;
-
-	uiCamera->viewport.w = camera->GetViewportWidth() / 6;
-	if( uiCamera->viewport.w < 128 ) {
-		uiCamera->viewport.w = 128;
-	}
-	uiCamera->viewport.h = uiCamera->viewport.w;
+	uiCamera->viewport.x	= 0;
+	uiCamera->viewport.y	= 0;
+	uiCamera->viewport.w 	= 450;
+	uiCamera->viewport.h 	= 256;
 
 	plSetupCamera( uiCamera );
-
-	plSetCullMode( PL_CULL_NONE );
 
 	PLMatrix4 transform;
 	transform.Identity();
 	transform.Rotate( plDegreesToRadians( 90.0f ), PLVector3( 1, 0, 0 ) );
-	transform.Rotate( plDegreesToRadians( -camera->GetAngles().y + 90.0f ), PLVector3( 0, 1, 0 ) );
+	transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
 
 	plDrawTexturedRectangle( &transform, -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
 
@@ -262,14 +265,23 @@ static void FrontEnd_DrawMinimap() {
 			continue;
 		}
 
+		// Figure out what icon we're using
+		PLTexture *iconTexture = Engine::Resource()->GetFallbackTexture();
+		unsigned int iconNum = actor->GetMinimapIconStyle();
+		if ( iconNum < MAX_MINIMAP_ICONS ) {
+			iconTexture = minimapIcons[ iconNum ];
+		}
+
 		// And now figure out where relatively speaking they should be
-
 		PLVector3 curPosition = actor->GetPosition();
-
 		int x = static_cast< int >( curPosition.x / 256 ) - 64;
 		int y = static_cast< int >( curPosition.z / 256 ) - 64;
 
-		plDrawTexturedRectangle( &transform, x, y, 8, 8, Engine::Resource()->GetFallbackTexture() );
+		// TODO: need to get the icons upright but rotating to viewer
+		//transform.Identity();
+		//transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
+
+		plDrawTexturedRectangle( &transform, x - 4, y - 4, 8, 8, iconTexture );
 	}
 
 	// Restore what we originally had for the camera

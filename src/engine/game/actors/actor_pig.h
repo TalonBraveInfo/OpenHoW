@@ -49,6 +49,7 @@ public:
 	void Depossessed( const Player *player ) override;
 
 	bool IsVisibleOnMinimap() override;
+	unsigned int GetMinimapIconStyle() override;
 
 	enum class VoiceCategory {
 		READY,

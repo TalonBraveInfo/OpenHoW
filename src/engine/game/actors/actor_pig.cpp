@@ -16,6 +16,7 @@
  */
 
 #include "../../engine.h"
+#include "../../frontend.h"
 #include "../../Map.h"
 
 #include "../player.h"
@@ -206,6 +207,10 @@ void APig::Depossessed( const Player* player ) {
 bool APig::IsVisibleOnMinimap() {
 	// TODO: handle special cases
 	return true;
+}
+
+unsigned int APig::GetMinimapIconStyle() {
+	return MINIMAP_ICON_PIG;
 }
 
 void APig::Killed() {

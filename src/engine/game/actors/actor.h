@@ -79,7 +79,7 @@ class IPhysicsBody;
 class Player;
 
 class Actor : public PropertyOwner {
- public:
+public:
 	Actor();
 	~Actor() override;
 
@@ -118,6 +118,7 @@ class Actor : public PropertyOwner {
 	virtual bool IsActivated() { return is_activated_; }
 
 	virtual bool IsVisibleOnMinimap() { return false; }
+	virtual unsigned int GetMinimapIconStyle() { return 0; }
 
 	Actor *GetParent() { return parent_; }
 	void LinkChild( Actor *actor );
@@ -134,7 +135,7 @@ class Actor : public PropertyOwner {
 	const IPhysicsBody *CreatePhysicsBody();
 	void DestroyPhysicsBody();
 
- protected:
+protected:
 	bool is_visible_{ false };
 
 	NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
@@ -156,7 +157,7 @@ class Actor : public PropertyOwner {
 	// Use this if you want your actor to have a helpful descriptor in it's
 	std::string reference_name_{ "actor" };
 
- private:
+private:
 	int16_t health_{ 0 };
 
 	IPhysicsBody *physics_body_{ nullptr };
