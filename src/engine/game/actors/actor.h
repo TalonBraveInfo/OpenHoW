@@ -117,8 +117,8 @@ public:
 	virtual void Deactivate() { is_activated_ = false; }
 	virtual bool IsActivated() { return is_activated_; }
 
-	virtual bool IsVisibleOnMinimap() { return false; }
-	virtual unsigned int GetMinimapIconStyle() { return 0; }
+	virtual bool IsVisibleOnMinimap() const { return false; }
+	virtual unsigned int GetMinimapIconStyle() const { return 0; }
 
 	Actor *GetParent() { return parent_; }
 	void LinkChild( Actor *actor );

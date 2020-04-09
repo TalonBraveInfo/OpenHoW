@@ -204,12 +204,12 @@ void APig::Depossessed( const Player* player ) {
 	SuperClass::Depossessed( player );
 }
 
-bool APig::IsVisibleOnMinimap() {
+bool APig::IsVisibleOnMinimap() const {
 	// TODO: handle special cases
 	return true;
 }
 
-unsigned int APig::GetMinimapIconStyle() {
+unsigned int APig::GetMinimapIconStyle() const {
 	return MINIMAP_ICON_PIG;
 }
 

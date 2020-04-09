@@ -48,8 +48,8 @@ public:
 	bool Possessed( const Player *player ) override;
 	void Depossessed( const Player *player ) override;
 
-	bool IsVisibleOnMinimap() override;
-	unsigned int GetMinimapIconStyle() override;
+	bool IsVisibleOnMinimap() const override;
+	unsigned int GetMinimapIconStyle() const override;
 
 	enum class VoiceCategory {
 		READY,
