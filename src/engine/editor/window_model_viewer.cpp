@@ -126,9 +126,6 @@ void ModelViewer::Display() {
 	ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
 
 	Begin( "Model Viewer", flags );
-	if ( ImGui::BeginMenuBar() ) {
-		ImGui::EndMenuBar();
-	}
 
 	if ( ImGui::BeginMenuBar() ) {
 		if ( ImGui::BeginMenu( "Models" ) ) {
@@ -238,7 +235,7 @@ void ModelViewer::Display() {
 				numVertices += modelPtr->levels[ 0 ].meshes[ i ]->num_verts;
 			}
 		}
-		ImGui::Text( "Draw Calls: %d", numDrawCalls );
+		ImGui::Text( "Batches: %d", numDrawCalls );
 		ImGui::Text( "Vertices: %d", numVertices );
 		ImGui::Text( "Triangles: %d", numTriangles );
 
