@@ -267,22 +267,30 @@ static void FrontEnd_DrawMinimap() {
 
 		// Figure out what icon we're using
 		PLTexture *iconTexture = Engine::Resource()->GetFallbackTexture();
-		unsigned int iconNum = actor->GetMinimapIconStyle();
-		if ( iconNum < MAX_MINIMAP_ICONS ) {
-			iconTexture = minimapIcons[ iconNum ];
+		unsigned int iconStyle = actor->GetMinimapIconStyle();
+		if ( iconStyle < MAX_MINIMAP_ICONS ) {
+			iconTexture = minimapIcons[ iconStyle ];
 		}
+
+		PLColour iconColour = actor->GetMinimapIconColour();
 
 		// And now figure out where relatively speaking they should be
 		PLVector3 curPosition = actor->GetPosition();
-		int x = static_cast< int >( curPosition.x / 256 ) - 64;
-		int y = static_cast< int >( curPosition.z / 256 ) - 64;
+		float x = ( curPosition.x / 256.0f ) - 64.0f;
+		float y = ( curPosition.z / 256.0f ) - 64.0f;
 
-		// TODO: need to get the icons upright but rotating to viewer
-		//transform.Identity();
-		//transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
+		transform.Identity();
+		transform.Rotate( plDegreesToRadians( 135.0f ), PLVector3( 1, 0, 0 ) );
+		transform.Rotate( plDegreesToRadians( -camera->GetAngles().y - 90.0f ), PLVector3( 0, 1, 0 ) );
+		transform.Translate( PLVector3( x, 0.0f, y ) );
+		transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
 
-		plDrawTexturedRectangle( &transform, x - 4, y - 4, 8, 8, iconTexture );
+		plSetTexture( iconTexture, 0 );
+
+		plDrawRectangle( &transform, -4, -4, 8, 8, iconColour );
 	}
+
+	plSetTexture( nullptr, 0 );
 
 	// Restore what we originally had for the camera
 	*uiCamera = save;

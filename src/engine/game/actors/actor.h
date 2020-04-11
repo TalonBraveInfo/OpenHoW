@@ -119,6 +119,7 @@ public:
 
 	virtual bool IsVisibleOnMinimap() const { return false; }
 	virtual unsigned int GetMinimapIconStyle() const { return 0; }
+	virtual PLColour GetMinimapIconColour() const { return PLColour( 255, 255, 255 ); }
 
 	Actor *GetParent() { return parent_; }
 	void LinkChild( Actor *actor );
