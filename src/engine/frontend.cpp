@@ -285,9 +285,14 @@ static void FrontEnd_DrawMinimap() {
 		transform.Translate( PLVector3( x, 0.0f, y ) );
 		transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
 
+		PLVector3 translation = transform.GetTranslation();
+		PLVector3 distance = uiCamera->position - translation;
+		float lengthDistance = distance.Length();
+
 		plSetTexture( iconTexture, 0 );
 
-		plDrawRectangle( &transform, -4, -4, 8, 8, iconColour );
+		float scale = 8 * lengthDistance / 100;
+		plDrawRectangle( &transform, -( scale / 2 ), -( scale / 2 ), scale, scale, iconColour );
 	}
 
 	plSetTexture( nullptr, 0 );
@@ -362,7 +367,8 @@ void FE_Draw( void ) {
 			Video_Draw();
 			break;
 
-		case FE_MODE_GAME: FrontEnd_DrawMinimap();
+		case FE_MODE_GAME:
+			FrontEnd_DrawMinimap();
 			DrawTimer();
 			break;
 	}
