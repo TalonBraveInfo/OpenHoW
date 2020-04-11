@@ -89,7 +89,7 @@ void BaseGameMode::Tick() {
 	if ( HasTurnStarted() ) {
 		num_turn_ticks++;
 		if ( num_turn_ticks >= max_turn_ticks ) {
-
+			EndTurn( player );
 		}
 	}
 }
