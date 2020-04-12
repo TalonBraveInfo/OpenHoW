@@ -26,7 +26,6 @@
 #include "imgui_layer.h"
 
 #include "graphics/display.h"
-#include "game/actor_manager.h"
 
 EngineState g_state;
 
