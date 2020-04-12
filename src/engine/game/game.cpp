@@ -220,11 +220,13 @@ void GameManager::RegisterTeamManifest( const std::string &path ) {
 
 void GameManager::RegisterClassManifest( const std::string &path ) {
 	JsonReader config( path );
-	unsigned int numClasses = config.GetArrayLength();
+
+	unsigned int numClasses = config.GetArrayLength( "classes" );
 	if ( numClasses == 0 ) {
 		Error( "Failed to register classes, no classes available in \"%s\"!\n", path.c_str() );
 	}
 
+	config.EnterChildNode( "classes" );
 	for ( unsigned int i = 0; i < numClasses; ++i ) {
 		config.EnterChildNode( i );
 
