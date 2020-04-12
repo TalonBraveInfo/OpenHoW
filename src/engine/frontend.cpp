@@ -272,7 +272,7 @@ static void FrontEnd_DrawMinimap() {
 			iconTexture = minimapIcons[ iconStyle ];
 		}
 
-		PLColour iconColour = actor->GetMinimapIconColour();
+		plSetTexture( iconTexture, 0 );
 
 		// And now figure out where relatively speaking they should be
 		PLVector3 curPosition = actor->GetPosition();
@@ -280,19 +280,22 @@ static void FrontEnd_DrawMinimap() {
 		float y = ( curPosition.z / 256.0f ) - 64.0f;
 
 		transform.Identity();
+		// Angle the plane towards the camera
 		transform.Rotate( plDegreesToRadians( 135.0f ), PLVector3( 1, 0, 0 ) );
+		// Rotate the yaw so it's always facing the camera
 		transform.Rotate( plDegreesToRadians( -camera->GetAngles().y - 90.0f ), PLVector3( 0, 1, 0 ) );
+		// And now position and rotate it so it appears on top of the map
 		transform.Translate( PLVector3( x, 0.0f, y ) );
 		transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
 
+		// Fetch the transformed distance from the camera
 		PLVector3 translation = transform.GetTranslation();
 		PLVector3 distance = uiCamera->position - translation;
 		float lengthDistance = distance.Length();
+		// And now scale it up as it moves further away (this isn't perfect...)
+		float scale = 8.0f * lengthDistance / 100.0f;
 
-		plSetTexture( iconTexture, 0 );
-
-		float scale = 8 * lengthDistance / 100;
-		plDrawRectangle( &transform, -( scale / 2 ), -( scale / 2 ), scale, scale, iconColour );
+		plDrawRectangle( &transform, -( scale / 2 ), -( scale / 2 ), scale, scale, actor->GetMinimapIconColour() );
 	}
 
 	plSetTexture( nullptr, 0 );
