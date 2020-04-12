@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "actors/actor.h"
+class Actor;
 
 typedef std::set<Actor *> ActorSet;
 

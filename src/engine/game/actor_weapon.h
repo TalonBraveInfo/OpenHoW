@@ -17,20 +17,21 @@
 
 #pragma once
 
-#include "actor.h"
 #include "actor_model.h"
 
-class AStaticModel : public AModel {
-  IMPLEMENT_ACTOR(AStaticModel, AModel)
+class AWeapon : public AModel {
+	IMPLEMENT_ACTOR( AWeapon, AModel )
 
- public:
-  AStaticModel();
-  ~AStaticModel() override;
+public:
+	AWeapon();
+	~AWeapon() override;
 
-  void Draw() override;
+	virtual void Fire( const PLVector3 &pos, const PLVector3 &dir );
+	virtual void Deploy();
 
-  void Deserialize(const ActorSpawn& spawn) override;
+protected:
 
- protected:
- private:
+	bool is_deployed_{ false };
+
+private:
 };

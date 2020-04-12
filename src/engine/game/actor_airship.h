@@ -17,21 +17,20 @@
 
 #pragma once
 
-#include "actor_model.h"
+#include "actor_vehicle.h"
 
-class AWeapon : public AModel {
-  IMPLEMENT_ACTOR(AWeapon, AModel)
+class AAirship : public AVehicle {
+	IMPLEMENT_ACTOR( AAirship, AVehicle )
 
- public:
-  AWeapon();
-  ~AWeapon() override;
+public:
+	AAirship();
+	~AAirship() override;
 
-  virtual void Fire(const PLVector3& pos, const PLVector3& dir);
-  virtual void Deploy();
+	void Tick() override;
 
- protected:
+	void Deserialize( const ActorSpawn &spawn ) override;
 
-  bool is_deployed_{ false };
-
- private:
+protected:
+private:
+	AudioSource *ambientSource{ nullptr };
 };

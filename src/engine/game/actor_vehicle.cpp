@@ -17,35 +17,17 @@
 
 #include "../engine.h"
 
-#include "inventory.h"
+#include "actor_vehicle.h"
 
-/**
- * Clear the inventory of items.
- */
-void InventoryManager::ClearItems() {
-	items_.clear();
+AVehicle::AVehicle() : SuperClass() {}
+AVehicle::~AVehicle() = default;
+
+void AVehicle::Occupy( Actor *occupant ) {
+	occupant_ = occupant;
+	isOccupied_ = true;
 }
 
-void InventoryManager::AddInventoryItem( ItemIdentifier identifier, unsigned int quantity ) {
-#if 0
-	u_assert(identifier != InventoryItem::Identifier::INVALID_ID, "Attempted to add a null item to inventory!\n");
-
-	LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
-
-	items_.emplace(std::pair<std::string, InventoryItem*>(item->GetInventoryDescription(), item));
-#endif
-}
-
-InventoryItem *InventoryManager::GetItem( ItemIdentifier identifier ) {
-	return nullptr;
-}
-
-/// Inventory Items
-
-PLTexture *InventoryItem::GetInventoryIcon() {
-	return nullptr;
-}
-
-void InventoryItem::Equipped( Actor *other ) {
-
+void AVehicle::Unoccupy() {
+	occupant_ = nullptr;
+	isOccupied_ = false;
 }

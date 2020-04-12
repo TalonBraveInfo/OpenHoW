@@ -21,14 +21,14 @@
 #include "actor_model.h"
 
 class AAnimatedModel : public AModel {
-  IMPLEMENT_ACTOR(AAnimatedModel, AModel)
+	IMPLEMENT_ACTOR( AAnimatedModel, AModel )
 
- public:
-  AAnimatedModel();
-  ~AAnimatedModel() override;
+public:
+	AAnimatedModel();
+	~AAnimatedModel() override;
 
-  void Deserialize(const ActorSpawn& spawn) override;
+	void Deserialize( const ActorSpawn &spawn ) override;
 
- protected:
- private:
+protected:
+private:
 };

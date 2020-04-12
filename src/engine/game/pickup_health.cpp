@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../../frontend.h"
+#include "../engine.h"
+#include "../frontend.h"
 
-#include "../actor_manager.h"
+#include "actor_manager.h"
 #include "actor_pig.h"
 
 class AHealthPickup : public AModel {

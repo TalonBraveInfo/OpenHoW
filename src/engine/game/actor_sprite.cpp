@@ -15,12 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../../graphics/sprite.h"
-#include "../../graphics/display.h"
+#include "../engine.h"
+#include "../graphics/sprite.h"
 
-#include "../actor_manager.h"
-
+#include "actor_manager.h"
 #include "actor.h"
 
 // ASprite
@@ -36,12 +34,12 @@ public:
 	void Tick() override;
 	void Draw() override;
 
-	virtual void SetSpriteTexture( const std::string& path );
-	virtual void SetSpriteTexture( PLTexture* texture );
+	virtual void SetSpriteTexture( const std::string &path );
+	virtual void SetSpriteTexture( PLTexture *texture );
 
 protected:
 private:
-	Sprite* sprite_;
+	Sprite *sprite_;
 };
 
 REGISTER_ACTOR( sprite, ASprite )
@@ -56,13 +54,13 @@ ASprite::~ASprite() {
 	delete sprite_;
 }
 
-void ASprite::SetSpriteTexture( const std::string& path ) {
+void ASprite::SetSpriteTexture( const std::string &path ) {
 	SetSpriteTexture( Engine::Resource()->LoadTexture( path,
 													   cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_LINEAR
 																						   : PL_TEXTURE_FILTER_NEAREST ) );
 }
 
-void ASprite::SetSpriteTexture( PLTexture* texture ) {
+void ASprite::SetSpriteTexture( PLTexture *texture ) {
 	sprite_->SetTexture( texture );
 }
 

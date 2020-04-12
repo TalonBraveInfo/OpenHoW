@@ -15,26 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../actor_manager.h"
-#include "actor_static_model.h"
+#include "../engine.h"
 
-REGISTER_ACTOR_BASIC( AStaticModel );
+#include "actor_weapon.h"
 
-AStaticModel::AStaticModel() : SuperClass() {}
-AStaticModel::~AStaticModel() = default;
+AWeapon::AWeapon() : SuperClass() {}
+AWeapon::~AWeapon() = default;
 
-void AStaticModel::Deserialize( const ActorSpawn& spawn ) {
-	SuperClass::Deserialize( spawn );
+void AWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {}
 
-	SetModel( "scenery/" + spawn.class_name );
+void AWeapon::Deploy() {
+	ShowModel( true );
 
-	// Some models are horrible special cases
-	if ( spawn.class_name == "brid2_s" ) {
-		SetAngles( PLVector3( angles_.GetValue().x, plDegreesToRadians( -45.f ), angles_.GetValue().z ) );
-	}
-}
-
-void AStaticModel::Draw() {
-	SuperClass::Draw();
+	is_deployed_ = true;
 }

@@ -15,20 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../engine.h"
+#include "actor_animated_model.h"
 
-#include "actor_weapon.h"
+AAnimatedModel::AAnimatedModel() : SuperClass() {}
+AAnimatedModel::~AAnimatedModel() = default;
 
-class ATrotterWeapon : public AWeapon {
-  IMPLEMENT_ACTOR(ATrotterWeapon, AWeapon)
-
- public:
-  ATrotterWeapon();
-  ~ATrotterWeapon() override;
-
-  void Fire(const PLVector3& pos, const PLVector3& dir) override;
-  void Deploy() override;
-
- protected:
- private:
-};
+void AAnimatedModel::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
+}

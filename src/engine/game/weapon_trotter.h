@@ -15,33 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../actor_manager.h"
-#include "weapon_parachute.h"
+#pragma once
 
-// Parachute, not really a weapon but hey ho!
+#include "actor_weapon.h"
 
-REGISTER_ACTOR( weapon_parachute, AParachuteWeapon )
+class ATrotterWeapon : public AWeapon {
+	IMPLEMENT_ACTOR( ATrotterWeapon, AWeapon )
 
-AParachuteWeapon::AParachuteWeapon() : SuperClass() {
-  SetModel("weapons/we_para");
-  ShowModel(false);
-}
+public:
+	ATrotterWeapon();
+	~ATrotterWeapon() override;
 
-AParachuteWeapon::~AParachuteWeapon() = default;
+	void Fire( const PLVector3 &pos, const PLVector3 &dir ) override;
+	void Deploy() override;
 
-void AParachuteWeapon::Tick() {
-  SuperClass::Tick();
-
-  if(!is_deployed_) {
-    return;
-  }
-}
-
-void AParachuteWeapon::Fire(const PLVector3& pos, const PLVector3& dir) {
-  SuperClass::Fire(pos, dir);
-}
-
-void AParachuteWeapon::Deploy() {
-  SuperClass::Deploy();
-}
+protected:
+private:
+};

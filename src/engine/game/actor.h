@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "../../property.h"
+#include "../property.h"
 
 enum ActorFlag {
 	ACTOR_FLAG_PLAYABLE = 1,

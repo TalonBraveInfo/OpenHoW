@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../../model.h"
+#include "../engine.h"
+#include "../model.h"
+
 #include "actor_model.h"
 
 using namespace openhow;
 
 AModel::AModel() : SuperClass(),
-	INIT_PROPERTY( modelPath, PROP_LOCAL ) {}
+				   INIT_PROPERTY( modelPath, PROP_LOCAL ) {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
@@ -47,7 +48,7 @@ void AModel::Draw() {
 	Model_Draw( model_, mat );
 }
 
-void AModel::SetModel( const std::string& path ) {
+void AModel::SetModel( const std::string &path ) {
 	model_ = Engine::Resource()->LoadModel( "chars/" + path, false );
 	u_assert( model_ != nullptr );
 

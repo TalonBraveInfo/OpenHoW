@@ -19,7 +19,7 @@
 #include "../frontend.h"
 
 #include "actor_manager.h"
-#include "actors/actor.h"
+#include "actor.h"
 
 /************************************************************/
 

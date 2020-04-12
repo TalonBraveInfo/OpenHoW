@@ -21,9 +21,9 @@
 #include "mode_base.h"
 #include "actor_manager.h"
 #include "player.h"
-#include "actors/actor_pig.h"
-#include "actors/actor_airship.h"
-#include "actors/actor_static_model.h"
+#include "actor_pig.h"
+#include "actor_airship.h"
+#include "actor_static_model.h"
 
 using namespace openhow;
 

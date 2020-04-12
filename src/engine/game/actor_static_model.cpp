@@ -15,22 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
 
-#include "actor_weapon.h"
+#include "actor_manager.h"
+#include "actor_static_model.h"
 
-class AParachuteWeapon : public AWeapon {
-  IMPLEMENT_ACTOR(AParachuteWeapon, AWeapon)
+REGISTER_ACTOR_BASIC( AStaticModel );
 
- public:
-  AParachuteWeapon();
-  ~AParachuteWeapon() override;
+AStaticModel::AStaticModel() : SuperClass() {}
+AStaticModel::~AStaticModel() = default;
 
-  void Tick() override;
+void AStaticModel::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
 
-  void Fire(const PLVector3& pos, const PLVector3& dir) override;
-  void Deploy() override;
+	SetModel( "scenery/" + spawn.class_name );
 
- protected:
- private:
-};
+	// Some models are horrible special cases
+	if ( spawn.class_name == "brid2_s" ) {
+		SetAngles( PLVector3( angles_.GetValue().x, plDegreesToRadians( -45.f ), angles_.GetValue().z ) );
+	}
+}
+
+void AStaticModel::Draw() {
+	SuperClass::Draw();
+}

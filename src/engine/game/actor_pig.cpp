@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../../frontend.h"
-#include "../../Map.h"
+#include "../engine.h"
+#include "../frontend.h"
+#include "../Map.h"
 
-#include "../player.h"
-#include "../actor_manager.h"
-
+#include "player.h"
+#include "actor_manager.h"
 #include "actor_pig.h"
 
 REGISTER_ACTOR( ac_me, APig )    // Ace
@@ -83,7 +82,7 @@ void APig::Tick() {
 	nAngles.y += input_yaw * 2.0f;
 
 	// Clamp height based on current tile pos
-	Map* map = Engine::Game()->GetCurrentMap();
+	Map *map = Engine::Game()->GetCurrentMap();
 	float height = map->GetTerrain()->GetHeight( { nPosition.x, nPosition.z } );
 	if ( ( nPosition.y - 32.f ) < height ) {
 		nPosition.y = height + 32.f;
@@ -145,12 +144,12 @@ void APig::SetPersonality( unsigned int personality ) {
 	// TODO: ensure all the necessary sounds are cached...
 }
 
-void APig::SetPlayerOwner( Player* owner ) {
-	IGameMode* mode = Engine::Game()->GetMode();
+void APig::SetPlayerOwner( Player *owner ) {
+	IGameMode *mode = Engine::Game()->GetMode();
 	mode->AssignActorToPlayer( this, owner );
 }
 
-const Player* APig::GetPlayerOwner() {
+const Player *APig::GetPlayerOwner() {
 	return nullptr;
 }
 
@@ -169,11 +168,11 @@ void APig::SetTeam( unsigned int team ) {
 #endif
 }
 
-void APig::Deserialize( const ActorSpawn& spawn ) {
+void APig::Deserialize( const ActorSpawn &spawn ) {
 	SuperClass::Deserialize( spawn );
 
 	// Ensure pig is spawned up in the air for deployment
-	Map* map = Engine::Game()->GetCurrentMap();
+	Map *map = Engine::Game()->GetCurrentMap();
 	SetPosition( { position_.GetValue().x, map->GetTerrain()->GetMaxHeight(), position_.GetValue().z } );
 
 	SetHealth( 100 );
@@ -183,7 +182,7 @@ void APig::Deserialize( const ActorSpawn& spawn ) {
 
 	// Create and equip our parachute, and then
 	// link it to ensure it gets destroyed when we do
-	parachute_ = dynamic_cast<AParachuteWeapon*>(ActorManager::GetInstance()->CreateActor( "weapon_parachute" ));
+	parachute_ = dynamic_cast<AParachuteWeapon *>(ActorManager::GetInstance()->CreateActor( "weapon_parachute" ));
 	if ( parachute_ == nullptr ) {
 		Error( "Failed to create \"weapon_parachute\" actor, aborting!\n" );
 	}
@@ -192,14 +191,14 @@ void APig::Deserialize( const ActorSpawn& spawn ) {
 	parachute_->Deploy();
 }
 
-bool APig::Possessed( const Player* player ) {
+bool APig::Possessed( const Player *player ) {
 	// TODO
 	PlayVoiceSample( VoiceCategory::READY );
 
 	return SuperClass::Possessed( player );
 }
 
-void APig::Depossessed( const Player* player ) {
+void APig::Depossessed( const Player *player ) {
 	// TODO
 	SuperClass::Depossessed( player );
 }
@@ -211,6 +210,10 @@ bool APig::IsVisibleOnMinimap() const {
 
 unsigned int APig::GetMinimapIconStyle() const {
 	return MINIMAP_ICON_PIG;
+}
+
+PLColour APig::GetMinimapIconColour() const {
+	return Actor::GetMinimapIconColour();
 }
 
 void APig::Killed() {

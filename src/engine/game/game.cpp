@@ -28,8 +28,8 @@
 
 #include "../script/json_reader.h"
 
-#include "actors/actor_pig.h"
-#include "actors/actor_static_model.h"
+#include "actor_pig.h"
+#include "actor_static_model.h"
 
 using namespace openhow;
 

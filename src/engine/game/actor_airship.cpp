@@ -17,35 +17,38 @@
 
 #include "../engine.h"
 
-#include "inventory.h"
+#include "actor_manager.h"
+#include "actor_airship.h"
 
-/**
- * Clear the inventory of items.
- */
-void InventoryManager::ClearItems() {
-	items_.clear();
+REGISTER_ACTOR( airship, AAirship )
+
+using namespace openhow;
+
+AAirship::AAirship() : SuperClass() {}
+
+AAirship::~AAirship() {
+	delete ambientSource;
 }
 
-void InventoryManager::AddInventoryItem( ItemIdentifier identifier, unsigned int quantity ) {
-#if 0
-	u_assert(identifier != InventoryItem::Identifier::INVALID_ID, "Attempted to add a null item to inventory!\n");
+void AAirship::Tick() {
+	SuperClass::Tick();
 
-	LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
-
-	items_.emplace(std::pair<std::string, InventoryItem*>(item->GetInventoryDescription(), item));
-#endif
+	ambientSource->SetPosition( GetPosition() );
 }
 
-InventoryItem *InventoryManager::GetItem( ItemIdentifier identifier ) {
-	return nullptr;
-}
+void AAirship::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
 
-/// Inventory Items
+	ambientSource = Engine::Audio()->CreateSource( "audio/en_bip.wav",
+												   { 0.0f, 0.0f, 0.0f },
+												   { 0.0f, 0.0f, 0.0f },
+												   true,
+												   1.0f,
+												   1.0f,
+												   true );
+	ambientSource->StartPlaying();
 
-PLTexture *InventoryItem::GetInventoryIcon() {
-	return nullptr;
-}
-
-void InventoryItem::Equipped( Actor *other ) {
-
+	SetModel( "scenery/airship1" );
+	SetAngles( { 180.0f, 0.0f, 0.0f } );
+	ShowModel( true );
 }

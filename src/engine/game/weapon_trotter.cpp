@@ -15,12 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "actor_animated_model.h"
+#include "../engine.h"
+#include "weapon_trotter.h"
 
-AAnimatedModel::AAnimatedModel() : SuperClass() {}
-AAnimatedModel::~AAnimatedModel() = default;
+// Basic Melee Attack
 
-void AAnimatedModel::Deserialize(const ActorSpawn& spawn) {
-  SuperClass::Deserialize(spawn);
+ATrotterWeapon::ATrotterWeapon() {}
+ATrotterWeapon::~ATrotterWeapon() {
+
+}
+
+void ATrotterWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
+	AWeapon::Fire( pos, dir );
+}
+
+void ATrotterWeapon::Deploy() {
+	AWeapon::Deploy();
 }

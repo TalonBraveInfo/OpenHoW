@@ -15,42 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../../graphics/particles.h"
+#pragma once
 
-#include "../actor_manager.h"
+#include "actor_weapon.h"
 
-#include "actor.h"
+class AParachuteWeapon : public AWeapon {
+	IMPLEMENT_ACTOR( AParachuteWeapon, AWeapon )
 
-class AParticleEffect : public Actor {
-	IMPLEMENT_ACTOR( AParticleEffect, Actor )
-
- public:
-	AParticleEffect();
-	~AParticleEffect() override;
+public:
+	AParachuteWeapon();
+	~AParachuteWeapon() override;
 
 	void Tick() override;
-	void Draw() override;
 
-	ActorSpawn Serialize() override { return ActorSpawn(); }
-	void Deserialize(const ActorSpawn& spawn) override {}
+	void Fire( const PLVector3 &pos, const PLVector3 &dir ) override;
+	void Deploy() override;
 
- protected:
- private:
-	ParticleEffect effect;
+protected:
+private:
 };
-
-REGISTER_ACTOR_BASIC( AParticleEffect )
-
-AParticleEffect::AParticleEffect() : SuperClass() {}
-AParticleEffect::~AParticleEffect() = default;
-
-void AParticleEffect::Tick() {
-	SuperClass::Tick();
-
-	effect.Tick();
-}
-
-void AParticleEffect::Draw() {
-	effect.Draw();
-}

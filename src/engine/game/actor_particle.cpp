@@ -15,21 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
-#include "../actor_manager.h"
-#include "actor_vehicle.h"
+#include "../engine.h"
+#include "../graphics/particles.h"
 
-AVehicle::AVehicle() : SuperClass() {}
-AVehicle::~AVehicle() = default;
+#include "actor_manager.h"
+#include "actor.h"
 
-void AVehicle::Occupy(Actor* occupant) 
-{
-    occupant_ = occupant;
-    isOccupied_ = true;
+class AParticleEffect : public Actor {
+	IMPLEMENT_ACTOR( AParticleEffect, Actor )
+
+public:
+	AParticleEffect();
+	~AParticleEffect() override;
+
+	void Tick() override;
+	void Draw() override;
+
+	ActorSpawn Serialize() override { return ActorSpawn(); }
+	void Deserialize( const ActorSpawn &spawn ) override {}
+
+protected:
+private:
+	ParticleEffect effect;
 };
 
-void AVehicle::Unoccupy() 
-{   
-    occupant_ = nullptr;
-    isOccupied_ = false;
-};
+REGISTER_ACTOR_BASIC( AParticleEffect )
+
+AParticleEffect::AParticleEffect() : SuperClass() {}
+AParticleEffect::~AParticleEffect() = default;
+
+void AParticleEffect::Tick() {
+	SuperClass::Tick();
+
+	effect.Tick();
+}
+
+void AParticleEffect::Draw() {
+	effect.Draw();
+}

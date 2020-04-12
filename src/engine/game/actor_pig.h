@@ -21,7 +21,7 @@
 #include "actor_animated_model.h"
 #include "actor_weapon.h"
 #include "weapon_parachute.h"
-#include "../inventory.h"
+#include "inventory.h"
 
 class APig : public AAnimatedModel, public InventoryManager {
 	IMPLEMENT_ACTOR( APig, AAnimatedModel )
@@ -50,6 +50,7 @@ public:
 
 	bool IsVisibleOnMinimap() const override;
 	unsigned int GetMinimapIconStyle() const override;
+	PLColour GetMinimapIconColour() const override;
 
 	enum class VoiceCategory {
 		READY,
