@@ -35,8 +35,6 @@ using namespace openhow;
 /************************************************************/
 /* Texture Cache */
 
-#define MAX_TEXTURES_PER_INDEX  1024
-
 static std::vector<VideoPreset> vidPresets;
 //static PLFrameBuffer* game_target;
 //static PLFrameBuffer* frontend_target;

@@ -100,12 +100,10 @@ const char *Model_GetAnimationDescription( unsigned int i ) {
 	return animationNames[ i ];
 }
 
-TextureAtlas *Model_GenerateTextureAtlas( const std::string &facPath, const std::string &texturePath ) {
-	FacHandle *facHandle = Fac_LoadFile( facPath.c_str() );
-	if ( facHandle == nullptr ) {
-		Error( "Failed to generate texture sheet for pig, \"%s\"!\n", facPath.c_str() );
-	} else if( facHandle->texture_table_size == 0 ) {
-		Error( "Empty texture table for pig, \"%s\"!\n", facPath.c_str() );
+TextureAtlas *Model_GenerateTextureAtlas( const FacHandle *facHandle, const std::string &texturePath ) {
+	if( facHandle->texture_table_size == 0 ) {
+		LogWarn( "Empty texture table!\n" );
+		return nullptr;
 	}
 
 	TextureAtlas *atlas = new TextureAtlas( 128, 128 );
@@ -116,9 +114,8 @@ TextureAtlas *Model_GenerateTextureAtlas( const std::string &facPath, const std:
 			continue;
 		}
 
-		std::string str = facPath;
-		std::string texture_path = str.erase( str.find_last_of( '/' ) ) + "/" + texturePath;
-
+		std::string str = texturePath;
+		std::string texture_path = str.erase( str.find_last_of( '/' ) ) + "/";
 		if ( !atlas->AddImage( texture_path + facHandle->texture_table[ i ].name + ".png", true ) ) {
 			LogWarn( "Failed to add texture \"%s\" to atlas!\n", facHandle->texture_table[ i ].name );
 		}
@@ -199,7 +196,12 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 	}
 
 	// automatically returns default if failed
-	TextureAtlas *textureAtlas = Model_GenerateTextureAtlas( fac_path );
+	std::string texturePath = fac_path;
+	// Temporary hack just to get the pig textures loaded
+	if( strstr( fac_path, "pigs" ) != nullptr ) {
+		texturePath = "chars/pigs/british/";
+	}
+	TextureAtlas *textureAtlas = Model_GenerateTextureAtlas( fac, texturePath );
 
 	unsigned int cur_index = 0;
 	for ( unsigned int j = 0, next_vtx_i = 0; j < fac->num_triangles; ++j ) {
@@ -209,10 +211,8 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 			plSetMeshVertexColour( mesh, next_vtx_i, PL_COLOUR_WHITE );
 			plSetMeshVertexPosition( mesh, next_vtx_i, vtx->vertices[ tri_vtx ].position );
 
-#if 0 // todo: only necessary for pigs?
-			mesh->vertices[next_vtx_i].bone_index = vtx->vertices[tri_vtx].bone_index;
-			mesh->vertices[next_vtx_i].bone_weight = 1.f;
-#endif
+			mesh->vertices[ next_vtx_i ].bone_index = vtx->vertices[tri_vtx].bone_index;
+			mesh->vertices[ next_vtx_i ].bone_weight = 1.f;
 		}
 
 		plSetMeshTrianglePosition( mesh, &cur_index, next_vtx_i - 1, next_vtx_i - 2, next_vtx_i - 3 );
