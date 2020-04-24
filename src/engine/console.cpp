@@ -272,9 +272,9 @@ void Console_Initialize( void ) {
 
 static void DrawInputPane() {
 	plSetTexture( nullptr, 0 );
-	plSetBlendMode( PL_BLEND_DEFAULT );
+	//plSetBlendMode( PL_BLEND_ADDITIVE );
 
-	BitmapFont *font = g_fonts[ FONT_CHARS2 ];
+	BitmapFont *font = g_fonts[ FONT_SMALL ];
 	unsigned int scr_w = Display_GetViewportWidth( &g_state.ui_camera->viewport );
 	unsigned int scr_h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
 	PLRectangle2D box = plCreateRectangle(
@@ -287,7 +287,7 @@ static void DrawInputPane() {
 	);
 	plDrawFilledRectangle( &box );
 
-	plSetBlendMode( PL_BLEND_ADDITIVE );
+	plSetBlendMode( PL_BLEND_DEFAULT );
 
 	unsigned int x = 20;
 	unsigned int y = scr_h - font->chars[ 0 ].h;
@@ -302,33 +302,28 @@ static void DrawInputPane() {
 		delay = g_state.sim_ticks + 2;
 	}
 
-	Font_DrawBitmapCharacter( font, x, y, 1.f, PL_COLOUR_GREEN, anim[ frame ] );
+	Font_DrawBitmapCharacter( font, x, y, 1.f, PL_COLOUR_LIME, anim[ frame ] );
 
 	if ( console_state.in_buffer_pos > 0 ) {
 		char msg_buf[MAX_INPUT_BUFFER_SIZE];
 		strncpy( msg_buf, console_state.in_buffer, sizeof( msg_buf ) );
 		unsigned int w = font->chars[ 0 ].w;
-		Font_DrawBitmapString( font, x + w + 10, y, 1, 1.f, PL_COLOUR_GREEN, pl_strtoupper( msg_buf ) );
+		Font_DrawBitmapString( font, x + w + 10, y, 1, 1.f, PL_COLOUR_LIME, pl_strtoupper( msg_buf ) );
 	}
-
-	/* DrawBitmapString disables blend - no need to call again here */
-
-	plSetBlendMode( PL_BLEND_DEFAULT );
 }
 
 static void DrawOutputPane() {
 	//unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
 	//unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
 
-	BitmapFont *font = g_fonts[ FONT_CHARS2 ];
+	BitmapFont *font = g_fonts[ FONT_SMALL ];
 	for ( size_t i = 0, cur_line = 0; i < console_state.out_buffer_pos; ) {
 		if ( console_state.out_buffer[ i ] == '\n' ) {
 			++i;
 			continue;
 		}
 
-		char *line_end =
-			static_cast<char *>(memchr( console_state.out_buffer + i, '\n', console_state.out_buffer_pos - i ));
+		char *line_end = static_cast<char *>(memchr( console_state.out_buffer + i, '\n', console_state.out_buffer_pos - i ));
 		if ( line_end == nullptr ) {
 			line_end = console_state.out_buffer + console_state.out_buffer_pos;
 		}
@@ -340,7 +335,7 @@ static void DrawOutputPane() {
 		line[ line_len ] = '\0';
 
 		int y = font->chars[ 0 ].h * cur_line;
-		Font_DrawBitmapString( font, font->chars[ 0 ].w, y, 1, 1.0f, PL_COLOUR_GREEN, pl_strtoupper( line ) );
+		Font_DrawBitmapString( font, font->chars[ 0 ].w, y, 1, 1.0f, PL_COLOUR_LIME, pl_strtoupper( line ) );
 
 		cur_line++;
 		i += line_len;
