@@ -98,8 +98,6 @@ void Font_DrawBitmapString( BitmapFont* font, int x, int y, unsigned int spacing
 		Error( "attempted to draw bitmap font with invalid texture, aborting!\n" );
 	}
 
-	plSetBlendMode( PL_BLEND_ADDITIVE );
-
 	int n_x = x;
 	int n_y = y;
 	for ( size_t i = 0; i < num_chars; ++i ) {
@@ -113,8 +111,6 @@ void Font_DrawBitmapString( BitmapFont* font, int x, int y, unsigned int spacing
 			n_x += 5;
 		}
 	}
-
-	plSetBlendMode( PL_BLEND_DEFAULT );
 }
 
 BitmapFont* LoadBitmapFont( const char* name, const char* tab_name ) {
@@ -150,6 +146,7 @@ BitmapFont* LoadBitmapFont( const char* name, const char* tab_name ) {
 	}
 
 	plReplaceImageColour( &image, PLColour( 255, 0, 255, 255 ), PLColour( 0, 0, 0, 0 ) );
+	plReplaceImageColour( &image, PLColour( 0, 0, 0, 255 ), PLColour( 0, 0, 0, 0 ) );
 
 	auto* font = static_cast<BitmapFont*>(u_alloc( 1, sizeof( BitmapFont ), true ));
 	memset( font, 0, sizeof( BitmapFont ) );
