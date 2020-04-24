@@ -44,7 +44,7 @@ class Player {
   unsigned int GetControllerSlot() { return input_slot; }
 
   void SetTeam(const PlayerTeam &team) { team_ = team; }
-  PlayerTeam *GetTeam() { return &team_; }
+  const PlayerTeam *GetTeam() const { return &team_; }
 
  protected:
  private:

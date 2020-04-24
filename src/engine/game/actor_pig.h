@@ -40,10 +40,10 @@ public:
 	unsigned int GetPersonality() { return personality_; }
 
 	void SetPlayerOwner( Player *owner );
-	const Player *GetPlayerOwner();
+	const Player *GetPlayerOwner() const;
 
 	void SetTeam( unsigned int team );
-	unsigned int GetTeam() { return team_; }
+	unsigned int GetTeam() const { return team_; }
 
 	bool Possessed( const Player *player ) override;
 	void Dispossessed(const Player *player ) override;
@@ -73,6 +73,8 @@ public:
 private:
 	AWeapon *weapon_{ nullptr };
 	AParachuteWeapon *parachute_{ nullptr };
+
+	Player *playerOwnerPtr{ nullptr };
 
 	AudioSource *speech_{ nullptr };
 

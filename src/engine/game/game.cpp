@@ -200,6 +200,7 @@ void GameManager::RegisterTeamManifest( const std::string &path ) {
 
 		PlayerTeam team;
 		team.name = lm_gtr( config.GetStringProperty( "name", team.name ).c_str() );
+		team.colour = config.GetColourProperty( "colour", PLColour( 255, 255, 255 ) );
 		team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
 		team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
 		team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures );

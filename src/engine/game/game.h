@@ -146,6 +146,8 @@ struct PlayerTeam : PropertyOwner {
 	StringProperty debrief_texture;
 	StringProperty voice_set;
 
+	PLColour colour;
+
 	std::array<CharacterSlot, 8> slots;
 };
 

@@ -123,7 +123,7 @@ void BaseGameMode::SpawnActors() {
 			continue;
 		}
 
-		AssignActorToPlayer( pig, player );
+		pig->SetPlayerOwner( player );
 	}
 
 	AAirship* model_actor = dynamic_cast<AAirship*>(ActorManager::GetInstance()->CreateActor( "airship" ));

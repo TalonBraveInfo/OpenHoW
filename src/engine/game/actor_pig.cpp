@@ -146,11 +146,17 @@ void APig::SetPersonality( unsigned int personality ) {
 
 void APig::SetPlayerOwner( Player *owner ) {
 	IGameMode *mode = Engine::Game()->GetMode();
+	if ( mode == nullptr ) {
+		LogWarn( "Attempted to set player owner without an active mode!\n" );
+		return;
+	}
+
 	mode->AssignActorToPlayer( this, owner );
+	playerOwnerPtr = owner;
 }
 
-const Player *APig::GetPlayerOwner() {
-	return nullptr;
+const Player *APig::GetPlayerOwner() const {
+	return playerOwnerPtr;
 }
 
 void APig::SetTeam( unsigned int team ) {
@@ -213,7 +219,17 @@ unsigned int APig::GetMinimapIconStyle() const {
 }
 
 PLColour APig::GetMinimapIconColour() const {
-	return Actor::GetMinimapIconColour();
+	const Player *player = GetPlayerOwner();
+	if ( player == nullptr ) {
+		return Actor::GetMinimapIconColour();
+	}
+
+	const PlayerTeam *team = player->GetTeam();
+	if ( team == nullptr ) {
+		return Actor::GetMinimapIconColour();
+	}
+
+	return team->colour;
 }
 
 void APig::Killed() {
