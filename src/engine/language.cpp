@@ -72,7 +72,7 @@ const char* LanguageManager::GetTranslation( const char* key ) { // todo: UTF-8 
 
 	auto i = current_language->keys.find( p );
 	if ( i == current_language->keys.end() ) {
-		LogWarn( "Failed to find translation key\n" );
+		LogWarn( "Failed to find translation key, %s\n", p );
 		return p;
 	}
 
