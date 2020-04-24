@@ -47,10 +47,7 @@ enum LogLevel {
 #define Error(...) _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__); \
         u_assert(0, __VA_ARGS__);                                   \
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
-        System_Shutdown(); \
-        return
-		// Added return here to silence dumb analytical crap in some IDEs that don't
-		// realise System_Shutdown will close the application.
+        System_Shutdown()
 #endif
 
 typedef unsigned int uint;
