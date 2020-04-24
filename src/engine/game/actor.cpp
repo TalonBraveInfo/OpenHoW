@@ -122,7 +122,10 @@ bool Actor::Possessed( const Player *player ) {
 	return true;
 }
 
-void Actor::Depossessed( const Player *player ) {}
+void Actor::Dispossessed(const Player *player ) {
+	// Clear all the input, otherwise we'll just run off forever
+	input_forward = input_pitch = input_yaw = 0.0f;
+}
 
 /**
  * Drop the actor to the ground based on it's bounding box size.

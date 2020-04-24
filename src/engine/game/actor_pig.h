@@ -46,7 +46,7 @@ public:
 	unsigned int GetTeam() { return team_; }
 
 	bool Possessed( const Player *player ) override;
-	void Depossessed( const Player *player ) override;
+	void Dispossessed(const Player *player ) override;
 
 	bool IsVisibleOnMinimap() const override;
 	unsigned int GetMinimapIconStyle() const override;

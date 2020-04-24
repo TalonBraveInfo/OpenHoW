@@ -198,9 +198,9 @@ bool APig::Possessed( const Player *player ) {
 	return SuperClass::Possessed( player );
 }
 
-void APig::Depossessed( const Player *player ) {
+void APig::Dispossessed(const Player *player ) {
 	// TODO
-	SuperClass::Depossessed( player );
+	SuperClass::Dispossessed(player);
 }
 
 bool APig::IsVisibleOnMinimap() const {

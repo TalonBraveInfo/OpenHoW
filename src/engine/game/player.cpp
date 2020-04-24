@@ -43,7 +43,7 @@ void Player::DispossessCurrentChild() {
 		return;
 	}
 
-	actor_ptr->Depossessed(this);
+	actor_ptr->Dispossessed(this);
 
 	LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }

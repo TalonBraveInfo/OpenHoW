@@ -107,7 +107,7 @@ public:
 	virtual void SetAngles( PLVector3 angles );
 
 	virtual bool Possessed( const Player *player );
-	virtual void Depossessed( const Player *player );
+	virtual void Dispossessed(const Player *player );
 	virtual void HandleInput();   // handle any player input, if applicable
 
 	virtual ActorSpawn Serialize() { return ActorSpawn(); }
