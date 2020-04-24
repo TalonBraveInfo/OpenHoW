@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,10 @@ enum LogLevel {
 #define Error(...) _print_w_function(LOG_LEVEL_ERROR, __VA_ARGS__); \
         u_assert(0, __VA_ARGS__);                                   \
         System_DisplayMessageBox(PROMPT_LEVEL_ERROR, __VA_ARGS__);  \
-        System_Shutdown()
+        System_Shutdown(); \
+        return
+		// Added return here to silence dumb analytical crap in some IDEs that don't
+		// realise System_Shutdown will close the application.
 #endif
 
 typedef unsigned int uint;

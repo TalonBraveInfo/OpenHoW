@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,13 +126,6 @@ void GameManager::Tick() {
 	mode_->Tick();
 
 	ActorManager::GetInstance()->TickActors();
-
-	switch ( camera_mode_ ) {
-		case CameraMode::FIRSTPERSON:break;
-		case CameraMode::FLY:break;
-		case CameraMode::FOLLOW:break;
-		case CameraMode::FLYAROUND:break;
-	}
 
 	if ( simSteps > 0 ) {
 		simSteps--;

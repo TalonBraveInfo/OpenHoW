@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,64 +23,64 @@ Player::Player(PlayerType type) : type_(type) {}
 Player::~Player() = default;
 
 void Player::PossessCurrentChild() {
-  Actor* child = children_[current_child_];
-  if(child == nullptr) {
-    LogWarn("Child of player is null!\n");
-    return;
-  }
+	Actor* child = children_[current_child_];
+	if(child == nullptr) {
+		LogWarn("Child of player is null!\n");
+		return;
+	}
 
-  if(!child->Possessed(this)) {
-    LogWarn("Failed to possess actor!\n");
-    return;
-  }
+	if(!child->Possessed(this)) {
+		LogWarn("Failed to possess actor!\n");
+		return;
+	}
 
-  LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), current_child_);
+	LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
 void Player::DepossessCurrentChild() {
-  Actor* actor_ptr = GetCurrentChild();
-  if(actor_ptr == nullptr) {
-    return;
-  }
+	Actor* actor_ptr = GetCurrentChild();
+	if(actor_ptr == nullptr) {
+		return;
+	}
 
-  actor_ptr->Depossessed(this);
+	actor_ptr->Depossessed(this);
 
-  LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), current_child_);
+	LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
 Actor* Player::GetCurrentChild() {
-  if(current_child_ >= children_.size()) {
-    return nullptr;
-  }
+	if(current_child_ >= children_.size()) {
+		return nullptr;
+	}
 
-  return children_[current_child_];
+	return children_[current_child_];
 }
 
 void Player::CycleChildren(bool forward) {
-  if(forward) {
-    if (current_child_ >= children_.size()) {
-      current_child_ = 0;
-    } else {
-      current_child_++;
-    }
-  } else {
-    if(current_child_ == 0) {
-      current_child_ = children_.size() - 1;
-    } else {
-      current_child_--;
-    }
-  }
+	if(forward) {
+		if (current_child_ >= children_.size()) {
+			current_child_ = 0;
+		} else {
+			current_child_++;
+		}
+	} else {
+		if(current_child_ == 0) {
+			current_child_ = children_.size() - 1;
+		} else {
+			current_child_--;
+		}
+	}
 
-  LogDebug("%s cycled to child %d...\n", GetTeam()->name.c_str(), current_child_);
+	LogDebug("%s cycled to child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
 void Player::AddChild(Actor* actor) {
-  u_assert(actor != nullptr, "Attempted to pass a null actor reference to player!\n");
-  children_.push_back(actor);
+	u_assert(actor != nullptr, "Attempted to pass a null actor reference to player!\n");
+	children_.push_back(actor);
 
-  LogDebug("%s received child %d...\n", GetTeam()->name.c_str(), children_.size());
+	LogDebug("%s received child %d...\n", GetTeam()->name.c_str(), children_.size());
 }
 
 void Player::RemoveChild(Actor* actor) {
-  // todo
+	// todo
 }

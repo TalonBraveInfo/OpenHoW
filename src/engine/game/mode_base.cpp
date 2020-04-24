@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2020 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ void BaseGameMode::SpawnActors() {
 		Error( "Failed to create model actor!\n" );
 	}
 
-	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(),  TERRAIN_PIXEL_WIDTH / 2, } );
+	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2.0f, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(),  TERRAIN_PIXEL_WIDTH / 2.0f, } );
 
 	ActorManager::GetInstance()->ActivateActors();
 }
@@ -154,7 +154,6 @@ void BaseGameMode::EndTurn( Player* player ) {
 	CyclePlayers();
 
 	num_turn_ticks = 0;
-
 	turn_started_ = false;
 }
 
@@ -191,15 +190,15 @@ unsigned int BaseGameMode::GetMaxPlayers() const {
 }
 
 Player* BaseGameMode::GetCurrentPlayer() {
-	return Engine::Game()->GetPlayerByIndex( current_player_ );
+	return Engine::Game()->GetPlayerByIndex(currentPlayer );
 }
 
 void BaseGameMode::CyclePlayers() {
 	PlayerPtrVector players = Engine::Game()->GetPlayers();
-	if ( current_player_ >= players.size() ) {
-		current_player_ = 0;
+	if ( currentPlayer >= players.size() ) {
+		currentPlayer = 0;
 	} else {
-		current_player_++;
+		currentPlayer++;
 	}
 }
 
