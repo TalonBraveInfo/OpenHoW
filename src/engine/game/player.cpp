@@ -37,7 +37,7 @@ void Player::PossessCurrentChild() {
 	LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), current_child_);
 }
 
-void Player::DepossessCurrentChild() {
+void Player::DispossessCurrentChild() {
 	Actor* actor_ptr = GetCurrentChild();
 	if(actor_ptr == nullptr) {
 		return;

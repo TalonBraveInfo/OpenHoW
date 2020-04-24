@@ -147,7 +147,7 @@ void BaseGameMode::StartTurn( Player* player ) {
 }
 
 void BaseGameMode::EndTurn( Player* player ) {
-	player->DepossessCurrentChild();
+	player->DispossessCurrentChild();
 	player->CycleChildren();
 
 	// move onto the next player

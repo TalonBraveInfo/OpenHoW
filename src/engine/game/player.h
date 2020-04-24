@@ -34,7 +34,7 @@ class Player {
   void RemoveChild(Actor* actor);
 
   void PossessCurrentChild();
-  void DepossessCurrentChild();
+  void DispossessCurrentChild();
 
   Actor* GetCurrentChild();
 
