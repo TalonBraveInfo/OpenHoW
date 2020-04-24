@@ -57,8 +57,8 @@ static const char *OALErrorString(ALenum err) {
 	} \
 }
 
-unsigned int reverb_effect_slot = 0;
-unsigned int reverb_sound_slot = 0;
+static unsigned int reverb_effect_slot = 0;
+static unsigned int reverb_sound_slot = 0;
 
 /************************************************************/
 /* Audio Source */
