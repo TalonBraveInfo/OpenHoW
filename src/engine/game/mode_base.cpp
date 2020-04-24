@@ -69,6 +69,11 @@ void BaseGameMode::Tick() {
 		return;
 	}
 
+	if ( !HasTurnStarted() ) {
+		StartTurn( GetCurrentPlayer() );
+		return;
+	}
+
 	Actor* actor = player->GetCurrentChild();
 	if ( actor == nullptr ) {
 		return;
@@ -194,11 +199,11 @@ Player* BaseGameMode::GetCurrentPlayer() {
 }
 
 void BaseGameMode::CyclePlayers() {
+	currentPlayer++;
+
 	PlayerPtrVector players = Engine::Game()->GetPlayers();
 	if ( currentPlayer >= players.size() ) {
 		currentPlayer = 0;
-	} else {
-		currentPlayer++;
 	}
 }
 

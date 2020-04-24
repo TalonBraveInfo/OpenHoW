@@ -30,29 +30,29 @@ class Player {
 
   unsigned int GetNumChildren() { return children_.size(); }
 
-  void AddChild(Actor* actor);
-  void RemoveChild(Actor* actor);
+  void AddChild(Actor *actor);
+  void RemoveChild(Actor *actor);
 
   void PossessCurrentChild();
   void DispossessCurrentChild();
 
-  Actor* GetCurrentChild();
+  Actor *GetCurrentChild();
 
   void CycleChildren(bool forward = true);
 
   void SetControllerSlot(unsigned int slot) { input_slot = slot; }
   unsigned int GetControllerSlot() { return input_slot; }
 
-  void SetTeam(const PlayerTeam& team) { team_ = team; }
-  PlayerTeam* GetTeam() { return &team_; }
+  void SetTeam(const PlayerTeam &team) { team_ = team; }
+  PlayerTeam *GetTeam() { return &team_; }
 
  protected:
  private:
-  unsigned int  input_slot{ 0 }; // Controller slot
+  unsigned int input_slot{0}; // Controller slot
 
   PlayerType type_;
   PlayerTeam team_;
 
-  std::vector<Actor*> children_;
-  unsigned int current_child_{ 0 };
+  std::vector<Actor *> children_;
+  unsigned int currentChildIndex{0};
 };

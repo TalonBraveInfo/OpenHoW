@@ -23,7 +23,7 @@ Player::Player(PlayerType type) : type_(type) {}
 Player::~Player() = default;
 
 void Player::PossessCurrentChild() {
-	Actor* child = children_[current_child_];
+	Actor* child = children_[currentChildIndex];
 	if(child == nullptr) {
 		LogWarn("Child of player is null!\n");
 		return;
@@ -34,7 +34,7 @@ void Player::PossessCurrentChild() {
 		return;
 	}
 
-	LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), current_child_);
+	LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }
 
 void Player::DispossessCurrentChild() {
@@ -45,33 +45,39 @@ void Player::DispossessCurrentChild() {
 
 	actor_ptr->Depossessed(this);
 
-	LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), current_child_);
+	LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }
 
 Actor* Player::GetCurrentChild() {
-	if(current_child_ >= children_.size()) {
+	if(currentChildIndex >= children_.size()) {
 		return nullptr;
 	}
 
-	return children_[current_child_];
+	return children_[currentChildIndex];
 }
 
 void Player::CycleChildren(bool forward) {
-	if(forward) {
-		if (current_child_ >= children_.size()) {
-			current_child_ = 0;
-		} else {
-			current_child_++;
+	if ( forward ) {
+		currentChildIndex++;
+
+		// Check if we need to wrap it round
+		if ( currentChildIndex >= children_.size() ) {
+			currentChildIndex = 0;
 		}
-	} else {
-		if(current_child_ == 0) {
-			current_child_ = children_.size() - 1;
-		} else {
-			current_child_--;
-		}
+
+		return;
 	}
 
-	LogDebug("%s cycled to child %d...\n", GetTeam()->name.c_str(), current_child_);
+	// Else we're decrementing
+
+	currentChildIndex--;
+
+	// Check if we need to wrap it round
+	if ( currentChildIndex < 0 ) {
+		currentChildIndex = children_.size() - 1;
+	}
+
+	LogDebug("%s cycled to child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }
 
 void Player::AddChild(Actor* actor) {
