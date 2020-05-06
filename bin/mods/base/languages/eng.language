@@ -262,5 +262,9 @@
   "mp_l09": "%s HAS GIVEN UP",
   "mp_l10": "%s LEAVES QUIETLY",
   "mp_l11": "%s HURRIEDLY RETREATS",
-  "mp_l12": "%s IS OUTTA HERE!"
+  "mp_l12": "%s IS OUTTA HERE!",
+
+  "file": "File",
+  "open": "Open",
+  "window_particle_editor": "Particle Editor"
 }

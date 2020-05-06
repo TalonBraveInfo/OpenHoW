@@ -20,6 +20,7 @@
 #include "../graphics/display.h"
 #include "../imgui_layer.h"
 #include "../model.h"
+#include "../language.h"
 
 #include "window_model_viewer.h"
 #include "window_texture_viewer.h"
@@ -125,7 +126,7 @@ void ModelViewer::Display() {
 			ImGuiWindowFlags_NoSavedSettings;
 	ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
 
-	Begin( "Model Viewer", flags );
+	Begin( lm_gtr( "$window_model_viewer" ), flags );
 
 	if ( ImGui::BeginMenuBar() ) {
 		if ( ImGui::BeginMenu( "Models" ) ) {
