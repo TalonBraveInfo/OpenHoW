@@ -33,7 +33,7 @@ std::list<std::string> ModelViewer::modelList;
 ModelViewer::ModelViewer() : BaseWindow() {
 	const char **formatExtensions = supported_model_formats;
 	while ( *formatExtensions != nullptr ) {
-		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true );
+		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true, nullptr );
 		formatExtensions++;
 	}
 
@@ -289,7 +289,9 @@ void ModelViewer::Display() {
 	ImGui::End();
 }
 
-void ModelViewer::AppendModelList( const char *path ) {
+void ModelViewer::AppendModelList( const char *path, void *userData ) {
+	u_unused( userData );
+
 	modelList.push_back( path );
 }
 

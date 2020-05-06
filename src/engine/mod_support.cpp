@@ -30,7 +30,7 @@ using namespace openhow;
  */
 
 modsMap_t modsList;
-modDirectory_t* currentModification = nullptr;
+ModDirectory* currentModification = nullptr;
 
 /**
  * Pull a list of registered mods which can be displayed
@@ -41,7 +41,7 @@ const modsMap_t* Mod_GetRegisteredMods() {
 	return &modsList;
 }
 
-static modDirectory_t* Mod_GetManifest( const std::string& name ) {
+static ModDirectory* Mod_GetManifest( const std::string& name ) {
 	auto campaign = modsList.find( name );
 	if ( campaign != modsList.end() ) {
 		return &campaign->second;
@@ -51,10 +51,10 @@ static modDirectory_t* Mod_GetManifest( const std::string& name ) {
 	return nullptr;
 }
 
-static modDirectory_t Mod_LoadManifest( const char* path ) {
+static ModDirectory Mod_LoadManifest( const char* path ) {
 	LogInfo( "Loading manifest \"%s\"...\n", path );
 
-	modDirectory_t slot;
+	ModDirectory slot;
 	try {
 		JsonReader config( path );
 
@@ -81,8 +81,9 @@ static modDirectory_t Mod_LoadManifest( const char* path ) {
  * Load in the mod manifest and store it into a buffer.
  * @param path Path to the manifest file.
  */
-void Mod_RegisterMod( const char* path ) {
-	modDirectory_t mod = Mod_LoadManifest( path );
+void Mod_RegisterMod( const char* path, void *userData ) {
+	u_unused( userData );
+	ModDirectory mod = Mod_LoadManifest( path );
 	modsList.emplace( mod.internalName, mod );
 }
 
@@ -90,21 +91,21 @@ void Mod_RegisterMod( const char* path ) {
  * Registers all of the mods provided under the mods directory.
  */
 void Mod_RegisterMods() {
-	plScanDirectory( "mods", "mod", Mod_RegisterMod, false );
+	plScanDirectory( "mods", "mod", Mod_RegisterMod, false, nullptr );
 }
 
 /**
  * Returns a pointer to the mod that's currently active.
  * @return Pointer to the current mod.
  */
-const modDirectory_t* Mod_GetCurrentMod() {
+const ModDirectory* Mod_GetCurrentMod() {
 	return currentModification;
 }
 
 /**
  * Unmounts the specified modification.
  */
-static void Mod_Unmount( modDirectory_t* mod ) {
+static void Mod_Unmount( ModDirectory* mod ) {
 	// If a modification is already mounted, unmount it
 	if ( mod != nullptr ) {
 		for ( const auto& i : mod->mountList ) {
@@ -117,15 +118,15 @@ static void Mod_Unmount( modDirectory_t* mod ) {
 	Engine::Resource()->ClearAll();
 }
 
-void Mod_FetchDependencies( modDirectory_t* mod, std::set<std::string>& dirSet ) {
+void Mod_FetchDependencies( ModDirectory* mod, std::set<std::string>& dirSet ) {
 	const auto& dir = dirSet.find( mod->directory );
 	if ( dir != dirSet.end() ) {
-		LogInfo( "%s is already mounted, skipping\n", mod->directory );
+		LogInfo( "%s is already mounted, skipping\n", mod->directory.c_str() );
 		return;
 	}
 
 	for ( const auto& i : mod->dependencies ) {
-		modDirectory_t* dependency = Mod_GetManifest( i );
+		ModDirectory* dependency = Mod_GetManifest( i );
 		if ( dependency == nullptr ) {
 			LogWarn( "Failed to fetch dependency for mod, \"%s\"!\n", i.c_str() );
 			return;
@@ -141,14 +142,14 @@ void Mod_FetchDependencies( modDirectory_t* mod, std::set<std::string>& dirSet )
 
 void Mod_SetMod( const char* name ) {
 	// Attempt to fetch the manifest, if it doesn't exist then attempt to load it
-	modDirectory_t* mod = Mod_GetManifest( name );
+	ModDirectory* mod = Mod_GetManifest( name );
 	if ( mod == nullptr ) {
 		LogInfo( "Mod manifest, \"%s\", wasn't cached on launch... attempting to load!\n", name );
 
 		char path[PL_SYSTEM_MAX_PATH];
 		snprintf( path, sizeof( path ), "mods/%s.mod", name );
 		if ( plFileExists( path ) ) {
-			Mod_RegisterMod( path );
+			Mod_RegisterMod( path, nullptr );
 			mod = Mod_GetManifest( name );
 		}
 

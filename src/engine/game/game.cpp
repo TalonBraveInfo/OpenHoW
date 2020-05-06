@@ -275,7 +275,8 @@ void GameManager::RegisterMapManifest( const std::string &path ) {
 	map_manifests_.insert( std::make_pair( temp_buf, manifest ) );
 }
 
-static void RegisterManifestInterface( const char *path ) {
+static void RegisterManifestInterface( const char *path, void *userData ) {
+	u_unused( userData );
 	Engine::Game()->RegisterMapManifest( path );
 }
 
@@ -284,7 +285,7 @@ static void RegisterManifestInterface( const char *path ) {
  */
 void GameManager::RegisterMapManifests() {
 	map_manifests_.clear();
-	plScanDirectory( "maps", "map", RegisterManifestInterface, false );
+	plScanDirectory( "maps", "map", RegisterManifestInterface, false, nullptr );
 }
 
 /**
@@ -314,7 +315,7 @@ MapManifest *GameManager::CreateManifest( const std::string &name ) {
 		return nullptr;
 	}
 
-	const modDirectory_t *currentMod = Mod_GetCurrentMod();
+	const ModDirectory *currentMod = Mod_GetCurrentMod();
 	std::string path = "mods/" + currentMod->directory + "maps/" + name + ".map";
 	std::ofstream output( path );
 	if ( !output.is_open() ) {

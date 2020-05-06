@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <PL/platform_graphics_camera.h>
+#include <PL/pl_graphics_camera.h>
 
 class Camera {
 public:

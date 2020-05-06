@@ -15,12 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../frontend.h"
-#include "../model.h"
-
-#include "stb_vorbis.c"
-
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
@@ -28,8 +22,12 @@
 
 #include <SDL2/SDL_audio.h>
 
-#include <PL/platform_graphics_camera.h>
 #include <PL/platform_filesystem.h>
+
+#include "../engine.h"
+#include "../frontend.h"
+
+#include "stb_vorbis.c"
 
 using namespace openhow;
 

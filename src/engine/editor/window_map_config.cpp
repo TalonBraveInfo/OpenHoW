@@ -227,7 +227,7 @@ void MapConfigEditor::Display() {
 }
 
 void MapConfigEditor::SaveManifest( const std::string& path ) {
-	const modDirectory_t* currentMod = Mod_GetCurrentMod();
+	const ModDirectory* currentMod = Mod_GetCurrentMod();
 	std::ofstream output( "mods/" + currentMod->directory + path );
 	if ( !output.is_open() ) {
 		LogWarn( "Failed to write to \"%s\", aborting!n\"\n", filename_buffer );

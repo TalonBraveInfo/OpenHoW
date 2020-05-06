@@ -15,9 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_graphics_camera.h>
-#include <PL/platform_filesystem.h>
-
 #include "engine.h"
 #include "imgui_layer.h"
 #include "graphics/display.h"
@@ -200,7 +197,9 @@ typedef struct FileDescriptor {
 
 static std::vector<FileDescriptor> file_list;
 
-void AddFilePath( const char *path ) {
+void AddFilePath( const char *path, void *userData ) {
+	u_unused( userData );
+
 	FileDescriptor descriptor;
 	strncpy( descriptor.path, path, sizeof( descriptor.path ) );
 	descriptor.type = FILE_TYPE_UNKNOWN;
@@ -245,7 +244,7 @@ void AddFilePath( const char *path ) {
 
 void ScanDirectories() {
 	file_list.clear();
-	plScanDirectory( ".", nullptr, AddFilePath, true );
+	plScanDirectory( ".", nullptr, AddFilePath, true, nullptr );
 }
 
 void UI_DisplayFileBox() {

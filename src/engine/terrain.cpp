@@ -125,8 +125,7 @@ void Terrain::GenerateModel( Chunk* chunk, const PLVector2& offset ) {
 		chunk->model = nullptr;
 	}
 
-	PLMesh
-		* chunk_mesh = plCreateMeshInit( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, ( void* ) chunk_indices, nullptr );
+	PLMesh *chunk_mesh = plCreateMeshInit( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, chunk_indices, nullptr );
 	if ( chunk_mesh == nullptr ) {
 		Error( "Unable to create map chunk mesh, aborting (%s)!\n", plGetError() );
 	}

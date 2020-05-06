@@ -17,7 +17,7 @@
 
 #pragma once
 
-struct modDirectory_t {
+struct ModDirectory {
 	std::string fileName;
 	std::string internalName;
 	std::string directory;
@@ -32,11 +32,11 @@ struct modDirectory_t {
 	std::vector<PLFileSystemMount*> mountList; /// Pointers to the mounted directory handle
 };
 
-typedef std::map<std::string, modDirectory_t> modsMap_t;
+typedef std::map<std::string, ModDirectory> modsMap_t;
 
 const modsMap_t* Mod_GetRegisteredMods();
 
-const modDirectory_t* Mod_GetCurrentMod();
+const ModDirectory* Mod_GetCurrentMod();
 
 void Mod_RegisterMods();
 void Mod_RegisterMod( const char* path );

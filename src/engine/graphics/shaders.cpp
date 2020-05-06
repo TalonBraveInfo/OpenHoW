@@ -50,7 +50,9 @@ static void Shaders_ValidateDefault() {
 	}
 }
 
-static void Shaders_CacheShaderProgram( const char* path ) {
+static void Shaders_CacheShaderProgram( const char* path, void *userData ) {
+	u_unused( userData );
+
 	const char* fileName = plGetFileName( path );
 	if ( fileName == nullptr ) {
 		LogWarn( "Failed to get filename for shader program, \"%s\"!\n", path );
@@ -92,7 +94,7 @@ static void Shaders_ClearPrograms() {
 static void Shaders_CachePrograms() {
 	Shaders_ClearPrograms();
 
-	plScanDirectory( "shaders", "program", Shaders_CacheShaderProgram, false );
+	plScanDirectory( "shaders", "program", Shaders_CacheShaderProgram, false, nullptr );
 
 	Shaders_ValidateDefault();
 }

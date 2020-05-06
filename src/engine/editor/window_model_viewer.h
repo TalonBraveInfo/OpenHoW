@@ -46,6 +46,6 @@ private:
 	bool viewDebugNormals{ false };
 	bool viewGrid{ true };
 
-	static void AppendModelList( const char *path );
+	static void AppendModelList( const char *path, void *userData );
 	static std::list<std::string> modelList;
 };

@@ -17,13 +17,13 @@
 
 #pragma once
 
-#include <PL/platform_graphics.h>
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 #include <PL/platform_package.h>
 #include <PL/platform_filesystem.h>
-#include <PL/platform_graphics_camera.h>
+
+#include <PL/pl_graphics.h>
 
 // remove this once everything is C++'fied
 #ifdef __cplusplus
