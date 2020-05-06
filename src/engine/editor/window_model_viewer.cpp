@@ -41,7 +41,7 @@ ModelViewer::ModelViewer() : BaseWindow() {
 	modelList.unique();
 
 	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
-	camera->SetViewport( { 0, 0 }, { 640, 480 } );
+	camera->SetViewport( 0, 0, 640, 480 );
 
 	GenerateFrameBuffer( 640, 480 );
 }
@@ -62,7 +62,7 @@ void ModelViewer::DrawViewport() {
 
 	unsigned int bufferWidth = 0, bufferHeight = 0;
 	plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
-	camera->SetViewport( { 0, 0 }, { bufferWidth, bufferHeight } );
+	camera->SetViewport( 0, 0, bufferWidth, bufferHeight );
 	camera->MakeActive();
 
 	PLVector3 angles(

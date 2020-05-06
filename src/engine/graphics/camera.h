@@ -34,7 +34,7 @@ public:
 
 	float GetFieldOfView() { return camera_->fov; }
 
-	void SetViewport( const std::array<int, 2> &xy, const std::array<int, 2> &wh );
+	void SetViewport( int x, int y, int width, int height );
 
 	int GetViewportWidth() { return camera_->viewport.w; }
 	int GetViewportHeight() { return camera_->viewport.h; }

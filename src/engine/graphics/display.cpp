@@ -180,7 +180,7 @@ void Display_UpdateViewport( int x, int y, int width, int height ) {
 	}
 
 	Camera *camera = Engine::Game()->GetCamera();
-	camera->SetViewport( { x, y }, { width, height } );
+	camera->SetViewport( x, y, width, height );
 }
 
 int Display_GetViewportWidth( const PLViewport *viewport ) {
