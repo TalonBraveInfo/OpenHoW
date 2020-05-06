@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 cmake_minimum_required(VERSION 3.5.1)
 
+project( OpenHoW )
+
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set all of our output directories.
