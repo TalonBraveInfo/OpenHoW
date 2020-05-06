@@ -20,15 +20,15 @@
 #include "sprite.h"
 
 class Particle {
- public:
+public:
 	Particle( PLVector3 position, PLVector3 velocity, float lifeSpan );
 
 	void Tick() {}
 
- protected:
- private:
+protected:
+private:
 	PLVector3 velocity;
- 	float     lifeSpan{ 0.0f };
+	float lifeSpan{ 0.0f };
 };
 
 class SpriteParticle : public Particle, Sprite {};
@@ -46,7 +46,7 @@ public:
 
 protected:
 private:
-	std::vector< Particle > particles;
+	std::vector<Particle> particles;
 
 	float gravity{ 0.0f };
 
@@ -90,20 +90,22 @@ private:
 };
 
 class ParticleEffect {
- public:
+public:
 	ParticleEffect() {}
 	~ParticleEffect() {}
 
 	void Draw();
 	void Tick();
 
- protected:
- private:
-	std::string name;
+	std::string GetPath() const { return path; }
 
- 	unsigned int version{ 0 };
+protected:
+private:
+	std::string path;
 
- 	PLVector3 position;
+	unsigned int version{ 0 };
 
-	std::map< std::string, ParticleEmitter > emitters;
+	PLVector3 position;
+
+	std::map<std::string, ParticleEmitter> emitters;
 };
