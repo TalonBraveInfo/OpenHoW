@@ -172,19 +172,7 @@ void GameManager::UnloadMap() {
 	delete map_;
 }
 
-void GameManager::CachePersistentData() {
-	// Cache all of the pig models we need
-	for ( const CharacterClass &playerClass : defaultClasses ) {
-		Engine::Resource()->LoadModel( playerClass.model, true, true );
-
-		// Now cache all the colour variations for this class
-		/*
-		for ( const PlayerTeam &playerTeam : defaultTeams ) {
-
-		}
-		 */
-	}
-}
+void GameManager::CachePersistentData() {}
 
 void GameManager::RegisterTeamManifest( const std::string &path ) {
 	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
@@ -225,13 +213,13 @@ void GameManager::RegisterClassManifest( const std::string &path ) {
 		config.EnterChildNode( i );
 
 		CharacterClass playerClass;
-		playerClass.key = config.GetStringProperty( "key" );
+		playerClass.identifer = config.GetStringProperty( "identifer" );
 		playerClass.cost = config.GetIntegerProperty( "cost" );
 		playerClass.health = config.GetIntegerProperty( "health" );
 		playerClass.model = config.GetStringProperty( "model" );
 		playerClass.label = lm_gtr( config.GetStringProperty( "label" ).c_str() );
 
-		defaultClasses.push_back( playerClass );
+		defaultClasses.emplace( std::pair< std::string, CharacterClass >( playerClass.identifer, playerClass ) );
 
 		config.LeaveChildNode();
 	}
@@ -331,6 +319,16 @@ MapManifest *GameManager::CreateManifest( const std::string &name ) {
 
 	Engine::Game()->RegisterMapManifest( path );
 	return Engine::Game()->GetMapManifest( name );
+}
+
+const CharacterClass *GameManager::GetDefaultClass( const std::string &classIdentifer ) const {
+	const auto &i = defaultClasses.find( classIdentifer );
+	if( i == defaultClasses.end() ) {
+		LogWarn( "Failed to find character class \"%s\"!\n", classIdentifer.c_str() );
+		return nullptr;
+	}
+
+	return &i->second;
 }
 
 void GameManager::CreateMapCommand( unsigned int argc, char **argv ) {

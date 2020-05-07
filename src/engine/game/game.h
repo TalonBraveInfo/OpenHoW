@@ -60,21 +60,24 @@ enum class CharacterStatus {
 
 struct CharacterClass : PropertyOwner {
 	CharacterClass() :
-		INIT_PROPERTY( key, 0 ),
+		INIT_PROPERTY( identifer, 0 ),
 		INIT_PROPERTY( label, 0 ),
 		INIT_PROPERTY( model, 0 ),
+		INIT_PROPERTY( nextClass, 0 ),
 		INIT_PROPERTY( cost, 0, 0 ),
 		INIT_PROPERTY( health, 0, 0 ) {}
 	CharacterClass( const CharacterClass &src ) :
-		COPY_PROPERTY( key, src ),
+		COPY_PROPERTY( identifer, src ),
 		COPY_PROPERTY( label, src ),
 		COPY_PROPERTY( model, src ),
+		COPY_PROPERTY( nextClass, src ),
 		COPY_PROPERTY( cost, src ),
 		COPY_PROPERTY( health, src ) {}
 
-	StringProperty key;
+	StringProperty identifer;
 	StringProperty label;
 	StringProperty model;
+	StringProperty nextClass;
 	NumericProperty<unsigned int> cost;
 	NumericProperty<unsigned int> health;
 
@@ -231,10 +234,10 @@ public:
 	//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
 	typedef std::vector<PlayerTeam> PlayerTeamVector;
-	typedef std::vector<CharacterClass> PlayerClassVector;
-
 	const PlayerTeamVector &GetDefaultTeams() const { return defaultTeams; }
-	const PlayerClassVector &GetDefaultClasses() const { return defaultClasses; }
+
+	typedef std::map<std::string, CharacterClass> CharacterClassMap;
+	const CharacterClass *GetDefaultClass( const std::string &classIdentifer ) const;
 
 	Map *GetCurrentMap() { return map_; }
 
@@ -289,7 +292,7 @@ private:
 	std::map<std::string, MapManifest> map_manifests_;
 
 	PlayerTeamVector defaultTeams;
-	PlayerClassVector defaultClasses;
+	CharacterClassMap defaultClasses;
 
 	PlayerPtrVector players_;
 
