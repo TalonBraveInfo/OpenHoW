@@ -1,75 +1,58 @@
 {
-	"defaultClass": "gr",
+	"defaultClass": "gr_me",
 	"classes": [
 		{
-			"key": "ac",
-			"model": "chars/pigs/pcace_hi"
+			"identifer": "ac_me",
+			"label": "$aceClass",
+			"model": "pigs/pcace_hi"
 		},
 		{
-			"key": "sb",
-			"model": "chars/pigs/sb_hi"
-		},
-		{
-			"key": "gr",
+			"identifer": "gr_me",
 			"label": "$gruntClass",
 			"health": "50",
 			"cost": "0",
-			"model": "chars/pigs/gr_hi",
+			"model": "pigs/pcgru_hi",
 			"items": [
 				{
-					"id": "0",
+					"identifer": "weapon_bayonet",
 					"quantity": "0"
 				}
 			]
 		},
 		{
-			"key": "hv",
+			"identifer": "hv_me",
 			"label": "$gunnerClass",
 			"health": "75",
 			"cost": "1",
-			"model": "chars/pigs/pchvy_hi",
+			"model": "pigs/pchvy_hi",
 			"nextStage": "$bombardierClass",
 			"items": [
 				{
-					"id": "0",
+					"identifer": "weapon_bayon",
 					"quantity": "0"
 				}
 			]
 		},
 		{
-			"key": "le",
-			"model": "chars/pigs/pcleg_hi"
+			"identifer": "le_me",
+			"model": "pigs/pcleg_hi"
 		},
 		{
-			"key": "me",
-			"model": "chars/pigs/pcmed_hi"
+			"identifer": "me_me",
+			"model": "pigs/pcmed_hi"
 		},
 		{
-			"key": "sb",
-			"model": "chars/pigs/pcsab_hi"
+			"identifer": "sb_me",
+			"model": "pigs/pcsab_hi"
 		},
 		{
-			"key": "sn",
-			"model": "chars/pigs/sn_hi"
+			"identifer": "sn_me",
+			"model": "pigs/sn_hi"
 		},
 		{
-			"key": "sp",
-			"model": "chars/pigs/sp_hi",
+			"identifer": "sp_me",
+			"model": "pigs/sp_hi",
 			"visibleOnMinimap": "0"
-		},
-		{
-			"key": "hv",
-			"label": "$bombardierClass",
-			"health": "90",
-			"cost": "",
-			"model": "chars/pigs/hv_hi",
-			"nextStage": "$pyrotechnicClass",
-			"items": [
-				{
-					"id": "0",
-					"quantity": "0"
-				}
-			]
 		}
 	]
 }
