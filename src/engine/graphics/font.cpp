@@ -24,63 +24,55 @@
 
 BitmapFont* g_fonts[NUM_FONTS];
 
-PLMesh* font_mesh = nullptr;
+static PLMesh* renderMesh = nullptr;
 
-void Font_DrawBitmapCharacter( BitmapFont* font, int x, int y, float scale, PLColour colour, uint8_t character ) {
+/**
+ * Draw a single bitmap character at the specified coordinates.
+ */
+void Font_DrawBitmapCharacter( BitmapFont* font, float x, float y, float scale, PLColour colour, uint8_t character ) {
+	u_assert( renderMesh != nullptr, "Attempted to draw font before font init!" );
+
 	if ( font == nullptr || scale == 0 ) {
 		return;
 	}
 
-	int dw = g_state.ui_camera->viewport.w;
-	int dh = g_state.ui_camera->viewport.h;
+	float dw = ( float ) g_state.ui_camera->viewport.w;
+	float dh = ( float ) g_state.ui_camera->viewport.h;
 	if ( x > dw || y > dh ) {
 		return;
 	}
 
-	// ensure that the character we're being passed fits within HoW's bitmap set
+	// ensure that the character we're being passed fits within the bitmap set
 	if ( character < 33 || character > 138 ) {
 		return;
 	}
 	character -= 33;
 
-	if ( font->texture == nullptr ) {
-		Error( "attempted to draw bitmap font with invalid texture, aborting!\n" );
-	}
-
-	if ( font_mesh == nullptr ) {
-		Error( "attempted to draw font before font init, aborting!\n" );
-	}
+	// Setup our render pass
 
 	plSetTexture( font->texture, 0 );
 
-	plClearMesh( font_mesh );
+	plClearMesh( renderMesh );
 
-	plSetMeshUniformColour( font_mesh, colour );
+	// Figure out the correct coords we need in the font sheet
+	BitmapChar *bitmapChar = &font->chars[ character ];
+	float tw = ( float ) bitmapChar->w / ( float ) font->width;
+	float th = ( float ) bitmapChar->h / ( float ) font->height;
+	float tx = ( float ) bitmapChar->x / ( float ) font->width;
+	float ty = ( float ) bitmapChar->y / ( float ) font->height;
 
-	BitmapChar* bitmap_char = &font->chars[ character ];
-	plSetMeshVertexPosition( font_mesh, 0, PLVector3( x, y, 0 ) );
-	plSetMeshVertexPosition( font_mesh, 1, PLVector3( x, y + ( bitmap_char->h * scale ), 0 ) );
-	plSetMeshVertexPosition( font_mesh, 2, PLVector3( x + ( bitmap_char->w * scale ), y, 0 ) );
-	plSetMeshVertexPosition( font_mesh,
-							 3,
-							 PLVector3( x + ( bitmap_char->w * scale ), y + ( bitmap_char->h * scale ), 0 ) );
-
-	float tw = ( float ) bitmap_char->w / font->width;
-	float th = ( float ) bitmap_char->h / font->height;
-	float tx = ( float ) bitmap_char->x / font->width;
-	float ty = ( float ) bitmap_char->y / font->height;
-	plSetMeshVertexST( font_mesh, 0, tx, ty );
-	plSetMeshVertexST( font_mesh, 1, tx, ty + th );
-	plSetMeshVertexST( font_mesh, 2, tx + tw, ty );
-	plSetMeshVertexST( font_mesh, 3, tx + tw, ty + th );
+	plAddMeshVertex( renderMesh, PLVector3( x, y, 0 ), PLVector3(), colour, PLVector2( tx, ty ) );
+	plAddMeshVertex( renderMesh, PLVector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx, ty + th ) );
+	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, PLVector2( tx + tw, ty ) );
+	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx + tw, ty + th ) );
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
-	plUploadMesh( font_mesh );
-	plDrawMesh( font_mesh );
+
+	plUploadMesh( renderMesh );
+	plDrawMesh( renderMesh );
 }
 
-void Font_DrawBitmapString( BitmapFont* font, int x, int y, unsigned int spacing, float scale, PLColour colour,
-							const char* msg ) {
+void Font_DrawBitmapString( BitmapFont* font, float x, float y, float spacing, float scale, PLColour colour, const char* msg ) {
 	if ( font == nullptr ) {
 		return;
 	}
@@ -98,14 +90,14 @@ void Font_DrawBitmapString( BitmapFont* font, int x, int y, unsigned int spacing
 		Error( "attempted to draw bitmap font with invalid texture, aborting!\n" );
 	}
 
-	int n_x = x;
-	int n_y = y;
+	float n_x = x;
+	float n_y = y;
 	for ( size_t i = 0; i < num_chars; ++i ) {
 		Font_DrawBitmapCharacter( font, n_x, n_y, scale, colour, ( uint8_t ) msg[ i ] );
 		if ( msg[ i ] >= 33 && msg[ i ] <= 122 ) {
-			n_x += font->chars[ msg[ i ] - 33 ].w + spacing;
+			n_x += ( float ) font->chars[ msg[ i ] - 33 ].w + spacing;
 		} else if ( msg[ i ] == '\n' ) {
-			n_y += font->chars[ 0 ].h;
+			n_y += ( float ) font->chars[ 0 ].h;
 			n_x = x;
 		} else {
 			n_x += 5;
@@ -113,7 +105,7 @@ void Font_DrawBitmapString( BitmapFont* font, int x, int y, unsigned int spacing
 	}
 }
 
-BitmapFont* LoadBitmapFont( const char* name, const char* tab_name ) {
+static BitmapFont* Font_LoadBitmap( const char* name, const char* tab_name ) {
 	char path[PL_SYSTEM_MAX_PATH];
 	snprintf( path, sizeof( path ) - 1, "frontend/text/%s.tab", tab_name );
 	PLFile* tab_file = plOpenFile( path, false );
@@ -192,17 +184,17 @@ BitmapFont* LoadBitmapFont( const char* name, const char* tab_name ) {
 //////////////////////////////////////////////////////////////////////////
 
 void FrontEnd_CacheFontData() {
-	font_mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
-	if ( font_mesh == nullptr ) {
+	renderMesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
+	if ( renderMesh == nullptr ) {
 		Error( "failed to create font mesh, %s, aborting!\n", plGetError() );
 	}
 
-	g_fonts[ FONT_BIG ] = LoadBitmapFont( "big", "big" );
-	g_fonts[ FONT_BIG_CHARS ] = LoadBitmapFont( "bigchars", "bigchars" );
-	g_fonts[ FONT_CHARS2 ] = LoadBitmapFont( "chars2l", "chars2" );
-	g_fonts[ FONT_CHARS3 ] = LoadBitmapFont( "chars3", "chars3" );
-	g_fonts[ FONT_GAME_CHARS ] = LoadBitmapFont( "gamechars", "gamechars" );
-	g_fonts[ FONT_SMALL ] = LoadBitmapFont( "small", "small" );
+	g_fonts[ FONT_BIG ] = Font_LoadBitmap( "big", "big" );
+	g_fonts[ FONT_BIG_CHARS ] = Font_LoadBitmap( "bigchars", "bigchars" );
+	g_fonts[ FONT_CHARS2 ] = Font_LoadBitmap( "chars2l", "chars2" );
+	g_fonts[ FONT_CHARS3 ] = Font_LoadBitmap( "chars3", "chars3" );
+	g_fonts[ FONT_GAME_CHARS ] = Font_LoadBitmap( "gamechars", "gamechars" );
+	g_fonts[ FONT_SMALL ] = Font_LoadBitmap( "small", "small" );
 }
 
 void ClearFontData() {

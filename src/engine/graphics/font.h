@@ -67,6 +67,5 @@ extern BitmapFont *g_fonts[NUM_FONTS];
 void FrontEnd_CacheFontData();
 void ClearFontData();
 
-void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character);
-void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
-                           const char *msg);
+void Font_DrawBitmapCharacter(BitmapFont *font, float x, float y, float scale, PLColour colour, uint8_t character);
+void Font_DrawBitmapString(BitmapFont *font, float x, float y, float spacing, float scale, PLColour colour, const char *msg);
