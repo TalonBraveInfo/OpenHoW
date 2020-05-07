@@ -26,12 +26,17 @@ public:
 	AWeapon();
 	~AWeapon() override;
 
+	void Tick() override;
+
 	virtual void Fire( const PLVector3 &pos, const PLVector3 &dir );
 	virtual void Deploy();
+	virtual void Holster();
+
+	bool IsDeployed() const { return isWeaponDeployed; }
 
 protected:
 
-	bool is_deployed_{ false };
+	bool isWeaponDeployed{ false };
 
 private:
 };

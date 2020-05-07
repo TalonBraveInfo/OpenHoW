@@ -22,10 +22,30 @@
 AWeapon::AWeapon() : SuperClass() {}
 AWeapon::~AWeapon() = default;
 
+void AWeapon::Tick() {
+	SuperClass::Tick();
+
+	Actor *parent = GetParent();
+	if ( parent != nullptr ) {
+		SetPosition( parent->GetPosition() );
+		SetAngles( parent->GetAngles() );
+	}
+}
+
 void AWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {}
 
 void AWeapon::Deploy() {
 	ShowModel( true );
 
-	is_deployed_ = true;
+	/* todo: make deploy sound */
+
+	isWeaponDeployed = true;
+}
+
+void AWeapon::Holster() {
+	ShowModel( false );
+
+	/* todo: make holster sound */
+
+	isWeaponDeployed = false;
 }
