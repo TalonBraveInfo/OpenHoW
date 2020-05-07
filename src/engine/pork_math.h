@@ -24,6 +24,16 @@
 
 #ifdef __cplusplus
 
+inline static void VectorClamp( PLVector3 *vector, float min, float max ) {
+	for (unsigned int i = 0; i < 3; ++i) {
+		if ((*vector)[i] >= max) {
+			(*vector)[i] = max;
+		} else if ((*vector)[i] <= min) {
+			(*vector)[i] = min;
+		}
+	}
+}
+
 inline static void VecAngleClamp(PLVector3* vector) {
   for (unsigned int i = 0; i < 3; ++i) {
     if ((*vector)[i] >= 360) {
