@@ -85,7 +85,7 @@ public:
 
 	virtual const char *GetClassName() { return "Actor"; }
 
-	virtual void Tick() {}  // simulation tick, called per-frame
+	virtual void Tick();
 	virtual void Draw() {}  // draw tick, called per-frame
 
 	virtual bool Damage( const Actor *attacker,
@@ -100,15 +100,16 @@ public:
 
 	virtual bool IsVisible() { return is_visible_; }
 
+	PLVector3 GetVelocity() { return velocity; }
+	virtual void SetVelocity( PLVector3 newVelocity );
 	PLVector3 GetPosition() { return position_; }
 	virtual void SetPosition( PLVector3 position );
-
 	PLVector3 GetAngles() { return angles_; }
 	virtual void SetAngles( PLVector3 angles );
 
 	virtual bool Possessed( const Player *player );
 	virtual void Dispossessed(const Player *player );
-	virtual void HandleInput();   // handle any player input, if applicable
+	virtual void HandleInput() {}   // handle any player input, if applicable
 
 	virtual ActorSpawn Serialize() { return ActorSpawn(); }
 	virtual void Deserialize( const ActorSpawn &spawn );
@@ -121,10 +122,10 @@ public:
 	virtual unsigned int GetMinimapIconStyle() const { return 0; }
 	virtual PLColour GetMinimapIconColour() const { return PLColour( 255, 255, 255 ); }
 
-	Actor *GetParent() { return parent_; }
+	Actor *GetParent() { return parentActor; }
 	void LinkChild( Actor *actor );
-	unsigned int GetNumOfChildren() { return children_.size(); }
-	std::vector<Actor *> GetChildren() { return children_; }
+	unsigned int GetNumOfChildren() { return childActors.size(); }
+	std::vector<Actor *> GetChildren() { return childActors; }
 
 	virtual void Touch( Actor *other );
 
@@ -137,13 +138,15 @@ public:
 	void DestroyPhysicsBody();
 
 protected:
+	bool IsGrounded();
+
 	bool is_visible_{ false };
 
-	NumericProperty<float> input_forward;  /* -1.0 = backwards, +1.0 = forwards */
-	NumericProperty<float> input_yaw;      /* -1.0 = left, +1.0 = right */
-	NumericProperty<float> input_pitch;    /* -1.0 = down, +1.0 = up */
+	NumericProperty<float> forwardVelocity;  /* -1.0 = backwards, +1.0 = forwards */
+	NumericProperty<float> inputYaw;      /* -1.0 = left, +1.0 = right */
+	NumericProperty<float> inputPitch;    /* -1.0 = down, +1.0 = up */
 
-	PLVector3 velocity_{ 0, 0, 0 }, old_velocity_{ 0, 0, 0 };
+	PLVector3 velocity{ 0, 0, 0 }, old_velocity_{ 0, 0, 0 };
 
 	Vector3Property position_;
 	PLVector3 old_position_{ 0, 0, 0 };
@@ -165,6 +168,6 @@ private:
 
 	bool is_activated_{ false };
 
-	Actor *parent_{ nullptr };
-	std::vector<Actor *> children_;
+	Actor *parentActor{ nullptr };
+	std::vector<Actor *> childActors;
 };

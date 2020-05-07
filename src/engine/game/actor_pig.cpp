@@ -22,6 +22,7 @@
 #include "player.h"
 #include "actor_manager.h"
 #include "actor_pig.h"
+#include "../input.h"
 
 REGISTER_ACTOR( ac_me, APig )    // Ace
 REGISTER_ACTOR( gr_me, APig )    // Grunt
@@ -36,33 +37,84 @@ REGISTER_ACTOR( sp_me, APig )    // Spy
 using namespace openhow;
 
 APig::APig() : SuperClass() {
-	speech_ = Engine::Audio()->CreateSource();
+	speechEmitter = Engine::Audio()->CreateSource();
 }
 
 APig::~APig() {
-	delete speech_;
+	delete speechEmitter;
 }
 
 void APig::HandleInput() {
-	SuperClass::HandleInput();
+	IGameMode *mode = Engine::Game()->GetMode();
+	if ( mode == nullptr ) {
+		return;
+	}
+
+	Player *player = mode->GetCurrentPlayer();
+	if ( player == nullptr ) {
+		return;
+	}
+
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_JUMP ) ) {
+		Jump();
+		return;
+	}
+
+	PLVector2 cl = Input_GetJoystickState( player->GetControllerSlot(), INPUT_JOYSTICK_LEFT );
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_MOVE_FORWARD ) ) {
+		forwardVelocity = 1.0f;
+	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_MOVE_BACKWARD ) ) {
+		forwardVelocity = -1.0f;
+	} else {
+		forwardVelocity = -cl.y / 327.0f;
+	}
+
+	PLVector2 cr = Input_GetJoystickState( player->GetControllerSlot(), INPUT_JOYSTICK_RIGHT );
+
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_TURN_LEFT ) ) {
+		inputYaw = -1.0f;
+	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_TURN_RIGHT ) ) {
+		inputYaw = 1.0f;
+	} else {
+		inputYaw = cr.x / 327.0f;
+	}
+
+	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_AIM_UP ) ) {
+		inputPitch = 1.0f;
+	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_AIM_DOWN ) ) {
+		inputPitch = -1.0f;
+	} else {
+		inputPitch = -cr.y / 327.0f;
+	}
 }
 
 void APig::Tick() {
 	SuperClass::Tick();
 
-	// temp
-	DropToFloor();
+	float speedModifier = 1.0f;
+	if ( !IsGrounded() ) {
+		if ( parachuteWeapon->IsDeployed() ) {
+			speedModifier = 10.0f;
+		}
+
+		velocity.y = -75.0f;
+	} else {
+		// If we've landed, put it away
+		if ( parachuteWeapon->IsDeployed() ) {
+			parachuteWeapon->Holster();
+		}
+	}
 
 	// a dead piggy
 	if ( lifeState == LifeState::DEAD ) {
 		return;
 	} else if ( lifeState == LifeState::DYING ) {
-		if ( speech_->IsPlaying() ) {
+		if ( speechEmitter->IsPlaying() ) {
 			return;
 		}
 
 		// TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
-		Engine::Audio()->PlayLocalSound( "audio/e_1.wav", GetPosition(), { 0, 0, 0 }, true );
+		Engine::Audio()->PlayLocalSound( "audio/e_1.wav", GetPosition(), PLVector3(), true );
 
 		SetModel( "scenery/boots" );
 		DropToFloor();
@@ -72,72 +124,50 @@ void APig::Tick() {
 		return;
 	}
 
-	PLVector3 forward = GetForward();
-	PLVector3 nPosition = position_, nAngles = angles_;
-	nPosition.x += input_forward * 100.0f * forward.x;
-	nPosition.y += input_forward * 100.0f * forward.y;
-	nPosition.z += input_forward * 100.0f * forward.z;
+	// Update position
 
-	aim_pitch_ += input_pitch * 2.0f;
-	nAngles.y += input_yaw * 2.0f;
+	PLVector3 nPosition = GetPosition();
+
+	PLVector3 forward = GetForward();
+	PLVector3 forwardDirection;
+	forwardDirection.x = forwardVelocity * 50.0f * forward.x;
+	forwardDirection.y = forwardVelocity * 50.0f * forward.y;
+	forwardDirection.z = forwardVelocity * 50.0f * forward.z;
+	nPosition += velocity + forwardDirection;
 
 	// Clamp height based on current tile pos
 	Map *map = Engine::Game()->GetCurrentMap();
-	float height = map->GetTerrain()->GetHeight( { nPosition.x, nPosition.z } );
-	if ( ( nPosition.y - 32.f ) < height ) {
-		nPosition.y = height + 32.f;
+	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
+	if ( ( nPosition.y - ( bounds_.GetValue().y / 2 ) ) < height ) {
+		nPosition.y = height + ( bounds_.GetValue().y / 2 );
 	}
-
-#define MAX_PITCH 89.f
-	if ( aim_pitch_ < -MAX_PITCH ) aim_pitch_ = -MAX_PITCH;
-	if ( aim_pitch_ > MAX_PITCH ) aim_pitch_ = MAX_PITCH;
-
-	VecAngleClamp( &nAngles );
 
 	SetPosition( nPosition );
-	SetAngles( nAngles );
+	speechEmitter->SetPosition( nPosition );
 
-	speech_->SetPosition( GetPosition() );
+	// Update angles
+
+	aimPitch += inputPitch * 2.0f;
+#define MAX_PITCH 89.f
+	if ( aimPitch < -MAX_PITCH ) aimPitch = -MAX_PITCH;
+	if ( aimPitch > MAX_PITCH ) aimPitch = MAX_PITCH;
+
+	PLVector3 nAngles = GetAngles();
+	nAngles.y += inputYaw * 2.0f;
+	VecAngleClamp( &nAngles );
+
+	SetAngles( nAngles );
 }
 
-void APig::SetClass( unsigned int pclass ) {
-	// TODO: setup default inventory
-
-	SetHealth( 100 );
-
-#if 0 // TODO: pass via json blob instead...
-	switch (pclass_) {
-	  default:
-
-
-	  case CLASS_ACE:
-		model_path = "pigs/ac_hi";
-		break;
-	  case CLASS_LEGEND:
-		model_path = "pigs/le_hi";
-		break;
-	  case CLASS_MEDIC:
-		model_path = "pigs/me_hi";
-		break;
-	  case CLASS_COMMANDO:
-		model_path = "pigs/sb_hi";
-		break;
-	  case CLASS_SPY:
-		model_path = "pigs/sp_hi";
-		break;
-	  case CLASS_SNIPER:
-		model_path = "pigs/sn_hi";
-		break;
-	  case CLASS_SABOTEUR:
-		model_path = "pigs/sa_hi";
-		break;
-	  case CLASS_HEAVY:
-		model_path = "pigs/hv_hi";
-		break;
-	  case CLASS_GRUNT:
-
+void APig::SetClass( const std::string &classIdentifer ) {
+	const CharacterClass *characterClass = Engine::Game()->GetDefaultClass( classIdentifer );
+	if ( characterClass == nullptr ) {
+		LogWarn( "Failed to fetch valid character class for pig!\n" );
+		return;
 	}
-#endif
+
+	SetHealth( characterClass->health );
+	SetModel( characterClass->model );
 }
 
 void APig::SetPersonality( unsigned int personality ) {
@@ -181,20 +211,19 @@ void APig::Deserialize( const ActorSpawn &spawn ) {
 	Map *map = Engine::Game()->GetCurrentMap();
 	SetPosition( { position_.GetValue().x, map->GetTerrain()->GetMaxHeight(), position_.GetValue().z } );
 
-	SetHealth( 100 );
-	SetModel( "pigs/ac_hi" ); // temp
+	SetClass( spawn.class_name );
 	SetTeam( spawn.team );
-	//SetClass(pig_class);
 
 	// Create and equip our parachute, and then
 	// link it to ensure it gets destroyed when we do
-	parachute_ = dynamic_cast<AParachuteWeapon *>(ActorManager::GetInstance()->CreateActor( "weapon_parachute" ));
-	if ( parachute_ == nullptr ) {
+	parachuteWeapon = dynamic_cast<AParachuteWeapon *>(ActorManager::GetInstance()->CreateActor( "weapon_parachute" ));
+	if ( parachuteWeapon == nullptr ) {
 		Error( "Failed to create \"weapon_parachute\" actor, aborting!\n" );
 	}
 
-	LinkChild( parachute_ );
-	parachute_->Deploy();
+	LinkChild( parachuteWeapon );
+	parachuteWeapon->SetPosition( GetPosition() );
+	parachuteWeapon->Deploy();
 }
 
 bool APig::Possessed( const Player *player ) {
@@ -277,7 +306,36 @@ void APig::PlayVoiceSample( VoiceCategory category ) {
 	  return;
 	}
 
-	speech_->SetSample(sample);
-	speech_->StartPlaying();
+	speechEmitter->SetSample(sample);
+	speechEmitter->StartPlaying();
 #endif
+}
+
+/**
+ * Lift that pig into the air like you just don't care!
+ */
+void APig::Jump() {
+	LogDebug( "Jumping...\n" );
+
+	// Make sure we can't jump again if we're already off the ground!
+	if ( !IsGrounded() ) {
+		return;
+	}
+
+	Engine::Audio()->PlayLocalSound( "audio/p_snort1.wav", GetPosition(), GetVelocity(), true );
+
+	velocity.y += 8.0f;
+}
+
+/**
+ * Landed after a jump.
+ */
+void APig::Land() {
+	LogDebug( "Landing...\n" );
+
+	PLVector3 curVelocity = GetVelocity();
+	if ( curVelocity.Length() > 120.0f ) {
+		Engine::Audio()->PlayLocalSound( "audio/p_land1.wav", GetPosition(), GetVelocity(), true );
+		Damage( nullptr, 20, PLVector3(), PLVector3() );
+	}
 }

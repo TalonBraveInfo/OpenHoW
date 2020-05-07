@@ -33,7 +33,7 @@ public:
 	void HandleInput() override;
 	void Tick() override;
 
-	void SetClass( unsigned int pclass );
+	void SetClass( const std::string &classIdentier );
 	unsigned int GetClass() { return class_; }
 
 	void SetPersonality( unsigned int personality );
@@ -71,14 +71,17 @@ public:
 	void Deserialize( const ActorSpawn &spawn ) override;
 
 private:
+	void Jump();
+	void Land();
+
 	AWeapon *weapon_{ nullptr };
-	AParachuteWeapon *parachute_{ nullptr };
+	AParachuteWeapon *parachuteWeapon{ nullptr };
 
 	Player *playerOwnerPtr{ nullptr };
 
-	AudioSource *speech_{ nullptr };
+	AudioSource *speechEmitter{ nullptr };
 
-	float aim_pitch_{ 0 };
+	float aimPitch{ 0 };
 
 	unsigned int team_{ 0 };
 	unsigned int personality_{ 0 };
