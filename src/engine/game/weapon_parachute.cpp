@@ -33,9 +33,11 @@ AParachuteWeapon::~AParachuteWeapon() = default;
 void AParachuteWeapon::Tick() {
 	SuperClass::Tick();
 
-	if ( !is_deployed_ ) {
+	if ( !isWeaponDeployed ) {
 		return;
 	}
+
+	/* todo: make parachute noises... */
 }
 
 void AParachuteWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
