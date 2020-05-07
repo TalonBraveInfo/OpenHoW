@@ -26,11 +26,30 @@ BitmapFont* g_fonts[NUM_FONTS];
 
 static PLMesh* renderMesh = nullptr;
 
+static void Font_AddBitmapCharacterToPass( const BitmapFont *font, float x, float y, float scale, PLColour colour, uint8_t character ) {
+	// ensure that the character we're being passed fits within the bitmap set
+	if ( character < 33 || character > 138 ) {
+		return;
+	}
+
+	// Figure out the correct coords we need in the font sheet
+	const BitmapChar *bitmapChar = &font->chars[ character - 33 ];
+	float tw = ( float ) bitmapChar->w / ( float ) font->width;
+	float th = ( float ) bitmapChar->h / ( float ) font->height;
+	float tx = ( float ) bitmapChar->x / ( float ) font->width;
+	float ty = ( float ) bitmapChar->y / ( float ) font->height;
+
+	plAddMeshVertex( renderMesh, PLVector3( x, y, 0 ), PLVector3(), colour, PLVector2( tx, ty ) );
+	plAddMeshVertex( renderMesh, PLVector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx, ty + th ) );
+	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, PLVector2( tx + tw, ty ) );
+	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx + tw, ty + th ) );
+}
+
 /**
  * Draw a single bitmap character at the specified coordinates.
  */
 void Font_DrawBitmapCharacter( BitmapFont* font, float x, float y, float scale, PLColour colour, uint8_t character ) {
-	u_assert( renderMesh != nullptr, "Attempted to draw font before font init!" );
+	u_assert( renderMesh != nullptr, "Attempted to draw font before font init!\n" );
 
 	if ( font == nullptr || scale == 0 ) {
 		return;
@@ -42,29 +61,13 @@ void Font_DrawBitmapCharacter( BitmapFont* font, float x, float y, float scale, 
 		return;
 	}
 
-	// ensure that the character we're being passed fits within the bitmap set
-	if ( character < 33 || character > 138 ) {
-		return;
-	}
-	character -= 33;
-
 	// Setup our render pass
 
 	plSetTexture( font->texture, 0 );
 
 	plClearMesh( renderMesh );
 
-	// Figure out the correct coords we need in the font sheet
-	BitmapChar *bitmapChar = &font->chars[ character ];
-	float tw = ( float ) bitmapChar->w / ( float ) font->width;
-	float th = ( float ) bitmapChar->h / ( float ) font->height;
-	float tx = ( float ) bitmapChar->x / ( float ) font->width;
-	float ty = ( float ) bitmapChar->y / ( float ) font->height;
-
-	plAddMeshVertex( renderMesh, PLVector3( x, y, 0 ), PLVector3(), colour, PLVector2( tx, ty ) );
-	plAddMeshVertex( renderMesh, PLVector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx, ty + th ) );
-	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, PLVector2( tx + tw, ty ) );
-	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx + tw, ty + th ) );
+	Font_AddBitmapCharacterToPass( font, x, y, scale, colour, character );
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
 
@@ -72,28 +75,27 @@ void Font_DrawBitmapCharacter( BitmapFont* font, float x, float y, float scale, 
 	plDrawMesh( renderMesh );
 }
 
-void Font_DrawBitmapString( BitmapFont* font, float x, float y, float spacing, float scale, PLColour colour, const char* msg ) {
-	if ( font == nullptr ) {
+void Font_DrawBitmapString( BitmapFont *font, float x, float y, float spacing, float scale, PLColour colour, const char* msg ) {
+	u_assert( font != nullptr, "Null font pointer passed!\n" );
+
+	if ( scale == 0.0f ) {
 		return;
 	}
 
-	if ( scale == 0 ) {
+	size_t numChars = strlen( msg );
+	if ( numChars == 0 ) {
 		return;
 	}
 
-	auto num_chars = strlen( msg );
-	if ( num_chars == 0 ) {
-		return;
-	}
+	plClearMesh( renderMesh );
 
-	if ( font->texture == nullptr ) {
-		Error( "attempted to draw bitmap font with invalid texture, aborting!\n" );
-	}
+	plSetTexture( font->texture, 0 );
 
 	float n_x = x;
 	float n_y = y;
-	for ( size_t i = 0; i < num_chars; ++i ) {
-		Font_DrawBitmapCharacter( font, n_x, n_y, scale, colour, ( uint8_t ) msg[ i ] );
+	for ( size_t i = 0; i < numChars; ++i ) {
+		Font_AddBitmapCharacterToPass( font, n_x, n_y, scale, colour, ( uint8_t ) msg[ i ] );
+
 		if ( msg[ i ] >= 33 && msg[ i ] <= 122 ) {
 			n_x += ( float ) font->chars[ msg[ i ] - 33 ].w + spacing;
 		} else if ( msg[ i ] == '\n' ) {
@@ -103,6 +105,10 @@ void Font_DrawBitmapString( BitmapFont* font, float x, float y, float spacing, f
 			n_x += 5;
 		}
 	}
+
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plUploadMesh( renderMesh );
+	plDrawMesh( renderMesh );
 }
 
 static BitmapFont* Font_LoadBitmap( const char* name, const char* tab_name ) {
@@ -184,7 +190,7 @@ static BitmapFont* Font_LoadBitmap( const char* name, const char* tab_name ) {
 //////////////////////////////////////////////////////////////////////////
 
 void FrontEnd_CacheFontData() {
-	renderMesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
+	renderMesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 0, 256 );
 	if ( renderMesh == nullptr ) {
 		Error( "failed to create font mesh, %s, aborting!\n", plGetError() );
 	}
