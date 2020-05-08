@@ -91,30 +91,36 @@ FacHandle *Fac_LoadFile( const char *path ) {
 		return NULL;
 	}
 
-	LogDebug( "Opened Fac \"%s\"...\n", plGetFilePath( filePtr ) );
+	//LogDebug( "Opened Fac \"%s\"...\n", plGetFilePath( filePtr ) );
 
 	/* 16 bytes of unknown data, just skip it for now */
-	plFileSeek( filePtr, 16, PL_SEEK_CUR );
+	if ( !plFileSeek( filePtr, 16, PL_SEEK_CUR ) ) {
+		plCloseFile( filePtr );
+
+		LogWarn( "Failed to find data in Fac \"%s\"!\nPL: %s\n", path, plGetError() );
+		return NULL;
+	}
 
 	bool status;
 	uint32_t numTriangles = plReadInt32( filePtr, false, &status );
 	FacTriangle *triangles = Fac_LoadTriangles( filePtr, numTriangles );
-	if ( triangles == NULL ) {
-		plCloseFile( filePtr );
-
+	if ( triangles == NULL && numTriangles > 0 ) {
 		LogWarn( "Failed to read in triangles, \"%s\"!\nPL: %s\n", path, plGetError() );
+		plCloseFile( filePtr );
 		return NULL;
 	}
 
 	uint32_t numQuads = plReadInt32( filePtr, false, &status );
 	FacQuad *quads = Fac_LoadQuads( filePtr, numQuads );
 	if ( quads == NULL && numQuads > 0 ) {
-		plCloseFile( filePtr );
-
-		free( triangles );
-
 		LogWarn( "Failed to read in quads, \"%s\"!\nPL: %s\n", path, plGetError() );
+		free( triangles );
+		plCloseFile( filePtr );
 		return NULL;
+	}
+
+	if ( numQuads == 0 && numTriangles == 0 ) {
+		LogWarn( "Fac \"%s\" contains no quads or triangles!\n", path );
 	}
 
 	// check for textures table
@@ -138,7 +144,6 @@ FacHandle *Fac_LoadFile( const char *path ) {
 		for ( unsigned int j = 0, u = 0; j < 3; j++, u += 2 ) {
 			handle->triangles[ i ].vertex_indices[ j ] = triangles[ i ].vertex_indices[ j ];
 			handle->triangles[ i ].normal_indices[ j ] = triangles[ i ].normal_indices[ j ];
-			// todo
 			handle->triangles[ i ].uv_coords[ u ] = triangles[ i ].uv_coords[ u ];
 			handle->triangles[ i ].uv_coords[ u + 1 ] = triangles[ i ].uv_coords[ u + 1 ];
 		}

@@ -27,11 +27,13 @@ static char g_output_path[PL_SYSTEM_MAX_PATH];
 
 //#define PARANOID_DATA
 //#define EXPORT_NORMALS
+//#define CONVERT_TIMS
 
 /************************************************************/
 /* Data Conversion */
 
 static void ConvertImageToPng( const char *path ) {
+#if defined( CONVERT_TIMS )
 	LogInfo( "Converting %s...\n", path );
 
 	// figure out if the file already exists before
@@ -72,6 +74,7 @@ static void ConvertImageToPng( const char *path ) {
 	}
 
 	plFreeImage( &image );
+#endif
 }
 
 typedef struct ModelConversionData {
@@ -123,11 +126,7 @@ static void ConvertModelData( void ) {
 		unsigned int num_models = 0;
 		for ( unsigned int j = 0; j < package->table_size; ++j ) {
 			char out[PL_SYSTEM_MAX_PATH];
-			snprintf( out,
-					  sizeof( out ),
-					  "%s%s",
-					  pc_conversion_data[ i ].out,
-					  pl_strtolower( package->table[ j ].fileName ) );
+			snprintf( out, sizeof( out ), "%s/%s%s", g_output_path, pc_conversion_data[ i ].out, pl_strtolower( package->table[ j ].fileName ) );
 
 			char dir[PL_SYSTEM_MAX_PATH];
 			const char *filename = plGetFileName( out );
@@ -170,11 +169,8 @@ static void ConvertModelData( void ) {
 			// write all the textures out
 			for ( unsigned int j = 0; j < package->table_size; ++j ) {
 				char out[PL_SYSTEM_MAX_PATH];
-				snprintf( out,
-						  sizeof( out ),
-						  "%s%s",
-						  pc_conversion_data[ i ].out,
-						  pl_strtolower( package->table[ j ].fileName ) );
+				snprintf( out, sizeof( out ), "%s/%s%s", g_output_path, pc_conversion_data[ i ].out, pl_strtolower( package->table[ j ].fileName ) );
+
 				char dir[PL_SYSTEM_MAX_PATH];
 				const char *filename = plGetFileName( out );
 				strncpy( dir, out, strlen( out ) - strlen( filename ) );
@@ -230,6 +226,11 @@ static void ConvertModelData( void ) {
 			unsigned int table_size = 0;
 
 			FacHandle *fac = Fac_LoadFile( fac_path );
+			if ( fac == NULL ) {
+				LogWarn( "Failed to load FAC \"%s\"!\n", fac_path );
+				continue;
+			}
+
 			for ( unsigned int k = 0; k < fac->num_triangles; ++k ) {
 				uint32_t texture_index = fac->triangles[ k ].texture_index;
 				if ( texture_index >= package->table_size ) {
@@ -238,8 +239,7 @@ static void ConvertModelData( void ) {
 
 				// attempt to add it to the table
 				char texture_name[16];
-				strncpy( texture_name, package->table[ texture_index ].fileName,
-						 strlen( package->table[ texture_index ].fileName ) - 4 );
+				strncpy( texture_name, package->table[ texture_index ].fileName, strlen( package->table[ texture_index ].fileName ) - 4 );
 				texture_name[ strlen( package->table[ texture_index ].fileName ) - 4 ] = '\0';
 				pl_strtolower( texture_name );
 				unsigned int l;
@@ -254,7 +254,7 @@ static void ConvertModelData( void ) {
 				}
 
 				if ( table_size > package->table_size ) {
-					Error( "Invalid" );
+					Error( "Invalid table size, %d > %d!\n", table_size, package->table_size );
 				}
 
 				// replace the original id so it matches with the index in our table
@@ -304,6 +304,7 @@ static void ExtractPtgPackage( const char *input_path, const char *output_path )
 		if ( !plWriteFile( out_path, tim, tim_size ) ) {
 			LogWarn( "Failed to write file, \"%s\" (%s)!\n", out_path, plGetError() );
 		}
+
 		ConvertImageToPng( out_path );
 	}
 
