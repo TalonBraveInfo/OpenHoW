@@ -31,8 +31,9 @@ static FILE *ptg_fp = NULL;
 
 static unsigned int num_textures = 0;
 static char dir_textures[256][PL_SYSTEM_MAX_PATH];
-static void PTG_CountDirectoryTextures(const char *path) {
+static void PTG_CountDirectoryTextures(const char *path, void *userData) {
     /* ensure consistency */
+    u_unused( userData );
 
     size_t size = plGetLocalFileSize( path );
     if(size == 0) {
@@ -203,7 +204,7 @@ int main(int argc, char **argv) {
             Error("Failed to open \"%s\" for writing, aborting!\n", out_path);
         }
 
-        plScanDirectory(in_path, "tim", PTG_CountDirectoryTextures, false);
+        plScanDirectory(in_path, "tim", PTG_CountDirectoryTextures, false, NULL );
 
         LogInfo("Found %d textures for writing into \"%s\"...\n", num_textures, out_path);
 
