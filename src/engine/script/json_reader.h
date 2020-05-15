@@ -34,9 +34,8 @@ public:
 	bool GetBooleanProperty( const std::string &property, bool def = false, bool silent = true );
 	float GetFloatProperty( const std::string &property, float def = 0.0f, bool silent = true );
 	PLColour GetColourProperty( const std::string &property, PLColour def = PLColour( 0, 0, 0 ), bool silent = true );
-	PLVector3 GetVector3Property( const std::string &property,
-								  PLVector3 def = PLVector3( 0, 0, 0 ),
-								  bool silent = true );
+	PLVector3 GetVector3Property( const std::string &property, PLVector3 def = PLVector3( 0, 0, 0 ), bool silent = true );
+	PLVector4 GetVector4Property( const std::string &property, PLVector4 def = PLVector4( 0, 0, 0, 0 ), bool silent = true );
 
 	std::list<std::string> GetObjectKeys();
 

@@ -174,6 +174,31 @@ PLColour JsonReader::GetColourProperty( const std::string &property, PLColour de
 	return { r, g, b, a };
 }
 
+PLVector4 JsonReader::GetVector4Property( const std::string &property, PLVector4 def, bool silent ) {
+	auto *context = static_cast<duk_context *>(ctx_);
+
+	const char *p = property.c_str();
+	if ( !duk_get_prop_string( context, -1, p ) ) {
+		duk_pop( context );
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return def;
+	}
+
+	std::string str = duk_safe_to_string( context, -1 );
+	duk_pop( context );
+
+	PLVector4 out;
+	std::stringstream stream( str );
+	stream >> out.x >> expect<' '> >> out.y >> expect<' '> >> out.z >> expect< ' ' > >> out.w;
+	if ( stream.rdstate() & std::stringstream::failbit ) {
+		throw std::runtime_error( "Failed to parse entirety of vector from JSON property, \"" + property + "\"!\n" );
+	}
+
+	return out;
+}
+
 PLVector3 JsonReader::GetVector3Property( const std::string &property, PLVector3 def, bool silent ) {
 	auto *context = static_cast<duk_context *>(ctx_);
 
