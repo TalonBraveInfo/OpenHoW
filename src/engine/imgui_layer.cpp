@@ -29,6 +29,7 @@
 #include "editor/window_terrain_import.h"
 #include "editor/window_actor_tree.h"
 #include "editor/window_new_game.h"
+#include "editor/window_particle_editor.h"
 
 #include "language.h"
 
@@ -517,7 +518,9 @@ void UI_DisplayDebugMenu( void ) {
 
 		// todo: eventually this will be moved into a dedicated toolbar
 		if ( ImGui::BeginMenu( "Tools" ) ) {
-			if ( ImGui::MenuItem( "Particle Editor..." ) ) {}
+			if ( ImGui::MenuItem( "Particle Editor..." ) ) {
+				windows.push_back( new ParticleEditor() );
+			}
 			if ( Engine::Game()->IsModeActive() ) {
 				if ( ImGui::MenuItem( "Import Heightmap..." ) ) {
 					windows.push_back( new WindowTerrainImport() );
