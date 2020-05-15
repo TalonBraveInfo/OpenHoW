@@ -39,10 +39,13 @@ static void Font_AddBitmapCharacterToPass( const BitmapFont *font, float x, floa
 	float tx = ( float ) bitmapChar->x / ( float ) font->width;
 	float ty = ( float ) bitmapChar->y / ( float ) font->height;
 
-	plAddMeshVertex( renderMesh, PLVector3( x, y, 0 ), PLVector3(), colour, PLVector2( tx, ty ) );
-	plAddMeshVertex( renderMesh, PLVector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx, ty + th ) );
-	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, PLVector2( tx + tw, ty ) );
-	plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx + tw, ty + th ) );
+	unsigned int vX = plAddMeshVertex( renderMesh, PLVector3( x, y, 0 ), PLVector3(), colour, PLVector2( tx, ty ) );
+	unsigned int vY = plAddMeshVertex( renderMesh, PLVector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx, ty + th ) );
+	unsigned int vZ = plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, PLVector2( tx + tw, ty ) );
+	unsigned int vW = plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx + tw, ty + th ) );
+
+	plAddMeshTriangle( renderMesh, vX, vY, vZ );
+	plAddMeshTriangle( renderMesh, vZ, vY, vW );
 }
 
 /**
@@ -190,7 +193,7 @@ static BitmapFont* Font_LoadBitmap( const char* name, const char* tab_name ) {
 //////////////////////////////////////////////////////////////////////////
 
 void FrontEnd_CacheFontData() {
-	renderMesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 0, 256 );
+	renderMesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 512, 256 );
 	if ( renderMesh == nullptr ) {
 		Error( "failed to create font mesh, %s, aborting!\n", plGetError() );
 	}
