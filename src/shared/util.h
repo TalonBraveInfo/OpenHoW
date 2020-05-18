@@ -75,6 +75,8 @@ const char* u_find2(const char* path, const char** preference, bool abort_on_fai
 
 FILE* u_open(const char* path, const char* mode, bool abort_on_fail);
 
+char *u_new_filename( char *dst, const char *src, const char *ext );
+
 PL_EXTERN_C_END
 
 #ifdef _DEBUG

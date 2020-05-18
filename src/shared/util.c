@@ -109,3 +109,10 @@ const char* u_find2( const char* path, const char** preference, bool abort_on_fa
 	//LogDebug( "Found \"%s\"\n", out );
 	return out;
 }
+
+char *u_new_filename( char *dst, const char *src, const char *ext ) {
+	strncpy( dst, src, strlen( src ) - 3 );
+	dst[ strlen( src ) - 3 ] = '\0';
+	strcat( dst, ext );
+	return dst;
+}
