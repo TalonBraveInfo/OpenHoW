@@ -70,7 +70,7 @@ file(
         ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 
-add_executable( engine ${OPENHOW_SOURCE_FILES})
+add_executable( engine ${OPENHOW_SOURCE_FILES} )
 
 target_link_libraries( engine platform newton)
 #target_include_directories(OpenHoW PRIVATE 

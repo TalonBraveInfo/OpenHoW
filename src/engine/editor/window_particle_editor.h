@@ -40,7 +40,7 @@ private:
 
 	Camera *camera{ nullptr };
 
-	PLVector3 modelRotation;
+	PLVector3 modelRotation{ 0, 0, 0 };
 
 	float oldMousePos[2]{ 0, 0 };
 

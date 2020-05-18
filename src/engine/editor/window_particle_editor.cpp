@@ -18,6 +18,8 @@
 #include "../engine.h"
 #include "../graphics/shaders.h"
 #include "../graphics/display.h"
+#include "../graphics/particle_effect.h"
+#include "../graphics/particle_emitter.h"
 #include "../graphics/particles.h"
 #include "../language.h"
 #include "../imgui_layer.h"
@@ -31,9 +33,9 @@ std::list< std::string > ParticleEditor::particleList;
 
 ParticleEditor::ParticleEditor() : BaseWindow() {
 	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
-	camera->SetViewport( 0, 0, 640, 480 );
+	camera->SetViewport( 0, 0, VIEWER_WIDTH, VIEWER_HEIGHT );
 
-	GenerateFrameBuffer( 640, 480 );
+	GenerateFrameBuffer( VIEWER_WIDTH, VIEWER_HEIGHT );
 }
 
 ParticleEditor::~ParticleEditor() {
@@ -44,7 +46,42 @@ ParticleEditor::~ParticleEditor() {
 }
 
 void ParticleEditor::DrawViewport() {
+	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
 
+	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
+
+	plSetClearColour( { 0, 0, 0, 0 } );
+	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+
+	unsigned int width, height;
+	plGetFrameBufferResolution( drawBuffer, &width, &height );
+
+	camera->SetViewport( 0, 0, width, height );
+	camera->MakeActive();
+
+	PLVector3 angles(
+		plDegreesToRadians( modelRotation.x ),
+		plDegreesToRadians( modelRotation.y ),
+		plDegreesToRadians( modelRotation.z ) );
+
+	if ( viewGrid ) {
+		ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
+		shaderProgram->Enable();
+
+		PLMatrix4 matrix;
+		matrix.Identity();
+		matrix.Rotate( plDegreesToRadians( modelRotation.z + 90.0f ), { 1, 0, 0 } );
+		matrix.Rotate( angles.y, { 0, 1, 0 } );
+		matrix.Rotate( angles.x, { 0, 0, 1 } );
+
+		plDrawGrid( &matrix, -512, -512, 1024, 1024, 32 );
+	}
+
+	if ( particleEffect == nullptr ) {
+		// Fallback to default
+		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+		return;
+	}
 }
 
 void ParticleEditor::Display() {
