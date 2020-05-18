@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include "TempGame.h"
 #include "actor.h"
 #include "mode_interface.h"
 

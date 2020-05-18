@@ -29,26 +29,8 @@ using namespace openhow;
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = ( unsigned int ) -1;
 
-/* for now we're going to hard-code most of this but eventually
- * we will start freeing most of this up... either through JS
- * or some other way, so y'know. Wheeee.
- */
-
-static const char *papers_teams_paths[MAX_TEAMS] = {
-	"frontend/papers/british.bmp",
-	"frontend/papers/american.bmp",
-	"frontend/papers/french.bmp",
-	"frontend/papers/german.bmp",
-	"frontend/papers/russian.bmp",
-	"frontend/papers/japan.bmp",
-	"frontend/papers/teamlard.bmp"
-};
-
 /* texture assets, these are loaded and free'd at runtime */
 static PLTexture *fe_background = nullptr;
-static PLTexture *fe_papers_teams[MAX_TEAMS] = {
-	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
-};
 
 enum {
 	FE_TEXTURE_ANG,
@@ -105,10 +87,6 @@ static void FrontEnd_CacheGameData() {
 
 static void FrontEnd_CacheMenuData() {
 	fe_background = Engine::Resource()->LoadTexture( "frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR, true );
-	for ( unsigned int i = 0; i < MAX_TEAMS; ++i ) {
-		fe_papers_teams[ i ] =
-			Engine::Resource()->LoadTexture( papers_teams_paths[ i ], PL_TEXTURE_FILTER_LINEAR, true );
-	}
 }
 
 /************************************************************/
