@@ -19,7 +19,12 @@
 
 PL_EXTERN_C
 
-typedef struct VtxHandle VtxHandle;
-VtxHandle *No2_LoadFile(const char *path, VtxHandle *vertex_data);
+typedef struct No2Handle {
+	PLVector3 *normals;
+	unsigned int numNormals;
+} No2Handle;
+
+No2Handle *No2_LoadFile( const char *path );
+void No2_DestroyHandle( No2Handle *handle );
 
 PL_EXTERN_C_END

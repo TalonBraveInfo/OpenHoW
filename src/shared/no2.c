@@ -19,7 +19,6 @@
 #include <PL/platform_mesh.h>
 
 #include "util.h"
-#include "vtx.h"
 #include "no2.h"
 
 /************************************************************/
@@ -31,37 +30,45 @@
  * @param vertex_data Pointer to an existing VtxHandle which will be filled with normal data
  * @return Returns vertex_data on success, null on fail
  */
-VtxHandle *No2_LoadFile(const char *path, VtxHandle *vertex_data) {
-  PLFile *fp = plOpenFile(path, false);
-  if (fp == NULL) {
-    LogWarn("Failed to load no2 \"%s\"!\n", path);
-    return NULL;
-  }
+No2Handle *No2_LoadFile( const char *path ) {
+	PLFile *fp = plOpenFile( path, false );
+	if ( fp == NULL) {
+		LogWarn( "Failed to load no2 \"%s\"!\n", path );
+		return NULL;
+	}
 
-  typedef struct __attribute__((packed)) No2Coord {
-    float v[3];
-    float bone_index;
-  } No2Coord;
-  unsigned int num_normals = (unsigned int) (plGetFileSize(fp) / sizeof(No2Coord));
-  if (num_normals != vertex_data->num_vertices || num_normals == 0) {
-    LogWarn("Invalid number of normals in \"%s\" (%d/%d)!\n", path, num_normals, vertex_data->num_vertices);
-    plCloseFile(fp);
-    return NULL;
-  }
+	typedef struct __attribute__((packed)) No2Coord {
+		float v[3];
+		float bone_index;
+	} No2Coord;
 
-  No2Coord normals[num_normals];
-  unsigned int rnum_normals = plReadFile(fp, normals, sizeof(No2Coord), num_normals);
-  plCloseFile(fp);
-  if (rnum_normals != num_normals) {
-    LogWarn("Failed to read in all normals from \"%s\"!\n", path);
-    return NULL;
-  }
+	unsigned int numNormals = ( unsigned int ) ( plGetFileSize( fp ) / sizeof( No2Coord ));
+	No2Coord *normals = malloc( sizeof( No2Coord ) * numNormals );
+	unsigned int numReadNormals = plReadFile( fp, normals, sizeof( No2Coord ), numNormals );
 
-  for (unsigned int i = 0; i < vertex_data->num_vertices; ++i) {
-    vertex_data->vertices[i].normal.x = normals[i].v[0];
-    vertex_data->vertices[i].normal.y = normals[i].v[1];
-    vertex_data->vertices[i].normal.z = normals[i].v[2];
-  }
+	plCloseFile( fp );
 
-  return vertex_data;
+	if ( numReadNormals != numNormals ) {
+		free( normals );
+		LogWarn( "Failed to read in all normals from \"%s\"!\n", path );
+		return NULL;
+	}
+
+	No2Handle *handle = malloc( sizeof( No2Handle ) );
+	handle->numNormals = numNormals;
+	handle->normals = malloc( sizeof( PLVector3 ) * handle->numNormals );
+	for ( unsigned int i = 0; i < numNormals; ++i ) {
+		handle->normals[ i ].x = normals->v[ 0 ];
+		handle->normals[ i ].y = normals->v[ 1 ];
+		handle->normals[ i ].z = normals->v[ 2 ];
+	}
+
+	free( normals );
+
+	return handle;
+}
+
+void No2_DestroyHandle( No2Handle *handle ) {
+	free( handle->normals );
+	free( handle );
 }
