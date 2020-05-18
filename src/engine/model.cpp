@@ -135,9 +135,7 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 
 	/* now we load in all the faces */
 	char fac_path[PL_SYSTEM_MAX_PATH];
-	strncpy( fac_path, path, strlen( path ) - 3 );
-	fac_path[ strlen( path ) - 3 ] = '\0';
-	strcat( fac_path, "fac" );
+	u_new_filename( fac_path, path, "fac" );
 	FacHandle *fac = Fac_LoadFile( fac_path );
 	if ( fac == nullptr ) {
 		Vtx_DestroyHandle( vtx );
@@ -201,7 +199,12 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 	if( strstr( fac_path, "pigs" ) != nullptr ) {
 		texturePath = "chars/pigs/british/";
 	}
+
 	TextureAtlas *textureAtlas = Model_GenerateTextureAtlas( fac, texturePath );
+
+	char normalsPath[ PL_SYSTEM_MAX_PATH ];
+	u_new_filename( normalsPath, path, "no2" );
+	No2Handle *normalData = No2_LoadFile( normalsPath );
 
 	unsigned int cur_index = 0;
 	for ( unsigned int j = 0, next_vtx_i = 0; j < fac->num_triangles; ++j ) {
@@ -211,6 +214,11 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 			plSetMeshVertexColour( mesh, next_vtx_i, PL_COLOUR_WHITE );
 			plSetMeshVertexPosition( mesh, next_vtx_i, vtx->vertices[ tri_vtx ].position );
 
+			if ( normalData != nullptr ) {
+				unsigned int normalIndex = fac->triangles[ j ].normal_indices[ tri_vtx_i ];
+				plSetMeshVertexNormal( mesh, next_vtx_i, normalData->normals[ normalIndex ] );
+			}
+
 			mesh->vertices[ next_vtx_i ].bone_index = vtx->vertices[tri_vtx].bone_index;
 			mesh->vertices[ next_vtx_i ].bone_weight = 1.f;
 		}
@@ -219,21 +227,14 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 
 		if ( fac->texture_table != nullptr && textureAtlas != nullptr ) {
 			float tx_x, tx_y, tx_w, tx_h;
-			textureAtlas->GetTextureCoords( fac->texture_table[ fac->triangles[ j ].texture_index ].name,
-									&tx_x,
-									&tx_y,
-									&tx_w,
-									&tx_h );
+			textureAtlas->GetTextureCoords( fac->texture_table[ fac->triangles[ j ].texture_index ].name, &tx_x, &tx_y, &tx_w, &tx_h );
 
-			std::pair<unsigned int, unsigned int>
-				texture_size = textureAtlas->GetTextureSize( fac->texture_table[ fac->triangles[ j ].texture_index ].name );
+			std::pair<unsigned int, unsigned int> texture_size = textureAtlas->GetTextureSize( fac->texture_table[ fac->triangles[ j ].texture_index ].name );
 
 			for ( unsigned int k = 0, u = 0; k < 3; ++k, u += 2 ) {
 				plSetMeshVertexST( mesh, next_vtx_i - ( 3 - k ),
-								   tx_x + ( tx_w * ( 1.0f / ( float ) ( texture_size.first ) )
-									   * ( float ) ( fac->triangles[ j ].uv_coords[ u ] ) ),
-								   tx_y + ( tx_h * ( 1.0f / ( float ) ( texture_size.second ) )
-									   * ( float ) ( fac->triangles[ j ].uv_coords[ u + 1 ] ) ) );
+								   tx_x + ( tx_w * ( 1.0f / ( float ) ( texture_size.first ) ) * ( float ) ( fac->triangles[ j ].uv_coords[ u ] ) ),
+								   tx_y + ( tx_h * ( 1.0f / ( float ) ( texture_size.second ) ) * ( float ) ( fac->triangles[ j ].uv_coords[ u + 1 ] ) ) );
 			}
 		}
 	}
@@ -246,8 +247,13 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 
 	delete textureAtlas;
 
-	std::list<PLMesh *> meshes( &mesh, &mesh + 1 );
-	Mesh_GenerateFragmentedMeshNormals( meshes );
+	// Normals weren't loaded in, so attempt to generate them
+	if ( normalData == nullptr ) {
+		std::list<PLMesh *> meshes( &mesh, &mesh + 1 );
+		Mesh_GenerateFragmentedMeshNormals( meshes );
+	} else {
+		No2_DestroyHandle( normalData );
+	}
 
 #if 0
 	auto *skeleton =
@@ -263,7 +269,6 @@ PLModel *Model_LoadVtxFile( const char *path ) {
 	}
 
 	plGenerateModelBounds( model );
-	//plGenerateModelNormals( model, true );
 
 	return model;
 }
