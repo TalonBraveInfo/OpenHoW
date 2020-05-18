@@ -19,8 +19,7 @@
 
 #include <PL/platform_math.h>
 
-/* extension of Platform's math functionality
- * a lot of these are borrowed from ioq3 to fill gaps */
+/* extension of Platform's math functionality */
 
 #ifdef __cplusplus
 
