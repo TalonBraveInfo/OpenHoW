@@ -19,93 +19,43 @@
 
 #include "sprite.h"
 
+// And this is the individual particle
 class Particle {
 public:
-	Particle( PLVector3 position, PLVector3 velocity, float lifeSpan );
+	Particle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan );
 
 	void Tick() {}
 
 protected:
 private:
-	PLVector3 velocity;
-	float lifeSpan{ 0.0f };
+	PLColour    myColour;
+	PLVector3   myVelocity;
+	PLVector3   myScale{ 0.0f, 0.0f, 0.0f };
+	PLVector3   myPosition;
+
+	float myLifeSpan{ 0.0f };
 };
 
-class SpriteParticle : public Particle, Sprite {};
-class ModelParticle : public Particle {};
+class SpriteParticle : public Particle, Sprite {
+	SpriteParticle( PLTexture *texture, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan );
+	~SpriteParticle();
+
+private:
+};
+
+class ModelParticle : public Particle {
+	ModelParticle( PLVector3 position,
+	               PLVector3 velocity,
+	               PLColour start_colour,
+	               float life_span,
+	               const std::string &modelPath );
+	ModelParticle( PLModel *modelPtr, PLVector3 position, PLVector3 velocity, float lifeSpan );
+	~ModelParticle();
+
+private:
+	PLModel *myModelPtr{ nullptr };
+};
+
+// TODO
 class TrailParticle : public Particle {};
 class TextParticle : public Particle {};
-
-class ParticleEmitter : public PropertyOwner {
-public:
-	ParticleEmitter( PLVector3 position ) {}
-	~ParticleEmitter() {}
-
-	void Tick();
-	void Draw();
-
-protected:
-private:
-	std::vector<Particle> particles;
-
-	float gravity{ 0.0f };
-
-	float randomLifeSpanFactor{ 0.0f };
-	float lifeSpan{ 1.0f };
-
-	PLVector4 randomColourFactor;
-	PLColour startColour;
-	PLColour endColour;
-
-	float randomScaleFactor{ 0.0f };
-	float startScale{ 0.0f };
-	float endScale{ 1.0f };
-
-	float drawDistance{ 10000.0f };
-
-	float spawnRadius{ 0.0f };
-
-	bool sortParticles{ false };
-
-	// todo; consider more typical collision mask?
-	bool collideActors{ false };
-	bool collideWorld{ false };
-
-	unsigned int maxParticles{ 0 };
-
-	enum class ParticleType {
-		SPRITE,
-		MODEL,
-		TRAIL,
-		TEXT,
-	};
-	enum class BlendType {
-		NONE,
-		ADDITIVE,
-		SUBTRACTIVE,
-		DIFFERENCE
-	};
-
-	PLVector3 position;
-};
-
-class ParticleEffect {
-public:
-	ParticleEffect() {}
-	~ParticleEffect() {}
-
-	void Draw();
-	void Tick();
-
-	std::string GetPath() const { return path; }
-
-protected:
-private:
-	std::string path;
-
-	unsigned int version{ 0 };
-
-	PLVector3 position;
-
-	std::map<std::string, ParticleEmitter> emitters;
-};

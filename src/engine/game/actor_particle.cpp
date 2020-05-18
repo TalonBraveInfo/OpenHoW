@@ -16,10 +16,11 @@
  */
 
 #include "../engine.h"
+#include "../graphics/particle_effect.h"
+#include "../graphics/particle_emitter.h"
 #include "../graphics/particles.h"
 
 #include "actor_manager.h"
-#include "actor.h"
 
 class AParticleEffect : public Actor {
 	IMPLEMENT_ACTOR( AParticleEffect, Actor )
@@ -32,24 +33,32 @@ public:
 	void Draw() override;
 
 	ActorSpawn Serialize() override { return ActorSpawn(); }
-	void Deserialize( const ActorSpawn &spawn ) override {}
+	void Deserialize( const ActorSpawn &spawn ) override;
 
 protected:
 private:
-	ParticleEffect effect;
+	ParticleEffect *effect;
 };
 
 REGISTER_ACTOR_BASIC( AParticleEffect )
 
 AParticleEffect::AParticleEffect() : SuperClass() {}
-AParticleEffect::~AParticleEffect() = default;
+AParticleEffect::~AParticleEffect() {
+	delete effect;
+}
 
 void AParticleEffect::Tick() {
 	SuperClass::Tick();
 
-	effect.Tick();
+	effect->Tick();
 }
 
 void AParticleEffect::Draw() {
-	effect.Draw();
+	effect->Draw();
+}
+
+void AParticleEffect::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
+
+	// TODO: might need to revise the ActorSpawn structure in order for this to work
 }
