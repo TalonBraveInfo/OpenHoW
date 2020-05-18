@@ -266,5 +266,6 @@
 
   "file": "File",
   "open": "Open",
-  "window_particle_editor": "Particle Editor"
+  "window_particle_editor": "Particle Editor",
+  "window_model_viewer": "Model Viewer"
 }
