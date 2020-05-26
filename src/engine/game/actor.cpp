@@ -31,8 +31,7 @@ Actor::Actor() :
 	INIT_PROPERTY( inputPitch, PROP_PUSH, 0.00 ),
 	INIT_PROPERTY( position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
 	INIT_PROPERTY( fallback_position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
-	INIT_PROPERTY( angles_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
-	INIT_PROPERTY( bounds_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
+	INIT_PROPERTY( angles_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
 
 Actor::~Actor() {
 	for ( auto actor : childActors ) {
@@ -65,9 +64,20 @@ void Actor::SetVelocity(PLVector3 newVelocity) {
 void Actor::SetPosition( PLVector3 position ) {
 	old_position_ = position_;
 	position_ = position;
+
+	// Ensure the bounds are kept updated...
+	boundingBox.origin = position;
 }
 
 void Actor::Deserialize( const ActorSpawn &spawn ) {
+	// Convert the original spawn bounds to those we want (TODO: do this in spawn handler)
+	boundingBox.maxs.x = ( float ) spawn.bounds[ 0 ];
+	boundingBox.mins.x = ( float ) -spawn.bounds[ 0 ];
+	boundingBox.maxs.y = ( float ) spawn.bounds[ 1 ];
+	boundingBox.mins.y = ( float ) -spawn.bounds[ 1 ];
+	boundingBox.maxs.z = ( float ) spawn.bounds[ 2 ];
+	boundingBox.mins.z = ( float ) -spawn.bounds[ 2 ];
+
 	SetPosition( spawn.position );
 	SetAngles( spawn.angles );
 }
@@ -148,7 +158,7 @@ void Actor::DropToFloor() {
 
 	PLVector3 nPosition = position_;
 	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
-	nPosition.y = height + bounds_.GetValue().y;
+	nPosition.y = height + boundingBox.maxs.y;
 	SetPosition( nPosition );
 }
 
@@ -174,12 +184,60 @@ void Actor::LinkChild( Actor *actor ) {
 }
 
 /**
+ * Checks whether or not this actor is touching another actor.
+ */
+bool Actor::CheckTouching() {
+	bool touchedSomething = false;
+
+	ActorSet actorSet = ActorManager::GetInstance()->GetActors();
+	for ( Actor *other : actorSet ) {
+		// Can't touch ourself
+		if ( other == this || !other->IsActivated() ) {
+			continue;
+		}
+
+		// Check if it's our parent; we can't touch them
+		if ( other == parentActor ) {
+			continue;
+		}
+
+		// Check if it's one of our children; we can't touch them either
+		bool isChild = false;
+		for ( unsigned int i = 0; i < childActors.size(); ++i ) {
+			if ( childActors[ i ] == other ) {
+				isChild = true;
+				break;
+			}
+		}
+
+		if ( isChild ) {
+			continue;
+		}
+
+		// Now check the AABB against that of the other actor
+		if( !plIsAABBIntersecting( &boundingBox, &other->boundingBox ) ) {
+			// Didn't get a hit, continue onto the next
+			continue;
+		}
+
+		// We're touching them, so go ahead and handle that case
+		Touch( other );
+
+		touchedSomething = true;
+	}
+
+	return touchedSomething;
+}
+
+/**
  * Called when one actor collides with another.
  * @param other The touchee.
  */
 void Actor::Touch( Actor *other ) {
-	LogDebug( "actor (%s) touched actor (%s)\n",
+	LogDebug( "actor %s (%s) touched actor %s (%s)\n",
+		GetClassName(),
 		plPrintVector3( &position_.GetValue(), pl_int_var ),
+		GetClassName(),
 		plPrintVector3( &other->position_.GetValue(), pl_int_var ) );
 }
 
@@ -194,5 +252,5 @@ bool Actor::IsGrounded() {
 
 	PLVector3 nPosition = position_;
 	float tileHeight = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
-	return ( nPosition.y - ( bounds_.GetValue().y / 2 ) ) <= tileHeight;
+	return ( nPosition.y - ( boundingBox.maxs.y / 2 ) ) <= tileHeight;
 }

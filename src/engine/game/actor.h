@@ -129,6 +129,7 @@ public:
 	unsigned int GetNumOfChildren() { return childActors.size(); }
 	std::vector<Actor *> GetChildren() { return childActors; }
 
+	bool CheckTouching();
 	virtual void Touch( Actor *other );
 
 	void DropToFloor();
@@ -158,7 +159,7 @@ protected:
 	Vector3Property angles_;
 	PLVector3 old_angles_{ 0, 0, 0 };
 
-	Vector3Property bounds_;
+	PLCollisionAABB boundingBox;
 
 	// Use this if you want your actor to have a helpful descriptor in it's
 	std::string reference_name_{ "actor" };

@@ -64,12 +64,12 @@ void ActorManager::TickActors() {
 		}
 
 		actor->Tick();
+		actor->CheckTouching();
 	}
 
 	// Now clean everything up that was marked for destruction
 	for ( auto &i : destructionQueue ) {
 		assert( actors_.find( i ) != actors_.end() );
-
 		actors_.erase( i );
 		delete i;
 	}

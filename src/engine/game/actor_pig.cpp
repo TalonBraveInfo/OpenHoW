@@ -138,8 +138,8 @@ void APig::Tick() {
 	// Clamp height based on current tile pos
 	Map *map = Engine::Game()->GetCurrentMap();
 	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
-	if ( ( nPosition.y - ( bounds_.GetValue().y / 2 ) ) < height ) {
-		nPosition.y = height + ( bounds_.GetValue().y / 2 );
+	if ( ( nPosition.y - ( boundingBox.maxs.y / 2 ) ) < height ) {
+		nPosition.y = height + ( boundingBox.maxs.y / 2 );
 	}
 
 	SetPosition( nPosition );
