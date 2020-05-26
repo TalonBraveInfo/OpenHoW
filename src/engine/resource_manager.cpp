@@ -34,6 +34,16 @@ ResourceManager::ResourceManager() {
 	plRegisterModelLoader( "vtx", Model_LoadVtxFile );
 	plRegisterModelLoader( "min", Model_LoadMinFile );
 
+	// Allow users to enable support for all model formats if desired (disabled by default for security reasons)
+	if ( plHasCommandLineArgument( "-ramf" ) ) {
+		plRegisterStandardModelLoaders();
+	}
+
+	// Allow users to enable support for all package formats if desired (disabled by default for security reasons)
+	if ( plHasCommandLineArgument( "-rapf" ) ) {
+		plRegisterStandardPackageLoaders();
+	}
+
 	plRegisterConsoleCommand( "ListCachedResources",
 							  &ResourceManager::ListCachedResources,
 							  "List all cached resources." );
