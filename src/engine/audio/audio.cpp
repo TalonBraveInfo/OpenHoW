@@ -29,7 +29,7 @@
 
 #include "stb_vorbis.c"
 
-using namespace openhow;
+using namespace ohw;
 
 /* todo: provide fallback to SDL2 Audio? maybe dynamically load OpenAL??
  * todo: stream music and large samples */

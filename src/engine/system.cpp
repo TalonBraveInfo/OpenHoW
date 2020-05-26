@@ -34,7 +34,7 @@
 static SDL_Window* window = nullptr;
 static SDL_GLContext gl_context = nullptr;
 
-using namespace openhow;
+using namespace ohw;
 
 unsigned int System_GetTicks( void ) {
 	return SDL_GetTicks();
@@ -395,7 +395,7 @@ void System_SwapDisplay( void ) {
 }
 
 void System_Shutdown( void ) {
-	delete openhow::engine;
+	delete ohw::engine;
 
 	ImGui_ImplOpenGL3_DestroyDeviceObjects();
 	ImGui::DestroyContext();

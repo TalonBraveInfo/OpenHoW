@@ -41,7 +41,7 @@ private:
 
 REGISTER_ACTOR( crate2, AHealthPickup )
 
-using namespace openhow;
+using namespace ohw;
 
 AHealthPickup::AHealthPickup() : SuperClass() {}
 AHealthPickup::~AHealthPickup() = default;

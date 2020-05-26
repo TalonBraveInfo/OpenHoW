@@ -25,7 +25,7 @@
 #include "actor_airship.h"
 #include "actor_static_model.h"
 
-using namespace openhow;
+using namespace ohw;
 
 BaseGameMode::BaseGameMode( const GameModeDescriptor& descriptor ) {
 	max_turn_ticks = descriptor.turn_time * TICKS_PER_SECOND;

@@ -299,5 +299,5 @@ private:
 	double ambient_emit_delay_{ 0 };
 	const struct AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
 
-	friend class openhow::Engine;
+	friend class ohw::Engine;
 };

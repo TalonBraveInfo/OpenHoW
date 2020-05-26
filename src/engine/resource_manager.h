@@ -17,7 +17,7 @@
 
 #pragma once
 
-namespace openhow {
+namespace ohw {
 class Engine;
 }
 
@@ -81,5 +81,5 @@ private:
 	PLTexture* fallback_texture_{ nullptr };
 	PLModel* fallback_model_{ nullptr };
 
-	friend class openhow::Engine;
+	friend class ohw::Engine;
 };

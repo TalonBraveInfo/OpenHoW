@@ -21,7 +21,7 @@
 
 #include "window_new_map.h"
 
-using namespace openhow;
+using namespace ohw;
 
 void NewMapWindow::Display() {
 	ImGui::SetNextWindowSize( ImVec2( 256, 128 ), ImGuiCond_Once );

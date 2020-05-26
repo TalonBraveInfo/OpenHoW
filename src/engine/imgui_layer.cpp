@@ -42,7 +42,7 @@ static std::vector<BaseWindow *> windows;
 
 static PLCamera *imgui_camera = nullptr;
 
-using namespace openhow;
+using namespace ohw;
 
 #define IMGUI_POS_CENTER \
     ImVec2( \

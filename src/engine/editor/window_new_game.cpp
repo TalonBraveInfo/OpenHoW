@@ -23,7 +23,7 @@
 
 #include "window_new_game.h"
 
-using namespace openhow;
+using namespace ohw;
 
 void NewGameWindow::Display() {
 	ImGui::SetNextWindowSize( ImVec2( 320, 400 ), ImGuiCond_Once );

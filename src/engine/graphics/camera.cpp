@@ -19,7 +19,7 @@
 
 #include "camera.h"
 
-using namespace openhow;
+using namespace ohw;
 
 Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
 	camera_ = plCreateCamera();

@@ -28,7 +28,7 @@
 #include "graphics/texture_atlas.h"
 #include "graphics/mesh.h"
 
-using namespace openhow;
+using namespace ohw;
 
 const char *Model_GetAnimationDescription( unsigned int i ) {
 	static const char *animationNames[] = {

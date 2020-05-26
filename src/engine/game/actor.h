@@ -68,7 +68,7 @@ struct ActorSpawn {
 	ActorSpawn *attachment{ nullptr };
 };
 
-namespace openhow {
+namespace ohw {
 	class PhysicsBody;
 }
 
@@ -136,7 +136,7 @@ public:
 	PLVector3 GetForward();
 
 	// Physics
-	const openhow::PhysicsBody *CreatePhysicsBody();
+	const ohw::PhysicsBody *CreatePhysicsBody();
 	void DestroyPhysicsBody();
 
 protected:
@@ -166,7 +166,7 @@ protected:
 private:
 	int16_t health_{ 0 };
 
-	openhow::PhysicsBody *physics_body_{ nullptr };
+	ohw::PhysicsBody *physics_body_{ nullptr };
 
 	bool is_activated_{ false };
 

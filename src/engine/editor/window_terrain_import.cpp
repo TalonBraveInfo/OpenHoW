@@ -23,7 +23,7 @@
 
 #include "window_terrain_import.h"
 
-using namespace openhow;
+using namespace ohw;
 
 WindowTerrainImport::WindowTerrainImport() = default;
 WindowTerrainImport::~WindowTerrainImport() = default;

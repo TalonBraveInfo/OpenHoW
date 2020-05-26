@@ -65,7 +65,7 @@ struct AudioSample {
 	bool preserve_{ false };
 };
 
-namespace openhow {
+namespace ohw {
 class Engine;
 }
 
@@ -140,7 +140,7 @@ private:
 
 	AudioSource *musicSource{ nullptr };
 
-	friend class openhow::Engine;
+	friend class ohw::Engine;
 };
 
 class AudioSource {

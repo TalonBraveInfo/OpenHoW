@@ -19,7 +19,7 @@
 #include "resource_manager.h"
 #include "graphics/shaders.h"
 
-using namespace openhow;
+using namespace ohw;
 
 /* todo:
  *  allow resources to be cached into collections (e.g. Clear("GameTextures"))

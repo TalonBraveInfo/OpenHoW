@@ -31,7 +31,7 @@
 #include "actor_pig.h"
 #include "actor_static_model.h"
 
-using namespace openhow;
+using namespace ohw;
 
 std::string MapManifest::Serialize() {
 	std::stringstream output;

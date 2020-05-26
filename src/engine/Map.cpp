@@ -23,7 +23,7 @@
 #include "graphics/shaders.h"
 #include "graphics/texture_atlas.h"
 
-using namespace openhow;
+using namespace ohw;
 
 Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	std::string base_path = "maps/" + manifest_->filename + "/";

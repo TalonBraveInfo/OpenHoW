@@ -27,7 +27,7 @@
 #include "shaders.h"
 #include "display.h"
 
-using namespace openhow;
+using namespace ohw;
 
 /************************************************************/
 /* Texture Cache */
@@ -514,7 +514,7 @@ void DrawMap() {
 		return;
 	}
 
-	Map *map = openhow::Engine::Game()->GetCurrentMap();
+	Map *map = ohw::Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}

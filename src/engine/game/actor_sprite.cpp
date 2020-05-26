@@ -44,7 +44,7 @@ private:
 
 REGISTER_ACTOR( sprite, ASprite )
 
-using namespace openhow;
+using namespace ohw;
 
 ASprite::ASprite() : SuperClass() {
 	sprite_ = new Sprite( Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture() );

@@ -29,9 +29,9 @@
 
 EngineState g_state;
 
-openhow::Engine *openhow::engine;
+ohw::Engine *ohw::engine;
 
-openhow::Engine::Engine() {
+ohw::Engine::Engine() {
 	g_state.draw_ticks = 0;
 
 	g_state.last_draw_ms = 0;
@@ -44,7 +44,7 @@ openhow::Engine::Engine() {
 	g_state.gfx.num_triangles_total = 0;
 }
 
-openhow::Engine::~Engine() {
+ohw::Engine::~Engine() {
 	Display_Shutdown();
 
 	Config_Save( Config_GetUserConfigPath() );
@@ -57,7 +57,7 @@ openhow::Engine::~Engine() {
 	LanguageManager::DestroyInstance();
 }
 
-void openhow::Engine::Initialize() {
+void ohw::Engine::Initialize() {
 	LogInfo( "Initializing Engine (%s)...\n", GetVersionString().c_str() );
 
 	Console_Initialize();
@@ -111,7 +111,7 @@ void openhow::Engine::Initialize() {
 	Game()->CachePersistentData();
 }
 
-std::string openhow::Engine::GetVersionString() {
+std::string ohw::Engine::GetVersionString() {
 	return "v" +
 		std::to_string( ENGINE_MAJOR_VERSION ) + "." +
 		std::to_string( ENGINE_MINOR_VERSION ) + "." +
@@ -119,7 +119,7 @@ std::string openhow::Engine::GetVersionString() {
 		GIT_BRANCH + ":" + GIT_COMMIT_HASH + "-" + GIT_COMMIT_COUNT;
 }
 
-bool openhow::Engine::IsRunning() {
+bool ohw::Engine::IsRunning() {
 	System_PollEvents();
 
 	static unsigned int next_tick = 0;

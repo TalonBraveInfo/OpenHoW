@@ -22,7 +22,7 @@
 
 #include "window_map_config.h"
 
-using namespace openhow;
+using namespace ohw;
 
 MapConfigEditor::MapConfigEditor() {
 	map_ = Engine::Game()->GetCurrentMap();

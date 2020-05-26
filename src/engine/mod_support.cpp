@@ -21,7 +21,7 @@
 #include "mod_support.h"
 #include "script/json_reader.h"
 
-using namespace openhow;
+using namespace ohw;
 
 /* Mod Management
  *

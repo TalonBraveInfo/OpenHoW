@@ -23,7 +23,7 @@
 #include "player.h"
 #include "actor.h"
 
-using namespace openhow;
+using namespace ohw;
 
 Actor::Actor() :
 	INIT_PROPERTY( forwardVelocity, PROP_PUSH, 0.00 ),
@@ -72,7 +72,7 @@ void Actor::Deserialize( const ActorSpawn &spawn ) {
 	SetAngles( spawn.angles );
 }
 
-const openhow::PhysicsBody *Actor::CreatePhysicsBody() {
+const ohw::PhysicsBody *Actor::CreatePhysicsBody() {
 	if ( physics_body_ != nullptr ) {
 		return physics_body_;
 	}

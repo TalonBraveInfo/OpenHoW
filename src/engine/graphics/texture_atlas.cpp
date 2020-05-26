@@ -20,7 +20,7 @@
 #include "display.h"
 #include "texture_atlas.h"
 
-using namespace openhow;
+using namespace ohw;
 
 TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {
 	texture_ = Engine::Resource()->GetFallbackTexture();

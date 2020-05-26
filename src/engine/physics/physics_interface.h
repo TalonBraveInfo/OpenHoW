@@ -17,7 +17,7 @@
 
 #pragma once
 
-namespace openhow {
+namespace ohw {
 
 enum class PhysicsPrimitiveType {
 	SPHERE,

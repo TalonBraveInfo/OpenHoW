@@ -25,7 +25,7 @@
 #include "graphics/font.h"
 #include "config.h"
 
-using namespace openhow;
+using namespace ohw;
 
 /************************************************************/
 

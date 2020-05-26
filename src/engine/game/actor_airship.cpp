@@ -22,7 +22,7 @@
 
 REGISTER_ACTOR( airship, AAirship )
 
-using namespace openhow;
+using namespace ohw;
 
 AAirship::AAirship() : SuperClass() {}
 

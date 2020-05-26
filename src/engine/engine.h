@@ -57,7 +57,7 @@
 #include "game/game.h"
 #include "physics/physics_interface.h"
 
-namespace openhow {
+namespace ohw {
 
 class Engine;
 extern Engine *engine;

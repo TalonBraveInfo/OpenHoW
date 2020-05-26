@@ -20,7 +20,7 @@
 
 #include "WaveFrontReader.h"
 
-using namespace openhow;
+using namespace ohw;
 
 PLModel *LoadObjModel( const char *path ) {
 	WaveFrontReader obj;

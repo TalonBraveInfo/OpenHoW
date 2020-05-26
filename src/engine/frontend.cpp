@@ -24,7 +24,7 @@
 #include "graphics/video.h"
 #include "game/actor_manager.h"
 
-using namespace openhow;
+using namespace ohw;
 
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = ( unsigned int ) -1;

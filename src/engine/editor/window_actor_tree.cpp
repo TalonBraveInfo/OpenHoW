@@ -21,7 +21,7 @@
 #include "window_actor_tree.h"
 #include "../game/actor_manager.h"
 
-using namespace openhow;
+using namespace ohw;
 
 ActorTreeWindow::ActorTreeWindow() = default;
 ActorTreeWindow::~ActorTreeWindow() = default;

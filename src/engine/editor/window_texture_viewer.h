@@ -24,7 +24,7 @@ public:
 	}
 
 	TextureViewer( const std::string &path ) {
-		texturePtr = openhow::Engine::Resource()->LoadTexture( path, PL_TEXTURE_FILTER_LINEAR );
+		texturePtr = ohw::Engine::Resource()->LoadTexture( path, PL_TEXTURE_FILTER_LINEAR );
 		if ( texturePtr == nullptr ) {
 			throw std::runtime_error( "Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!" );
 		}
@@ -40,7 +40,7 @@ public:
 		}
 
 		plDestroyTexture( texturePtr );
-		texturePtr = openhow::Engine::Resource()->LoadTexture( texturePath, filter_mode );
+		texturePtr = ohw::Engine::Resource()->LoadTexture( texturePath, filter_mode );
 		filterMode = filter_mode;
 	}
 

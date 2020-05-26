@@ -20,7 +20,7 @@
 
 #include "actor_model.h"
 
-using namespace openhow;
+using namespace ohw;
 
 AModel::AModel() : SuperClass(),
 				   INIT_PROPERTY( modelPath, PROP_LOCAL ) {}

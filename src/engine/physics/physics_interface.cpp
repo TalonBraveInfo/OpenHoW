@@ -18,22 +18,22 @@
 #include "engine.h"
 #include "physics_interface.h"
 
-void openhow::PhysicsInterface::Tick() {
+void ohw::PhysicsInterface::Tick() {
 
 }
 
-openhow::PhysicsBody *openhow::PhysicsInterface::CreatePhysicsBody() {
+ohw::PhysicsBody *ohw::PhysicsInterface::CreatePhysicsBody() {
 	return nullptr;
 }
 
-void openhow::PhysicsInterface::DestroyPhysicsBody( openhow::PhysicsBody *body ) {
+void ohw::PhysicsInterface::DestroyPhysicsBody( ohw::PhysicsBody *body ) {
 
 }
 
-void openhow::PhysicsInterface::GenerateTerrainCollision( std::vector<float> vertices ) {
+void ohw::PhysicsInterface::GenerateTerrainCollision( std::vector<float> vertices ) {
 
 }
 
-void openhow::PhysicsInterface::DestroyTerrainCollision() {
+void ohw::PhysicsInterface::DestroyTerrainCollision() {
 
 }

@@ -39,7 +39,7 @@ SpriteParticle::~SpriteParticle() {}
 // ModelParticle
 
 ModelParticle::ModelParticle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan, const std::string &modelPath ) : Particle( position, velocity, startColour, lifeSpan ) {
-	myModelPtr = openhow::Engine::Resource()->GetCachedModel( modelPath );
+	myModelPtr = ohw::Engine::Resource()->GetCachedModel( modelPath );
 }
 
 //ModelParticle::ModelParticle( PLModel *modelPtr, PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) : Particle( position, velocity, startColour, lifeSpan ) {
