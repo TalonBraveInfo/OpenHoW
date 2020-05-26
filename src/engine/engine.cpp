@@ -49,11 +49,11 @@ openhow::Engine::~Engine() {
 
 	Config_Save( Config_GetUserConfigPath() );
 
-	delete game_manager_;
-	delete audio_manager_;
-	delete resource_manager_;
+	delete gameManager;
+	delete audioManager;
+	delete resourceManager;
+	delete physicsInterface;
 
-	IPhysicsInterface::DestroyInstance( physics_interface_ );
 	LanguageManager::DestroyInstance();
 }
 
@@ -66,8 +66,8 @@ void openhow::Engine::Initialize() {
 	Mod_RegisterMods();
 
 	// check for any command line arguments
-	const char *var;
-	if ( ( var = plGetCommandLineArgumentValue( "-mod" ) ) == nullptr ) {
+	const char *var = plGetCommandLineArgumentValue( "-mod" );
+	if ( var == nullptr ) {
 		// otherwise default to base campaign
 		var = "how";
 	}
@@ -86,16 +86,15 @@ void openhow::Engine::Initialize() {
 
 	Input_Initialize();
 	Display_Initialize();
-	resource_manager_ = new ResourceManager();
 
-	audio_manager_ = new AudioManager();
-	audio_manager_->SetupMusicSource();
+	resourceManager = new ResourceManager();
+	audioManager = new AudioManager();
+	audioManager->SetupMusicSource();
+	gameManager = new GameManager();
 
-	game_manager_ = new GameManager();
+	physicsInterface = new PhysicsInterface();
+
 	FE_Initialize();
-
-	// Setup our interface to the physics engine, this handles the abstraction
-	physics_interface_ = IPhysicsInterface::CreateInstance();
 
 	plParseConsoleString( "fsListMounted" );
 

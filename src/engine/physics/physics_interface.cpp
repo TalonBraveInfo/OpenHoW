@@ -15,46 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "engine.h"
+#include "physics_interface.h"
 
-namespace openhow {
+void openhow::PhysicsInterface::Tick() {
 
-enum class PhysicsPrimitiveType {
-	SPHERE,
-	BOX,
-	CAPSULE,
-	CYLINDER,
-	CONE,
-	CHAMFER_CYLINDER,
-	RANDOM_CONVEX_HULL,
-	REGULAR_CONVEX_HULL,
-	COMPOUND_CONVEX_CRUZ,
-};
+}
 
-class PhysicsBody {
-public:
-protected:
-	PhysicsBody() = default;
-	virtual ~PhysicsBody() = default;
+openhow::PhysicsBody *openhow::PhysicsInterface::CreatePhysicsBody() {
+	return nullptr;
+}
 
-private:
-};
+void openhow::PhysicsInterface::DestroyPhysicsBody( openhow::PhysicsBody *body ) {
 
-class PhysicsInterface {
-public:
-	PhysicsInterface() = default;
-	virtual ~PhysicsInterface() = default;
+}
 
-	virtual void Tick();
+void openhow::PhysicsInterface::GenerateTerrainCollision( std::vector<float> vertices ) {
 
-	virtual PhysicsBody *CreatePhysicsBody();
-	virtual void DestroyPhysicsBody( PhysicsBody *body );
+}
 
-	virtual void GenerateTerrainCollision( std::vector<float> vertices );
-	virtual void DestroyTerrainCollision();
-
-protected:
-private:
-};
+void openhow::PhysicsInterface::DestroyTerrainCollision() {
 
 }

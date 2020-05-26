@@ -72,7 +72,7 @@ void Actor::Deserialize( const ActorSpawn &spawn ) {
 	SetAngles( spawn.angles );
 }
 
-const IPhysicsBody *Actor::CreatePhysicsBody() {
+const openhow::PhysicsBody *Actor::CreatePhysicsBody() {
 	if ( physics_body_ != nullptr ) {
 		return physics_body_;
 	}

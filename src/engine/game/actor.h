@@ -68,7 +68,9 @@ struct ActorSpawn {
 	ActorSpawn *attachment{ nullptr };
 };
 
-class IPhysicsBody;
+namespace openhow {
+	class PhysicsBody;
+}
 
 #define IMPLEMENT_SUPER( a ) typedef a SuperClass;
 #define IMPLEMENT_ACTOR( base, parent ) \
@@ -134,7 +136,7 @@ public:
 	PLVector3 GetForward();
 
 	// Physics
-	const IPhysicsBody *CreatePhysicsBody();
+	const openhow::PhysicsBody *CreatePhysicsBody();
 	void DestroyPhysicsBody();
 
 protected:
@@ -164,7 +166,7 @@ protected:
 private:
 	int16_t health_{ 0 };
 
-	IPhysicsBody *physics_body_{ nullptr };
+	openhow::PhysicsBody *physics_body_{ nullptr };
 
 	bool is_activated_{ false };
 

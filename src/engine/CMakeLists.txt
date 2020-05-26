@@ -30,11 +30,9 @@ project( engine )
 add_definitions(
         "-DIMGUI_IMPL_OPENGL_LOADER_GLEW"   # Required for OpenGL3.x imgui setup
         "-DCOMPILE_ENGINE"
-        "-D_NEWTON_STATIC_LIB"              # Sigh...
 )
 
-file(
-        GLOB OPENHOW_SOURCE_FILES
+file( GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
         *.h
 
@@ -50,8 +48,8 @@ file(
         audio/audio.cpp
 
         # Physics Sub-System
-        physics/*.cpp
-        physics/newton/*.cpp
+        physics/physics_interface.cpp
+        physics/physics_interface.h
 
         editor/*.*
         graphics/*.*
@@ -72,13 +70,16 @@ file(
 
 add_executable( engine ${OPENHOW_SOURCE_FILES} )
 
-target_link_libraries( engine platform newton)
-#target_include_directories(OpenHoW PRIVATE 
-#	../3rdparty/newton-dynamics/sdk/dMath/
-#	../3rdparty/newton-dynamics/sdk/dgCore/
-#	../3rdparty/newton-dynamics/sdk/dNewton/
-#	../3rdparty/newton-dynamics/sdk/dgNewton/
-#	../3rdparty/newton-dynamics/sdk/dgPhysics/)
+target_include_directories( engine PRIVATE
+        ./
+        ./audio/
+        ./editor/
+        ./game/
+        ./graphics/
+        ./loaders/
+        ./physics/
+        ./script/ )
+target_link_libraries( engine platform )
 
 if(WIN32)
     add_dependencies( engine OpenAL)
@@ -104,5 +105,5 @@ endif()
 
 #set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
-target_compile_options( engine PUBLIC -fPIC)
-target_include_directories( engine PUBLIC ../3rdparty/imgui/ script/duktape-2.2.0/)
+target_compile_options( engine PUBLIC -fPIC )
+target_include_directories( engine PUBLIC ../3rdparty/imgui/ script/duktape-2.2.0/ )

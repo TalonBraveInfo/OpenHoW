@@ -58,24 +58,26 @@
 #include "physics/physics_interface.h"
 
 namespace openhow {
+
 class Engine;
 extern Engine *engine;
+
 class Engine {
 public:
 	Engine();
 	~Engine();
 
 	static AudioManager *Audio() {
-		return engine->audio_manager_;
+		return engine->audioManager;
 	}
 	static GameManager *Game() {
-		return engine->game_manager_;
+		return engine->gameManager;
 	}
 	static ResourceManager *Resource() {
-		return engine->resource_manager_;
+		return engine->resourceManager;
 	}
-	static IPhysicsInterface *Physics() {
-		return engine->physics_interface_;
+	static PhysicsInterface *Physics() {
+		return engine->physicsInterface;
 	}
 
 	void Initialize();
@@ -87,13 +89,14 @@ public:
 	double GetDeltaTime() { return deltaTime; }
 
 private:
-	GameManager *game_manager_{ nullptr };
-	AudioManager *audio_manager_{ nullptr };
-	ResourceManager *resource_manager_{ nullptr };
-	IPhysicsInterface *physics_interface_{ nullptr };
+	GameManager *gameManager{ nullptr };
+	AudioManager *audioManager{ nullptr };
+	ResourceManager *resourceManager{ nullptr };
+	PhysicsInterface *physicsInterface{ nullptr };
 
 	double deltaTime{ 0 };
 };
+
 }
 
 #else
