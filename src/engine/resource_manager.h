@@ -18,68 +18,45 @@
 #pragma once
 
 namespace ohw {
-class Engine;
+	class Resource;
+	class TextureResource;
+	class ModelResource;
+
+	class ResourceManager {
+	private:
+		ResourceManager();
+		~ResourceManager();
+
+	public:
+		TextureResource *LoadTexture( const std::string &path, PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST, bool persist = false, bool abortOnFail = false );
+		ModelResource *LoadModel( const std::string &path, bool persist = false, bool abortOnFail = false );
+
+		void ClearResource( const std::string &path, bool force = false );
+		void ClearAllResources( bool force = false );
+
+	private:
+		static void ListCachedResources( unsigned int argc, char **argv );
+		static void ClearAllResourcesCommand( unsigned int argc, char **argv );
+		static void ClearResourceCommand( unsigned int argc, char **argv );
+
+		PLTexture *GetFallbackTexture();
+		PLTexture *fallbackTexture;
+		PLModel *GetFallbackModel();
+		PLModel *fallbackModel;
+
+		Resource *GetCachedResource( const std::string &path );
+		PL_INLINE Resource *CacheResource( const std::string &path, Resource *resourcePtr, bool persist = false ) {
+			resourcesMap.insert( std::pair< std::string, Resource* >( path, resourcePtr ) );
+			LogDebug( "Cached resource, \"%s\"\n", path.c_str() );
+			return resourcePtr;
+		}
+
+		std::map< std::string, Resource* > resourcesMap;
+
+		friend class Engine;
+
+		friend class Resource;
+		friend class TextureResource;
+		friend class ModelResource;
+	};
 }
-
-class ResourceManager {
-private:
-	ResourceManager();
-	~ResourceManager();
-
-public:
-	PLTexture* GetCachedTexture( const std::string& path );
-	PLModel* GetCachedModel( const std::string& path );
-
-	PLTexture* LoadTexture( const std::string& path,
-							PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST,
-							bool persist = false, bool abort_on_fail = false );
-	PLModel* LoadModel( const std::string& path, bool persist = false, bool abort_on_fail = false );
-
-	PLTexture* GetFallbackTexture();
-	PLModel* GetFallbackModel();
-
-	void ClearTextures( bool force = false );
-	void ClearModels( bool force = false );
-
-	void ClearAll();
-
-private:
-	static void ListCachedResources( unsigned int argc, char** argv );
-	static void ClearTexturesCommand( unsigned int argc, char** argv );
-	static void ClearModelsCommand( unsigned int argc, char** argv );
-
-	struct TextureHandle {
-		TextureHandle( PLTexture* texture_ptr, bool persist ) {
-			this->texture_ptr = texture_ptr;
-			this->persist = persist;
-		}
-
-		PLTexture* texture_ptr{ nullptr };
-		bool persist{ false };
-	};
-	std::map<std::string, TextureHandle> textures_;
-	inline PLTexture* CacheTexture( const std::string& path, PLTexture* texture_ptr, bool persist = false ) {
-		textures_.insert( std::pair<std::string, TextureHandle>( path, { texture_ptr, persist } ) );
-		return texture_ptr;
-	}
-
-	struct ModelHandle {
-		ModelHandle( PLModel* model_ptr, bool persist ) {
-			this->model_ptr = model_ptr;
-			this->persist = persist;
-		}
-
-		PLModel* model_ptr{ nullptr };
-		bool persist{ false };
-	};
-	std::map<std::string, ModelHandle> models_;
-	inline PLModel* CacheModel( const std::string& path, PLModel* model_ptr, bool persist = false ) {
-		models_.insert( std::pair<std::string, ModelHandle>( path, { model_ptr, persist } ) );
-		return model_ptr;
-	}
-
-	PLTexture* fallback_texture_{ nullptr };
-	PLModel* fallback_model_{ nullptr };
-
-	friend class ohw::Engine;
-};

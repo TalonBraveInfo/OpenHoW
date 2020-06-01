@@ -140,7 +140,7 @@ static BitmapFont* Font_LoadBitmap( const char* name, const char* tab_name ) {
 
 	// Load in the image
 	snprintf( path, sizeof( path ) - 1, "frontend/text/%s", name );
-	const char* tex_path = u_find2( path, supported_image_formats, true );
+	const char* tex_path = u_find2( path, supportedTextureFormats, true );
 	PLImage image;
 	if ( !plLoadImage( tex_path, &image ) ) {
 		Error( "Failed to load in image, %s, aborting (%s)!\n", tex_path, plGetError() );

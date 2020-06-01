@@ -46,5 +46,4 @@ void Display_GetFramesCount(unsigned int *fps, unsigned int *ms);
 void Display_Draw( double delta );
 void Display_Flush(void);
 
-extern const char *supported_model_formats[];
-extern const char *supported_image_formats[];
+extern const char *supportedTextureFormats[];

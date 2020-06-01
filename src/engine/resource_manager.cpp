@@ -16,22 +16,19 @@
  */
 
 #include "engine.h"
+#include "ModelResource.h"
+#include "TextureResource.h"
 #include "resource_manager.h"
 #include "graphics/shaders.h"
 
 using namespace ohw;
 
-/* todo:
- *  allow resources to be cached into collections (e.g. Clear("GameTextures"))
- */
-
-PLModel* LoadObjModel( const char* path ); // see loaders/obj.cpp
-PLModel* Model_LoadVtxFile( const char* path );
-PLModel* Model_LoadMinFile( const char* path );
-
 ResourceManager::ResourceManager() {
+	PLModel *LoadObjModel( const char *path ); // see loaders/obj.cpp
 	plRegisterModelLoader( "obj", LoadObjModel );
+	PLModel *Model_LoadVtxFile( const char *path );
 	plRegisterModelLoader( "vtx", Model_LoadVtxFile );
+	PLModel *Model_LoadMinFile( const char *path );
 	plRegisterModelLoader( "min", Model_LoadMinFile );
 
 	// Allow users to enable support for all model formats if desired (disabled by default for security reasons)
@@ -44,156 +41,79 @@ ResourceManager::ResourceManager() {
 		plRegisterStandardPackageLoaders();
 	}
 
-	plRegisterConsoleCommand( "ListCachedResources",
-							  &ResourceManager::ListCachedResources,
-							  "List all cached resources." );
+	plRegisterConsoleCommand( "ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources." );
 	plRegisterConsoleCommand( "ClearModels", &ResourceManager::ClearModelsCommand, "Clears all cached models." );
-	plRegisterConsoleCommand( "ClearTextures",
-							  &ResourceManager::ClearTexturesCommand,
-							  "Clears all cached textures." );
+	plRegisterConsoleCommand( "ClearTextures", &ResourceManager::ClearTexturesCommand, "Clears all cached textures." );
 }
 
 ResourceManager::~ResourceManager() {
-	ClearTextures( true );
-	ClearModels( true );
-
-	plDestroyTexture( fallback_texture_ );
-	plDestroyModel( fallback_model_ );
+	ClearAllResources( true );
 }
 
-// TODO: we should be able to query the platform library for this!!
-const char* supported_model_formats[] = { "obj", "vtx", "min", nullptr };
-const char* supported_image_formats[] = { "png", "tga", "bmp", "tim", nullptr };
+
 //const char *supported_audio_formats[]={"wav", NULL};
 //const char *supported_video_formats[]={"bik", NULL};
 
-PLTexture* ResourceManager::GetCachedTexture( const std::string& path ) {
-	auto idx = textures_.find( path );
-	if ( idx != textures_.end() ) {
-		return idx->second.texture_ptr;
+Resource *ResourceManager::GetCachedResource( const std::string& path ) {
+	auto idx = resourcesMap.find( path );
+	if ( idx != resourcesMap.end() ) {
+		return idx->second;
 	}
 
 	return nullptr;
 }
 
-PLModel* ResourceManager::GetCachedModel( const std::string& path ) {
-	auto idx = models_.find( path );
-	if ( idx != models_.end() ) {
-		return idx->second.model_ptr;
+TextureResource *ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist, bool abortOnFail ) {
+	TextureResource *texturePtr = static_cast< TextureResource* >( GetCachedResource( path ) );
+	if ( texturePtr != nullptr ) {
+		return texturePtr;
 	}
 
-	return nullptr;
+	texturePtr = new TextureResource( path, filter, persist, abortOnFail );
+	CacheResource( path, texturePtr );
+
+	return texturePtr;
 }
 
-PLTexture* ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist,
-										 bool abort_on_fail ) {
-	const char* ext = plGetFileExtension( path.c_str() );
-	if ( plIsEmptyString( ext ) ) {
-		const char* fp = u_find2( path.c_str(), supported_image_formats, abort_on_fail );
-		if ( fp == nullptr ) {
-			return CacheTexture( path, GetFallbackTexture(), persist );
-		}
-
-		PLTexture* texture = GetCachedTexture( fp );
-		if ( texture != nullptr ) {
-			return texture;
-		}
-
-		texture = plLoadTextureFromImage( fp, filter );
-		if ( texture != nullptr ) {
-			return CacheTexture( fp, texture, persist );;
-		}
-
-		if ( abort_on_fail ) {
-			Error( "Failed to load texture, \"%s\" (%s)!\n", fp, plGetError() );
-		}
-
-		LogWarn( "%s, aborting!\n", plGetError() );
-		return CacheTexture( fp, GetFallbackTexture(), persist );
+ModelResource* ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
+	ModelResource *modelPtr = static_cast< ModelResource* >( GetCachedResource( path ) );
+	if ( modelPtr != nullptr ) {
+		return modelPtr;
 	}
 
-	PLTexture* texture = GetCachedTexture( path );
-	if ( texture != nullptr ) {
-		return texture;
-	}
+	modelPtr = new ModelResource( path, persist, abortOnFail );
+	CacheResource( path, modelPtr );
 
-	PLImage img;
-	if ( plLoadImage( path.c_str(), &img ) ) {
-		// pixel format of TIM will be changed before uploading
-		if ( pl_strncasecmp( ext, "tim", 3 ) == 0 ) {
-			plConvertPixelFormat( &img, PL_IMAGEFORMAT_RGBA8 );
-		}
-
-		texture = plCreateTexture();
-		if ( texture != nullptr ) {
-			texture->filter = filter;
-			if ( plUploadTextureImage( texture, &img ) ) {
-				return CacheTexture( path, texture, persist );
-			}
-		}
-		plDestroyTexture( texture );
-	}
-
-	if ( abort_on_fail ) {
-		Error( "Failed to load texture, \"%s\" (%s)!\n", path.c_str(), plGetError() );
-	}
-
-	LogWarn( "Failed to load texture, \"%s\" (%s)!\n", path.c_str(), plGetError() );
-	plFreeImage( &img );
-
-	return CacheTexture( path, GetFallbackTexture(), persist );
+	return modelPtr;
 }
 
-PLModel* ResourceManager::LoadModel( const std::string& path, bool persist, bool abort_on_fail ) {
-	const char* fp = u_find2( path.c_str(), supported_model_formats, abort_on_fail );
-	if ( fp == nullptr ) {
-		return CacheModel( path, GetFallbackModel(), persist );
+PLTexture *ResourceManager::GetFallbackTexture() {
+	if ( fallbackTexture != nullptr ) {
+		return fallbackTexture;
 	}
 
-	PLModel* model = GetCachedModel( fp );
-	if ( model != nullptr ) {
-		return model;
-	}
-
-	model = plLoadModel( fp );
-	if ( model == nullptr ) {
-		if ( abort_on_fail ) {
-			Error( "Failed to load model, \"%s\" (%s)!\n", fp, plGetError() );
-		}
-
-		LogWarn( "Failed to load model, \"%s\" (%s)!\n", fp, plGetError() );
-		return CacheModel( fp, GetFallbackModel(), persist );
-	}
-
-	return CacheModel( fp, model, persist );
-}
-
-PLTexture* ResourceManager::GetFallbackTexture() {
-	if ( fallback_texture_ != nullptr ) {
-		return fallback_texture_;
-	}
-
-	PLColour pbuffer[] = {
+	PLColour pixelBuffer[] = {
 		{ 255, 255, 0, 255 }, { 0, 255, 255, 255 },
 		{ 0, 255, 255, 255 }, { 255, 255, 0, 255 } };
-	PLImage* image = plCreateImage( ( uint8_t* ) pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
-	if ( image != nullptr ) {
-		fallback_texture_ = plCreateTexture();
-		fallback_texture_->flags &= PL_TEXTURE_FLAG_NOMIPS;
-		if ( !plUploadTextureImage( fallback_texture_, image ) ) {
-			Error( "Failed to upload default texture (%s)!\n", plGetError() );
-		}
-		plFreeImage( image );
-	} else {
+	PLImage *image = plCreateImage(( uint8_t* ) pixelBuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	if ( image == nullptr ) {
 		Error( "Failed to generate default texture (%s)!\n", plGetError() );
 	}
 
-	return fallback_texture_;
+	fallbackTexture = plCreateTexture();
+	fallbackTexture->flags &= PL_TEXTURE_FLAG_NOMIPS;
+	if ( !plUploadTextureImage( fallbackTexture, image ) ) {
+		Error( "Failed to upload default texture (%s)!\n", plGetError() );
+	}
+
+	plFreeImage( image );
+
+	return fallbackTexture;
 }
 
-PLModel* ResourceManager::GetFallbackModel() {
-	if ( fallback_model_ != nullptr ) {
-		return fallback_model_;
+PLModel *ResourceManager::GetFallbackModel() {
+	if ( fallbackModel != nullptr ) {
+		return fallbackModel;
 	}
 
 	PLMesh* mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6 );
@@ -214,48 +134,36 @@ PLModel* ResourceManager::GetFallbackModel() {
 	plSetMeshShaderProgram( mesh, shaderProgram->GetInternalProgram() );
 	plUploadMesh( mesh );
 
-	return ( fallback_model_ = plCreateBasicStaticModel( mesh ) );
+	return ( fallbackModel = plCreateBasicStaticModel( mesh ) );
 }
 
-void ResourceManager::ClearTextures( bool force ) {
-	if ( textures_.empty() ) {
+void ResourceManager::ClearResource( const std::string &path, bool force ) {
+	if ( resourcesMap.empty() ) {
 		return;
 	}
 
-	for ( auto& i : textures_ ) {
-		if ( ( i.second.persist && !force )
-			|| ( fallback_texture_ != nullptr && i.second.texture_ptr == fallback_texture_ ) ) {
-			continue;
-		}
-
-		plDestroyTexture( i.second.texture_ptr );
-	}
-
-	if ( force ) {
-		textures_.clear();
-	}
-}
-
-void ResourceManager::ClearModels( bool force ) {
-	if ( models_.empty() ) {
+	auto resourceIndex = resourcesMap.find( path );
+	if ( resourceIndex == resourcesMap.end() ) {
 		return;
 	}
 
-	for ( auto i = models_.begin(); i != models_.end(); ) {
-		if ( ( i->second.persist && !force )
-			|| ( fallback_model_ != nullptr && i->second.model_ptr == fallback_model_ ) ) {
-			++i;
+	if ( !force && !resourceIndex->second->CanDestroy() ) {
+		return;
+	}
+
+	delete resourceIndex->second;
+	resourcesMap.erase( resourceIndex );
+}
+
+void ResourceManager::ClearAllResources( bool force ) {
+	for ( const auto& i : resourcesMap ) {
+		if ( !force && !i.second->CanDestroy() ) {
 			continue;
 		}
 
-		plDestroyModel( i->second.model_ptr );
-		i = models_.erase(i);
+		delete i.second;
+		resourcesMap.erase( i );
 	}
-}
-
-void ResourceManager::ClearAll() {
-	ClearModels();
-	ClearTextures();
 }
 
 void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
@@ -263,31 +171,13 @@ void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
 	u_unused( argv );
 
 	LogInfo( "Printing cache...\n" );
-
-	for ( auto const& i : Engine::Resource()->models_ ) {
-		LogInfo( " model %s / %s : name(%s)\n", i.first.c_str(), i.second.persist ? "true" : "false",
-				 i.second.model_ptr->name );
+	for ( auto const& i : Engine::Resource()->resourcesMap ) {
+		LogInfo(
+			" CachedName(%s)"
+            " CanDestroy(%s)"
+            " ReferenceCount(%u)\n",
+            i.first.c_str(),
+            i.second->CanDestroy() ? "true" : "false",
+            i.second->GetReferenceCount() );
 	}
-
-	unsigned int tsize = 0;
-	for ( auto const& i : Engine::Resource()->textures_ ) {
-		LogInfo( " texture %s / %s : name(%s)\n", i.first.c_str(), i.second.persist ? "true" : "false",
-				 i.second.texture_ptr->name );
-		tsize += i.second.texture_ptr->size;
-	}
-	LogInfo( "Texture Memory: %dkb\n", plBytesToKilobytes( tsize ) );
-}
-
-void ResourceManager::ClearTexturesCommand( unsigned int argc, char** argv ) {
-	u_unused( argc );
-	u_unused( argv );
-
-	Engine::Resource()->ClearTextures();
-}
-
-void ResourceManager::ClearModelsCommand( unsigned int argc, char** argv ) {
-	u_unused( argc );
-	u_unused( argv );
-
-	Engine::Resource()->ClearModels();
 }

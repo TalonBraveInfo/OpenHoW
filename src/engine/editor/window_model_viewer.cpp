@@ -31,7 +31,8 @@
 std::list<std::string> ModelViewer::modelList;
 
 ModelViewer::ModelViewer() : BaseWindow() {
-	const char **formatExtensions = supported_model_formats;
+	extern const char *supportedModelFormats[]; // TODO: platform lib should be providing this!!!
+	const char **formatExtensions = supportedModelFormats;
 	while ( *formatExtensions != nullptr ) {
 		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true, nullptr );
 		formatExtensions++;
