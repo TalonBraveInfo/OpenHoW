@@ -32,4 +32,6 @@ namespace ohw {
 	private:
 		PLModel *modelPtr;
 	};
+
+	using SharedModelResourcePointer = SharedResourcePointer< ModelResource >;
 }

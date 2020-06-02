@@ -57,7 +57,7 @@ Resource *ResourceManager::GetCachedResource( const std::string& path ) {
 	return nullptr;
 }
 
-TextureResource *ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist, bool abortOnFail ) {
+SharedTextureResourcePointer ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist, bool abortOnFail ) {
 	TextureResource *texturePtr = static_cast< TextureResource* >( GetCachedResource( path ) );
 	if ( texturePtr != nullptr ) {
 		return texturePtr;
@@ -69,7 +69,7 @@ TextureResource *ResourceManager::LoadTexture( const std::string& path, PLTextur
 	return texturePtr;
 }
 
-ModelResource* ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
+SharedModelResourcePointer ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
 	ModelResource *modelPtr = static_cast< ModelResource* >( GetCachedResource( path ) );
 	if ( modelPtr != nullptr ) {
 		return modelPtr;

@@ -37,4 +37,6 @@ namespace ohw {
 	private:
 		PLTexture *texturePtr{ nullptr };
 	};
+
+	using SharedTextureResourcePointer = SharedResourcePointer< TextureResource >;
 }

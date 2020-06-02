@@ -21,6 +21,29 @@
 PL_INLINE size_t GetMemoryUsage() const override { return sizeof( A ); }
 
 namespace ohw {
+	template< typename T >
+	class SharedResourcePointer {
+	private:
+		T *ptr;
+
+	public:
+		SharedResourcePointer( T *p ) : ptr( p ) {
+			p->AddReference();
+		}
+
+		SharedResourcePointer( const SharedResourcePointer< T > &src ) : ptr( src.ptr ) {
+			ptr->AddReference();
+		}
+
+		~SharedResourcePointer() {
+			ptr->Release();
+		}
+
+		operator T *() const {
+			return ptr;
+		}
+	};
+
 	class Resource {
 	public:
 		explicit Resource( const std::string &path, bool persist = false );
