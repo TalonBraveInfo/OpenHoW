@@ -30,30 +30,8 @@ static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = ( unsigned int ) -1;
 
 /* texture assets, these are loaded and free'd at runtime */
-static PLTexture *fe_background = nullptr;
-
-enum {
-	FE_TEXTURE_ANG,
-	FE_TEXTURE_ANGPOINT,
-
-	FE_TEXTURE_CLOCK,
-	FE_TEXTURE_TIMER,
-	FE_TEXTURE_CLIGHT,
-
-	FE_TEXTURE_CROSSHAIR,
-	FE_TEXTURE_TARGET,
-
-	FE_TEXTURE_ARROW,
-	FE_TEXTURE_CROSS,
-
-	FE_TEXTURE_PAUSE,
-
-	MAX_FE_GAME_TEXTURES
-};
-static PLTexture *fe_tx_game_textures[MAX_FE_GAME_TEXTURES];  /* textures that we'll be using in-game */
-//static PLTexture *fe_tx_game_icons[MAX_ITEM_TYPES];
-
-static PLTexture *minimapIcons[ MAX_MINIMAP_ICONS ];
+static ohw::TextureResource *fe_background = nullptr;
+static ohw::TextureResource *minimapIcons[ MAX_MINIMAP_ICONS ];
 
 static int frontend_width = 0;
 static int frontend_height = 0;
@@ -72,19 +50,6 @@ static void FrontendInputCallback( int key, bool is_pressed ) {
 	}
 }
 
-static void FrontEnd_CacheGameData() {
-	fe_tx_game_textures[ FE_TEXTURE_ANG ] =
-		Engine::Resource()->LoadTexture( "frontend/dash/ang", PL_TEXTURE_FILTER_LINEAR, true );
-	fe_tx_game_textures[ FE_TEXTURE_ANGPOINT ] =
-		Engine::Resource()->LoadTexture( "frontend/dash/angpoint", PL_TEXTURE_FILTER_LINEAR, true );
-	fe_tx_game_textures[ FE_TEXTURE_CLOCK ] =
-		Engine::Resource()->LoadTexture( "frontend/dash/clock", PL_TEXTURE_FILTER_LINEAR, true );
-	fe_tx_game_textures[ FE_TEXTURE_CLIGHT ] =
-		Engine::Resource()->LoadTexture( "frontend/dash/timlit.png", PL_TEXTURE_FILTER_LINEAR, true );
-	fe_tx_game_textures[ FE_TEXTURE_TIMER ] =
-		Engine::Resource()->LoadTexture( "frontend/dash/timer", PL_TEXTURE_FILTER_LINEAR, true );
-}
-
 static void FrontEnd_CacheMenuData() {
 	fe_background = Engine::Resource()->LoadTexture( "frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR, true );
 }
@@ -94,14 +59,13 @@ static void FrontEnd_CacheMenuData() {
 void FE_Initialize( void ) {
 	FrontEnd_CacheFontData();
 	FrontEnd_CacheMenuData();
-	FrontEnd_CacheGameData();
 
 	// Cache all the minimap icons
-	minimapIcons[ MINIMAP_ICON_BOMB ] = Engine::Resource()->LoadTexture( "frontend/map/bomb", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_BOMB ]   = Engine::Resource()->LoadTexture( "frontend/map/bomb", PL_TEXTURE_FILTER_NEAREST, true );
 	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", PL_TEXTURE_FILTER_NEAREST, true );
-	minimapIcons[ MINIMAP_ICON_PIG ] = Engine::Resource()->LoadTexture( "frontend/map/iconpig", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_PIG ]    = Engine::Resource()->LoadTexture( "frontend/map/iconpig", PL_TEXTURE_FILTER_NEAREST, true );
 	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", PL_TEXTURE_FILTER_NEAREST, true );
-	minimapIcons[ MINIMAP_ICON_PROP ] = Engine::Resource()->LoadTexture( "frontend/map/iconprop", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_PROP ]   = Engine::Resource()->LoadTexture( "frontend/map/iconprop", PL_TEXTURE_FILTER_NEAREST, true );
 }
 
 void FE_Shutdown( void ) {
@@ -241,7 +205,7 @@ static void FrontEnd_DrawMinimap() {
 		PLTexture *iconTexture = Engine::Resource()->GetFallbackTexture();
 		unsigned int iconStyle = actor->GetMinimapIconStyle();
 		if ( iconStyle < MAX_MINIMAP_ICONS ) {
-			iconTexture = minimapIcons[ iconStyle ];
+			iconTexture = minimapIcons[ iconStyle ]->GetInternalTexture();
 		}
 
 		plSetTexture( iconTexture, 0 );
@@ -286,7 +250,7 @@ static void FrontEnd_DrawMinimap() {
 
 static void DrawLoadingScreen() {
 	PLMatrix4 transform = plMatrix4Identity();
-	plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background );
+	plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background->GetInternalTexture() );
 
 	/* originally I wrote some code ensuring the menu bar
 	 * was centered... that was until I found out that on
@@ -331,7 +295,7 @@ void FE_Draw( void ) {
 		case FE_MODE_INIT:
 		case FE_MODE_START:
 		case FE_MODE_MAIN_MENU:
-			plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background );
+			plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background->GetInternalTexture() );
 			break;
 
 		case FE_MODE_LOADING:

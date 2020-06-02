@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../graphics/sprite.h"
-
+#include "engine.h"
+#include "sprite.h"
 #include "actor_manager.h"
 #include "actor.h"
 
@@ -35,7 +34,7 @@ public:
 	void Draw() override;
 
 	virtual void SetSpriteTexture( const std::string &path );
-	virtual void SetSpriteTexture( PLTexture *texture );
+	virtual void SetSpriteTexture( ohw::TextureResource *texture );
 
 protected:
 private:
@@ -55,12 +54,10 @@ ASprite::~ASprite() {
 }
 
 void ASprite::SetSpriteTexture( const std::string &path ) {
-	SetSpriteTexture( Engine::Resource()->LoadTexture( path,
-													   cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_LINEAR
-																						   : PL_TEXTURE_FILTER_NEAREST ) );
+	SetSpriteTexture( Engine::Resource()->LoadTexture( path, cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_LINEAR : PL_TEXTURE_FILTER_NEAREST ) );
 }
 
-void ASprite::SetSpriteTexture( PLTexture *texture ) {
+void ASprite::SetSpriteTexture( ohw::TextureResource *texture ) {
 	sprite_->SetTexture( texture );
 }
 

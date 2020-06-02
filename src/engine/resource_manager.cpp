@@ -48,10 +48,6 @@ ResourceManager::~ResourceManager() {
 	ClearAllResources( true );
 }
 
-
-//const char *supported_audio_formats[]={"wav", NULL};
-//const char *supported_video_formats[]={"bik", NULL};
-
 Resource *ResourceManager::GetCachedResource( const std::string& path ) {
 	auto idx = resourcesMap.find( path );
 	if ( idx != resourcesMap.end() ) {

@@ -45,7 +45,7 @@ void AModel::Draw() {
 	mat.Rotate( angles.x, { 0, 0, 1 } );
 	mat.Translate( position_ );
 
-	Model_Draw( model_, mat );
+	Model_Draw( model_->GetInternalModel(), mat );
 }
 
 void AModel::SetModel( const std::string &path ) {
@@ -53,7 +53,7 @@ void AModel::SetModel( const std::string &path ) {
 	u_assert( model_ != nullptr );
 
 	// Keep model path up-to-date
-	modelPath = model_->path;
+	modelPath = model_->GetInternalModel()->path;
 }
 
 void AModel::ShowModel( bool show ) {

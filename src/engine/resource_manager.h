@@ -54,9 +54,5 @@ namespace ohw {
 		std::map< std::string, Resource* > resourcesMap;
 
 		friend class Engine;
-
-		friend class Resource;
-		friend class TextureResource;
-		friend class ModelResource;
 	};
 }

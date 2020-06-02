@@ -22,10 +22,17 @@
 namespace ohw {
 	class TextureResource : public Resource {
 	public:
+		IMPLEMENT_RESOURCE_CLASS( TextureResource )
+
 		explicit TextureResource( const std::string &path, PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST, bool persist = false, bool abortOnFail = false );
 		~TextureResource();
 
 		PL_INLINE PLTexture *GetInternalTexture() { return texturePtr; }
+
+		PL_INLINE unsigned int GetWidth() { return texturePtr->w; }
+		PL_INLINE unsigned int GetHeight() { return texturePtr->h; }
+
+		PL_INLINE size_t GetTextureSize() { return texturePtr->size; }
 
 	private:
 		PLTexture *texturePtr{ nullptr };

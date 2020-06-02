@@ -22,12 +22,29 @@ ohw::Resource::Resource( const std::string &path, bool persist ) : persist( pers
 	LogDebug( "Created resource, \"%s\"\n", path.c_str() );
 }
 
+ohw::Resource::~Resource() {
+	LogDebug( "Destroyed resource\n" );
+}
+
+/**
+ * Releases a reference to this object.
+ */
 void ohw::Resource::Release() {
 	if ( numReferences > 0 ) {
 		--numReferences;
 		return;
 	}
 
+	/* originally the plan was to do this through the resource manager instead
+	 * but we could have situations where the following happens...
+	 *  Actor is spawned in the game
+	 *  Actor is almost immediately destroyed
+	 *  Actor releases reference
+	 *  Actor is then spawned back in again immediately after
+	 * And that could happen over and over - potentially causing a big chug.
+	 * For now we'll do the clean up at the end of a game for released objects,
+	 * and in the longer term we will stagger the clean-up during the game.
+	 */
 #if 0
 	if ( !persist && numReferences == 0 ) {
 		// Automatically destroy ourselves
@@ -36,6 +53,9 @@ void ohw::Resource::Release() {
 #endif
 }
 
+/**
+ * Returns true if this object can be destroyed.
+ */
 bool ohw::Resource::CanDestroy() {
 	if ( persist ) {
 		return false;

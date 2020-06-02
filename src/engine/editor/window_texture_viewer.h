@@ -19,11 +19,12 @@
 
 class TextureViewer : public BaseWindow {
 public:
-	TextureViewer( PLTexture *texture ) : BaseWindow() {
+	explicit TextureViewer( ohw::TextureResource *texture ) : BaseWindow() {
 		texturePtr = texture;
+		texturePtr->AddReference();
 	}
 
-	TextureViewer( const std::string &path ) {
+	explicit TextureViewer( const std::string &path ) {
 		texturePtr = ohw::Engine::Resource()->LoadTexture( path, PL_TEXTURE_FILTER_LINEAR );
 		if ( texturePtr == nullptr ) {
 			throw std::runtime_error( "Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!" );
@@ -39,13 +40,18 @@ public:
 			return;
 		}
 
-		plDestroyTexture( texturePtr );
+		texturePtr->Release();
+		ohw::Engine::Resource()->ClearAllResources();
+
 		texturePtr = ohw::Engine::Resource()->LoadTexture( texturePath, filter_mode );
 		filterMode = filter_mode;
 	}
 
 	void Display() override {
-		ImGui::SetNextWindowSize( ImVec2( texturePtr->w + 64, texturePtr->h + 128 ), ImGuiCond_Once );
+		unsigned int texWidth = texturePtr->GetWidth();
+		unsigned int texHeight = texturePtr->GetHeight();
+
+		ImGui::SetNextWindowSize( ImVec2( texWidth + 64, texHeight + 128 ), ImGuiCond_Once );
 		Begin( "Texture Viewer",
 			   ImGuiWindowFlags_MenuBar |
 				   ImGuiWindowFlags_HorizontalScrollbar |
@@ -69,20 +75,20 @@ public:
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::Image( reinterpret_cast<ImTextureID>(texturePtr->internal.id), ImVec2(
-			texturePtr->w * scale_, texturePtr->h * scale_ ) );
+		unsigned int internalId = texturePtr->GetInternalTexture()->internal.id;
+		ImGui::Image( reinterpret_cast<ImTextureID>( internalId ), ImVec2( texWidth * scale_, texHeight * scale_ ) );
 		ImGui::Separator();
 		ImGui::Text( "Path: %s", texturePath.c_str() );
-		ImGui::Text( "%dx%d", texturePtr->w, texturePtr->h );
-		ImGui::Text( "Size: %ukB (%luB)", ( unsigned int ) plBytesToKilobytes( texturePtr->size ),
-					 ( long unsigned ) texturePtr->size );
+		ImGui::Text( "%dx%d", texWidth, texHeight );
+		size_t texSize = texturePtr->GetTextureSize();
+		ImGui::Text( "Size: %ukB (%luB)", ( unsigned int ) plBytesToKilobytes( texSize ), ( long unsigned ) texSize );
 
 		ImGui::End();
 	}
 
 protected:
 private:
-	PLTexture *texturePtr{ nullptr };
+	ohw::TextureResource *texturePtr{ nullptr };
 	std::string texturePath;
 
 	PLTextureFilter filterMode{ PL_TEXTURE_FILTER_LINEAR };

@@ -21,19 +21,23 @@
 #include "display.h"
 #include "shaders.h"
 
-Sprite::Sprite( SpriteType type, PLTexture* texture, PLColour colour, float scale ) :
+Sprite::Sprite( SpriteType type, ohw::TextureResource* texture, PLColour colour, float scale ) :
 	type_( type ),
 	colour_( colour ),
-	scale_( scale ) {
+	scale_( scale ),
+	textureResource( texture ) {
 	mesh_ = plCreateMeshRectangle( -64, -64, 64, 64, colour_ );
-	mesh_->texture = texture;
 
 	defaultProgram = Shaders_GetProgram( "generic_textured" );
 
 	matrix_.Identity();
 }
 
-Sprite::~Sprite() = default;
+Sprite::~Sprite() {
+	if ( textureResource != nullptr ) {
+		textureResource->Release();
+	}
+}
 
 void Sprite::Draw() {
 	if ( !cv_graphics_draw_sprites->b_value ) {
@@ -56,7 +60,7 @@ void Sprite::Draw() {
 
 	//matrix_ = matrix_ * PLVector3( scale_, scale_, scale_ );
 
-	plSetTexture( mesh_->texture, 0 );
+	plSetTexture( textureResource->GetInternalTexture(), 0 );
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", matrix_, true );
 
@@ -96,12 +100,12 @@ void Sprite::SetColour( const PLColour& colour ) {
 	colour_ = colour;
 }
 
-void Sprite::SetTexture( PLTexture* texture ) {
+void Sprite::SetTexture( ohw::TextureResource* texture ) {
 	// a lot of this will change once the rc manager is introduced...
 
-	if ( texture == mesh_->texture ) {
+	if ( texture->GetInternalTexture() == mesh_->texture ) {
 		return;
 	}
 
-	mesh_->texture = texture;
+	mesh_->texture = texture->GetInternalTexture();
 }

@@ -43,32 +43,38 @@ Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 
 	std::string pogPath = "maps/" + manifest_->filename + "/" + manifest_->filename + ".pog";
 	LoadSpawns( pogPath );
-	LoadSky();
+
+	// Load both the bottom and top parts of the sky dome
+	if ( skyModelTop == nullptr ) {
+		skyModelTop = LoadSkyModel( "skys/skydome" );
+	}
+	if ( skyModelBottom == nullptr ) {
+		skyModelBottom = LoadSkyModel( "skys/skydomeu" );
+	}
 
 	UpdateSky();
 }
 
 Map::~Map() {
 	delete terrain_;
-}
 
-void Map::LoadSky() {
-	if ( sky_model_top_ == nullptr ) {
-		sky_model_top_ = LoadSkyModel( "skys/skydome" );
+	if ( skyModelTop != nullptr ) {
+		skyModelTop->Release();
 	}
-
-	if ( sky_model_bottom_ == nullptr ) {
-		sky_model_bottom_ = LoadSkyModel( "skys/skydomeu" );
+	if ( skyModelBottom != nullptr ) {
+		skyModelBottom->Release();
 	}
 }
 
-PLModel *Map::LoadSkyModel( const std::string &path ) {
-	PLModel *model = Engine::Resource()->LoadModel( path, true, true );
-	model->model_matrix = plTranslateMatrix4( PLVector3( TERRAIN_PIXEL_WIDTH / 2, 0, TERRAIN_PIXEL_WIDTH / 2 ) );
+ohw::ModelResource *Map::LoadSkyModel( const std::string &path ) {
+	ohw::ModelResource *model = Engine::Resource()->LoadModel( path, true, true );
+
+	PLModel *internalModel = model->GetInternalModel();
+	internalModel->model_matrix = plTranslateMatrix4( PLVector3( TERRAIN_PIXEL_WIDTH / 2.0f, 0, TERRAIN_PIXEL_WIDTH / 2.0f ) );
 	// Default skydome is smaller than the map, so we'll scale it
-	model->model_matrix = plScaleMatrix4( model->model_matrix, PLVector3( 5, 5, 5 ) );
+	internalModel->model_matrix = plScaleMatrix4( internalModel->model_matrix, PLVector3( 5.0f, 5.0f, 5.0f ) );
 
-	PLModelLod *lod = plGetModelLodLevel( model, 0 );
+	PLModelLod *lod = plGetModelLodLevel( internalModel, 0 );
 	if ( lod == nullptr ) {
 		Error( "Failed to get first lod for sky mesh!\n" );
 	}
@@ -83,8 +89,8 @@ PLModel *Map::LoadSkyModel( const std::string &path ) {
 }
 
 void Map::UpdateSky() {
-	UpdateSkyModel( sky_model_top_ );
-	UpdateSkyModel( sky_model_bottom_ );
+	UpdateSkyModel( skyModelTop->GetInternalModel() );
+	UpdateSkyModel( skyModelBottom->GetInternalModel() );
 }
 
 void Map::UpdateSkyModel( PLModel *model ) {
@@ -211,8 +217,8 @@ void Map::LoadSpawns( const std::string &path ) {
 void Map::Draw() {
 	Shaders_SetProgramByName( "generic_untextured" );
 
-	plDrawModel( sky_model_top_ );
-	plDrawModel( sky_model_bottom_ );
+	plDrawModel( skyModelTop->GetInternalModel() );
+	plDrawModel( skyModelBottom->GetInternalModel() );
 
 	// TODO: move this somewhere else???
 	PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();

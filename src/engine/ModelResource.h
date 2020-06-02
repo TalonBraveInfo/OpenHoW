@@ -22,6 +22,8 @@
 namespace ohw {
 	class ModelResource : public Resource {
 	public:
+		IMPLEMENT_RESOURCE_CLASS( ModelResource )
+
 		explicit ModelResource( const std::string &path, bool persist = false, bool abortOnFail = false );
 		~ModelResource();
 

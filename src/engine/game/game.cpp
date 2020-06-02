@@ -486,7 +486,10 @@ void GameManager::StartMode( const std::string &map,
 							 const GameModeDescriptor &descriptor ) {
 	FrontEnd_SetState( FE_MODE_LOADING );
 
-	Engine::Game()->LoadMap( map );
+	// Free up all our unreferenced resources
+	Engine::Resource()->ClearAllResources();
+
+	LoadMap( map );
 
 	if ( map_ == nullptr ) {
 		LogWarn( "Failed to start mode, map wasn't loaded!\n" );
@@ -540,8 +543,8 @@ void GameManager::EndMode() {
 
 	ActorManager::GetInstance()->DestroyActors();
 
-	Engine::Resource()->ClearTextures();
-	Engine::Resource()->ClearModels();
+	// Free up all our unreferenced resources
+	Engine::Resource()->ClearAllResources();
 
 	Engine::Audio()->FreeSources();
 	Engine::Audio()->FreeSamples();

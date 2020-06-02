@@ -17,16 +17,22 @@
 
 #pragma once
 
+#define IMPLEMENT_RESOURCE_CLASS( A ) \
+PL_INLINE size_t GetMemoryUsage() const override { return sizeof( A ); }
+
 namespace ohw {
 	class Resource {
 	public:
 		explicit Resource( const std::string &path, bool persist = false );
+		virtual ~Resource();
 
 		PL_INLINE unsigned int AddReference() { return ( ++numReferences ); }
 		PL_INLINE unsigned int GetReferenceCount() { return numReferences; }
 		void Release();
 
 		bool CanDestroy();
+
+		PL_INLINE virtual size_t GetMemoryUsage() const = 0;
 
 	private:
 		unsigned int numReferences{ 0 };
