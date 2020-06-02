@@ -25,6 +25,8 @@ namespace ohw {
 		explicit ModelResource( const std::string &path, bool persist = false, bool abortOnFail = false );
 		~ModelResource();
 
+		PL_INLINE PLModel *GetInternalModel() { return modelPtr; }
+
 	private:
 		PLModel *modelPtr;
 	};

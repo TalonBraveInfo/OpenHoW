@@ -26,13 +26,7 @@ namespace ohw {
 		PL_INLINE unsigned int GetReferenceCount() { return numReferences; }
 		void Release();
 
-		PL_INLINE bool CanDestroy() {
-			if ( persist ) {
-				return false;
-			}
-
-			return ( numReferences == 0 );
-		}
+		bool CanDestroy();
 
 	private:
 		unsigned int numReferences{ 0 };

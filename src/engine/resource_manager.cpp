@@ -16,10 +16,8 @@
  */
 
 #include "engine.h"
-#include "ModelResource.h"
-#include "TextureResource.h"
 #include "resource_manager.h"
-#include "graphics/shaders.h"
+#include "shaders.h"
 
 using namespace ohw;
 
@@ -42,8 +40,8 @@ ResourceManager::ResourceManager() {
 	}
 
 	plRegisterConsoleCommand( "ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources." );
-	plRegisterConsoleCommand( "ClearModels", &ResourceManager::ClearModelsCommand, "Clears all cached models." );
-	plRegisterConsoleCommand( "ClearTextures", &ResourceManager::ClearTexturesCommand, "Clears all cached textures." );
+	plRegisterConsoleCommand( "ClearAllResources", &ResourceManager::ClearAllResourcesCommand, "Clears all cached resources." );
+	plRegisterConsoleCommand( "ClearResource", &ResourceManager::ClearResourceCommand, "Clears the specified resource." );
 }
 
 ResourceManager::~ResourceManager() {
@@ -116,7 +114,7 @@ PLModel *ResourceManager::GetFallbackModel() {
 		return fallbackModel;
 	}
 
-	PLMesh* mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6 );
+	PLMesh *mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6 );
 	plSetMeshVertexPosition( mesh, 0, PLVector3( 0, 20, 0 ) );
 	plSetMeshVertexPosition( mesh, 1, PLVector3( 0, -20, 0 ) );
 	plSetMeshVertexPosition( mesh, 2, PLVector3( 20, 0, 0 ) );
@@ -125,7 +123,7 @@ PLModel *ResourceManager::GetFallbackModel() {
 	plSetMeshVertexPosition( mesh, 5, PLVector3( 0, 0, -20 ) );
 	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ) );
 
-	ShaderProgram* shaderProgram = Shaders_GetProgram( "generic_untextured" );
+	ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
 	if ( shaderProgram == nullptr ) {
 		Error( "Failed to get default shader program, \"generic_untextured\"!\n" );
 	}
@@ -137,6 +135,9 @@ PLModel *ResourceManager::GetFallbackModel() {
 	return ( fallbackModel = plCreateBasicStaticModel( mesh ) );
 }
 
+/**
+ * Clear the specified resource if it's ready to be freed. Use force to immediately destroy it.
+ */
 void ResourceManager::ClearResource( const std::string &path, bool force ) {
 	if ( resourcesMap.empty() ) {
 		return;
@@ -153,16 +154,22 @@ void ResourceManager::ClearResource( const std::string &path, bool force ) {
 
 	delete resourceIndex->second;
 	resourcesMap.erase( resourceIndex );
+
+	LogDebug( "Freed resource \"%s\"\n", path.c_str() );
 }
 
+/**
+ * Clear all cached resources that can be freed up. Use force to immediately destroy it.
+ */
 void ResourceManager::ClearAllResources( bool force ) {
-	for ( const auto& i : resourcesMap ) {
-		if ( !force && !i.second->CanDestroy() ) {
+	for ( auto i = resourcesMap.begin(); i != resourcesMap.end(); ) {
+		if ( !force && !i->second->CanDestroy() ) {
+			++i;
 			continue;
 		}
 
-		delete i.second;
-		resourcesMap.erase( i );
+		delete i->second;
+		i = resourcesMap.erase( i );
 	}
 }
 
@@ -180,4 +187,53 @@ void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
             i.second->CanDestroy() ? "true" : "false",
             i.second->GetReferenceCount() );
 	}
+}
+
+void ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv ) {
+	bool force = false;
+	if ( argc > 1 ) {
+		const char *forceParameter = argv[ 1 ];
+		if ( forceParameter == nullptr ) {
+			LogWarn( "Invalid force parameter!\n" );
+			return;
+		}
+
+		if ( pl_strcasecmp( forceParameter, "true" ) == 0 ) {
+			force = true;
+		} else if ( pl_strcasecmp( forceParameter, "false" ) != 0 ) {
+			LogWarn( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
+		}
+	}
+
+	ohw::Engine::Resource()->ClearAllResources( force );
+}
+
+void ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
+	if ( argc <= 1 ) {
+		LogWarn( "Invalid number of arguments!\n" );
+		return;
+	}
+
+	const char *resourceName = argv[ 1 ];
+	if ( resourceName == nullptr ) {
+		LogWarn( "Invalid resource name!\n" );
+		return;
+	}
+
+	bool force = false;
+	if ( argc > 2 ) {
+		const char *forceParameter = argv[ 2 ];
+		if ( forceParameter == nullptr ) {
+			LogWarn( "Invalid force parameter!\n" );
+			return;
+		}
+
+		if ( pl_strcasecmp( forceParameter, "true" ) == 0 ) {
+			force = true;
+		} else if ( pl_strcasecmp( forceParameter, "false" ) != 0 ) {
+			LogWarn( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
+		}
+	}
+
+	ohw::Engine::Resource()->ClearResource( resourceName, force );
 }

@@ -52,10 +52,9 @@
 
 #ifdef __cplusplus
 #include "resource_manager.h"
-
-#include "audio/audio.h"
-#include "game/game.h"
-#include "physics/physics_interface.h"
+#include "audio.h"
+#include "game.h"
+#include "physics_interface.h"
 
 namespace ohw {
 

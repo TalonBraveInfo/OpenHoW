@@ -25,6 +25,8 @@ namespace ohw {
 		explicit TextureResource( const std::string &path, PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST, bool persist = false, bool abortOnFail = false );
 		~TextureResource();
 
+		PL_INLINE PLTexture *GetInternalTexture() { return texturePtr; }
+
 	private:
 		PLTexture *texturePtr{ nullptr };
 	};

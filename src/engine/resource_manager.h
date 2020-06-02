@@ -17,11 +17,10 @@
 
 #pragma once
 
-namespace ohw {
-	class Resource;
-	class TextureResource;
-	class ModelResource;
+#include "ModelResource.h"
+#include "TextureResource.h"
 
+namespace ohw {
 	class ResourceManager {
 	private:
 		ResourceManager();
@@ -34,14 +33,15 @@ namespace ohw {
 		void ClearResource( const std::string &path, bool force = false );
 		void ClearAllResources( bool force = false );
 
+		PLTexture *GetFallbackTexture();
+		PLModel *GetFallbackModel();
+
 	private:
 		static void ListCachedResources( unsigned int argc, char **argv );
 		static void ClearAllResourcesCommand( unsigned int argc, char **argv );
 		static void ClearResourceCommand( unsigned int argc, char **argv );
 
-		PLTexture *GetFallbackTexture();
 		PLTexture *fallbackTexture;
-		PLModel *GetFallbackModel();
 		PLModel *fallbackModel;
 
 		Resource *GetCachedResource( const std::string &path );

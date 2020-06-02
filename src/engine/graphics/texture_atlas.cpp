@@ -20,10 +20,8 @@
 #include "display.h"
 #include "texture_atlas.h"
 
-using namespace ohw;
-
 TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {
-	texture_ = Engine::Resource()->GetFallbackTexture();
+	texture_ = ohw::Engine::Resource()->GetFallbackTexture();
 }
 
 TextureAtlas::~TextureAtlas() {
@@ -33,7 +31,7 @@ TextureAtlas::~TextureAtlas() {
 		id.second = nullptr;
 	}
 
-	if ( texture_ != Engine::Resource()->GetFallbackTexture() ) {
+	if ( texture_ != ohw::Engine::Resource()->GetFallbackTexture() ) {
 		// TODO: reintroduce once we have a wrapper around PLModel to hold this!
 		//plDestroyTexture(texture_);
 	}

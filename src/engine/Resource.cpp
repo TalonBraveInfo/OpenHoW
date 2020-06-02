@@ -28,8 +28,18 @@ void ohw::Resource::Release() {
 		return;
 	}
 
+#if 0
 	if ( !persist && numReferences == 0 ) {
 		// Automatically destroy ourselves
 		delete this;
 	}
+#endif
+}
+
+bool ohw::Resource::CanDestroy() {
+	if ( persist ) {
+		return false;
+	}
+
+	return ( numReferences == 0 );
 }
