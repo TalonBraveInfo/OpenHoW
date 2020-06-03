@@ -32,7 +32,7 @@ public:
 	void SetModel( const std::string &path );
 
 protected:
-	ohw::ModelResource *model_{ nullptr };
+	ohw::SharedModelResourcePointer model_{ nullptr };
 
 private:
 	bool show_model_{ true };

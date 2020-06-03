@@ -57,17 +57,10 @@ Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 
 Map::~Map() {
 	delete terrain_;
-
-	if ( skyModelTop != nullptr ) {
-		skyModelTop->Release();
-	}
-	if ( skyModelBottom != nullptr ) {
-		skyModelBottom->Release();
-	}
 }
 
-ohw::ModelResource *Map::LoadSkyModel( const std::string &path ) {
-	ohw::ModelResource *model = Engine::Resource()->LoadModel( path, true, true );
+ohw::SharedModelResourcePointer Map::LoadSkyModel( const std::string &path ) {
+	ohw::SharedModelResourcePointer model = Engine::Resource()->LoadModel( path, true, true );
 
 	PLModel *internalModel = model->GetInternalModel();
 	internalModel->model_matrix = plTranslateMatrix4( PLVector3( TERRAIN_PIXEL_WIDTH / 2.0f, 0, TERRAIN_PIXEL_WIDTH / 2.0f ) );

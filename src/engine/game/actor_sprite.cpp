@@ -34,11 +34,10 @@ public:
 	void Draw() override;
 
 	virtual void SetSpriteTexture( const std::string &path );
-	virtual void SetSpriteTexture( ohw::TextureResource *texture );
 
 protected:
 private:
-	Sprite *sprite_;
+	Sprite *spritePtr;
 };
 
 REGISTER_ACTOR( sprite, ASprite )
@@ -46,19 +45,15 @@ REGISTER_ACTOR( sprite, ASprite )
 using namespace ohw;
 
 ASprite::ASprite() : SuperClass() {
-	sprite_ = new Sprite( Sprite::TYPE_DEFAULT, Engine::Resource()->GetFallbackTexture() );
+	spritePtr = new Sprite( Sprite::TYPE_DEFAULT, "materials/engine/default.png" );
 }
 
 ASprite::~ASprite() {
-	delete sprite_;
+	delete spritePtr;
 }
 
 void ASprite::SetSpriteTexture( const std::string &path ) {
-	SetSpriteTexture( Engine::Resource()->LoadTexture( path, cv_graphics_texture_filter->b_value ? PL_TEXTURE_FILTER_LINEAR : PL_TEXTURE_FILTER_NEAREST ) );
-}
-
-void ASprite::SetSpriteTexture( ohw::TextureResource *texture ) {
-	sprite_->SetTexture( texture );
+	spritePtr->SetTexture( path );
 }
 
 void ASprite::Tick() {
@@ -66,12 +61,12 @@ void ASprite::Tick() {
 
 	SetAngles( angles_.GetValue() + 0.2f );
 
-	sprite_->SetPosition( position_ );
-	sprite_->SetAngles( angles_ );
+	spritePtr->SetPosition( position_ );
+	spritePtr->SetAngles( angles_ );
 }
 
 void ASprite::Draw() {
 	SuperClass::Draw();
 
-	sprite_->Draw();
+	spritePtr->Draw();
 }

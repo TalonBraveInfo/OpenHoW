@@ -25,8 +25,7 @@ public:
 		TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
 	} type_{ TYPE_DEFAULT };
 
-	Sprite( SpriteType type, ohw::TextureResource *texture, PLColour colour = { 255, 255, 255, 255 },
-	        float scale = 1.0f );
+	Sprite( SpriteType type, const std::string &texturePath, PLColour colour = { 255, 255, 255, 255 }, float scale = 1.0f );
 	~Sprite();
 
 	float GetScale() { return scale_; }
@@ -41,7 +40,7 @@ public:
 	PLColour GetColour() { return colour_; }
 	void SetColour( const PLColour &colour );
 
-	void SetTexture( ohw::TextureResource *texture );
+	void SetTexture( const std::string &texturePath );
 
 	//const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
 	//void SetAnimation(SpriteAnimation* anim);
@@ -54,7 +53,7 @@ private:
 	PLVector3 angles_;
 	PLColour colour_{ 255, 255, 255, 255 };
 	float scale_{ 1.0f };
-	ohw::TextureResource *textureResource;
+	ohw::SharedTextureResourcePointer texture{ nullptr };
 
 	ShaderProgram *defaultProgram;
 
@@ -62,5 +61,5 @@ private:
 	double frame_delay_{ 0 };
 
 	PLMesh *mesh_{ nullptr };
-	PLMatrix4 matrix_{};
+	PLMatrix4 modelMatrix{};
 };

@@ -42,7 +42,7 @@ public:
 protected:
 private:
 	void LoadSpawns( const std::string &path );
-	static ohw::ModelResource *LoadSkyModel( const std::string &path );
+	static ohw::SharedModelResourcePointer LoadSkyModel( const std::string &path );
 
 	void UpdateSkyModel( PLModel *model );
 
@@ -50,8 +50,8 @@ private:
 
 	std::vector< ActorSpawn > spawns_;
 
-	ohw::ModelResource *skyModelTop{ nullptr };
-	ohw::ModelResource *skyModelBottom{ nullptr };
+	ohw::SharedModelResourcePointer skyModelTop{ nullptr };
+	ohw::SharedModelResourcePointer skyModelBottom{ nullptr };
 
 	Terrain *terrain_{ nullptr };
 };

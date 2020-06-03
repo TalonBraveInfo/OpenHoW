@@ -28,24 +28,16 @@ Particle::Particle( PLVector3 position, PLVector3 velocity, PLColour startColour
 
 // SpriteParticle
 
-SpriteParticle::SpriteParticle( PLTexture *texture, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan ) :
+SpriteParticle::SpriteParticle( const std::string &texturePath, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan ) :
 	Particle( position, velocity, startColour, lifeSpan ),
-	Sprite( SpriteType::TYPE_DEFAULT, texture ) {
-
-}
+	Sprite( SpriteType::TYPE_DEFAULT, texturePath ) {}
 
 SpriteParticle::~SpriteParticle() {}
 
 // ModelParticle
 
-ModelParticle::ModelParticle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan, const std::string &modelPath ) : Particle( position, velocity, startColour, lifeSpan ) {
-	myModelPtr = ohw::Engine::Resource()->GetCachedModel( modelPath );
+ModelParticle::ModelParticle( const std::string &modelPath, PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) : Particle( position, velocity, startColour, lifeSpan ) {
+	modelPtr = ohw::Engine::Resource()->LoadModel( modelPath );
 }
 
-//ModelParticle::ModelParticle( PLModel *modelPtr, PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) : Particle( position, velocity, startColour, lifeSpan ) {
-//	myModelPtr = modelPtr;
-//}
-
-ModelParticle::~ModelParticle() {
-	// TODO: remove reference to model instance
-}
+ModelParticle::~ModelParticle() {}

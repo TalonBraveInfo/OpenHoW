@@ -21,12 +21,13 @@
 
 using namespace ohw;
 
+PLModel *LoadObjModel( const char *path ); // see loaders/obj.cpp
+PLModel *Model_LoadVtxFile( const char *path );
+PLModel *Model_LoadMinFile( const char *path );
+
 ResourceManager::ResourceManager() {
-	PLModel *LoadObjModel( const char *path ); // see loaders/obj.cpp
 	plRegisterModelLoader( "obj", LoadObjModel );
-	PLModel *Model_LoadVtxFile( const char *path );
 	plRegisterModelLoader( "vtx", Model_LoadVtxFile );
-	PLModel *Model_LoadMinFile( const char *path );
 	plRegisterModelLoader( "min", Model_LoadMinFile );
 
 	// Allow users to enable support for all model formats if desired (disabled by default for security reasons)

@@ -115,7 +115,8 @@ static void Mod_Unmount( ModDirectory* mod ) {
 		mod->mountList.clear();
 	}
 
-	Engine::Resource()->ClearAll();
+	// Clear out all the content we've loaded, we'll need to load all our major dependencies after
+	Engine::Resource()->ClearAllResources( true );
 }
 
 void Mod_FetchDependencies( ModDirectory* mod, std::set<std::string>& dirSet ) {

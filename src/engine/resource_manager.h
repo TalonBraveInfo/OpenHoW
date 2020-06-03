@@ -41,8 +41,8 @@ namespace ohw {
 		static void ClearAllResourcesCommand( unsigned int argc, char **argv );
 		static void ClearResourceCommand( unsigned int argc, char **argv );
 
-		PLTexture *fallbackTexture;
-		PLModel *fallbackModel;
+		PLTexture *fallbackTexture{ nullptr };
+		PLModel *fallbackModel{ nullptr };
 
 		Resource *GetCachedResource( const std::string &path );
 		PL_INLINE Resource *CacheResource( const std::string &path, Resource *resourcePtr, bool persist = false ) {

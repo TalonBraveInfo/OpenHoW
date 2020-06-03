@@ -18,7 +18,9 @@
 #include "engine.h"
 #include "Resource.h"
 
-ohw::Resource::Resource( const std::string &path, bool persist ) : persist( persist ) {
+ohw::Resource::Resource( const std::string &path, bool persist ) :
+	referencePath( path ),
+	persist( persist ) {
 	LogDebug( "Created resource, \"%s\"\n", path.c_str() );
 }
 
@@ -56,7 +58,7 @@ void ohw::Resource::Release() {
 /**
  * Returns true if this object can be destroyed.
  */
-bool ohw::Resource::CanDestroy() {
+bool ohw::Resource::CanDestroy() const {
 	if ( persist ) {
 		return false;
 	}

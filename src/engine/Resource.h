@@ -28,18 +28,42 @@ namespace ohw {
 
 	public:
 		SharedResourcePointer( T *p ) : ptr( p ) {
-			p->AddReference();
+			if ( ptr != nullptr ) {
+				ptr->AddReference();
+			}
 		}
 
 		SharedResourcePointer( const SharedResourcePointer< T > &src ) : ptr( src.ptr ) {
-			ptr->AddReference();
+			if ( ptr != nullptr ) {
+				ptr->AddReference();
+			}
 		}
 
 		~SharedResourcePointer() {
-			ptr->Release();
+			if ( ptr != nullptr ) {
+				ptr->Release();
+			}
+		}
+
+		SharedResourcePointer &operator=( const SharedResourcePointer< T > &rhs ) {
+			if ( rhs.ptr != nullptr ) {
+				rhs.ptr->AddReference();
+			}
+
+			if ( ptr != nullptr ) {
+				ptr->Release();
+			}
+
+			ptr = rhs.ptr;
+
+			return *this;
 		}
 
 		operator T *() const {
+			return ptr;
+		}
+
+		T *operator->() const {
 			return ptr;
 		}
 	};
@@ -50,14 +74,19 @@ namespace ohw {
 		virtual ~Resource();
 
 		PL_INLINE unsigned int AddReference() { return ( ++numReferences ); }
-		PL_INLINE unsigned int GetReferenceCount() { return numReferences; }
+		PL_INLINE unsigned int GetReferenceCount() const { return numReferences; }
 		void Release();
 
-		bool CanDestroy();
+		bool CanDestroy() const;
 
-		PL_INLINE virtual size_t GetMemoryUsage() const = 0;
+		virtual size_t GetMemoryUsage() const = 0;
+
+		// TODO: GetAbsolutePath() ...
+		PL_INLINE std::string GetPath() const { return referencePath; }
 
 	private:
+		std::string referencePath;
+
 		unsigned int numReferences{ 0 };
 		bool persist{ false };
 	};

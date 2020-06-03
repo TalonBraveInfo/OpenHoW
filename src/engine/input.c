@@ -157,6 +157,9 @@ PLVector2 Input_GetJoystickState(unsigned int controller, unsigned int joystick)
       );
     default: Error("Invalid joystick index (%d)!\n", joystick);
   }
+
+  // Make the compiler happy...
+  return PLVector2( 0, 0 );
 }
 
 bool Input_GetKeyState(int key) {

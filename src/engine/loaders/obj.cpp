@@ -41,8 +41,12 @@ PLModel *LoadObjModel( const char *path ) {
 		memcpy( mesh->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
 
 		if ( obj.materials.size() > 1 ) {
-			mesh->texture = Engine::Resource()->LoadTexture( obj.materials[ obj.attributes[ 0 ] ].strTexture,
-															 PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+			// TODO: oh dear... Oh dear dear... Reference will get released - we can't parent this to the meshes (need wrapper class) -
+			//  in the mean time this'll have to leak :(
+			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( obj.materials[ obj.attributes[ 0 ] ].strTexture, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+			texture->AddReference();
+
+			mesh->texture = texture->GetInternalTexture();
 		} else {
 			mesh->texture = Engine::Resource()->GetFallbackTexture();
 		}
@@ -66,8 +70,7 @@ PLModel *LoadObjModel( const char *path ) {
 	PLMesh **meshes = static_cast<PLMesh **>(malloc( meshSets.size() * sizeof( PLMesh * ) ));
 	auto j = meshSets.begin();
 	for ( unsigned int i = 0; j != meshSets.end(); ++j ) {
-		meshes[ i ] =
-			plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, j->second.indices.size(), obj.vertices.size() );
+		meshes[ i ] = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, j->second.indices.size(), obj.vertices.size() );
 		if ( meshes[ i ] == nullptr ) {
 			LogWarn( "Failed to create mesh! (%s)\n", plGetError() );
 			return nullptr;
@@ -76,8 +79,12 @@ PLModel *LoadObjModel( const char *path ) {
 		memcpy( meshes[ i ]->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
 		memcpy( meshes[ i ]->indices, j->second.indices.data(), sizeof( unsigned int ) * j->second.indices.size() );
 
-		meshes[ i ]->texture =
-			Engine::Resource()->LoadTexture( j->second.material.strTexture, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+		// TODO: oh dear... Oh dear dear... Reference will get released - we can't parent this to the meshes (need wrapper class) -
+		//  in the mean time this'll have to leak :(
+		SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+		texture->AddReference();
+
+		meshes[ i ]->texture = texture->GetInternalTexture();
 
 		++i;
 	}

@@ -15,29 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "engine.h"
 #include "sprite.h"
 #include "display.h"
 #include "shaders.h"
 
-Sprite::Sprite( SpriteType type, ohw::TextureResource* texture, PLColour colour, float scale ) :
-	type_( type ),
-	colour_( colour ),
-	scale_( scale ),
-	textureResource( texture ) {
+Sprite::Sprite( SpriteType type, const std::string &texturePath, PLColour colour, float scale ) :
+	type_( type ), colour_( colour ), scale_( scale ) {
 	mesh_ = plCreateMeshRectangle( -64, -64, 64, 64, colour_ );
+
+	// Load in the texture we need
+	texture = ohw::Engine::Resource()->LoadTexture( texturePath );
 
 	defaultProgram = Shaders_GetProgram( "generic_textured" );
 
-	matrix_.Identity();
+	modelMatrix.Identity();
 }
 
-Sprite::~Sprite() {
-	if ( textureResource != nullptr ) {
-		textureResource->Release();
-	}
-}
+Sprite::~Sprite() {}
 
 void Sprite::Draw() {
 	if ( !cv_graphics_draw_sprites->b_value ) {
@@ -50,19 +45,17 @@ void Sprite::Draw() {
 
 	defaultProgram->Enable();
 
-	matrix_.Identity();
-	matrix_ *= PLVector3( scale_, scale_, scale_ );
-	matrix_.Translate( { 32 * scale_, 32 * scale_, 0 } );
-	matrix_.Rotate( angles_.x, { 1, 0, 0 } );
-	matrix_.Rotate( angles_.y, { 0, 1, 0 } );
-	matrix_.Rotate( angles_.z, { 0, 0, 1 } );
-	matrix_.Translate( position_ );
+	plSetTexture( texture->GetInternalTexture(), 0 );
 
-	//matrix_ = matrix_ * PLVector3( scale_, scale_, scale_ );
+	modelMatrix.Identity();
+	modelMatrix *= PLVector3( scale_, scale_, scale_ );
+	modelMatrix.Translate( { 32 * scale_, 32 * scale_, 0 } );
+	modelMatrix.Rotate( angles_.x, { 1, 0, 0 } );
+	modelMatrix.Rotate( angles_.y, { 0, 1, 0 } );
+	modelMatrix.Rotate( angles_.z, { 0, 0, 1 } );
+	modelMatrix.Translate( position_ );
 
-	plSetTexture( textureResource->GetInternalTexture(), 0 );
-
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", matrix_, true );
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", modelMatrix, true );
 
 	plUploadMesh( mesh_ );
 
@@ -100,12 +93,15 @@ void Sprite::SetColour( const PLColour& colour ) {
 	colour_ = colour;
 }
 
-void Sprite::SetTexture( ohw::TextureResource* texture ) {
-	// a lot of this will change once the rc manager is introduced...
+void Sprite::SetTexture( const std::string &texturePath ) {
+	if ( texture != nullptr ) {
+		// TODO: this will currently fail (internal uses absolute)
+		if ( texturePath == texture->GetInternalTexture()->path ) {
+			return;
+		}
 
-	if ( texture->GetInternalTexture() == mesh_->texture ) {
-		return;
+		texture->Release();
 	}
 
-	mesh_->texture = texture->GetInternalTexture();
+	texture = ohw::Engine::Resource()->LoadTexture( texturePath );
 }

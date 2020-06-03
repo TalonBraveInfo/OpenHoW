@@ -37,23 +37,18 @@ private:
 };
 
 class SpriteParticle : public Particle, Sprite {
-	SpriteParticle( PLTexture *texture, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan );
+	SpriteParticle( const std::string &texturePath, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan );
 	~SpriteParticle();
 
 private:
 };
 
 class ModelParticle : public Particle {
-	ModelParticle( PLVector3 position,
-	               PLVector3 velocity,
-	               PLColour start_colour,
-	               float life_span,
-	               const std::string &modelPath );
-	ModelParticle( PLModel *modelPtr, PLVector3 position, PLVector3 velocity, float lifeSpan );
+	ModelParticle( const std::string &modelPath, PLVector3 position, PLVector3 velocity, PLColour start_colour, float life_span );
 	~ModelParticle();
 
 private:
-	PLModel *myModelPtr{ nullptr };
+	ohw::SharedModelResourcePointer modelPtr{ nullptr };
 };
 
 // TODO
