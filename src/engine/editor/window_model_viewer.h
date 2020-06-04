@@ -32,7 +32,7 @@ protected:
 private:
 	void GenerateFrameBuffer( unsigned int width, unsigned int height );
 
-	struct PLModel *modelPtr{ nullptr };
+	ohw::SharedModelResourcePointer model{ nullptr };
 	struct PLFrameBuffer *drawBuffer{ nullptr };
 	struct PLTexture *textureAttachment{ nullptr };
 

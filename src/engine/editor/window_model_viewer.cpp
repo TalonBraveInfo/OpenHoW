@@ -49,7 +49,6 @@ ModelViewer::ModelViewer() : BaseWindow() {
 }
 
 ModelViewer::~ModelViewer() {
-	plDestroyModel( modelPtr );
 	plDestroyTexture( textureAttachment );
 	plDestroyFrameBuffer( drawBuffer );
 }
@@ -85,7 +84,7 @@ void ModelViewer::DrawViewport() {
 		plDrawGrid( &matrix, -512, -512, 1024, 1024, 32 );
 	}
 
-	if ( modelPtr == nullptr ) {
+	if ( model == nullptr ) {
 		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 		return;
 	}
@@ -106,13 +105,12 @@ void ModelViewer::DrawViewport() {
 		modelRotation.y += 0.01f * g_state.last_draw_ms;
 	}
 
-	PLMatrix4 *matrixPtr = &modelPtr->model_matrix;
-	matrixPtr->Identity();
-	matrixPtr->Rotate( angles.z, { 1, 0, 0 } );
-	matrixPtr->Rotate( angles.y, { 0, 1, 0 } );
-	matrixPtr->Rotate( angles.x, { 0, 0, 1 } );
+	model->modelMatrix.Identity();
+	model->modelMatrix.Rotate( angles.z, { 1, 0, 0 } );
+	model->modelMatrix.Rotate( angles.y, { 0, 1, 0 } );
+	model->modelMatrix.Rotate( angles.x, { 0, 0, 1 } );
 
-	plDrawModel( modelPtr );
+	model->Draw();
 
 	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 }
@@ -141,18 +139,20 @@ void ModelViewer::Display() {
 				}
 
 				bool selected = false;
-				if ( modelPtr != nullptr ) {
-					selected = ( i == modelPtr->path );
+				if ( model != nullptr ) {
+					selected = ( i == model->GetPath() );
 				}
 
 				if ( ImGui::Selectable( i.c_str(), selected ) ) {
-					plDestroyModel( modelPtr );
-					modelPtr = nullptr;
+					if ( model != nullptr ) {
+						model->Release();
+						model = nullptr;
 
-					modelPtr = plLoadModel( i.c_str() );
-					if ( modelPtr == nullptr ) {
-						LogWarn( "Failed to load \"%s\" (%s)!\n", i.c_str(), plGetError() );
+						// Force a cleanup
+						ohw::Engine::Resource()->ClearAllResources();
 					}
+
+					model = ohw::Engine::Resource()->LoadModel( i );
 				}
 			}
 			ImGui::EndMenu();
@@ -221,8 +221,8 @@ void ModelViewer::Display() {
 		ImGui::Separator();
 
 		const char *labelStr = "No model loaded";
-		if ( modelPtr != nullptr ) {
-			labelStr = modelPtr->path;
+		if ( model != nullptr ) {
+			labelStr = model->GetPath().c_str();
 		}
 		ImGui::Text( "%s", labelStr );
 
@@ -231,12 +231,14 @@ void ModelViewer::Display() {
 		unsigned int numTriangles = 0;
 		unsigned int numVertices = 0;
 		unsigned int numDrawCalls = 0;
-		if ( modelPtr != nullptr ) {
-			numDrawCalls = modelPtr->levels[ 0 ].num_meshes;
-			for ( unsigned int i = 0; i < modelPtr->levels[ 0 ].num_meshes; ++i ) {
-				numTriangles += modelPtr->levels[ 0 ].meshes[ i ]->num_triangles;
-				numVertices += modelPtr->levels[ 0 ].meshes[ i ]->num_verts;
+		if ( model != nullptr ) {
+			numDrawCalls = model->GetNumberOfMeshes();
+			for ( unsigned int i = 0; i < numDrawCalls; ++i ) {
+				PLMesh *mesh = model->GetInternalMesh( i );
+				numTriangles += mesh->num_triangles;
+				numVertices += mesh->num_verts;
 			}
+			numDrawCalls += 1;
 		}
 		ImGui::Text( "Batches: %d", numDrawCalls );
 		ImGui::Text( "Vertices: %d", numVertices );
