@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Resource.h"
+#include "TextureResource.h"
 
 namespace ohw {
 	class ModelResource : public Resource {
@@ -27,10 +28,35 @@ namespace ohw {
 		explicit ModelResource( const std::string &path, bool persist = false, bool abortOnFail = false );
 		~ModelResource();
 
-		PL_INLINE PLModel *GetInternalModel() { return modelPtr; }
+		void Tick();
+		void Draw();
+
+		PLMesh *GetInternalMesh( unsigned int i );
+
+		const PLCollisionAABB &GetBounds() const { return bounds; }
+
+		PLMatrix4 modelMatrix;
 
 	private:
-		PLModel *modelPtr;
+		void LoadObjModel( const std::string &path, bool abortOnFail );
+		void LoadVtxModel( const std::string &path, bool abortOnFail );
+		void LoadMinModel( const std::string &path, bool abortOnFail );
+
+		void DrawMesh( unsigned int i );
+		void DrawNormals();
+		void DrawSkeleton();
+
+		void DestroyMeshes();
+
+		void GenerateBounds();
+
+		bool isAnimated{ false };
+
+		// List of textures this model depends on
+		std::vector< SharedTextureResourcePointer > texturesVector;
+		std::vector< PLMesh* > meshesVector;
+
+		PLCollisionAABB bounds;
 	};
 
 	using SharedModelResourcePointer = SharedResourcePointer< ModelResource >;

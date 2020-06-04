@@ -23,37 +23,36 @@
 using namespace ohw;
 
 AModel::AModel() : SuperClass(),
-				   INIT_PROPERTY( modelPath, PROP_LOCAL ) {}
+                   INIT_PROPERTY( modelPath, PROP_LOCAL ) {}
 AModel::~AModel() = default;
 
 void AModel::Draw() {
 	SuperClass::Draw();
 
-	if ( !show_model_ || model_ == nullptr ) {
+	if ( !show_model_ || model == nullptr ) {
 		return;
 	}
 
 	PLVector3 angles(
-		plDegreesToRadians( angles_.GetValue().x ),
-		plDegreesToRadians( angles_.GetValue().y ),
-		plDegreesToRadians( angles_.GetValue().z ) );
+			plDegreesToRadians( angles_.GetValue().x ),
+			plDegreesToRadians( angles_.GetValue().y ),
+			plDegreesToRadians( angles_.GetValue().z ) );
 
-	PLMatrix4 mat;
-	mat.Identity();
-	mat.Rotate( angles.z, { 1, 0, 0 } );
-	mat.Rotate( -angles.y, { 0, 1, 0 } );
-	mat.Rotate( angles.x, { 0, 0, 1 } );
-	mat.Translate( position_ );
+	model->modelMatrix.Identity();
+	model->modelMatrix.Rotate( angles.z, { 1, 0, 0 } );
+	model->modelMatrix.Rotate( -angles.y, { 0, 1, 0 } );
+	model->modelMatrix.Rotate( angles.x, { 0, 0, 1 } );
+	model->modelMatrix.Translate( position_ );
 
-	Model_Draw( model_->GetInternalModel(), mat );
+	model->Draw();
 }
 
 void AModel::SetModel( const std::string &path ) {
-	model_ = Engine::Resource()->LoadModel( "chars/" + path, false );
-	u_assert( model_ != nullptr );
+	model = Engine::Resource()->LoadModel( "chars/" + path, false );
+	u_assert( model != nullptr );
 
 	// Keep model path up-to-date
-	modelPath = model_->GetInternalModel()->path;
+	modelPath = model->GetPath();
 }
 
 void AModel::ShowModel( bool show ) {

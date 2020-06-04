@@ -21,20 +21,7 @@
 
 using namespace ohw;
 
-PLModel *LoadObjModel( const char *path ); // see loaders/obj.cpp
-PLModel *Model_LoadVtxFile( const char *path );
-PLModel *Model_LoadMinFile( const char *path );
-
 ResourceManager::ResourceManager() {
-	plRegisterModelLoader( "obj", LoadObjModel );
-	plRegisterModelLoader( "vtx", Model_LoadVtxFile );
-	plRegisterModelLoader( "min", Model_LoadMinFile );
-
-	// Allow users to enable support for all model formats if desired (disabled by default for security reasons)
-	if ( plHasCommandLineArgument( "-ramf" ) ) {
-		plRegisterStandardModelLoaders();
-	}
-
 	// Allow users to enable support for all package formats if desired (disabled by default for security reasons)
 	if ( plHasCommandLineArgument( "-rapf" ) ) {
 		plRegisterStandardPackageLoaders();

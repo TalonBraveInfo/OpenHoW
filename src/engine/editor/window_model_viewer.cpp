@@ -30,8 +30,9 @@
 
 std::list<std::string> ModelViewer::modelList;
 
+static const char *supportedModelFormats[] = { "obj", "vtx", "min", nullptr };
+
 ModelViewer::ModelViewer() : BaseWindow() {
-	extern const char *supportedModelFormats[]; // TODO: platform lib should be providing this!!!
 	const char **formatExtensions = supportedModelFormats;
 	while ( *formatExtensions != nullptr ) {
 		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true, nullptr );

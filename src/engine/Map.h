@@ -44,7 +44,7 @@ private:
 	void LoadSpawns( const std::string &path );
 	static ohw::SharedModelResourcePointer LoadSkyModel( const std::string &path );
 
-	void UpdateSkyModel( PLModel *model );
+	void UpdateSkyModel( ohw::SharedModelResourcePointer skyModel );
 
 	MapManifest *manifest_{ nullptr };
 

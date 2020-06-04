@@ -62,17 +62,13 @@ Map::~Map() {
 ohw::SharedModelResourcePointer Map::LoadSkyModel( const std::string &path ) {
 	ohw::SharedModelResourcePointer model = Engine::Resource()->LoadModel( path, true, true );
 
-	PLModel *internalModel = model->GetInternalModel();
-	internalModel->model_matrix = plTranslateMatrix4( PLVector3( TERRAIN_PIXEL_WIDTH / 2.0f, 0, TERRAIN_PIXEL_WIDTH / 2.0f ) );
 	// Default skydome is smaller than the map, so we'll scale it
-	internalModel->model_matrix = plScaleMatrix4( internalModel->model_matrix, PLVector3( 5.0f, 5.0f, 5.0f ) );
+	model->modelMatrix.Identity();
+	model->modelMatrix.Translate( PLVector3( TERRAIN_PIXEL_WIDTH / 2.0f, 0, TERRAIN_PIXEL_WIDTH / 2.0f ) );
+	model->modelMatrix *= PLVector3( 5.0f, 5.0f, 5.0f );
 
-	PLModelLod *lod = plGetModelLodLevel( internalModel, 0 );
-	if ( lod == nullptr ) {
-		Error( "Failed to get first lod for sky mesh!\n" );
-	}
+	PLMesh *mesh = model->GetInternalMesh( 0 );
 
-	PLMesh *mesh = lod->meshes[ 0 ];
 	// This is a really crap hardcoded limit, just to ensure it's what we're expecting
 	if ( mesh->num_verts != 257 ) {
 		Error( "Unexpected number of vertices for sky mesh! (%d vs 257)\n", mesh->num_verts );
@@ -82,20 +78,13 @@ ohw::SharedModelResourcePointer Map::LoadSkyModel( const std::string &path ) {
 }
 
 void Map::UpdateSky() {
-	UpdateSkyModel( skyModelTop->GetInternalModel() );
-	UpdateSkyModel( skyModelBottom->GetInternalModel() );
+	UpdateSkyModel( skyModelTop );
+	UpdateSkyModel( skyModelBottom );
 }
 
-void Map::UpdateSkyModel( PLModel *model ) {
-	u_assert( model != nullptr, "attempted to apply sky colours prior to loading sky dome" );
+void Map::UpdateSkyModel( ohw::SharedModelResourcePointer model ) {
+	PLMesh *mesh = model->GetInternalMesh( 0 );
 
-	PLModelLod *lod = plGetModelLodLevel( model, 0 );
-	if ( lod == nullptr ) {
-		LogWarn( "Failed to get first lod for sky mesh!\n" );
-		return;
-	}
-
-	PLMesh *mesh = lod->meshes[ 0 ];
 	// Below is a PSX-style gradient sky implementation
 	const unsigned int solid_steps = 3;
 	const unsigned int grad_steps = 6;
@@ -210,8 +199,8 @@ void Map::LoadSpawns( const std::string &path ) {
 void Map::Draw() {
 	Shaders_SetProgramByName( "generic_untextured" );
 
-	plDrawModel( skyModelTop->GetInternalModel() );
-	plDrawModel( skyModelBottom->GetInternalModel() );
+	skyModelTop->Draw();
+	skyModelBottom->Draw();
 
 	// TODO: move this somewhere else???
 	PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();
