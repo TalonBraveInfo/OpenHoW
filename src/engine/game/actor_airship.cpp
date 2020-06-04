@@ -48,7 +48,7 @@ void AAirship::Deserialize( const ActorSpawn &spawn ) {
 												   true );
 	ambientSource->StartPlaying();
 
-	SetModel( "scenery/airship1" );
+	SetModel( "scenery/airship1.vtx" );
 	SetAngles( { 180.0f, 0.0f, 0.0f } );
 	ShowModel( true );
 }

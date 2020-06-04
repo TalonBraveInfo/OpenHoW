@@ -28,7 +28,7 @@ AStaticModel::~AStaticModel() = default;
 void AStaticModel::Deserialize( const ActorSpawn &spawn ) {
 	SuperClass::Deserialize( spawn );
 
-	SetModel( "scenery/" + spawn.class_name );
+	SetModel( "scenery/" + spawn.class_name + ".vtx" );
 
 	// Some models are horrible special cases
 	if ( spawn.class_name == "brid2_s" ) {

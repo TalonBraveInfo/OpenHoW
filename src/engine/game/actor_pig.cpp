@@ -116,7 +116,7 @@ void APig::Tick() {
 		// TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
 		Engine::Audio()->PlayLocalSound( "audio/e_1.wav", GetPosition(), PLVector3(), true );
 
-		SetModel( "scenery/boots" );
+		SetModel( "scenery/boots.vtx" );
 		DropToFloor();
 
 		// todo; create particle emitter and link as child to the boots!
