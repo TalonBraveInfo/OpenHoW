@@ -31,6 +31,7 @@ namespace ohw {
 		void Tick();
 		void Draw();
 
+		PL_INLINE unsigned int GetNumberOfMeshes() const { return meshesVector.size(); }
 		PLMesh *GetInternalMesh( unsigned int i );
 
 		const PLCollisionAABB &GetBounds() const { return bounds; }

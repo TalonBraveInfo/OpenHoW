@@ -20,14 +20,13 @@
 #include "texture_atlas.h"
 #include "mesh.h"
 #include "WaveFrontReader.h"
-#include "Shaders.h"
 
 #include "../shared/vtx.h"
 #include "../shared/fac.h"
 #include "../shared/no2.h"
 
-ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool abortOnFail ) : Resource( path,
-                                                                                                         persist ) {
+ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool abortOnFail ) :
+		Resource( path, persist ) {
 	const char *fileExt = plGetFileExtension( path.c_str() );
 	if ( fileExt == nullptr ) {
 		if ( abortOnFail ) {
@@ -86,7 +85,7 @@ void ohw::ModelResource::Draw() {
 	}
 }
 
-PLMesh *ohw::ModelResource::GetInternalMesh(unsigned int i) {
+PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 	u_assert( i < meshesVector.size() );
 	if ( i >= meshesVector.size() ) {
 		LogWarn( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
@@ -153,7 +152,8 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 
 	auto j = meshSets.begin();
 	for ( unsigned int i = 0; j != meshSets.end(); ++j ) {
-		meshesVector[ i ] = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, j->second.indices.size(), obj.vertices.size() );
+		meshesVector[ i ] = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, j->second.indices.size(),
+		                                  obj.vertices.size() );
 		if ( meshesVector[ i ] == nullptr ) {
 			if ( abortOnFail ) {
 				Error( "Failed to create mesh!\nPL: %s\n", plGetError() );
@@ -167,9 +167,11 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		}
 
 		memcpy( meshesVector[ i ]->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
-		memcpy( meshesVector[ i ]->indices, j->second.indices.data(), sizeof( unsigned int ) * j->second.indices.size() );
+		memcpy( meshesVector[ i ]->indices, j->second.indices.data(),
+		        sizeof( unsigned int ) * j->second.indices.size() );
 
-		SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+		SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture,
+		                                                                        PL_TEXTURE_FILTER_MIPMAP_LINEAR );
 		texturesVector.push_back( texture );
 
 		meshesVector[ i ]->texture = texture->GetInternalTexture();
