@@ -25,7 +25,7 @@ ohw::Resource::Resource( const std::string &path, bool persist ) :
 }
 
 ohw::Resource::~Resource() {
-	LogDebug( "Destroyed resource\n" );
+	LogDebug( "Destroyed resource, \"%s\"\n", referencePath.c_str() );
 }
 
 /**
