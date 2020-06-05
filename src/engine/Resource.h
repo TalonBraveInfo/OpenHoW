@@ -82,7 +82,7 @@ namespace ohw {
 		virtual size_t GetMemoryUsage() const = 0;
 
 		// TODO: GetAbsolutePath() ...
-		PL_INLINE std::string GetPath() const { return referencePath; }
+		PL_INLINE const std::string &GetPath() const { return referencePath; }
 
 	private:
 		std::string referencePath;
