@@ -31,10 +31,10 @@ ohw::TextureResource::TextureResource( const std::string &path, PLTextureFilter 
 
 		if ( texturePtr == nullptr ) {
 			if ( abortOnFail ) {
-				Error( "Failed to load texture, \"%s\"!\nPL: %s\n", newPath, plGetError() );
+				Error( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 			}
 
-			LogWarn( "Failed to load texture, \"%s\"!\nPL: %s\n", newPath, plGetError() );
+			LogWarn( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 			texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
 		}
 
