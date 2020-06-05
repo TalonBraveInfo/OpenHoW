@@ -170,11 +170,15 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		memcpy( meshesVector[ i ]->indices, j->second.indices.data(),
 		        sizeof( unsigned int ) * j->second.indices.size() );
 
-		SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture,
-		                                                                        PL_TEXTURE_FILTER_MIPMAP_LINEAR );
-		texturesVector.push_back( texture );
+		if ( !j->second.material.strTexture.empty() ) {
+			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture,
+																					PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+			texturesVector.push_back( texture );
 
-		meshesVector[ i ]->texture = texture->GetInternalTexture();
+			meshesVector[ i ]->texture = texture->GetInternalTexture();
+		} else {
+			meshesVector[ i ]->texture = Engine::Resource()->GetFallbackTexture();
+		}
 
 		++i;
 	}
