@@ -46,10 +46,10 @@ Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 
 	// Load both the bottom and top parts of the sky dome
 	if ( skyModelTop == nullptr ) {
-		skyModelTop = LoadSkyModel( "skys/skydome" );
+		skyModelTop = LoadSkyModel( "skys/skydome.vtx" );
 	}
 	if ( skyModelBottom == nullptr ) {
-		skyModelBottom = LoadSkyModel( "skys/skydomeu" );
+		skyModelBottom = LoadSkyModel( "skys/skydomeu.vtx" );
 	}
 
 	UpdateSky();
