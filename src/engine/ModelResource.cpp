@@ -343,7 +343,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 			std::pair< unsigned int, unsigned int > textureSize = textureAtlas->GetTextureSize( textureName );
 
 			for ( unsigned int j = 0, u = 0; j < 3; ++j, u += 2 ) {
-				plSetMeshVertexST( mesh, nextVtxIndex - ( 3 - i ),
+				plSetMeshVertexST( mesh, nextVtxIndex - ( 3 - j ),
 				                   tX + ( tW * ( 1.0f / ( float ) ( textureSize.first ) ) *
 				                          ( float ) ( facHandle->triangles[ i ].uv_coords[ u ] ) ),
 				                   tY + ( tH * ( 1.0f / ( float ) ( textureSize.second ) ) *
