@@ -21,6 +21,7 @@
 ohw::Resource::Resource( const std::string &path, bool persist ) :
 	referencePath( path ),
 	persist( persist ) {
+	u_assert( !path.empty() );
 	LogDebug( "Created resource, \"%s\"\n", path.c_str() );
 }
 

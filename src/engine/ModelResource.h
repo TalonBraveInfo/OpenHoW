@@ -36,7 +36,7 @@ namespace ohw {
 
 		const PLCollisionAABB &GetBounds() const { return bounds; }
 
-		PLMatrix4 modelMatrix;
+		PLMatrix4 modelMatrix{};
 
 	private:
 		void LoadObjModel( const std::string &path, bool abortOnFail );
