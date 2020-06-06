@@ -70,5 +70,11 @@ ohw::TextureResource::TextureResource( const std::string &path, PLTextureFilter 
 }
 
 ohw::TextureResource::~TextureResource() {
+	// Don't destroy the fallback!
+	PLTexture *placeholderTexture = Engine::Resource()->GetFallbackTexture();
+	if ( texturePtr == placeholderTexture ) {
+		return;
+	}
+
 	plDestroyTexture( texturePtr );
 }
