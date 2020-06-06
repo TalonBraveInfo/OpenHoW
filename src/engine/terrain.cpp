@@ -15,15 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <list>
-
 #include "engine.h"
 #include "terrain.h"
 
 #include "graphics/mesh.h"
 #include "graphics/shaders.h"
 #include "graphics/texture_atlas.h"
-#include "graphics/display.h"
 
 //Precalculated vertices for chunk rendering
 //TODO: Share one index buffer instance between all chunks
@@ -71,14 +68,11 @@ Terrain::~Terrain() {
 }
 
 Terrain::Chunk* Terrain::GetChunk( const PLVector2& pos ) {
-	if ( pos.x < 0 || std::floor( pos.x ) >= TERRAIN_PIXEL_WIDTH ||
-		pos.y < 0 || std::floor( pos.y ) >= TERRAIN_PIXEL_WIDTH ) {
+	if ( pos.x < 0 || std::floor( pos.x ) >= TERRAIN_PIXEL_WIDTH || pos.y < 0 || std::floor( pos.y ) >= TERRAIN_PIXEL_WIDTH ) {
 		return nullptr;
 	}
 
-	uint idx =
-		( ( uint ) ( pos.x ) / TERRAIN_CHUNK_PIXEL_WIDTH )
-			+ ( ( ( uint ) ( pos.y ) / TERRAIN_CHUNK_PIXEL_WIDTH ) * TERRAIN_CHUNK_ROW );
+	uint idx = ( ( uint ) ( pos.x ) / TERRAIN_CHUNK_PIXEL_WIDTH ) + ( ( ( uint ) ( pos.y ) / TERRAIN_CHUNK_PIXEL_WIDTH ) * TERRAIN_CHUNK_ROW );
 	if ( idx >= chunks_.size() ) {
 		LogWarn( "Attempted to get an out of bounds chunk index (%d)!\n", idx );
 		return nullptr;
@@ -103,6 +97,9 @@ Terrain::Tile* Terrain::GetTile( const PLVector2& pos ) {
 	return &chunk->tiles[ idx ];
 }
 
+/**
+ * Return the height at the given point. If we fail to find a tile there, we just return 0.
+ */
 float Terrain::GetHeight( const PLVector2& pos ) {
 	Tile* tile = GetTile( pos );
 	if ( tile == nullptr ) {
