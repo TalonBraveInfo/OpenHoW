@@ -118,9 +118,10 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		memcpy( mesh->indices, obj.indices.data(), sizeof( unsigned int ) * obj.indices.size() );
 		memcpy( mesh->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
 
-		if ( obj.materials.size() > 1 ) {
+		std::string textureName = obj.materials[ obj.attributes[ 0 ] ].strTexture;
+		if ( obj.materials.size() > 1 && !textureName.empty() ) {
 			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture(
-					obj.materials[ obj.attributes[ 0 ] ].strTexture, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+					textureName, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
 			texturesVector.push_back( texture );
 
 			mesh->texture = texture->GetInternalTexture();
