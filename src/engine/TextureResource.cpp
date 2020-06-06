@@ -23,7 +23,7 @@ const char *supportedTextureFormats[] = { "png", "tga", "bmp", "tim", nullptr };
 
 ohw::TextureResource::TextureResource( const std::string &path, PLTextureFilter filter, bool persist, bool abortOnFail ) : Resource( path, persist ) {
 	const char *fileExtension = plGetFileExtension( path.c_str() );
-	if ( fileExtension != nullptr ) {
+	if ( fileExtension[ 0 ] == '\0' ) {
 		const char *newPath = u_find2( path.c_str(), supportedTextureFormats, abortOnFail );
 		if ( newPath != nullptr ) {
 			texturePtr = plLoadTextureFromImage( newPath, filter );

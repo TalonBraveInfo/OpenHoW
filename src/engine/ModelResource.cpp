@@ -149,7 +149,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		meshSets[ obj.attributes[ i / 3 ] ].material = obj.materials[ obj.attributes[ i / 3 ] ];
 	}
 
-	meshesVector.reserve( meshSets.size() );
+	meshesVector.resize( meshSets.size() );
 
 	auto j = meshSets.begin();
 	for ( unsigned int i = 0; j != meshSets.end(); ++j ) {
@@ -373,6 +373,8 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 	} else {
 		No2_DestroyHandle( no2Handle );
 	}
+
+	meshesVector.push_back( mesh );
 
 	// Done!
 }
