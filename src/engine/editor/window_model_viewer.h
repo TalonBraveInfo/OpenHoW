@@ -17,35 +17,36 @@
 
 #include "base_window.h"
 
-class Camera;
+namespace ohw {
+	class Camera;
+	class ModelViewer : public BaseWindow {
+	public:
+		explicit ModelViewer();
+		~ModelViewer() override;
 
-class ModelViewer : public BaseWindow {
-public:
-	explicit ModelViewer();
-	~ModelViewer() override;
+		void Display() override;
 
-	void Display() override;
+		void DrawViewport();
 
-	void DrawViewport();
+	protected:
+	private:
+		void GenerateFrameBuffer( unsigned int width, unsigned int height );
 
-protected:
-private:
-	void GenerateFrameBuffer( unsigned int width, unsigned int height );
+		ohw::SharedModelResourcePointer model{ nullptr };
+		struct PLFrameBuffer *drawBuffer{ nullptr };
+		struct PLTexture *textureAttachment{ nullptr };
 
-	ohw::SharedModelResourcePointer model{ nullptr };
-	struct PLFrameBuffer *drawBuffer{ nullptr };
-	struct PLTexture *textureAttachment{ nullptr };
+		Camera *camera{ nullptr };
 
-	Camera *camera{ nullptr };
+		PLVector3 modelRotation;
 
-	PLVector3 modelRotation;
+		float oldMousePos[ 2 ]{ 0, 0 };
 
-	float oldMousePos[2]{ 0, 0 };
+		bool viewRotate{ true };
+		bool viewDebugNormals{ false };
+		bool viewGrid{ true };
 
-	bool viewRotate{ true };
-	bool viewDebugNormals{ false };
-	bool viewGrid{ true };
-
-	static void AppendModelList( const char *path, void *userData );
-	static std::list<std::string> modelList;
-};
+		static void AppendModelList( const char *path, void *userData );
+		static std::list< std::string > modelList;
+	};
+}

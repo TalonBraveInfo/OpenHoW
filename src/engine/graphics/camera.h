@@ -19,29 +19,31 @@
 
 #include <PL/pl_graphics_camera.h>
 
-class Camera {
-public:
-	Camera( const PLVector3 &pos, const PLVector3 &angles );
-	~Camera();
+namespace ohw {
+	class Camera {
+	public:
+		Camera( const PLVector3 &pos, const PLVector3 &angles );
+		~Camera();
 
-	void SetPosition( const PLVector3 &pos );
-	void SetAngles( const PLVector3 &angles );
-	void SetFieldOfView( float fov );
+		void SetPosition( const PLVector3 &pos );
+		void SetAngles( const PLVector3 &angles );
+		void SetFieldOfView( float fov );
 
-	PLVector3 GetPosition() { return camera_->position; }
-	PLVector3 GetAngles() { return camera_->angles; }
-	PLVector3 GetForward() { return camera_->forward; }
+		PL_INLINE PLVector3 GetPosition() const { return camera_->position; }
+		PL_INLINE PLVector3 GetAngles() const { return camera_->angles; }
+		PL_INLINE PLVector3 GetForward() const { return camera_->forward; }
 
-	float GetFieldOfView() { return camera_->fov; }
+		PL_INLINE float GetFieldOfView() const { return camera_->fov; }
 
-	void SetViewport( int x, int y, int width, int height );
+		void SetViewport( int x, int y, int width, int height );
 
-	int GetViewportWidth() { return camera_->viewport.w; }
-	int GetViewportHeight() { return camera_->viewport.h; }
+		PL_INLINE int GetViewportWidth() const { return camera_->viewport.w; }
+		PL_INLINE int GetViewportHeight() const { return camera_->viewport.h; }
 
-	void MakeActive();
+		void MakeActive();
 
-protected:
-private:
-	PLCamera *camera_{ nullptr };
-};
+	protected:
+	private:
+		PLCamera *camera_{ nullptr };
+	};
+}

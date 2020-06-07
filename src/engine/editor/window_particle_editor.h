@@ -19,35 +19,38 @@
 
 #include "base_window.h"
 
-class Camera;
 class ParticleEffect;
 
-class ParticleEditor : public BaseWindow {
-public:
-	explicit ParticleEditor();
-	~ParticleEditor() override;
+namespace ohw {
+	class Camera;
 
-	void Display() override;
-	void DrawViewport();
+	class ParticleEditor : public BaseWindow {
+	public:
+		explicit ParticleEditor();
+		~ParticleEditor() override;
 
-private:
-	void GenerateFrameBuffer( unsigned int width, unsigned int height );
+		void Display() override;
+		void DrawViewport();
 
-	ParticleEffect *particleEffect{ nullptr };
+	private:
+		void GenerateFrameBuffer( unsigned int width, unsigned int height );
 
-	struct PLFrameBuffer *drawBuffer{ nullptr };
-	struct PLTexture *textureAttachment{ nullptr };
+		ParticleEffect *particleEffect{ nullptr };
 
-	Camera *camera{ nullptr };
+		struct PLFrameBuffer *drawBuffer{ nullptr };
+		struct PLTexture *textureAttachment{ nullptr };
 
-	PLVector3 modelRotation{ 0, 0, 0 };
+		Camera *camera{ nullptr };
 
-	float oldMousePos[2]{ 0, 0 };
+		PLVector3 modelRotation{ 0, 0, 0 };
 
-	bool viewRotate{ true };
-	bool viewDebugNormals{ false };
-	bool viewGrid{ true };
+		float oldMousePos[ 2 ]{ 0, 0 };
 
-	static void AppendParticleList( const char *path );
-	static std::list<std::string> particleList;
-};
+		bool viewRotate{ true };
+		bool viewDebugNormals{ false };
+		bool viewGrid{ true };
+
+		static void AppendParticleList( const char *path );
+		static std::list< std::string > particleList;
+	};
+}

@@ -15,37 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../graphics/shaders.h"
-#include "../graphics/display.h"
-#include "../graphics/particle_effect.h"
-#include "../graphics/particle_emitter.h"
-#include "../graphics/particles.h"
-#include "../language.h"
-#include "../imgui_layer.h"
+#include "engine.h"
+#include "graphics/shaders.h"
+#include "graphics/display.h"
+#include "graphics/particle_effect.h"
+#include "graphics/particle_emitter.h"
+#include "graphics/particles.h"
+#include "language.h"
+#include "imgui_layer.h"
 
 #include "window_particle_editor.h"
 
 #define VIEWER_WIDTH  640
 #define VIEWER_HEIGHT 480
 
-std::list< std::string > ParticleEditor::particleList;
+std::list< std::string > ohw::ParticleEditor::particleList;
 
-ParticleEditor::ParticleEditor() : BaseWindow() {
+ohw::ParticleEditor::ParticleEditor() : BaseWindow() {
 	camera = new Camera( { -2500.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } );
 	camera->SetViewport( 0, 0, VIEWER_WIDTH, VIEWER_HEIGHT );
 
 	GenerateFrameBuffer( VIEWER_WIDTH, VIEWER_HEIGHT );
 }
 
-ParticleEditor::~ParticleEditor() {
+ohw::ParticleEditor::~ParticleEditor() {
 	delete particleEffect;
 
 	plDestroyTexture( textureAttachment );
 	plDestroyFrameBuffer( drawBuffer );
 }
 
-void ParticleEditor::DrawViewport() {
+void ohw::ParticleEditor::DrawViewport() {
 	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
 
 	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
@@ -84,7 +84,7 @@ void ParticleEditor::DrawViewport() {
 	}
 }
 
-void ParticleEditor::Display() {
+void ohw::ParticleEditor::Display() {
 	DrawViewport();
 
 	unsigned int flags =
@@ -133,7 +133,7 @@ void ParticleEditor::Display() {
 	ImGui::End();
 }
 
-void ParticleEditor::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
+void ohw::ParticleEditor::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
 	unsigned int bufferWidth = 0, bufferHeight = 0;
 	if ( drawBuffer != nullptr ) {
 		plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );

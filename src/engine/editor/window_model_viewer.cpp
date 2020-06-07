@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../graphics/shaders.h"
-#include "../graphics/display.h"
-#include "../imgui_layer.h"
-#include "../model.h"
-#include "../language.h"
+#include "engine.h"
+#include "graphics/shaders.h"
+#include "graphics/display.h"
+#include "imgui_layer.h"
+#include "model.h"
+#include "language.h"
 
 #include "window_model_viewer.h"
 #include "window_texture_viewer.h"
@@ -28,11 +28,11 @@
 #define VIEWER_WIDTH  640
 #define VIEWER_HEIGHT 480
 
-std::list<std::string> ModelViewer::modelList;
+std::list<std::string> ohw::ModelViewer::modelList;
 
 static const char *supportedModelFormats[] = { "obj", "vtx", "min", nullptr };
 
-ModelViewer::ModelViewer() : BaseWindow() {
+ohw::ModelViewer::ModelViewer() : BaseWindow() {
 	const char **formatExtensions = supportedModelFormats;
 	while ( *formatExtensions != nullptr ) {
 		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true, nullptr );
@@ -48,12 +48,12 @@ ModelViewer::ModelViewer() : BaseWindow() {
 	GenerateFrameBuffer( 640, 480 );
 }
 
-ModelViewer::~ModelViewer() {
+ohw::ModelViewer::~ModelViewer() {
 	plDestroyTexture( textureAttachment );
 	plDestroyFrameBuffer( drawBuffer );
 }
 
-void ModelViewer::DrawViewport() {
+void ohw::ModelViewer::DrawViewport() {
 	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
 
 	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
@@ -115,7 +115,7 @@ void ModelViewer::DrawViewport() {
 	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 }
 
-void ModelViewer::Display() {
+void ohw::ModelViewer::Display() {
 	// Draw the model view if there's a valid model
 	DrawViewport();
 
@@ -293,13 +293,13 @@ void ModelViewer::Display() {
 	ImGui::End();
 }
 
-void ModelViewer::AppendModelList( const char *path, void *userData ) {
+void ohw::ModelViewer::AppendModelList( const char *path, void *userData ) {
 	u_unused( userData );
 
 	modelList.push_back( path );
 }
 
-void ModelViewer::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
+void ohw::ModelViewer::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
 	unsigned int bufferWidth = 0, bufferHeight = 0;
 	if ( drawBuffer != nullptr ) {
 		plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );

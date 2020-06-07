@@ -206,7 +206,7 @@ private:
 public:
 	void Tick();
 
-	Camera *GetCamera() { return camera_; }
+	ohw::Camera *GetCamera() { return camera_; }
 
 	void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
 	void EndMode();
@@ -279,7 +279,7 @@ private:
 		FLYAROUND,
 	};
 
-	Camera *camera_{ nullptr };
+	ohw::Camera *camera_{ nullptr };
 	CameraMode camera_mode_{ CameraMode::FOLLOW };
 
 	/////////////////////////////////////////////////////////////

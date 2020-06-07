@@ -15,13 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "engine.h"
 #include "camera.h"
 
-using namespace ohw;
-
-Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
+ohw::Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
 	camera_ = plCreateCamera();
 	if ( camera_ == nullptr ) {
 		Error( "Failed to create camera object!\n%s\n", plGetError() );
@@ -35,19 +32,19 @@ Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
 	camera_->viewport.h = cv_display_height->i_value;
 }
 
-Camera::~Camera() {
+ohw::Camera::~Camera() {
 	plDestroyCamera( camera_ );
 }
 
-void Camera::SetPosition( const PLVector3 &pos ) {
+void ohw::Camera::SetPosition( const PLVector3 &pos ) {
 	camera_->position = pos;
 }
 
-void Camera::SetAngles( const PLVector3 &angles ) {
+void ohw::Camera::SetAngles( const PLVector3 &angles ) {
 	camera_->angles = angles;
 }
 
-void Camera::SetFieldOfView( float fov ) {
+void ohw::Camera::SetFieldOfView( float fov ) {
 	camera_->fov = fov;
 }
 
@@ -56,14 +53,14 @@ void Camera::SetFieldOfView( float fov ) {
  * @param xy X and Y.
  * @param wh Width and height.
  */
-void Camera::SetViewport( int x, int y, int width, int height ) {
+void ohw::Camera::SetViewport( int x, int y, int width, int height ) {
 	camera_->viewport.x = x;
 	camera_->viewport.y = y;
 	camera_->viewport.w = width;
 	camera_->viewport.h = height;
 }
 
-void Camera::MakeActive() {
+void ohw::Camera::MakeActive() {
 	// ensure camera matches current vars
 	//camera_->fov = cv_camera_fov->f_value;
 	camera_->near = cv_camera_near->f_value;
