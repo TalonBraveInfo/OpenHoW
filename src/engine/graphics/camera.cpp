@@ -68,3 +68,11 @@ void ohw::Camera::MakeActive() {
 
 	plSetupCamera( camera_ );
 }
+
+bool ohw::Camera::IsBoxVisible( const PLCollisionAABB *bounds ) const {
+	return plIsBoxInsideView( camera_, bounds );
+}
+
+bool ohw::Camera::IsSphereVisible( const PLCollisionSphere *sphere ) const {
+	return plIsSphereInsideView( camera_, sphere );
+}

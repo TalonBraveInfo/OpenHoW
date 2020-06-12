@@ -410,7 +410,7 @@ static void DrawDebugOverlay() {
 	DrawDisplayInfo();
 	DrawCameraInfoOverlay();
 
-#if 0
+#if 1
 	Font_DrawBitmapString(g_fonts[FONT_CHARS2], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS");
 	unsigned int y = 50;
 	char cam_pos[32];

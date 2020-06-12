@@ -42,6 +42,9 @@ namespace ohw {
 
 		void MakeActive();
 
+		bool IsBoxVisible( const PLCollisionAABB *bounds ) const;
+		bool IsSphereVisible( const PLCollisionSphere *sphere ) const;
+
 	protected:
 	private:
 		PLCamera *camera_{ nullptr };
