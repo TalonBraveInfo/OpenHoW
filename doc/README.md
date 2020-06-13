@@ -1,6 +1,6 @@
  # Documentation
 
-The following is a collection of documentings outlining the specifications for all of the formats
-used in the game, Hogs of War.
+The following is a collection of documents we've written outlining the specifications for all of the formats
+used in the game, Hogs of War. These are based on our own original research.
 
-These documents are also based on research by _Mikhail_, so huge thanks to him.
+Thanks to _Mikhail_ for his help on clarifying some minor points.
