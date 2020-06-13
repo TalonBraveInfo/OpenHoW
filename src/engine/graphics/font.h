@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,9 +64,8 @@ enum {
 
 extern BitmapFont *g_fonts[NUM_FONTS];
 
-void CacheFontData();
+void FrontEnd_CacheFontData();
 void ClearFontData();
 
-void Font_DrawBitmapCharacter(BitmapFont *font, int x, int y, float scale, PLColour colour, uint8_t character);
-void Font_DrawBitmapString(BitmapFont *font, int x, int y, unsigned int spacing, float scale, PLColour colour,
-                           const char *msg);
+void Font_DrawBitmapCharacter(BitmapFont *font, float x, float y, float scale, PLColour colour, uint8_t character);
+void Font_DrawBitmapString(BitmapFont *font, float x, float y, float spacing, float scale, PLColour colour, const char *msg);

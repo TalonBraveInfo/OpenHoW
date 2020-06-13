@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,31 @@
 
 #pragma once
 
-#define FAC_MAX_TRIANGLES 8192
-
 PL_EXTERN_C
 
 typedef struct FacTriangle {
-  int8_t uv_coords[6];
-  uint16_t vertex_indices[3];
-  uint16_t normal_indices[3];
-  uint32_t texture_index;
+	int8_t uv_coords[6];
+	uint16_t vertex_indices[3];
+	uint16_t normal_indices[3];
+	uint16_t unknown0;
+	uint32_t texture_index;
+	uint16_t unknown1[4];
 } FacTriangle;
 
 typedef struct FacTextureIndex {
-  char name[16];
+	char name[16];
 } FacTextureIndex;
 
 typedef struct FacHandle {
-  FacTriangle *triangles;
-  unsigned int num_triangles;
+	FacTriangle *triangles;
+	unsigned int num_triangles;
 
-  struct FacTextureIndex *texture_table;
-  unsigned int texture_table_size;
+	struct FacTextureIndex *texture_table;
+	unsigned int texture_table_size;
 } FacHandle;
 
-FacHandle *Fac_LoadFile(const char *path);
-void Fac_WriteFile(FacHandle *handle, const char *path);
-void Fac_DestroyHandle(FacHandle *handle);
+FacHandle *Fac_LoadFile( const char *path );
+void Fac_WriteFile( FacHandle *handle, const char *path );
+void Fac_DestroyHandle( FacHandle *handle );
 
 PL_EXTERN_C_END

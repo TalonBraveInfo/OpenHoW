@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 cmake_minimum_required(VERSION 3.5.1)
 
+project( OpenHoW )
+
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set all of our output directories.
@@ -54,18 +56,9 @@ function(build_openal)
     add_subdirectory(src/3rdparty/openal-soft)
 endfunction()
 
-function(build_newton)
-    set(NEWTON_BUILD_SANDBOX_DEMOS OFF CACHE BOOL "generates demos projects")
-    set(NEWTON_BUILD_SHARED_LIBS OFF CACHE BOOL "build shared library")
-    set(NEWTON_WITH_AVX_PLUGIN OFF CACHE BOOL "adding avx parallel solver (forces shared libs)")
-    add_subdirectory(src/3rdparty/newton-dynamics)
-endfunction()
-
 if(WIN32 OR APPLE)
     build_openal()
 endif()
-
-build_newton()
 
 # Get the current working branch
 execute_process(
@@ -98,4 +91,5 @@ add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
 add_subdirectory(src/3rdparty/platform/platform)
 add_subdirectory(src/tools/extractor)
 add_subdirectory(src/tools/ptgtool)
+add_subdirectory(src/tools/img2pmg)
 add_subdirectory(src/engine)

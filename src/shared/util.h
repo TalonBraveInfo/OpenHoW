@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,18 +70,12 @@ void u_init_logs(const char* log_path);
 void* u_realloc(void* ptr, size_t new_size, bool abort_on_fail);
 void* u_alloc(size_t num, size_t size, bool abort_on_fail);
 
-void u_init_paths(void);
-const char* u_get_base_path(void);
-const char* u_get_mod_path(void);
-void u_set_base_path(const char* path);
-void u_set_mod_path(const char* path);
-const char* u_get_full_path(void);
-
 const char* u_scan(const char* path, const char** preference);
-const char* u_find(const char* path);
 const char* u_find2(const char* path, const char** preference, bool abort_on_fail);
 
 FILE* u_open(const char* path, const char* mode, bool abort_on_fail);
+
+char *u_new_filename( char *dst, const char *src, const char *ext );
 
 PL_EXTERN_C_END
 

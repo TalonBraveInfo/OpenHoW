@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,16 @@
  *                          Loading Screen
  *      Load Game
  */
+
+enum MinimapIcon {
+	MINIMAP_ICON_BOMB,	// Unused?
+	MINIMAP_ICON_HEALTH,
+	MINIMAP_ICON_PIG,
+	MINIMAP_ICON_PICKUP,
+	MINIMAP_ICON_PROP,	// Unused?
+
+	MAX_MINIMAP_ICONS
+};
 
 enum {
   FE_MODE_INIT,       /* menu shown during initialization */

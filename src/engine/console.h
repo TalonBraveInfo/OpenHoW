@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,8 +42,9 @@ extern PLConsoleVariable *cv_display_ui_scale;
 extern PLConsoleVariable *cv_display_vsync;
 
 extern PLConsoleVariable *cv_graphics_cull;
-extern PLConsoleVariable *cv_graphics_draw_world;
-extern PLConsoleVariable *cv_graphics_draw_audio_sources;
+extern PLConsoleVariable* cv_graphics_draw_world;
+extern PLConsoleVariable* cv_graphics_draw_sprites;
+extern PLConsoleVariable* cv_graphics_draw_audio_sources;
 extern PLConsoleVariable *cv_graphics_texture_filter;
 extern PLConsoleVariable *cv_graphics_alpha_to_coverage;
 extern PLConsoleVariable *cv_graphics_debug_normals;

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,49 +17,51 @@
 
 #pragma once
 
-#include "actors/actor.h"
+class Actor;
 
-typedef std::set<Actor*> ActorSet;
+typedef std::set<Actor *> ActorSet;
 
 class ActorManager {
- protected:
-  typedef Actor* (* actor_ctor_func)();
-  static std::map<std::string, actor_ctor_func> actor_classes_;
+protected:
+	typedef Actor *(*actor_ctor_func)();
+	static std::map<std::string, actor_ctor_func> actor_classes_;
 
- public:
-  static ActorManager* GetInstance() {
-    static ActorManager* instance = nullptr;
-    if (instance == nullptr) {
-      instance = new ActorManager();
-    }
-    return instance;
-  }
+public:
+	static ActorManager *GetInstance() {
+		static ActorManager *instance = nullptr;
+		if ( instance == nullptr ) {
+			instance = new ActorManager();
+		}
+		return instance;
+	}
 
-  Actor* CreateActor(const std::string& class_name);
-  void DestroyActor(Actor* actor);
+	Actor *CreateActor( const std::string &class_name, const ActorSpawn &spawnData = ActorSpawn() );
+	void DestroyActor( Actor *actor );
 
-  void TickActors();
-  void DrawActors();
-  void DestroyActors();
+	void TickActors();
+	void DrawActors();
+	void DestroyActors();
 
-  void ActivateActors();
-  void DeactivateActors();
+	void ActivateActors();
+	void DeactivateActors();
 
-  const ActorSet& GetActors() const { return actors_; }
+	const ActorSet &GetActors() const { return actors_; }
 
-  class ActorClassRegistration {
-   public:
-    const std::string name_;
+	class ActorClassRegistration {
+	public:
+		const std::string name_;
 
-    ActorClassRegistration(const std::string& name, actor_ctor_func ctor_func);
-    ~ActorClassRegistration();
-  };
+		ActorClassRegistration( const std::string &name, actor_ctor_func ctor_func );
+		~ActorClassRegistration();
+	};
 
- private:
-  static ActorSet actors_;
+private:
+	static ActorSet actors_;
+	static std::vector<Actor *> destructionQueue;
 };
 
-#define REGISTER_ACTOR(NAME, CLASS) \
+#define REGISTER_ACTOR( NAME, CLASS ) \
     static Actor * NAME ## _make() { return new CLASS (); } \
     static ActorManager::ActorClassRegistration __attribute__ ((init_priority(2000))) \
     _reg_actor_ ## NAME ## _name((#NAME), NAME ## _make); // NOLINT(cert-err58-cpp)
+#define REGISTER_ACTOR_BASIC( CLASS ) REGISTER_ACTOR( CLASS, CLASS )

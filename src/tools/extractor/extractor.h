@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  * Copyright (C) 2017 Daniel Collins <solemnwarning@solemnwarning.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,30 +25,30 @@
 #include "../../shared/util.h"
 
 typedef enum ERegion {
-  REGION_UNKNOWN = -1,
+	REGION_UNKNOWN = -1,
 
-  REGION_ENG,
-  REGION_FRE,
-  REGION_GER,
-  REGION_ITA,
-  REGION_RUS,
-  REGION_SPA,
+	REGION_ENG,
+	REGION_FRE,
+	REGION_GER,
+	REGION_ITA,
+	REGION_RUS,
+	REGION_SPA,
 
-  MAX_REGIONS
+	MAX_REGIONS
 } ERegion;
 extern const char *region_idents[MAX_REGIONS];
 
 typedef enum EPlatform {
-  PLATFORM_UNKNOWN = -1,
-  PLATFORM_PSX,               /* PSX version */
-  PLATFORM_PC,                /* PC version */
-  PLATFORM_PC_DIGITAL,        /* PC/Digital version */
+	PLATFORM_UNKNOWN = -1,
+	PLATFORM_PSX,               /* PSX version */
+	PLATFORM_PC,                /* PC version */
+	PLATFORM_PC_DIGITAL,        /* PC/Digital version */
 } EPlatform;
 
 typedef struct VersionInfo {
-  ERegion region;
-  EPlatform platform;
+	ERegion region;
+	EPlatform platform;
 } VersionInfo;
 extern VersionInfo version_info;
 
-void CheckGameVersion(const char *path);
+void CheckGameVersion( const char *path );

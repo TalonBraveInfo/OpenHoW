@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,13 +25,13 @@
 
 /************************************************************/
 
-PL_EXTERN_C
+class BaseWindow;
 
-void ImGuiImpl_SetupCamera(void);
-void ImGuiImpl_SetupFrame(void);
-void ImGuiImpl_Draw(void);
+void ImGuiImpl_SetupCamera();
+void ImGuiImpl_SetupFrame();
+void ImGuiImpl_Draw();
 void ImGuiImpl_UpdateViewport(int w, int h);
 
-void UI_DisplayDebugMenu(void);
+void ImGuiImpl_RegisterWindow( BaseWindow *window );
 
-PL_EXTERN_C_END
+void UI_DisplayDebugMenu(void);

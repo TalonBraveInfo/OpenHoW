@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,29 +17,31 @@
 
 #pragma once
 
-#include <PL/platform_graphics_camera.h>
+#include <PL/pl_graphics_camera.h>
 
 class Camera {
- public:
-  Camera(const PLVector3& pos, const PLVector3& angles);
-  ~Camera();
+public:
+	Camera( const PLVector3 &pos, const PLVector3 &angles );
+	~Camera();
 
-  void SetPosition(const PLVector3& pos);
-  void SetAngles(const PLVector3& angles);
-  void SetFieldOfView(float fov);
+	void SetPosition( const PLVector3 &pos );
+	void SetAngles( const PLVector3 &angles );
+	void SetFieldOfView( float fov );
 
-  PLVector3 GetPosition() { return camera_->position; }
-  PLVector3 GetAngles() { return camera_->angles; }
-  PLVector3 GetForward() { return camera_->forward; }
+	PLVector3 GetPosition() { return camera_->position; }
+	PLVector3 GetAngles() { return camera_->angles; }
+	PLVector3 GetForward() { return camera_->forward; }
 
-  void SetViewport(const std::array<int, 2>& xy, const std::array<int, 2>& wh);
+	float GetFieldOfView() { return camera_->fov; }
 
-  int GetViewportWidth() { return camera_->viewport.w; }
-  int GetViewportHeight() { return camera_->viewport.h; }
+	void SetViewport( int x, int y, int width, int height );
 
-  void MakeActive();
+	int GetViewportWidth() { return camera_->viewport.w; }
+	int GetViewportHeight() { return camera_->viewport.h; }
 
- protected:
- private:
-  PLCamera* camera_{nullptr};
+	void MakeActive();
+
+protected:
+private:
+	PLCamera *camera_{ nullptr };
 };

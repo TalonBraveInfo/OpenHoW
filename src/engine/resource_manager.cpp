@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,259 +17,207 @@
 
 #include "engine.h"
 #include "resource_manager.h"
-#include "graphics/shaders.h"
+#include "shaders.h"
 
-using namespace openhow;
-
-/* todo:
- *  allow resources to be cached into collections (e.g. Clear("GameTextures"))
- */
-
-PLModel* LoadObjModel(const char* path); // see loaders/obj.cpp
-PLModel* Model_LoadVtxFile(const char* path);
-PLModel* Model_LoadMinFile(const char* path);
+using namespace ohw;
 
 ResourceManager::ResourceManager() {
-  plRegisterModelLoader("obj", LoadObjModel);
-  plRegisterModelLoader("vtx", Model_LoadVtxFile);
-  plRegisterModelLoader("min", Model_LoadMinFile);
+	// Allow users to enable support for all package formats if desired (disabled by default for security reasons)
+	if ( plHasCommandLineArgument( "-rapf" ) ) {
+		plRegisterStandardPackageLoaders();
+	}
 
-  plRegisterConsoleCommand("ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources.");
-  plRegisterConsoleCommand("ClearModels", &ResourceManager::ClearModelsCommand, "Clears all cached models.");
-  plRegisterConsoleCommand("ClearTextures", &ResourceManager::ClearTexturesCommand, "Clears all cached textures.");
+	plRegisterConsoleCommand( "ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources." );
+	plRegisterConsoleCommand( "ClearAllResources", &ResourceManager::ClearAllResourcesCommand, "Clears all cached resources." );
+	plRegisterConsoleCommand( "ClearResource", &ResourceManager::ClearResourceCommand, "Clears the specified resource." );
 }
 
 ResourceManager::~ResourceManager() {
-  ClearTextures(true);
-  ClearModels(true);
-
-  plDestroyTexture(fallback_texture_, true);
-  plDestroyModel(fallback_model_);
+	ClearAllResources( true );
 }
 
-// TODO: we should be able to query the platform library for this!!
-const char* supported_model_formats[] = {"obj", "vtx", "min", nullptr};
-const char* supported_image_formats[] = {"png", "tga", "bmp", "tim", nullptr};
-//const char *supported_audio_formats[]={"wav", NULL};
-//const char *supported_video_formats[]={"bik", NULL};
+Resource *ResourceManager::GetCachedResource( const std::string& path ) {
+	auto idx = resourcesMap.find( path );
+	if ( idx != resourcesMap.end() ) {
+		return idx->second;
+	}
 
-PLTexture* ResourceManager::GetCachedTexture(const std::string& path) {
-  auto idx = textures_.find(path);
-  if(idx != textures_.end()) {
-    return idx->second.texture_ptr;
-  }
-
-  return nullptr;
+	return nullptr;
 }
 
-PLModel* ResourceManager::GetCachedModel(const std::string& path) {
-  auto idx = models_.find(path);
-  if(idx != models_.end()) {
-    return idx->second.model_ptr;
-  }
+SharedTextureResourcePointer ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist, bool abortOnFail ) {
+	TextureResource *texturePtr = static_cast< TextureResource* >( GetCachedResource( path ) );
+	if ( texturePtr != nullptr ) {
+		return texturePtr;
+	}
 
-  return nullptr;
+	texturePtr = new TextureResource( path, filter, persist, abortOnFail );
+	CacheResource( path, texturePtr );
+
+	return texturePtr;
 }
 
-PLTexture* ResourceManager::LoadTexture(const std::string& path, PLTextureFilter filter, bool persist,
-    bool abort_on_fail) {
-  const char* ext = plGetFileExtension(path.c_str());
-  if (plIsEmptyString(ext)) {
-    const char* fp = u_find2(path.c_str(), supported_image_formats, abort_on_fail);
-    if (fp == nullptr) {
-      return CacheTexture(path, GetFallbackTexture(), persist);
-    }
+SharedModelResourcePointer ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
+	ModelResource *modelPtr = static_cast< ModelResource* >( GetCachedResource( path ) );
+	if ( modelPtr != nullptr ) {
+		return modelPtr;
+	}
 
-    PLTexture* texture = GetCachedTexture(fp);
-    if(texture != nullptr) {
-      return texture;
-    }
+	modelPtr = new ModelResource( path, persist, abortOnFail );
+	CacheResource( path, modelPtr );
 
-    texture = plLoadTextureImage(fp, filter);
-    if (texture != nullptr) {
-      return CacheTexture(fp, texture, persist);;
-    }
-
-    if(abort_on_fail) {
-      Error("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
-    }
-
-    LogWarn("%s, aborting!\n", plGetError());
-    return CacheTexture(fp, GetFallbackTexture(), persist);
-  }
-
-  const char* fp = u_find(path.c_str());
-  PLTexture* texture = GetCachedTexture(fp);
-  if(texture != nullptr) {
-    return texture;
-  }
-
-  PLImage img;
-  if (plLoadImage(fp, &img)) {
-    // pixel format of TIM will be changed before uploading
-    if (pl_strncasecmp(ext, "tim", 3) == 0) {
-      plConvertPixelFormat(&img, PL_IMAGEFORMAT_RGBA8);
-    }
-
-    texture = plCreateTexture();
-    if (texture != nullptr) {
-      texture->filter = filter;
-      if (plUploadTextureImage(texture, &img)) {
-        return CacheTexture(fp, texture, persist);
-      }
-    }
-    plDestroyTexture(texture, true);
-  }
-
-  if(abort_on_fail) {
-    Error("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
-  }
-
-  LogWarn("Failed to load texture, \"%s\" (%s)!\n", fp, plGetError());
-  plFreeImage(&img);
-
-  return CacheTexture(fp, GetFallbackTexture(), persist);;
+	return modelPtr;
 }
 
-PLModel* ResourceManager::LoadModel(const std::string& path, bool persist, bool abort_on_fail) {
-  const char* fp = u_find2(path.c_str(), supported_model_formats, abort_on_fail);
-  if (fp == nullptr) {
-    return CacheModel(path, GetFallbackModel(), persist);
-  }
+PLTexture *ResourceManager::GetFallbackTexture() {
+	if ( fallbackTexture != nullptr ) {
+		return fallbackTexture;
+	}
 
-  PLModel* model = GetCachedModel(fp);
-  if(model != nullptr) {
-    return model;
-  }
+	PLColour pixelBuffer[] = {
+		{ 255, 255, 0, 255 }, { 0, 255, 255, 255 },
+		{ 0, 255, 255, 255 }, { 255, 255, 0, 255 } };
+	PLImage *image = plCreateImage(( uint8_t* ) pixelBuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	if ( image == nullptr ) {
+		Error( "Failed to generate default texture (%s)!\n", plGetError() );
+	}
 
-  model = plLoadModel(fp);
-  if (model == nullptr) {
-    if (abort_on_fail) {
-      Error("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
-    }
+	fallbackTexture = plCreateTexture();
+	fallbackTexture->flags &= PL_TEXTURE_FLAG_NOMIPS;
+	if ( !plUploadTextureImage( fallbackTexture, image ) ) {
+		Error( "Failed to upload default texture (%s)!\n", plGetError() );
+	}
 
-    LogWarn("Failed to load model, \"%s\" (%s)!\n", fp, plGetError());
-    return CacheModel(fp, GetFallbackModel(), persist);
-  }
+	plFreeImage( image );
 
-  return CacheModel(fp, model, persist);
+	return fallbackTexture;
 }
 
-PLTexture* ResourceManager::GetFallbackTexture() {
-  if(fallback_texture_ != nullptr) {
-    return fallback_texture_;
-  }
+PLModel *ResourceManager::GetFallbackModel() {
+	if ( fallbackModel != nullptr ) {
+		return fallbackModel;
+	}
 
-  PLColour pbuffer[] = {
-      {255, 255, 0, 255}, {0, 255, 255, 255},
-      {0, 255, 255, 255}, {255, 255, 0, 255}};
-  PLImage* image = plCreateImage((uint8_t*) pbuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8);
-  if (image != nullptr) {
-    fallback_texture_ = plCreateTexture();
-    fallback_texture_->flags &= PL_TEXTURE_FLAG_NOMIPS;
-    if (!plUploadTextureImage(fallback_texture_, image)) {
-      Error("Failed to upload default texture (%s)!\n", plGetError());
-    }
-    plFreeImage(image);
-  } else {
-    Error("Failed to generate default texture (%s)!\n", plGetError());
-  }
+	PLMesh *mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6 );
+	plSetMeshVertexPosition( mesh, 0, PLVector3( 0, 20, 0 ) );
+	plSetMeshVertexPosition( mesh, 1, PLVector3( 0, -20, 0 ) );
+	plSetMeshVertexPosition( mesh, 2, PLVector3( 20, 0, 0 ) );
+	plSetMeshVertexPosition( mesh, 3, PLVector3( -20, 0, 0 ) );
+	plSetMeshVertexPosition( mesh, 4, PLVector3( 0, 0, 20 ) );
+	plSetMeshVertexPosition( mesh, 5, PLVector3( 0, 0, -20 ) );
+	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ) );
 
-  return fallback_texture_;
+	ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
+	if ( shaderProgram == nullptr ) {
+		Error( "Failed to get default shader program, \"generic_untextured\"!\n" );
+	}
+
+	// todo: kill this api, if we rebuild shader cache we'll die
+	plSetMeshShaderProgram( mesh, shaderProgram->GetInternalProgram() );
+	plUploadMesh( mesh );
+
+	return ( fallbackModel = plCreateBasicStaticModel( mesh ) );
 }
 
-PLModel* ResourceManager::GetFallbackModel() {
-  if(fallback_model_ != nullptr) {
-    return fallback_model_;
-  }
+/**
+ * Clear the specified resource if it's ready to be freed. Use force to immediately destroy it.
+ */
+void ResourceManager::ClearResource( const std::string &path, bool force ) {
+	if ( resourcesMap.empty() ) {
+		return;
+	}
 
-  PLMesh* mesh = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6);
-  plSetMeshVertexPosition(mesh, 0, PLVector3(0, 20, 0));
-  plSetMeshVertexPosition(mesh, 1, PLVector3(0, -20, 0));
-  plSetMeshVertexPosition(mesh, 2, PLVector3(20, 0, 0));
-  plSetMeshVertexPosition(mesh, 3, PLVector3(-20, 0, 0));
-  plSetMeshVertexPosition(mesh, 4, PLVector3(0, 0, 20));
-  plSetMeshVertexPosition(mesh, 5, PLVector3(0, 0, -20));
-  plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
+	auto resourceIndex = resourcesMap.find( path );
+	if ( resourceIndex == resourcesMap.end() ) {
+		return;
+	}
 
-  hwShaderProgram* shaderProgram = Shaders_GetProgram( "generic_untextured" );
-  if( shaderProgram == nullptr ) {
-  	Error( "Failed to get default shader program, \"generic_untextured\"!\n" );
-  }
+	if ( !force && !resourceIndex->second->CanDestroy() ) {
+		return;
+	}
 
-  // todo: kill this api, if we rebuild shader cache we'll die
-  plSetMeshShaderProgram(mesh, shaderProgram->GetInternalProgram());
-  plUploadMesh(mesh);
+	delete resourceIndex->second;
+	resourcesMap.erase( resourceIndex );
 
-  return (fallback_model_ = plCreateBasicStaticModel(mesh));
+	LogDebug( "Freed resource \"%s\"\n", path.c_str() );
 }
 
-void ResourceManager::ClearTextures(bool force) {
-  if(textures_.empty()) {
-    return;
-  }
+/**
+ * Clear all cached resources that can be freed up. Use force to immediately destroy it.
+ */
+void ResourceManager::ClearAllResources( bool force ) {
+	for ( auto i = resourcesMap.begin(); i != resourcesMap.end(); ) {
+		if ( !force && !i->second->CanDestroy() ) {
+			++i;
+			continue;
+		}
 
-  for(auto &i : textures_) {
-    if((i.second.persist && !force) || (fallback_texture_ != nullptr && i.second.texture_ptr == fallback_texture_)) {
-      continue;
-    }
-
-    plDestroyTexture(i.second.texture_ptr, true);
-  }
-
-  if(force) {
-    textures_.clear();
-  }
+		delete i->second;
+		i = resourcesMap.erase( i );
+	}
 }
 
-void ResourceManager::ClearModels(bool force) {
-  if(models_.empty()) {
-    return;
-  }
+void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
+	u_unused( argc );
+	u_unused( argv );
 
-  for(auto &i : models_) {
-    if((i.second.persist && !force) || (fallback_model_ != nullptr && i.second.model_ptr == fallback_model_)) {
-      continue;
-    }
-
-    plDestroyModel(i.second.model_ptr);
-  }
-
-  if(force) {
-    models_.clear();
-  }
+	LogInfo( "Printing cache...\n" );
+	for ( auto const& i : Engine::Resource()->resourcesMap ) {
+		LogInfo(
+			" CachedName(%s)"
+            " CanDestroy(%s)"
+            " ReferenceCount(%u)\n",
+            i.first.c_str(),
+            i.second->CanDestroy() ? "true" : "false",
+            i.second->GetReferenceCount() );
+	}
 }
 
-void ResourceManager::ListCachedResources(unsigned int argc, char** argv) {
-  u_unused(argc);
-  u_unused(argv);
+void ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv ) {
+	bool force = false;
+	if ( argc > 1 ) {
+		const char *forceParameter = argv[ 1 ];
+		if ( forceParameter == nullptr ) {
+			LogWarn( "Invalid force parameter!\n" );
+			return;
+		}
 
-  LogInfo("Printing cache...\n");
+		if ( pl_strcasecmp( forceParameter, "true" ) == 0 ) {
+			force = true;
+		} else if ( pl_strcasecmp( forceParameter, "false" ) != 0 ) {
+			LogWarn( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
+		}
+	}
 
-  for(auto const& i : Engine::Resource()->models_) {
-    LogInfo(" model %s / %s : name(%s)\n", i.first.c_str(), i.second.persist ? "true" : "false",
-        i.second.model_ptr->name);
-  }
-
-  unsigned int tsize = 0;
-  for(auto const& i : Engine::Resource()->textures_) {
-    LogInfo(" texture %s / %s : name(%s)\n", i.first.c_str(), i.second.persist ? "true" : "false",
-            i.second.texture_ptr->name);
-    tsize += i.second.texture_ptr->size;
-  }
-  LogInfo("Texture Memory: %dkb\n", plBytesToKilobytes(tsize));
+	ohw::Engine::Resource()->ClearAllResources( force );
 }
 
-void ResourceManager::ClearTexturesCommand(unsigned int argc, char** argv) {
-  u_unused(argc);
-  u_unused(argv);
+void ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
+	if ( argc <= 1 ) {
+		LogWarn( "Invalid number of arguments!\n" );
+		return;
+	}
 
-  Engine::Resource()->ClearTextures();
-}
+	const char *resourceName = argv[ 1 ];
+	if ( resourceName == nullptr ) {
+		LogWarn( "Invalid resource name!\n" );
+		return;
+	}
 
-void ResourceManager::ClearModelsCommand(unsigned int argc, char** argv) {
-  u_unused(argc);
-  u_unused(argv);
+	bool force = false;
+	if ( argc > 2 ) {
+		const char *forceParameter = argv[ 2 ];
+		if ( forceParameter == nullptr ) {
+			LogWarn( "Invalid force parameter!\n" );
+			return;
+		}
 
-  Engine::Resource()->ClearModels();
+		if ( pl_strcasecmp( forceParameter, "true" ) == 0 ) {
+			force = true;
+		} else if ( pl_strcasecmp( forceParameter, "false" ) != 0 ) {
+			LogWarn( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
+		}
+	}
+
+	ohw::Engine::Resource()->ClearResource( resourceName, force );
 }

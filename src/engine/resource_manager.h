@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,65 +17,42 @@
 
 #pragma once
 
-namespace openhow {
-class ResourceManager {
- private:
-  ResourceManager();
-  ~ResourceManager();
+#include "ModelResource.h"
+#include "TextureResource.h"
 
- public:
-  PLTexture* GetCachedTexture(const std::string& path);
-  PLModel* GetCachedModel(const std::string& path);
+namespace ohw {
+	class ResourceManager {
+	private:
+		ResourceManager();
+		~ResourceManager();
 
-  PLTexture* LoadTexture(const std::string& path,
-                         PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST,
-                         bool persist = false, bool abort_on_fail = false);
-  PLModel* LoadModel(const std::string& path, bool persist = false, bool abort_on_fail = false);
+	public:
+		SharedTextureResourcePointer LoadTexture( const std::string &path, PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST, bool persist = false, bool abortOnFail = false );
+		SharedModelResourcePointer LoadModel( const std::string &path, bool persist = false, bool abortOnFail = false );
 
-  PLTexture* GetFallbackTexture();
-  PLModel* GetFallbackModel();
+		void ClearResource( const std::string &path, bool force = false );
+		void ClearAllResources( bool force = false );
 
-  void ClearTextures(bool force = false);
-  void ClearModels(bool force = false);
+		PLTexture *GetFallbackTexture();
+		PLModel *GetFallbackModel();
 
- private:
-  static void ListCachedResources(unsigned int argc, char** argv);
-  static void ClearTexturesCommand(unsigned int argc, char** argv);
-  static void ClearModelsCommand(unsigned int argc, char** argv);
+	private:
+		static void ListCachedResources( unsigned int argc, char **argv );
+		static void ClearAllResourcesCommand( unsigned int argc, char **argv );
+		static void ClearResourceCommand( unsigned int argc, char **argv );
 
-  struct TextureHandle {
-    TextureHandle(PLTexture* texture_ptr, bool persist) {
-      this->texture_ptr = texture_ptr;
-      this->persist = persist;
-    }
+		PLTexture *fallbackTexture{ nullptr };
+		PLModel *fallbackModel{ nullptr };
 
-    PLTexture* texture_ptr{nullptr};
-    bool persist{false};
-  };
-  std::map<std::string, TextureHandle> textures_;
-  inline PLTexture* CacheTexture(const std::string& path, PLTexture* texture_ptr, bool persist = false) {
-    textures_.insert(std::pair<std::string, TextureHandle>(path, { texture_ptr, persist }));
-    return texture_ptr;
-  }
+		Resource *GetCachedResource( const std::string &path );
+		PL_INLINE Resource *CacheResource( const std::string &path, Resource *resourcePtr, bool persist = false ) {
+			resourcesMap.insert( std::pair< std::string, Resource* >( path, resourcePtr ) );
+			LogDebug( "Cached resource, \"%s\"\n", path.c_str() );
+			return resourcePtr;
+		}
 
-  struct ModelHandle {
-    ModelHandle(PLModel* model_ptr, bool persist) {
-      this->model_ptr = model_ptr;
-      this->persist = persist;
-    }
+		std::map< std::string, Resource* > resourcesMap;
 
-    PLModel* model_ptr{nullptr};
-    bool persist{false};
-  };
-  std::map<std::string, ModelHandle> models_;
-  inline PLModel* CacheModel(const std::string& path, PLModel* model_ptr, bool persist = false) {
-    models_.insert(std::pair<std::string, ModelHandle>(path, { model_ptr, persist }));
-    return model_ptr;
-  }
-
-  PLTexture* fallback_texture_{nullptr};
-  PLModel* fallback_model_{nullptr};
-
-  friend class Engine;
-};
+		friend class Engine;
+	};
 }

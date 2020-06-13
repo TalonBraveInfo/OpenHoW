@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 #pragma once
 
-struct Team;
+struct PlayerTeam;
 class Player;
 
 class IGameMode {
@@ -66,5 +66,5 @@ class IGameMode {
   bool round_started_{false};
   bool turn_started_{false};
 
-  unsigned int current_player_{0 };
+  unsigned int currentPlayer{0 };
 };

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,19 +20,20 @@
 #define MIN_DISPLAY_WIDTH   640
 #define MIN_DISPLAY_HEIGHT  480
 
-typedef struct VideoPreset{
-    int width;
-    int height;
-} VideoPreset;
+struct VideoPreset {
+	VideoPreset( int w, int h ) : width( w ), height( h ) {}
+
+    int width{ 0 };
+    int height{ 0 };
+};
 
 void Display_Initialize(void);
 void Display_Shutdown(void);
 void Display_UpdateState(void);
 
 bool Display_AppendVideoPreset(int width, int height);
-void Display_ClearVideoPresets();
 int Display_GetNumVideoPresets();
-const VideoPreset* Display_GetVideoPreset(int idx);
+const VideoPreset* Display_GetVideoPreset( unsigned int idx );
 
 void Display_UpdateViewport(int x, int y, int width, int height);
 
@@ -42,11 +43,7 @@ int Display_GetViewportHeight(const PLViewport *viewport);
 // debugging
 void Display_GetFramesCount(unsigned int *fps, unsigned int *ms);
 
-void Display_SetupDraw(double delta);
-void Display_DrawScene(void);
-void Display_DrawInterface(void);
-void Display_DrawDebug(void);
+void Display_Draw( double delta );
 void Display_Flush(void);
 
-extern const char *supported_model_formats[];
-extern const char *supported_image_formats[];
+extern const char *supportedTextureFormats[];

@@ -1,0 +1,19 @@
+{
+  "version": 15052020,
+  "emitters": [
+    {
+      "gravity": 0,
+      "randomLifeSpanFactor": 5,
+      "randomColourFactor": 2,
+      "startColour": "255 255 255 255",
+      "endColour": "255 0 0 255",
+      "startScale": 0,
+      "endScale": 1.65,
+      "spawnRadius": 1.0,
+      "collideWorld": "true",
+      "collideActors": "true",
+      "particleType": "sprite",
+      "blendType": "additive"
+    }
+  ]
+}

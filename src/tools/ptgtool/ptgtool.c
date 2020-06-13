@@ -16,7 +16,6 @@
  */
 
 #include <PL/platform_filesystem.h>
-#include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
 #include "../../engine/engine.h"
@@ -32,10 +31,11 @@ static FILE *ptg_fp = NULL;
 
 static unsigned int num_textures = 0;
 static char dir_textures[256][PL_SYSTEM_MAX_PATH];
-static void PTG_CountDirectoryTextures(const char *path) {
+static void PTG_CountDirectoryTextures(const char *path, void *userData) {
     /* ensure consistency */
+    u_unused( userData );
 
-    size_t size = plGetFileSize(path);
+    size_t size = plGetLocalFileSize( path );
     if(size == 0) {
         Error("Invalid file size for \"%s\", aborting!\n", path);
     }
@@ -89,8 +89,7 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
 
     uint32_t num_textures;
     if(fread(&num_textures, sizeof(uint32_t), 1, file) != 1) {
-        LogInfo("invalid PTG file, failed to get number of textures!\n");
-        goto ABORT_PTG;
+        Error("invalid PTG file, failed to get number of textures!\n");
     }
 
     char index_path[PL_SYSTEM_MAX_PATH];
@@ -100,7 +99,7 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
         Error("Failed to open index for writing at \"%s\", aborting!\n", index_path);
     }
 
-    size_t tim_size = (plGetFileSize(input_path) - sizeof(num_textures)) / num_textures;
+    size_t tim_size = ( plGetLocalFileSize( input_path ) - sizeof( num_textures ) ) / num_textures;
     for(unsigned int i = 0; i < num_textures; ++i) {
         fprintf(index, "%d\n", i);
 
@@ -205,7 +204,7 @@ int main(int argc, char **argv) {
             Error("Failed to open \"%s\" for writing, aborting!\n", out_path);
         }
 
-        plScanDirectory(in_path, "tim", PTG_CountDirectoryTextures, false);
+        plScanDirectory(in_path, "tim", PTG_CountDirectoryTextures, false, NULL );
 
         LogInfo("Found %d textures for writing into \"%s\"...\n", num_textures, out_path);
 
@@ -213,8 +212,8 @@ int main(int argc, char **argv) {
         qsort(dir_textures[0], num_textures, PL_SYSTEM_MAX_PATH, PTG_SortTextures);
         for(unsigned int i = 0; i < num_textures; ++i) {
             LogInfo("Writing \"%s\" (%d)\n", dir_textures[i], i);
-            size_t tim_size = plGetFileSize(dir_textures[i]);
-            uint8_t buf[tim_size];
+			size_t tim_size = plGetLocalFileSize( dir_textures[ i ] );
+			uint8_t buf[tim_size];
             FILE *tim_fp = fopen(dir_textures[i], "rb");
             fread(buf, sizeof(uint8_t), tim_size, tim_fp);
             fwrite(buf, sizeof(uint8_t), tim_size, ptg_fp);

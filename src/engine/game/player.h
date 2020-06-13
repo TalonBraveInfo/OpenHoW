@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,29 +30,29 @@ class Player {
 
   unsigned int GetNumChildren() { return children_.size(); }
 
-  void AddChild(Actor* actor);
-  void RemoveChild(Actor* actor);
+  void AddChild(Actor *actor);
+  void RemoveChild(Actor *actor);
 
   void PossessCurrentChild();
-  void DepossessCurrentChild();
+  void DispossessCurrentChild();
 
-  Actor* GetCurrentChild();
+  Actor *GetCurrentChild();
 
   void CycleChildren(bool forward = true);
 
   void SetControllerSlot(unsigned int slot) { input_slot = slot; }
   unsigned int GetControllerSlot() { return input_slot; }
 
-  void SetTeam(const Team& team) { team_ = team; }
-  Team* GetTeam() { return &team_; }
+  void SetTeam(const PlayerTeam &team) { team_ = team; }
+  const PlayerTeam *GetTeam() const { return &team_; }
 
  protected:
  private:
-  unsigned int  input_slot{ 0 }; // Controller slot
+  unsigned int input_slot{0}; // Controller slot
 
   PlayerType type_;
-  Team team_;
+  PlayerTeam team_;
 
-  std::vector<Actor*> children_;
-  unsigned int current_child_{ 0 };
+  std::vector<Actor *> children_;
+  unsigned int currentChildIndex{0};
 };

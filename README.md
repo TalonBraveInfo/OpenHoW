@@ -5,6 +5,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2FOpenHoW?ref=badge_shield)
 [![CodeFactor](https://www.codefactor.io/repository/github/talonbraveinfo/openhow/badge)](https://www.codefactor.io/repository/github/talonbraveinfo/openhow)
 [![Build Status](https://badge.buildkite.com/91e09e49d899659cf45b4898c8aaeb9d5927f2a7b23eaafb28.svg)](https://buildkite.com/solemnwarning/openhow)
+[![version](https://img.shields.io/github/release-pre/TalonBraveInfo/OpenHoW)](https://github.com/TalonBraveInfo/OpenHoW/releases/latest)
 
 ## What's this? :pig:
 OpenHoW aims to be an open-source reimplementation of [Hogs of War](https://en.wikipedia.org/wiki/Hogs_of_War),
@@ -24,19 +25,19 @@ Consider this more of a wish-list at this  point in time ;)
 * Enhanced graphics over the original game
 
 ## Status :mag:
-![Screenshot](https://github.com/TalonBraveInfo/HogViewer/blob/master/preview/preview00.png?raw=true)
+![Screenshot](./preview/preview00.png?raw=true)
 
 As of October 1st, 2019, the project is still in a very early phase of development.
 As we shift onto our next milestone (0.5.0) a lot of work will begin on actually getting
 the game into a basic playable form.
 
-The current goal is to have the game in a rough playable state by the end of the year.
+The current goal is to get the game into a rough playable state.
 
 ## Contributing :hammer:
 Interested in contributing to the project? Know C/C++ and looking to get deep down
 into some code? Then what are you waiting for!?
 
-The best place right now to get in touch is through our [Discord](https://discord.gg/YMHJa6p),
+The best place right now to get in touch is through our [Discord](https://discord.gg/EdmwgVk),
 and makes things a hell of a lot easier to coordinate and collaborate as well. If you're
 interested then jump on in!
 
@@ -54,18 +55,22 @@ have been listed below.
 * [SDL2](https://www.libsdl.org/) (needed for input, window creation and audio)
 * [OpenAL Soft](https://github.com/kcat/openal-soft) (needed for audio)
 
-At this time the project should compile for Linux (_Ubuntu 18.10_) with these dependencies 100%
+At this time with these dependencies the project should compile for Linux (_Ubuntu 19.10_: ```apt install cmake libglew-dev libopenal-dev libsdl2-dev```)
 but Windows needs some further care before it will be up and running correctly (see Windows section below).
 
-Once you've got everything you need, you'll need to compile the [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility. In order to do this you'll need to generate your project files
-using the CMakeLists found under 'src/tools/'.
+Once compiled, you need to use the [extraction](https://github.com/TalonBraveInfo/OpenHoW/tree/master/src/tools/extractor) utility: point it to your Hogs of War installation directory. The tool will then copy across and update any of the original Hogs of War's assets as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory, but the default ```bin``` directory is required to get OpenHoW up and running.
 
-Using the extraction tool, you'll need to point it to your Hogs of War installation directory and the tool will then copy across and update any of Hogs of War's files as necessary. If you want the files to be copied over somewhere else, add `-<output-dir>` after specifying your Hogs of War directory.
 
-It's advised that you point the extractor to the 'bin' directory, otherwise you won't be able to get OpenHoW up and running.
+#### Linux
 
-Once that's done, you're now set to generate the project files via the 
-CMakeLists found under the root OpenHoW directory and compile the rest of the project.
+```
+git clone https://github.com/TalonBraveInfo/OpenHoW.git
+cd OpenHoW
+git submodule update --init
+mkdir build
+cd build
+cmake ../
+```
 
 #### Windows
 
@@ -80,5 +85,8 @@ This will be changing at a later point to make things a little easier.
 
 #### C/C++ Style Guide
 
-Please try to follow the [Google C++ guidelines](https://google.github.io/styleguide/cppguide.html), if possible.
-Otherwise please follow the style already used in the code you're editing and this will be sufficient.
+A style guide is available [here](https://github.com/TalonBraveInfo/OpenHoW/tree/master/doc/coding_style.md).
+
+At the moment the project is a mess of different styles, which is very much an unfortunate side effect of
+experimenting with different styles during earlier stages of development.
+

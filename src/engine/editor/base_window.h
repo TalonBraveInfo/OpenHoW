@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include <imgui.h>
-
 #define ED_DEFAULT_WINDOW_FLAGS ImGuiWindowFlags_NoSavedSettings
+
+struct ImVec2;
 
 class BaseWindow {
 public:
@@ -38,6 +38,11 @@ public:
 
     void SetStatus(bool status) { status_ = status; }
 
+    void Begin( const std::string &windowTitle, unsigned int flags );
+
+    virtual void ToggleFullscreen();
+    bool IsFullscreen() const { return isFullscreen; }
+
     void ToggleStatus() {
         status_ = !status_;
     }
@@ -47,6 +52,11 @@ protected:
     unsigned int id_;
 
     BaseWindow *parent_{nullptr};
+
+private:
+	bool isFullscreen{ false };
+	PLVector2 curWindowSize, curWindowPosition;
+	PLVector2 oldSize, oldPosition;
 };
 
-#define dname(a)  std::string(a "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()
+#define dname(a)  std::string( a + "##" + /* std::to_string((ptrdiff_t)(this))*/ std::to_string(id_)).c_str()

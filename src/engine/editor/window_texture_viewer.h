@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,70 +18,80 @@
 #include "base_window.h"
 
 class TextureViewer : public BaseWindow {
- public:
-  explicit TextureViewer(const std::string &path) {
-    texture_ = openhow::Engine::Resource()->LoadTexture(path, PL_TEXTURE_FILTER_LINEAR);
-    if (texture_ == nullptr) {
-      throw std::runtime_error("Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!");
-    }
+public:
+	explicit TextureViewer( ohw::TextureResource *texture ) : BaseWindow() {
+		texturePtr = texture;
+		texturePtr->AddReference();
+	}
 
-    texture_path = path;
-  }
+	explicit TextureViewer( const std::string &path ) {
+		texturePtr = ohw::Engine::Resource()->LoadTexture( path, PL_TEXTURE_FILTER_LINEAR );
+		if ( texturePtr == nullptr ) {
+			throw std::runtime_error( "Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!" );
+		}
 
-  ~TextureViewer() override = default;
+		texturePath = path;
+	}
 
-  void ReloadTexture(PLTextureFilter filter_mode) {
-    if (filter_mode == filter_mode_) {
-      return;
-    }
+	~TextureViewer() override = default;
 
-    plDestroyTexture(texture_, true);
-    texture_ = openhow::Engine::Resource()->LoadTexture(texture_path, filter_mode);
-    filter_mode_ = filter_mode;
-  }
+	void ReloadTexture( PLTextureFilter filter_mode ) {
+		if ( texturePath.empty() || filter_mode == filterMode ) {
+			return;
+		}
 
-  void Display() override {
-    ImGui::SetNextWindowSize(ImVec2(texture_->w + 64, texture_->h + 128), ImGuiCond_Once);
-    ImGui::Begin(dname("Texture Viewer"), &status_,
-                 ImGuiWindowFlags_MenuBar |
-                     ImGuiWindowFlags_HorizontalScrollbar |
-                     ImGuiWindowFlags_NoSavedSettings
-    );
+		texturePtr->Release();
+		ohw::Engine::Resource()->ClearAllResources();
 
-    if (ImGui::BeginMenuBar()) {
-      if (ImGui::BeginMenu("View")) {
-        ImGui::SliderInt("Scale", &scale_, 1, 8);
-        if (ImGui::BeginMenu("Filter Mode")) {
-          if (ImGui::MenuItem("Linear", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_LINEAR))) {
-            ReloadTexture(PL_TEXTURE_FILTER_LINEAR);
-          }
-          if (ImGui::MenuItem("Nearest", nullptr, (filter_mode_ == PL_TEXTURE_FILTER_NEAREST))) {
-            ReloadTexture(PL_TEXTURE_FILTER_NEAREST);
-          }
-          ImGui::EndMenu();
-        }
-        ImGui::EndMenu();
-      }
-      ImGui::EndMenuBar();
-    }
+		texturePtr = ohw::Engine::Resource()->LoadTexture( texturePath, filter_mode );
+		filterMode = filter_mode;
+	}
 
-    ImGui::Image(reinterpret_cast<ImTextureID>(texture_->internal.id), ImVec2(
-        texture_->w * scale_, texture_->h * scale_));
-    ImGui::Separator();
-    ImGui::Text("Path: %s", texture_path.c_str());
-    ImGui::Text("%dx%d", texture_->w, texture_->h);
-    ImGui::Text("Size: %ukB (%luB)", (unsigned int) plBytesToKilobytes(texture_->size),
-                (long unsigned) texture_->size);
+	void Display() override {
+		unsigned int texWidth = texturePtr->GetWidth();
+		unsigned int texHeight = texturePtr->GetHeight();
 
-    ImGui::End();
-  }
+		ImGui::SetNextWindowSize( ImVec2( texWidth + 64, texHeight + 128 ), ImGuiCond_Once );
+		Begin( "Texture Viewer",
+			   ImGuiWindowFlags_MenuBar |
+				   ImGuiWindowFlags_HorizontalScrollbar |
+				   ImGuiWindowFlags_NoSavedSettings
+		);
 
- protected:
- private:
-  PLTexture *texture_{nullptr};
-  std::string texture_path;
+		if ( ImGui::BeginMenuBar() ) {
+			if ( ImGui::BeginMenu( "View" ) ) {
+				ImGui::SliderInt( "Scale", &scale_, 1, 8 );
+				if ( ImGui::BeginMenu( "Filter Mode" ) ) {
+					if ( ImGui::MenuItem( "Linear", nullptr, ( filterMode == PL_TEXTURE_FILTER_LINEAR ) ) ) {
+						ReloadTexture( PL_TEXTURE_FILTER_LINEAR );
+					}
+					if ( ImGui::MenuItem( "Nearest", nullptr, ( filterMode == PL_TEXTURE_FILTER_NEAREST ) ) ) {
+						ReloadTexture( PL_TEXTURE_FILTER_NEAREST );
+					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 
-  PLTextureFilter filter_mode_{PL_TEXTURE_FILTER_LINEAR};
+		unsigned int internalId = texturePtr->GetInternalTexture()->internal.id;
+		ImGui::Image( reinterpret_cast<ImTextureID>( internalId ), ImVec2( texWidth * scale_, texHeight * scale_ ) );
+		ImGui::Separator();
+		ImGui::Text( "Path: %s", texturePath.c_str() );
+		ImGui::Text( "%dx%d", texWidth, texHeight );
+		size_t texSize = texturePtr->GetTextureSize();
+		ImGui::Text( "Size: %ukB (%luB)", ( unsigned int ) plBytesToKilobytes( texSize ), ( long unsigned ) texSize );
 
-  int scale_{1};
+		ImGui::End();
+	}
+
+protected:
+private:
+	ohw::TextureResource *texturePtr{ nullptr };
+	std::string texturePath;
+
+	PLTextureFilter filterMode{ PL_TEXTURE_FILTER_LINEAR };
+
+	int scale_{ 1 };
 };

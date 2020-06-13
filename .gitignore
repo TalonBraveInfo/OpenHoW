@@ -44,11 +44,17 @@ bin/debug/
 bin/release/
 
 # Ignore extracted assets 
-bin/campaigns/how/audio/
-bin/campaigns/how/chars/
-bin/campaigns/how/frontend/
-bin/campaigns/how/music/
-bin/campaigns/how/skys/
-bin/campaigns/how/speech/
-bin/campaigns/how/streams/
-bin/campaigns/how/textures/
+bin/mods/how/audio/
+bin/mods/how/chars/
+bin/mods/how/frontend/
+bin/mods/how/music/
+bin/mods/how/skys/
+bin/mods/how/speech/
+bin/mods/how/streams/
+bin/mods/how/textures/
+bin/mods/base/debug/
+/.idea/
+/cmake-build-debug/
+/bin/extractor
+/bin/OpenHoW
+/bin/ptgtool

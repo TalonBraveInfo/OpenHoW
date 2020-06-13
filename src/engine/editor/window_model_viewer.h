@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_model.h>
-
 #include "base_window.h"
 
+class Camera;
+
 class ModelViewer : public BaseWindow {
- public:
-  explicit ModelViewer(const std::string &path);
-  ~ModelViewer() override;
+public:
+	explicit ModelViewer();
+	~ModelViewer() override;
 
-  void Display() override;
+	void Display() override;
 
- protected:
- private:
-  PLModel       *model_;
-  std::string   model_path_;
+	void DrawViewport();
+
+protected:
+private:
+	void GenerateFrameBuffer( unsigned int width, unsigned int height );
+
+	ohw::SharedModelResourcePointer model{ nullptr };
+	struct PLFrameBuffer *drawBuffer{ nullptr };
+	struct PLTexture *textureAttachment{ nullptr };
+
+	Camera *camera{ nullptr };
+
+	PLVector3 modelRotation;
+
+	float oldMousePos[2]{ 0, 0 };
+
+	bool viewRotate{ true };
+	bool viewDebugNormals{ false };
+	bool viewGrid{ true };
+
+	static void AppendModelList( const char *path, void *userData );
+	static std::list<std::string> modelList;
 };

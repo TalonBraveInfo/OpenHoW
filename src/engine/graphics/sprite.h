@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,45 +17,49 @@
 
 #pragma once
 
+class ShaderProgram;
+
 class Sprite {
- public:
-  enum SpriteType {
-    TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
-  } type_{TYPE_DEFAULT};
+public:
+	enum SpriteType {
+		TYPE_DEFAULT,    // Depth-tested, scaled manually and oriented
+	} type_{ TYPE_DEFAULT };
 
-  Sprite(SpriteType type, PLTexture* texture, PLColour colour = {255, 255, 255, 255}, float scale = 1.0f);
-  ~Sprite();
+	Sprite( SpriteType type, const std::string &texturePath, PLColour colour = { 255, 255, 255, 255 }, float scale = 1.0f );
+	~Sprite();
 
-  float GetScale() { return scale_; }
-  void SetScale(float scale);
+	float GetScale() { return scale_; }
+	void SetScale( float scale );
 
-  PLVector3 GetPosition() { return position_; }
-  void SetPosition(const PLVector3& position);
+	PLVector3 GetPosition() { return position_; }
+	void SetPosition( const PLVector3 &position );
 
-  PLVector3 GetAngles() { return angles_; }
-  void SetAngles(const PLVector3& angles);
+	PLVector3 GetAngles() { return angles_; }
+	void SetAngles( const PLVector3 &angles );
 
-  PLColour GetColour() { return colour_; }
-  void SetColour(const PLColour& colour);
+	PLColour GetColour() { return colour_; }
+	void SetColour( const PLColour &colour );
 
-  void SetTexture(PLTexture* texture);
+	void SetTexture( const std::string &texturePath );
 
-  //const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
-  //void SetAnimation(SpriteAnimation* anim);
+	//const SpriteAnimation* GetCurrentAnimation() { return current_animation_; }
+	//void SetAnimation(SpriteAnimation* anim);
 
-  void Tick();
-  void Draw();
+	void Draw();
 
- protected:
- private:
-  PLVector3 position_;
-  PLVector3 angles_;
-  PLColour colour_{255, 255, 255, 255};
-  float scale_{1.0f};
+protected:
+private:
+	PLVector3 position_;
+	PLVector3 angles_;
+	PLColour colour_{ 255, 255, 255, 255 };
+	float scale_{ 1.0f };
+	ohw::SharedTextureResourcePointer texture{ nullptr };
 
-  unsigned int current_frame_{0};
-  double frame_delay_{0};
+	ShaderProgram *defaultProgram;
 
-  PLMesh* mesh_{nullptr};
-  PLMatrix4 matrix_{};
+	unsigned int current_frame_{ 0 };
+	double frame_delay_{ 0 };
+
+	PLMesh *mesh_{ nullptr };
+	PLMatrix4 modelMatrix{};
 };

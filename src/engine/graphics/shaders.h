@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 
 typedef struct PLShaderProgram PLShaderProgram;
 
-class hwShaderProgram {
+class ShaderProgram {
 public:
-	hwShaderProgram( const std::string& vertPath, const std::string& fragPath );
-	~hwShaderProgram();
+	ShaderProgram( const std::string& vertPath, const std::string& fragPath );
+	~ShaderProgram();
 
 	void Rebuild();
 
@@ -42,7 +42,7 @@ private:
 	PLShaderProgram* shaderProgram{ nullptr };
 };
 
-hwShaderProgram* Shaders_GetProgram( const std::string& name );
+ShaderProgram* Shaders_GetProgram( const std::string& name );
 
 void Shaders_SetProgramByName( const std::string& name );
 

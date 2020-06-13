@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,18 +45,38 @@
 #include "../../shared/vtx.h"
 #include "../../shared/no2.h"
 
-PL_EXTERN_C
+typedef enum HirSkeletonBone {
+	PELVIS = 0,
+	SPINE,
+	HEAD,
+
+	UPPER_ARM_L,
+	LOWER_ARM_L,
+	HAND_L,
+
+	UPPER_ARM_R,
+	LOWER_ARM_R,
+	HAND_R,
+
+	UPPER_LEG_L,
+	LOWER_LEG_L,
+	FOOT_L,
+
+	UPPER_LEG_R,
+	LOWER_LEG_R,
+	FOOT_R,
+
+	MAX_BONES
+} HirSkeletonBone;
 
 typedef struct HirHandle {
-  PLModelBone *bones;
-  unsigned int num_bones;
+	PLModelBone *bones;
+	unsigned int num_bones;
 } HirHandle;
-HirHandle *Hir_LoadFile(const char *path);
-void Hir_DestroyHandle(HirHandle *handle);
+HirHandle *Hir_LoadFile( const char *path );
+void Hir_DestroyHandle( HirHandle *handle );
 
 typedef struct MinHandle {
-  unsigned int blah;
+	unsigned int blah;
 } MinHandle;
-MinHandle *Min_LoadFile(const char *path);
-
-PL_EXTERN_C_END
+MinHandle *Min_LoadFile( const char *path );

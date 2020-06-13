@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,44 +23,38 @@
 /************************************************************/
 /* PSX Min Model Format */
 
-MinHandle *Min_LoadFile(const char *path) {
-  PLFile *fp = plOpenFile(path, false);
-  if (fp == NULL) {
-    LogWarn("Failed to load Min \"%s\", aborting!\n", path);
-    return NULL;
-  }
+MinHandle *Min_LoadFile( const char *path ) {
+	PLFile *fp = plOpenFile( path, false );
+	if ( fp == NULL ) {
+		LogWarn( "Failed to load Min \"%s\", aborting!\n", path );
+		return NULL;
+	}
 
-  plFileSeek(fp, 16, PL_SEEK_CUR);
+	plFileSeek( fp, 16, PL_SEEK_CUR );
 
-  uint32_t num_triangles;
-  if (plReadFile(fp, &num_triangles, sizeof(uint32_t), 1) != 1) {
-    LogWarn("Failed to get number of triangles, \"%s\"!\n", path);
-  }
+	uint32_t num_triangles;
+	if ( plReadFile( fp, &num_triangles, sizeof( uint32_t ), 1 ) != 1 ) {
+		LogWarn( "Failed to get number of triangles, \"%s\"!\n", path );
+	}
 
-  if (num_triangles == 0 || num_triangles >= FAC_MAX_TRIANGLES) {
-    plCloseFile(fp);
-    LogWarn("Invalid number of triangles in \"%s\" (%d/%d)!\n", path, num_triangles, FAC_MAX_TRIANGLES);
-    return NULL;
-  }
-
-  struct __attribute__((packed)) {
+	struct __attribute__((packed)) {
 #if 0
-    int8_t      uv_coords[6];
-    uint16_t    vertex_indices[3];
-    uint16_t    normal_indices[3];
-    uint16_t    unknown0;
-    uint32_t    texture_index;
-    uint16_t    unknown1[4];
+		int8_t      uv_coords[6];
+		uint16_t    vertex_indices[3];
+		uint16_t    normal_indices[3];
+		uint16_t    unknown0;
+		uint32_t    texture_index;
+		uint16_t    unknown1[4];
 #else
-    char u0[24];
+		char u0[24];
 #endif
-  } triangles[num_triangles];
-  static_assert(sizeof(*triangles) == 24, "invalid struct size");
-  if (plReadFile(fp, triangles, sizeof(*triangles), num_triangles) != num_triangles) {
-    plCloseFile(fp);
-    LogWarn("Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path);
-    return NULL;
-  }
-  // todo
-  return NULL;
+	} triangles[num_triangles];
+	static_assert( sizeof( *triangles ) == 24, "invalid struct size" );
+	if ( plReadFile( fp, triangles, sizeof( *triangles ), num_triangles ) != num_triangles ) {
+		plCloseFile( fp );
+		LogWarn( "Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path );
+		return NULL;
+	}
+	// todo
+	return NULL;
 }

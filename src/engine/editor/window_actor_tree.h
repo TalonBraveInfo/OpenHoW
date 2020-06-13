@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,14 @@
 #include "base_window.h"
 
 class ActorTreeWindow : public BaseWindow {
- public:
-  ActorTreeWindow();
-  ~ActorTreeWindow() override;
+public:
+	ActorTreeWindow();
+	~ActorTreeWindow() override;
 
-  void Display() override;
-  void DisplayActorProperties(Actor* actor);
+	void Display() override;
+	void DisplayActorProperties( Actor* actor );
 
- protected:
- private:
+protected:
+private:
+	bool showReadOnly{ false };
 };

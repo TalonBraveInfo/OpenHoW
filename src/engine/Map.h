@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,34 +26,32 @@ struct MapManifest;
 struct ActorSpawn;
 
 class Map {
- public:
-  explicit Map(MapManifest* manifest);
-  ~Map();
+public:
+	explicit Map( MapManifest *manifest );
+	~Map();
 
-  void Draw();
+	void Draw();
 
-  MapManifest* GetManifest() { return manifest_; }
-  Terrain* GetTerrain() { return terrain_; }
+	MapManifest *GetManifest() { return manifest_; }
+	Terrain *GetTerrain() { return terrain_; }
 
-  const std::vector<ActorSpawn>& GetSpawns() { return spawns_; }
+	const std::vector< ActorSpawn > &GetSpawns() { return spawns_; }
 
-  void UpdateSky();
-  void UpdateLighting();
+	void UpdateSky();
 
- protected:
- private:
-  void LoadSpawns(const std::string& path);
-  void LoadSky();
-  static PLModel* LoadSkyModel(const std::string& path);
+protected:
+private:
+	void LoadSpawns( const std::string &path );
+	static ohw::SharedModelResourcePointer LoadSkyModel( const std::string &path );
 
-  void UpdateSkyModel(PLModel* model);
+	void UpdateSkyModel( ohw::SharedModelResourcePointer skyModel );
 
-  MapManifest* manifest_{nullptr};
+	MapManifest *manifest_{ nullptr };
 
-  std::vector<ActorSpawn> spawns_;
+	std::vector< ActorSpawn > spawns_;
 
-  PLModel* sky_model_top_{nullptr};
-  PLModel* sky_model_bottom_{nullptr};
+	ohw::SharedModelResourcePointer skyModelTop{ nullptr };
+	ohw::SharedModelResourcePointer skyModelBottom{ nullptr };
 
-  Terrain* terrain_{nullptr};
+	Terrain *terrain_{ nullptr };
 };

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,101 +20,92 @@
 #include "engine.h"
 #include "language.h"
 
-#include "script/script_config.h"
+#include "script/json_reader.h"
+
+#define LNG_MANIFEST_PATH    "languages.manifest"
 
 LanguageManager* LanguageManager::language_manager_;
 
 LanguageManager::LanguageManager() {
-  char man_path[PL_SYSTEM_MAX_PATH];
-  strncpy(man_path, u_find("languages.manifest"), sizeof(man_path));
+	LogInfo( "Loading "
+				 LNG_MANIFEST_PATH
+				 "\n" );
 
-  const char *var;
-  if ((var = plGetCommandLineArgumentValue("-manifest")) != nullptr) {
-    strncpy(man_path, var, sizeof(man_path));
-  }
-
-  LogInfo("Loading languages.manifest\n");
-
-  // Load in the languages manifest
-  try {
-    ScriptConfig manifest(man_path);
-    unsigned int num_keys = manifest.GetArrayLength();
-    for(unsigned int i = 0; i < num_keys; ++i) {
-      Index index;
-      manifest.EnterChildNode(i);
-      index.name = manifest.GetStringProperty("name");
-      LogDebug("Language Name: %s\n", index.name.c_str());
-      index.key = manifest.GetStringProperty("key");
-      LogDebug("Language Key: %s\n", index.key.c_str());
-      //index.font = manifest.GetStringProperty("font");
-      //LogDebug("Language Font: %s\n", index.font.c_str());
-      manifest.LeaveChildNode();
-      languages_.insert(std::pair<std::string, Index>(index.key, index));
-    }
-  } catch(const std::exception &e) {
-    Error("Failed to load languages manifest, \"%s\"!\n", man_path);
-  }
+	// Load in the languages manifest
+	try {
+		JsonReader manifest( LNG_MANIFEST_PATH );
+		unsigned int num_keys = manifest.GetArrayLength();
+		for ( unsigned int i = 0; i < num_keys; ++i ) {
+			Index index;
+			manifest.EnterChildNode( i );
+			index.name = manifest.GetStringProperty( "name" );
+			//LogDebug( "Language Name: %s\n", index.name.c_str() );
+			index.key = manifest.GetStringProperty( "key" );
+			//LogDebug( "Language Key: %s\n", index.key.c_str() );
+			//index.font = manifest.GetStringProperty("font");
+			//LogDebug("Language Font: %s\n", index.font.c_str());
+			manifest.LeaveChildNode();
+			languages_.insert( std::pair<std::string, Index>( index.key, index ) );
+		}
+	} catch ( const std::exception& e ) {
+		Error( "Failed to load languages manifest, \"%s\"!\n", LNG_MANIFEST_PATH );
+	}
 }
 
 LanguageManager::~LanguageManager() = default;
 
-const char *LanguageManager::GetTranslation(const char *key) { // todo: UTF-8 pls
-  if(key[0] != '$') {
-    return key;
-  }
+const char* LanguageManager::GetTranslation( const char* key ) { // todo: UTF-8 pls
+	if ( key[ 0 ] != '$' ) {
+		return key;
+	}
 
-  const char* p = ++key;
-  if(*p == '\0') {
-    LogWarn("Invalid key provided\n");
-    return p;
-  }
+	const char* p = ++key;
+	if ( *p == '\0' ) {
+		LogWarn( "Invalid key provided\n" );
+		return p;
+	}
 
-  if(current_language == nullptr) {
-    LogWarn("No valid language set\n");
-    return p;
-  }
+	if ( current_language == nullptr ) {
+		LogWarn( "No valid language set\n" );
+		return p;
+	}
 
-  auto i = current_language->keys.find(p);
-  if(i == current_language->keys.end()) {
-    LogWarn("Failed to find translation key\n");
-    return p;
-  }
+	auto i = current_language->keys.find( p );
+	if ( i == current_language->keys.end() ) {
+		LogWarn( "Failed to find translation key, %s\n", p );
+		return p;
+	}
 
-  return i->second.translation.c_str();
+	return i->second.translation.c_str();
 }
 
-void LanguageManager::SetLanguage(const char* key) {
-  if(current_language != nullptr && current_language->key == key) {
-    return;
-  }
+void LanguageManager::SetLanguage( const char* key ) {
+	if ( current_language != nullptr && current_language->key == key ) {
+		return;
+	}
 
-  auto language = languages_.find(key);
-  if(language == languages_.end()) {
-    Error("Failed to find specified language, \"%s\"!\n", key);
-  }
+	auto language = languages_.find( key );
+	if ( language == languages_.end() ) {
+		Error( "Failed to find specified language, \"%s\"!\n", key );
+	}
 
-  current_language = &language->second;
+	current_language = &language->second;
 
-  char filename[64];
-  snprintf(filename, sizeof(filename), "languages/%s.language", current_language->key.c_str());
-
-  char path[PL_SYSTEM_MAX_PATH];
-  snprintf(path, sizeof(path), "%s", u_find(filename));
-
-  try {
-    ScriptConfig manifest(path);
-    std::list<std::string> keys = manifest.GetObjectKeys();
-    for(const auto& idx : keys) {
-      current_language->keys.insert(std::pair<std::string, Key>(idx, {
-        manifest.GetStringProperty(idx)
-      }));
-      LogDebug("Key: %s", idx.c_str());
-    }
-  } catch(const std::exception &e) {
-    Error("Failed to load language manifest, \"%s\"!\n", path);
-  }
+	std::string filePath = "languages/" + current_language->key + ".language";
+	try {
+		JsonReader manifest( filePath );
+		std::list<std::string> keys = manifest.GetObjectKeys();
+		for ( const auto& idx : keys ) {
+			current_language->keys.insert( std::pair<std::string, Key>( idx, {
+				manifest.GetStringProperty( idx )
+			} ) );
+			//LogDebug( "Key: %s", idx.c_str() );
+		}
+	} catch ( const std::exception& e ) {
+		Error( "Failed to load language manifest, \"%s\"!\n", filePath.c_str() );
+	}
 }
 
-void LanguageManager::SetLanguageCallback(const PLConsoleVariable *var) {
-  LanguageManager::GetInstance()->SetLanguage(var->s_value);
+void LanguageManager::SetLanguageCallback( const PLConsoleVariable* var ) {
+	LanguageManager::GetInstance()->SetLanguage( var->s_value );
 }

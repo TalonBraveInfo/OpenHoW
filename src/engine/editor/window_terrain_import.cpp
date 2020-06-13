@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,42 +15,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <imgui.h>
+
 #include "../engine.h"
 #include "../Map.h"
 #include "../terrain.h"
 
 #include "window_terrain_import.h"
 
-using namespace openhow;
+using namespace ohw;
 
 WindowTerrainImport::WindowTerrainImport() = default;
 WindowTerrainImport::~WindowTerrainImport() = default;
 
 void WindowTerrainImport::Display() {
-  ImGui::SetNextWindowSize(ImVec2(310, 128), ImGuiCond_Once);
-  ImGui::Begin(dname("Import Heightmap"), &status_, ED_DEFAULT_WINDOW_FLAGS);
-  ImGui::InputText("Path", path_buffer, sizeof(path_buffer));
-  ImGui::InputInt("Multiplier", &multiplier_);
-  if(ImGui::Button("Import")) {
-    ImportTerrain();
-  }
-  ImGui::SameLine();
-  if(ImGui::Button("Cancel")) {
-    SetStatus(false);
-  }
-  ImGui::End();
+	ImGui::SetNextWindowSize( ImVec2( 310, 128 ), ImGuiCond_Once );
+	Begin( "Import Heightmap", ED_DEFAULT_WINDOW_FLAGS );
+	ImGui::InputText( "Path", path_buffer, sizeof( path_buffer ) );
+	ImGui::InputInt( "Multiplier", &multiplier_ );
+	if ( ImGui::Button( "Import" ) ) {
+		ImportTerrain();
+	}
+	ImGui::SameLine();
+	if ( ImGui::Button( "Cancel" ) ) {
+		SetStatus( false );
+	}
+	ImGui::End();
 }
 
 void WindowTerrainImport::ImportTerrain() {
-  Map* map = Engine::Game()->GetCurrentMap();
-  if(map == nullptr) {
-    return;
-  }
+	Map *map = Engine::Game()->GetCurrentMap();
+	if ( map == nullptr ) {
+		return;
+	}
 
-  Terrain* terrain = map->GetTerrain();
-  if(terrain == nullptr) {
-    return;
-  }
+	Terrain *terrain = map->GetTerrain();
+	if ( terrain == nullptr ) {
+		return;
+	}
 
-  terrain->LoadHeightmap(path_buffer, multiplier_);
+	terrain->LoadHeightmap( path_buffer, multiplier_ );
 }

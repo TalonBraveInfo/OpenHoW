@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,12 @@
 
 PL_EXTERN_C
 
-typedef struct VtxHandle VtxHandle;
-VtxHandle *No2_LoadFile(const char *path, VtxHandle *vertex_data);
+typedef struct No2Handle {
+	PLVector3 *normals;
+	unsigned int numNormals;
+} No2Handle;
+
+No2Handle *No2_LoadFile( const char *path );
+void No2_DestroyHandle( No2Handle *handle );
 
 PL_EXTERN_C_END

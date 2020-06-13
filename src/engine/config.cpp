@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,72 +18,72 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "script/script_config.h"
+#include "script/json_reader.h"
 
-const char *Config_GetUserConfigPath() {
-  static std::string config_path;
-  if (config_path.empty()) {
-    char out[PL_SYSTEM_MAX_PATH];
-    if (plGetApplicationDataDirectory(ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH) == nullptr) {
-      LogWarn("failed to get app data directory!\n%s\n", plGetError());
-      config_path = "./user.config";
-    } else {
-      config_path = std::string(out) + "/user.config";
-    }
-  }
-  return config_path.c_str();
+const char* Config_GetUserConfigPath() {
+	static std::string config_path;
+	if ( config_path.empty() ) {
+		char out[PL_SYSTEM_MAX_PATH];
+		if ( plGetApplicationDataDirectory( ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
+			LogWarn( "Failed to get app data directory!\n%s\n", plGetError() );
+			config_path = "./user.config";
+		} else {
+			config_path = std::string( out ) + "user.config";
+		}
+	}
+	return config_path.c_str();
 }
 
-void Config_Save(const char *path) {
-  FILE *fp = fopen(path, "wb");
-  if (fp == nullptr) {
-    LogWarn("failed to write config to \"%s\"!\n", path);
-    return;
-  }
+void Config_Save( const char* path ) {
+	FILE* fp = fopen( path, "wb" );
+	if ( fp == nullptr ) {
+		LogWarn( "failed to write config to \"%s\"!\n", path );
+		return;
+	}
 
-  fprintf(fp, "{\n");
+	fprintf( fp, "{\n" );
 
-  /* get access to the console variables from the platform library */
-  size_t num_c;
-  PLConsoleVariable **vars;
-  plGetConsoleVariables(&vars, &num_c);
+	/* get access to the console variables from the platform library */
+	size_t num_c;
+	PLConsoleVariable** vars;
+	plGetConsoleVariables( &vars, &num_c );
 
-  /* and NOW save them! */
-  bool first = true;
-  for (PLConsoleVariable **var = vars; var < num_c + vars; ++var) {
-    if (!(*var)->archive) {
-      continue;
-    }
+	/* and NOW save them! */
+	bool first = true;
+	for ( PLConsoleVariable** var = vars; var < num_c + vars; ++var ) {
+		if ( !( *var )->archive ) {
+			continue;
+		}
 
-    if (!first) {
-      fprintf(fp, ",\n");
-    }
+		if ( !first ) {
+			fprintf( fp, ",\n" );
+		}
 
-    fprintf(fp, "\t\t\"%s\":\"%s\"", (*var)->var, (*var)->value);
-    first = false;
-  }
+		fprintf( fp, "\t\t\"%s\":\"%s\"", ( *var )->var, ( *var )->value );
+		first = false;
+	}
 
-  fprintf(fp, "\n}\n");
-  fclose(fp);
+	fprintf( fp, "\n}\n" );
+	fclose( fp );
 }
 
-void Config_Load(const char *path) {
-  try {
-    ScriptConfig config(path);
+void Config_Load( const char* path ) {
+	try {
+		JsonReader config( path );
 
-    size_t num_c;
-    PLConsoleVariable **vars;
-    plGetConsoleVariables(&vars, &num_c);
+		size_t num_c;
+		PLConsoleVariable** vars;
+		plGetConsoleVariables( &vars, &num_c );
 
-    for (PLConsoleVariable **var = vars; var < vars + num_c; ++var) {
-      std::string result = config.GetStringProperty((*var)->var);
-      if (result.empty()) {
-        continue;
-      }
+		for ( PLConsoleVariable** var = vars; var < vars + num_c; ++var ) {
+			std::string result = config.GetStringProperty( ( *var )->var );
+			if ( result.empty() ) {
+				continue;
+			}
 
-      plSetConsoleVariable((*var), result.c_str());
-    }
-  } catch (const std::exception &e) {
-    LogWarn("Failed to read user config, \"%s\"!\n%s\n", path, e.what());
-  }
+			plSetConsoleVariable( ( *var ), result.c_str() );
+		}
+	} catch ( const std::exception& e ) {
+		LogWarn( "Failed to read user config, \"%s\"!\n%s\n", path, e.what() );
+	}
 }

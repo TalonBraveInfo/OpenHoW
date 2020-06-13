@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,43 +17,44 @@
 
 #pragma once
 
+namespace ohw {
+
 enum class PhysicsPrimitiveType {
-  SPHERE,
-  BOX,
-  CAPSULE,
-  CYLINDER,
-  CONE,
-  CHAMFER_CYLINDER,
-  RANDOM_CONVEX_HULL,
-  REGULAR_CONVEX_HULL,
-  COMPOUND_CONVEX_CRUZ,
+	SPHERE,
+	BOX,
+	CAPSULE,
+	CYLINDER,
+	CONE,
+	CHAMFER_CYLINDER,
+	RANDOM_CONVEX_HULL,
+	REGULAR_CONVEX_HULL,
+	COMPOUND_CONVEX_CRUZ,
 };
 
-class IPhysicsBody {
- public:
- protected:
-  IPhysicsBody() = default;
-  virtual ~IPhysicsBody() = default;
+class PhysicsBody {
+public:
+protected:
+	PhysicsBody() = default;
+	virtual ~PhysicsBody() = default;
 
- private:
+private:
 };
 
-class IPhysicsInterface {
- public:
-  static IPhysicsInterface* CreateInstance();
-  static void DestroyInstance(IPhysicsInterface* instance);
+class PhysicsInterface {
+public:
+	PhysicsInterface() = default;
+	virtual ~PhysicsInterface() = default;
 
-  virtual void Tick() = 0;
+	virtual void Tick();
 
-  virtual IPhysicsBody* CreatePhysicsBody() = 0;
-  virtual void DestroyPhysicsBody(IPhysicsBody* body) = 0;
+	virtual PhysicsBody *CreatePhysicsBody();
+	virtual void DestroyPhysicsBody( PhysicsBody *body );
 
-  virtual void GenerateTerrainCollision(std::vector<float> vertices) = 0;
-  virtual void DestroyTerrainCollision() = 0;
+	virtual void GenerateTerrainCollision( std::vector<float> vertices );
+	virtual void DestroyTerrainCollision();
 
- protected:
-  IPhysicsInterface() = default;
-  virtual ~IPhysicsInterface() = default;
-
- private:
+protected:
+private:
 };
+
+}

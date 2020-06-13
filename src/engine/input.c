@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,8 @@ void Input_Initialize(void) {
   input_state.keyboard.bindings[ACTION_MOVE_BACKWARD] = INPUT_KEY_DOWN;
   input_state.keyboard.bindings[ACTION_TURN_LEFT] = INPUT_KEY_LEFT;
   input_state.keyboard.bindings[ACTION_TURN_RIGHT] = INPUT_KEY_RIGHT;
+  input_state.keyboard.bindings[ACTION_JUMP] = INPUT_KEY_SPACE;
+  input_state.keyboard.bindings[ACTION_SELECT] = INPUT_KEY_TAB;
   input_state.keyboard.bindings[ACTION_AIM_UP] = 'a';
   input_state.keyboard.bindings[ACTION_AIM_DOWN] = 'z';
 
@@ -155,6 +157,9 @@ PLVector2 Input_GetJoystickState(unsigned int controller, unsigned int joystick)
       );
     default: Error("Invalid joystick index (%d)!\n", joystick);
   }
+
+  // Make the compiler happy...
+  return PLVector2( 0, 0 );
 }
 
 bool Input_GetKeyState(int key) {

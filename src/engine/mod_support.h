@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,21 +17,27 @@
 
 #pragma once
 
-struct ModManifest {
-  std::string manifest_path;
-  std::string base_directory;
-  // Modification Details
-  std::string name{"Unknown"};
-  std::string version{"Unknown"};
-  std::string author{"Unknown"};
+struct ModDirectory {
+	std::string fileName;
+	std::string internalName;
+	std::string directory;
+
+	// Modification Details
+	std::string name; /// Name of the mod
+	std::string version; /// The version of the mod
+	std::string author; /// Who created the mod
+	std::vector<std::string> dependencies; /// Other mods this mod depends on
+	bool isVisible = false; /// Whether or not the mod is selectable
+
+	std::vector<PLFileSystemMount*> mountList; /// Pointers to the mounted directory handle
 };
 
-PL_EXTERN_C
+typedef std::map<std::string, ModDirectory> modsMap_t;
 
-ModManifest *Mod_GetCurrentCampaign(void);
+const modsMap_t* Mod_GetRegisteredMods();
 
-void Mod_RegisterCampaigns(void);
-void Mod_RegisterCampaign(const char *path);
-void Mod_SetCampaign(const char *dir);
+const ModDirectory* Mod_GetCurrentMod();
 
-PL_EXTERN_C_END
+void Mod_RegisterMods();
+void Mod_RegisterMod( const char* path );
+void Mod_SetMod( const char* name );

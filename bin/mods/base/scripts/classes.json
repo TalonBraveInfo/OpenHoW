@@ -1,0 +1,58 @@
+{
+	"defaultClass": "gr_me",
+	"classes": [
+		{
+			"identifer": "ac_me",
+			"label": "$aceClass",
+			"model": "pigs/pcace_hi.vtx"
+		},
+		{
+			"identifer": "gr_me",
+			"label": "$gruntClass",
+			"health": "50",
+			"cost": "0",
+			"model": "pigs/pcgru_hi.vtx",
+			"items": [
+				{
+					"identifer": "weapon_bayonet",
+					"quantity": "0"
+				}
+			]
+		},
+		{
+			"identifer": "hv_me",
+			"label": "$gunnerClass",
+			"health": "75",
+			"cost": "1",
+			"model": "pigs/pchvy_hi.vtx",
+			"nextStage": "$bombardierClass",
+			"items": [
+				{
+					"identifer": "weapon_bayon",
+					"quantity": "0"
+				}
+			]
+		},
+		{
+			"identifer": "le_me",
+			"model": "pigs/pcleg_hi.vtx"
+		},
+		{
+			"identifer": "me_me",
+			"model": "pigs/pcmed_hi.vtx"
+		},
+		{
+			"identifer": "sb_me",
+			"model": "pigs/pcsab_hi.vtx"
+		},
+		{
+			"identifer": "sn_me",
+			"model": "pigs/sn_hi.vtx"
+		},
+		{
+			"identifer": "sp_me",
+			"model": "pigs/sp_hi.vtx",
+			"visibleOnMinimap": "0"
+		}
+	]
+}

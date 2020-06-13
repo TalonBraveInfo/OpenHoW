@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,28 @@
 
 #include <PL/platform_math.h>
 
-/* extension of Platform's math functionality
- * a lot of these are borrowed from ioq3 to fill gaps */
+/* extension of Platform's math functionality */
 
 #ifdef __cplusplus
 
-inline static void VecAngleClamp(PLVector3* vector) {
-  for (unsigned int i = 0; i < 3; ++i) {
-    if ((*vector)[i] >= 360) {
-      (*vector)[i] = 0;
-    } else if ((*vector)[i] <= -360) {
-      (*vector)[i] = 0;
-    }
-  }
+inline static void VectorClamp( PLVector3 *vector, float min, float max ) {
+	for ( unsigned int i = 0; i < 3; ++i ) {
+		if (( *vector )[ i ] >= max ) {
+			( *vector )[ i ] = max;
+		} else if (( *vector )[ i ] <= min ) {
+			( *vector )[ i ] = min;
+		}
+	}
+}
+
+inline static void VecAngleClamp( PLVector3 *vector ) {
+	for ( unsigned int i = 0; i < 3; ++i ) {
+		if (( *vector )[ i ] >= 360 ) {
+			( *vector )[ i ] = 0;
+		} else if (( *vector )[ i ] <= -360 ) {
+			( *vector )[ i ] = 0;
+		}
+	}
 }
 
 #endif

@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,36 +19,36 @@
 
 #include "camera.h"
 
-using namespace openhow;
+using namespace ohw;
 
-Camera::Camera(const PLVector3& pos, const PLVector3& angles) {
-  camera_ = plCreateCamera();
-  if (camera_ == nullptr) {
-    Error("Failed to create camera object!\n%s\n", plGetError());
-  }
+Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
+	camera_ = plCreateCamera();
+	if ( camera_ == nullptr ) {
+		Error( "Failed to create camera object!\n%s\n", plGetError() );
+	}
 
-  camera_->mode = PL_CAMERA_MODE_PERSPECTIVE;
-  camera_->fov = cv_camera_fov->f_value;
-  camera_->far = cv_camera_far->f_value;
-  camera_->near = cv_camera_near->f_value;
-  camera_->viewport.w = cv_display_width->i_value;
-  camera_->viewport.h = cv_display_height->i_value;
+	camera_->mode = PL_CAMERA_MODE_PERSPECTIVE;
+	camera_->fov = cv_camera_fov->f_value;
+	camera_->far = cv_camera_far->f_value;
+	camera_->near = cv_camera_near->f_value;
+	camera_->viewport.w = cv_display_width->i_value;
+	camera_->viewport.h = cv_display_height->i_value;
 }
 
 Camera::~Camera() {
-  plDestroyCamera(camera_);
+	plDestroyCamera( camera_ );
 }
 
-void Camera::SetPosition(const PLVector3& pos) {
-  camera_->position = pos;
+void Camera::SetPosition( const PLVector3 &pos ) {
+	camera_->position = pos;
 }
 
-void Camera::SetAngles(const PLVector3& angles) {
-  camera_->angles = angles;
+void Camera::SetAngles( const PLVector3 &angles ) {
+	camera_->angles = angles;
 }
 
-void Camera::SetFieldOfView(float fov) {
-  camera_->fov = fov;
+void Camera::SetFieldOfView( float fov ) {
+	camera_->fov = fov;
 }
 
 /**
@@ -56,18 +56,18 @@ void Camera::SetFieldOfView(float fov) {
  * @param xy X and Y.
  * @param wh Width and height.
  */
-void Camera::SetViewport(const std::array<int, 2>& xy, const std::array<int, 2>& wh) {
-  camera_->viewport.x = xy[0];
-  camera_->viewport.y = xy[1];
-  camera_->viewport.w = wh[0];
-  camera_->viewport.h = wh[1];
+void Camera::SetViewport( int x, int y, int width, int height ) {
+	camera_->viewport.x = x;
+	camera_->viewport.y = y;
+	camera_->viewport.w = width;
+	camera_->viewport.h = height;
 }
 
 void Camera::MakeActive() {
-  // ensure camera matches current vars
-  camera_->fov = cv_camera_fov->f_value;
-  camera_->near = cv_camera_near->f_value;
-  camera_->far = cv_camera_far->f_value;
+	// ensure camera matches current vars
+	//camera_->fov = cv_camera_fov->f_value;
+	camera_->near = cv_camera_near->f_value;
+	camera_->far = cv_camera_far->f_value;
 
-  plSetupCamera(camera_);
+	plSetupCamera( camera_ );
 }

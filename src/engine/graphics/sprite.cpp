@@ -1,5 +1,5 @@
 /* OpenHoW
- * Copyright (C) 2017-2019 Mark Sowden <markelswo@gmail.com>
+ * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,57 +15,57 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "engine.h"
 #include "sprite.h"
 #include "display.h"
 #include "shaders.h"
 
-Sprite::Sprite(SpriteType type, PLTexture* texture, PLColour colour, float scale) :
-    type_(type),
-    colour_(colour),
-    scale_(scale) {
-  mesh_ = plCreateMeshRectangle(0, 0, texture->w, texture->h, colour_);
-  mesh_->texture = texture;
+Sprite::Sprite( SpriteType type, const std::string &texturePath, PLColour colour, float scale ) :
+	type_( type ), colour_( colour ), scale_( scale ) {
+	mesh_ = plCreateMeshRectangle( -64, -64, 64, 64, colour_ );
 
-  matrix_.Identity();
+	// Load in the texture we need
+	texture = ohw::Engine::Resource()->LoadTexture( texturePath );
+
+	defaultProgram = Shaders_GetProgram( "generic_textured" );
+
+	modelMatrix.Identity();
 }
 
-Sprite::~Sprite() = default;
-
-void Sprite::Tick() {
-#if 0
-  if (current_animation_ == nullptr) {
-    return;
-  }
-
-  if (frame_delay_ < g_state.sim_ticks + TICKS_PER_SECOND) {
-    current_frame_++;
-    if (current_frame_ > (current_animation_->h_frames + current_animation_->v_frames)) {
-      current_frame_ = 0;
-    }
-  }
-#endif
-}
+Sprite::~Sprite() {}
 
 void Sprite::Draw() {
-  if (scale_ <= 0) {
-    return;
-  }
+	if ( !cv_graphics_draw_sprites->b_value ) {
+		return;
+	}
 
-  Shaders_SetProgramByName("generic_textured_lit");
+	if ( scale_ <= 0 ) {
+		return;
+	}
 
-  PLMatrix4 mrot = plRotateMatrix4(angles_.x, PLVector3(1, 0, 0));
-  mrot = mrot * plRotateMatrix4(angles_.y, PLVector3(0, 1, 0));
-  mrot = mrot * plRotateMatrix4(angles_.z, PLVector3(0, 0, 1));
-  matrix_ = mrot * plTranslateMatrix4(position_);
+	defaultProgram->Enable();
 
-  //matrix_ = matrix_ * PLVector3(scale_, scale_, scale_);
+	plSetTexture( texture->GetInternalTexture(), 0 );
 
-  plSetNamedShaderUniformMatrix4(NULL, "pl_model", matrix_, false);
+	modelMatrix.Identity();
+	modelMatrix *= PLVector3( scale_, scale_, scale_ );
+	modelMatrix.Translate( { 32 * scale_, 32 * scale_, 0 } );
+	modelMatrix.Rotate( angles_.x, { 1, 0, 0 } );
+	modelMatrix.Rotate( angles_.y, { 0, 1, 0 } );
+	modelMatrix.Rotate( angles_.z, { 0, 0, 1 } );
+	modelMatrix.Translate( position_ );
 
-  plUploadMesh(mesh_);
-  plDrawMesh(mesh_);
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", modelMatrix, true );
+
+	plUploadMesh( mesh_ );
+
+	plSetCullMode( PL_CULL_NONE );
+
+	plDrawMesh( mesh_ );
+
+	plSetCullMode( PL_CULL_POSTIVE );
+
+	plSetTexture( NULL, 0 );
 }
 
 #if 0
@@ -76,34 +76,32 @@ void Sprite::SetAnimation(SpriteAnimation* anim) {
 }
 #endif
 
-void Sprite::SetScale(float scale) {
-  scale_ = scale;
+void Sprite::SetScale( float scale ) {
+	scale_ = scale;
 }
 
-void Sprite::SetPosition(const PLVector3& position) {
-  position_ = position;
+void Sprite::SetPosition( const PLVector3& position ) {
+	position_ = position;
 }
 
-void Sprite::SetAngles(const PLVector3& angles) {
-  angles_ = angles;
+void Sprite::SetAngles( const PLVector3& angles ) {
+	angles_ = angles;
 }
 
-void Sprite::SetColour(const PLColour& colour) {
-  plSetMeshUniformColour(mesh_, colour);
-  colour_ = colour;
+void Sprite::SetColour( const PLColour& colour ) {
+	plSetMeshUniformColour( mesh_, colour );
+	colour_ = colour;
 }
 
-void Sprite::SetTexture(PLTexture* texture) {
-  // a lot of this will change once the rc manager is introduced...
+void Sprite::SetTexture( const std::string &texturePath ) {
+	if ( texture != nullptr ) {
+		// TODO: this will currently fail (internal uses absolute)
+		if ( texturePath == texture->GetInternalTexture()->path ) {
+			return;
+		}
 
-  if(texture == mesh_->texture) {
-    return;
-  }
+		texture->Release();
+	}
 
-  if(texture->w != mesh_->texture->w || texture->h != mesh_->texture->h) {
-    plDestroyMesh(mesh_);
-    mesh_ = plCreateMeshRectangle(0, 0, texture->w, texture->h, colour_);
-  }
-
-  mesh_->texture = texture;
+	texture = ohw::Engine::Resource()->LoadTexture( texturePath );
 }
