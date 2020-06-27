@@ -55,6 +55,8 @@ namespace ohw {
 
 		const PLCollisionAABB &GetBounds() const { return bounds; }
 
+		TextureResource *GetTextureResource( unsigned int i );
+
 		PL_INLINE bool IsAnimated() const { return isAnimated; }
 
 		PLMatrix4 modelMatrix{};

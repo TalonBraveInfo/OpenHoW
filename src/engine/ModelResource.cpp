@@ -104,6 +104,16 @@ PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 	return meshesVector[ i ];
 }
 
+ohw::TextureResource *ohw::ModelResource::GetTextureResource(unsigned int i) {
+	u_assert( i < texturesVector.size() );
+	if ( i >= texturesVector.size() ) {
+		LogWarn( "Attempted to access an invalid texture (%d/%d)!\n", i, texturesVector.size() );
+		return nullptr;
+	}
+
+	return texturesVector[ i ];
+}
+
 void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail ) {
 	WaveFrontReader obj;
 	if ( !obj.Load( path, true ) ) {
