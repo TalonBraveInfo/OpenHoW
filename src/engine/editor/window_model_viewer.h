@@ -44,6 +44,7 @@ namespace ohw {
 
 		bool viewRotate{ true };
 		bool viewDebugNormals{ false };
+		bool viewSkeleton{ false };
 		bool viewGrid{ true };
 
 		static void AppendModelList( const char *path, void *userData );

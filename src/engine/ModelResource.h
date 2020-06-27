@@ -29,12 +29,33 @@ namespace ohw {
 		~ModelResource();
 
 		void Tick();
-		void Draw();
+
+		void Draw( bool batchDraw = false );
+		void DrawNormals();
+		void DrawSkeleton();
+
+		// Batching
+
+		PL_INLINE void AddDrawToQueue( const PLMatrix4 &transform ) {
+			batchedDrawCalls.push_back( transform );
+		}
+
+		PL_INLINE unsigned int GetNumberOfQueuedDraws() const {
+			return batchedDrawCalls.size();
+		}
+
+		PL_INLINE void ClearQueuedDraws() {
+			batchedDrawCalls.clear();
+		}
+
+		// Mesh state
 
 		PL_INLINE unsigned int GetNumberOfMeshes() const { return meshesVector.size(); }
 		PLMesh *GetInternalMesh( unsigned int i );
 
 		const PLCollisionAABB &GetBounds() const { return bounds; }
+
+		PL_INLINE bool IsAnimated() const { return isAnimated; }
 
 		PLMatrix4 modelMatrix{};
 
@@ -44,8 +65,6 @@ namespace ohw {
 		void LoadMinModel( const std::string &path, bool abortOnFail );
 
 		void DrawMesh( unsigned int i );
-		void DrawNormals();
-		void DrawSkeleton();
 
 		void DestroyMeshes();
 
@@ -53,9 +72,10 @@ namespace ohw {
 
 		bool isAnimated{ false };
 
-		// List of textures this model depends on
-		std::vector< SharedTextureResourcePointer > texturesVector;
-		std::vector< PLMesh* > meshesVector;
+		std::vector< SharedTextureResourcePointer > texturesVector; // List of textures this model depends on
+
+		std::vector< PLMesh * > meshesVector;       // Sub-meshes that are part of this model
+		std::vector< PLMatrix4 > batchedDrawCalls;  // Draw queue. Anything queued up will be pushed to the GPU in one batch
 
 		PLCollisionAABB bounds;
 	};

@@ -112,6 +112,14 @@ void ohw::ModelViewer::DrawViewport() {
 
 	model->Draw();
 
+	if ( viewDebugNormals ) {
+		model->DrawNormals();
+	}
+
+	if ( viewSkeleton ) {
+		model->DrawSkeleton();
+	}
+
 	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 }
 
@@ -159,19 +167,21 @@ void ohw::ModelViewer::Display() {
 		}
 
 		// Urgh, yeah this will eventually need to change
-		if ( ImGui::BeginMenu( "Animations" ) ) {
-			for ( unsigned int i = 0; static_cast<AnimationIndex>(i) < AnimationIndex::MAX_ANIMATIONS; ++i ) {
-				const char *animationName = Model_GetAnimationDescription( i );
-				if ( animationName == nullptr ) {
-					continue;
-				}
+		if ( model != nullptr && model->IsAnimated() ) {
+			if ( ImGui::BeginMenu( "Animations" ) ) {
+				for ( unsigned int i = 0; static_cast<AnimationIndex>(i) < AnimationIndex::MAX_ANIMATIONS; ++i ) {
+					const char *animationName = Model_GetAnimationDescription( i );
+					if ( animationName == nullptr ) {
+						continue;
+					}
 
-				bool selected = false;
-				if ( ImGui::Selectable( animationName, selected ) ) {
-					// todo
+					bool selected = false;
+					if ( ImGui::Selectable( animationName, selected ) ) {
+						// todo
+					}
 				}
+				ImGui::EndMenu();
 			}
-			ImGui::EndMenu();
 		}
 
 		if ( ImGui::BeginMenu( "View" ) ) {
@@ -182,8 +192,14 @@ void ohw::ModelViewer::Display() {
 			if ( ImGui::MenuItem( "Rotate Model", nullptr, viewRotate ) ) {
 				viewRotate = !viewRotate;
 			}
-			if ( ImGui::MenuItem( "Debug Normals", nullptr, viewDebugNormals ) ) {
+			ImGui::Separator();
+			if ( ImGui::MenuItem( "Show Normals", nullptr, viewDebugNormals ) ) {
 				viewDebugNormals = !viewDebugNormals;
+			}
+			if ( model != nullptr && model->IsAnimated() ) {
+				if ( ImGui::MenuItem( "Show Skeleton", nullptr, viewSkeleton ) ) {
+					viewSkeleton = !viewSkeleton;
+				}
 			}
 			if ( ImGui::MenuItem( "Show Grid", nullptr, viewGrid ) ) {
 				viewGrid = !viewGrid;
@@ -238,7 +254,6 @@ void ohw::ModelViewer::Display() {
 				numTriangles += mesh->num_triangles;
 				numVertices += mesh->num_verts;
 			}
-			numDrawCalls += 1;
 		}
 		ImGui::Text( "Batches: %d", numDrawCalls );
 		ImGui::Text( "Vertices: %d", numVertices );

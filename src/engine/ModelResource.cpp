@@ -66,19 +66,28 @@ void ohw::ModelResource::Tick() {
 	// TODO: animation is handled here...
 }
 
-void ohw::ModelResource::Draw() {
+void ohw::ModelResource::Draw( bool batchDraw ) {
 	if ( meshesVector.empty() ) {
-		// TODO: draw placeholder model
+		PLModel *model = Engine::Resource()->GetFallbackModel();
+		if ( model == nullptr ) {
+			return;
+		}
+
+		model->model_matrix = modelMatrix;
+
+		plDrawModel( model );
 		return;
 	}
 
-	// TODO: check visibility
+	// If specified, just add it to our list and return
+	if ( batchDraw ) {
+		batchedDrawCalls.push_back( modelMatrix );
+		return;
+	}
 
 	for ( unsigned int i = 0; i < meshesVector.size(); ++i ) {
 		DrawMesh( i );
 	}
-
-	plSetTexture( nullptr, 0 );
 
 	if ( cv_graphics_debug_normals->b_value ) {
 		DrawNormals();
