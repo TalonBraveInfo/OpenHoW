@@ -173,10 +173,7 @@ void Terrain::GenerateModel( Chunk* chunk, const PLVector2& offset ) {
 				float z = ( offset.y * TERRAIN_CHUNK_PIXEL_WIDTH ) + ( tile_y + ( i / 2 ) ) * TERRAIN_TILE_PIXEL_WIDTH;
 				plSetMeshVertexST( chunk_mesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
 				plSetMeshVertexPosition( chunk_mesh, cm_idx, { x, current_tile->height[ i ], z } );
-				plSetMeshVertexColour( chunk_mesh, cm_idx, {
-					current_tile->shading[ i ],
-					current_tile->shading[ i ],
-					current_tile->shading[ i ] } );
+				plSetMeshVertexColour( chunk_mesh, cm_idx, { current_tile->shading[ i ], current_tile->shading[ i ], current_tile->shading[ i ] } );
 			}
 		}
 	}
@@ -276,11 +273,33 @@ void Terrain::Update() {
 }
 
 void Terrain::Draw() {
+	ohw::Camera *cameraPtr = ohw::Engine::Game()->GetCamera();
+	if ( cameraPtr == nullptr ) {
+		return;
+	}
+
 	Shaders_SetProgramByName( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
 
 	g_state.gfx.num_chunks_drawn = 0;
 	for ( const auto& chunk : chunks_ ) {
 		if ( chunk.model == nullptr ) {
+			continue;
+		}
+
+		// Temporary, for prototyping
+		PLCollisionSphere sphere;
+		sphere.origin = chunk.origin;
+		sphere.radius = 256.0f;
+
+		plPushMatrix();
+		plLoadIdentityMatrix();
+		plTranslateMatrix( sphere.origin );
+
+		plDrawRectangle( plGetMatrix( plGetMatrixMode() ), 0.0f, 0.0f, 128.0f, 128.0f, PL_COLOUR_RED );
+
+		plPopMatrix();
+
+		if ( cv_graphics_cull->b_value && !cameraPtr->IsSphereVisible( &sphere ) ) {
 			continue;
 		}
 
@@ -317,6 +336,8 @@ void Terrain::LoadPmg( const std::string& path ) {
 			if ( !status ) {
 				Error( "Failed to read in chunk descriptor in \"%s\"!\n", plGetFilePath( fh ) );
 			}
+
+			current_chunk.origin = PLVector3( chunk_x * TERRAIN_CHUNK_PIXEL_WIDTH, 0.0f, chunk_y * TERRAIN_CHUNK_PIXEL_WIDTH );
 
 			struct __attribute__((packed)) {
 				int16_t height{ 0 };

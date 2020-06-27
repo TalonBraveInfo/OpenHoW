@@ -56,6 +56,11 @@ void Actor::SetAngles( PLVector3 angles ) {
 	angles_ = angles;
 }
 
+bool Actor::IsVisible() {
+	Camera *camera = Engine::Game()->GetCamera();
+	return !( camera == nullptr || !camera->IsBoxVisible( &boundingBox ) );
+}
+
 void Actor::SetVelocity(PLVector3 newVelocity) {
 	old_velocity_ = velocity;
 	velocity = newVelocity;

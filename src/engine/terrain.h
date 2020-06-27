@@ -74,11 +74,14 @@ class Terrain {
 
     float height[4]{0, 0, 0, 0};
     uint8_t shading[4]{255, 255, 255, 255};
+
+	PLVector3 origin;
   };
 
   struct Chunk {
     Tile tiles[16];
     PLModel* model{nullptr};
+	PLVector3 origin;
   };
 
   Chunk* GetChunk(const PLVector2& pos);

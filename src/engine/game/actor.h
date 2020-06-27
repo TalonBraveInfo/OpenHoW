@@ -100,7 +100,7 @@ public:
 	virtual void AddHealth( int16_t health );
 	int16_t GetHealth() { return health_; }
 
-	virtual bool IsVisible() { return is_visible_; }
+	virtual bool IsVisible();
 
 	PLVector3 GetVelocity() { return velocity; }
 	virtual void SetVelocity( PLVector3 newVelocity );
