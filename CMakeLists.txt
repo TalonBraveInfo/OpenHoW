@@ -30,6 +30,7 @@ cmake_minimum_required(VERSION 3.5.1)
 project( OpenHoW )
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
+option( OHW_BUILD_TOOLS "Build tools and utilities" ON )
 
 # Set all of our output directories.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
@@ -88,8 +89,17 @@ add_definitions(-DGIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
 add_definitions(-DGIT_COMMIT_COUNT="${GIT_COMMIT_COUNT}")
 add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
 
+# 3rd-party libraries
 add_subdirectory(src/3rdparty/platform/platform)
-add_subdirectory(src/tools/extractor)
-add_subdirectory(src/tools/ptgtool)
-add_subdirectory(src/tools/img2pmg)
-add_subdirectory(src/engine)
+
+# tools and utilities
+if ( OHW_BUILD_TOOLS )
+    add_subdirectory(src/tools/extractor)
+    add_subdirectory(src/tools/ptgtool)
+    add_subdirectory(src/tools/img2pmg)
+endif()
+
+# core openhow components
+add_subdirectory( src/engine )
+#add_subdirectory( src/game )
+#add_subdirectory( src/launcher_sdl2 )
