@@ -33,7 +33,11 @@ public:
 		texturePath = path;
 	}
 
-	~TextureViewer() override = default;
+	~TextureViewer() override {
+		if ( texturePtr != nullptr ) {
+			texturePtr->Release();
+		}
+	}
 
 	void ReloadTexture( PLTextureFilter filter_mode ) {
 		if ( texturePath.empty() || filter_mode == filterMode ) {

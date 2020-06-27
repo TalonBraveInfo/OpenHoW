@@ -205,23 +205,20 @@ void ohw::ModelViewer::Display() {
 				viewGrid = !viewGrid;
 			}
 
-#if 0 // Once we have reference counting for resources, add this back
-			if ( modelPtr != nullptr ) {
+			if ( model != nullptr ) {
 				ImGui::Separator();
 
 				if ( ImGui::BeginMenu( "Textures" ) ) {
-					for ( unsigned int i = 0; i < modelPtr->levels[ 0 ].num_meshes; ++i ) {
-						PLMesh *mesh = modelPtr->levels[ 0 ].meshes[ i ];
-						if ( ImGui::ImageButton( reinterpret_cast<ImTextureID>( mesh->texture->internal.id ),
-												 ImVec2( 128, 128 ) ) ) {
-							ImGuiImpl_RegisterWindow( new TextureViewer( mesh->texture ) );
+					for ( unsigned int i = 0; i < model->GetNumberOfMeshes(); ++i ) {
+						PLMesh *mesh = model->GetInternalMesh( i );
+						if ( ImGui::ImageButton( reinterpret_cast<ImTextureID>( mesh->texture->internal.id ), ImVec2( 128, 128 ) ) ) {
+							//ImGuiImpl_RegisterWindow( new TextureViewer( model->GetTextureResource( i ) ) );
 						}
 					}
 
 					ImGui::EndMenu();
 				}
 			}
-#endif
 
 			ImGui::Separator();
 
