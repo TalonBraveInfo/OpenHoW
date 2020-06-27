@@ -397,6 +397,7 @@ void ohw::ModelResource::DrawMesh( unsigned int i ) {
 	}
 
 	// TODO: This currently doesn't handle animations...
+	// TODO: We should be batching the same things too!
 
 	plSetTexture( meshesVector[ i ]->texture, 0 );
 

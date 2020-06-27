@@ -137,5 +137,3 @@ enum class AnimationIndex {
 class TextureAtlas;
 
 const char *Model_GetAnimationDescription( unsigned int i );
-
-void Model_Draw( PLModel *model, PLMatrix4 translation );

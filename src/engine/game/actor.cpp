@@ -158,13 +158,23 @@ void Actor::Dispossessed(const Player *player ) {
 void Actor::DropToFloor() {
 	Map *map = Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
-		Error( "Failed to get current map!\n" );
+		return;
 	}
 
-	PLVector3 nPosition = position_;
-	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
-	nPosition.y = height + boundingBox.maxs.y;
-	SetPosition( nPosition );
+	Terrain *terrain = map->GetTerrain();
+	if ( terrain == nullptr ) {
+		return;
+	}
+
+	// Fetch the height based on where we're currently positioned
+	PLVector3 newPos = position_;
+	float height = terrain->GetHeight( PLVector2( newPos.x, newPos.z ) );
+
+	// Now add the bounding box height onto that, so we're raised a little off the surface
+	newPos.y = height + ( boundingBox.maxs.y / 2 );
+	
+	// And finally actually update our position
+	SetPosition( newPos );
 }
 
 PLVector3 Actor::GetForward() {

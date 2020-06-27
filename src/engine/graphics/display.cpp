@@ -523,6 +523,13 @@ void DrawMap() {
 }
 
 void Display_DrawScene() {
+	Camera *camera = Engine::Game()->GetCamera();
+	if ( camera == nullptr ) {
+		return;
+	}
+
+	camera->MakeActive();
+
 	if ( cv_graphics_alpha_to_coverage->b_value ) {
 		plEnableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
 	}
@@ -532,6 +539,10 @@ void Display_DrawScene() {
 	DrawMap();
 	ActorManager::GetInstance()->DrawActors();
 	//DrawParticles(cur_delta);
+
+	if ( cv_graphics_alpha_to_coverage->b_value ) {
+		plDisableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
+	}
 
 	/* debug methods */
 	Engine::Audio()->DrawSources();
@@ -576,13 +587,6 @@ void Display_Draw( double delta ) {
 	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
 
 	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
-
-	Camera *camera = Engine::Game()->GetCamera();
-	if ( camera == nullptr ) {
-		return;
-	}
-
-	camera->MakeActive();
 
 	Display_DrawScene();
 	Display_DrawInterface();
