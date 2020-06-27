@@ -37,7 +37,7 @@ void ActorTreeWindow::Display() {
 		return;
 	}
 
-	ImGui::Text( "%lu Actors", actors.size() );
+	ImGui::Text( "%u Actors", ( unsigned int ) actors.size() );
 
 	ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 2, 2 ) );
 	for ( auto i : actors ) {
