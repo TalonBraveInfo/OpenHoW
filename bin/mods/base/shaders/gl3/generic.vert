@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "global.glsl"
-
 out vec3 interp_normal;
 out vec2 interp_UV;
 out vec4 interp_colour;
