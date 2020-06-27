@@ -637,6 +637,10 @@ static void* u_calloc( size_t num, size_t size ) {
 }
 
 int main( int argc, char** argv ) {
+#if defined( _WIN32 ) && defined( _DEBUG )
+	setvbuf( stdout, nullptr, _IONBF, 0 );
+#endif
+
 	pl_malloc = u_malloc;
 	pl_calloc = u_calloc;
 
