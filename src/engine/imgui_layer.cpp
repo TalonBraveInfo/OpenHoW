@@ -18,6 +18,7 @@
 #include "engine.h"
 #include "imgui_layer.h"
 #include "graphics/display.h"
+#include "graphics/camera.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 

@@ -17,14 +17,12 @@
 
 #include <imgui.h>
 
-#include "../engine.h"
-#include "../mod_support.h"
-
+#include "engine.h"
+#include "mod_support.h"
+#include "Map.h"
 #include "window_map_config.h"
 
-using namespace ohw;
-
-MapConfigEditor::MapConfigEditor() {
+ohw::MapConfigEditor::MapConfigEditor() {
 	map_ = Engine::Game()->GetCurrentMap();
 	if ( map_ == nullptr ) {
 		throw std::runtime_error( "Attempted to create config editor without a valid map loaded!\n" );
@@ -37,11 +35,11 @@ MapConfigEditor::MapConfigEditor() {
 	strncpy( author_buffer, manifest_->author.c_str(), sizeof( author_buffer ) );
 }
 
-MapConfigEditor::~MapConfigEditor() {
+ohw::MapConfigEditor::~MapConfigEditor() {
 	RestoreManifest();
 }
 
-void MapConfigEditor::DisplayTemperature() {
+void ohw::MapConfigEditor::DisplayTemperature() {
 	enum {
 		TEMP_NORMAL, TEMP_HOT, TEMP_COLD, MAX_TEMP
 	};
@@ -70,7 +68,7 @@ void MapConfigEditor::DisplayTemperature() {
 	}
 }
 
-void MapConfigEditor::DisplayWeather() {
+void ohw::MapConfigEditor::DisplayWeather() {
 	enum {
 		WEATHER_CLEAR, WEATHER_RAIN, WEATHER_SNOW, MAX_WEATHER
 	};
@@ -99,7 +97,7 @@ void MapConfigEditor::DisplayWeather() {
 	}
 }
 
-void MapConfigEditor::DisplayTime() {
+void ohw::MapConfigEditor::DisplayTime() {
 	enum {
 		TIME_DAY, TIME_NIGHT, MAX_TIME
 	};
@@ -126,7 +124,7 @@ void MapConfigEditor::DisplayTime() {
 	}
 }
 
-void MapConfigEditor::Display() {
+void ohw::MapConfigEditor::Display() {
 	ImGui::SetNextWindowSize( ImVec2( 310, 512 ), ImGuiCond_Once );
 	Begin( "Map Config Editor", ED_DEFAULT_WINDOW_FLAGS );
 
@@ -226,7 +224,7 @@ void MapConfigEditor::Display() {
 	ImGui::End();
 }
 
-void MapConfigEditor::SaveManifest( const std::string& path ) {
+void ohw::MapConfigEditor::SaveManifest( const std::string& path ) {
 	const ModDirectory* currentMod = Mod_GetCurrentMod();
 	std::ofstream output( "mods/" + currentMod->directory + path );
 	if ( !output.is_open() ) {
@@ -243,7 +241,7 @@ void MapConfigEditor::SaveManifest( const std::string& path ) {
 	backup_ = *manifest_;
 }
 
-void MapConfigEditor::RestoreManifest() {
+void ohw::MapConfigEditor::RestoreManifest() {
 	*manifest_ = backup_;
 
 	map_->UpdateSky();

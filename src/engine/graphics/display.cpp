@@ -15,17 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../input.h"
-#include "../imgui_layer.h"
-#include "../frontend.h"
-#include "../Map.h"
+#include "engine.h"
+#include "input.h"
+#include "imgui_layer.h"
+#include "frontend.h"
+#include "Map.h"
 
-#include "../game/actor_manager.h"
+#include "game/actor_manager.h"
 
 #include "font.h"
 #include "shaders.h"
 #include "display.h"
+#include "camera.h"
 
 using namespace ohw;
 
@@ -546,10 +547,7 @@ void Display_DrawScene() {
 
 	/* debug methods */
 	Engine::Audio()->DrawSources();
-
-	if ( cv_graphics_alpha_to_coverage->b_value ) {
-		plDisableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
-	}
+	camera->DrawViewFrustum();
 }
 
 void Display_DrawInterface() {

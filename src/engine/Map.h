@@ -25,33 +25,35 @@ struct MapManifest;
 
 struct ActorSpawn;
 
-class Map {
-public:
-	explicit Map( MapManifest *manifest );
-	~Map();
+namespace ohw {
+	class Map {
+	public:
+		explicit Map( MapManifest *manifest );
+		~Map();
 
-	void Draw();
+		void Draw();
 
-	MapManifest *GetManifest() { return manifest_; }
-	Terrain *GetTerrain() { return terrain_; }
+		MapManifest *GetManifest() { return manifest_; }
+		Terrain *GetTerrain() { return terrain_; }
 
-	const std::vector< ActorSpawn > &GetSpawns() { return spawns_; }
+		const std::vector< ActorSpawn > &GetSpawns() { return spawns_; }
 
-	void UpdateSky();
+		void UpdateSky();
 
-protected:
-private:
-	void LoadSpawns( const std::string &path );
-	static ohw::SharedModelResourcePointer LoadSkyModel( const std::string &path );
+	protected:
+	private:
+		void LoadSpawns( const std::string &path );
+		static SharedModelResourcePointer LoadSkyModel( const std::string &path );
 
-	void UpdateSkyModel( ohw::SharedModelResourcePointer skyModel );
+		void UpdateSkyModel( SharedModelResourcePointer skyModel );
 
-	MapManifest *manifest_{ nullptr };
+		MapManifest *manifest_{ nullptr };
 
-	std::vector< ActorSpawn > spawns_;
+		std::vector< ActorSpawn > spawns_;
 
-	ohw::SharedModelResourcePointer skyModelTop{ nullptr };
-	ohw::SharedModelResourcePointer skyModelBottom{ nullptr };
+		SharedModelResourcePointer skyModelTop{ nullptr };
+		SharedModelResourcePointer skyModelBottom{ nullptr };
 
-	Terrain *terrain_{ nullptr };
-};
+		Terrain *terrain_{ nullptr };
+	};
+}

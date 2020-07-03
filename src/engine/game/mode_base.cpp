@@ -15,15 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../Map.h"
-
+#include "engine.h"
+#include "Map.h"
 #include "mode_base.h"
 #include "actor_manager.h"
 #include "player.h"
 #include "actor_pig.h"
 #include "actor_airship.h"
-#include "actor_static_model.h"
+#include "graphics/camera.h"
 
 using namespace ohw;
 

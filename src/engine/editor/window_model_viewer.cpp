@@ -18,6 +18,7 @@
 #include "engine.h"
 #include "graphics/shaders.h"
 #include "graphics/display.h"
+#include "graphics/camera.h"
 #include "imgui_layer.h"
 #include "model.h"
 #include "language.h"

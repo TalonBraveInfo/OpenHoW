@@ -24,8 +24,10 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "../engine.h"
-#include "../frontend.h"
+#include "engine.h"
+#include "frontend.h"
+
+#include "graphics/camera.h"
 
 #include "stb_vorbis.c"
 

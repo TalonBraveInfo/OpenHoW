@@ -15,23 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../frontend.h"
-#include "../Map.h"
-#include "../language.h"
-#include "../mod_support.h"
-
+#include "engine.h"
+#include "frontend.h"
+#include "Map.h"
+#include "language.h"
+#include "mod_support.h"
 #include "actor_manager.h"
 #include "mode_base.h"
 #include "player.h"
-#include "game.h"
 
-#include "../script/json_reader.h"
+#include "graphics/camera.h"
+
+#include "script/json_reader.h"
 
 #include "actor_pig.h"
 #include "actor_static_model.h"
-
-using namespace ohw;
 
 std::string MapManifest::Serialize() {
 	std::stringstream output;
@@ -50,21 +48,21 @@ std::string MapManifest::Serialize() {
 		output << "],";
 	}
 	output << R"("ambientColour":")" <<
-		   std::to_string( ambient_colour.r ) << " " <<
-		   std::to_string( ambient_colour.g ) << " " <<
-		   std::to_string( ambient_colour.b ) << "\",";
+	       std::to_string( ambient_colour.r ) << " " <<
+	       std::to_string( ambient_colour.g ) << " " <<
+	       std::to_string( ambient_colour.b ) << "\",";
 	output << R"("skyColourTop":")" <<
-		   std::to_string( sky_colour_top.r ) << " " <<
-		   std::to_string( sky_colour_top.g ) << " " <<
-		   std::to_string( sky_colour_top.b ) << "\",";
+	       std::to_string( sky_colour_top.r ) << " " <<
+	       std::to_string( sky_colour_top.g ) << " " <<
+	       std::to_string( sky_colour_top.b ) << "\",";
 	output << R"("skyColourBottom":")" <<
-		   std::to_string( sky_colour_bottom.r ) << " " <<
-		   std::to_string( sky_colour_bottom.g ) << " " <<
-		   std::to_string( sky_colour_bottom.b ) << "\",";
+	       std::to_string( sky_colour_bottom.r ) << " " <<
+	       std::to_string( sky_colour_bottom.g ) << " " <<
+	       std::to_string( sky_colour_bottom.b ) << "\",";
 	output << R"("sunColour":")" <<
-		   std::to_string( sun_colour.r ) << " " <<
-		   std::to_string( sun_colour.g ) << " " <<
-		   std::to_string( sun_colour.b ) << "\",";
+	       std::to_string( sun_colour.r ) << " " <<
+	       std::to_string( sun_colour.g ) << " " <<
+	       std::to_string( sun_colour.b ) << "\",";
 	output << R"("sunYaw":")" << std::to_string( sun_yaw ) << "\",";
 	output << R"("sunPitch":")" << std::to_string( sun_pitch ) << "\",";
 	output << R"("temperature":")" << temperature << "\",";
@@ -72,16 +70,16 @@ std::string MapManifest::Serialize() {
 	output << R"("time":")" << time << "\",";
 	// Fog
 	output << R"("fogColour":")" <<
-		   std::to_string( fog_colour.r ) << " " <<
-		   std::to_string( fog_colour.g ) << " " <<
-		   std::to_string( fog_colour.b ) << "\",";
+	       std::to_string( fog_colour.r ) << " " <<
+	       std::to_string( fog_colour.g ) << " " <<
+	       std::to_string( fog_colour.b ) << "\",";
 	output << R"("fogIntensity":")" << std::to_string( fog_intensity ) << "\",";
 	output << R"("fogDistance":")" << std::to_string( fog_distance ) << "\"";
 	output << "}\n";
 	return output.str();
 }
 
-GameManager::GameManager() {
+ohw::GameManager::GameManager() {
 	plRegisterConsoleCommand( "CreateMap", CreateMapCommand, "Creates a new named map." );
 	plRegisterConsoleCommand( "OpenMap", OpenMapCommand, "" );
 	plRegisterConsoleCommand( "ListMaps", ListMapsCommand, "" );
@@ -92,13 +90,13 @@ GameManager::GameManager() {
 	camera_ = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
 }
 
-GameManager::~GameManager() {
+ohw::GameManager::~GameManager() {
 	map_manifests_.clear();
 
 	delete camera_;
 }
 
-void GameManager::Tick() {
+void ohw::GameManager::Tick() {
 	if ( pauseSim && simSteps == 0 ) {
 		return;
 	}
@@ -113,9 +111,9 @@ void GameManager::Tick() {
 		const AudioSample *sample = ambient_samples_[ rand() % MAX_AMBIENT_SAMPLES ];
 		if ( sample != nullptr ) {
 			PLVector3 position = {
-				plGenerateRandomf( TERRAIN_PIXEL_WIDTH ),
-				map_->GetTerrain()->GetMaxHeight(),
-				plGenerateRandomf( TERRAIN_PIXEL_WIDTH )
+					plGenerateRandomf( TERRAIN_PIXEL_WIDTH ),
+					map_->GetTerrain()->GetMaxHeight(),
+					plGenerateRandomf( TERRAIN_PIXEL_WIDTH )
 			};
 			Engine::Audio()->PlayLocalSound( sample, position, { 0, 0, 0 }, true, 0.5f );
 		}
@@ -132,7 +130,7 @@ void GameManager::Tick() {
 	}
 }
 
-void GameManager::SetupPlayers( const PlayerPtrVector &players ) {
+void ohw::GameManager::SetupPlayers( const PlayerPtrVector &players ) {
 	for ( auto i : players ) {
 		GetMode()->PlayerJoined( i );
 	}
@@ -140,7 +138,7 @@ void GameManager::SetupPlayers( const PlayerPtrVector &players ) {
 	players_ = players;
 }
 
-Player *GameManager::GetPlayerByIndex( unsigned int i ) {
+Player *ohw::GameManager::GetPlayerByIndex( unsigned int i ) {
 	if ( i >= players_.size() ) {
 		LogWarn( "Invalid player index, \"%d\"!\n", i );
 		return nullptr;
@@ -149,7 +147,7 @@ Player *GameManager::GetPlayerByIndex( unsigned int i ) {
 	return players_[ i ];
 }
 
-void GameManager::LoadMap( const std::string &name ) {
+void ohw::GameManager::LoadMap( const std::string &name ) {
 	MapManifest *manifest = Engine::Game()->GetMapManifest( name );
 	if ( manifest == nullptr ) {
 		LogWarn( "Failed to get map descriptor, \"%s\"\n", name.c_str() );
@@ -168,13 +166,13 @@ void GameManager::LoadMap( const std::string &name ) {
 	FrontEnd_SetState( FE_MODE_GAME );
 }
 
-void GameManager::UnloadMap() {
+void ohw::GameManager::UnloadMap() {
 	delete map_;
 }
 
-void GameManager::CachePersistentData() {}
+void ohw::GameManager::CachePersistentData() {}
 
-void GameManager::RegisterTeamManifest( const std::string &path ) {
+void ohw::GameManager::RegisterTeamManifest( const std::string &path ) {
 	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
 
 	JsonReader config( path );
@@ -200,7 +198,7 @@ void GameManager::RegisterTeamManifest( const std::string &path ) {
 	}
 }
 
-void GameManager::RegisterClassManifest( const std::string &path ) {
+void ohw::GameManager::RegisterClassManifest( const std::string &path ) {
 	JsonReader config( path );
 
 	unsigned int numClasses = config.GetArrayLength( "classes" );
@@ -225,7 +223,7 @@ void GameManager::RegisterClassManifest( const std::string &path ) {
 	}
 }
 
-void GameManager::RegisterMapManifest( const std::string &path ) {
+void ohw::GameManager::RegisterMapManifest( const std::string &path ) {
 	LogInfo( "Registering map \"%s\"...\n", path.c_str() );
 
 	MapManifest manifest;
@@ -265,13 +263,13 @@ void GameManager::RegisterMapManifest( const std::string &path ) {
 
 static void RegisterManifestInterface( const char *path, void *userData ) {
 	u_unused( userData );
-	Engine::Game()->RegisterMapManifest( path );
+	ohw::Engine::Game()->RegisterMapManifest( path );
 }
 
 /**
  * Scans the campaigns directory for .map files and indexes them.
  */
-void GameManager::RegisterMapManifests() {
+void ohw::GameManager::RegisterMapManifests() {
 	map_manifests_.clear();
 	plScanDirectory( "maps", "map", RegisterManifestInterface, false, nullptr );
 }
@@ -281,7 +279,7 @@ void GameManager::RegisterMapManifests() {
  * @param name
  * @return Returns a pointer to the requested manifest, otherwise returns null.
  */
-MapManifest *GameManager::GetMapManifest( const std::string &name ) {
+MapManifest *ohw::GameManager::GetMapManifest( const std::string &name ) {
 	auto manifest = map_manifests_.find( name );
 	if ( manifest != map_manifests_.end() ) {
 		return &manifest->second;
@@ -296,7 +294,7 @@ MapManifest *GameManager::GetMapManifest( const std::string &name ) {
  * @param name
  * @return
  */
-MapManifest *GameManager::CreateManifest( const std::string &name ) {
+MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 	// ensure the map doesn't exist already
 	if ( Engine::Game()->GetMapManifest( name ) != nullptr ) {
 		LogWarn( "Unable to create map, it already exists!\n" );
@@ -321,9 +319,9 @@ MapManifest *GameManager::CreateManifest( const std::string &name ) {
 	return Engine::Game()->GetMapManifest( name );
 }
 
-const CharacterClass *GameManager::GetDefaultClass( const std::string &classIdentifer ) const {
+const CharacterClass *ohw::GameManager::GetDefaultClass( const std::string &classIdentifer ) const {
 	const auto &i = defaultClasses.find( classIdentifer );
-	if( i == defaultClasses.end() ) {
+	if ( i == defaultClasses.end() ) {
 		LogWarn( "Failed to find character class \"%s\"!\n", classIdentifer.c_str() );
 		return nullptr;
 	}
@@ -331,7 +329,7 @@ const CharacterClass *GameManager::GetDefaultClass( const std::string &classIden
 	return &i->second;
 }
 
-void GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
@@ -350,7 +348,7 @@ void GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
  * @param argc
  * @param argv
  */
-void GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
@@ -372,7 +370,7 @@ void GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
  * @param argc
  * @param argv
  */
-void GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->map_manifests_.empty() ) {
 		LogWarn( "No maps available!\n" );
 		return;
@@ -381,7 +379,7 @@ void GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	for ( auto manifest : Engine::Game()->map_manifests_ ) {
 		MapManifest *desc = &manifest.second;
 		std::string out =
-			desc->name + "/" + manifest.first +
+				desc->name + "/" + manifest.first +
 				" : " + desc->description +
 				" :";
 		// print out all the supported modes
@@ -394,7 +392,7 @@ void GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	LogInfo( "%u maps\n", Engine::Game()->map_manifests_.size() );
 }
 
-void GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		LogWarn( "Invalid number of arguments, ignoring!\n" );
 		return;
@@ -427,7 +425,7 @@ void GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 	pig->AddInventoryItem( item, quantity );
 }
 
-void GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->mode_ == nullptr ) {
 		LogWarn( "Command cannot function outside of game!\n" );
 		return;
@@ -448,7 +446,7 @@ void GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
 	actor->Damage( nullptr, 9999 );
 }
 
-void GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->mode_ == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
 		return;
@@ -471,7 +469,7 @@ void GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 	}
 
 	AStaticModel
-		*model_actor = dynamic_cast<AStaticModel *>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
+			*model_actor = dynamic_cast<AStaticModel *>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}
@@ -481,9 +479,9 @@ void GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 	model_actor->SetAngles( actor->GetAngles() );
 }
 
-void GameManager::StartMode( const std::string &map,
-							 const PlayerPtrVector &players,
-							 const GameModeDescriptor &descriptor ) {
+void ohw::GameManager::StartMode( const std::string &map,
+                                  const PlayerPtrVector &players,
+                                  const GameModeDescriptor &descriptor ) {
 	FrontEnd_SetState( FE_MODE_LOADING );
 
 	// Free up all our unreferenced resources
@@ -530,7 +528,7 @@ void GameManager::StartMode( const std::string &map,
 /**
  * End the currently active mode and flush everything.
  */
-void GameManager::EndMode() {
+void ohw::GameManager::EndMode() {
 	delete mode_;
 
 	// Clear out all the allocated players for this game
@@ -554,6 +552,6 @@ void GameManager::EndMode() {
  * Check whether or not a mode is currently active.
  * @return Returns true if a mode is currently active.
  */
-bool GameManager::IsModeActive() {
+bool ohw::GameManager::IsModeActive() {
 	return ( mode_ != nullptr );
 }

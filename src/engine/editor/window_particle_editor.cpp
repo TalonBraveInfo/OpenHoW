@@ -21,6 +21,7 @@
 #include "graphics/particle_effect.h"
 #include "graphics/particle_emitter.h"
 #include "graphics/particles.h"
+#include "graphics/camera.h"
 #include "language.h"
 #include "imgui_layer.h"
 

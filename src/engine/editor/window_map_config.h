@@ -18,30 +18,30 @@
 #pragma once
 
 #include "base_window.h"
-#include "../Map.h"
 
-#include <algorithm>
+namespace ohw {
+	class Map;
+	class MapConfigEditor : public BaseWindow {
+	public:
+		MapConfigEditor();
+		~MapConfigEditor() override;
 
-class MapConfigEditor : public BaseWindow {
- public:
-  MapConfigEditor();
-  ~MapConfigEditor() override;
+		void Display() override;
+		void SaveManifest( const std::string &path );
+		void RestoreManifest();
 
-  void Display() override;
-  void SaveManifest(const std::string &path);
-  void RestoreManifest();
+	protected:
+	private:
+		MapManifest backup_;
+		MapManifest *manifest_;
+		Map *map_{ nullptr };
 
- protected:
- private:
-  MapManifest  backup_;
-  MapManifest* manifest_;
-  Map* map_{nullptr};
+		char name_buffer[32]{ '\0' };
+		char author_buffer[32]{ '\0' };
+		char filename_buffer[32]{ '\0' };
 
-  char name_buffer[32]{'\0'};
-  char author_buffer[32]{'\0'};
-  char filename_buffer[32]{'\0'};
-
-  void DisplayWeather();
-  void DisplayTemperature();
-  void DisplayTime();
-};
+		void DisplayWeather();
+		void DisplayTemperature();
+		void DisplayTime();
+	};
+}

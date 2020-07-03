@@ -20,8 +20,6 @@
 #include "actor.h"
 #include "mode_interface.h"
 
-#include "../graphics/camera.h"
-
 enum class CharacterStatus {
 	NONE = -1,
 	ALIVE,
@@ -59,60 +57,60 @@ enum class CharacterStatus {
 
 struct CharacterClass : PropertyOwner {
 	CharacterClass() :
-		INIT_PROPERTY( identifer, 0 ),
-		INIT_PROPERTY( label, 0 ),
-		INIT_PROPERTY( model, 0 ),
-		INIT_PROPERTY( nextClass, 0 ),
-		INIT_PROPERTY( cost, 0, 0 ),
-		INIT_PROPERTY( health, 0, 0 ) {}
+			INIT_PROPERTY( identifer, 0 ),
+			INIT_PROPERTY( label, 0 ),
+			INIT_PROPERTY( model, 0 ),
+			INIT_PROPERTY( nextClass, 0 ),
+			INIT_PROPERTY( cost, 0, 0 ),
+			INIT_PROPERTY( health, 0, 0 ) {}
 	CharacterClass( const CharacterClass &src ) :
-		COPY_PROPERTY( identifer, src ),
-		COPY_PROPERTY( label, src ),
-		COPY_PROPERTY( model, src ),
-		COPY_PROPERTY( nextClass, src ),
-		COPY_PROPERTY( cost, src ),
-		COPY_PROPERTY( health, src ) {}
+			COPY_PROPERTY( identifer, src ),
+			COPY_PROPERTY( label, src ),
+			COPY_PROPERTY( model, src ),
+			COPY_PROPERTY( nextClass, src ),
+			COPY_PROPERTY( cost, src ),
+			COPY_PROPERTY( health, src ) {}
 
 	StringProperty identifer;
 	StringProperty label;
 	StringProperty model;
 	StringProperty nextClass;
-	NumericProperty<unsigned int> cost;
-	NumericProperty<unsigned int> health;
+	NumericProperty< unsigned int > cost;
+	NumericProperty< unsigned int > health;
 
 	struct Item {
 		std::string key;
 		std::string classname;
 		unsigned int quantity{ 0 };
 	};
-	std::vector<Item> items;
+	std::vector< Item > items;
 };
 
 struct CharacterSlot : PropertyOwner {
 	CharacterSlot() :
-		INIT_PROPERTY( portrait, 0 ),
-		INIT_PROPERTY( portrait_selected, 0 ),
-		INIT_PROPERTY( portrait_wounded, 0 ),
-		INIT_PROPERTY( voice_language, 0 ),
-		INIT_PROPERTY( voice_set, 0, 0 ) {}
+			INIT_PROPERTY( portrait, 0 ),
+			INIT_PROPERTY( portrait_selected, 0 ),
+			INIT_PROPERTY( portrait_wounded, 0 ),
+			INIT_PROPERTY( voice_language, 0 ),
+			INIT_PROPERTY( voice_set, 0, 0 ) {}
 	CharacterSlot( const CharacterSlot &src ) :
-		COPY_PROPERTY( portrait, src ),
-		COPY_PROPERTY( portrait_selected, src ),
-		COPY_PROPERTY( portrait_wounded, src ),
-		COPY_PROPERTY( voice_language, src ),
-		COPY_PROPERTY( voice_set, src ),
-		name( src.name ),
-		classname( src.classname ),
-		status( src.status ),
-		kill_count( src.kill_count ),
-		death_count( src.death_count ) {}
+			COPY_PROPERTY( portrait, src ),
+			COPY_PROPERTY( portrait_selected, src ),
+			COPY_PROPERTY( portrait_wounded, src ),
+			COPY_PROPERTY( voice_language, src ),
+			COPY_PROPERTY( voice_set, src ),
+			name( src.name ),
+			classname( src.classname ),
+			status( src.status ),
+			kill_count( src.kill_count ),
+			death_count( src.death_count ) {}
 
 	// Static
 	StringProperty portrait;           // Face profile
 	StringProperty portrait_selected;  // Selected face profile
 	StringProperty portrait_wounded;   // Wounded face profile
 	StringProperty voice_language;
-	NumericProperty<unsigned int> voice_set;
+	NumericProperty< unsigned int > voice_set;
 
 	// Dynamic
 	std::string name;                               // Assigned name, e.g. Herman
@@ -124,20 +122,20 @@ struct CharacterSlot : PropertyOwner {
 
 struct PlayerTeam : PropertyOwner {
 	PlayerTeam() :
-		INIT_PROPERTY( name, 0 ),
-		INIT_PROPERTY( description, 0 ),
-		INIT_PROPERTY( pig_textures, 0 ),
-		INIT_PROPERTY( paper_texture, 0 ),
-		INIT_PROPERTY( debrief_texture, 0 ),
-		INIT_PROPERTY( voice_set, 0 ) {}
+			INIT_PROPERTY( name, 0 ),
+			INIT_PROPERTY( description, 0 ),
+			INIT_PROPERTY( pig_textures, 0 ),
+			INIT_PROPERTY( paper_texture, 0 ),
+			INIT_PROPERTY( debrief_texture, 0 ),
+			INIT_PROPERTY( voice_set, 0 ) {}
 	PlayerTeam( const PlayerTeam &src ) :
-		COPY_PROPERTY( name, src ),
-		COPY_PROPERTY( description, src ),
-		COPY_PROPERTY( pig_textures, src ),
-		COPY_PROPERTY( paper_texture, src ),
-		COPY_PROPERTY( debrief_texture, src ),
-		COPY_PROPERTY( voice_set, src ),
-		slots( src.slots ) {}
+			COPY_PROPERTY( name, src ),
+			COPY_PROPERTY( description, src ),
+			COPY_PROPERTY( pig_textures, src ),
+			COPY_PROPERTY( paper_texture, src ),
+			COPY_PROPERTY( debrief_texture, src ),
+			COPY_PROPERTY( voice_set, src ),
+			slots( src.slots ) {}
 
 	StringProperty name;
 	StringProperty description;
@@ -150,7 +148,7 @@ struct PlayerTeam : PropertyOwner {
 
 	PLColour colour;
 
-	std::array<CharacterSlot, 8> slots;
+	std::array< CharacterSlot, 8 > slots;
 };
 
 struct MapManifest {
@@ -161,7 +159,7 @@ struct MapManifest {
 	std::string author{ "none" };                     // creator of the map
 	std::string description{ "none" };                //
 	std::string tile_directory;
-	std::vector<std::string> modes;                 // supported gameplay types
+	std::vector< std::string > modes;                 // supported gameplay types
 	PLColour ambient_colour{ 255, 255, 255, 255 };    // ambient colour
 	// Sky gradient
 	PLColour sky_colour_top{ 0, 104, 156 };
@@ -194,110 +192,114 @@ struct GameModeDescriptor {
 	unsigned int deathmatch_limit{ 5 };
 };
 
-typedef std::vector<Player *> PlayerPtrVector;
+typedef std::vector< Player * > PlayerPtrVector;
 
-class Map;
+namespace ohw {
+	class Map;
 
-class GameManager {
-private:
-	GameManager();
-	~GameManager();
+	class Camera;
 
-public:
-	void Tick();
+	class GameManager {
+	private:
+		GameManager();
+		~GameManager();
 
-	ohw::Camera *GetCamera() { return camera_; }
+	public:
+		void Tick();
 
-	void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
-	void EndMode();
+		Camera *GetCamera() { return camera_; }
 
-	void SetupPlayers( const PlayerPtrVector &teams );
-	Player *GetPlayerByIndex( unsigned int i );
-	const PlayerPtrVector &GetPlayers() { return players_; }
+		void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
+		void EndMode();
 
-	// Map
-	void LoadMap( const std::string &name );
-	void UnloadMap();
+		void SetupPlayers( const PlayerPtrVector &teams );
+		Player *GetPlayerByIndex( unsigned int i );
+		const PlayerPtrVector &GetPlayers() { return players_; }
 
-	void CachePersistentData();
+		// Map
+		void LoadMap( const std::string &name );
+		void UnloadMap();
 
-	void RegisterTeamManifest( const std::string &path );
-	void RegisterClassManifest( const std::string &path );
-	void RegisterMapManifest( const std::string &path );
-	void RegisterMapManifests();
+		void CachePersistentData();
 
-	typedef std::map<std::string, MapManifest> MapManifestMap;
-	MapManifest *GetMapManifest( const std::string &name );
-	const MapManifestMap &GetMapManifests() { return map_manifests_; };
-	MapManifest *CreateManifest( const std::string &name );
-	//void SaveManifest(const std::string& name, const MapManifest& manifest);
+		void RegisterTeamManifest( const std::string &path );
+		void RegisterClassManifest( const std::string &path );
+		void RegisterMapManifest( const std::string &path );
+		void RegisterMapManifests();
 
-	typedef std::vector<PlayerTeam> PlayerTeamVector;
-	const PlayerTeamVector &GetDefaultTeams() const { return defaultTeams; }
+		typedef std::map< std::string, MapManifest > MapManifestMap;
+		MapManifest *GetMapManifest( const std::string &name );
+		const MapManifestMap &GetMapManifests() { return map_manifests_; };
+		MapManifest *CreateManifest( const std::string &name );
+		//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
-	typedef std::map<std::string, CharacterClass> CharacterClassMap;
-	const CharacterClass *GetDefaultClass( const std::string &classIdentifer ) const;
+		typedef std::vector< PlayerTeam > PlayerTeamVector;
+		const PlayerTeamVector &GetDefaultTeams() const { return defaultTeams; }
 
-	Map *GetCurrentMap() { return map_; }
+		typedef std::map< std::string, CharacterClass > CharacterClassMap;
+		const CharacterClass *GetDefaultClass( const std::string &classIdentifer ) const;
 
-	IGameMode *GetMode() { return mode_; }
+		Map *GetCurrentMap() { return map_; }
 
-	bool IsModeActive();
+		IGameMode *GetMode() { return mode_; }
 
-	void StepSimulation( unsigned int steps = 1 ) {
-		simSteps = steps;
-	}
+		bool IsModeActive();
 
-	void ToggleSimulation( bool paused ) {
-		pauseSim = paused;
-	}
+		void StepSimulation( unsigned int steps = 1 ) {
+			simSteps = steps;
+		}
 
-protected:
-private:
-	static void OpenMapCommand( unsigned int argc, char *argv[] );
-	static void CreateMapCommand( unsigned int argc, char *argv[] );
-	static void ListMapsCommand( unsigned int argc, char **argv );
-	static void GiveItemCommand( unsigned int argc, char *argv[] );
-	static void KillSelfCommand( unsigned int argc, char **argv );
-	static void SpawnModelCommand( unsigned int argc, char **argv );
+		void ToggleSimulation( bool paused ) {
+			pauseSim = paused;
+		}
 
-	bool pauseSim{ false };
-	unsigned int simSteps{ 0 };
+	protected:
+	private:
+		static void OpenMapCommand( unsigned int argc, char *argv[] );
+		static void CreateMapCommand( unsigned int argc, char *argv[] );
+		static void ListMapsCommand( unsigned int argc, char **argv );
+		static void GiveItemCommand( unsigned int argc, char *argv[] );
+		static void KillSelfCommand( unsigned int argc, char **argv );
+		static void SpawnModelCommand( unsigned int argc, char **argv );
 
-	/////////////////////////////////////////////////////////////
-	// Camera
+		bool pauseSim{ false };
+		unsigned int simSteps{ 0 };
 
-	enum class CameraMode {
-		// Debugging modes
+		/////////////////////////////////////////////////////////////
+		// Camera
 
-		FLY,          // Fly around
-		FIRSTPERSON,  // First person controls
+		enum class CameraMode {
+			// Debugging modes
 
-		// Gameplay
+			FLY,          // Fly around
+			FIRSTPERSON,  // First person controls
 
-		FOLLOW,       // Follows behind a specific entity
-		FLYAROUND,
-	};
+			// Gameplay
 
-	ohw::Camera *camera_{ nullptr };
-	CameraMode camera_mode_{ CameraMode::FOLLOW };
+			FOLLOW,       // Follows behind a specific entity
+			FLYAROUND,
+		};
 
-	/////////////////////////////////////////////////////////////
+		Camera *camera_{ nullptr };
+		CameraMode camera_mode_{ CameraMode::FOLLOW };
 
-	Map *map_{ nullptr };
+		/////////////////////////////////////////////////////////////
 
-	IGameMode *mode_{ nullptr };
+		Map *map_{ nullptr };
 
-	std::map<std::string, MapManifest> map_manifests_;
+		IGameMode *mode_{ nullptr };
 
-	PlayerTeamVector defaultTeams;
-	CharacterClassMap defaultClasses;
+		std::map< std::string, MapManifest > map_manifests_;
 
-	PlayerPtrVector players_;
+		PlayerTeamVector defaultTeams;
+		CharacterClassMap defaultClasses;
+
+		PlayerPtrVector players_;
 
 #define MAX_AMBIENT_SAMPLES 8
-	double ambient_emit_delay_{ 0 };
-	const struct AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
+		double ambient_emit_delay_{ 0 };
+		const struct AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
 
-	friend class ohw::Engine;
-};
+		friend class Engine;
+	};
+}

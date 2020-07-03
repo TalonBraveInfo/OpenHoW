@@ -17,15 +17,11 @@
 
 #include "engine.h"
 #include "Map.h"
-#include "model.h"
 
-#include "graphics/mesh.h"
 #include "graphics/shaders.h"
 #include "graphics/texture_atlas.h"
 
-using namespace ohw;
-
-Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
+ohw::Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	std::string base_path = "maps/" + manifest_->filename + "/";
 
 	std::string tilePath = manifest_->tile_directory;
@@ -55,12 +51,12 @@ Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	UpdateSky();
 }
 
-Map::~Map() {
+ohw::Map::~Map() {
 	delete terrain_;
 }
 
-ohw::SharedModelResourcePointer Map::LoadSkyModel( const std::string &path ) {
-	ohw::SharedModelResourcePointer model = Engine::Resource()->LoadModel( path, true, true );
+ohw::SharedModelResourcePointer ohw::Map::LoadSkyModel( const std::string &path ) {
+	SharedModelResourcePointer model = Engine::Resource()->LoadModel( path, true, true );
 
 	// Default skydome is smaller than the map, so we'll scale it
 	model->modelMatrix.Identity();
@@ -77,12 +73,12 @@ ohw::SharedModelResourcePointer Map::LoadSkyModel( const std::string &path ) {
 	return model;
 }
 
-void Map::UpdateSky() {
+void ohw::Map::UpdateSky() {
 	UpdateSkyModel( skyModelTop );
 	UpdateSkyModel( skyModelBottom );
 }
 
-void Map::UpdateSkyModel( ohw::SharedModelResourcePointer model ) {
+void ohw::Map::UpdateSkyModel( SharedModelResourcePointer model ) {
 	PLMesh *mesh = model->GetInternalMesh( 0 );
 
 	// Below is a PSX-style gradient sky implementation
@@ -115,7 +111,7 @@ void Map::UpdateSkyModel( ohw::SharedModelResourcePointer model ) {
 	plUploadMesh( mesh );
 }
 
-void Map::LoadSpawns( const std::string &path ) {
+void ohw::Map::LoadSpawns( const std::string &path ) {
 	struct PogIndex {
 		char name[16];               // class name
 		char unused0[16];
@@ -196,7 +192,7 @@ void Map::LoadSpawns( const std::string &path ) {
 	}
 }
 
-void Map::Draw() {
+void ohw::Map::Draw() {
 	Shaders_SetProgramByName( "generic_untextured" );
 
 	skyModelTop->Draw();

@@ -22,6 +22,7 @@
 #include "graphics/font.h"
 #include "graphics/display.h"
 #include "graphics/video.h"
+#include "graphics/camera.h"
 #include "game/actor_manager.h"
 
 using namespace ohw;

@@ -28,6 +28,19 @@ namespace ohw {
 		explicit ModelResource( const std::string &path, bool persist = false, bool abortOnFail = false );
 		~ModelResource();
 
+		struct Keyframe {
+			PLVector3 transforms[10];
+			PLQuaternion rotations[15];
+		};
+
+		struct Animation {
+			unsigned int id;
+			const char *name;
+
+			Keyframe *frames;
+			unsigned int num_frames;
+		};
+
 		void Tick();
 
 		void Draw( bool batchDraw = false );

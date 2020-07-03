@@ -31,86 +31,89 @@
 
 class TextureAtlas;
 
-class Terrain {
- public:
-  explicit Terrain(const std::string& tileset);
-  ~Terrain();
+namespace ohw {
+	class Terrain {
+	public:
+		explicit Terrain( const std::string &tileset );
+		~Terrain();
 
-  struct Tile {
-    /* surface properties */
-    enum Surface {
-      SURFACE_MUD = 0,
-      SURFACE_GRASS = 1,
-      SURFACE_METAL = 2,
-      SURFACE_WOOD = 3,
-      SURFACE_WATER = 4,
-      SURFACE_STONE = 5,
-      SURFACE_ROCK = 6,
-      SURFACE_SAND = 7,
-      SURFACE_ICE = 8,
-      SURFACE_SNOW = 9,
-      SURFACE_QUAGMIRE = 10,
-      SURFACE_LAVA = 11,
-    } surface{SURFACE_MUD}; // e.g. wood
+		struct Tile {
+			/* surface properties */
+			enum Surface {
+				SURFACE_MUD = 0,
+				SURFACE_GRASS = 1,
+				SURFACE_METAL = 2,
+				SURFACE_WOOD = 3,
+				SURFACE_WATER = 4,
+				SURFACE_STONE = 5,
+				SURFACE_ROCK = 6,
+				SURFACE_SAND = 7,
+				SURFACE_ICE = 8,
+				SURFACE_SNOW = 9,
+				SURFACE_QUAGMIRE = 10,
+				SURFACE_LAVA = 11,
+			} surface{ SURFACE_MUD }; // e.g. wood
 
-    enum Behaviour {
-      BEHAVIOUR_NONE,
-      BEHAVIOUR_WATERY = 32,
-      BEHAVIOUR_MINE = 64,
-      BEHAVIOUR_WALL = 128,
-    } behaviour{BEHAVIOUR_NONE}; // e.g. mine, watery
+			enum Behaviour {
+				BEHAVIOUR_NONE,
+				BEHAVIOUR_WATERY = 32,
+				BEHAVIOUR_MINE = 64,
+				BEHAVIOUR_WALL = 128,
+			} behaviour{ BEHAVIOUR_NONE }; // e.g. mine, watery
 
-    unsigned int slip{0}; // e.g. full, bottom or left?
+			unsigned int slip{ 0 }; // e.g. full, bottom or left?
 
-    uint8_t texture{0};
+			uint8_t texture{ 0 };
 
-    enum Rotation {
-      ROTATION_FLAG_NONE,
-      ROTATION_FLAG_X = 1,
-      ROTATION_FLAG_ROTATE_90 = 2,
-      ROTATION_FLAG_ROTATE_180 = 4,
-      ROTATION_FLAG_ROTATE_270 = 6,
-    } rotation{ROTATION_FLAG_NONE};
+			enum Rotation {
+				ROTATION_FLAG_NONE,
+				ROTATION_FLAG_X = 1,
+				ROTATION_FLAG_ROTATE_90 = 2,
+				ROTATION_FLAG_ROTATE_180 = 4,
+				ROTATION_FLAG_ROTATE_270 = 6,
+			} rotation{ ROTATION_FLAG_NONE };
 
-    float height[4]{0, 0, 0, 0};
-    uint8_t shading[4]{255, 255, 255, 255};
+			float height[4]{ 0, 0, 0, 0 };
+			uint8_t shading[4]{ 255, 255, 255, 255 };
 
-	PLVector3 origin;
-  };
+			PLVector3 origin;
+		};
 
-  struct Chunk {
-    Tile tiles[16];
-    PLModel* model{nullptr};
-	PLVector3 origin;
-  };
+		struct Chunk {
+			Tile tiles[16];
+			PLVector3 origin;
 
-  Chunk* GetChunk(const PLVector2& pos);
-  Tile* GetTile(const PLVector2& pos);
+			PLMesh *solidMesh{ nullptr };
+		};
 
-  float GetHeight(const PLVector2& pos);
-  float GetMaxHeight() { return max_height_; }
-  float GetMinHeight() { return min_height_; }
+		Chunk *GetChunk( const PLVector2 &pos );
+		Tile *GetTile( const PLVector2 &pos );
 
-  void LoadPmg(const std::string& path);
-  void LoadHeightmap(const std::string& path, int multiplier);
+		float GetHeight( const PLVector2 &pos );
+		float GetMaxHeight() { return max_height_; }
+		float GetMinHeight() { return min_height_; }
 
-  PLTexture* GetOverview() { return overview_; }
+		void LoadPmg( const std::string &path );
+		void LoadHeightmap( const std::string &path, int multiplier );
 
-  void Serialize(const std::string& path);
+		PLTexture *GetOverview() { return overview_; }
 
-  void Draw();
-  void Update();
+		void Serialize( const std::string &path );
 
- protected:
- private:
-  void GenerateModel(Chunk* chunk, const PLVector2& offset);
-  void GenerateOverview();
+		void Draw();
+		void Update();
 
-  float max_height_{0};
-  float min_height_{0};
+	protected:
+	private:
+		void GenerateChunkMesh( Chunk *chunk, const PLVector2 &offset );
+		void GenerateOverview();
 
-  std::vector<Chunk> chunks_;
+		float max_height_{ 0 };
+		float min_height_{ 0 };
 
-  TextureAtlas* atlas_{nullptr};
-  PLTexture* overview_{nullptr};
-};
+		std::vector< Chunk > chunks_;
+
+		TextureAtlas *textureAtlas{ nullptr };
+		PLTexture *overview_{ nullptr };
+	};
+}

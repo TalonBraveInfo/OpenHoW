@@ -17,19 +17,6 @@
 
 #pragma once
 
-typedef struct Keyframe {
-	PLVector3 transforms[10];
-	PLQuaternion rotations[15];
-} Keyframe;
-
-typedef struct Animation {
-	unsigned int id;
-	const char *name;
-
-	Keyframe *frames;
-	unsigned int num_frames;
-} Animation;
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // Animations
 
