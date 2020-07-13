@@ -191,7 +191,7 @@ void ohw::Terrain::GenerateChunkMesh( Chunk *chunk, const PLVector2 &offset ) {
 				plSetMeshVertexST( chunk->solidMesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
 
 				if ( current_tile->behaviour == Tile::BEHAVIOUR_WATERY ) {
-					shadedColour.a = 100;
+					shadedColour.a = 145;
 					plSetMeshVertexPosition( chunk->waterMesh, cm_idx, position );
 					plSetMeshVertexColour( chunk->waterMesh, cm_idx, shadedColour );
 					plSetMeshVertexST( chunk->waterMesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
