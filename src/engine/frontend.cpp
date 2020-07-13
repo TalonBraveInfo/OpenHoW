@@ -62,11 +62,11 @@ void FE_Initialize( void ) {
 	FrontEnd_CacheMenuData();
 
 	// Cache all the minimap icons
-	minimapIcons[ MINIMAP_ICON_BOMB ]   = Engine::Resource()->LoadTexture( "frontend/map/bomb", PL_TEXTURE_FILTER_NEAREST, true );
-	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", PL_TEXTURE_FILTER_NEAREST, true );
-	minimapIcons[ MINIMAP_ICON_PIG ]    = Engine::Resource()->LoadTexture( "frontend/map/iconpig", PL_TEXTURE_FILTER_NEAREST, true );
-	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", PL_TEXTURE_FILTER_NEAREST, true );
-	minimapIcons[ MINIMAP_ICON_PROP ]   = Engine::Resource()->LoadTexture( "frontend/map/iconprop", PL_TEXTURE_FILTER_NEAREST, true );
+	minimapIcons[ MINIMAP_ICON_BOMB ]   = Engine::Resource()->LoadTexture( "frontend/map/bomb", PL_TEXTURE_FILTER_LINEAR, true );
+	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", PL_TEXTURE_FILTER_LINEAR, true );
+	minimapIcons[ MINIMAP_ICON_PIG ]    = Engine::Resource()->LoadTexture( "frontend/map/iconpig", PL_TEXTURE_FILTER_LINEAR, true );
+	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", PL_TEXTURE_FILTER_LINEAR, true );
+	minimapIcons[ MINIMAP_ICON_PROP ]   = Engine::Resource()->LoadTexture( "frontend/map/iconprop", PL_TEXTURE_FILTER_LINEAR, true );
 }
 
 void FE_Shutdown( void ) {
