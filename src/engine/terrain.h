@@ -81,9 +81,17 @@ namespace ohw {
 
 		struct Chunk {
 			Tile tiles[16];
-			PLVector3 origin;
+
+			// We don't currently use these...
+			int16_t x, y, z;
 
 			PLMesh *solidMesh{ nullptr };
+			PLMesh *waterMesh{ nullptr };
+
+			/* Bounding volume encompassing the chunk. Used for determining
+			 * what actors are currently within the chunk space and whether
+			 * the given chunk is visible. */
+			PLCollisionAABB bounds;
 		};
 
 		Chunk *GetChunk( const PLVector2 &pos );

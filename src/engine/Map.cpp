@@ -149,7 +149,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 		Error( "Failed to read Pog indices count in \"%s\" (%s)!\n", cPath, plGetError() );
 	}
 
-	std::vector<PogIndex> spawns( num_indices );
+	std::vector< PogIndex > spawns( num_indices );
 	if ( plReadFile( fp, spawns.data(), sizeof( PogIndex ), num_indices ) != num_indices ) {
 		Error( "Failed to read Pog spawns in \"%s\" (%s)!\n", cPath, plGetError() );
 	}
@@ -178,7 +178,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 			spawns_[ i ].attachment = &spawns_.at( spawns[ i ].attached_actor_num );
 		} catch ( const std::out_of_range &e ) {
 			LogWarn( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
-					 plPrintVector3( &spawns_[ i ].position, pl_int_var ) );
+			         plPrintVector3( &spawns_[ i ].position, pl_int_var ) );
 		}
 
 		spawns_[ i ].energy = spawns[ i ].energy;
@@ -193,6 +193,10 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 }
 
 void ohw::Map::Draw() {
+	if ( !cv_graphics_draw_world->b_value ) {
+		return;
+	}
+
 	Shaders_SetProgramByName( "generic_untextured" );
 
 	skyModelTop->Draw();

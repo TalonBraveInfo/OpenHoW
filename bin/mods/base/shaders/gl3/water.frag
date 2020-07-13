@@ -15,6 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+uniform sampler2D diffuse;
+
+in vec2 interp_UV;
+in vec4 interp_colour;
+
 void main() {
-    pl_frag = vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 samp = vec4( texture( diffuse, interp_UV ).rgb, 1.0 );
+    pl_frag = interp_colour * samp;
 }

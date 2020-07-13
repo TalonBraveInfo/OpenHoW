@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 #include "../frontend.h"
-
+#include "graphics/shaders.h"
 #include "actor_manager.h"
 #include "actor.h"
 
@@ -80,6 +80,8 @@ void ActorManager::DrawActors() {
 	if ( FrontEnd_GetState() == FE_MODE_LOADING ) {
 		return;
 	}
+
+	Shaders_SetProgramByName( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
 
 	g_state.gfx.num_actors_drawn = 0;
 	for ( auto const &actor: actors_ ) {

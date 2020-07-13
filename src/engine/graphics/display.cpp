@@ -510,11 +510,7 @@ static void DrawDebugOverlay() {
 
 double cur_delta = 0;
 
-void DrawMap() {
-	if ( !cv_graphics_draw_world->b_value ) {
-		return;
-	}
-
+static void Display_DrawMap() {
 	Map *map = ohw::Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
@@ -535,11 +531,9 @@ void Display_DrawScene() {
 		plEnableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
 	}
 
-	Shaders_SetProgramByName( "generic_textured" );
+	Display_DrawMap();
 
-	DrawMap();
 	ActorManager::GetInstance()->DrawActors();
-	//DrawParticles(cur_delta);
 
 	if ( cv_graphics_alpha_to_coverage->b_value ) {
 		plDisableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
@@ -575,13 +569,14 @@ void Display_Draw( double delta ) {
 	cur_delta = delta;
 	g_state.draw_ticks = System_GetTicks();
 
-	plSetClearColour( ( PLColour ) { 0, 0, 0, 255 } );
+	plSetClearColour( PLColour( 0, 0, 0, 255 ) );
 
 	unsigned int clear_flags = PL_BUFFER_DEPTH;
 	if ( FrontEnd_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0 ) {
 		clear_flags |= PL_BUFFER_COLOUR;
 	}
 	plClearBuffers( clear_flags );
+
 	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
 
 	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
