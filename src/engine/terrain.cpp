@@ -378,6 +378,8 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 			}
 
 			chunk.bounds.origin = PLVector3( chunk_x * TERRAIN_CHUNK_PIXEL_WIDTH, 0.0f, chunk_y * TERRAIN_CHUNK_PIXEL_WIDTH );
+			chunk.bounds.maxs.z = chunk.bounds.maxs.x = TERRAIN_CHUNK_PIXEL_WIDTH;
+			chunk.bounds.mins.z = chunk.bounds.mins.x = -TERRAIN_CHUNK_PIXEL_WIDTH;
 
 			struct {
 				int16_t height{ 0 };
@@ -385,8 +387,8 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 			} vertices[25];
 
 			// Find the maximum and minimum points
-			int16_t maxChunkHeight = INT16_MIN;
-			int16_t minChunkHeight = INT16_MAX;
+			chunk.bounds.maxs.y = INT16_MIN;
+			chunk.bounds.mins.y = INT16_MAX;
 			for ( auto &vertex : vertices ) {
 				vertex.height = plReadInt16( fh, false, &status );
 				vertex.lighting = plReadInt16( fh, false, &status );
@@ -396,11 +398,11 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 				}
 
 				// Determine the maximum height and minimum height for this chunk
-				if ( vertex.height > maxChunkHeight ) {
-					maxChunkHeight = vertex.height;
+				if ( vertex.height > chunk.bounds.maxs.y ) {
+					chunk.bounds.maxs.y = vertex.height;
 				}
-				if ( vertex.height < minChunkHeight ) {
-					minChunkHeight = vertex.height;
+				if ( vertex.height < chunk.bounds.mins.y ) {
+					chunk.bounds.mins.y = vertex.height;
 				}
 				// And now for the entire terrain
 				if ( static_cast<float>(vertex.height) > max_height_ ) {
