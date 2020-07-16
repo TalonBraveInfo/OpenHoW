@@ -207,13 +207,13 @@ namespace ohw {
 	public:
 		void Tick();
 
-		Camera *GetCamera() { return camera_; }
+		PL_INLINE Camera *GetCamera() const { return camera_; }
 
 		void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
 		void EndMode();
 
 		void SetupPlayers( const PlayerPtrVector &teams );
-		Player *GetPlayerByIndex( unsigned int i );
+		Player *GetPlayerByIndex( unsigned int i ) const;
 		const PlayerPtrVector &GetPlayers() { return players_; }
 
 		// Map
@@ -229,7 +229,7 @@ namespace ohw {
 
 		typedef std::map< std::string, MapManifest > MapManifestMap;
 		MapManifest *GetMapManifest( const std::string &name );
-		const MapManifestMap &GetMapManifests() { return map_manifests_; };
+		const MapManifestMap &GetMapManifests() { return mapManifests; };
 		MapManifest *CreateManifest( const std::string &name );
 		//void SaveManifest(const std::string& name, const MapManifest& manifest);
 
@@ -239,17 +239,16 @@ namespace ohw {
 		typedef std::map< std::string, CharacterClass > CharacterClassMap;
 		const CharacterClass *GetDefaultClass( const std::string &classIdentifer ) const;
 
-		Map *GetCurrentMap() { return map_; }
-
-		IGameMode *GetMode() { return mode_; }
+		PL_INLINE Map *GetCurrentMap() const { return currentMap; }
+		PL_INLINE IGameMode *GetMode() const { return currentMode; }
 
 		bool IsModeActive();
 
-		void StepSimulation( unsigned int steps = 1 ) {
+		PL_INLINE void StepSimulation( unsigned int steps = 1 ) {
 			simSteps = steps;
 		}
 
-		void ToggleSimulation( bool paused ) {
+		PL_INLINE void ToggleSimulation( bool paused ) {
 			pauseSim = paused;
 		}
 
@@ -261,6 +260,7 @@ namespace ohw {
 		static void GiveItemCommand( unsigned int argc, char *argv[] );
 		static void KillSelfCommand( unsigned int argc, char **argv );
 		static void SpawnModelCommand( unsigned int argc, char **argv );
+		static void TeleportCommand( unsigned int argc, char **argv );
 
 		bool pauseSim{ false };
 		unsigned int simSteps{ 0 };
@@ -281,15 +281,15 @@ namespace ohw {
 		};
 
 		Camera *camera_{ nullptr };
-		CameraMode camera_mode_{ CameraMode::FOLLOW };
+		CameraMode cameraMode{ CameraMode::FOLLOW };
 
 		/////////////////////////////////////////////////////////////
 
-		Map *map_{ nullptr };
+		Map *currentMap{ nullptr };
 
-		IGameMode *mode_{ nullptr };
+		IGameMode *currentMode{ nullptr };
 
-		std::map< std::string, MapManifest > map_manifests_;
+		std::map< std::string, MapManifest > mapManifests;
 
 		PlayerTeamVector defaultTeams;
 		CharacterClassMap defaultClasses;

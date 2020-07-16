@@ -250,11 +250,13 @@ bool Actor::CheckTouching() {
  * @param other The touchee.
  */
 void Actor::Touch( Actor *other ) {
+#if 0
 	LogDebug( "actor %s (%s) touched actor %s (%s)\n",
 		GetClassName(),
 		plPrintVector3( &position_.GetValue(), pl_int_var ),
 		GetClassName(),
 		plPrintVector3( &other->position_.GetValue(), pl_int_var ) );
+#endif
 }
 
 /**

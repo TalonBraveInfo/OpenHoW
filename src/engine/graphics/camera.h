@@ -25,9 +25,11 @@ namespace ohw {
 		Camera( const PLVector3 &pos, const PLVector3 &angles );
 		~Camera();
 
-		void SetPosition( const PLVector3 &pos );
-		void SetAngles( const PLVector3 &angles );
-		void SetFieldOfView( float fov );
+		PL_INLINE void SetPosition( const PLVector3 &pos ) { camera_->position = pos; }
+		PL_INLINE void SetAngles( const PLVector3 &angles ) { camera_->angles = angles; }
+		PL_INLINE void SetFieldOfView( float fov ) { camera_->fov = fov; }
+		PL_INLINE void SetNear( float near ) { camera_->near = near; }
+		PL_INLINE void SetFar( float far ) { camera_->far = far; }
 
 		PL_INLINE PLVector3 GetPosition() const { return camera_->position; }
 		PL_INLINE PLVector3 GetAngles() const { return camera_->angles; }
@@ -45,8 +47,12 @@ namespace ohw {
 		bool IsBoxVisible( const PLCollisionAABB *bounds ) const;
 		bool IsSphereVisible( const PLCollisionSphere *sphere ) const;
 
+		void DrawViewFrustum();
+
 	protected:
 	private:
+		static PLMesh *frustumPreviewMesh;
+
 		PLCamera *camera_{ nullptr };
 	};
 }
