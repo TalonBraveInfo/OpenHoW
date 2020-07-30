@@ -25,22 +25,26 @@ namespace ohw {
 		Camera( const PLVector3 &pos, const PLVector3 &angles );
 		~Camera();
 
-		PL_INLINE void SetPosition( const PLVector3 &pos ) { camera_->position = pos; }
-		PL_INLINE void SetAngles( const PLVector3 &angles ) { camera_->angles = angles; }
-		PL_INLINE void SetFieldOfView( float fov ) { camera_->fov = fov; }
-		PL_INLINE void SetNear( float near ) { camera_->near = near; }
-		PL_INLINE void SetFar( float far ) { camera_->far = far; }
+		PL_INLINE void SetPosition( const PLVector3 &pos ) { internalCameraPtr->position = pos; }
+		PL_INLINE void SetPosition( float x, float y, float z ) { internalCameraPtr->position = PLVector3( x, y, z ); }
 
-		PL_INLINE PLVector3 GetPosition() const { return camera_->position; }
-		PL_INLINE PLVector3 GetAngles() const { return camera_->angles; }
-		PL_INLINE PLVector3 GetForward() const { return camera_->forward; }
+		PL_INLINE void SetAngles( const PLVector3 &angles ) { internalCameraPtr->angles = angles; }
+		PL_INLINE void SetAngles( float x, float y, float z ) { internalCameraPtr->angles = PLVector3( x, y, z ); }
 
-		PL_INLINE float GetFieldOfView() const { return camera_->fov; }
+		PL_INLINE void SetFieldOfView( float fov ) { internalCameraPtr->fov = fov; }
+		PL_INLINE void SetNear( float near ) { internalCameraPtr->near = near; }
+		PL_INLINE void SetFar( float far ) { internalCameraPtr->far = far; }
+
+		PL_INLINE PLVector3 GetPosition() const { return internalCameraPtr->position; }
+		PL_INLINE PLVector3 GetAngles() const { return internalCameraPtr->angles; }
+		PL_INLINE PLVector3 GetForward() const { return internalCameraPtr->forward; }
+
+		PL_INLINE float GetFieldOfView() const { return internalCameraPtr->fov; }
 
 		void SetViewport( int x, int y, int width, int height );
 
-		PL_INLINE int GetViewportWidth() const { return camera_->viewport.w; }
-		PL_INLINE int GetViewportHeight() const { return camera_->viewport.h; }
+		PL_INLINE int GetViewportWidth() const { return internalCameraPtr->viewport.w; }
+		PL_INLINE int GetViewportHeight() const { return internalCameraPtr->viewport.h; }
 
 		void MakeActive();
 
@@ -51,8 +55,6 @@ namespace ohw {
 
 	protected:
 	private:
-		static PLMesh *frustumPreviewMesh;
-
-		PLCamera *camera_{ nullptr };
+		PLCamera *internalCameraPtr{ nullptr };
 	};
 }

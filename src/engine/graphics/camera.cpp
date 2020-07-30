@@ -18,25 +18,15 @@
 #include "engine.h"
 #include "camera.h"
 
-PLMesh *ohw::Camera::frustumPreviewMesh = nullptr;
-
 ohw::Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
-	camera_ = plCreateCamera();
-	if ( camera_ == nullptr ) {
+	internalCameraPtr = plCreateCamera();
+	if ( internalCameraPtr == nullptr ) {
 		Error( "Failed to create camera object!\n%s\n", plGetError() );
-	}
-
-	// If the preview mesh hasn't been generated yet, create it
-	if ( frustumPreviewMesh == nullptr ) {
-		frustumPreviewMesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 8 );
-		if ( frustumPreviewMesh == nullptr ) {
-			Error( "Failed to create frustum mesh!\nPL: %s\n", plGetError() );
-		}
 	}
 }
 
 ohw::Camera::~Camera() {
-	plDestroyCamera( camera_ );
+	plDestroyCamera( internalCameraPtr );
 }
 
 /**
@@ -45,34 +35,36 @@ ohw::Camera::~Camera() {
  * @param wh Width and height.
  */
 void ohw::Camera::SetViewport( int x, int y, int width, int height ) {
-	camera_->viewport.x = x;
-	camera_->viewport.y = y;
-	camera_->viewport.w = width;
-	camera_->viewport.h = height;
+	internalCameraPtr->viewport.x = x;
+	internalCameraPtr->viewport.y = y;
+	internalCameraPtr->viewport.w = width;
+	internalCameraPtr->viewport.h = height;
 }
 
 void ohw::Camera::MakeActive() {
-	plSetupCamera( camera_ );
+	plSetupCamera( internalCameraPtr );
 }
 
 bool ohw::Camera::IsBoxVisible( const PLCollisionAABB *bounds ) const {
-	return plIsBoxInsideView( camera_, bounds );
+	return plIsBoxInsideView( internalCameraPtr, bounds );
 }
 
 bool ohw::Camera::IsSphereVisible( const PLCollisionSphere *sphere ) const {
-	return plIsSphereInsideView( camera_, sphere );
+	return plIsSphereInsideView( internalCameraPtr, sphere );
 }
 
 void ohw::Camera::DrawViewFrustum() {
-	plClearMesh( frustumPreviewMesh );
+	const PLViewFrustum &frustum = internalCameraPtr->frustum;
 
-	const PLViewFrustum &frustum = camera_->frustum;
-	for ( unsigned int i = 0; i < 4; ++i ) {
-		plAddMeshVertex( frustumPreviewMesh, PLVector3( frustum[ i ].x, frustum[ i ].y, frustum[ i ].z ) * frustum[ i ].w, PLVector3(), PL_COLOUR_RED, PLVector2() );
+	for ( unsigned int i = 0; i < PL_MAX_FRUSTUM_PLANES; ++i ) {
+		PLVector3 startPos( 0, 0, 2.0f );
+		PLVector3 endPos = PLVector3( frustum[ i ].x, frustum[ i ].y, frustum[ i ].z ) * frustum[ i ].w;
+		PLMatrix4 transform;
+		PLColour colour( 255, 0, 0 );
+		transform = plTranslateMatrix4( internalCameraPtr->position );
+		plDrawSimpleLine( &transform, &startPos, &endPos, &colour );
+		transform = plMatrix4Identity();
+		colour = PLColour( 0, 255, 255 );
+		plDrawSimpleLine( &transform, &internalCameraPtr->position, &endPos, &colour );
 	}
-
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
-
-	plUploadMesh( frustumPreviewMesh );
-	plDrawMesh( frustumPreviewMesh );
 }

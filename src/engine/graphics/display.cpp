@@ -545,6 +545,9 @@ void Display_DrawScene() {
 	}
 
 	/* debug methods */
+
+	Shaders_SetProgramByName( "generic_untextured" );
+
 	Engine::Audio()->DrawSources();
 	camera->DrawViewFrustum();
 }
@@ -554,13 +557,8 @@ void Display_DrawInterface() {
 
 	plSetupCamera( g_state.ui_camera );
 	plSetDepthBufferMode( PL_DEPTHBUFFER_DISABLE );
+
 	FE_Draw();
-}
-
-void Display_DrawDebug() {
-	Shaders_SetProgramByName( "generic_textured" );
-
-	plSetupCamera( g_state.ui_camera );
 
 	DrawDebugOverlay();
 	DrawFPSOverlay();
@@ -588,7 +586,6 @@ void Display_Draw( double delta ) {
 
 	Display_DrawScene();
 	Display_DrawInterface();
-	Display_DrawDebug();
 
 	ImGuiImpl_Draw();
 
