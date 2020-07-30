@@ -2,13 +2,13 @@
 	"defaultClass": "gr_me",
 	"classes": [
 		{
-			"identifer": "ac_me",
+			"identifier": "ac_me",
 			"label": "$aceClass",
 			"model": "pigs/pcace_hi.vtx",
 			"isVisibleOnMinimap": true
 		},
 		{
-			"identifer": "gr_me",
+			"identifier": "gr_me",
 			"label": "$gruntClass",
 			"health": "50",
 			"cost": "0",
@@ -16,13 +16,13 @@
 			"isVisibleOnMinimap": true,
 			"items": [
 				{
-					"identifer": "weapon_bayonet",
+					"identifier": "weapon_bayonet",
 					"quantity": "0"
 				}
 			]
 		},
 		{
-			"identifer": "hv_me",
+			"identifier": "hv_me",
 			"label": "$gunnerClass",
 			"health": "75",
 			"cost": "1",
@@ -31,33 +31,33 @@
 			"nextStage": "$bombardierClass",
 			"items": [
 				{
-					"identifer": "weapon_bayon",
+					"identifier": "weapon_bayon",
 					"quantity": "0"
 				}
 			]
 		},
 		{
-			"identifer": "le_me",
+			"identifier": "le_me",
 			"model": "pigs/pcleg_hi.vtx",
 			"isVisibleOnMinimap": true
 		},
 		{
-			"identifer": "me_me",
+			"identifier": "me_me",
 			"model": "pigs/pcmed_hi.vtx",
 			"isVisibleOnMinimap": true
 		},
 		{
-			"identifer": "sb_me",
+			"identifier": "sb_me",
 			"model": "pigs/pcsab_hi.vtx",
 			"isVisibleOnMinimap": true
 		},
 		{
-			"identifer": "sn_me",
+			"identifier": "sn_me",
 			"model": "pigs/sn_hi.vtx",
 			"isVisibleOnMinimap": true
 		},
 		{
-			"identifer": "sp_me",
+			"identifier": "sp_me",
 			"model": "pigs/sp_hi.vtx",
 			"isVisibleOnMinimap": false
 		}

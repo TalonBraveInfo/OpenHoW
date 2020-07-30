@@ -1,0 +1,43 @@
+[
+  {
+    "identifier": "ac_me",
+    "className": "APig",
+    "properties": {
+      "modelPath": "chars/pigs/pcace_hi.vtx"
+    }
+  },
+  {
+    "identifier": "gr_me",
+    "className": "APig"
+  },
+  {
+    "identifier": "hv_me",
+    "className": "APig"
+  },
+  {
+    "identifier": "le_me",
+    "className": "APig"
+  },
+  {
+    "identifier": "me_me",
+    "className": "APig",
+    "properties": {
+      "modelPath": "chars/pigs/pcmed_hi.vtx"
+    }
+  },
+  {
+    "identifier": "sa_me",
+    "className": "APig"
+  },
+  {
+    "identifier": "sb_me",
+    "className": "APig",
+    "properties": {
+      "modelPath": "chars/pigs/pcsab_hi.vtx"
+    }
+  },
+  {
+    "identifier": "sn_me",
+    "className": "APig"
+  }
+]
