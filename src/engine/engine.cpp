@@ -98,16 +98,6 @@ void ohw::Engine::Initialize() {
 
 	plParseConsoleString( "fsListMounted" );
 
-	// Ensure that our manifest list is updated
-	Game()->RegisterMapManifests();
-
-	try {
-		Game()->RegisterTeamManifest( "scripts/teams.json" );
-		Game()->RegisterClassManifest( "scripts/classes.json" );
-	} catch( const std::exception &exception ) {
-		Error( "Failed to read manifest data (%s)!\n", exception.what() );
-	}
-
 	Game()->CachePersistentData();
 }
 

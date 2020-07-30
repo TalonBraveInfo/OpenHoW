@@ -171,7 +171,14 @@ void ohw::GameManager::UnloadMap() {
 	delete currentMap;
 }
 
-void ohw::GameManager::CachePersistentData() {}
+void ohw::GameManager::CachePersistentData() {
+	RegisterMapManifests();
+	RegisterTeamManifest( "scripts/teams.json" );
+	RegisterClassManifest( "scripts/classes.json" );
+
+	// todo: ActorManager should be part of the GameManager class
+	ActorManager::GetInstance()->RegisterSpawnManifests();
+}
 
 void ohw::GameManager::RegisterTeamManifest( const std::string &path ) {
 	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
