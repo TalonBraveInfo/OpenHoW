@@ -21,7 +21,7 @@
 #include "language.h"
 #include "mod_support.h"
 #include "actor_manager.h"
-#include "mode_base.h"
+#include "GameMode.h"
 #include "player.h"
 
 #include "graphics/camera.h"
@@ -87,14 +87,15 @@ ohw::GameManager::GameManager() {
 	plRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
 	plRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied actor." );
 	plRegisterConsoleCommand( "Teleport", TeleportCommand, "Teleports current actor to the given destination." );
+	plRegisterConsoleCommand( "FreeCam", FreeCamCommand, "Toggles the camera into fly mode." );
 
-	camera_ = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
+	defaultCamera = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
 }
 
 ohw::GameManager::~GameManager() {
 	mapManifests.clear();
 
-	delete camera_;
+	delete defaultCamera;
 }
 
 void ohw::GameManager::Tick() {
@@ -124,6 +125,8 @@ void ohw::GameManager::Tick() {
 
 	currentMode->Tick();
 
+	TickCamera();
+
 	ActorManager::GetInstance()->TickActors();
 
 	if ( simSteps > 0 ) {
@@ -137,6 +140,13 @@ void ohw::GameManager::SetupPlayers( const PlayerPtrVector &players ) {
 	}
 
 	players_ = players;
+}
+
+void ohw::GameManager::ClearPlayers() {
+	for ( auto i : players_ ) {
+		delete i;
+	}
+	players_.clear();
 }
 
 Player *ohw::GameManager::GetPlayerByIndex( unsigned int i ) const {
@@ -269,8 +279,8 @@ void ohw::GameManager::RegisterMapManifest( const std::string &path ) {
 	mapManifests.insert( std::make_pair( temp_buf, manifest ) );
 }
 
-static void RegisterManifestInterface( const char *path, void *userData ) {
-	u_unused( userData );
+static void RegisterManifestInterface( const char *path, void *userPtr ) {
+	u_unused( userPtr );
 	ohw::Engine::Game()->RegisterMapManifest( path );
 }
 
@@ -353,8 +363,6 @@ void ohw::GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
 
 /**
  * Loads the specified map.
- * @param argc
- * @param argv
  */
 void ohw::GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
@@ -375,8 +383,6 @@ void ohw::GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 
 /**
  * Provide a list of all the currently registered maps.
- * @param argc
- * @param argv
  */
 void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->mapManifests.empty() ) {
@@ -406,19 +412,13 @@ void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	IGameMode *mode = Engine::Game()->GetMode();
+	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
 		return;
 	}
 
-	Player *player = mode->GetCurrentPlayer();
-	if ( player == nullptr ) {
-		LogWarn( "Failed to get current player!\n" );
-		return;
-	}
-
-	Actor *actor = player->GetCurrentChild();
+	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
 		LogWarn( "No actor currently active!\n" );
 		return;
@@ -440,19 +440,13 @@ void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 }
 
 void ohw::GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
-	IGameMode *mode = Engine::Game()->GetMode();
+	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
 		return;
 	}
 
-	Player *player = mode->GetCurrentPlayer();
-	if ( player == nullptr ) {
-		LogWarn( "Failed to get current player!\n" );
-		return;
-	}
-
-	Actor *actor = player->GetCurrentChild();
+	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
 		LogWarn( "No actor currently active!\n" );
 		return;
@@ -467,20 +461,14 @@ void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	IGameMode *mode = Engine::Game()->GetMode();
+	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
 		return;
 	}
 
-	Player *player = mode->GetCurrentPlayer();
-	if ( player == nullptr ) {
-		LogWarn( "Failed to get current player!\n" );
-		return;
-	}
-
 	// Fetch the player's actor, so we can get their position
-	Actor *actor = player->GetCurrentChild();
+	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
 		LogWarn( "No actor currently active!\n" );
 		return;
@@ -489,6 +477,7 @@ void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 	AStaticModel *modelActor = dynamic_cast<AStaticModel *>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
 	if ( modelActor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
+		return;
 	}
 
 	modelActor->SetModel( argv[ 1 ] );
@@ -502,20 +491,14 @@ void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	IGameMode *mode = Engine::Game()->GetMode();
+	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
 		LogInfo( "Command cannot function outside of game!\n" );
 		return;
 	}
 
-	Player *player = mode->GetCurrentPlayer();
-	if ( player == nullptr ) {
-		LogWarn( "Failed to get current player!\n" );
-		return;
-	}
-
 	// Fetch the player's actor, so we can get their position
-	Actor *actor = player->GetCurrentChild();
+	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
 		LogWarn( "No actor currently active!\n" );
 		return;
@@ -523,6 +506,18 @@ void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 
 	PLVector3 teleportDestination( atof( argv[ 1 ] ), atof( argv[ 2 ] ), atof( argv[ 3 ] ) );
 	actor->SetPosition( teleportDestination );
+}
+
+void ohw::GameManager::FreeCamCommand( unsigned int argc, char **argv ) {
+	static CameraMode oldCameraMode = CameraMode::FOLLOW;
+
+	if ( Engine::Game()->cameraMode != CameraMode::FIRSTPERSON ) {
+		oldCameraMode = Engine::Game()->cameraMode;
+		Engine::Game()->cameraMode = CameraMode::FIRSTPERSON;
+		return;
+	}
+
+	Engine::Game()->cameraMode = oldCameraMode;
 }
 
 void ohw::GameManager::StartMode( const std::string &map,
@@ -564,7 +559,7 @@ void ohw::GameManager::StartMode( const std::string &map,
 	FrontEnd_SetState( FE_MODE_GAME );
 
 	// call StartRound; deals with spawning everything in and other mode specific logic
-	currentMode = new BaseGameMode( descriptor );
+	currentMode = new GameMode( descriptor );
 
 	SetupPlayers( players );
 
@@ -578,10 +573,7 @@ void ohw::GameManager::EndMode() {
 	delete currentMode;
 
 	// Clear out all the allocated players for this game
-	for ( auto i : players_ ) {
-		delete i;
-	}
-	players_.clear();
+	ClearPlayers();
 
 	UnloadMap();
 
@@ -600,4 +592,37 @@ void ohw::GameManager::EndMode() {
  */
 bool ohw::GameManager::IsModeActive() {
 	return ( currentMode != nullptr );
+}
+
+/**
+ * Handle the different camera modes.
+ */
+void ohw::GameManager::TickCamera() {
+	switch ( cameraMode ) {
+		case CameraMode::FLY:
+			break;
+		case CameraMode::FIRSTPERSON:
+			break;
+
+		case CameraMode::FOLLOW: {
+			GameMode *mode = dynamic_cast<GameMode *>(GetMode());
+			if ( mode == nullptr ) {
+				return;
+			}
+
+			Actor *actor = mode->GetPossessedActor();
+			if ( actor == nullptr ) {
+				return;
+			}
+
+			PLVector3 forward = actor->GetForward();
+			PLVector3 pos = actor->GetPosition();
+			defaultCamera->SetPosition( pos.x + forward.x * -500.0f, pos.y + 500.0f, pos.z + forward.z * -500.0f );
+			defaultCamera->SetAngles( -25.0f, actor->GetAngles().y, 0.0f );
+			break;
+		}
+
+		case CameraMode::FLYAROUND:
+			break;
+	}
 }

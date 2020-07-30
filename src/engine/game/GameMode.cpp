@@ -17,7 +17,7 @@
 
 #include "engine.h"
 #include "Map.h"
-#include "mode_base.h"
+#include "GameMode.h"
 #include "actor_manager.h"
 #include "player.h"
 #include "actor_pig.h"
@@ -26,13 +26,13 @@
 
 using namespace ohw;
 
-BaseGameMode::BaseGameMode( const GameModeDescriptor& descriptor ) {
+GameMode::GameMode( const GameModeDescriptor &descriptor ) {
 	max_turn_ticks = descriptor.turn_time * TICKS_PER_SECOND;
 }
 
-BaseGameMode::~BaseGameMode() = default;
+GameMode::~GameMode() = default;
 
-void BaseGameMode::StartRound() {
+void GameMode::StartRound() {
 	if ( HasRoundStarted() ) {
 		Error( "Attempted to change map in the middle of a round, aborting!\n" );
 	}
@@ -44,51 +44,41 @@ void BaseGameMode::StartRound() {
 
 	StartTurn( GetCurrentPlayer() );
 
-	round_started_ = true;
+	hasRoundStarted = true;
 }
 
-void BaseGameMode::RestartRound() {
+void GameMode::RestartRound() {
 	DestroyActors();
 
 	StartRound();
 }
 
-void BaseGameMode::EndRound() {
+void GameMode::EndRound() {
 	DestroyActors();
 }
 
-void BaseGameMode::Tick() {
+void GameMode::Tick() {
 	if ( !HasRoundStarted() ) {
 		// still setting the game up...
 		return;
 	}
 
-	Player* player = GetCurrentPlayer();
+	Player *player = GetCurrentPlayer();
 	if ( player == nullptr ) {
 		return;
 	}
 
 	if ( !HasTurnStarted() ) {
-		StartTurn( GetCurrentPlayer() );
+		StartTurn( player );
 		return;
 	}
 
-	Actor* actor = player->GetCurrentChild();
+	Actor *actor = player->GetCurrentChild();
 	if ( actor == nullptr ) {
 		return;
 	}
 
 	actor->HandleInput();
-
-	// temp: force the camera at the actor pos
-
-	PLVector3 forward = actor->GetForward();
-	Camera* camera = Engine::Game()->GetCamera();
-	camera->SetPosition( {
-							 actor->GetPosition().x + forward.x * -500,
-							 actor->GetPosition().y + 500.f,
-							 actor->GetPosition().z + forward.z * -500 } );
-	camera->SetAngles( { -25.f, actor->GetAngles().y, 0 } );
 
 	if ( HasTurnStarted() ) {
 		num_turn_ticks++;
@@ -98,25 +88,26 @@ void BaseGameMode::Tick() {
 	}
 }
 
-void BaseGameMode::SpawnActors() {
-	Map* map = Engine::Game()->GetCurrentMap();
+void GameMode::SpawnActors() {
+	Map *map = Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		Error( "Attempted to spawn actors without having loaded a map!\n" );
+		return;
 	}
 
-	std::vector<ActorSpawn> spawns = map->GetSpawns();
-	for ( const auto& spawn : spawns ) {
-		Actor* actor = ActorManager::GetInstance()->CreateActor( spawn.class_name, spawn );
+	const std::vector< ActorSpawn > &spawns = map->GetSpawns();
+	for ( const auto &spawn : spawns ) {
+		Actor *actor = ActorManager::GetInstance()->CreateActor( spawn.class_name, spawn );
 		if ( actor == nullptr ) {
 			actor = ActorManager::GetInstance()->CreateActor( "AStaticModel", spawn );
 		}
 
-		APig* pig = dynamic_cast<APig*>(actor);
+		APig *pig = dynamic_cast<APig *>(actor);
 		if ( pig == nullptr ) {
 			continue;
 		}
 
-		Player* player = Engine::Game()->GetPlayerByIndex( pig->GetTeam() );
+		Player *player = Engine::Game()->GetPlayerByIndex( pig->GetTeam() );
 		if ( player == nullptr ) {
 			LogWarn( "Failed to assign pig to team!\n" );
 			continue;
@@ -125,21 +116,21 @@ void BaseGameMode::SpawnActors() {
 		pig->SetPlayerOwner( player );
 	}
 
-	AAirship* model_actor = dynamic_cast<AAirship*>(ActorManager::GetInstance()->CreateActor( "airship" ));
+	AAirship *model_actor = dynamic_cast<AAirship *>(ActorManager::GetInstance()->CreateActor( "airship" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}
 
-	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2.0f, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(),  TERRAIN_PIXEL_WIDTH / 2.0f, } );
+	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2.0f, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(), TERRAIN_PIXEL_WIDTH / 2.0f, } );
 
 	ActorManager::GetInstance()->ActivateActors();
 }
 
-void BaseGameMode::DestroyActors() {
+void GameMode::DestroyActors() {
 	ActorManager::GetInstance()->DestroyActors();
 }
 
-void BaseGameMode::StartTurn( Player* player ) {
+void GameMode::StartTurn( Player *player ) {
 	if ( player->GetNumChildren() == 0 ) {
 		LogWarn( "No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str() );
 		return;
@@ -150,7 +141,7 @@ void BaseGameMode::StartTurn( Player* player ) {
 	turn_started_ = true;
 }
 
-void BaseGameMode::EndTurn( Player* player ) {
+void GameMode::EndTurn( Player *player ) {
 	player->DispossessCurrentChild();
 	player->CycleChildren();
 
@@ -161,26 +152,26 @@ void BaseGameMode::EndTurn( Player* player ) {
 	turn_started_ = false;
 }
 
-void BaseGameMode::PlayerJoined( Player* player ) {
+void GameMode::PlayerJoined( Player *player ) {
 	// todo: display prompt
 	LogInfo( "%s has joined the game\n", player->GetTeam()->name.c_str() );
 }
 
-void BaseGameMode::PlayerLeft( Player* player ) {
+void GameMode::PlayerLeft( Player *player ) {
 	// todo: display prompt
 	LogInfo( "%s has left the game\n", player->GetTeam()->name.c_str() );
 }
 
-unsigned int BaseGameMode::GetMaxSpectators() const {
+unsigned int GameMode::GetMaxSpectators() const {
 	return 0;
 }
 
-void BaseGameMode::SpectatorJoined( Player* player ) {
+void GameMode::SpectatorJoined( Player *player ) {
 	// todo: display prompt
 	LogInfo( "%s has joined the spectators\n", player->GetTeam()->name.c_str() );
 }
 
-void BaseGameMode::SpectatorLeft( Player* player ) {
+void GameMode::SpectatorLeft( Player *player ) {
 	// todo: display prompt
 	LogInfo( "%s has left the spectators\n", player->GetTeam()->name.c_str() );
 }
@@ -189,15 +180,24 @@ void BaseGameMode::SpectatorLeft( Player* player ) {
  * Maximum players allowed in this mode.
  * @return Number of players.
  */
-unsigned int BaseGameMode::GetMaxPlayers() const {
+unsigned int GameMode::GetMaxPlayers() const {
 	return 4;
 }
 
-Player* BaseGameMode::GetCurrentPlayer() {
-	return Engine::Game()->GetPlayerByIndex(currentPlayer );
+Player *GameMode::GetCurrentPlayer() {
+	return Engine::Game()->GetPlayerByIndex( currentPlayer );
 }
 
-void BaseGameMode::CyclePlayers() {
+Actor *GameMode::GetPossessedActor() {
+	Player *player = GetCurrentPlayer();
+	if ( player == nullptr ) {
+		return nullptr;
+	}
+
+	return player->GetCurrentChild();
+}
+
+void GameMode::CyclePlayers() {
 	currentPlayer++;
 
 	PlayerPtrVector players = Engine::Game()->GetPlayers();
@@ -206,6 +206,6 @@ void BaseGameMode::CyclePlayers() {
 	}
 }
 
-void BaseGameMode::AssignActorToPlayer( Actor* target, Player* owner ) {
+void GameMode::AssignActorToPlayer( Actor *target, Player *owner ) {
 	owner->AddChild( target );
 }

@@ -207,12 +207,13 @@ namespace ohw {
 	public:
 		void Tick();
 
-		PL_INLINE Camera *GetCamera() const { return camera_; }
+		PL_INLINE Camera *GetCamera() const { return defaultCamera; }
 
 		void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
 		void EndMode();
 
 		void SetupPlayers( const PlayerPtrVector &teams );
+		void ClearPlayers();
 		Player *GetPlayerByIndex( unsigned int i ) const;
 		const PlayerPtrVector &GetPlayers() { return players_; }
 
@@ -253,6 +254,8 @@ namespace ohw {
 		}
 
 	protected:
+		void TickCamera();
+
 	private:
 		static void OpenMapCommand( unsigned int argc, char *argv[] );
 		static void CreateMapCommand( unsigned int argc, char *argv[] );
@@ -261,6 +264,7 @@ namespace ohw {
 		static void KillSelfCommand( unsigned int argc, char **argv );
 		static void SpawnModelCommand( unsigned int argc, char **argv );
 		static void TeleportCommand( unsigned int argc, char **argv );
+		static void FreeCamCommand( unsigned int argc, char **argv );
 
 		bool pauseSim{ false };
 		unsigned int simSteps{ 0 };
@@ -280,7 +284,7 @@ namespace ohw {
 			FLYAROUND,
 		};
 
-		Camera *camera_{ nullptr };
+		Camera *defaultCamera{ nullptr };
 		CameraMode cameraMode{ CameraMode::FOLLOW };
 
 		/////////////////////////////////////////////////////////////
