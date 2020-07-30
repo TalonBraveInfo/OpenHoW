@@ -27,7 +27,7 @@ enum LogLevel {
   LOG_LEVEL_DEBUG,
 };
 
-#define u_unused(a) (void)((a))
+#define u_unused( ... ) (void)( __VA_ARGS__ )
 
 #define _print_w_function(LEVEL, FORMAT, ...) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
 
@@ -51,7 +51,6 @@ enum LogLevel {
 #endif
 
 typedef unsigned int uint;
-typedef unsigned char uchar, byte;
 
 #define u_fclose(FILE)  if((FILE) != NULL) { fclose((FILE)); (FILE) = NULL; }
 #define u_free(DATA)    free((DATA)); (DATA) = NULL
