@@ -25,7 +25,7 @@ public:
 
 	void ParseBuffer( const char *buf );
 
-	void EnterChildNode( const std::string &property );
+	bool EnterChildNode( const std::string &property, bool silent = true );
 	void EnterChildNode( unsigned int index );
 	void LeaveChildNode();
 
@@ -39,7 +39,7 @@ public:
 
 	std::list<std::string> GetObjectKeys();
 
-	unsigned int GetArrayLength( const std::string &property = "" );
+	unsigned int GetArrayLength( const std::string &property = "", bool silent = true );
 	std::vector<std::string> GetArrayStrings( const std::string &property, bool silent = true );
 	std::string GetArrayStringProperty( const std::string &property, unsigned int index );
 

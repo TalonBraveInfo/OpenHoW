@@ -224,14 +224,16 @@ PLVector3 JsonReader::GetVector3Property( const std::string &property, PLVector3
 	return out;
 }
 
-unsigned int JsonReader::GetArrayLength( const std::string &property ) {
+unsigned int JsonReader::GetArrayLength( const std::string &property, bool silent ) {
 	auto *context = static_cast<duk_context *>(ctx_);
 
 	if ( !property.empty() ) {
 		const char *p = property.c_str();
 		if ( !duk_get_prop_string( context, -1, p ) ) {
 			duk_pop( context );
-			LogMissingProperty( p );
+			if ( !silent ) {
+				LogMissingProperty( p );
+			}
 			return 0;
 		}
 	}
@@ -240,7 +242,9 @@ unsigned int JsonReader::GetArrayLength( const std::string &property ) {
 		if ( !property.empty() ) {
 			duk_pop( context );
 		}
-		LogWarn( "Invalid array node!\n" );
+		if ( !silent ) {
+			LogWarn( "Invalid array node!\n" );
+		}
 		return 0;
 	}
 
@@ -331,14 +335,18 @@ void JsonReader::ParseBuffer( const char *buf ) {
 	duk_json_decode( context, -1 );
 }
 
-void JsonReader::EnterChildNode( const std::string &property ) {
+bool JsonReader::EnterChildNode( const std::string &property, bool silent ) {
 	auto *context = static_cast<duk_context *>(ctx_);
 	const char *p = property.c_str();
 	if ( !duk_get_prop_string( context, -1, p ) ) {
 		duk_pop( context );
-		LogMissingProperty( p );
-		return;
+		if ( !silent ) {
+			LogMissingProperty( p );
+		}
+		return false;
 	}
+
+	return true;
 }
 
 void JsonReader::EnterChildNode( unsigned int index ) {
