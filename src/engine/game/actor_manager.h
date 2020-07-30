@@ -19,12 +19,18 @@
 
 class Actor;
 
-typedef std::set<Actor *> ActorSet;
+typedef std::set< Actor * > ActorSet;
+
+struct ActorSpawnManifest {
+	std::string identifier;
+	std::string className;
+	std::map< std::string, std::string > properties;
+};
 
 class ActorManager {
 protected:
 	typedef Actor *(*actor_ctor_func)();
-	static std::map<std::string, actor_ctor_func> actor_classes_;
+	static std::map< std::string, actor_ctor_func > actorClassesRegistry;
 
 public:
 	static ActorManager *GetInstance() {
@@ -35,7 +41,7 @@ public:
 		return instance;
 	}
 
-	Actor *CreateActor( const std::string &class_name, const ActorSpawn &spawnData = ActorSpawn() );
+	Actor *CreateActor( const std::string &identifier, const ActorSpawn &spawnData = ActorSpawn() );
 	void DestroyActor( Actor *actor );
 
 	void TickActors();
@@ -45,7 +51,10 @@ public:
 	void ActivateActors();
 	void DeactivateActors();
 
-	const ActorSet &GetActors() const { return actors_; }
+	const ActorSet &GetActors() const { return actorsList; }
+
+	void RegisterSpawnManifests();
+	static void RegisterActorManifest( const char *path, void *userData );
 
 	class ActorClassRegistration {
 	public:
@@ -56,8 +65,10 @@ public:
 	};
 
 private:
-	static ActorSet actors_;
-	static std::vector<Actor *> destructionQueue;
+	std::map< std::string, ActorSpawnManifest > actorSpawnsRegistry;
+
+	static ActorSet actorsList;
+	static std::vector< Actor * > destructionQueue;
 };
 
 #define REGISTER_ACTOR( NAME, CLASS ) \

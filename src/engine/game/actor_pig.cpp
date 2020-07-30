@@ -34,6 +34,8 @@ REGISTER_ACTOR( sb_me, APig )    // Commando
 REGISTER_ACTOR( sn_me, APig )    // Sniper
 REGISTER_ACTOR( sp_me, APig )    // Spy
 
+REGISTER_ACTOR_BASIC( APig )
+
 using namespace ohw;
 
 APig::APig() : SuperClass() {

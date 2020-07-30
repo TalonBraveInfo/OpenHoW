@@ -15,29 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../frontend.h"
+#include "engine.h"
+#include "frontend.h"
 #include "graphics/shaders.h"
 #include "actor_manager.h"
 #include "actor.h"
+#include "json_reader.h"
 
 /************************************************************/
 
-ActorSet ActorManager::actors_;
-std::vector<Actor *> ActorManager::destructionQueue;
-std::map<std::string, ActorManager::actor_ctor_func> ActorManager::actor_classes_
-	__attribute__((init_priority (1000)));
+ActorSet ActorManager::actorsList;
+std::vector< Actor * > ActorManager::destructionQueue;
+std::map< std::string, ActorManager::actor_ctor_func > ActorManager::actorClassesRegistry
+		__attribute__((init_priority (1000)));
 
-Actor *ActorManager::CreateActor( const std::string &class_name, const ActorSpawn &spawnData ) {
-	auto i = actor_classes_.find( class_name );
-	if ( i == actor_classes_.end() ) {
+Actor *ActorManager::CreateActor( const std::string &identifier, const ActorSpawn &spawnData ) {
+	auto spawn = actorSpawnsRegistry.find( identifier );
+	if ( spawn == actorSpawnsRegistry.end() ) {
 		// TODO: make this throw an error rather than continue...
-		LogWarn( "Failed to find actor class %s!\n", class_name.c_str() );
+		LogWarn( "Failed to find actor \"%s\"!\n", identifier.c_str() );
 		return nullptr;
 	}
 
-	Actor *actor = i->second();
-	actors_.insert( actor );
+	auto classSpawn = actorClassesRegistry.find( spawn->second.className );
+	if ( classSpawn == actorClassesRegistry.end() ) {
+		Error( "Invalid class name \"%s\" provided for actor \"%s\"!\n",
+		 spawn->second.className.c_str(),
+		 spawn->second.identifier.c_str() );
+	}
+
+	Actor *actor = classSpawn->second();
+	actorsList.insert( actor );
 
 	actor->Deserialize( spawnData );
 
@@ -58,7 +66,7 @@ void ActorManager::DestroyActor( Actor *actor ) {
 }
 
 void ActorManager::TickActors() {
-	for ( auto const &actor: actors_ ) {
+	for ( auto const &actor: actorsList ) {
 		if ( !actor->IsActivated() ) {
 			continue;
 		}
@@ -69,8 +77,8 @@ void ActorManager::TickActors() {
 
 	// Now clean everything up that was marked for destruction
 	for ( auto &i : destructionQueue ) {
-		assert( actors_.find( i ) != actors_.end() );
-		actors_.erase( i );
+		assert( actorsList.find( i ) != actorsList.end() );
+		actorsList.erase( i );
 		delete i;
 	}
 	destructionQueue.clear();
@@ -84,7 +92,7 @@ void ActorManager::DrawActors() {
 	Shaders_SetProgramByName( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
 
 	g_state.gfx.num_actors_drawn = 0;
-	for ( auto const &actor: actors_ ) {
+	for ( auto const &actor: actorsList ) {
 		if ( cv_graphics_cull->b_value && !actor->IsVisible() ) {
 			continue;
 		}
@@ -96,31 +104,82 @@ void ActorManager::DrawActors() {
 }
 
 void ActorManager::DestroyActors() {
-	for ( auto &actor: actors_ ) {
+	for ( auto &actor: actorsList ) {
 		delete actor;
 	}
 
 	destructionQueue.clear();
-	actors_.clear();
+	actorsList.clear();
 }
 
 void ActorManager::ActivateActors() {
-	for ( auto const &actor: actors_ ) {
+	for ( auto const &actor: actorsList ) {
 		actor->Activate();
 	}
 }
 
 void ActorManager::DeactivateActors() {
-	for ( auto const &actor: actors_ ) {
+	for ( auto const &actor: actorsList ) {
 		actor->Deactivate();
 	}
 }
 
+void ActorManager::RegisterSpawnManifests() {
+	plScanDirectory( "actors", "actor", RegisterActorManifest, false, this );
+}
+
+void ActorManager::RegisterActorManifest( const char *path, void *userPtr ) {
+	ActorManager *actorManager = static_cast<ActorManager *>( userPtr );
+
+	try {
+		JsonReader reader( path );
+
+		// Number of actors in this particular manifest
+		unsigned int numActors = reader.GetArrayLength();
+		if ( numActors == 0 ) {
+			LogWarn( "Empty actor manifest!\n" );
+			return;
+		}
+
+		for( unsigned int i = 0; i < numActors; ++i ) {
+			reader.EnterChildNode( i );
+
+			ActorSpawnManifest manifest;
+
+			// Ensure it's not already been added!
+			manifest.identifier = reader.GetStringProperty( "identifier" );
+			const auto &find = actorManager->actorSpawnsRegistry.find( manifest.identifier );
+			if( find != actorManager->actorSpawnsRegistry.end() ) {
+				LogWarn( "Actor \"%s\" has already been registered!\n", manifest.identifier.c_str() );
+				continue;
+			}
+
+			manifest.className = reader.GetStringProperty( "className" );
+
+			// Read in all the custom properties
+			if ( reader.EnterChildNode( "properties" ) ) {
+				std::list< std::string > propertyKeys = reader.GetObjectKeys();
+				for ( const auto &property : propertyKeys ) {
+
+				}
+				reader.LeaveChildNode();
+			}
+
+			actorManager->actorSpawnsRegistry.emplace( std::pair< std::string, ActorSpawnManifest >( manifest.identifier, manifest ) );
+
+			reader.LeaveChildNode();
+		}
+	} catch( const std::exception &exception ) {
+		LogWarn( "Failed to load actor manifest, \"%s\"!\nException: %s\n", exception.what() );
+		return;
+	}
+}
+
 ActorManager::ActorClassRegistration::ActorClassRegistration( const std::string &name, actor_ctor_func ctor_func )
-	: name_( name ) {
-	ActorManager::actor_classes_[ name ] = ctor_func;
+		: name_( name ) {
+	ActorManager::actorClassesRegistry[ name ] = ctor_func;
 }
 
 ActorManager::ActorClassRegistration::~ActorClassRegistration() {
-	ActorManager::actor_classes_.erase( name_ );
+	ActorManager::actorClassesRegistry.erase( name_ );
 }
