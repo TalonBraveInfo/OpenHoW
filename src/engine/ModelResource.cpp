@@ -386,12 +386,18 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 	delete textureAtlas;
 
 	// Normals weren't loaded in, so attempt to generate them
+#if 0
 	if ( no2Handle == nullptr ) {
 		std::list< PLMesh * > meshes( &mesh, &mesh + 1 );
 		Mesh_GenerateFragmentedMeshNormals( meshes );
 	} else {
 		No2_DestroyHandle( no2Handle );
 	}
+#else
+	// Always generate normals until we handle No2 correctly
+	std::list< PLMesh * > meshes( &mesh, &mesh + 1 );
+	Mesh_GenerateFragmentedMeshNormals( meshes );
+#endif
 
 	meshesVector.push_back( mesh );
 
