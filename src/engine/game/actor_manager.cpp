@@ -33,7 +33,7 @@ Actor *ActorManager::CreateActor( const std::string &identifier, const ActorSpaw
 	auto spawn = actorSpawnsRegistry.find( identifier );
 	if ( spawn == actorSpawnsRegistry.end() ) {
 		// TODO: make this throw an error rather than continue...
-		LogWarn( "Failed to find actor \"%s\"!\n", identifier.c_str() );
+		LogWarn( "Failed to find actor in spawn registry \"%s\"!\n", identifier.c_str() );
 		return nullptr;
 	}
 

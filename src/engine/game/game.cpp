@@ -474,7 +474,7 @@ void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	AStaticModel *modelActor = dynamic_cast<AStaticModel *>(ActorManager::GetInstance()->CreateActor( "AStaticModel" ));
+	AStaticModel *modelActor = dynamic_cast<AStaticModel *>(ActorManager::GetInstance()->CreateActor( "model_static" ));
 	if ( modelActor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 		return;

@@ -20,7 +20,7 @@
 #include "actor_manager.h"
 #include "actor_airship.h"
 
-REGISTER_ACTOR( airship, AAirship )
+REGISTER_ACTOR_BASIC( AAirship )
 
 using namespace ohw;
 

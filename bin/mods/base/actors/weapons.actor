@@ -1,0 +1,6 @@
+[
+  {
+    "identifier": "weapon_parachute",
+    "className": "AParachuteWeapon"
+  }
+]

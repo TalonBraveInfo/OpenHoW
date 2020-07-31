@@ -99,7 +99,7 @@ void GameMode::SpawnActors() {
 	for ( const auto &spawn : spawns ) {
 		Actor *actor = ActorManager::GetInstance()->CreateActor( spawn.class_name, spawn );
 		if ( actor == nullptr ) {
-			actor = ActorManager::GetInstance()->CreateActor( "AStaticModel", spawn );
+			actor = ActorManager::GetInstance()->CreateActor( "model_static", spawn );
 		}
 
 		APig *pig = dynamic_cast<APig *>(actor);
@@ -116,7 +116,7 @@ void GameMode::SpawnActors() {
 		pig->SetPlayerOwner( player );
 	}
 
-	AAirship *model_actor = dynamic_cast<AAirship *>(ActorManager::GetInstance()->CreateActor( "airship" ));
+	AAirship *model_actor = dynamic_cast<AAirship *>(ActorManager::GetInstance()->CreateActor( "vehicle_airship" ));
 	if ( model_actor == nullptr ) {
 		Error( "Failed to create model actor!\n" );
 	}

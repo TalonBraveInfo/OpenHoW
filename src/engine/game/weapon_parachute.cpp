@@ -21,7 +21,7 @@
 
 // Parachute, not really a weapon but hey ho!
 
-REGISTER_ACTOR( weapon_parachute, AParachuteWeapon )
+REGISTER_ACTOR_BASIC( AParachuteWeapon )
 
 AParachuteWeapon::AParachuteWeapon() : SuperClass() {
 	SetModel( "weapons/we_para.vtx" );
