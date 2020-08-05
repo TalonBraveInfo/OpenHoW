@@ -626,3 +626,16 @@ void ohw::GameManager::TickCamera() {
 			break;
 	}
 }
+
+std::string ohw::GameManager::GetCurrentMapDirectory() const {
+	if ( currentMap == nullptr ) {
+		return "";
+	}
+
+	MapManifest *manifest = currentMap->GetManifest();
+	if ( manifest == nullptr ) {
+		return "";
+	}
+
+	return "maps/" + manifest->filename + "/";
+}

@@ -31,6 +31,7 @@
 #include "editor/window_actor_tree.h"
 #include "editor/window_new_game.h"
 #include "editor/window_particle_editor.h"
+#include "editor/TexturePicker.h"
 
 #include "language.h"
 
@@ -529,6 +530,7 @@ void UI_DisplayDebugMenu( void ) {
 				ImGui::Separator();
 				if ( ImGui::MenuItem( "Actor Inspector..." ) ) { windows.push_back( new ActorTreeWindow() ); }
 				if ( ImGui::MenuItem( "Map Config Editor..." ) ) { windows.push_back( new MapConfigEditor() ); }
+				if ( ImGui::MenuItem( "Texture Picker..." ) ) { windows.push_back( new TexturePicker() ); }
 			}
 			if ( ImGui::MenuItem( "Model Viewer..." ) ) { windows.push_back( new ModelViewer() ); }
 			ImGui::EndMenu();

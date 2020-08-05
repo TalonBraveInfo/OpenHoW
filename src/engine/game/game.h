@@ -253,6 +253,8 @@ namespace ohw {
 			pauseSim = paused;
 		}
 
+		std::string GetCurrentMapDirectory() const;
+
 	protected:
 		void TickCamera();
 

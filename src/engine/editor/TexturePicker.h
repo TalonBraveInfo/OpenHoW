@@ -15,39 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "base_window.h"
 
 namespace ohw {
-	class Camera;
-	class ModelViewer : public BaseWindow {
+	class TexturePicker : public BaseWindow {
 	public:
-		explicit ModelViewer();
-		~ModelViewer() override;
+		TexturePicker();
+		~TexturePicker();
 
 		void Display() override;
 
-		void DrawViewport();
-
-	protected:
 	private:
-		void GenerateFrameBuffer( unsigned int width, unsigned int height );
-
-		SharedModelResourcePointer model{ nullptr };
-		struct PLFrameBuffer *drawBuffer{ nullptr };
-		struct PLTexture *textureAttachment{ nullptr };
-
-		Camera *camera{ nullptr };
-
-		PLVector3 modelRotation;
-
-		float oldMousePos[ 2 ]{ 0, 0 };
-
-		bool viewRotate{ true };
-		bool viewDebugNormals{ false };
-		bool viewSkeleton{ false };
-		bool viewGrid{ true };
-
-		static void AppendModelList( const char *path, void *userData );
-		static std::list< std::string > modelList;
+		std::vector< SharedTextureResourcePointer > textures;
 	};
 }
