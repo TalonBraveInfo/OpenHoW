@@ -19,7 +19,6 @@
 #include "frontend.h"
 #include "graphics/shaders.h"
 #include "actor_manager.h"
-#include "actor.h"
 #include "json_reader.h"
 
 /************************************************************/
@@ -155,12 +154,14 @@ void ActorManager::RegisterActorManifest( const char *path, void *userPtr ) {
 			}
 
 			manifest.className = reader.GetStringProperty( "className" );
+			manifest.description = reader.GetStringProperty( "description" );
 
 			// Read in all the custom properties
 			if ( reader.EnterChildNode( "properties" ) ) {
 				std::list< std::string > propertyKeys = reader.GetObjectKeys();
 				for ( const auto &property : propertyKeys ) {
-
+					std::string value = reader.GetStringProperty( property );
+					manifest.properties.emplace( std::pair< std::string, std::string >( property, value ) );
 				}
 				reader.LeaveChildNode();
 			}

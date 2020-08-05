@@ -40,7 +40,7 @@ private:
 	Sprite *spritePtr;
 };
 
-REGISTER_ACTOR( sprite, ASprite )
+REGISTER_ACTOR_BASIC( ASprite )
 
 using namespace ohw;
 

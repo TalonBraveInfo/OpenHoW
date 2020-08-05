@@ -24,6 +24,7 @@ typedef std::set< Actor * > ActorSet;
 struct ActorSpawnManifest {
 	std::string identifier;
 	std::string className;
+	std::string description;
 	std::map< std::string, std::string > properties;
 };
 
