@@ -1,0 +1,6 @@
+{
+	"gl3": {
+		"vertPath": "shaders/gl3/gouraud.vert",
+		"fragPath": "shaders/gl3/texture.frag"
+	}
+}
