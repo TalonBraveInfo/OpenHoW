@@ -31,7 +31,7 @@ namespace ohw {
 		PL_INLINE void SetAngles( const PLVector3 &angles ) { internalCameraPtr->angles = angles; }
 		PL_INLINE void SetAngles( float x, float y, float z ) { internalCameraPtr->angles = PLVector3( x, y, z ); }
 
-		PL_INLINE void SetFieldOfView( float fov ) { internalCameraPtr->fov = fov; }
+		void SetFieldOfView( float fov );
 		PL_INLINE void SetNear( float near ) { internalCameraPtr->near = near; }
 		PL_INLINE void SetFar( float far ) { internalCameraPtr->far = far; }
 

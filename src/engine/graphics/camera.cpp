@@ -29,6 +29,12 @@ ohw::Camera::~Camera() {
 	plDestroyCamera( internalCameraPtr );
 }
 
+void ohw::Camera::SetFieldOfView( float fov ) {
+	// Call the platform lib function for this,
+	// which'll do some validation for us
+	plSetCameraFieldOfView( internalCameraPtr, fov );
+}
+
 /**
  * Sets the viewport position and size.
  * @param xy X and Y.
