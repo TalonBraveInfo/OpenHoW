@@ -58,19 +58,3 @@ bool ohw::Camera::IsBoxVisible( const PLCollisionAABB *bounds ) const {
 bool ohw::Camera::IsSphereVisible( const PLCollisionSphere *sphere ) const {
 	return plIsSphereInsideView( internalCameraPtr, sphere );
 }
-
-void ohw::Camera::DrawViewFrustum() {
-	const PLViewFrustum &frustum = internalCameraPtr->frustum;
-
-	for ( unsigned int i = 0; i < PL_MAX_FRUSTUM_PLANES; ++i ) {
-		PLVector3 startPos( 0, 0, 2.0f );
-		PLVector3 endPos = PLVector3( frustum[ i ].x, frustum[ i ].y, frustum[ i ].z ) * frustum[ i ].w;
-		PLMatrix4 transform;
-		PLColour colour( 255, 0, 0 );
-		transform = plTranslateMatrix4( internalCameraPtr->position );
-		plDrawSimpleLine( &transform, &startPos, &endPos, &colour );
-		transform = plMatrix4Identity();
-		colour = PLColour( 0, 255, 255 );
-		plDrawSimpleLine( &transform, &internalCameraPtr->position, &endPos, &colour );
-	}
-}

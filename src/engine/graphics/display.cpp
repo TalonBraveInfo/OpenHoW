@@ -549,7 +549,6 @@ void Display_DrawScene() {
 	Shaders_SetProgramByName( "generic_untextured" );
 
 	Engine::Audio()->DrawSources();
-	camera->DrawViewFrustum();
 }
 
 void Display_DrawInterface() {

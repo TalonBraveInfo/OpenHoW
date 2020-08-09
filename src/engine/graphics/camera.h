@@ -51,8 +51,6 @@ namespace ohw {
 		bool IsBoxVisible( const PLCollisionAABB *bounds ) const;
 		bool IsSphereVisible( const PLCollisionSphere *sphere ) const;
 
-		void DrawViewFrustum();
-
 	protected:
 	private:
 		PLCamera *internalCameraPtr{ nullptr };
