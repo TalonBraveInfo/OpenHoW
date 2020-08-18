@@ -12,7 +12,7 @@ OpenHoW aims to be an open-source reimplementation of [Hogs of War](https://en.w
 a turn-based strategy game produced by [Gremlin Interactive](https://en.wikipedia.org/wiki/Gremlin_Interactive).
 
 The entire project is being built from the ground up, supporting 
-content from both the PC and PSX releases of the game, and 
+content from the PC release of the game, and 
 the end goal will be to produce a completely open and free 
 version of the game, featuring completely new assets to 
 replace those of the original (think 
@@ -21,7 +21,7 @@ replace those of the original (think
 ## Features :page_with_curl:
 Consider this more of a wish-list at this  point in time ;)
 * Support for Windows and Linux, with possibly more to follow!
-* An editor to allow for easy modification of game-data
+* An editor to allow for easy modification of game data
 * Enhanced graphics over the original game
 
 ## Status :mag:
