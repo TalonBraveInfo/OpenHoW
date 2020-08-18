@@ -22,7 +22,6 @@
 #include "language.h"
 #include "frontend.h"
 #include "graphics/display.h"
-#include "graphics/font.h"
 #include "config.h"
 
 using namespace ohw;

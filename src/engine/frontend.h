@@ -73,7 +73,31 @@ enum {
   MAX_FE_MODES
 };
 
-PL_EXTERN_C
+enum {
+	FONT_BIG,
+	FONT_BIG_CHARS,
+	FONT_CHARS2,
+	FONT_CHARS3,
+	FONT_GAME_CHARS,
+	FONT_SMALL,
+
+	NUM_FONTS
+};
+
+// these are for FONT_SMALL, and probably will be made
+// redundant once we get our own icons in etc.
+#define CHAR_PSX_TRIANGLE   "c"
+#define CHAR_PSX_CIRCLE     "d"
+#define CHAR_PSX_CROSS      "e"
+#define CHAR_PSX_SQUARE     "f"
+#define CHAR_PSX_L1         "g"
+#define CHAR_PSX_L2         "h"
+#define CHAR_PSX_R1         "i"
+#define CHAR_PSX_R2         "j"
+
+#include "BitmapFont.h"
+
+extern ohw::BitmapFont *g_fonts[NUM_FONTS];
 
 void FE_Initialize(void);
 void FE_Shutdown(void);
@@ -89,5 +113,3 @@ uint8_t FE_GetLoadingProgress(void);
 unsigned int FrontEnd_GetState(void);
 void FrontEnd_SetState(unsigned int state);
 void FE_RestoreLastState(void);
-
-PL_EXTERN_C_END

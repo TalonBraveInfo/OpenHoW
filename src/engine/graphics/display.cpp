@@ -23,7 +23,6 @@
 
 #include "game/actor_manager.h"
 
-#include "font.h"
 #include "shaders.h"
 #include "display.h"
 #include "camera.h"

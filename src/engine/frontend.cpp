@@ -19,7 +19,6 @@
 #include "input.h"
 #include "frontend.h"
 #include "Map.h"
-#include "graphics/font.h"
 #include "graphics/display.h"
 #include "graphics/video.h"
 #include "graphics/camera.h"
@@ -36,6 +35,8 @@ static ohw::TextureResource *minimapIcons[MAX_MINIMAP_ICONS];
 
 static int frontend_width = 0;
 static int frontend_height = 0;
+
+ohw::BitmapFont *g_fonts[NUM_FONTS];
 
 /************************************************************/
 
@@ -58,7 +59,6 @@ static void FrontEnd_CacheMenuData() {
 /************************************************************/
 
 void FE_Initialize( void ) {
-	Font_CacheDefaultFonts();
 	FrontEnd_CacheMenuData();
 
 	// Cache all the minimap icons
@@ -67,10 +67,32 @@ void FE_Initialize( void ) {
 	minimapIcons[ MINIMAP_ICON_PIG ] = Engine::Resource()->LoadTexture( "frontend/map/iconpig", TextureResource::FLAG_NOMIPS, true );
 	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", TextureResource::FLAG_NOMIPS, true );
 	minimapIcons[ MINIMAP_ICON_PROP ] = Engine::Resource()->LoadTexture( "frontend/map/iconprop", TextureResource::FLAG_NOMIPS, true );
+
+	// Cache the default fonts
+
+	struct FontIndex {
+		const char *tab, *texture;
+	} defaultFonts[NUM_FONTS] = {
+			{ "frontend/text/big.tab",       "frontend/text/big.bmp" },
+			{ "frontend/text/bigchars.tab",  "frontend/text/bigchars.bmp" },
+			{ "frontend/text/chars2.tab",    "frontend/text/chars2l.bmp" },
+			{ "frontend/text/chars3.tab",    "frontend/text/chars3.bmp" },
+			{ "frontend/text/gamechars.tab", "frontend/text/gamechars.bmp" },
+			{ "frontend/text/small.tab",     "frontend/text/small.bmp" },
+	};
+
+	for ( unsigned int i = 0; i < NUM_FONTS; ++i ) {
+		g_fonts[ i ] = new ohw::BitmapFont();
+		if ( !g_fonts[ i ]->Load( defaultFonts[ i ].tab, defaultFonts[ i ].texture ) ) {
+			Error( "Failed to load default font!\n" );
+		}
+	}
 }
 
 void FE_Shutdown( void ) {
-	Font_ClearCachedFonts();
+	for ( auto &g_font : g_fonts ) {
+		delete g_font;
+	}
 }
 
 void FE_ProcessInput( void ) {
