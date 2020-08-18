@@ -36,7 +36,10 @@ ohw::TexturePicker::TexturePicker() : BaseWindow() {
 		for ( unsigned int j = 0; j < numFormats; ++j ) {
 			std::string texturePath = mapDir + std::to_string( i ) + "." + formatExtensions[ j ];
 			if ( plFileExists( texturePath.c_str() ) ) {
-				SharedTextureResourcePointer sharedTexture = Engine::Resource()->LoadTexture( texturePath, PL_TEXTURE_FILTER_NEAREST, false, true );
+				SharedTextureResourcePointer sharedTexture = Engine::Resource()->LoadTexture(
+						texturePath,
+						TextureResource::FLAG_NOMIPS | TextureResource::FLAG_NEAREST
+				);
 				textures.push_back( sharedTexture );
 				indexLoaded = true;
 				break;
@@ -79,7 +82,7 @@ void ohw::TexturePicker::Display() {
 		ImGui::Separator();
 
 		ImGui::Text( "Set: %s", "Blah" );
-		ImGui::Text( "Tiles: %zu", textures.size() );
+		ImGui::Text( "Tiles: %u", ( unsigned int ) textures.size() );
 
 		ImGui::EndMenuBar();
 	}

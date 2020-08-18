@@ -17,38 +17,17 @@
 
 #pragma once
 
-typedef struct BitmapChar {
-    unsigned int x;
-    unsigned int y;
-
-    unsigned int w;
-    unsigned int h;
-
-    char character;
-
-    float s;
-    float t;
-} BitmapChar;
-
-typedef struct BitmapFont {
-    BitmapChar chars[128];
-    unsigned int num_chars;
-
-    unsigned int width;
-    unsigned int height;
-
-    PLTexture *texture;
-} BitmapFont;
+#include "BitmapFont.h"
 
 enum {
-    FONT_BIG,
-    FONT_BIG_CHARS,
-    FONT_CHARS2,
-    FONT_CHARS3,
-    FONT_GAME_CHARS,
-    FONT_SMALL,
+	FONT_BIG,
+	FONT_BIG_CHARS,
+	FONT_CHARS2,
+	FONT_CHARS3,
+	FONT_GAME_CHARS,
+	FONT_SMALL,
 
-    NUM_FONTS
+	NUM_FONTS
 };
 
 // these are for FONT_SMALL, and probably will be made
@@ -62,10 +41,7 @@ enum {
 #define CHAR_PSX_R1         "i"
 #define CHAR_PSX_R2         "j"
 
-extern BitmapFont *g_fonts[NUM_FONTS];
+extern ohw::BitmapFont *g_fonts[NUM_FONTS];
 
-void FrontEnd_CacheFontData();
-void ClearFontData();
-
-void Font_DrawBitmapCharacter(BitmapFont *font, float x, float y, float scale, PLColour colour, uint8_t character);
-void Font_DrawBitmapString(BitmapFont *font, float x, float y, float spacing, float scale, PLColour colour, const char *msg);
+void Font_CacheDefaultFonts();
+void Font_ClearCachedFonts();

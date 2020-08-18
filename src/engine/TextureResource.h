@@ -24,7 +24,7 @@ namespace ohw {
 	public:
 		IMPLEMENT_RESOURCE_CLASS( TextureResource )
 
-		explicit TextureResource( const std::string &path, PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST, bool persist = false, bool abortOnFail = false );
+		explicit TextureResource( const std::string &path, unsigned int flags = 0, bool persist = false, bool abortOnFail = false );
 		~TextureResource();
 
 		PLTexture *GetInternalTexture() { return texturePtr; }
@@ -33,6 +33,12 @@ namespace ohw {
 		PL_INLINE unsigned int GetHeight() const { return texturePtr->h; }
 
 		PL_INLINE size_t GetTextureSize() const { return texturePtr->size; }
+
+		enum {
+			FLAG_DISCARD        = ( 1 << 0 ),   // Convert the background colour to alpha
+			FLAG_NOMIPS         = ( 1 << 1 ),   // Will not generate mipmaps
+			FLAG_NEAREST        = ( 1 << 2 ),   // Will use nearest filtering
+		};
 
 	private:
 		PLTexture *texturePtr{ nullptr };

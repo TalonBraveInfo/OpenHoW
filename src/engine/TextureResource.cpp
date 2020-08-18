@@ -21,12 +21,27 @@
 // TODO: we should be able to query the platform library for this!!
 const char *supportedTextureFormats[] = { "png", "tga", "bmp", "tim", nullptr };
 
-ohw::TextureResource::TextureResource( const std::string &path, PLTextureFilter filter, bool persist, bool abortOnFail ) : Resource( path, persist ) {
+ohw::TextureResource::TextureResource( const std::string &path, unsigned int flags, bool persist, bool abortOnFail ) : Resource( path, persist ) {
+	PLTextureFilter filterMode;
+	if ( flags & FLAG_NOMIPS ) {
+		if ( flags & FLAG_NEAREST ) {
+			filterMode = PL_TEXTURE_FILTER_NEAREST;
+		} else {
+			filterMode = PL_TEXTURE_FILTER_LINEAR;
+		}
+	} else {
+		if ( flags & FLAG_NEAREST ) {
+			filterMode = PL_TEXTURE_FILTER_MIPMAP_NEAREST;
+		} else {
+			filterMode = PL_TEXTURE_FILTER_MIPMAP_LINEAR;
+		}
+	}
+
 	const char *fileExtension = plGetFileExtension( path.c_str() );
 	if ( fileExtension[ 0 ] == '\0' ) {
 		const char *newPath = u_find2( path.c_str(), supportedTextureFormats, abortOnFail );
 		if ( newPath != nullptr ) {
-			texturePtr = plLoadTextureFromImage( newPath, filter );
+			texturePtr = plLoadTextureFromImage( newPath, filterMode );
 		}
 
 		if ( texturePtr == nullptr ) {
@@ -48,13 +63,20 @@ ohw::TextureResource::TextureResource( const std::string &path, PLTextureFilter 
 			plConvertPixelFormat( &image, PL_IMAGEFORMAT_RGBA8 );
 		}
 
+		// If discard is specified, we need to throw away the first colour
+		if ( flags & FLAG_DISCARD ) {
+			const PLColour *firstColour = ( PLColour * ) image.data[ 0 ];
+			plReplaceImageColour( &image, *firstColour, PLColour( 0, 0, 0, 0 ) );
+		}
+
 		texturePtr = plCreateTexture();
 		if ( texturePtr != nullptr ) {
-			texturePtr->filter = filter;
+			texturePtr->filter = filterMode;
 			if ( plUploadTextureImage( texturePtr, &image ) ) {
 				return;
 			}
 		}
+
 		plDestroyTexture( texturePtr );
 	}
 

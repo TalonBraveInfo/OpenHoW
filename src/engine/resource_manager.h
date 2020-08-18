@@ -27,7 +27,7 @@ namespace ohw {
 		~ResourceManager();
 
 	public:
-		SharedTextureResourcePointer LoadTexture( const std::string &path, PLTextureFilter filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST, bool persist = false, bool abortOnFail = false );
+		SharedTextureResourcePointer LoadTexture( const std::string &path, unsigned int flags = 0, bool persist = false, bool abortOnFail = false );
 		SharedModelResourcePointer LoadModel( const std::string &path, bool persist = false, bool abortOnFail = false );
 
 		void ClearResource( const std::string &path, bool force = false );

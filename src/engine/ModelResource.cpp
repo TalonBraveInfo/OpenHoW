@@ -139,8 +139,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 
 		std::string textureName = obj.materials[ obj.attributes[ 0 ] ].strTexture;
 		if ( obj.materials.size() > 1 && !textureName.empty() ) {
-			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture(
-					textureName, PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( textureName );
 			texturesVector.push_back( texture );
 
 			mesh->texture = texture->GetInternalTexture();
@@ -191,8 +190,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		        sizeof( unsigned int ) * j->second.indices.size() );
 
 		if ( !j->second.material.strTexture.empty() ) {
-			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture,
-																					PL_TEXTURE_FILTER_MIPMAP_LINEAR );
+			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture );
 			texturesVector.push_back( texture );
 
 			meshesVector[ i ]->texture = texture->GetInternalTexture();

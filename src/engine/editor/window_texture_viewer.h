@@ -25,7 +25,7 @@ public:
 	}
 
 	explicit TextureViewer( const std::string &path ) {
-		texturePtr = ohw::Engine::Resource()->LoadTexture( path, PL_TEXTURE_FILTER_LINEAR );
+		texturePtr = ohw::Engine::Resource()->LoadTexture( path, ohw::TextureResource::FLAG_NOMIPS );
 		if ( texturePtr == nullptr ) {
 			throw std::runtime_error( "Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!" );
 		}

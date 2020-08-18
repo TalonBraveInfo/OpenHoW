@@ -315,87 +315,6 @@ void Display_GetFramesCount( unsigned int *fps, unsigned int *ms ) {
 	*ms = ms_;
 }
 
-static void DrawDisplayInfo() {
-	if ( !cv_display_show_viewportinfo->b_value ) {
-		return;
-	}
-
-	char debug_display[128];
-	int w, h;
-	bool fs;
-	System_GetWindowDrawableSize( &w, &h, &fs );
-	sprintf( debug_display, "%d X %d %s", w, h, fs ? "FULLSCREEN" : "WINDOWED" );
-	Font_DrawBitmapString( g_fonts[ FONT_GAME_CHARS ], 20,
-	                       Display_GetViewportHeight( &g_state.ui_camera->viewport ) - 32, 0, 1.f, PL_COLOUR_WHITE,
-	                       debug_display );
-}
-
-static void DrawFPSOverlay() {
-	if ( !cv_debug_fps->b_value ) {
-		return;
-	}
-
-	unsigned int fps, ms;
-	Display_GetFramesCount( &fps, &ms );
-
-	int w = Display_GetViewportWidth( &g_state.ui_camera->viewport );
-	int h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
-
-	BitmapFont *font = g_fonts[ FONT_SMALL ];
-	if ( font == nullptr ) {
-		return;
-	}
-
-	char ms_count[32];
-	sprintf( ms_count, "FPS %d/S (%d/MS)", fps, ms );
-	unsigned int str_w = ( font->chars[ 0 ].w * 2 ) * strlen( ms_count );
-
-	PLColour colour;
-	if ( fps < 20 ) {
-		colour = PL_COLOUR_RED;
-	} else if ( fps < 30 ) {
-		colour = PL_COLOUR_YELLOW;
-	} else {
-		colour = PL_COLOUR_GREEN;
-	}
-
-	PLVector2 position = PLVector2(
-			static_cast< float >( w - str_w ),
-			static_cast< float >( h - ( font->chars[ 0 ].h * 2 ) ) );
-	PLVector2 size = PLVector2(
-			static_cast< float >( str_w ),
-			static_cast< float >( font->chars[ 0 ].h )
-	);
-
-	PLRectangle2D box = plCreateRectangle( position, size, PL_COLOUR_BLACK, PL_COLOUR_BLACK, PL_COLOUR_BLACK,
-	                                       PL_COLOUR_BLACK );
-	plDrawFilledRectangle( &box );
-
-	Font_DrawBitmapString( font, position.x, position.y, 0, 1.f, colour, ms_count );
-}
-
-static void DrawCameraInfoOverlay() {
-	if ( !cv_display_show_camerapos->b_value ) {
-		return;
-	}
-
-	Camera *camera = Engine::Game()->GetCamera();
-	if ( camera == nullptr ) {
-		return;
-	}
-
-	PLVector3 position = camera->GetPosition();
-	PLVector3 angles = camera->GetAngles();
-
-	Font_DrawBitmapString( g_fonts[ FONT_CHARS2 ], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CAMERA" );
-	int y = 50;
-	char cam_pos[32];
-	snprintf( cam_pos, sizeof( cam_pos ), "POSITION : %s", plPrintVector3( &position, pl_float_var ) );
-	Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
-	snprintf( cam_pos, sizeof( cam_pos ), "ANGLES   : %s", plPrintVector3( &angles, pl_float_var ) );
-	Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
-}
-
 static void DrawDebugOverlay() {
 	if ( cv_debug_mode->i_value <= 0 ) {
 		return;
@@ -408,104 +327,15 @@ static void DrawDebugOverlay() {
 		return;
 	}
 
-	DrawDisplayInfo();
-	DrawCameraInfoOverlay();
-
 #if 1
-	Font_DrawBitmapString( g_fonts[ FONT_CHARS2 ], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS" );
+	g_fonts[ FONT_CHARS2 ]->DrawString( 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS" );
 	unsigned int y = 50;
 	char cam_pos[32];
 	snprintf( cam_pos, sizeof( cam_pos ), "CHUNKS DRAWN : %d", g_state.gfx.num_chunks_drawn );
-	Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
+	g_fonts[ FONT_SMALL ]->DrawString( 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
 	snprintf( cam_pos, sizeof( cam_pos ), "ACTORS DRAWN : %d", g_state.gfx.num_actors_drawn );
-	Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
+	g_fonts[ FONT_SMALL ]->DrawString( 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
 #endif
-
-	if ( cv_debug_input->i_value > 0 ) {
-		switch ( cv_debug_input->i_value ) {
-			default: {
-				Font_DrawBitmapString( g_fonts[ FONT_CHARS2 ], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "KEYBOARD STATE" );
-				int x = 20, y = 50;
-				for ( unsigned int i = 0; i < INPUT_MAX_KEYS; ++i ) {
-					bool status = Input_GetKeyState( i );
-					char key_state[64];
-					snprintf( key_state, sizeof( key_state ), "%d (%s)", i, status ? "TRUE" : "FALSE" );
-					Font_DrawBitmapString( g_fonts[ FONT_SMALL ], x, y, 0, 1.f, PL_COLOUR_WHITE, key_state );
-					if ( y + 15 > Display_GetViewportHeight( &g_state.ui_camera->viewport ) - 50 ) {
-						x += 90;
-						y = 50;
-					} else {
-						y += 15;
-					}
-				}
-			}
-				break;
-
-			case 2: {
-				Font_DrawBitmapString( g_fonts[ FONT_CHARS2 ], 20, 24, 2, 1.f, PL_COLOUR_WHITE, "CONTROLLER STATE" );
-
-				char button_state[64];
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_CROSS " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_CROSS ) ? "TRUE" : "FALSE" );
-				unsigned int y = 50;
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_TRIANGLE " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_TRIANGLE ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_CIRCLE " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_CIRCLE ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_SQUARE " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_SQUARE ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_L1 " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_L1 ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_L2 " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_L2 ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_R1 " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_R1 ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), CHAR_PSX_R2 " (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_R2 ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), "START (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_START ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), "SELECT (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_SELECT ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), "UP (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_UP ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), "DOWN (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_DOWN ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), "LEFT (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_LEFT ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-
-				snprintf( button_state, sizeof( button_state ), "RIGHT (%s)",
-				          Input_GetButtonState( 0, INPUT_BUTTON_RIGHT ) ? "TRUE" : "FALSE" );
-				Font_DrawBitmapString( g_fonts[ FONT_SMALL ], 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, button_state );
-			}
-				break;
-		}
-		return;
-	}
 }
 
 double cur_delta = 0;
@@ -560,7 +390,6 @@ void Display_DrawInterface() {
 	FE_Draw();
 
 	DrawDebugOverlay();
-	DrawFPSOverlay();
 
 	Console_Draw();
 }

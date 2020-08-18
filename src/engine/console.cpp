@@ -270,26 +270,29 @@ void Console_Initialize( void ) {
 }
 
 static void DrawInputPane() {
-	plSetTexture( nullptr, 0 );
-	//plSetBlendMode( PL_BLEND_ADDITIVE );
-
 	BitmapFont *font = g_fonts[ FONT_SMALL ];
-	unsigned int scr_w = Display_GetViewportWidth( &g_state.ui_camera->viewport );
-	unsigned int scr_h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
-	PLRectangle2D box = plCreateRectangle(
-		PLVector2( 0, scr_h - font->chars[ 0 ].h ),
-		PLVector2( scr_w, font->chars[ 0 ].h ),
-		PLColour( 0, 0, 0, 255 ),
-		PLColour( 0, 0, 0, 0 ),
-		PLColour( 0, 0, 0, 255 ),
-		PLColour( 0, 0, 0, 0 )
-	);
-	plDrawFilledRectangle( &box );
+	if ( font == nullptr ) {
+		return;
+	}
+
+	// First we need to draw the background
+
+	plSetTexture( nullptr, 0 );
+
+	int scr_w = Display_GetViewportWidth( &g_state.ui_camera->viewport );
+	int scr_h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
+	float h = font->GetCharacterHeight( 0 );
+
+	PLMatrix4 identity;
+	identity.Identity();
+	plDrawRectangle( &identity, 0, scr_h - h, scr_w, h, PL_COLOUR_DARK_GRAY );
 
 	plSetBlendMode( PL_BLEND_DEFAULT );
 
-	unsigned int x = 20;
-	unsigned int y = scr_h - font->chars[ 0 ].h;
+	// And now the actual text!
+
+	float x = 20.0f;
+	float y = scr_h - h;
 
 	char anim[] = { 'I', '/', '-', '\\' };
 	static unsigned int frame = 0;
@@ -301,13 +304,13 @@ static void DrawInputPane() {
 		delay = g_state.sim_ticks + 2;
 	}
 
-	Font_DrawBitmapCharacter( font, x, y, 1.f, PL_COLOUR_LIME, anim[ frame ] );
+	font->DrawCharacter( x, y, 1.f, PL_COLOUR_LIME, anim[ frame ] );
 
 	if ( console_state.in_buffer_pos > 0 ) {
 		char msg_buf[MAX_INPUT_BUFFER_SIZE];
 		strncpy( msg_buf, console_state.in_buffer, sizeof( msg_buf ) );
-		unsigned int w = font->chars[ 0 ].w;
-		Font_DrawBitmapString( font, x + w + 10, y, 1, 1.f, PL_COLOUR_LIME, pl_strtoupper( msg_buf ) );
+		unsigned int w = font->GetCharacterWidth( 0 );
+		font->DrawString( x + w + 10, y, 1, 1.f, PL_COLOUR_LIME, pl_strtoupper( msg_buf ) );
 	}
 }
 
@@ -333,8 +336,8 @@ static void DrawOutputPane() {
 		strncpy( line, console_state.out_buffer + i, line_len );
 		line[ line_len ] = '\0';
 
-		int y = font->chars[ 0 ].h * cur_line;
-		Font_DrawBitmapString( font, font->chars[ 0 ].w, y, 1, 1.0f, PL_COLOUR_LIME, pl_strtoupper( line ) );
+		int y = font->GetCharacterHeight( 0 ) * cur_line;
+		g_fonts[ FONT_SMALL ]->DrawString( font->GetCharacterWidth( 0 ), y, 1, 1.0f, PL_COLOUR_LIME, pl_strtoupper( line ) );
 
 		cur_line++;
 		i += line_len;

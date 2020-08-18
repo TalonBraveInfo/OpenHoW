@@ -32,7 +32,7 @@ static unsigned int old_frontend_state = ( unsigned int ) -1;
 
 /* texture assets, these are loaded and free'd at runtime */
 static ohw::TextureResource *fe_background = nullptr;
-static ohw::TextureResource *minimapIcons[ MAX_MINIMAP_ICONS ];
+static ohw::TextureResource *minimapIcons[MAX_MINIMAP_ICONS];
 
 static int frontend_width = 0;
 static int frontend_height = 0;
@@ -52,30 +52,31 @@ static void FrontendInputCallback( int key, bool is_pressed ) {
 }
 
 static void FrontEnd_CacheMenuData() {
-	fe_background = Engine::Resource()->LoadTexture( "frontend/pigbkpc1", PL_TEXTURE_FILTER_LINEAR, true );
+	fe_background = Engine::Resource()->LoadTexture( "frontend/pigbkpc1", TextureResource::FLAG_NOMIPS, true );
 }
 
 /************************************************************/
 
 void FE_Initialize( void ) {
-	FrontEnd_CacheFontData();
+	Font_CacheDefaultFonts();
 	FrontEnd_CacheMenuData();
 
 	// Cache all the minimap icons
-	minimapIcons[ MINIMAP_ICON_BOMB ]   = Engine::Resource()->LoadTexture( "frontend/map/bomb", PL_TEXTURE_FILTER_LINEAR, true );
-	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", PL_TEXTURE_FILTER_LINEAR, true );
-	minimapIcons[ MINIMAP_ICON_PIG ]    = Engine::Resource()->LoadTexture( "frontend/map/iconpig", PL_TEXTURE_FILTER_LINEAR, true );
-	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", PL_TEXTURE_FILTER_LINEAR, true );
-	minimapIcons[ MINIMAP_ICON_PROP ]   = Engine::Resource()->LoadTexture( "frontend/map/iconprop", PL_TEXTURE_FILTER_LINEAR, true );
+	minimapIcons[ MINIMAP_ICON_BOMB ] = Engine::Resource()->LoadTexture( "frontend/map/bomb", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PIG ] = Engine::Resource()->LoadTexture( "frontend/map/iconpig", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PROP ] = Engine::Resource()->LoadTexture( "frontend/map/iconprop", TextureResource::FLAG_NOMIPS, true );
 }
 
 void FE_Shutdown( void ) {
-	ClearFontData();
+	Font_ClearCachedFonts();
 }
 
 void FE_ProcessInput( void ) {
 	switch ( frontend_state ) {
-		default:break;
+		default:
+			break;
 
 		case FE_MODE_START:
 			/* this is... kind of a hack... but ensures that
@@ -112,7 +113,7 @@ void FE_SetLoadingBackground( const char *name ) {
 		snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/loadmult" );
 	}
 
-	fe_background = Engine::Resource()->LoadTexture( screen_path, PL_TEXTURE_FILTER_LINEAR );
+	fe_background = Engine::Resource()->LoadTexture( screen_path, TextureResource::FLAG_NOMIPS );
 	Redraw();
 }
 
@@ -148,13 +149,12 @@ static void DrawTimer() {
 
 	char str[64];
 	snprintf( str, sizeof( str ), "%0d", mode->GetMaxTurnTimeSeconds() - mode->GetTurnTimeSeconds() );
-	Font_DrawBitmapString( g_fonts[ FONT_BIG ],
-						   frontend_width - 256,
-						   frontend_height - 100,
-						   4,
-						   1.0f,
-						   PL_COLOUR_WHITE,
-						   str );
+	g_fonts[ FONT_BIG ]->DrawString( frontend_width - 256,
+	                                 frontend_height - 100,
+	                                 4,
+	                                 1.0f,
+	                                 PL_COLOUR_WHITE,
+	                                 str );
 }
 
 /**
@@ -176,16 +176,16 @@ static void FrontEnd_DrawMinimap() {
 	PLCamera save = *uiCamera;
 
 	// Set up the camera so we can render the minimap how it needs to be
-	uiCamera->mode 			= PL_CAMERA_MODE_PERSPECTIVE;
-	uiCamera->near			= 0.1f;
-	uiCamera->far			= 100.0f;
-	uiCamera->fov			= 65.0f;
-	uiCamera->position		= PLVector3( -120.0f, 64.0f, 0.0f );
-	uiCamera->angles		= PLVector3( -45.0f, 0.0f, 0.0f );
-	uiCamera->viewport.x	= 0;
-	uiCamera->viewport.y	= 0;
-	uiCamera->viewport.w 	= 450;
-	uiCamera->viewport.h 	= 256;
+	uiCamera->mode = PL_CAMERA_MODE_PERSPECTIVE;
+	uiCamera->near = 0.1f;
+	uiCamera->far = 100.0f;
+	uiCamera->fov = 65.0f;
+	uiCamera->position = PLVector3( -120.0f, 64.0f, 0.0f );
+	uiCamera->angles = PLVector3( -45.0f, 0.0f, 0.0f );
+	uiCamera->viewport.x = 0;
+	uiCamera->viewport.y = 0;
+	uiCamera->viewport.w = 450;
+	uiCamera->viewport.h = 256;
 
 	plSetupCamera( uiCamera );
 
@@ -262,24 +262,23 @@ static void DrawLoadingScreen() {
 	int bar_y = 450;
 	if ( loading_progress > 0 ) {
 		PLRectangle2D box = plCreateRectangle(
-			PLVector2( bar_x, bar_y ),
-			PLVector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
-			PL_COLOUR_INDIAN_RED,
-			PL_COLOUR_INDIAN_RED,
-			PL_COLOUR_RED,
-			PL_COLOUR_RED
+				PLVector2( bar_x, bar_y ),
+				PLVector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
+				PL_COLOUR_INDIAN_RED,
+				PL_COLOUR_INDIAN_RED,
+				PL_COLOUR_RED,
+				PL_COLOUR_RED
 		);
 		plDrawFilledRectangle( &box );
 	}
 
 	if ( loading_description[ 0 ] != ' ' && loading_description[ 0 ] != '\0' ) {
-		Font_DrawBitmapString( g_fonts[ FONT_CHARS2 ],
-							   bar_x + 2,
-							   bar_y + 1,
-							   4,
-							   1.f,
-							   PL_COLOUR_WHITE,
-							   loading_description );
+		g_fonts[ FONT_CHARS2 ]->DrawString( bar_x + 2,
+		                                    bar_y + 1,
+		                                    4,
+		                                    1.f,
+		                                    PL_COLOUR_WHITE,
+		                                    loading_description );
 	}
 }
 
@@ -291,7 +290,8 @@ void FE_Draw( void ) {
 
 	/* render and handle the main menu */
 	switch ( frontend_state ) {
-		default:break;
+		default:
+			break;
 
 		case FE_MODE_INIT:
 		case FE_MODE_START:
@@ -356,7 +356,8 @@ void FrontEnd_SetState( unsigned int state ) {
 			break;
 		}
 
-		case FE_MODE_EDITOR: break;
+		case FE_MODE_EDITOR:
+			break;
 	}
 	old_frontend_state = frontend_state;
 	frontend_state = state;

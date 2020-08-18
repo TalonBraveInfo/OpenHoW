@@ -45,13 +45,13 @@ Resource *ResourceManager::GetCachedResource( const std::string& path ) {
 	return nullptr;
 }
 
-SharedTextureResourcePointer ResourceManager::LoadTexture( const std::string& path, PLTextureFilter filter, bool persist, bool abortOnFail ) {
+SharedTextureResourcePointer ResourceManager::LoadTexture( const std::string& path, unsigned int flags, bool persist, bool abortOnFail ) {
 	TextureResource *texturePtr = static_cast< TextureResource* >( GetCachedResource( path ) );
 	if ( texturePtr != nullptr ) {
 		return texturePtr;
 	}
 
-	texturePtr = new TextureResource( path, filter, persist, abortOnFail );
+	texturePtr = new TextureResource( path, flags, persist, abortOnFail );
 	CacheResource( path, texturePtr );
 
 	return texturePtr;
