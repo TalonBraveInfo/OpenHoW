@@ -509,6 +509,26 @@ void UI_DisplayDebugMenu( void ) {
 				ImGui::EndMenu();
 			}
 
+			if ( ImGui::BeginMenu( "Console Commands" ) ) {
+				size_t num;
+				const PLConsoleCommand **cmds;
+				plGetConsoleCommands( &cmds, &num );
+
+				for ( const PLConsoleCommand **cmd = cmds; cmd < num + cmds; ++cmd ) {
+					if ( ImGui::MenuItem( ( *cmd )->cmd ) ) {
+						plParseConsoleString( ( *cmd )->cmd );
+					}
+
+					if ( ImGui::IsItemHovered() ) {
+						ImGui::BeginTooltip();
+						ImGui::TextUnformatted( ( *cmd )->description );
+						ImGui::EndTooltip();
+					}
+				}
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMenu();
 		}
 
