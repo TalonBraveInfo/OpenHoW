@@ -75,7 +75,7 @@ void ohw::ParticleEditor::DrawViewport() {
 		matrix.Rotate( angles.y, { 0, 1, 0 } );
 		matrix.Rotate( angles.x, { 0, 0, 1 } );
 
-		plDrawGrid( &matrix, -512, -512, 1024, 1024, 32 );
+		plDrawGrid( matrix, -512, -512, 1024, 1024, 32 );
 	}
 
 	if ( particleEffect == nullptr ) {
