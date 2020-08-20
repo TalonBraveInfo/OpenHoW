@@ -350,6 +350,18 @@ void ohw::Terrain::Draw() {
 		}
 	}
 
+	if ( cv_debug_bounds->b_value ) {
+		Shaders_SetProgramByName( "generic_untextured" );
+
+		for ( const auto &chunk : chunks_ ) {
+			if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) ) {
+				continue;
+			}
+
+			plDrawBoundingVolume( &chunk.bounds, PL_COLOUR_ORANGE );
+		}
+	}
+
 	if ( !cv_graphics_debug_normals->b_value ) {
 		plSetTexture( nullptr, 0 );
 	}

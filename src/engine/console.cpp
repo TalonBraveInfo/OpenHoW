@@ -149,9 +149,8 @@ static bool console_enabled = false;
 PLConsoleVariable *cv_debug_mode = nullptr;
 PLConsoleVariable *cv_debug_fps = nullptr;
 PLConsoleVariable *cv_debug_skeleton = nullptr;
-PLConsoleVariable *cv_debug_input = nullptr;
-PLConsoleVariable *cv_debug_cache = nullptr;
 PLConsoleVariable *cv_debug_shaders = nullptr;
+PLConsoleVariable *cv_debug_bounds = nullptr;
 
 PLConsoleVariable *cv_game_language = nullptr;
 
@@ -217,12 +216,8 @@ void Console_Initialize( void ) {
 	rvar( cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level" );
 	rvar( cv_debug_fps, false, "0", pl_bool_var, nullptr, "Display the framerate count while in-game" );
 	rvar( cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons" );
-	rvar( cv_debug_input, false, "0", pl_int_var, nullptr,
-		  "changing this cycles between different modes of debugging input\n"
-		  "1: keyboard states\n2: controller states"
-	);
-	rvar( cv_debug_cache, false, "0", pl_bool_var, nullptr, "display memory and other info" );
 	rvar( cv_debug_shaders, false, "-1", pl_int_var, nullptr, "Forces specified GLSL shader on all draw calls." );
+	rvar( cv_debug_bounds, false, "0", pl_bool_var, nullptr, "Display bounding volumes of all objects." );
 
 	rvar( cv_game_language, true, "eng", pl_string_var, &LanguageManager::SetLanguageCallback, "Set the language" );
 

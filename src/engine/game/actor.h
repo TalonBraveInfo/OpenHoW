@@ -140,6 +140,8 @@ public:
 	const ohw::PhysicsBody *CreatePhysicsBody();
 	void DestroyPhysicsBody();
 
+	PLCollisionAABB *GetBoundingBox() { return &boundingBox; }
+
 protected:
 	bool IsGrounded();
 

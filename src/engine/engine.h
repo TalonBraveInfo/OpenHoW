@@ -117,7 +117,7 @@ typedef struct EngineState {
 
 	struct {
 		unsigned int num_chunks_drawn;
-		unsigned int num_actors_drawn;
+		unsigned int numModelsDrawn;
 		unsigned int num_triangles_total;
 	} gfx;
 } EngineState;

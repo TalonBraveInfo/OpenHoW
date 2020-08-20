@@ -20,6 +20,7 @@
 #include "texture_atlas.h"
 #include "mesh.h"
 #include "WaveFrontReader.h"
+#include "graphics/camera.h"
 
 #include "../shared/vtx.h"
 #include "../shared/fac.h"
@@ -67,6 +68,20 @@ void ohw::ModelResource::Tick() {
 }
 
 void ohw::ModelResource::Draw( bool batchDraw ) {
+	Camera *camera = Engine::Game()->GetCamera();
+	if ( camera == nullptr ) {
+		return;
+	}
+
+	bounds.origin = plGetMatrix4Translation( &modelMatrix );
+	if ( cv_graphics_cull->b_value && !camera->IsBoxVisible( &bounds ) ) {
+		return;
+	}
+
+	if ( cv_debug_bounds->b_value ) {
+		plDrawBoundingVolume( &bounds, PL_COLOUR_BLUE );
+	}
+
 	if ( meshesVector.empty() ) {
 		PLModel *model = Engine::Resource()->GetFallbackModel();
 		if ( model == nullptr ) {
@@ -76,6 +91,7 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 		model->model_matrix = modelMatrix;
 
 		plDrawModel( model );
+		g_state.gfx.numModelsDrawn++;
 		return;
 	}
 
@@ -92,6 +108,8 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 	if ( cv_graphics_debug_normals->b_value ) {
 		DrawNormals();
 	}
+
+	g_state.gfx.numModelsDrawn++;
 }
 
 PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {

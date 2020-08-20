@@ -39,7 +39,7 @@ ohw::Engine::Engine() {
 	g_state.sim_ticks = 0;
 	g_state.sys_ticks = 0;
 
-	g_state.gfx.num_actors_drawn = 0;
+	g_state.gfx.numModelsDrawn = 0;
 	g_state.gfx.num_chunks_drawn = 0;
 	g_state.gfx.num_triangles_total = 0;
 }

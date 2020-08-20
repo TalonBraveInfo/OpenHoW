@@ -90,15 +90,16 @@ void ActorManager::DrawActors() {
 
 	Shaders_SetProgramByName( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
 
-	g_state.gfx.num_actors_drawn = 0;
 	for ( auto const &actor: actorsList ) {
-		if ( cv_graphics_cull->b_value && !actor->IsVisible() ) {
-			continue;
-		}
-
-		g_state.gfx.num_actors_drawn++;
-
 		actor->Draw();
+	}
+
+	if ( cv_debug_bounds->b_value ) {
+		Shaders_SetProgramByName( "generic_untextured" );
+
+		for ( auto const &actor: actorsList ) {
+			plDrawBoundingVolume( actor->GetBoundingBox(), PL_COLOUR_GREEN );
+		}
 	}
 }
 

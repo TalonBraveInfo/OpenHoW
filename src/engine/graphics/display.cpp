@@ -332,7 +332,7 @@ static void DrawDebugOverlay() {
 	char cam_pos[32];
 	snprintf( cam_pos, sizeof( cam_pos ), "CHUNKS DRAWN : %d", g_state.gfx.num_chunks_drawn );
 	g_fonts[ FONT_SMALL ]->DrawString( 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
-	snprintf( cam_pos, sizeof( cam_pos ), "ACTORS DRAWN : %d", g_state.gfx.num_actors_drawn );
+	snprintf( cam_pos, sizeof( cam_pos ), "MODELS DRAWN : %d", g_state.gfx.numModelsDrawn );
 	g_fonts[ FONT_SMALL ]->DrawString( 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
 #endif
 }
@@ -394,6 +394,8 @@ void Display_DrawInterface() {
 }
 
 void Display_Draw( double delta ) {
+	g_state.gfx.numModelsDrawn = 0;
+
 	ImGuiImpl_SetupFrame();
 
 	cur_delta = delta;
