@@ -266,6 +266,7 @@ namespace ohw {
 		static void KillSelfCommand( unsigned int argc, char **argv );
 		static void SpawnModelCommand( unsigned int argc, char **argv );
 		static void TeleportCommand( unsigned int argc, char **argv );
+		static void FirstPersonCommand( unsigned int argc, char **argv );
 		static void FreeCamCommand( unsigned int argc, char **argv );
 
 		bool pauseSim{ false };

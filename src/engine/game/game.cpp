@@ -30,6 +30,8 @@
 
 #include "actor_pig.h"
 #include "actor_static_model.h"
+#include "game.h"
+
 
 std::string MapManifest::Serialize() {
 	std::stringstream output;
@@ -87,9 +89,10 @@ ohw::GameManager::GameManager() {
 	plRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
 	plRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied actor." );
 	plRegisterConsoleCommand( "Teleport", TeleportCommand, "Teleports current actor to the given destination." );
+	plRegisterConsoleCommand( "FirstPerson", FirstPersonCommand, "Toggles the camera into first-person mode." );
 	plRegisterConsoleCommand( "FreeCam", FreeCamCommand, "Toggles the camera into fly mode." );
 
-	defaultCamera = new Camera( { 0, 0, 0 }, { 0, 0, 0 } );
+	defaultCamera = new Camera( pl_vecOrigin3, pl_vecOrigin3 );
 }
 
 ohw::GameManager::~GameManager() {
@@ -508,12 +511,24 @@ void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 	actor->SetPosition( teleportDestination );
 }
 
-void ohw::GameManager::FreeCamCommand( unsigned int argc, char **argv ) {
+void ohw::GameManager::FirstPersonCommand( unsigned int argc, char **argv ) {
 	static CameraMode oldCameraMode = CameraMode::FOLLOW;
 
 	if ( Engine::Game()->cameraMode != CameraMode::FIRSTPERSON ) {
 		oldCameraMode = Engine::Game()->cameraMode;
 		Engine::Game()->cameraMode = CameraMode::FIRSTPERSON;
+		return;
+	}
+
+	Engine::Game()->cameraMode = oldCameraMode;
+}
+
+void ohw::GameManager::FreeCamCommand( unsigned int argc, char **argv ) {
+	static CameraMode oldCameraMode = CameraMode::FOLLOW;
+
+	if ( Engine::Game()->cameraMode != CameraMode::FLY ) {
+		oldCameraMode = Engine::Game()->cameraMode;
+		Engine::Game()->cameraMode = CameraMode::FLY;
 		return;
 	}
 
@@ -601,8 +616,22 @@ void ohw::GameManager::TickCamera() {
 	switch ( cameraMode ) {
 		case CameraMode::FLY:
 			break;
-		case CameraMode::FIRSTPERSON:
+		case CameraMode::FIRSTPERSON: {
+			GameMode *mode = dynamic_cast<GameMode *>(GetMode());
+			if ( mode == nullptr ) {
+				return;
+			}
+
+			Actor *actor = mode->GetPossessedActor();
+			if ( actor == nullptr ) {
+				return;
+			}
+
+			PLVector3 forward = actor->GetForward();
+			PLVector3 pos = actor->GetPosition();
+			defaultCamera->SetPosition( pos.x + forward.x * -500.0f, pos.y + 500.0f, pos.z + forward.z * -500.0f );
 			break;
+		}
 
 		case CameraMode::FOLLOW: {
 			GameMode *mode = dynamic_cast<GameMode *>(GetMode());
