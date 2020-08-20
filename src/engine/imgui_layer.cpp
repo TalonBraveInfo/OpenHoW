@@ -461,12 +461,6 @@ void UI_DisplayDebugMenu( void ) {
 			}
 #endif
 
-			static int im = 0;
-			if ( ImGui::SliderInt( "Show Input States", &im, 0, 2 ) ) {
-				char buf[4];
-				plSetConsoleVariable( cv_debug_input, pl_itoa( im, buf, 4, 10 ) );
-			}
-
 			ImGui::Separator();
 
 			if ( ImGui::MenuItem( "Rebuild Shaders" ) ) {
