@@ -90,33 +90,33 @@ int System_SetSwapInterval( int interval ) {
 }
 
 static void System_SetWindowIcon( const char* path ) {
-	PLImage image;
-	if ( !plLoadImage( path, &image ) ) {
+	PLImage *image = plLoadImage( path );
+	if ( image == nullptr ) {
 		LogWarn( "Failed to load image, %s (%s)!\n", path, plGetError() );
 		return;
 	}
 
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
-		image.data[ 0 ],
+		image->data[ 0 ],
 		// Casting casting casting, why o why
-		static_cast<signed>( image.width ),
-		static_cast<signed>( image.height ),
+		static_cast<signed>( image->width ),
+		static_cast<signed>( image->height ),
 		32,
-		static_cast<signed>( image.width * 4 ),
+		static_cast<signed>( image->width * 4 ),
 		0x000000ff,
 		0x0000ff00,
 		0x00ff0000,
 		0xff000000
 	);
 	if ( surface == nullptr ) {
-		plFreeImage( &image );
 		LogWarn( "Failed to create requested SDL surface, %s!\n", SDL_GetError() );
-		return;
+	} else {
+		SDL_SetWindowIcon( window, surface );
 	}
 
-	SDL_SetWindowIcon( window, surface );
 	SDL_FreeSurface( surface );
-	plFreeImage( &image );
+
+	plDestroyImage( image );
 }
 
 void System_DisplayWindow( bool fullscreen, int width, int height ) {
@@ -637,7 +637,7 @@ static void* u_calloc( size_t num, size_t size ) {
 }
 
 int main( int argc, char** argv ) {
-#if defined( _WIN32 ) && defined( _DEBUG )
+#if defined( _DEBUG )
 	setvbuf( stdout, nullptr, _IONBF, 0 );
 #endif
 
@@ -648,6 +648,7 @@ int main( int argc, char** argv ) {
 	plInitializeSubSystems( PL_SUBSYSTEM_IO );
 
 	plRegisterStandardPackageLoaders();
+	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TGA | PL_IMAGE_FILEFORMAT_PNG | PL_IMAGE_FILEFORMAT_BMP | PL_IMAGE_FILEFORMAT_TIM );
 
 	// Mount the working directory first (./mods/...)
 	plMountLocalLocation( plGetWorkingDirectory() );

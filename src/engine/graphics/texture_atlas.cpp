@@ -50,9 +50,8 @@ bool TextureAtlas::AddImage( const std::string &path, bool absolute ) {
 		snprintf( full_path, sizeof( full_path ) - 1, "%s", u_find2( path.c_str(), supportedTextureFormats, false ) );
 	}
 
-	auto *img = static_cast<PLImage *>(u_alloc( 1, sizeof( PLImage ), true ));
-	if ( !plLoadImage( full_path, img ) ) {
-		u_free( img );
+	PLImage *img = plLoadImage( full_path );
+	if ( img == nullptr ) {
 		return false;
 	}
 
@@ -124,10 +123,6 @@ void TextureAtlas::Finalize() {
 		Error( "Failed to generate image cache for texture atlas (%s)!\n", plGetError() );
 	}
 
-	// todo: generate mipmap levels
-	cache->data = ( uint8_t ** ) u_alloc( cache->levels, sizeof( uint8_t * ), true );
-	cache->data[ 0 ] = ( uint8_t * ) u_alloc( cache->size, sizeof( uint8_t ), true );
-
 	//plReplaceImageColour(cache, {0, 0, 0, 0}, {0, 0, 0, 255});
 
 	for ( auto &tarr : textures_ ) {
@@ -140,7 +135,7 @@ void TextureAtlas::Finalize() {
 			pos += cache->width * 4;
 		}
 
-		plFreeImage( texture->image );
+		plDestroyImage( texture->image );
 		texture->image = nullptr;
 	}
 
@@ -158,13 +153,19 @@ void TextureAtlas::Finalize() {
 		Error( "Failed to generate atlas texture (%s)!\n", plGetError() );
 	}
 
-	texture_->filter = cv_graphics_texture_filter->b_value ?
-					   PL_TEXTURE_FILTER_MIPMAP_LINEAR : PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR;
+	if ( cv_graphics_texture_filter->b_value ) {
+		plSetTextureAnisotropy( texture_, 8 );
+		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_LINEAR;
+	} else {
+		plSetTextureAnisotropy( texture_, 0 );
+		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR;
+	}
+
 	if ( !plUploadTextureImage( texture_, cache ) ) {
 		Error( "Failed to upload texture atlas (%s)!\n", plGetError() );
 	}
 
-	plFreeImage( cache );
+	plDestroyImage( cache );
 }
 
 bool TextureAtlas::GetTextureCoords( const std::string &name, float *x, float *y, float *w, float *h ) {

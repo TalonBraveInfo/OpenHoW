@@ -482,15 +482,15 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 }
 
 void ohw::Terrain::LoadHeightmap( const std::string &path, int multiplier ) {
-	PLImage image;
-	if ( !plLoadImage( path.c_str(), &image ) ) {
+	PLImage *image = plLoadImage( path.c_str() );
+	if ( image == nullptr ) {
 		LogWarn( "Failed to load the specified heightmap, \"%s\" (%s)!\n", path.c_str(), plGetError() );
 		return;
 	}
 
-	if ( image.width < 65 || image.height < 65 ) {
-		plFreeImage( &image );
-		LogWarn( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image.width, image.height );
+	if ( image->width < 65 || image->height < 65 ) {
+		plDestroyImage( image );
+		LogWarn( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image->width, image->height );
 		return;
 	}
 
@@ -498,23 +498,23 @@ void ohw::Terrain::LoadHeightmap( const std::string &path, int multiplier ) {
 	// red = height
 	// green = texture
 
-	unsigned int chan_length = image.width * image.height;
+	unsigned int chan_length = image->width * image->height;
 
 	auto *rchan = static_cast<float *>(u_alloc( chan_length, sizeof( float ), true ));
-	uint8_t *pixel = image.data[ 0 ];
+	uint8_t *pixel = image->data[ 0 ];
 	for ( unsigned int i = 0; i < chan_length; ++i ) {
 		rchan[ i ] = static_cast<int>(*pixel) * multiplier; //(static_cast<int>(*pixel) - 127) * 256;
 		pixel += 4;
 	}
 
 	auto *gchan = static_cast<uint8_t *>(u_alloc( chan_length, sizeof( uint8_t ), true ));
-	pixel = image.data[ 0 ] + 1;
+	pixel = image->data[ 0 ] + 1;
 	for ( unsigned int i = 0; i < chan_length; ++i ) {
 		gchan[ i ] = *pixel;
 		pixel += 4;
 	}
 
-	plFreeImage( &image );
+	plDestroyImage( image );
 
 	for ( unsigned int chunk_y = 0; chunk_y < TERRAIN_CHUNK_ROW; ++chunk_y ) {
 		for ( unsigned int chunk_x = 0; chunk_x < TERRAIN_CHUNK_ROW; ++chunk_x ) {

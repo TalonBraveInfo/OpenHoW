@@ -56,23 +56,23 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 		return;
 	}
 
-	PLImage image;
-	if ( plLoadImage( path.c_str(), &image ) ) {
+	PLImage *image = plLoadImage( path.c_str() );
+	if ( image ) {
 		// pixel format of TIM will be changed before uploading
 		if ( pl_strncasecmp( fileExtension, "tim", 3 ) == 0 ) {
-			plConvertPixelFormat( &image, PL_IMAGEFORMAT_RGBA8 );
+			plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
 		}
 
 		// If discard is specified, we need to throw away the first colour
 		if ( flags & FLAG_DISCARD ) {
-			const PLColour *firstColour = ( PLColour * ) image.data[ 0 ];
-			plReplaceImageColour( &image, *firstColour, PLColour( 0, 0, 0, 0 ) );
+			const PLColour *firstColour = ( PLColour * ) image->data[ 0 ];
+			plReplaceImageColour( image, *firstColour, PLColour( 0, 0, 0, 0 ) );
 		}
 
 		texturePtr = plCreateTexture();
 		if ( texturePtr != nullptr ) {
 			texturePtr->filter = filterMode;
-			if ( plUploadTextureImage( texturePtr, &image ) ) {
+			if ( plUploadTextureImage( texturePtr, image ) ) {
 				return;
 			}
 		}
@@ -80,7 +80,7 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 		plDestroyTexture( texturePtr );
 	}
 
-	plFreeImage( &image );
+	plDestroyImage( image );
 
 	if ( abortOnFail ) {
 		Error( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
