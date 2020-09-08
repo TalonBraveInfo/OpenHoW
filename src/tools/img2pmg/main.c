@@ -64,41 +64,41 @@ static const char *instructions =
 	"Img2Pmg.exe myimage.png 100 myterrain.pmg";
 
 static void LoadHeightmap( const char *path, int multiplier ) {
-	PLImage image;
-	if ( !plLoadImage( path, &image ) ) {
+	PLImage *image = plLoadImage( path );
+	if ( image == NULL ) {
 		Error( "Failed to load the specified heightmap, \"%s\"!\nPL: %s\n", path, plGetError() );
 	}
 
 	static const unsigned int imageWidth = 65;
-	if ( image.width < imageWidth || image.height < imageWidth ) {
-		Error( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image.width, image.height );
+	if ( image->width < imageWidth || image->height < imageWidth ) {
+		Error( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image->width, image->height );
 	}
 
-	unsigned int channelLength = image.width * image.height;
+	unsigned int channelLength = image->width * image->height;
 
 	/* height */
 	float *redChannel = malloc( sizeof( float ) * channelLength );
-	uint8_t *pixel = image.data[ 0 ];
+	uint8_t *pixel = image->data[ 0 ];
 	for ( unsigned int i = 0; i < channelLength; ++i ) {
 		redChannel[ i ] = (float) ( *pixel * multiplier );
 		pixel += 4;
 	}
 
 	uint8_t *greenChannel = malloc( sizeof( uint8_t ) * channelLength );
-	pixel = image.data[ 0 ] + 1;
+	pixel = image->data[ 0 ] + 1;
 	for ( unsigned int i = 0; i < channelLength; ++i ) {
 		greenChannel[ i ] = *pixel;
 		pixel += 4;
 	}
 
 	uint8_t *alphaChannel = malloc( sizeof( uint8_t ) * channelLength );
-	pixel = image.data[ 0 ] + 3;
+	pixel = image->data[ 0 ] + 3;
 	for ( unsigned int i = 0; i < channelLength; ++i ) {
 		alphaChannel[ i ] = *pixel;
 		pixel += 4;
 	}
 
-	plFreeImage( &image );
+	plDestroyImage( image );
 
 	/* copy pasta this, since I can't be bothered writing it out again */
 	for ( unsigned int chunk_y = 0; chunk_y < TERRAIN_CHUNK_ROW; ++chunk_y ) {
