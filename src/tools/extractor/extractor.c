@@ -437,9 +437,9 @@ static void MergeTextureTargets( void ) {
 		}
 
 		for ( unsigned int j = 0; j < merge->num_textures; ++j ) {
-			PLImage image;
 			const char *path = merge->targets[ j ].path;
-			if ( !plLoadImage( path, &image ) ) {
+			PLImage *image = plLoadImage( path );
+			if ( image == NULL ) {
 				LogWarn( "Failed to find image, \"%s\", for merge!\n", merge->targets[ j ].path );
 				continue;
 			}
@@ -448,14 +448,14 @@ static void MergeTextureTargets( void ) {
 
 			uint8_t
 				*pos = output->data[ 0 ] + ( ( merge->targets[ j ].y * output->width ) + merge->targets[ j ].x ) * 4;
-			uint8_t *src = image.data[ 0 ];
-			for ( unsigned int y = 0; y < image.height; ++y ) {
-				memcpy( pos, src, ( image.width * 4 ) );
-				src += image.width * 4;
+			uint8_t *src = image->data[ 0 ];
+			for ( unsigned int y = 0; y < image->height; ++y ) {
+				memcpy( pos, src, ( image->width * 4 ) );
+				src += image->width * 4;
 				pos += output->width * 4;
 			}
 
-			plFreeImage( &image );
+			plDestroyImage( image );
 			plDeleteFile( path );
 		}
 
