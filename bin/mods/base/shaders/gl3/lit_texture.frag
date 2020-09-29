@@ -33,7 +33,7 @@ in vec4 interp_colour;
 in vec3 frag_pos;
 
 void main() {
-    vec4 dsample = texture(diffuse, interp_UV);
+    vec4 dsample = texture(diffuse, interp_UV, -2.0);
     if (dsample.a < 0.1) {
         discard;
     }
