@@ -315,13 +315,13 @@ void ohw::Terrain::Draw() {
 
 	plLoadIdentityMatrix();
 
-	ShaderProgram *program;
+	PLShaderProgram *program;
 
 	// Solid
-	program = Shaders_GetProgram( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
+	program = Shaders_GetProgram( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" )->GetInternalProgram();
 	if ( program != nullptr ) {
-		PLShaderProgram *iProgram = program->GetInternalProgram();
-		plSetShaderUniformValue( iProgram, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+		plSetShaderProgram( program );
+		plSetShaderUniformValue( program, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
 		plSetBlendMode( PL_BLEND_DISABLE );
 
@@ -337,35 +337,37 @@ void ohw::Terrain::Draw() {
 		}
 	}
 
-	// Water
-	program = Shaders_GetProgram( cv_graphics_debug_normals->b_value ? "debug_normals" : "water" );
-	if ( program != nullptr ) {
-		PLShaderProgram *iProgram = program->GetInternalProgram();
-		plSetShaderUniformValue( iProgram, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+	if ( !cv_graphics_debug_normals->b_value ) {
+		// Water
+		program = Shaders_GetProgram( "water" )->GetInternalProgram();
+		if ( program != nullptr ) {
+			plSetShaderProgram( program );
+			plSetShaderUniformValue( program, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
-		plSetBlendMode( PL_BLEND_DEFAULT );
+			plSetBlendMode( PL_BLEND_DEFAULT );
 
-		for ( const auto &chunk : chunks_ ) {
-			if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) || chunk.waterMesh == nullptr ) {
-				continue;
+			for ( const auto &chunk : chunks_ ) {
+				if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) || chunk.waterMesh == nullptr ) {
+					continue;
+				}
+
+				plUploadMesh( chunk.waterMesh );
+				plDrawMesh( chunk.waterMesh );
+
+				g_state.gfx.num_chunks_drawn++;
 			}
-
-			plUploadMesh( chunk.waterMesh );
-			plDrawMesh( chunk.waterMesh );
-
-			g_state.gfx.num_chunks_drawn++;
 		}
-	}
 
-	if ( cv_debug_bounds->b_value ) {
-		Shaders_SetProgramByName( "generic_untextured" );
+		if ( cv_debug_bounds->b_value ) {
+			Shaders_SetProgramByName( "generic_untextured" );
 
-		for ( const auto &chunk : chunks_ ) {
-			if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) ) {
-				continue;
+			for ( const auto &chunk : chunks_ ) {
+				if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) ) {
+					continue;
+				}
+
+				plDrawBoundingVolume( &chunk.bounds, PL_COLOUR_ORANGE );
 			}
-
-			plDrawBoundingVolume( &chunk.bounds, PL_COLOUR_ORANGE );
 		}
 	}
 

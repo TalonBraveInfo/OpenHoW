@@ -433,8 +433,12 @@ void ohw::ModelResource::LoadMinModel( const std::string &path, bool abortOnFail
 void ohw::ModelResource::DrawMesh( unsigned int i ) {
 	u_assert( i < meshesVector.size() );
 	if ( i >= meshesVector.size() ) {
-		LogWarn( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
-		return;
+		Error( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
+	}
+
+	PLShaderProgram *program = plGetCurrentShaderProgram();
+	if ( program == nullptr ) {
+		Error( "No bound shader program when drawing mesh %d!\n", i );
 	}
 
 	// TODO: This currently doesn't handle animations...
@@ -442,7 +446,7 @@ void ohw::ModelResource::DrawMesh( unsigned int i ) {
 
 	plSetTexture( meshesVector[ i ]->texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( nullptr, "pl_model", modelMatrix, true );
+	plSetShaderUniformValue( program, "pl_model", &modelMatrix, true );
 
 	plUploadMesh( meshesVector[ i ] );
 	plDrawMesh( meshesVector[ i ] );

@@ -147,9 +147,7 @@ struct {
 static bool console_enabled = false;
 
 PLConsoleVariable *cv_debug_mode = nullptr;
-PLConsoleVariable *cv_debug_fps = nullptr;
 PLConsoleVariable *cv_debug_skeleton = nullptr;
-PLConsoleVariable *cv_debug_shaders = nullptr;
 PLConsoleVariable *cv_debug_bounds = nullptr;
 
 PLConsoleVariable *cv_game_language = nullptr;
@@ -159,7 +157,6 @@ PLConsoleVariable *cv_camera_fov = nullptr;
 PLConsoleVariable *cv_camera_near = nullptr;
 PLConsoleVariable *cv_camera_far = nullptr;
 
-PLConsoleVariable *cv_display_texture_cache = nullptr;
 PLConsoleVariable *cv_display_width = nullptr;
 PLConsoleVariable *cv_display_height = nullptr;
 PLConsoleVariable *cv_display_fullscreen = nullptr;
@@ -214,9 +211,7 @@ void Console_Initialize( void ) {
     }
 
 	rvar( cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level" );
-	rvar( cv_debug_fps, false, "0", pl_bool_var, nullptr, "Display the framerate count while in-game" );
 	rvar( cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons" );
-	rvar( cv_debug_shaders, false, "-1", pl_int_var, nullptr, "Forces specified GLSL shader on all draw calls." );
 	rvar( cv_debug_bounds, false, "0", pl_bool_var, nullptr, "Display bounding volumes of all objects." );
 
 	rvar( cv_game_language, true, "eng", pl_string_var, &LanguageManager::SetLanguageCallback, "Set the language" );
@@ -226,20 +221,19 @@ void Console_Initialize( void ) {
 	rvar( cv_camera_near, false, "0.1", pl_float_var, nullptr, "" );
 	rvar( cv_camera_far, false, "999999", pl_float_var, nullptr, "" );
 
-	rvar( cv_display_texture_cache, false, "-1", pl_int_var, nullptr, "" );
 	rvar( cv_display_width, true, "1024", pl_int_var, nullptr, "" );
 	rvar( cv_display_height, true, "768", pl_int_var, nullptr, "" );
-	rvar( cv_display_fullscreen, true, "false", pl_bool_var, nullptr, "" );
+	rvar( cv_display_fullscreen, true, "true", pl_bool_var, nullptr, "" );
 	rvar( cv_display_use_window_aspect, false, "false", pl_bool_var, nullptr, "" );
-	rvar( cv_display_ui_scale, true, "1", pl_int_var, nullptr, "0 = automatic scale" );
+	rvar( cv_display_ui_scale, true, "0", pl_int_var, nullptr, "0 = automatic scale" );
 	rvar( cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync" );
 
 	rvar( cv_graphics_cull, false, "true", pl_bool_var, nullptr, "Toggles culling of visible objects." );
 	rvar( cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world" );
 	rvar( cv_graphics_draw_sprites, false, "true", pl_bool_var, nullptr, "Toggles rendering of sprites." );
 	rvar( cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources" );
-	rvar( cv_graphics_texture_filter, true, "false", pl_bool_var, nullptr, "Filter level/model textures?" );
-	rvar( cv_graphics_alpha_to_coverage, true, "false", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage" );
+	rvar( cv_graphics_texture_filter, true, "true", pl_bool_var, nullptr, "Filter level/model textures?" );
+	rvar( cv_graphics_alpha_to_coverage, true, "true", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage" );
 	rvar( cv_graphics_debug_normals, false, "false", pl_bool_var, nullptr, "Forces normals to be displayed" );
 
 	rvar( cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume" );
@@ -255,7 +249,6 @@ void Console_Initialize( void ) {
 	plRegisterConsoleCommand( "saveConfig", SaveConfigCommand, "Save current config" );
 	plRegisterConsoleCommand( "disconnect", DisconnectCommand, "Disconnects and unloads current map" );
 	plRegisterConsoleCommand( "displayUpdate", UpdateDisplayCommand, "Updates the display to match current settings" );
-	//plRegisterConsoleCommand("femode", FrontendModeCommand, "Forcefully change the current mode for the frontend");
 	plRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 	plRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 
@@ -273,8 +266,8 @@ static void DrawInputPane() {
 
 	plSetTexture( nullptr, 0 );
 
-	int scr_w = Display_GetViewportWidth( &g_state.ui_camera->viewport );
-	int scr_h = Display_GetViewportHeight( &g_state.ui_camera->viewport );
+	int scr_w = g_state.ui_camera->viewport.w;
+	int scr_h = g_state.ui_camera->viewport.h;
 	float h = font->GetCharacterHeight( 0 );
 
 	PLMatrix4 identity;

@@ -305,8 +305,8 @@ static void DrawLoadingScreen() {
 }
 
 void FE_Draw( void ) {
-	frontend_width = Display_GetViewportWidth( &g_state.ui_camera->viewport );
-	frontend_height = Display_GetViewportHeight( &g_state.ui_camera->viewport );
+	frontend_width = g_state.ui_camera->viewport.w;
+	frontend_height = g_state.ui_camera->viewport.h;
 
 	PLMatrix4 transform = plMatrix4Identity();
 

@@ -39,9 +39,6 @@ const VideoPreset *Display_GetVideoPreset( unsigned int idx );
 
 void Display_UpdateViewport( int x, int y, int width, int height );
 
-int Display_GetViewportWidth( const PLViewport *viewport );
-int Display_GetViewportHeight( const PLViewport *viewport );
-
 // debugging
 void Display_GetFramesCount( unsigned int *fps, unsigned int *ms );
 

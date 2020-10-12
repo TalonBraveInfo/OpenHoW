@@ -36,9 +36,6 @@ static std::vector< VideoPreset > vidPresets;
 //static PLFrameBuffer* game_target;
 //static PLFrameBuffer* frontend_target;
 
-static PLConsoleVariable *cv_display_show_camerapos;
-static PLConsoleVariable *cv_display_show_viewportinfo;
-
 #if 0
 void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
 	size_t cache_size = GetTextureCacheSize();
@@ -180,14 +177,6 @@ void Display_UpdateViewport( int x, int y, int width, int height ) {
 	camera->SetViewport( x, y, width, height );
 }
 
-int Display_GetViewportWidth( const PLViewport *viewport ) {
-	return viewport->w;
-}
-
-int Display_GetViewportHeight( const PLViewport *viewport ) {
-	return viewport->h;
-}
-
 /**
  * Update display to match the current settings.
  */
@@ -223,11 +212,6 @@ void Display_UpdateState() {
 }
 
 void Display_Initialize() {
-	// register debug vars
-	cv_display_show_camerapos = plRegisterConsoleVariable( "display_show_camerapos", "0", pl_bool_var, nullptr, "" );
-	cv_display_show_viewportinfo =
-			plRegisterConsoleVariable( "display_show_viewportinfo", "0", pl_bool_var, nullptr, "" );
-
 	// check the command line for any arguments
 	const char *var;
 	if ( ( var = plGetCommandLineArgumentValue( "-width" ) ) != nullptr ) {
@@ -244,7 +228,7 @@ void Display_Initialize() {
 	}
 
 	// now create the window and update the display
-	System_DisplayWindow( false, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT );
+	System_DisplayWindow( true, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT );
 
 	System_SetSwapInterval( cv_display_vsync->b_value ? 1 : 0 );
 	System_SetWindowTitle( ENGINE_TITLE );

@@ -20,9 +20,7 @@
 PL_EXTERN_C
 
 extern PLConsoleVariable *cv_debug_mode;
-extern PLConsoleVariable *cv_debug_fps;
 extern PLConsoleVariable *cv_debug_skeleton;
-extern PLConsoleVariable *cv_debug_shaders;
 extern PLConsoleVariable *cv_debug_bounds;
 
 extern PLConsoleVariable *cv_game_language;
@@ -32,7 +30,6 @@ extern PLConsoleVariable *cv_camera_fov;
 extern PLConsoleVariable *cv_camera_near;
 extern PLConsoleVariable *cv_camera_far;
 
-extern PLConsoleVariable *cv_display_texture_cache;
 extern PLConsoleVariable *cv_display_width;
 extern PLConsoleVariable *cv_display_height;
 extern PLConsoleVariable *cv_display_fullscreen;
