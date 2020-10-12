@@ -540,6 +540,7 @@ int main( int argc, char **argv ) {
 	plInitialize( argc, argv );
 
 	plRegisterStandardPackageLoaders();
+	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TIM | PL_IMAGE_FILEFORMAT_BMP );
 
 	char app_dir[PL_SYSTEM_MAX_PATH];
 	plGetApplicationDataDirectory( "OpenHoW", app_dir, PL_SYSTEM_MAX_PATH );

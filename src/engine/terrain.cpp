@@ -310,11 +310,18 @@ void ohw::Terrain::Draw() {
 		plSetTexture( textureAtlas->GetTexture(), 0 );
 	}
 
-	// Solid
-	{
-		Shaders_SetProgramByName( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
 
-		plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), true );
+	plLoadIdentityMatrix();
+
+	ShaderProgram *program;
+
+	// Solid
+	program = Shaders_GetProgram( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" );
+	if ( program != nullptr ) {
+		PLShaderProgram *iProgram = program->GetInternalProgram();
+		plSetShaderUniformValue( iProgram, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
 		plSetBlendMode( PL_BLEND_DISABLE );
 
@@ -331,10 +338,10 @@ void ohw::Terrain::Draw() {
 	}
 
 	// Water
-	{
-		Shaders_SetProgramByName( cv_graphics_debug_normals->b_value ? "debug_normals" : "water" );
-
-		plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), true );
+	program = Shaders_GetProgram( cv_graphics_debug_normals->b_value ? "debug_normals" : "water" );
+	if ( program != nullptr ) {
+		PLShaderProgram *iProgram = program->GetInternalProgram();
+		plSetShaderUniformValue( iProgram, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
 		plSetBlendMode( PL_BLEND_DEFAULT );
 
@@ -365,6 +372,8 @@ void ohw::Terrain::Draw() {
 	if ( !cv_graphics_debug_normals->b_value ) {
 		plSetTexture( nullptr, 0 );
 	}
+
+	plPopMatrix();
 }
 
 void ohw::Terrain::LoadPmg( const std::string &path ) {

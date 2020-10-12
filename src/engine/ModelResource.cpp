@@ -496,7 +496,7 @@ void ohw::ModelResource::GenerateBounds() {
 	}
 
 	// And now generate the bounds
-	bounds = plGenerateAABB( vertices.data(), vertices.size() );
+	bounds = plGenerateAABB( vertices.data(), vertices.size(), false );
 
 	// TODO: handle animations somehow? We might need to call this for each animation frame for animated models...
 }

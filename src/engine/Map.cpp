@@ -208,34 +208,24 @@ void ohw::Map::Draw() {
 		return;
 	}
 
-	plSetNamedShaderUniformVector4( program, "fog_colour", manifest_->fog_colour.ToVec4() );
-	plSetNamedShaderUniformFloat( program, "fog_near", manifest_->fog_intensity );
-	plSetNamedShaderUniformFloat( program, "fog_far", manifest_->fog_distance );
+	PLVector4 vColour = manifest_->fog_colour.ToVec4();
+	plSetShaderUniformValue( program, "fog_colour", &vColour, false );
+	plSetShaderUniformValue( program, "fog_near", &manifest_->fog_intensity, false );
+	plSetShaderUniformValue( program, "fog_far", &manifest_->fog_distance, false );
 
-	PLVector3 sun_position( 1.0f, -manifest_->sun_pitch, 0 );
-	PLMatrix4 sun_matrix;
-	sun_matrix.Identity();
-	sun_matrix.Translate( sun_position );
-	sun_matrix.Rotate( manifest_->sun_yaw, PLVector3( 0.0f, 1.0f, 0.0f ) );
-	sun_position.x = sun_matrix.m[ 0 ];
-	sun_position.z = sun_matrix.m[ 8 ];
+	PLVector3 sunPosition( 1.0f, -manifest_->sun_pitch, 0 );
+	PLMatrix4 sunMatrix;
+	sunMatrix.Identity();
+	sunMatrix.Translate( sunPosition );
+	sunMatrix.Rotate( manifest_->sun_yaw, PLVector3( 0.0f, 1.0f, 0.0f ) );
+	sunPosition.x = sunMatrix.m[ 0 ];
+	sunPosition.z = sunMatrix.m[ 8 ];
 
-	plSetNamedShaderUniformVector3( program, "sun_position", sun_position );
-	plSetNamedShaderUniformVector4( program, "sun_colour", manifest_->sun_colour.ToVec4() );
-	plSetNamedShaderUniformVector4( program, "ambient_colour", manifest_->ambient_colour.ToVec4() );
+	plSetShaderUniformValue( program, "sun_position", &sunPosition, false );
+	vColour = manifest_->sun_colour.ToVec4();
+	plSetShaderUniformValue( program, "sun_colour", &vColour, false );
+	vColour = manifest_->ambient_colour.ToVec4();
+	plSetShaderUniformValue( program, "ambient_colour", &vColour, false );
 
 	terrain_->Draw();
-
-#if 0 // debug sun position
-	Shaders_SetProgramByName( "generic_untextured" );
-	PLModel *sprite = engine->Resource()->GetFallbackModel();
-	PLMesh *mesh = sprite->levels[ 0 ].meshes[ 0 ];
-	plSetMeshUniformColour( mesh, PLColour( 0, 255, 0, 255 ) );
-	sprite->model_matrix = plTranslateMatrix4( sun_position );
-	plDrawModel( sprite );
-	plSetMeshUniformColour( mesh, PLColour( 255, 255, 0, 255 ) );
-	sprite->model_matrix = plTranslateMatrix4( PLVector3( 0, 0, 0 ) );
-	plDrawModel( sprite );
-	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ) );
-#endif
 }

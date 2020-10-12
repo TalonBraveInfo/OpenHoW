@@ -94,12 +94,13 @@ void ohw::ModelViewer::DrawViewport() {
 	shaderProgram->Enable();
 
 	if ( !viewDebugNormals ) {
-		plSetNamedShaderUniformVector3( shaderProgram->GetInternalProgram(), "sun_position",
-										PLVector3( 0.5f, 0.2f, 0.6f ) );
-		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "sun_colour",
-										PLColour( 255, 255, 255, 255 ).ToVec4() );
-		plSetNamedShaderUniformVector4( shaderProgram->GetInternalProgram(), "ambient_colour",
-										PLColour( 128, 128, 128, 255 ).ToVec4() );
+		PLVector3 sunPosition = PLVector3( 0.5f, 0.2f, 0.6f );
+		PLVector4 sunColour = PLVector4( 1.0f, 1.0f, 1.0f, 1.0f );
+		PLVector4 ambience = PLVector4( 0.75f, 0.75f, 0.75f, 1.0f );
+
+		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_position", &sunPosition, false );
+		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_colour", &sunColour, false );
+		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "ambient_colour", &ambience, false );
 	}
 
 	if ( viewRotate ) {
