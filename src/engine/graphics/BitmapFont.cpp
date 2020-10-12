@@ -93,6 +93,11 @@ void ohw::BitmapFont::DrawCharacter( float x, float y, float scale, PLColour col
  * Immediately draw the given string.
  */
 void ohw::BitmapFont::DrawString( float x, float y, float spacing, float scale, PLColour colour, const char *msg ) {
+	PLShaderProgram *program = plGetCurrentShaderProgram();
+	if ( program == nullptr ) {
+		Error( "Attempted to draw bitmap string without a bound shader program!\n" );
+	}
+
 	if ( scale <= 0.0f ) {
 		return;
 	}
@@ -105,6 +110,11 @@ void ohw::BitmapFont::DrawString( float x, float y, float spacing, float scale, 
 	plSetTexture( texture->GetInternalTexture(), 0 );
 
 	plClearMesh( renderMesh );
+
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
 
 	float nX = x;
 	float nY = y;
@@ -121,10 +131,12 @@ void ohw::BitmapFont::DrawString( float x, float y, float spacing, float scale, 
 		}
 	}
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plSetShaderUniformValue( program, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
 	plUploadMesh( renderMesh );
 	plDrawMesh( renderMesh );
+
+	plPopMatrix();
 }
 
 /**
