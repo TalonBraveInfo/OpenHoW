@@ -26,7 +26,7 @@
 MinHandle *Min_LoadFile( const char *path ) {
 	PLFile *fp = plOpenFile( path, false );
 	if ( fp == NULL ) {
-		LogWarn( "Failed to load Min \"%s\", aborting!\n", path );
+		Warning( "Failed to load Min \"%s\", aborting!\n", path );
 		return NULL;
 	}
 
@@ -34,7 +34,7 @@ MinHandle *Min_LoadFile( const char *path ) {
 
 	uint32_t num_triangles;
 	if ( plReadFile( fp, &num_triangles, sizeof( uint32_t ), 1 ) != 1 ) {
-		LogWarn( "Failed to get number of triangles, \"%s\"!\n", path );
+		Warning( "Failed to get number of triangles, \"%s\"!\n", path );
 	}
 
 	struct __attribute__((packed)) {
@@ -52,7 +52,7 @@ MinHandle *Min_LoadFile( const char *path ) {
 	static_assert( sizeof( *triangles ) == 24, "invalid struct size" );
 	if ( plReadFile( fp, triangles, sizeof( *triangles ), num_triangles ) != num_triangles ) {
 		plCloseFile( fp );
-		LogWarn( "Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path );
+		Warning( "Failed to get %u triangles, \"%s\", aborting!\n", num_triangles, path );
 		return NULL;
 	}
 	// todo

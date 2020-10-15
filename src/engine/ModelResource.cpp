@@ -34,7 +34,7 @@ ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool a
 			Error( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
 		}
 
-		LogWarn( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
+		Warning( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
 		return;
 	}
 
@@ -52,7 +52,7 @@ ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool a
 			Error( "Unrecognised file extension, \"%s\"!\n", fileExt );
 		}
 
-		LogWarn( "Unrecognised file extension, \"%s\"!\n", fileExt );
+		Warning( "Unrecognised file extension, \"%s\"!\n", fileExt );
 		return;
 	}
 
@@ -115,7 +115,7 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 	u_assert( i < meshesVector.size() );
 	if ( i >= meshesVector.size() ) {
-		LogWarn( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
+		Warning( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
 		return nullptr;
 	}
 
@@ -125,7 +125,7 @@ PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 ohw::TextureResource *ohw::ModelResource::GetTextureResource(unsigned int i) {
 	u_assert( i < texturesVector.size() );
 	if ( i >= texturesVector.size() ) {
-		LogWarn( "Attempted to access an invalid texture (%d/%d)!\n", i, texturesVector.size() );
+		Warning( "Attempted to access an invalid texture (%d/%d)!\n", i, texturesVector.size() );
 		return nullptr;
 	}
 
@@ -146,7 +146,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 				Error( "Failed to create mesh! (%s)\n", plGetError() );
 			}
 
-			LogWarn( "Failed to create mesh! (%s)\n", plGetError() );
+			Warning( "Failed to create mesh! (%s)\n", plGetError() );
 			return;
 		}
 
@@ -199,7 +199,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 			// Destroy all the attached meshes
 			DestroyMeshes();
 
-			LogWarn( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
 			return;
 		}
 
@@ -225,7 +225,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 static TextureAtlas *
 ModelResource_GenerateVtxTextureAtlas( const FacHandle *facHandle, const std::string &texturePath ) {
 	if ( facHandle->texture_table_size == 0 ) {
-		LogWarn( "Empty texture table!\n" );
+		Warning( "Empty texture table!\n" );
 		return nullptr;
 	}
 
@@ -233,14 +233,14 @@ ModelResource_GenerateVtxTextureAtlas( const FacHandle *facHandle, const std::st
 
 	for ( unsigned int i = 0; i < facHandle->texture_table_size; ++i ) {
 		if ( facHandle->texture_table[ i ].name[ 0 ] == '\0' ) {
-			LogWarn( "Invalid texture name in table, skipping (%d)!\n", i );
+			Warning( "Invalid texture name in table, skipping (%d)!\n", i );
 			continue;
 		}
 
 		std::string str = texturePath;
 		std::string texture_path = str.erase( str.find_last_of( '/' ) ) + "/";
 		if ( !atlas->AddImage( texture_path + facHandle->texture_table[ i ].name + ".png", true ) ) {
-			LogWarn( "Failed to add texture \"%s\" to atlas!\n", facHandle->texture_table[ i ].name );
+			Warning( "Failed to add texture \"%s\" to atlas!\n", facHandle->texture_table[ i ].name );
 		}
 	}
 
@@ -260,7 +260,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 			Error( "Failed to load Vtx, \"%s\"!\n", path.c_str() );
 		}
 
-		LogWarn( "Failed to load Vtx, \"%s\"!\n", path.c_str() );
+		Warning( "Failed to load Vtx, \"%s\"!\n", path.c_str() );
 		return;
 	}
 
@@ -275,7 +275,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 
 		Vtx_DestroyHandle( vtxHandle );
 
-		LogWarn( "Failed to load Fac, \"%s\"!\n", facesPath );
+		Warning( "Failed to load Fac, \"%s\"!\n", facesPath );
 		return;
 	}
 
@@ -292,7 +292,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 			Vtx_DestroyHandle( vtxHandle );
 			Fac_DestroyHandle( facHandle );
 
-			LogWarn( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
 			return;
 		}
 
@@ -331,7 +331,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		Vtx_DestroyHandle( vtxHandle );
 		Fac_DestroyHandle( facHandle );
 
-		LogWarn( "Failed to create mesh!\nPL: %s\n", plGetError() );
+		Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
 		return;
 	}
 

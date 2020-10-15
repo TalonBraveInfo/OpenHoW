@@ -27,117 +27,6 @@
 #include "display.h"
 #include "camera.h"
 
-using namespace ohw;
-
-/************************************************************/
-/* Texture Cache */
-
-static std::vector< VideoPreset > vidPresets;
-//static PLFrameBuffer* game_target;
-//static PLFrameBuffer* frontend_target;
-
-#if 0
-void PrintTextureCacheSizeCommand(unsigned int argc, char *argv[]) {
-	size_t cache_size = GetTextureCacheSize();
-	const char *str = "total texture cache: ";
-	if(argc < 2) {
-		LogInfo("%s %u bytes", str, cache_size);
-		return;
-	}
-
-	if(pl_strncasecmp(argv[1], "KB", 2) == 0) {
-		LogInfo("%s %.2fKB (%u bytes)\n", str, plBytesToKilobytes(cache_size), cache_size);
-	} else if(pl_strncasecmp(argv[1], "MB", 2) == 0) {
-		LogInfo("%s %.2fMB (%u bytes)\n", str, plBytesToMegabytes(cache_size), cache_size);
-	} else if(pl_strncasecmp(argv[1], "GB", 2) == 0) {
-		LogInfo("%s %.2fGB (%u bytes)\n", str, plBytesToGigabytes(cache_size), cache_size);
-	} else {
-		LogInfo("unknown parameter \"%s\", ignoring!\n", argv[1]);
-	}
-}
-
-/* for debugging purposes, displays the textures
- * cached in memory on the screen */
-void DrawTextureCache(unsigned int id) {
-	u_assert(id < MAX_TEXTURE_INDEX);
-	TextureIndex *index = &texture_cache[id];
-	if(index->num_textures > 0) {
-		int w = index->texture->w;
-		int h = index->texture->h;
-		if (w > cv_display_width->i_value) {
-			w = (unsigned int) cv_display_width->i_value;
-		}
-		if (h > cv_display_height->i_value) {
-			h = (unsigned int) cv_display_height->i_value;
-		}
-
-		plDrawTexturedRectangle(0, 0, w, h, index->texture);
-#if 1
-		for(unsigned int i = 0; i < index->num_textures; ++i) {
-			plDrawRectangle(
-					index->offsets[i].x,
-					index->offsets[i].y,
-					index->offsets[i].w,
-					index->offsets[i].h,
-					PL_COLOUR_RED
-			);
-		}
-#endif
-		char msg[256];
-		snprintf(msg, sizeof(msg), "%u TEXTURES\n%dX%d\n%.2fMB (VRAM)",
-				 index->num_textures,
-				 index->texture->w,
-				 index->texture->h,
-				 plBytesToMegabytes(index->texture->size));
-		Font_DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, msg);
-	} else {
-		Font_DrawBitmapString(g_fonts[FONT_SMALL], 10, 10, 0, 1.f, PL_COLOUR_WHITE, "NO DATA CACHED!");
-	}
-}
-#endif
-
-#if 0 /* experimental palette changer thing... */
-PLColour main_channel = PLColourRGB((uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255));
-	plReplaceImageColour(&cache, PLColourRGB(90, 82, 8), main_channel);
-
-	PLColour dark_channel = main_channel;
-	if(dark_channel.r > 16) dark_channel.r -= 16;
-	if(dark_channel.g > 25) dark_channel.g -= 25;
-	if(dark_channel.b > 8)  dark_channel.b -= 8;
-	plReplaceImageColour(&cache, PLColourRGB(74, 57, 0), dark_channel);
-
-	PLColour light_channel = main_channel;
-	if(light_channel.r < 206) light_channel.r += 49;
-	if(light_channel.g < 197) light_channel.g += 58;
-	if(light_channel.b < 214) light_channel.b += 41;
-	plReplaceImageColour(&cache, PLColourRGB(139, 115, 49), light_channel);
-
-	PLColour mid_channel = main_channel;
-	/* this one still needs doing... */
-	plReplaceImageColour(&cache, PLColourRGB(115, 98, 24), mid_channel);
-#endif
-
-bool Display_AppendVideoPreset( int width, int height ) {
-	vidPresets.push_back( { width, height } );
-	LogInfo( "Added %dx%d video preset", width, height );
-	return true;
-}
-
-int Display_GetNumVideoPresets() {
-	return vidPresets.size();
-}
-
-const VideoPreset *Display_GetVideoPreset( unsigned int idx ) {
-	if ( idx >= vidPresets.size() ) {
-		LogWarn( "Attempted to get an out of range video preset \'%d\', current count is %d", idx, vidPresets.size() );
-		return nullptr;
-	}
-
-	return &vidPresets[ idx ];
-}
-
-/************************************************************/
-
 /* shared function */
 void Display_UpdateViewport( int x, int y, int width, int height ) {
 	Input_ResetStates();
@@ -173,7 +62,7 @@ void Display_UpdateViewport( int x, int y, int width, int height ) {
 		g_state.ui_camera->viewport.h = newHeight;
 	}
 
-	Camera *camera = Engine::Game()->GetCamera();
+	ohw::Camera *camera = ohw::Engine::Game()->GetCamera();
 	camera->SetViewport( x, y, width, height );
 }
 
@@ -195,8 +84,8 @@ void Display_UpdateState() {
 	int w = cv_display_width->i_value;
 	int h = cv_display_height->i_value;
 	if ( !System_SetWindowSize( w, h, false ) ) {
-		LogWarn( "failed to set display size to %dx%d!\n", cv_display_width->i_value, cv_display_height->i_value );
-		LogInfo( "display set to %dx%d\n", w, h );
+		Warning( "failed to set display size to %dx%d!\n", cv_display_width->i_value, cv_display_height->i_value );
+		Print( "display set to %dx%d\n", w, h );
 
 		// ... not sure if we'll force the engine to only render a specific display size ...
 		if ( w < MIN_DISPLAY_WIDTH ) w = MIN_DISPLAY_WIDTH;
@@ -205,7 +94,7 @@ void Display_UpdateState() {
 		plSetConsoleVariable( cv_display_width, pl_itoa( w, buf, 4, 10 ) );
 		plSetConsoleVariable( cv_display_height, pl_itoa( h, buf, 4, 10 ) );
 	} else {
-		LogInfo( "display set to %dx%d\n", w, h );
+		Print( "display set to %dx%d\n", w, h );
 	}
 
 	Display_UpdateViewport( 0, 0, cv_display_width->i_value, cv_display_height->i_value );
@@ -231,26 +120,8 @@ void Display_Initialize() {
 	System_DisplayWindow( true, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT );
 
 	System_SetSwapInterval( cv_display_vsync->b_value ? 1 : 0 );
-	System_SetWindowTitle( ENGINE_TITLE );
 
 	Display_UpdateState();
-
-	// platform library graphics subsystem can init now...
-	plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS );
-	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
-
-#if 0
-	//Create the render textures
-	game_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
-	if (game_target == nullptr) {
-	  Error("Failed to create game_target framebuffer, aborting!\n%s\n", plGetError());
-	}
-
-	frontend_target = plCreateFrameBuffer(640, 480, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
-	if (frontend_target == nullptr) {
-	  Error("Failed to create frontend_target framebuffer, aborting!\n%s\n", plGetError());
-	}
-#endif
 
 	Shaders_Initialize();
 
@@ -304,27 +175,12 @@ static void DrawDebugOverlay() {
 	}
 
 	UI_DisplayDebugMenu(); /* aka imgui */
-
-	if ( FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING
-	     || cv_debug_mode->i_value <= 0 ) {
-		return;
-	}
-
-#if 1
-	g_fonts[ FONT_CHARS2 ]->DrawString( 20, 24, 2, 1.f, PL_COLOUR_WHITE, "DRAW STATS" );
-	unsigned int y = 50;
-	char cam_pos[32];
-	snprintf( cam_pos, sizeof( cam_pos ), "CHUNKS DRAWN : %d", g_state.gfx.num_chunks_drawn );
-	g_fonts[ FONT_SMALL ]->DrawString( 20, y, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
-	snprintf( cam_pos, sizeof( cam_pos ), "MODELS DRAWN : %d", g_state.gfx.numModelsDrawn );
-	g_fonts[ FONT_SMALL ]->DrawString( 20, y += 15, 0, 1.f, PL_COLOUR_WHITE, cam_pos );
-#endif
 }
 
 double cur_delta = 0;
 
 static void Display_DrawMap() {
-	Map *map = ohw::Engine::Game()->GetCurrentMap();
+	ohw::Map *map = ohw::Engine::Game()->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
@@ -333,7 +189,7 @@ static void Display_DrawMap() {
 }
 
 void Display_DrawScene() {
-	Camera *camera = Engine::Game()->GetCamera();
+	ohw::Camera *camera = ohw::Engine::Game()->GetCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -361,7 +217,7 @@ void Display_DrawScene() {
 
 	Shaders_SetProgramByName( "generic_untextured" );
 
-	Engine::Audio()->DrawSources();
+	ohw::Engine::Audio()->DrawSources();
 }
 
 void Display_DrawInterface() {
@@ -373,8 +229,6 @@ void Display_DrawInterface() {
 	FE_Draw();
 
 	DrawDebugOverlay();
-
-	Console_Draw();
 }
 
 void Display_Draw( double delta ) {

@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "App.h"
 #include "engine.h"
 #include "language.h"
-#include "mod_support.h"
+#include "ModManager.h"
 #include "client.h"
 #include "config.h"
 #include "input.h"
@@ -32,13 +33,6 @@ EngineState g_state;
 ohw::Engine *ohw::engine;
 
 ohw::Engine::Engine() {
-	g_state.draw_ticks = 0;
-
-	g_state.last_draw_ms = 0;
-	g_state.last_sys_tick = 0;
-	g_state.sim_ticks = 0;
-	g_state.sys_ticks = 0;
-
 	g_state.gfx.numModelsDrawn = 0;
 	g_state.gfx.num_chunks_drawn = 0;
 	g_state.gfx.num_triangles_total = 0;
@@ -58,21 +52,9 @@ ohw::Engine::~Engine() {
 }
 
 void ohw::Engine::Initialize() {
-	LogInfo( "Initializing Engine (%s)...\n", GetVersionString().c_str() );
+	Print( "Initializing Engine (%s)...\n", GetVersionString().c_str() );
 
 	Console_Initialize();
-
-	// load in the manifests
-	Mod_RegisterMods();
-
-	// check for any command line arguments
-	const char *var = plGetCommandLineArgumentValue( "-mod" );
-	if ( var == nullptr ) {
-		// otherwise default to base campaign
-		var = "how";
-	}
-
-	Mod_SetMod( var );
 
 	// Initialize the language manager
 	LanguageManager::GetInstance()->SetLanguage( "eng" );
@@ -96,45 +78,5 @@ void ohw::Engine::Initialize() {
 
 	FE_Initialize();
 
-	plParseConsoleString( "fsListMounted" );
-
 	Game()->CachePersistentData();
-}
-
-std::string ohw::Engine::GetVersionString() {
-	return "v" +
-		std::to_string( ENGINE_MAJOR_VERSION ) + "." +
-		std::to_string( ENGINE_MINOR_VERSION ) + "." +
-		std::to_string( ENGINE_PATCH_VERSION ) + "-" +
-		GIT_BRANCH + ":" + GIT_COMMIT_HASH + "-" + GIT_COMMIT_COUNT;
-}
-
-bool ohw::Engine::IsRunning() {
-	System_PollEvents();
-
-	static unsigned int next_tick = 0;
-	if ( next_tick == 0 ) {
-		next_tick = System_GetTicks();
-	}
-
-	unsigned int loops = 0;
-	while ( System_GetTicks() > next_tick && loops < MAX_FRAMESKIP ) {
-		g_state.sys_ticks = System_GetTicks();
-		g_state.sim_ticks++;
-
-		Client_ProcessInput(); // todo: kill this
-
-		Physics()->Tick();
-		Game()->Tick();
-		Audio()->Tick();
-
-		g_state.last_sys_tick = System_GetTicks();
-		next_tick += SKIP_TICKS;
-		loops++;
-	}
-
-	deltaTime = ( double ) ( System_GetTicks() + SKIP_TICKS - next_tick ) / ( double ) ( SKIP_TICKS );
-	Display_Draw( deltaTime );
-
-	return true;
 }

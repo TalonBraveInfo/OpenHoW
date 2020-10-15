@@ -25,14 +25,14 @@
 HirHandle *Hir_LoadFile( const char *path ) {
 	PLFile *file = plOpenFile( path, false );
 	if ( file == nullptr ) {
-		LogWarn( "Failed to load \"%s\", aborting!\n", path );
+		Warning( "Failed to load \"%s\", aborting!\n", path );
 		return nullptr;
 	}
 
 	size_t hir_size = plGetFileSize( file );
 	if ( hir_size == 0 ) {
 		plCloseFile( file );
-		LogWarn( "Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError() );
+		Warning( "Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError() );
 		return nullptr;
 	}
 
@@ -48,7 +48,7 @@ HirHandle *Hir_LoadFile( const char *path ) {
 	plCloseFile( file );
 
 	if ( rnum_bones != num_bones ) {
-		LogWarn( "Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones );
+		Warning( "Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones );
 		return nullptr;
 	}
 
@@ -66,7 +66,7 @@ HirHandle *Hir_LoadFile( const char *path ) {
 	/* in the long term, we won't have this here, we'll probably extend the format
 	 * to include the names of each bone (.skeleton format?) */
 	if ( static_cast<HirSkeletonBone>(num_bones) >= HirSkeletonBone::MAX_BONES ) {
-		LogWarn( "Invalid number of bones, %d/%d, aborting!\n", num_bones, HirSkeletonBone::MAX_BONES );
+		Warning( "Invalid number of bones, %d/%d, aborting!\n", num_bones, HirSkeletonBone::MAX_BONES );
 		return nullptr;
 	}
 

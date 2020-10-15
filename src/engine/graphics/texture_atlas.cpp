@@ -69,7 +69,7 @@ void TextureAtlas::AddImages( const std::vector<std::string> &textures ) {
 
 void TextureAtlas::Finalize() {
 	if ( images_by_height_.empty() ) {
-		LogWarn( "Failed to finalize texture atlas, no textures loaded!\n" );
+		Warning( "Failed to finalize texture atlas, no textures loaded!\n" );
 		return;
 	}
 

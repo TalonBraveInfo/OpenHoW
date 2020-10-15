@@ -27,7 +27,7 @@
 VtxHandle* Vtx_LoadFile(const char* path) {
   PLFile* vtx_file = plOpenFile(path, false);
   if (vtx_file == NULL) {
-    LogWarn("Failed to load Vtx \"%s\", aborting!\n", path);
+    Warning( "Failed to load Vtx \"%s\", aborting!\n", path);
     return NULL;
   }
 
@@ -40,7 +40,7 @@ VtxHandle* Vtx_LoadFile(const char* path) {
 	unsigned int num_vertices = ( unsigned int ) ( plGetFileSize( vtx_file ) / sizeof( VtxCoord ) );
   if (num_vertices >= VTX_MAX_VERTICES) {
     plCloseFile(vtx_file);
-    LogWarn("Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, VTX_MAX_VERTICES);
+    Warning( "Invalid number of vertices in \"%s\" (%d/%d)!\n", path, num_vertices, VTX_MAX_VERTICES);
     return NULL;
   }
 
@@ -49,12 +49,12 @@ VtxHandle* Vtx_LoadFile(const char* path) {
   plCloseFile(vtx_file);
 
   if (num_vertices == 0) {
-    LogWarn("No vertices found in Vtx \"%s\"!\n", path);
+    Warning( "No vertices found in Vtx \"%s\"!\n", path);
     return NULL;
   }
 
   if (rnum_vertices != num_vertices) {
-    LogWarn("Failed to read in all vertices from \"%s\", aborting!\n", path);
+    Warning( "Failed to read in all vertices from \"%s\", aborting!\n", path);
     return NULL;
   }
 

@@ -17,7 +17,29 @@
 
 #pragma once
 
-PL_EXTERN_C
+enum LogLevel {
+	LOG_LEVEL_DEFAULT,
+	LOG_LEVEL_WARNING,
+	LOG_LEVEL_ERROR,
+	LOG_LEVEL_DEBUG,
+};
+
+#define CMSGPrintWFunction( LEVEL, FORMAT, ... ) plLogMessage((LEVEL), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__)
+
+#ifdef _DEBUG
+#   define DebugMsg( ... ) CMSGPrintWFunction(LOG_LEVEL_DEBUG, __VA_ARGS__)
+#else
+#   define DebugMsg( ... )
+#endif
+
+#define Print( ... )    CMSGPrintWFunction(LOG_LEVEL_DEFAULT, __VA_ARGS__)
+#define Warning( ... )  CMSGPrintWFunction(LOG_LEVEL_WARNING, __VA_ARGS__)
+#define Error( ... ) \
+        CMSGPrintWFunction(LOG_LEVEL_ERROR, __VA_ARGS__);                               \
+        ohw::GetApp()->DisplayMessageBox( ohw::App::MBErrorLevel::ERROR, __VA_ARGS__ ); \
+        ohw::GetApp()->Shutdown()
+
+/************************************************************/
 
 extern PLConsoleVariable *cv_debug_mode;
 extern PLConsoleVariable *cv_debug_skeleton;
@@ -53,8 +75,4 @@ extern PLConsoleVariable *cv_audio_mode;
 
 /************************************************************/
 
-void Console_Initialize(void);
-void Console_Toggle(void);
-void Console_Draw(void);
-
-PL_EXTERN_C_END
+void Console_Initialize();

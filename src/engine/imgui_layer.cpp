@@ -97,7 +97,7 @@ void UI_DisplaySettings() {
 
 	static int item_current = 0;
 	bool display_changed = false;
-	const VideoPreset *mode = Display_GetVideoPreset( item_current );
+	const DisplayPreset *mode = Display_GetVideoPreset( item_current );
 	char s[32] = { 0 };
 	snprintf( s, 32, "%dx%d", mode->width, mode->height );
 	if ( ImGui::BeginCombo( "Resolution", s, 0 ) ) {
@@ -286,7 +286,7 @@ void UI_DisplayFileBox() {
 							auto *viewer = new TextureViewer( i.path );
 							windows.push_back( viewer );
 						} catch ( const std::runtime_error &error ) {
-							LogWarn( "%s\n", error.what() );
+							Warning( "%s\n", error.what() );
 						}
 					}
 						break;

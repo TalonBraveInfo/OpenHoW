@@ -27,7 +27,7 @@
 LanguageManager* LanguageManager::language_manager_;
 
 LanguageManager::LanguageManager() {
-	LogInfo( "Loading "
+	Print( "Loading "
 				 LNG_MANIFEST_PATH
 				 "\n" );
 
@@ -61,18 +61,18 @@ const char* LanguageManager::GetTranslation( const char* key ) { // todo: UTF-8 
 
 	const char* p = ++key;
 	if ( *p == '\0' ) {
-		LogWarn( "Invalid key provided\n" );
+		Warning( "Invalid key provided\n" );
 		return p;
 	}
 
 	if ( current_language == nullptr ) {
-		LogWarn( "No valid language set\n" );
+		Warning( "No valid language set\n" );
 		return p;
 	}
 
 	auto i = current_language->keys.find( p );
 	if ( i == current_language->keys.end() ) {
-		LogWarn( "Failed to find translation key, %s\n", p );
+		Warning( "Failed to find translation key, %s\n", p );
 		return p;
 	}
 

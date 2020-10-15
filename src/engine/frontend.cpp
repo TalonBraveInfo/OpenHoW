@@ -355,7 +355,7 @@ void FrontEnd_SetState( unsigned int state ) {
 	LogDebug( "changing frontend state to %u...\n", state );
 	switch ( state ) {
 		default: {
-			LogWarn( "invalid frontend state, %u, aborting\n", state );
+			Warning( "invalid frontend state, %u, aborting\n", state );
 			return;
 		}
 

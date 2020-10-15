@@ -28,7 +28,7 @@ ParticleEffect::ParticleEffect( const std::string &effectPath ) {
 
 		int version = jsonBlob.GetIntegerProperty( "version", 0, false );
 		if ( version != PARTICLE_EFFECT_VERSION ) {
-			LogWarn( "Invalid particle effect version, %d (expected %d) in \"%s\"!\n",
+			Warning( "Invalid particle effect version, %d (expected %d) in \"%s\"!\n",
 			         version,
 			         PARTICLE_EFFECT_VERSION,
 			         effectPath.c_str());
@@ -36,7 +36,7 @@ ParticleEffect::ParticleEffect( const std::string &effectPath ) {
 
 		unsigned int numEmitters = jsonBlob.GetArrayLength( "emitters" );
 		if ( numEmitters == 0 ) {
-			LogWarn( "No emitters in particle effect \"%s\"!\n", effectPath.c_str());
+			Warning( "No emitters in particle effect \"%s\"!\n", effectPath.c_str());
 		}
 
 		jsonBlob.EnterChildNode( "emitters" );

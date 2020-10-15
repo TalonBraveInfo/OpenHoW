@@ -19,7 +19,7 @@
 #include "frontend.h"
 #include "Map.h"
 #include "language.h"
-#include "mod_support.h"
+#include "ModManager.h"
 #include "actor_manager.h"
 #include "GameMode.h"
 #include "player.h"
@@ -154,7 +154,7 @@ void ohw::GameManager::ClearPlayers() {
 
 Player *ohw::GameManager::GetPlayerByIndex( unsigned int i ) const {
 	if ( i >= players_.size() ) {
-		LogWarn( "Invalid player index, \"%d\"!\n", i );
+		Warning( "Invalid player index, \"%d\"!\n", i );
 		return nullptr;
 	}
 
@@ -164,7 +164,7 @@ Player *ohw::GameManager::GetPlayerByIndex( unsigned int i ) const {
 void ohw::GameManager::LoadMap( const std::string &name ) {
 	MapManifest *manifest = Engine::Game()->GetMapManifest( name );
 	if ( manifest == nullptr ) {
-		LogWarn( "Failed to get map descriptor, \"%s\"\n", name.c_str() );
+		Warning( "Failed to get map descriptor, \"%s\"\n", name.c_str() );
 		return;
 	}
 
@@ -194,7 +194,7 @@ void ohw::GameManager::CachePersistentData() {
 }
 
 void ohw::GameManager::RegisterTeamManifest( const std::string &path ) {
-	LogInfo( "Registering team manifest \"%s\"...\n", path.c_str() );
+	Print( "Registering team manifest \"%s\"...\n", path.c_str() );
 
 	JsonReader config( path );
 	unsigned int numTeams = config.GetArrayLength();
@@ -245,7 +245,7 @@ void ohw::GameManager::RegisterClassManifest( const std::string &path ) {
 }
 
 void ohw::GameManager::RegisterMapManifest( const std::string &path ) {
-	LogInfo( "Registering map \"%s\"...\n", path.c_str() );
+	Print( "Registering map \"%s\"...\n", path.c_str() );
 
 	MapManifest manifest;
 	try {
@@ -270,7 +270,7 @@ void ohw::GameManager::RegisterMapManifest( const std::string &path ) {
 		manifest.fog_intensity = config.GetFloatProperty( "fogIntensity", manifest.fog_intensity );
 		manifest.fog_distance = config.GetFloatProperty( "fogDistance", manifest.fog_distance );
 	} catch ( const std::exception &e ) {
-		LogWarn( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
+		Warning( "Failed to read map config, \"%s\"!\n%s\n", path.c_str(), e.what() );
 	}
 
 	char temp_buf[64];
@@ -306,7 +306,7 @@ MapManifest *ohw::GameManager::GetMapManifest( const std::string &name ) {
 		return &manifest->second;
 	}
 
-	LogWarn( "Failed to get manifest for \"%s\"!\n", name.c_str() );
+	Warning( "Failed to get manifest for \"%s\"!\n", name.c_str() );
 	return nullptr;
 }
 
@@ -318,7 +318,7 @@ MapManifest *ohw::GameManager::GetMapManifest( const std::string &name ) {
 MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 	// ensure the map doesn't exist already
 	if ( Engine::Game()->GetMapManifest( name ) != nullptr ) {
-		LogWarn( "Unable to create map, it already exists!\n" );
+		Warning( "Unable to create map, it already exists!\n" );
 		return nullptr;
 	}
 
@@ -326,7 +326,7 @@ MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 	std::string path = "mods/" + currentMod->directory + "maps/" + name + ".map";
 	std::ofstream output( path );
 	if ( !output.is_open() ) {
-		LogWarn( "Failed to write to \"%s\", aborting!n\"\n", path.c_str() );
+		Warning( "Failed to write to \"%s\", aborting!n\"\n", path.c_str() );
 		return nullptr;
 	}
 
@@ -334,7 +334,7 @@ MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 	output << manifest.Serialize();
 	output.close();
 
-	LogInfo( "Wrote \"%s\"!\n", path.c_str() );
+	Print( "Wrote \"%s\"!\n", path.c_str() );
 
 	Engine::Game()->RegisterMapManifest( path );
 	return Engine::Game()->GetMapManifest( name );
@@ -343,7 +343,7 @@ MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 const CharacterClass *ohw::GameManager::GetDefaultClass( const std::string &classIdentifer ) const {
 	const auto &i = defaultClasses.find( classIdentifer );
 	if ( i == defaultClasses.end() ) {
-		LogWarn( "Failed to find character class \"%s\"!\n", classIdentifer.c_str() );
+		Warning( "Failed to find character class \"%s\"!\n", classIdentifer.c_str() );
 		return nullptr;
 	}
 
@@ -352,7 +352,7 @@ const CharacterClass *ohw::GameManager::GetDefaultClass( const std::string &clas
 
 void ohw::GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
-		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		Warning( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
@@ -369,7 +369,7 @@ void ohw::GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
  */
 void ohw::GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
-		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		Warning( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
@@ -389,7 +389,7 @@ void ohw::GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
  */
 void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 	if ( Engine::Game()->mapManifests.empty() ) {
-		LogWarn( "No maps available!\n" );
+		Warning( "No maps available!\n" );
 		return;
 	}
 
@@ -403,33 +403,33 @@ void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 		for ( size_t i = 0; i < desc->modes.size(); ++i ) {
 			out += ( i == 0 ? " " : ", " ) + desc->modes[ i ];
 		}
-		LogInfo( "%s\n", out.c_str() );
+		Print( "%s\n", out.c_str() );
 	}
 
-	LogInfo( "%u maps\n", Engine::Game()->mapManifests.size() );
+	Print( "%u maps\n", Engine::Game()->mapManifests.size() );
 }
 
 void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
-		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		Warning( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
 	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
-		LogInfo( "Command cannot function outside of game!\n" );
+		Print( "Command cannot function outside of game!\n" );
 		return;
 	}
 
 	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
-		LogWarn( "No actor currently active!\n" );
+		Warning( "No actor currently active!\n" );
 		return;
 	}
 
 	APig *pig = dynamic_cast<APig *>(actor);
 	if ( pig == nullptr ) {
-		LogWarn( "Actor is not a pig!\n" );
+		Warning( "Actor is not a pig!\n" );
 		return;
 	}
 
@@ -445,13 +445,13 @@ void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 void ohw::GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
 	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
-		LogInfo( "Command cannot function outside of game!\n" );
+		Print( "Command cannot function outside of game!\n" );
 		return;
 	}
 
 	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
-		LogWarn( "No actor currently active!\n" );
+		Warning( "No actor currently active!\n" );
 		return;
 	}
 
@@ -460,20 +460,20 @@ void ohw::GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
 
 void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
-		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		Warning( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
 	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
-		LogInfo( "Command cannot function outside of game!\n" );
+		Print( "Command cannot function outside of game!\n" );
 		return;
 	}
 
 	// Fetch the player's actor, so we can get their position
 	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
-		LogWarn( "No actor currently active!\n" );
+		Warning( "No actor currently active!\n" );
 		return;
 	}
 
@@ -490,20 +490,20 @@ void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 
 void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 	if ( argc < 4 ) {
-		LogWarn( "Invalid number of arguments, ignoring!\n" );
+		Warning( "Invalid number of arguments, ignoring!\n" );
 		return;
 	}
 
 	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
 	if ( mode == nullptr ) {
-		LogInfo( "Command cannot function outside of game!\n" );
+		Print( "Command cannot function outside of game!\n" );
 		return;
 	}
 
 	// Fetch the player's actor, so we can get their position
 	Actor *actor = mode->GetPossessedActor();
 	if ( actor == nullptr ) {
-		LogWarn( "No actor currently active!\n" );
+		Warning( "No actor currently active!\n" );
 		return;
 	}
 
@@ -546,7 +546,7 @@ void ohw::GameManager::StartMode( const std::string &map,
 	LoadMap( map );
 
 	if ( currentMap == nullptr ) {
-		LogWarn( "Failed to start mode, map wasn't loaded!\n" );
+		Warning( "Failed to start mode, map wasn't loaded!\n" );
 		EndMode();
 		return;
 	}

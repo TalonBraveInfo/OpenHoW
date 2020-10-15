@@ -28,7 +28,7 @@ using namespace ohw;
 
 /************************************************************/
 
-#define check_args( num ) if(argc < (num)) { LogWarn("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
+#define check_args( num ) if(argc < (num)) { Warning("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
 
 #if 0
 static void FrontendModeCommand(unsigned int argc, char* argv[]) {
@@ -75,7 +75,7 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 
 	const char *fpath = argv[ 1 ];
 	if ( plIsEmptyString( fpath ) ) {
-		LogWarn( "invalid argument provided, ignoring!\n" );
+		Warning( "invalid argument provided, ignoring!\n" );
 		return;
 	}
 
@@ -105,14 +105,14 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 	}
 
 	switch ( type ) {
-		default:LogWarn( "unknown filetype, ignoring!\n" );
+		default:Warning( "unknown filetype, ignoring!\n" );
 			break;
 
 		case TYPE_MAP: {
 			char map_name[32];
 			snprintf( map_name, sizeof( map_name ), "%s", plGetFileName( fpath ) - 4 );
 			if ( plIsEmptyString( map_name ) ) {
-				LogWarn( "invalid map name, ignoring!\n" );
+				Warning( "invalid map name, ignoring!\n" );
 				return;
 			}
 
@@ -205,7 +205,7 @@ static void ClearConsoleOutputBuffer( unsigned int argc, char **argv ) {
 void Console_Initialize( void ) {
 #define rvar( var, arc, ... ) \
     { \
-        const char *str_##var = plStringify(var); \
+        const char *str_##var = PL_STRINGIFY(var); \
         (var) = plRegisterConsoleVariable(&str_##var[3], __VA_ARGS__); \
         (var)->archive = (arc); \
     }
@@ -347,7 +347,7 @@ static void ResetInputBuffer() {
 
 static void ConsoleTextInputCallback( const char *c ) {
 	if ( console_state.in_buffer_pos > MAX_INPUT_BUFFER_SIZE ) {
-		LogWarn( "Hit console buffer limit!\n" );
+		Warning( "Hit console buffer limit!\n" );
 		return;
 	}
 

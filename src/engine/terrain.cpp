@@ -75,7 +75,7 @@ ohw::Terrain::Chunk *ohw::Terrain::GetChunk( const PLVector2 &pos ) {
 
 	uint idx = ( ( uint ) ( pos.x ) / TERRAIN_CHUNK_PIXEL_WIDTH ) + ( ( ( uint ) ( pos.y ) / TERRAIN_CHUNK_PIXEL_WIDTH ) * TERRAIN_CHUNK_ROW );
 	if ( idx >= chunks_.size() ) {
-		LogWarn( "Attempted to get an out of bounds chunk index (%d)!\n", idx );
+		Warning( "Attempted to get an out of bounds chunk index (%d)!\n", idx );
 		return nullptr;
 	}
 
@@ -91,7 +91,7 @@ ohw::Terrain::Tile *ohw::Terrain::GetTile( const PLVector2 &pos ) {
 	uint idx = ( ( ( uint ) ( pos.x ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) +
 	           ( ( ( ( uint ) ( pos.y ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) * TERRAIN_CHUNK_ROW_TILES );
 	if ( idx >= TERRAIN_CHUNK_TILES ) {
-		LogWarn( "Attempted to get an out of bounds tile index!\n" );
+		Warning( "Attempted to get an out of bounds tile index!\n" );
 		return nullptr;
 	}
 
@@ -381,7 +381,7 @@ void ohw::Terrain::Draw() {
 void ohw::Terrain::LoadPmg( const std::string &path ) {
 	PLFile *fh = plOpenFile( path.c_str(), false );
 	if ( fh == nullptr ) {
-		LogWarn( "Failed to open tile data, \"%s\", aborting\n", path.c_str() );
+		Warning( "Failed to open tile data, \"%s\", aborting\n", path.c_str() );
 		return;
 	}
 
@@ -495,13 +495,13 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 void ohw::Terrain::LoadHeightmap( const std::string &path, int multiplier ) {
 	PLImage *image = plLoadImage( path.c_str() );
 	if ( image == nullptr ) {
-		LogWarn( "Failed to load the specified heightmap, \"%s\" (%s)!\n", path.c_str(), plGetError() );
+		Warning( "Failed to load the specified heightmap, \"%s\" (%s)!\n", path.c_str(), plGetError() );
 		return;
 	}
 
 	if ( image->width < 65 || image->height < 65 ) {
 		plDestroyImage( image );
-		LogWarn( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image->width, image->height );
+		Warning( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image->width, image->height );
 		return;
 	}
 

@@ -72,7 +72,7 @@ static VideoState video;
 
 void PlayVideoCommand(unsigned int argc, char *argv[]) {
     if(argc < 1) {
-        LogWarn("invalid number of arguments, ignoring!\n"
+        Warning( "invalid number of arguments, ignoring!\n"
                 "use \"play_video /streams/sheff.bik /streams/infologo.bik\", for example.\n");
         return;
     }
@@ -117,19 +117,19 @@ void Video_QueuePlayback(const char **videos, unsigned int num_videos) {
 
     for(unsigned int i = 0; i < num_videos; ++i) {
         if(plIsEmptyString(videos[i])) {
-            LogWarn("encountered invalid video path at index %u, skipping!\n", i);
+            Warning( "encountered invalid video path at index %u, skipping!\n", i);
             continue;
         }
 
         size_t len = strlen(videos[i]);
         if(len >= PL_SYSTEM_MAX_PATH) {
-            LogWarn("unexpected length of path - %u bytes - expect issues!\n", len);
+            Warning( "unexpected length of path - %u bytes - expect issues!\n", len);
         }
 
         char n_path[PL_SYSTEM_MAX_PATH];
         strncpy(n_path, videos[i], PL_SYSTEM_MAX_PATH);
         if(!plFileExists(n_path)) {
-            LogWarn("failed to find video at \"%s\", skipping!\n", n_path);
+            Warning( "failed to find video at \"%s\", skipping!\n", n_path);
             continue;
         }
 
@@ -142,7 +142,7 @@ void Video_Play(const char *path) {
     Video_ClearQueue();
     Video_QueuePlayback(&path, 1);
     if(video.num_videos_queued == 0) {
-        LogWarn("failed to queue video, \"%s\", aborting playback!\n", path);
+        Warning( "failed to queue video, \"%s\", aborting playback!\n", path);
         return;
     }
 

@@ -27,20 +27,7 @@
 /* Logs */
 
 void u_init_logs( const char* log_path ) {
-	plSetupLogOutput( log_path );
 
-	/* set our logs up */
-
-	plSetupLogLevel( LOG_LEVEL_DEFAULT, "info", PLColour( 0, 255, 0, 255 ), true );
-	plSetupLogLevel( LOG_LEVEL_WARNING, "warning", PLColour( 255, 255, 0, 255 ), true );
-	plSetupLogLevel( LOG_LEVEL_ERROR, "error", PLColour( 255, 0, 0, 255 ), true );
-	plSetupLogLevel( LOG_LEVEL_DEBUG, "debug", PLColour( 0, 255, 255, 255 ),
-#ifdef _DEBUG
-					 true
-#else
-		false
-#endif
-	);
 }
 
 /****************************************************/
@@ -59,7 +46,7 @@ void* u_realloc( void* ptr, size_t new_size, bool abort_on_fail ) {
 			Error( "Failed to allocate %u bytes!\n", new_size );
 		}
 
-		LogWarn( "Failed to allocate %u bytes!\n", new_size );
+		Warning( "Failed to allocate %u bytes!\n", new_size );
 		return NULL;
 	}
 
@@ -102,7 +89,7 @@ const char* u_find2( const char* path, const char** preference, bool abort_on_fa
 			Error( "Failed to find \"%s\"!\n", path );
 		}
 
-		LogWarn( "Failed to find \"%s\"!\n", path );
+		Warning( "Failed to find \"%s\"!\n", path );
 		return NULL;
 	}
 

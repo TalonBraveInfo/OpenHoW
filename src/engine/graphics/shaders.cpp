@@ -55,7 +55,7 @@ static void Shaders_CacheShaderProgram( const char* path, void *userData ) {
 
 	const char* fileName = plGetFileName( path );
 	if ( fileName == nullptr ) {
-		LogWarn( "Failed to get filename for shader program, \"%s\"!\n", path );
+		Warning( "Failed to get filename for shader program, \"%s\"!\n", path );
 		return;
 	}
 
@@ -78,7 +78,7 @@ static void Shaders_CacheShaderProgram( const char* path, void *userData ) {
 		ShaderProgram* program = new ShaderProgram( vertPath, fragPath );
 		programs.insert( std::pair<std::string, ShaderProgram*>( shortFileName, program ));
 	} catch ( const std::exception& error ) {
-		LogWarn( "Failed to register shader program (%s)!\n", error.what());
+		Warning( "Failed to register shader program (%s)!\n", error.what());
 	}
 }
 
@@ -108,7 +108,7 @@ static void Cmd_ListShaderPrograms( unsigned int argc, char* argv[] ) {
 		list += program.first + "\n";
 	}
 
-	LogInfo( "%s\n", list.c_str() );
+	Print( "%s\n", list.c_str() );
 }
 
 static void Cmd_RebuildShaderProgramCache( unsigned int argc, char* argv[] ) {
@@ -126,7 +126,7 @@ static void Cmd_RebuildShaderPrograms( unsigned int argc, char* argv[] ) {
 		try {
 			program.second->Rebuild();
 		} catch ( const std::exception& exception ) {
-			LogWarn( "Failed to rebuild shader program, \"%s\" (%s)!\n", program.first.c_str(), exception.what());
+			Warning( "Failed to rebuild shader program, \"%s\" (%s)!\n", program.first.c_str(), exception.what());
 		}
 	}
 
@@ -135,16 +135,16 @@ static void Cmd_RebuildShaderPrograms( unsigned int argc, char* argv[] ) {
 
 static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
 	if( argc == 0 ) {
-		LogWarn( "Please provide the name of the shader program you wish to rebuild!\n" );
+		Warning( "Please provide the name of the shader program you wish to rebuild!\n" );
 		return;
 	} else if( argc > 1 ) {
-		LogWarn( "Too many arguments, please provide only the name of the shader program you wish to rebuild!\n" );
+		Warning( "Too many arguments, please provide only the name of the shader program you wish to rebuild!\n" );
 		return;
 	}
 
 	const char* shaderProgramArg = argv[0];
 	if( shaderProgramArg == NULL ) {
-		LogWarn( "Invalid argument provided, please try again!\n" );
+		Warning( "Invalid argument provided, please try again!\n" );
 		return;
 	}
 
@@ -156,7 +156,7 @@ static void Cmd_RebuildShaderProgram( unsigned int argc, char* argv[] ) {
 	try {
 		shaderProgram->Rebuild();
 	} catch( const std::exception& exception ) {
-		LogWarn( "Failed to rebuild shader program, \"%s\" (%s)!\n", shaderProgramArg, exception.what());
+		Warning( "Failed to rebuild shader program, \"%s\" (%s)!\n", shaderProgramArg, exception.what());
 	}
 }
 
@@ -177,7 +177,7 @@ void Shaders_Shutdown() {
 ShaderProgram* Shaders_GetProgram( const std::string& name ) {
 	const auto& i = programs.find( name );
 	if ( i == programs.end()) {
-		LogWarn( "Failed to find shader program, \"%s\"!\n", name.c_str());
+		Warning( "Failed to find shader program, \"%s\"!\n", name.c_str());
 		return nullptr;
 	}
 

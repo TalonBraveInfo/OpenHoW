@@ -75,7 +75,7 @@ namespace ohw {
 #define IMPLEMENT_SUPER( a ) typedef a SuperClass;
 #define IMPLEMENT_ACTOR( base, parent ) \
   IMPLEMENT_SUPER(parent) \
-  public: const char* GetClassName() override { return plStringify(base) ; } \
+  public: const char* GetClassName() override { return PL_STRINGIFY(base) ; } \
   private:
 
 class Player;

@@ -139,7 +139,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 	const char *cPath = path.c_str();
 	PLFile *fp = plOpenFile( cPath, false );
 	if ( fp == NULL ) {
-		LogWarn( "Failed to open actor data, \"%s\" (%s)!\n", cPath, plGetError() );
+		Warning( "Failed to open actor data, \"%s\" (%s)!\n", cPath, plGetError() );
 		return;
 	}
 
@@ -177,7 +177,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 		try {
 			spawns_[ i ].attachment = &spawns_.at( spawns[ i ].attached_actor_num );
 		} catch ( const std::out_of_range &e ) {
-			LogWarn( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
+			Warning( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
 			         plPrintVector3( &spawns_[ i ].position, pl_int_var ) );
 		}
 

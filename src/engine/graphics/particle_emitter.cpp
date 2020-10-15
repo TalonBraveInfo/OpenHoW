@@ -60,7 +60,7 @@ ParticleEmitter::ParticleEmitter( JsonReader &jsonReader ) {
 		myParticleType = ParticleType::TEXT;
 	} else {
 		myParticleType = ParticleType::SPRITE;
-		LogWarn( "Invalid particle type \"%s\" specified, defaulting to \"sprite\"!\n", parsedString.c_str() );
+		Warning( "Invalid particle type \"%s\" specified, defaulting to \"sprite\"!\n", parsedString.c_str() );
 	}
 
 	// And blend type specifies how we should draw ourselves
@@ -73,7 +73,7 @@ ParticleEmitter::ParticleEmitter( JsonReader &jsonReader ) {
 		myBlendType = BlendType::DIFFERENCE;
 	} else {
 		myBlendType = BlendType::ADDITIVE;
-		LogWarn( "Invalid blend type \"%s\" specified, default to \"additive\"!\n", parsedString.c_str() );
+		Warning( "Invalid blend type \"%s\" specified, default to \"additive\"!\n", parsedString.c_str() );
 	}
 
 	isActive = jsonReader.GetBooleanProperty( "isActive" );

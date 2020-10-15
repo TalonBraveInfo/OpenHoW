@@ -161,9 +161,9 @@ void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
 	u_unused( argc );
 	u_unused( argv );
 
-	LogInfo( "Printing cache...\n" );
+	Print( "Printing cache...\n" );
 	for ( auto const& i : Engine::Resource()->resourcesMap ) {
-		LogInfo(
+		Print(
 			" CachedName(%s)"
             " CanDestroy(%s)"
             " ReferenceCount(%u)\n",
@@ -178,14 +178,14 @@ void ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv )
 	if ( argc > 1 ) {
 		const char *forceParameter = argv[ 1 ];
 		if ( forceParameter == nullptr ) {
-			LogWarn( "Invalid force parameter!\n" );
+			Warning( "Invalid force parameter!\n" );
 			return;
 		}
 
 		if ( pl_strcasecmp( forceParameter, "true" ) == 0 ) {
 			force = true;
 		} else if ( pl_strcasecmp( forceParameter, "false" ) != 0 ) {
-			LogWarn( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
+			Warning( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
 		}
 	}
 
@@ -194,13 +194,13 @@ void ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv )
 
 void ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
 	if ( argc <= 1 ) {
-		LogWarn( "Invalid number of arguments!\n" );
+		Warning( "Invalid number of arguments!\n" );
 		return;
 	}
 
 	const char *resourceName = argv[ 1 ];
 	if ( resourceName == nullptr ) {
-		LogWarn( "Invalid resource name!\n" );
+		Warning( "Invalid resource name!\n" );
 		return;
 	}
 
@@ -208,14 +208,14 @@ void ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
 	if ( argc > 2 ) {
 		const char *forceParameter = argv[ 2 ];
 		if ( forceParameter == nullptr ) {
-			LogWarn( "Invalid force parameter!\n" );
+			Warning( "Invalid force parameter!\n" );
 			return;
 		}
 
 		if ( pl_strcasecmp( forceParameter, "true" ) == 0 ) {
 			force = true;
 		} else if ( pl_strcasecmp( forceParameter, "false" ) != 0 ) {
-			LogWarn( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
+			Warning( "Invalid force parameter, should be \"true\" or \"false\", was \"%s\"!\n", forceParameter );
 		}
 	}
 

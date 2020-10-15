@@ -18,7 +18,7 @@
 #include <imgui.h>
 
 #include "engine.h"
-#include "mod_support.h"
+#include "ModManager.h"
 #include "Map.h"
 #include "window_map_config.h"
 
@@ -228,7 +228,7 @@ void ohw::MapConfigEditor::SaveManifest( const std::string& path ) {
 	const ModDirectory* currentMod = Mod_GetCurrentMod();
 	std::ofstream output( "mods/" + currentMod->directory + path );
 	if ( !output.is_open() ) {
-		LogWarn( "Failed to write to \"%s\", aborting!n\"\n", filename_buffer );
+		Warning( "Failed to write to \"%s\", aborting!n\"\n", filename_buffer );
 		return;
 	}
 
@@ -237,7 +237,7 @@ void ohw::MapConfigEditor::SaveManifest( const std::string& path ) {
 
 	output << manifest_->Serialize();
 
-	LogInfo( "Wrote \"%s\"!\n", path.c_str() );
+	Print( "Wrote \"%s\"!\n", path.c_str() );
 	backup_ = *manifest_;
 }
 

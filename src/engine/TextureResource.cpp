@@ -49,7 +49,7 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 				Error( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 			}
 
-			LogWarn( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
+			Warning( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 			texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
 		}
 
@@ -86,7 +86,7 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 		Error( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 	}
 
-	LogWarn( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
+	Warning( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 
 	texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
 }

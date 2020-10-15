@@ -30,8 +30,8 @@
  * A = Shading
  */
 
-#define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
-#define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
+#define Print(...)  plLogMessage(0, __VA_ARGS__)
+#define Warning(...)  plLogMessage(1, __VA_ARGS__)
 #define Error(...)    plLogMessage(2, __VA_ARGS__); exit(EXIT_FAILURE)
 
 /* ripped from terrain.h */
@@ -227,17 +227,17 @@ int main(int argc, char **argv) {
 
 	char imgPath[PL_SYSTEM_MAX_PATH];
 	strncpy(imgPath, argv[ 1 ], sizeof(imgPath));
-	LogInfo("Input: %s\n", imgPath);
+	Print( "Input: %s\n", imgPath);
 	char pmgPath[PL_SYSTEM_MAX_PATH];
 	strncpy(pmgPath, argv[ 3 ], sizeof(pmgPath));
-	LogInfo("Output: %s\n", pmgPath);
+	Print( "Output: %s\n", pmgPath);
 
 	int multiplier = atoi( argv[ 2 ] );
 
 	LoadHeightmap( imgPath, multiplier );
 	WritePmg( pmgPath );
 
-	LogInfo("Done!\n");
+	Print( "Done!\n");
 
 	return EXIT_SUCCESS;
 }

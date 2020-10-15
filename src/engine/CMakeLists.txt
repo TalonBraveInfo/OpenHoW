@@ -68,7 +68,7 @@ file( GLOB OPENHOW_SOURCE_FILES
         ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 
-add_executable( engine ${OPENHOW_SOURCE_FILES} )
+add_executable( engine ${OPENHOW_SOURCE_FILES} App.cpp App.h)
 
 target_include_directories( engine PRIVATE
         ./

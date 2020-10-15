@@ -109,7 +109,7 @@ void GameMode::SpawnActors() {
 
 		Player *player = Engine::Game()->GetPlayerByIndex( pig->GetTeam() );
 		if ( player == nullptr ) {
-			LogWarn( "Failed to assign pig to team!\n" );
+			Warning( "Failed to assign pig to team!\n" );
 			continue;
 		}
 
@@ -132,7 +132,7 @@ void GameMode::DestroyActors() {
 
 void GameMode::StartTurn( Player *player ) {
 	if ( player->GetNumChildren() == 0 ) {
-		LogWarn( "No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str() );
+		Warning( "No valid control target for player \"%s\"!\n", player->GetTeam()->name.c_str() );
 		return;
 	}
 
@@ -154,12 +154,12 @@ void GameMode::EndTurn( Player *player ) {
 
 void GameMode::PlayerJoined( Player *player ) {
 	// todo: display prompt
-	LogInfo( "%s has joined the game\n", player->GetTeam()->name.c_str() );
+	Print( "%s has joined the game\n", player->GetTeam()->name.c_str() );
 }
 
 void GameMode::PlayerLeft( Player *player ) {
 	// todo: display prompt
-	LogInfo( "%s has left the game\n", player->GetTeam()->name.c_str() );
+	Print( "%s has left the game\n", player->GetTeam()->name.c_str() );
 }
 
 unsigned int GameMode::GetMaxSpectators() const {
@@ -168,12 +168,12 @@ unsigned int GameMode::GetMaxSpectators() const {
 
 void GameMode::SpectatorJoined( Player *player ) {
 	// todo: display prompt
-	LogInfo( "%s has joined the spectators\n", player->GetTeam()->name.c_str() );
+	Print( "%s has joined the spectators\n", player->GetTeam()->name.c_str() );
 }
 
 void GameMode::SpectatorLeft( Player *player ) {
 	// todo: display prompt
-	LogInfo( "%s has left the spectators\n", player->GetTeam()->name.c_str() );
+	Print( "%s has left the spectators\n", player->GetTeam()->name.c_str() );
 }
 
 /**

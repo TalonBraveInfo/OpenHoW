@@ -33,7 +33,7 @@ ohw::BitmapFont::~BitmapFont() {
 bool ohw::BitmapFont::Load( const char *tabPath, const char *texturePath ) {
 	PLFile *filePtr = plOpenFile( tabPath, false );
 	if ( filePtr == nullptr ) {
-		LogWarn( "Failed to load tab \"%s\"!\nPL: %s\n", tabPath, plGetError() );
+		Warning( "Failed to load tab \"%s\"!\nPL: %s\n", tabPath, plGetError() );
 		return false;
 	}
 
@@ -50,7 +50,7 @@ bool ohw::BitmapFont::Load( const char *tabPath, const char *texturePath ) {
 	plCloseFile( filePtr );
 
 	if( numChars == 0 ) {
-		LogWarn( "No characters in tab \"%s\"!\n" );
+		Warning( "No characters in tab \"%s\"!\n" );
 		return false;
 	}
 

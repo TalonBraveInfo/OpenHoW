@@ -28,12 +28,12 @@ VersionInfo version_info = {
 };
 
 void CheckGameVersion( const char *path ) {
-	LogInfo( "checking game version...\n" );
+	Print( "checking game version...\n" );
 
 	char fcheck[PL_SYSTEM_MAX_PATH];
 	snprintf( fcheck, sizeof( fcheck ), "%s/system.cnf", path );
 	if ( plFileExists( fcheck ) ) {
-		LogInfo( "Detected system.cnf, assuming PSX version\n" );
+		Print( "Detected system.cnf, assuming PSX version\n" );
 		version_info.platform = PLATFORM_PSX;
 
 #if 0
@@ -98,13 +98,13 @@ void CheckGameVersion( const char *path ) {
 
 		PLFile *languageFile = plOpenFile( path, false );
 		if ( languageFile == NULL ) {
-			LogWarn( "Failed to load \"%s\", aborting (%s)!\n", path, plGetError() );
+			Warning( "Failed to load \"%s\", aborting (%s)!\n", path, plGetError() );
 			return;
 		}
 
 		uint32_t languageId;
 		if ( plReadFile( languageFile, &languageId, sizeof( uint32_t ), 1 ) != 1 ) {
-			LogWarn( "Failed to get language code, \"%s\" (%s)!\n", path, plGetError() );
+			Warning( "Failed to get language code, \"%s\" (%s)!\n", path, plGetError() );
 			return;
 		}
 
@@ -119,7 +119,7 @@ void CheckGameVersion( const char *path ) {
 		} else if ( languageId == 5 ) {
 			version_info.region = REGION_ITA;
 		} else {
-			LogWarn( "Language id (%d) is unknown, unable to determine region!\n", languageId );
+			Warning( "Language id (%d) is unknown, unable to determine region!\n", languageId );
 			return;
 		}
 #endif
@@ -127,11 +127,11 @@ void CheckGameVersion( const char *path ) {
 
 	snprintf( fcheck, sizeof( fcheck ), "%s/Data/foxscale.d3d", path );
 	if ( !plFileExists( fcheck ) ) {
-		LogWarn( "Failed to find foxscale.d3d, unable to determine platform!\n" );
+		Warning( "Failed to find foxscale.d3d, unable to determine platform!\n" );
 		return;
 	}
 
-	LogInfo( "Detected Data/foxscale.d3d, assuming PC version\n" );
+	Print( "Detected Data/foxscale.d3d, assuming PC version\n" );
 	version_info.platform = PLATFORM_PC;
 
 	/* todo: need better method to determine this */
@@ -150,9 +150,9 @@ void CheckGameVersion( const char *path ) {
 
 	snprintf( fcheck, sizeof( fcheck ), "%s/MUSIC/Track02.ogg", path );
 	if ( plFileExists( fcheck ) ) {
-		LogInfo( "Detected MUSIC/Track02.ogg, assuming GOG version\n" );
+		Print( "Detected MUSIC/Track02.ogg, assuming GOG version\n" );
 		version_info.platform = PLATFORM_PC_DIGITAL;
 	}
 
-	LogInfo( "platform=%d, region=%d\n", version_info.platform, version_info.region );
+	Print( "platform=%d, region=%d\n", version_info.platform, version_info.region );
 }

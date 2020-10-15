@@ -19,23 +19,9 @@
 
 #include <PL/pl_graphics_camera.h>
 
-#define MIN_DISPLAY_WIDTH   640
-#define MIN_DISPLAY_HEIGHT  480
-
-struct VideoPreset {
-	VideoPreset( int w, int h ) : width( w ), height( h ) {}
-
-	int width{ 0 };
-	int height{ 0 };
-};
-
 void Display_Initialize( void );
 void Display_Shutdown( void );
 void Display_UpdateState( void );
-
-bool Display_AppendVideoPreset( int width, int height );
-int Display_GetNumVideoPresets();
-const VideoPreset *Display_GetVideoPreset( unsigned int idx );
 
 void Display_UpdateViewport( int x, int y, int width, int height );
 

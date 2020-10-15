@@ -25,7 +25,7 @@ const char* Config_GetUserConfigPath() {
 	if ( config_path.empty() ) {
 		char out[PL_SYSTEM_MAX_PATH];
 		if ( plGetApplicationDataDirectory( ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
-			LogWarn( "Failed to get app data directory!\n%s\n", plGetError() );
+			Warning( "Failed to get app data directory!\n%s\n", plGetError() );
 			config_path = "./user.config";
 		} else {
 			config_path = std::string( out ) + "user.config";
@@ -37,7 +37,7 @@ const char* Config_GetUserConfigPath() {
 void Config_Save( const char* path ) {
 	FILE* fp = fopen( path, "wb" );
 	if ( fp == nullptr ) {
-		LogWarn( "failed to write config to \"%s\"!\n", path );
+		Warning( "failed to write config to \"%s\"!\n", path );
 		return;
 	}
 
@@ -84,6 +84,6 @@ void Config_Load( const char* path ) {
 			plSetConsoleVariable( ( *var ), result.c_str() );
 		}
 	} catch ( const std::exception& e ) {
-		LogWarn( "Failed to read user config, \"%s\"!\n%s\n", path, e.what() );
+		Warning( "Failed to read user config, \"%s\"!\n%s\n", path, e.what() );
 	}
 }

@@ -32,7 +32,7 @@ Actor *ActorManager::CreateActor( const std::string &identifier, const ActorSpaw
 	auto spawn = actorSpawnsRegistry.find( identifier );
 	if ( spawn == actorSpawnsRegistry.end() ) {
 		// TODO: make this throw an error rather than continue...
-		LogWarn( "Failed to find actor in spawn registry \"%s\"!\n", identifier.c_str() );
+		Warning( "Failed to find actor in spawn registry \"%s\"!\n", identifier.c_str() );
 		return nullptr;
 	}
 
@@ -137,7 +137,7 @@ void ActorManager::RegisterActorManifest( const char *path, void *userPtr ) {
 		// Number of actors in this particular manifest
 		unsigned int numActors = reader.GetArrayLength();
 		if ( numActors == 0 ) {
-			LogWarn( "Empty actor manifest!\n" );
+			Warning( "Empty actor manifest!\n" );
 			return;
 		}
 
@@ -150,7 +150,7 @@ void ActorManager::RegisterActorManifest( const char *path, void *userPtr ) {
 			manifest.identifier = reader.GetStringProperty( "identifier" );
 			const auto &find = actorManager->actorSpawnsRegistry.find( manifest.identifier );
 			if( find != actorManager->actorSpawnsRegistry.end() ) {
-				LogWarn( "Actor \"%s\" has already been registered!\n", manifest.identifier.c_str() );
+				Warning( "Actor \"%s\" has already been registered!\n", manifest.identifier.c_str() );
 				continue;
 			}
 
@@ -172,7 +172,7 @@ void ActorManager::RegisterActorManifest( const char *path, void *userPtr ) {
 			reader.LeaveChildNode();
 		}
 	} catch( const std::exception &exception ) {
-		LogWarn( "Failed to load actor manifest, \"%s\"!\nException: %s\n", exception.what() );
+		Warning( "Failed to load actor manifest, \"%s\"!\nException: %s\n", exception.what() );
 		return;
 	}
 }

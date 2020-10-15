@@ -164,7 +164,7 @@ void APig::Tick() {
 void APig::SetClass( const std::string &classIdentifer ) {
 	const CharacterClass *characterClass = Engine::Game()->GetDefaultClass( classIdentifer );
 	if ( characterClass == nullptr ) {
-		LogWarn( "Failed to fetch valid character class for pig!\n" );
+		Warning( "Failed to fetch valid character class for pig!\n" );
 		return;
 	}
 
@@ -179,7 +179,7 @@ void APig::SetPersonality( unsigned int personality ) {
 void APig::SetPlayerOwner( Player *owner ) {
 	IGameMode *mode = Engine::Game()->GetMode();
 	if ( mode == nullptr ) {
-		LogWarn( "Attempted to set player owner without an active mode!\n" );
+		Warning( "Attempted to set player owner without an active mode!\n" );
 		return;
 	}
 

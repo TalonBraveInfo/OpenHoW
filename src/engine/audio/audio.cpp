@@ -277,7 +277,7 @@ AudioManager::AudioManager() {
 	memset( al_extensions_, 0, sizeof( al_extensions_ ));
 
 	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" )) {
-		LogInfo( "ALC_EXT_EFX detected\n" );
+		Print( "ALC_EXT_EFX detected\n" );
 
 		alGenEffects = ( LPALGENEFFECTS ) alGetProcAddress( "alGenEffects" );
 		alDeleteEffects = ( LPALDELETEEFFECTS ) alGetProcAddress( "alDeleteEffects" );
@@ -300,7 +300,7 @@ AudioManager::AudioManager() {
 	}
 
 	if ( alIsExtensionPresent( "AL_SOFT_buffer_samples" )) {
-		LogInfo( "AL_SOFT_buffer_samples detected\n" );
+		Print( "AL_SOFT_buffer_samples detected\n" );
 		al_extensions_[ AUDIO_EXT_SOFT_BUFFER_SAMPLES ] = true;
 	}
 
@@ -335,7 +335,7 @@ AudioManager::AudioManager() {
 }
 
 AudioManager::~AudioManager() {
-	LogInfo( "Shutting down audio sub-system...\n" );
+	Print( "Shutting down audio sub-system...\n" );
 
 	FreeSources();
 
@@ -370,7 +370,7 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 
 	const char *ext = plGetFileExtension( path.c_str());
 	if ( ext == nullptr ) {
-		LogWarn( "Unable to identify audio format, \"%s\"!\n", path.c_str());
+		Warning( "Unable to identify audio format, \"%s\"!\n", path.c_str());
 		return nullptr;
 	}
 
@@ -382,7 +382,7 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 		// Attempt to load the Wav file
 		PLFile *wavFile = plOpenFile( path.c_str(), false );
 		if ( wavFile == nullptr ) {
-			LogWarn( "Failed to load \"%s\"!\n", path.c_str());
+			Warning( "Failed to load \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
@@ -397,7 +397,7 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 
 		SDL_AudioSpec spec;
 		if ( SDL_LoadWAV_RW( SDL_RWFromMem( buf, len ), 1, &spec, &buffer, &length ) == nullptr ) {
-			LogWarn( "Failed to load \"%s\"!\n", path.c_str());
+			Warning( "Failed to load \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
@@ -425,7 +425,7 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 		}
 
 		if ( format == 0 ) {
-			LogWarn( "Invalid audio format for \"%s\"!\n", path.c_str());
+			Warning( "Invalid audio format for \"%s\"!\n", path.c_str());
 			SDL_FreeWAV( buffer );
 			return nullptr;
 		}
@@ -435,7 +435,7 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 		// Attempt to load the Ogg file
 		PLFile *oggFile = plOpenFile( path.c_str(), false );
 		if ( oggFile == nullptr ) {
-			LogWarn( "Failed to load \"%s\"!\n", path.c_str());
+			Warning( "Failed to load \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
@@ -451,7 +451,7 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 		int samples = stb_vorbis_decode_memory( buf, len, &vchan, &freq,
 												reinterpret_cast<short **>(&buffer));
 		if ( samples == -1 ) {
-			LogWarn( "Failed to decode ogg audio data, \"%s\"!\n", path.c_str());
+			Warning( "Failed to decode ogg audio data, \"%s\"!\n", path.c_str());
 			return nullptr;
 		}
 
@@ -585,7 +585,7 @@ void AudioManager::SilenceSources() {
 /* Will invalidate ALL references to AudioSource objects.
  * Only use in contexts where this is safe. */
 void AudioManager::FreeSources() {
-	LogInfo( "Freeing all audio sources...\n" );
+	Print( "Freeing all audio sources...\n" );
 
 	for ( auto s = sources_.begin(); s != sources_.end(); ) {
 		AudioSource *source = *s;
@@ -604,7 +604,7 @@ void AudioManager::FreeSources() {
 }
 
 void AudioManager::FreeSamples( bool force ) {
-	LogInfo( "Freeing all audio samples...\n" );
+	Print( "Freeing all audio samples...\n" );
 
 	if ( force ) {
 		/* clears absolutely everything */

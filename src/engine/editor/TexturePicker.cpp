@@ -48,7 +48,7 @@ ohw::TexturePicker::TexturePicker() : BaseWindow() {
 
 		// Failed to load the index? Assume it's the end. (let's do this better in future)
 		if ( !indexLoaded ) {
-			LogInfo( "Didn't find texture index %d. Assuming end of tiles list!\n", i );
+			Print( "Didn't find texture index %d. Assuming end of tiles list!\n", i );
 			break;
 		}
 	}

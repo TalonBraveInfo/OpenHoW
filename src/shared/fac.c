@@ -87,7 +87,7 @@ static FacTriangle *Fac_LoadTriangles( PLFile *filePtr, unsigned int numTriangle
 FacHandle *Fac_LoadFile( const char *path ) {
 	PLFile *filePtr = plOpenFile( path, false );
 	if ( filePtr == NULL ) {
-		LogWarn( "Failed to load Fac \"%s\", aborting!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to load Fac \"%s\", aborting!\nPL: %s\n", path, plGetError() );
 		return NULL;
 	}
 
@@ -97,7 +97,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 	if ( !plFileSeek( filePtr, 16, PL_SEEK_CUR ) ) {
 		plCloseFile( filePtr );
 
-		LogWarn( "Failed to find data in Fac \"%s\"!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to find data in Fac \"%s\"!\nPL: %s\n", path, plGetError() );
 		return NULL;
 	}
 
@@ -105,7 +105,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 	uint32_t numTriangles = plReadInt32( filePtr, false, &status );
 	FacTriangle *triangles = Fac_LoadTriangles( filePtr, numTriangles );
 	if ( triangles == NULL && numTriangles > 0 ) {
-		LogWarn( "Failed to read in triangles, \"%s\"!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to read in triangles, \"%s\"!\nPL: %s\n", path, plGetError() );
 		plCloseFile( filePtr );
 		return NULL;
 	}
@@ -113,14 +113,14 @@ FacHandle *Fac_LoadFile( const char *path ) {
 	uint32_t numQuads = plReadInt32( filePtr, false, &status );
 	FacQuad *quads = Fac_LoadQuads( filePtr, numQuads );
 	if ( quads == NULL && numQuads > 0 ) {
-		LogWarn( "Failed to read in quads, \"%s\"!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to read in quads, \"%s\"!\nPL: %s\n", path, plGetError() );
 		free( triangles );
 		plCloseFile( filePtr );
 		return NULL;
 	}
 
 	if ( numQuads == 0 && numTriangles == 0 ) {
-		LogWarn( "Fac \"%s\" contains no quads or triangles!\n", path );
+		Warning( "Fac \"%s\" contains no quads or triangles!\n", path );
 	}
 
 	// check for textures table
@@ -180,7 +180,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 void Fac_WriteFile( FacHandle *handle, const char *path ) {
 	FILE *fp = fopen( path, "wb" );
 	if ( fp == NULL ) {
-		LogWarn( "Failed to open, \"%s\"!\n", path );
+		Warning( "Failed to open, \"%s\"!\n", path );
 		return;
 	}
 

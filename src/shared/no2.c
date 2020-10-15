@@ -33,7 +33,7 @@
 No2Handle *No2_LoadFile( const char *path ) {
 	PLFile *fp = plOpenFile( path, false );
 	if ( fp == NULL) {
-		LogWarn( "Failed to load no2 \"%s\"!\n", path );
+		Warning( "Failed to load no2 \"%s\"!\n", path );
 		return NULL;
 	}
 
@@ -50,7 +50,7 @@ No2Handle *No2_LoadFile( const char *path ) {
 
 	if ( numReadNormals != numNormals ) {
 		free( normals );
-		LogWarn( "Failed to read in all normals from \"%s\"!\n", path );
+		Warning( "Failed to read in all normals from \"%s\"!\n", path );
 		return NULL;
 	}
 

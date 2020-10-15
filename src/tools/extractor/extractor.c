@@ -227,7 +227,7 @@ static void ConvertModelData( void ) {
 
 			FacHandle *fac = Fac_LoadFile( fac_path );
 			if ( fac == NULL ) {
-				LogWarn( "Failed to load FAC \"%s\"!\n", fac_path );
+				Warning( "Failed to load FAC \"%s\"!\n", fac_path );
 				continue;
 			}
 
@@ -295,14 +295,14 @@ static void ExtractPtgPackage( const char *input_path, const char *output_path )
 	for ( unsigned int i = 0; i < num_textures; ++i ) {
 		uint8_t tim[tim_size];
 		if ( fread( tim, tim_size, 1, file ) != 1 ) {
-			LogInfo( "Failed to read Tim, \"%d\"!\n", i );
+			Print( "Failed to read Tim, \"%d\"!\n", i );
 			continue;
 		}
 
 		char out_path[PL_SYSTEM_MAX_PATH] = { '\0' };
 		sprintf( out_path, "%s%d.tim", output_path, i );
 		if ( !plWriteFile( out_path, tim, tim_size ) ) {
-			LogWarn( "Failed to write file, \"%s\" (%s)!\n", out_path, plGetError() );
+			Warning( "Failed to write file, \"%s\" (%s)!\n", out_path, plGetError() );
 		}
 
 		ConvertImageToPng( out_path );
@@ -425,14 +425,14 @@ static TextureMerge texture_targets[] = {
 
 static void MergeTextureTargets( void ) {
 	unsigned int num_texture_targets = plArrayElements( texture_targets );
-	LogInfo( "Merging %d texture targets...\n", num_texture_targets );
+	Print( "Merging %d texture targets...\n", num_texture_targets );
 	for ( unsigned int i = 0; i < num_texture_targets; ++i ) {
 		TextureMerge *merge = &texture_targets[ i ];
-		LogInfo( "Generating %s\n", merge->output );
+		Print( "Generating %s\n", merge->output );
 		PLImage
 			*output = plCreateImage( NULL, merge->width, merge->height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 		if ( output == NULL ) {
-			LogWarn( "Failed to generate texture target (%s)!\n", plGetError() );
+			Warning( "Failed to generate texture target (%s)!\n", plGetError() );
 			continue;
 		}
 
@@ -440,11 +440,11 @@ static void MergeTextureTargets( void ) {
 			const char *path = merge->targets[ j ].path;
 			PLImage *image = plLoadImage( path );
 			if ( image == NULL ) {
-				LogWarn( "Failed to find image, \"%s\", for merge!\n", merge->targets[ j ].path );
+				Warning( "Failed to find image, \"%s\", for merge!\n", merge->targets[ j ].path );
 				continue;
 			}
 
-			LogInfo( "Writing %s into %s\n", merge->targets[ j ].path, merge->output );
+			Print( "Writing %s into %s\n", merge->targets[ j ].path, merge->output );
 
 			uint8_t
 				*pos = output->data[ 0 ] + ( ( merge->targets[ j ].y * output->width ) + merge->targets[ j ].x ) * 4;
@@ -459,7 +459,7 @@ static void MergeTextureTargets( void ) {
 			plDeleteFile( path );
 		}
 
-		LogInfo( "Writing %s\n", merge->output );
+		Print( "Writing %s\n", merge->output );
 		plWriteImage( output, merge->output );
 		plDestroyImage( output );
 	}
@@ -488,13 +488,13 @@ static void ProcessPackagePaths( const char *in, const char *out, const IOPath *
 		char output_path[PL_SYSTEM_MAX_PATH];
 		snprintf( output_path, sizeof( output_path ), "%s%s", out, paths[ i ].output );
 		if ( !plCreatePath( output_path ) ) {
-			LogWarn( "%s\n", plGetError() );
+			Warning( "%s\n", plGetError() );
 			continue;
 		}
 
 		char input_path[PL_SYSTEM_MAX_PATH];
 		snprintf( input_path, sizeof( input_path ), "%s%s", in, paths[ i ].input );
-		LogInfo( "Copying %s to %s\n", input_path, output_path );
+		Print( "Copying %s to %s\n", input_path, output_path );
 		const char *ext = plGetFileExtension( input_path );
 		if ( pl_strncasecmp( ext, "PTG", 3 ) == 0 ) {
 			ExtractPtgPackage( input_path, output_path );
@@ -525,7 +525,7 @@ static void ProcessCopyPaths( const char *in, const char *out, const IOPath *pat
 
 		char input_path[PL_SYSTEM_MAX_PATH];
 		snprintf( input_path, sizeof( input_path ), "%s%s", in, paths[ i ].input );
-		LogInfo( "Copying %s to %s\n", input_path, output_path );
+		Print( "Copying %s to %s\n", input_path, output_path );
 		plCopyFile( input_path, output_path );
 	}
 }
@@ -545,7 +545,7 @@ int main( int argc, char **argv ) {
 	char app_dir[PL_SYSTEM_MAX_PATH];
 	plGetApplicationDataDirectory( "OpenHoW", app_dir, PL_SYSTEM_MAX_PATH );
 	if ( !plCreatePath( app_dir ) ) {
-		LogWarn( "Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError() );
+		Warning( "Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError() );
 	}
 
 	char log_path[PL_SYSTEM_MAX_PATH];
@@ -574,10 +574,10 @@ int main( int argc, char **argv ) {
 		Error( "Empty game path, aborting!\n" );
 	}
 
-	LogInfo( "\n"
+	Print( "\n"
 			 "output path: %s\n"
 			 "input path:  %s\n",
-			 g_output_path, g_input_path );
+	       g_output_path, g_input_path );
 
 	/* ensure it's a valid version - original CD version requires
 	 * us to extract audio from the CD while GOG and Steam versions
@@ -607,6 +607,6 @@ int main( int argc, char **argv ) {
 
 	ConvertModelData();
 
-	LogInfo( "Complete!\n" );
+	Print( "Complete!\n" );
 	return EXIT_SUCCESS;
 }

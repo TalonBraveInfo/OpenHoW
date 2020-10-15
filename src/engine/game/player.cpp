@@ -25,12 +25,12 @@ Player::~Player() = default;
 void Player::PossessCurrentChild() {
 	Actor* child = children_[currentChildIndex];
 	if(child == nullptr) {
-		LogWarn("Child of player is null!\n");
+		Warning( "Child of player is null!\n");
 		return;
 	}
 
 	if(!child->Possessed(this)) {
-		LogWarn("Failed to possess actor!\n");
+		Warning( "Failed to possess actor!\n");
 		return;
 	}
 

@@ -191,7 +191,7 @@ PLVector3 Actor::GetForward() {
  */
 void Actor::LinkChild( Actor *actor ) {
 	if ( actor == nullptr ) {
-		LogWarn( "Attempted to attach an invalid actor to self!\n" );
+		Warning( "Attempted to attach an invalid actor to self!\n" );
 		return;
 	}
 

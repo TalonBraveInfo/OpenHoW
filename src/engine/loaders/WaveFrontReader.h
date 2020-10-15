@@ -34,7 +34,7 @@ public:
         // For now just read the whole thing into memory...
         PLFile *filePtr = plOpenFile( szFilePath.c_str(), true );
         if ( filePtr == nullptr ) {
-			LogWarn("Failed to open \"%s\"!\n", szFilePath.c_str());
+			Warning( "Failed to open \"%s\"!\n", szFilePath.c_str());
 			return false;
         }
 
@@ -112,7 +112,7 @@ public:
                 for (;;) {
                     if (iFace >= MAX_POLY) {
                         // Too many polygon verts for the reader
-                        LogWarn("Too many polygon vertices for the reader (%dvs%d)!\n", iFace, MAX_POLY);
+                        Warning( "Too many polygon vertices for the reader (%dvs%d)!\n", iFace, MAX_POLY);
                         return false;
                     }
 
@@ -121,7 +121,7 @@ public:
                     uint32_t vertexIndex = 0;
                     if (!iPosition) {
                         // 0 is not allowed for index
-                        LogWarn("0 is not allowed for index!\n");
+                        Warning( "0 is not allowed for index!\n");
                         return false;
                     } else if (iPosition < 0) {
                         // Negative values are relative indices
@@ -182,7 +182,7 @@ public:
                             if (normIndex >= normals.size()) {
                                 // Some Objs we tested provide normal indices, but no normals
                                 // ... GREAT!
-                                LogWarn("Out of range normal, ignoring!\n");
+                                Warning( "Out of range normal, ignoring!\n");
                                 vertex.normal = PLVector3(0, 0, 0);
                             } else {
                                 vertex.normal = normals[normIndex];
@@ -226,7 +226,7 @@ public:
 
                 if (iFace < 3) {
                     // Need at least 3 points to form a triangle
-                    LogWarn("Invalid number of points to form a triangle (%dvs3)\n", iFace);
+                    Warning( "Invalid number of points to form a triangle (%dvs3)\n", iFace);
                     return false;
                 }
 
@@ -291,7 +291,7 @@ public:
             const std::string& strMaterialFilePath = szFilePath.substr(0, szFilePath.find_last_of("\\/")) +
                     "/" + strMaterialFilename;
             if(!LoadMTL(strMaterialFilePath)) {
-                LogWarn("Failed to load material, \"%s\"!\n", strMaterialFilename.c_str());
+                Warning( "Failed to load material, \"%s\"!\n", strMaterialFilename.c_str());
             }
         }
 
@@ -302,7 +302,7 @@ public:
         // Assumes MTL is in CWD along with OBJ
         PLFile *filePtr = plOpenFile( szFilePath.c_str(), true );
         if ( filePtr == nullptr ) {
-			LogWarn("Failed to open material, \"%s\"!\n", szFilePath.c_str());
+			Warning( "Failed to open material, \"%s\"!\n", szFilePath.c_str());
 			return false;
         }
 

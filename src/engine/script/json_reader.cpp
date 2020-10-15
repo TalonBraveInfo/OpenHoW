@@ -22,8 +22,8 @@
 #include "../engine.h"
 #include "json_reader.h"
 
-#define LogMissingProperty( P )   LogWarn("Failed to get JSON property \"%s\"!\n", (P))
-#define LogInvalidArray( P )      LogWarn("Invalid JSON array for property \"%s\"!\n", (P))
+#define LogMissingProperty( P )   Warning("Failed to get JSON property \"%s\"!\n", (P))
+#define LogInvalidArray( P )      Warning("Invalid JSON array for property \"%s\"!\n", (P))
 
 JsonReader::JsonReader( const std::string &path ) : JsonReader() {
 	if ( path.empty() ) {
@@ -243,7 +243,7 @@ unsigned int JsonReader::GetArrayLength( const std::string &property, bool silen
 			duk_pop( context );
 		}
 		if ( !silent ) {
-			LogWarn( "Invalid array node!\n" );
+			Warning( "Invalid array node!\n" );
 		}
 		return 0;
 	}
@@ -275,7 +275,7 @@ std::string JsonReader::GetArrayStringProperty( const std::string &property, uns
 
 	duk_size_t length = duk_get_length( context, -1 );
 	if ( index >= length ) {
-		LogWarn( "Invalid index, %d (%d), in array!\n", index, length );
+		Warning( "Invalid index, %d (%d), in array!\n", index, length );
 		return "";
 	}
 
@@ -353,13 +353,13 @@ void JsonReader::EnterChildNode( unsigned int index ) {
 	auto *context = static_cast<duk_context *>(ctx_);
 	if ( !duk_is_array( context, -1 ) ) {
 		duk_pop( context );
-		LogWarn( "Node is not an array!\n" );
+		Warning( "Node is not an array!\n" );
 		return;
 	}
 
 	duk_size_t length = duk_get_length( context, -1 );
 	if ( index >= length ) {
-		LogWarn( "Invalid index, %d (%d), in array!\n", index, length );
+		Warning( "Invalid index, %d (%d), in array!\n", index, length );
 		return;
 	}
 
