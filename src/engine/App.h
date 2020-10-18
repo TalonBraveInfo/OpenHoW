@@ -26,7 +26,7 @@
 #include <PL/platform_console.h>
 
 #include "Utilities.h"
-#include "console.h"
+#include "Console.h"
 
 #define APP_MAJOR_VERSION    0
 #define APP_MINOR_VERSION    5

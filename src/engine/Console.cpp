@@ -17,10 +17,9 @@
 
 #include <PL/platform_filesystem.h>
 
+#include "App.h"
 #include "engine.h"
-#include "input.h"
 #include "language.h"
-#include "frontend.h"
 #include "graphics/display.h"
 #include "config.h"
 
@@ -49,7 +48,7 @@ static void UpdateDisplayCommand( unsigned int argc, char *argv[] ) {
 }
 
 static void QuitCommand( unsigned int argc, char *argv[] ) {
-	System_Shutdown();
+	GetApp()->Shutdown();
 }
 
 static void DisconnectCommand( unsigned int argc, char *argv[] ) {
@@ -128,23 +127,10 @@ static void DebugModeCallback( const PLConsoleVariable *variable ) {
 }
 
 static void GraphicsVsyncCallback( const PLConsoleVariable *var ) {
-	System_SetSwapInterval( var->b_value ? 1 : 0 );
+	GetApp()->SetSwapInterval( var->b_value ? 1 : 0 );
 }
 
 /************************************************************/
-
-#define MAX_INPUT_BUFFER_SIZE 256
-#define MAX_OUTPUT_BUFFER_SIZE  4096
-
-struct {
-	char out_buffer[MAX_OUTPUT_BUFFER_SIZE];
-	unsigned out_buffer_pos;
-
-	char in_buffer[MAX_INPUT_BUFFER_SIZE];
-	unsigned int in_buffer_pos;
-} console_state;
-
-static bool console_enabled = false;
 
 PLConsoleVariable *cv_debug_mode = nullptr;
 PLConsoleVariable *cv_debug_skeleton = nullptr;
@@ -177,30 +163,6 @@ PLConsoleVariable *cv_audio_volume_sfx = nullptr;
 PLConsoleVariable *cv_audio_volume_music = nullptr;
 PLConsoleVariable *cv_audio_voices = nullptr;
 PLConsoleVariable *cv_audio_mode = nullptr;
-
-static void ConsoleBufferUpdate( int level, const char *msg ) {
-	size_t len = strlen( msg );
-	u_assert( len < MAX_OUTPUT_BUFFER_SIZE );
-	if ( len + console_state.out_buffer_pos > MAX_OUTPUT_BUFFER_SIZE ) {
-		unsigned int cpy_pos = 0;
-		while ( len + ( console_state.out_buffer_pos - cpy_pos ) > MAX_OUTPUT_BUFFER_SIZE
-			|| console_state.out_buffer[ cpy_pos ] != '\n' ) {
-			++cpy_pos;
-		}
-
-		memmove( console_state.out_buffer, console_state.out_buffer + cpy_pos, console_state.out_buffer_pos - cpy_pos );
-		console_state.out_buffer_pos -= cpy_pos;
-	}
-
-	strncpy( console_state.out_buffer + console_state.out_buffer_pos, msg, len );
-	console_state.out_buffer_pos += len;
-}
-
-static void ClearConsoleOutputBuffer( unsigned int argc, char **argv ) {
-	u_unused( argc );
-	u_unused( argv );
-	console_state.out_buffer_pos = 0;
-}
 
 void Console_Initialize( void ) {
 #define rvar( var, arc, ... ) \
@@ -249,138 +211,9 @@ void Console_Initialize( void ) {
 	plRegisterConsoleCommand( "saveConfig", SaveConfigCommand, "Save current config" );
 	plRegisterConsoleCommand( "disconnect", DisconnectCommand, "Disconnects and unloads current map" );
 	plRegisterConsoleCommand( "displayUpdate", UpdateDisplayCommand, "Updates the display to match current settings" );
-	plRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
-	plRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
+	//plRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
+	//plRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 
-	ClearConsoleOutputBuffer( 0, nullptr );
-	plSetConsoleOutputCallback( ConsoleBufferUpdate );
-}
-
-static void DrawInputPane() {
-	BitmapFont *font = g_fonts[ FONT_SMALL ];
-	if ( font == nullptr ) {
-		return;
-	}
-
-	// First we need to draw the background
-
-	plSetTexture( nullptr, 0 );
-
-	int scr_w = g_state.ui_camera->viewport.w;
-	int scr_h = g_state.ui_camera->viewport.h;
-	float h = font->GetCharacterHeight( 0 );
-
-	PLMatrix4 identity;
-	identity.Identity();
-	plDrawRectangle( &identity, 0, scr_h - h, scr_w, h, PL_COLOUR_DARK_GRAY );
-
-	plSetBlendMode( PL_BLEND_DEFAULT );
-
-	// And now the actual text!
-
-	float x = 20.0f;
-	float y = scr_h - h;
-
-	char anim[] = { 'I', '/', '-', '\\' };
-	static unsigned int frame = 0;
-	static double delay = 0;
-	if ( delay < g_state.sim_ticks ) {
-		if ( ++frame >= plArrayElements( anim ) ) {
-			frame = 0;
-		}
-		delay = g_state.sim_ticks + 2;
-	}
-
-	font->DrawCharacter( x, y, 1.f, PL_COLOUR_LIME, anim[ frame ] );
-
-	if ( console_state.in_buffer_pos > 0 ) {
-		char msg_buf[MAX_INPUT_BUFFER_SIZE];
-		strncpy( msg_buf, console_state.in_buffer, sizeof( msg_buf ) );
-		unsigned int w = font->GetCharacterWidth( 0 );
-		font->DrawString( x + w + 10, y, 1, 1.f, PL_COLOUR_LIME, pl_strtoupper( msg_buf ) );
-	}
-}
-
-static void DrawOutputPane() {
-	//unsigned int scr_w = Display_GetViewportWidth(&g_state.ui_camera->viewport);
-	//unsigned int scr_h = Display_GetViewportHeight(&g_state.ui_camera->viewport);
-
-	BitmapFont *font = g_fonts[ FONT_SMALL ];
-	for ( size_t i = 0, cur_line = 0; i < console_state.out_buffer_pos; ) {
-		if ( console_state.out_buffer[ i ] == '\n' ) {
-			++i;
-			continue;
-		}
-
-		char *line_end = static_cast<char *>(memchr( console_state.out_buffer + i, '\n', console_state.out_buffer_pos - i ));
-		if ( line_end == nullptr ) {
-			line_end = console_state.out_buffer + console_state.out_buffer_pos;
-		}
-
-		size_t line_len = line_end - ( console_state.out_buffer + i );
-
-		char line[512];
-		strncpy( line, console_state.out_buffer + i, line_len );
-		line[ line_len ] = '\0';
-
-		int y = font->GetCharacterHeight( 0 ) * cur_line;
-		g_fonts[ FONT_SMALL ]->DrawString( font->GetCharacterWidth( 0 ), y, 1, 1.0f, PL_COLOUR_LIME, pl_strtoupper( line ) );
-
-		cur_line++;
-		i += line_len;
-	}
-}
-
-void Console_Draw( void ) {
-	if ( FrontEnd_GetState() == FE_MODE_INIT || FrontEnd_GetState() == FE_MODE_LOADING || !console_enabled ) {
-		return;
-	}
-
-	DrawInputPane();
-	DrawOutputPane();
-}
-
-static void ResetInputBuffer() {
-	memset( console_state.in_buffer, 0, sizeof( console_state.in_buffer ) );
-	console_state.in_buffer_pos = 0;
-}
-
-static void ConsoleTextInputCallback( const char *c ) {
-	if ( console_state.in_buffer_pos > MAX_INPUT_BUFFER_SIZE ) {
-		Warning( "Hit console buffer limit!\n" );
-		return;
-	}
-
-	console_state.in_buffer[ console_state.in_buffer_pos++ ] = *c;
-}
-
-static void ConsoleInputCallback( int key, bool pressed ) {
-	if ( !pressed ) {
-		return;
-	}
-
-	if ( key == '\r' && console_state.in_buffer[ 0 ] != '\0' ) {
-		plParseConsoleString( console_state.in_buffer );
-		ResetInputBuffer();
-		return;
-	}
-
-	if ( key == '\b' && console_state.in_buffer_pos > 0 ) {
-		console_state.in_buffer[ --console_state.in_buffer_pos ] = '\0';
-		return;
-	}
-}
-
-void Console_Toggle( void ) {
-	console_enabled = !console_enabled;
-	if ( console_enabled ) {
-		Input_SetTextFocusCallback( ConsoleTextInputCallback );
-		Input_SetKeyboardFocusCallback( ConsoleInputCallback );
-		ResetInputBuffer();
-	} else {
-		Input_SetTextFocusCallback( nullptr );
-		Input_SetKeyboardFocusCallback( nullptr );
-	}
-
-	Input_ResetStates();
+	//ClearConsoleOutputBuffer( 0, nullptr );
+	//plSetConsoleOutputCallback( ConsoleBufferUpdate );
 }

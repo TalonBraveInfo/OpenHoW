@@ -76,4 +76,3 @@ extern PLConsoleVariable *cv_audio_mode;
 /************************************************************/
 
 void Console_Initialize();
-void Console_Toggle();

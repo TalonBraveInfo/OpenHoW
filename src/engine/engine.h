@@ -26,7 +26,7 @@
 #endif
 
 #include "pork_math.h"
-#include "console.h"
+#include "Console.h"
 #include "ResourceManager.h"
 #include "audio.h"
 #include "game.h"
