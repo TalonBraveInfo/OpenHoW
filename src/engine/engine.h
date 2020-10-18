@@ -25,14 +25,12 @@
 #include <array>
 #endif
 
-#include "../shared/util.h"
-
 #include "pork_math.h"
 #include "console.h"
-#include "resource_manager.h"
+#include "ResourceManager.h"
 #include "audio.h"
 #include "game.h"
-#include "physics_interface.h"
+#include "PhysicsInterface.h"
 
 namespace ohw {
 

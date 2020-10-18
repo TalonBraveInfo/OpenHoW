@@ -19,7 +19,7 @@
 #include "../script/json_reader.h"
 
 #include "particles.h"
-#include "particle_emitter.h"
+#include "ParticleEmitter.h"
 
 ParticleEmitter::ParticleEmitter( JsonReader &jsonReader ) {
 	myGravity = jsonReader.GetFloatProperty( "gravity" );

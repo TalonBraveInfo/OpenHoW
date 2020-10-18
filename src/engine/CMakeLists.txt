@@ -36,26 +36,22 @@ file( GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
         *.h
 
-        ../shared/util.c
-        ../shared/fac.c
-        ../shared/min.c
-        ../shared/no2.c
-        ../shared/vtx.c
-
         script/duktape-2.2.0/*.c
         script/duktape-2.2.0/*.h
 
         audio/audio.cpp
 
         # Physics Sub-System
-        physics/physics_interface.cpp
-        physics/physics_interface.h
+        physics/PhysicsInterface.cpp
+        physics/PhysicsInterface.h
 
         editor/*.*
         graphics/*.*
         script/*.*
         game/*.*
         loaders/*.*
+
+        Utilities.cpp
 
         ################## ImGui
 

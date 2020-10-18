@@ -20,6 +20,10 @@
 #include "App.h"
 #include "ModManager.h"
 #include "input.h"
+#include "display.h"
+#include "imgui_layer.h"
+#include "language.h"
+#include "config.h"
 
 #define APP_NAME    "OpenHoW"
 
@@ -78,6 +82,8 @@ ohw::App::App( int argc, char **argv ) {
 			false
 #endif
 	);
+
+	Print( "Initializing OpenHoW %s\n", GetVersionString() );
 
 	if ( SDL_Init( SDL_INIT_EVERYTHING ) != 0 ) {
 		Error( "Failed to initialize SDL2!\nSDL: %s", SDL_GetError() );
@@ -153,68 +159,61 @@ void ohw::App::DisplayMessageBox( MBErrorLevel level, const char *message, ... )
 	delete[] buf;
 }
 
-///////////////////////////////////////////////
-// Display
+void ohw::App::InitializeConfig() {
+	Console_Initialize();
+
+	// Initialize the language manager
+	LanguageManager::GetInstance()->SetLanguage( "eng" );
+
+	/* this MUST be done after all vars have been
+	 * initialized, otherwise, right now, certain
+	 * vars will not be loaded/saved! */
+	Config_Load( CONFIG_FILENAME );
+}
 
 void ohw::App::InitializeDisplay() {
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
-	SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
-
-	const char* arg = plGetCommandLineArgumentValue( "-msaa" );
+	const char* arg;
+	// check the command line for any arguments
+	arg = plGetCommandLineArgumentValue( "-msaa" );
 	if ( arg != nullptr ) {
 		int i = std::strtol( arg, nullptr, 10 );
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, i );
 	}
-
-#ifdef _DEBUG
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
-#else
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-#endif
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
-
-	// Check if the user is specifying what display they want to use
+	int width = 0;
+	arg = plGetCommandLineArgumentValue( "-width" );
+	if ( arg != nullptr ) {
+		width = std::strtol( arg, nullptr, 10 );
+	}
+	int height = 0;
+	arg = plGetCommandLineArgumentValue( "-height" );
+	if ( arg != nullptr ) {
+		height = std::strtol( arg, nullptr, 10 );
+	}
 	arg = plGetCommandLineArgumentValue( "-display" );
 	if ( arg != nullptr ) {
 		myDesiredDisplay = std::strtol( arg, nullptr, 10 );
 	}
 
+	int defaultFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_ALLOW_HIGHDPI;
+
 	// Fetch the display size
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds( myDesiredDisplay, &displayBounds );
-	int width = displayBounds.w;
-	int height = displayBounds.h;
-
-	myWindow = SDL_CreateWindow(
-			WINDOW_TITLE,
-			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
-			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
-			width, height,
-			SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_BORDERLESS );
-	if ( myWindow == nullptr ) {
-		Error( "Failed to create window!\nSDL: %s\n", SDL_GetError() );
+	if ( width == 0 || height == 0 ) {
+		width = displayBounds.w;
+		height = displayBounds.h;
 	}
 
-	SetWindowIcon( "icon.png" );
-
-	SDL_SetWindowMinimumSize( myWindow, WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT );
-
-	// Now create the GL context
-	myGLContext = SDL_GL_CreateContext( myWindow );
-	if ( myGLContext == nullptr ) {
-		Error( "Failed to create OpenGL context!\nSDL: %s\n", SDL_GetError() );
+	// Assume borderless if it matches desktop resolution
+	if ( width == displayBounds.w && height == displayBounds.h ) {
+		defaultFlags |= SDL_WINDOW_BORDERLESS;
 	}
 
-	// platform library graphics subsystem can init now
-	plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS );
-	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
+	CreateDisplay( width, height, defaultFlags );
 
 	// Fetch all the available display modes
 	int numModes = SDL_GetNumDisplayModes( myDesiredDisplay );
-	for ( unsigned int i = 0; i < numModes; ++i ) {
+	for ( int i = 0; i < numModes; ++i ) {
 		SDL_DisplayMode mode;
 		if ( SDL_GetDisplayMode( myDesiredDisplay, i, &mode ) != 0 ) {
 			Warning( "Failed to get display mode %d via SDL!\nSDL: %s\n", i, SDL_GetError() );
@@ -272,6 +271,47 @@ void ohw::App::SetDisplaySize( int width, int height, bool fullscreen ) {
 
 void ohw::App::GetDisplaySize( int *width, int *height ) {
 	SDL_GL_GetDrawableSize( myWindow, width, height );
+}
+
+void ohw::App::CreateDisplay( int w, int h, int flags ) {
+	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+	SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
+#ifdef _DEBUG
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
+#else
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
+#endif
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+
+	myWindow = SDL_CreateWindow(
+			WINDOW_TITLE,
+			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
+			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
+			w, h,
+			flags );
+	if ( myWindow == nullptr ) {
+		Error( "Failed to create window!\nSDL: %s\n", SDL_GetError() );
+	}
+
+	SetWindowIcon( "icon.png" );
+
+	SDL_SetWindowMinimumSize( myWindow, WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT );
+
+	// Now create the GL context
+	myGLContext = SDL_GL_CreateContext( myWindow );
+	if ( myGLContext == nullptr ) {
+		Error( "Failed to create OpenGL context!\nSDL: %s\n", SDL_GetError() );
+	}
+
+	// platform library graphics subsystem can init now
+	if ( plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS ) != PL_RESULT_SUCCESS ) {
+		Error( "Failed to initialize platform graphics subsystem!\nPL: %s\n", plGetError() );
+	}
+
+	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
 }
 
 ///////////////////////////////////////////////
@@ -519,7 +559,9 @@ void ohw::App::PollEvents() {
 					char buf[16];
 					plSetConsoleVariable( cv_display_width, pl_itoa( event.window.data1, buf, 16, 10 ) );
 					plSetConsoleVariable( cv_display_height, pl_itoa( event.window.data2, buf, 16, 10 ) );
+
 					Display_UpdateViewport( 0, 0, event.window.data1, event.window.data2 );
+
 					ImGuiImpl_UpdateViewport( event.window.data1, event.window.data2 );
 					io.DisplaySize = ImVec2( event.window.data1, event.window.data2 );
 				}
@@ -543,10 +585,6 @@ const char *ohw::App::GetVersionString() {
 }
 
 bool ohw::App::IsRunning() {
-#define TICKS_PER_SECOND    25
-#define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
-#define MAX_FRAMESKIP       5
-
 	PollEvents();
 
 	static unsigned int nextTick = 0;
@@ -578,7 +616,7 @@ bool ohw::App::IsRunning() {
 }
 
 void *ohw::App::MAlloc( size_t size, bool abortOnFail ) {
-	CAlloc( 1, size, abortOnFail );
+	return CAlloc( 1, size, abortOnFail );
 }
 
 void *ohw::App::CAlloc( size_t num, size_t size, bool abortOnFail ) {
@@ -640,6 +678,7 @@ int main( int argc, char** argv ) {
 #endif
 
 	appInstance = new ohw::App( argc, argv );
+	appInstance->InitializeConfig();
 	appInstance->InitializeDisplay();
 
 	while ( appInstance->IsRunning() );

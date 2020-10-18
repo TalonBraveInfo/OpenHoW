@@ -17,7 +17,7 @@
 
 #include "engine.h"
 #include "frontend.h"
-#include "graphics/shaders.h"
+#include "graphics/ShaderManager.h"
 #include "actor_manager.h"
 #include "json_reader.h"
 

@@ -17,7 +17,7 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "util.h"
+#include "Utilities.h"
 
 #if defined(COMPILE_ENGINE)
 # include "../engine/engine.h"

@@ -15,12 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../script/json_reader.h"
-
+#include "App.h"
+#include "json_reader.h"
 #include "particles.h"
-#include "particle_effect.h"
-#include "particle_emitter.h"
+#include "ParticleEffect.h"
+#include "ParticleEmitter.h"
 
 ParticleEffect::ParticleEffect( const std::string &effectPath ) {
 	try {

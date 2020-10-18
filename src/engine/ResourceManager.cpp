@@ -15,13 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
-#include "resource_manager.h"
-#include "shaders.h"
+#include "App.h"
+#include "ResourceManager.h"
+#include "ShaderManager.h"
 
-using namespace ohw;
-
-ResourceManager::ResourceManager() {
+ohw::ResourceManager::ResourceManager() {
 	// Allow users to enable support for all package formats if desired (disabled by default for security reasons)
 	if ( plHasCommandLineArgument( "-rapf" ) ) {
 		plRegisterStandardPackageLoaders();
@@ -32,11 +30,11 @@ ResourceManager::ResourceManager() {
 	plRegisterConsoleCommand( "ClearResource", &ResourceManager::ClearResourceCommand, "Clears the specified resource." );
 }
 
-ResourceManager::~ResourceManager() {
+ohw::ResourceManager::~ResourceManager() {
 	ClearAllResources( true );
 }
 
-Resource *ResourceManager::GetCachedResource( const std::string& path ) {
+ohw::Resource *ohw::ResourceManager::GetCachedResource( const std::string& path ) {
 	auto idx = resourcesMap.find( path );
 	if ( idx != resourcesMap.end() ) {
 		return idx->second;
@@ -45,7 +43,7 @@ Resource *ResourceManager::GetCachedResource( const std::string& path ) {
 	return nullptr;
 }
 
-SharedTextureResourcePointer ResourceManager::LoadTexture( const std::string& path, unsigned int flags, bool persist, bool abortOnFail ) {
+ohw::SharedTextureResourcePointer ohw::ResourceManager::LoadTexture( const std::string& path, unsigned int flags, bool persist, bool abortOnFail ) {
 	TextureResource *texturePtr = static_cast< TextureResource* >( GetCachedResource( path ) );
 	if ( texturePtr != nullptr ) {
 		return texturePtr;
@@ -57,7 +55,7 @@ SharedTextureResourcePointer ResourceManager::LoadTexture( const std::string& pa
 	return texturePtr;
 }
 
-SharedModelResourcePointer ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
+ohw::SharedModelResourcePointer ohw::ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
 	ModelResource *modelPtr = static_cast< ModelResource* >( GetCachedResource( path ) );
 	if ( modelPtr != nullptr ) {
 		return modelPtr;
@@ -69,7 +67,7 @@ SharedModelResourcePointer ResourceManager::LoadModel( const std::string& path, 
 	return modelPtr;
 }
 
-PLTexture *ResourceManager::GetFallbackTexture() {
+PLTexture *ohw::ResourceManager::GetFallbackTexture() {
 	if ( fallbackTexture != nullptr ) {
 		return fallbackTexture;
 	}
@@ -93,7 +91,7 @@ PLTexture *ResourceManager::GetFallbackTexture() {
 	return fallbackTexture;
 }
 
-PLModel *ResourceManager::GetFallbackModel() {
+PLModel *ohw::ResourceManager::GetFallbackModel() {
 	if ( fallbackModel != nullptr ) {
 		return fallbackModel;
 	}
@@ -122,7 +120,7 @@ PLModel *ResourceManager::GetFallbackModel() {
 /**
  * Clear the specified resource if it's ready to be freed. Use force to immediately destroy it.
  */
-void ResourceManager::ClearResource( const std::string &path, bool force ) {
+void ohw::ResourceManager::ClearResource( const std::string &path, bool force ) {
 	if ( resourcesMap.empty() ) {
 		return;
 	}
@@ -139,13 +137,13 @@ void ResourceManager::ClearResource( const std::string &path, bool force ) {
 	delete resourceIndex->second;
 	resourcesMap.erase( resourceIndex );
 
-	LogDebug( "Freed resource \"%s\"\n", path.c_str() );
+	DebugMsg( "Freed resource \"%s\"\n", path.c_str() );
 }
 
 /**
  * Clear all cached resources that can be freed up. Use force to immediately destroy it.
  */
-void ResourceManager::ClearAllResources( bool force ) {
+void ohw::ResourceManager::ClearAllResources( bool force ) {
 	for ( auto i = resourcesMap.begin(); i != resourcesMap.end(); ) {
 		if ( !force && !i->second->CanDestroy() ) {
 			++i;
@@ -157,7 +155,7 @@ void ResourceManager::ClearAllResources( bool force ) {
 	}
 }
 
-void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
+void ohw::ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
 	u_unused( argc );
 	u_unused( argv );
 
@@ -173,7 +171,7 @@ void ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
 	}
 }
 
-void ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv ) {
+void ohw::ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv ) {
 	bool force = false;
 	if ( argc > 1 ) {
 		const char *forceParameter = argv[ 1 ];
@@ -192,7 +190,7 @@ void ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **argv )
 	ohw::Engine::Resource()->ClearAllResources( force );
 }
 
-void ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
+void ohw::ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
 	if ( argc <= 1 ) {
 		Warning( "Invalid number of arguments!\n" );
 		return;

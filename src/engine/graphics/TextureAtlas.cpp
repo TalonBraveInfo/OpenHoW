@@ -18,7 +18,7 @@
 #include "../engine.h"
 
 #include "display.h"
-#include "texture_atlas.h"
+#include "TextureAtlas.h"
 
 TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {
 	texture_ = ohw::Engine::Resource()->GetFallbackTexture();

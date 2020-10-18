@@ -23,9 +23,9 @@
 
 #include "game/actor_manager.h"
 
-#include "shaders.h"
+#include "ShaderManager.h"
 #include "display.h"
-#include "camera.h"
+#include "Camera.h"
 
 /* shared function */
 void Display_UpdateViewport( int x, int y, int width, int height ) {
@@ -101,24 +101,6 @@ void Display_UpdateState() {
 }
 
 void Display_Initialize() {
-	// check the command line for any arguments
-	const char *var;
-	if ( ( var = plGetCommandLineArgumentValue( "-width" ) ) != nullptr ) {
-		plSetConsoleVariable( cv_display_width, var );
-	}
-	if ( ( var = plGetCommandLineArgumentValue( "-height" ) ) != nullptr ) {
-		plSetConsoleVariable( cv_display_height, var );
-	}
-
-	if ( plHasCommandLineArgument( "-window" ) ) {
-		plSetConsoleVariable( cv_display_fullscreen, "false" );
-	} else if ( plHasCommandLineArgument( "-fullscreen" ) ) {
-		plSetConsoleVariable( cv_display_fullscreen, "true" );
-	}
-
-	// now create the window and update the display
-	System_DisplayWindow( true, MIN_DISPLAY_WIDTH, MIN_DISPLAY_HEIGHT );
-
 	System_SetSwapInterval( cv_display_vsync->b_value ? 1 : 0 );
 
 	Display_UpdateState();

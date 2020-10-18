@@ -19,9 +19,9 @@
 #include "terrain.h"
 
 #include "graphics/mesh.h"
-#include "graphics/shaders.h"
-#include "graphics/texture_atlas.h"
-#include "graphics/camera.h"
+#include "graphics/ShaderManager.h"
+#include "graphics/TextureAtlas.h"
+#include "graphics/Camera.h"
 
 //Precalculated vertices for chunk rendering
 //TODO: Share one index buffer instance between all chunks

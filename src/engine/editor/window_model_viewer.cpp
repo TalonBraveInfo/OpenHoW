@@ -16,9 +16,9 @@
  */
 
 #include "engine.h"
-#include "graphics/shaders.h"
+#include "graphics/ShaderManager.h"
 #include "graphics/display.h"
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 #include "imgui_layer.h"
 #include "model.h"
 #include "language.h"

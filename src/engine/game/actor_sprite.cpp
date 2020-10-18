@@ -16,7 +16,7 @@
  */
 
 #include "engine.h"
-#include "sprite.h"
+#include "Sprite.h"
 #include "actor_manager.h"
 #include "actor.h"
 

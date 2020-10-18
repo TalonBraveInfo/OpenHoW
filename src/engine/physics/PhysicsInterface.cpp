@@ -16,7 +16,7 @@
  */
 
 #include "engine.h"
-#include "physics_interface.h"
+#include "PhysicsInterface.h"
 
 void ohw::PhysicsInterface::Tick() {
 

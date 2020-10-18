@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "TextureResource.h"
 
 // TODO: we should be able to query the platform library for this!!

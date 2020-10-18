@@ -24,7 +24,7 @@
 #include "GameMode.h"
 #include "player.h"
 
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 
 #include "script/json_reader.h"
 

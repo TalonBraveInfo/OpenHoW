@@ -18,13 +18,10 @@
 #include "App.h"
 #include "engine.h"
 #include "language.h"
-#include "ModManager.h"
-#include "client.h"
 #include "config.h"
 #include "input.h"
 #include "frontend.h"
 #include "Map.h"
-#include "imgui_layer.h"
 
 #include "graphics/display.h"
 
@@ -52,17 +49,7 @@ ohw::Engine::~Engine() {
 }
 
 void ohw::Engine::Initialize() {
-	Print( "Initializing Engine (%s)...\n", GetVersionString().c_str() );
 
-	Console_Initialize();
-
-	// Initialize the language manager
-	LanguageManager::GetInstance()->SetLanguage( "eng" );
-
-	/* this MUST be done after all vars have been
-	 * initialized, otherwise, right now, certain
-	 * vars will not be loaded/saved! */
-	Config_Load( CONFIG_FILENAME );
 
 	// now initialize all other sub-systems
 

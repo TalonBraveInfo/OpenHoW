@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../script/json_reader.h"
-#include "shaders.h"
+#include "App.h"
+#include "json_reader.h"
+#include "ShaderManager.h"
 
 static std::map<std::string, ShaderProgram*> programs;
 static ShaderProgram* fallbackShaderProgram = nullptr;

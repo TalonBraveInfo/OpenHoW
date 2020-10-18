@@ -15,16 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "App.h"
 #include "engine.h"
 #include "ModelResource.h"
-#include "texture_atlas.h"
+#include "TextureAtlas.h"
 #include "mesh.h"
 #include "WaveFrontReader.h"
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 
-#include "../shared/vtx.h"
-#include "../shared/fac.h"
-#include "../shared/no2.h"
+#include "loaders/vtx.h"
+#include "loaders/fac.h"
+#include "loaders/no2.h"
 
 ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool abortOnFail ) :
 		Resource( path, persist ) {

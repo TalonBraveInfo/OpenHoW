@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
-#include "property.h"
+#include "App.h"
+#include "Property.h"
 
 Property::Property(PropertyOwner &po, const std::string &name, unsigned flags):
 	name(name),

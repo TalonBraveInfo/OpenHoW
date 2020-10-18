@@ -16,9 +16,9 @@
  */
 
 #include "engine.h"
-#include "sprite.h"
+#include "Sprite.h"
 #include "display.h"
-#include "shaders.h"
+#include "ShaderManager.h"
 
 Sprite::Sprite( SpriteType type, const std::string &texturePath, PLColour colour, float scale ) :
 	type_( type ), colour_( colour ), scale_( scale ) {

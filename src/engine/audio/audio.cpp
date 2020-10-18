@@ -27,7 +27,7 @@
 #include "engine.h"
 #include "frontend.h"
 
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 
 #include "stb_vorbis.c"
 

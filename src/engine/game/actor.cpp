@@ -22,7 +22,7 @@
 #include "player.h"
 #include "actor.h"
 
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 
 using namespace ohw;
 

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "sprite.h"
+#include "Sprite.h"
 
 // And this is the individual particle
 class Particle {

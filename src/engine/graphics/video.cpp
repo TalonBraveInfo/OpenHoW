@@ -20,7 +20,7 @@
 #include "../engine.h"
 #include "../frontend.h"
 #include "video.h"
-#include "shaders.h"
+#include "ShaderManager.h"
 
 #if 0
 #include <libavformat/avformat.h>

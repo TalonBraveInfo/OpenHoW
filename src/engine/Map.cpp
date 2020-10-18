@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "App.h"
 #include "engine.h"
 #include "Map.h"
 
-#include "graphics/shaders.h"
-#include "graphics/texture_atlas.h"
+#include "graphics/ShaderManager.h"
+#include "graphics/TextureAtlas.h"
+#include "Utilities.h"
 
 ohw::Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	std::string base_path = "maps/" + manifest_->filename + "/";

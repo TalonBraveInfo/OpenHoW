@@ -25,11 +25,16 @@
 #include <PL/pl_graphics.h>
 #include <PL/platform_console.h>
 
+#include "Utilities.h"
 #include "console.h"
 
 #define APP_MAJOR_VERSION    0
 #define APP_MINOR_VERSION    5
 #define APP_PATCH_VERSION    0
+
+#define TICKS_PER_SECOND    25
+#define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
+#define MAX_FRAMESKIP       5
 
 namespace ohw {
 	class ModManager;
@@ -54,9 +59,7 @@ namespace ohw {
 			return deltaTime;
 		}
 
-		///////////////////////////////////////////////
-		// Display
-
+		void InitializeConfig();
 		void InitializeDisplay();
 
 		void SwapDisplay();
@@ -78,9 +81,12 @@ namespace ohw {
 			return &myDisplayPresets;
 		}
 
+	private:
+		void CreateDisplay( int w, int h, int flags );
+
 		///////////////////////////////////////////////
 		// Events
-
+	public:
 		void PollEvents();
 
 		///////////////////////////////////////////////

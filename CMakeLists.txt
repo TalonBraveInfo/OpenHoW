@@ -92,14 +92,5 @@ add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
 # 3rd-party libraries
 add_subdirectory(src/3rdparty/platform/platform)
 
-# tools and utilities
-if ( OHW_BUILD_TOOLS )
-    add_subdirectory(src/tools/extractor)
-    add_subdirectory(src/tools/ptgtool)
-    add_subdirectory(src/tools/img2pmg)
-endif()
-
 # core openhow components
 add_subdirectory( src/engine )
-#add_subdirectory( src/game )
-#add_subdirectory( src/launcher_sdl2 )

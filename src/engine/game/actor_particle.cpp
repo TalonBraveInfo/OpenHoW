@@ -16,8 +16,8 @@
  */
 
 #include "../engine.h"
-#include "../graphics/particle_effect.h"
-#include "../graphics/particle_emitter.h"
+#include "../graphics/ParticleEffect.h"
+#include "../graphics/ParticleEmitter.h"
 #include "../graphics/particles.h"
 
 #include "actor_manager.h"

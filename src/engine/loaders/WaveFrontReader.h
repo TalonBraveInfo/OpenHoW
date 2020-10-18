@@ -276,7 +276,7 @@ public:
                     materials.emplace_back(mat);
                 }
             } else {
-                LogDebug("Unrecognised command in Obj \"%s\"!\n", szFilePath.c_str());
+                Warning("Unrecognised command in Obj \"%s\"!\n", szFilePath.c_str());
             }
 
             InFile.ignore(1000, L'\n');

@@ -16,12 +16,12 @@
  */
 
 #include "engine.h"
-#include "graphics/shaders.h"
+#include "graphics/ShaderManager.h"
 #include "graphics/display.h"
-#include "graphics/particle_effect.h"
-#include "graphics/particle_emitter.h"
+#include "graphics/ParticleEffect.h"
+#include "graphics/ParticleEmitter.h"
 #include "graphics/particles.h"
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 #include "language.h"
 #include "imgui_layer.h"
 

@@ -21,7 +21,7 @@
 #include "Map.h"
 #include "graphics/display.h"
 #include "graphics/video.h"
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 #include "game/actor_manager.h"
 
 using namespace ohw;

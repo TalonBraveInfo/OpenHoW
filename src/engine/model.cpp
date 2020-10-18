@@ -24,8 +24,8 @@
 #include "loaders/loaders.h"
 
 #include "graphics/display.h"
-#include "graphics/shaders.h"
-#include "graphics/texture_atlas.h"
+#include "graphics/ShaderManager.h"
+#include "graphics/TextureAtlas.h"
 #include "graphics/mesh.h"
 
 using namespace ohw;
