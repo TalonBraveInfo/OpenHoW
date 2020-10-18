@@ -17,14 +17,14 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "engine.h"
+#include "App.h"
 #include "script/json_reader.h"
 
-const char* Config_GetUserConfigPath() {
+const char *Config_GetUserConfigPath() {
 	static std::string config_path;
 	if ( config_path.empty() ) {
 		char out[PL_SYSTEM_MAX_PATH];
-		if ( plGetApplicationDataDirectory( ENGINE_APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
+		if ( plGetApplicationDataDirectory( APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
 			Warning( "Failed to get app data directory!\n%s\n", plGetError() );
 			config_path = "./user.config";
 		} else {
@@ -34,8 +34,8 @@ const char* Config_GetUserConfigPath() {
 	return config_path.c_str();
 }
 
-void Config_Save( const char* path ) {
-	FILE* fp = fopen( path, "wb" );
+void Config_Save( const char *path ) {
+	FILE *fp = fopen( path, "wb" );
 	if ( fp == nullptr ) {
 		Warning( "failed to write config to \"%s\"!\n", path );
 		return;
@@ -45,12 +45,12 @@ void Config_Save( const char* path ) {
 
 	/* get access to the console variables from the platform library */
 	size_t num_c;
-	PLConsoleVariable** vars;
+	PLConsoleVariable **vars;
 	plGetConsoleVariables( &vars, &num_c );
 
 	/* and NOW save them! */
 	bool first = true;
-	for ( PLConsoleVariable** var = vars; var < num_c + vars; ++var ) {
+	for ( PLConsoleVariable **var = vars; var < num_c + vars; ++var ) {
 		if ( !( *var )->archive ) {
 			continue;
 		}
@@ -67,15 +67,15 @@ void Config_Save( const char* path ) {
 	fclose( fp );
 }
 
-void Config_Load( const char* path ) {
+void Config_Load( const char *path ) {
 	try {
 		JsonReader config( path );
 
 		size_t num_c;
-		PLConsoleVariable** vars;
+		PLConsoleVariable **vars;
 		plGetConsoleVariables( &vars, &num_c );
 
-		for ( PLConsoleVariable** var = vars; var < vars + num_c; ++var ) {
+		for ( PLConsoleVariable **var = vars; var < vars + num_c; ++var ) {
 			std::string result = config.GetStringProperty( ( *var )->var );
 			if ( result.empty() ) {
 				continue;
@@ -83,7 +83,7 @@ void Config_Load( const char* path ) {
 
 			plSetConsoleVariable( ( *var ), result.c_str() );
 		}
-	} catch ( const std::exception& e ) {
+	} catch ( const std::exception &e ) {
 		Warning( "Failed to read user config, \"%s\"!\n%s\n", path, e.what() );
 	}
 }

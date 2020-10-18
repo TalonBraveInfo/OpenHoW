@@ -16,7 +16,7 @@
  */
 
 #include "../engine.h"
-#include "../frontend.h"
+#include "../Menu.h"
 #include "../Map.h"
 
 #include "player.h"

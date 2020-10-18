@@ -22,7 +22,7 @@
 #include "graphics/ParticleEmitter.h"
 #include "graphics/particles.h"
 #include "graphics/Camera.h"
-#include "language.h"
+#include "Language.h"
 #include "imgui_layer.h"
 
 #include "window_particle_editor.h"

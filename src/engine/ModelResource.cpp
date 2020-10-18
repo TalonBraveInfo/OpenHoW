@@ -23,9 +23,9 @@
 #include "WaveFrontReader.h"
 #include "graphics/Camera.h"
 
-#include "loaders/vtx.h"
-#include "loaders/fac.h"
-#include "loaders/no2.h"
+#include "loaders/VtxLoader.h"
+#include "loaders/FacLoader.h"
+#include "loaders/No2Loader.h"
 
 ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool abortOnFail ) :
 		Resource( path, persist ) {

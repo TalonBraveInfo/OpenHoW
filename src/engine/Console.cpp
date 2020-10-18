@@ -19,7 +19,7 @@
 
 #include "App.h"
 #include "engine.h"
-#include "language.h"
+#include "Language.h"
 #include "graphics/display.h"
 #include "config.h"
 

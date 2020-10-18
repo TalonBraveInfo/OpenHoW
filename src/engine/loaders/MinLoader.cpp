@@ -18,7 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "../engine/engine.h"
-#include "../engine/loaders/loaders.h"
+#include "../engine/loaders/Loaders.h"
 
 /************************************************************/
 /* PSX Min Model Format */

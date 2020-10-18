@@ -16,9 +16,9 @@
  */
 
 #include "engine.h"
-#include "frontend.h"
+#include "Menu.h"
 #include "Map.h"
-#include "language.h"
+#include "Language.h"
 #include "ModManager.h"
 #include "actor_manager.h"
 #include "GameMode.h"

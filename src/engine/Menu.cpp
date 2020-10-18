@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "App.h"
 #include "engine.h"
 #include "input.h"
-#include "frontend.h"
+#include "Menu.h"
 #include "Map.h"
 #include "graphics/display.h"
 #include "graphics/video.h"
@@ -348,11 +349,11 @@ unsigned int FrontEnd_GetState( void ) {
 
 void FrontEnd_SetState( unsigned int state ) {
 	if ( state == frontend_state ) {
-		LogDebug( "attempted to set debug state to an already existing state!\n" );
+		DebugMsg( "attempted to set debug state to an already existing state!\n" );
 		return;
 	}
 
-	LogDebug( "changing frontend state to %u...\n", state );
+	DebugMsg( "changing frontend state to %u...\n", state );
 	switch ( state ) {
 		default: {
 			Warning( "invalid frontend state, %u, aborting\n", state );

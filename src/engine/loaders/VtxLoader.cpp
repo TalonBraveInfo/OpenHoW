@@ -19,7 +19,7 @@
 #include <PL/platform_mesh.h>
 
 #include "Utilities.h"
-#include "vtx.h"
+#include "VtxLoader.h"
 
 /************************************************************/
 /* Vtx Vertex Format */

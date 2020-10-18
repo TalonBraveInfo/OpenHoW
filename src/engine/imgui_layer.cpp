@@ -33,7 +33,7 @@
 #include "editor/window_particle_editor.h"
 #include "editor/TexturePicker.h"
 
-#include "language.h"
+#include "Language.h"
 
 static bool show_quit = false;
 static bool show_file = false;

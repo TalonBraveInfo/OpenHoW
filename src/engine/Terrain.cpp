@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
-#include "terrain.h"
+#include "App.h"
+#include "Terrain.h"
 
 #include "graphics/mesh.h"
 #include "graphics/ShaderManager.h"
@@ -73,7 +73,9 @@ ohw::Terrain::Chunk *ohw::Terrain::GetChunk( const PLVector2 &pos ) {
 		return nullptr;
 	}
 
-	uint idx = ( ( uint ) ( pos.x ) / TERRAIN_CHUNK_PIXEL_WIDTH ) + ( ( ( uint ) ( pos.y ) / TERRAIN_CHUNK_PIXEL_WIDTH ) * TERRAIN_CHUNK_ROW );
+	unsigned int idx =
+			( ( unsigned int ) ( pos.x ) / TERRAIN_CHUNK_PIXEL_WIDTH ) +
+			( ( ( unsigned int ) ( pos.y ) / TERRAIN_CHUNK_PIXEL_WIDTH ) * TERRAIN_CHUNK_ROW );
 	if ( idx >= chunks_.size() ) {
 		Warning( "Attempted to get an out of bounds chunk index (%d)!\n", idx );
 		return nullptr;
@@ -88,8 +90,9 @@ ohw::Terrain::Tile *ohw::Terrain::GetTile( const PLVector2 &pos ) {
 		return nullptr;
 	}
 
-	uint idx = ( ( ( uint ) ( pos.x ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) +
-	           ( ( ( ( uint ) ( pos.y ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) * TERRAIN_CHUNK_ROW_TILES );
+	unsigned int idx =
+			( ( ( unsigned int ) ( pos.x ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) +
+			( ( ( ( unsigned int ) ( pos.y ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) * TERRAIN_CHUNK_ROW_TILES );
 	if ( idx >= TERRAIN_CHUNK_TILES ) {
 		Warning( "Attempted to get an out of bounds tile index!\n" );
 		return nullptr;

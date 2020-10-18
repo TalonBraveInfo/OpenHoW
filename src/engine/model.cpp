@@ -21,7 +21,7 @@
 
 #include "engine.h"
 #include "model.h"
-#include "loaders/loaders.h"
+#include "loaders/Loaders.h"
 
 #include "graphics/display.h"
 #include "graphics/ShaderManager.h"

@@ -15,17 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 #include "App.h"
 #include "ModManager.h"
 #include "input.h"
 #include "display.h"
 #include "imgui_layer.h"
-#include "language.h"
+#include "Language.h"
 #include "config.h"
-
-#define APP_NAME    "OpenHoW"
 
 #define WINDOW_TITLE        "OpenHoW"
 #define WINDOW_MIN_WIDTH    640

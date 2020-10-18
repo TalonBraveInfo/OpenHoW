@@ -21,7 +21,7 @@
 #include "graphics/Camera.h"
 #include "imgui_layer.h"
 #include "model.h"
-#include "language.h"
+#include "Language.h"
 
 #include "window_model_viewer.h"
 #include "window_texture_viewer.h"

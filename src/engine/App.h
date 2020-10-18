@@ -28,6 +28,8 @@
 #include "Utilities.h"
 #include "Console.h"
 
+#define APP_NAME    "OpenHoW"
+
 #define APP_MAJOR_VERSION    0
 #define APP_MINOR_VERSION    5
 #define APP_PATCH_VERSION    0

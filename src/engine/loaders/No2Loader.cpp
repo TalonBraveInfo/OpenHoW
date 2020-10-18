@@ -19,7 +19,7 @@
 #include <PL/platform_mesh.h>
 
 #include "Utilities.h"
-#include "no2.h"
+#include "No2Loader.h"
 
 /************************************************************/
 /* No2 Normals Format */

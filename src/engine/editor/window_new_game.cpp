@@ -18,7 +18,7 @@
 #include <imgui.h>
 
 #include "../engine.h"
-#include "../language.h"
+#include "../Language.h"
 #include "../game/player.h"
 
 #include "window_new_game.h"

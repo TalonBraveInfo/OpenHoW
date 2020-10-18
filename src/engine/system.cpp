@@ -22,17 +22,6 @@
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
-#include "graphics/display.h"
-
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-/* kill windows forever pls */
-#undef near
-#undef far
-
-using namespace ohw;
-
 void System_DisplayWindow( bool fullscreen, int width, int height ) {
 	/* setup imgui integration */
 

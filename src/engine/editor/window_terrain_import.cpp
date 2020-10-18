@@ -19,7 +19,7 @@
 
 #include "../engine.h"
 #include "../Map.h"
-#include "../terrain.h"
+#include "../Terrain.h"
 
 #include "window_terrain_import.h"
 

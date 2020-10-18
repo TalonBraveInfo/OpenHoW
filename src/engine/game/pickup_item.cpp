@@ -16,7 +16,7 @@
  */
 
 #include "../engine.h"
-#include "../frontend.h"
+#include "../Menu.h"
 
 #include "actor_manager.h"
 #include "inventory.h"

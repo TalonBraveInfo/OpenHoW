@@ -18,7 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "Utilities.h"
-#include "fac.h"
+#include "FacLoader.h"
 
 /************************************************************/
 /* Fac Triangle/Quad Faces Format */

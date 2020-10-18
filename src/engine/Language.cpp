@@ -15,21 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
+
 #include <PL/platform_filesystem.h>
 
-#include "engine.h"
-#include "language.h"
-
-#include "script/json_reader.h"
+#include "App.h"
+#include "Language.h"
+#include "json_reader.h"
 
 #define LNG_MANIFEST_PATH    "languages.manifest"
 
-LanguageManager* LanguageManager::language_manager_;
+ohw::LanguageManager *ohw::LanguageManager::language_manager_;
 
-LanguageManager::LanguageManager() {
-	Print( "Loading "
-				 LNG_MANIFEST_PATH
-				 "\n" );
+ohw::LanguageManager::LanguageManager() {
+	Print( "Loading " LNG_MANIFEST_PATH "\n" );
 
 	// Load in the languages manifest
 	try {
@@ -39,27 +38,23 @@ LanguageManager::LanguageManager() {
 			Index index;
 			manifest.EnterChildNode( i );
 			index.name = manifest.GetStringProperty( "name" );
-			//LogDebug( "Language Name: %s\n", index.name.c_str() );
 			index.key = manifest.GetStringProperty( "key" );
-			//LogDebug( "Language Key: %s\n", index.key.c_str() );
-			//index.font = manifest.GetStringProperty("font");
-			//LogDebug("Language Font: %s\n", index.font.c_str());
 			manifest.LeaveChildNode();
-			languages_.insert( std::pair<std::string, Index>( index.key, index ) );
+			languages_.insert( std::pair< std::string, Index >( index.key, index ) );
 		}
-	} catch ( const std::exception& e ) {
+	} catch ( const std::exception &e ) {
 		Error( "Failed to load languages manifest, \"%s\"!\n", LNG_MANIFEST_PATH );
 	}
 }
 
-LanguageManager::~LanguageManager() = default;
+ohw::LanguageManager::~LanguageManager() = default;
 
-const char* LanguageManager::GetTranslation( const char* key ) { // todo: UTF-8 pls
+const char *ohw::LanguageManager::GetTranslation( const char *key ) { // todo: UTF-8 pls
 	if ( key[ 0 ] != '$' ) {
 		return key;
 	}
 
-	const char* p = ++key;
+	const char *p = ++key;
 	if ( *p == '\0' ) {
 		Warning( "Invalid key provided\n" );
 		return p;
@@ -79,7 +74,7 @@ const char* LanguageManager::GetTranslation( const char* key ) { // todo: UTF-8 
 	return i->second.translation.c_str();
 }
 
-void LanguageManager::SetLanguage( const char* key ) {
+void ohw::LanguageManager::SetLanguage( const char *key ) {
 	if ( current_language != nullptr && current_language->key == key ) {
 		return;
 	}
@@ -94,18 +89,17 @@ void LanguageManager::SetLanguage( const char* key ) {
 	std::string filePath = "languages/" + current_language->key + ".language";
 	try {
 		JsonReader manifest( filePath );
-		std::list<std::string> keys = manifest.GetObjectKeys();
-		for ( const auto& idx : keys ) {
-			current_language->keys.insert( std::pair<std::string, Key>( idx, {
-				manifest.GetStringProperty( idx )
+		std::list< std::string > keys = manifest.GetObjectKeys();
+		for ( const auto &idx : keys ) {
+			current_language->keys.insert( std::pair< std::string, Key >( idx, {
+					manifest.GetStringProperty( idx )
 			} ) );
-			//LogDebug( "Key: %s", idx.c_str() );
 		}
-	} catch ( const std::exception& e ) {
+	} catch ( const std::exception &e ) {
 		Error( "Failed to load language manifest, \"%s\"!\n", filePath.c_str() );
 	}
 }
 
-void LanguageManager::SetLanguageCallback( const PLConsoleVariable* var ) {
+void ohw::LanguageManager::SetLanguageCallback( const PLConsoleVariable *var ) {
 	LanguageManager::GetInstance()->SetLanguage( var->s_value );
 }

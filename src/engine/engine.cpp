@@ -17,10 +17,10 @@
 
 #include "App.h"
 #include "engine.h"
-#include "language.h"
+#include "Language.h"
 #include "config.h"
 #include "input.h"
-#include "frontend.h"
+#include "Menu.h"
 #include "Map.h"
 
 #include "graphics/display.h"

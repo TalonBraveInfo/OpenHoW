@@ -25,7 +25,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "engine.h"
-#include "frontend.h"
+#include "Menu.h"
 
 #include "graphics/Camera.h"
 
