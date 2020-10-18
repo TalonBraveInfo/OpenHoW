@@ -38,6 +38,9 @@
 #define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
 #define MAX_FRAMESKIP       5
 
+// I'm sorry, but I refuse to include the SDL2 headers here!
+typedef struct SDL_Window SDL_Window;
+
 namespace ohw {
 	class ModManager;
 	class App {
@@ -47,9 +50,9 @@ namespace ohw {
 		void Shutdown();
 
 		enum class MBErrorLevel {
-			INFORMATION,
-			WARNING,
-			ERROR,
+			INFORMATION_MSG,
+			WARNING_MSG,
+			ERROR_MSG,
 		};
 		void DisplayMessageBox( MBErrorLevel level, const char *message, ... );
 
@@ -108,7 +111,7 @@ namespace ohw {
 
 		void SetWindowIcon( const char *path );
 
-		struct SDL_Window *myWindow{ nullptr };
+		SDL_Window *myWindow{ nullptr };
 		void *myGLContext{ nullptr };
 
 		std::vector< DisplayPreset > myDisplayPresets;

@@ -36,7 +36,7 @@ enum LogLevel {
 #define Warning( ... )  CMSGPrintWFunction(LOG_LEVEL_WARNING, __VA_ARGS__)
 #define Error( ... ) \
         CMSGPrintWFunction(LOG_LEVEL_ERROR, __VA_ARGS__);                               \
-        ohw::GetApp()->DisplayMessageBox( ohw::App::MBErrorLevel::ERROR, __VA_ARGS__ ); \
+        ohw::GetApp()->DisplayMessageBox( ohw::App::MBErrorLevel::ERROR_MSG, __VA_ARGS__ ); \
         ohw::GetApp()->Shutdown()
 
 /************************************************************/

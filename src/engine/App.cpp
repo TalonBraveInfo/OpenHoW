@@ -15,10 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-
 #include "App.h"
 #include "ModManager.h"
 #include "input.h"
@@ -26,6 +22,10 @@
 #include "imgui_layer.h"
 #include "Language.h"
 #include "config.h"
+
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 #define WINDOW_TITLE        "OpenHoW"
 #define WINDOW_MIN_WIDTH    640
@@ -61,7 +61,7 @@ ohw::App::App( int argc, char **argv ) {
 	plGetApplicationDataDirectory( APP_NAME, appDataPath, PL_SYSTEM_MAX_PATH );
 
 	if ( !plCreatePath( appDataPath ) ) {
-		DisplayMessageBox( MBErrorLevel::WARNING, "Unable to create %s: %s\nSettings will not be saved.", appDataPath, plGetError() );
+		DisplayMessageBox( MBErrorLevel::WARNING_MSG, "Unable to create %s: %s\nSettings will not be saved.", appDataPath, plGetError() );
 	}
 
 	// Then mount the app data dir so we can read from the config
@@ -135,13 +135,13 @@ void ohw::App::Shutdown() {
 void ohw::App::DisplayMessageBox( MBErrorLevel level, const char *message, ... ) {
 	unsigned int sdlLevel;
 	switch( level ) {
-		case MBErrorLevel::INFORMATION:
+		case MBErrorLevel::INFORMATION_MSG:
 			sdlLevel = SDL_MESSAGEBOX_INFORMATION;
 			break;
-		case MBErrorLevel::WARNING:
+		case MBErrorLevel::WARNING_MSG:
 			sdlLevel = SDL_MESSAGEBOX_WARNING;
 			break;
-		case MBErrorLevel::ERROR:
+		case MBErrorLevel::ERROR_MSG:
 			sdlLevel = SDL_MESSAGEBOX_ERROR;
 			break;
 	}
