@@ -598,7 +598,6 @@ bool ohw::App::IsRunning() {
 		numSimTicks++;
 
 #if 0
-		Client_ProcessInput(); // todo: kill this
 		Physics()->Tick();
 		Game()->Tick();
 		Audio()->Tick();
