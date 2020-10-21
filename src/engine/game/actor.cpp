@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
-#include "InputManager.h"
+#include "App.h"
 #include "Map.h"
 #include "actor_manager.h"
 #include "player.h"

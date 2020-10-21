@@ -16,7 +16,6 @@
  */
 
 #include "engine.h"
-#include "InputManager.h"
 #include "imgui_layer.h"
 
 #include "../3rdparty/imgui/examples/imgui_impl_sdl.h"

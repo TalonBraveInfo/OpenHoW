@@ -16,8 +16,6 @@
  */
 
 #include "App.h"
-#include "ModManager.h"
-#include "InputManager.h"
 #include "display.h"
 #include "imgui_layer.h"
 #include "Language.h"
@@ -102,6 +100,8 @@ ohw::App::App( int argc, char **argv ) {
 		var = "how";
 	}
 	myModManager->Mount( var );
+
+	myInputManager = new InputManager();
 
 	plParseConsoleString( "fsListMounted" );
 }

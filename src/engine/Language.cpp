@@ -21,7 +21,7 @@
 
 #include "App.h"
 #include "Language.h"
-#include "json_reader.h"
+#include "JsonReader.h"
 
 #define LNG_MANIFEST_PATH    "languages.manifest"
 

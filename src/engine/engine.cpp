@@ -19,7 +19,6 @@
 #include "engine.h"
 #include "Language.h"
 #include "config.h"
-#include "InputManager.h"
 #include "Menu.h"
 #include "Map.h"
 

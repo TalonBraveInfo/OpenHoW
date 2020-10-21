@@ -19,7 +19,7 @@
 #include "Menu.h"
 #include "graphics/ShaderManager.h"
 #include "actor_manager.h"
-#include "json_reader.h"
+#include "JsonReader.h"
 
 /************************************************************/
 

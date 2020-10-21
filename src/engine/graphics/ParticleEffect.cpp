@@ -16,7 +16,7 @@
  */
 
 #include "App.h"
-#include "json_reader.h"
+#include "JsonReader.h"
 #include "particles.h"
 #include "ParticleEffect.h"
 #include "ParticleEmitter.h"

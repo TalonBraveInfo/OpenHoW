@@ -20,7 +20,7 @@
 #include <sstream>
 
 #include "../engine.h"
-#include "json_reader.h"
+#include "JsonReader.h"
 
 #define LogMissingProperty( P )   Warning("Failed to get JSON property \"%s\"!\n", (P))
 #define LogInvalidArray( P )      Warning("Invalid JSON array for property \"%s\"!\n", (P))

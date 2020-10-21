@@ -16,7 +16,7 @@
  */
 
 #include "../engine.h"
-#include "../script/json_reader.h"
+#include "../script/JsonReader.h"
 
 #include "particles.h"
 #include "ParticleEmitter.h"

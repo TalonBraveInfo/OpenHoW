@@ -16,10 +16,9 @@
  */
 
 #include "App.h"
-#include "ModManager.h"
 #include "engine.h"
 
-#include "script/json_reader.h"
+#include "script/JsonReader.h"
 
 /* Mod Management
  *

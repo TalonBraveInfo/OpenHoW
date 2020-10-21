@@ -18,7 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "App.h"
-#include "script/json_reader.h"
+#include "script/JsonReader.h"
 
 const char *Config_GetUserConfigPath() {
 	static std::string config_path;

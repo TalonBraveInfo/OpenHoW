@@ -18,7 +18,6 @@
 #include <imgui.h>
 
 #include "engine.h"
-#include "ModManager.h"
 #include "Map.h"
 #include "window_map_config.h"
 

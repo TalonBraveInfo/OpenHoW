@@ -19,14 +19,13 @@
 #include "Menu.h"
 #include "Map.h"
 #include "Language.h"
-#include "ModManager.h"
 #include "actor_manager.h"
 #include "GameMode.h"
 #include "player.h"
 
 #include "graphics/Camera.h"
 
-#include "script/json_reader.h"
+#include "script/JsonReader.h"
 
 #include "actor_pig.h"
 #include "actor_static_model.h"

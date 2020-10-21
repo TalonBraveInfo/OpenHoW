@@ -31,6 +31,9 @@
 #include "Utilities.h"
 #include "Console.h"
 
+#include "ModManager.h"
+#include "InputManager.h"
+
 #define APP_NAME    "OpenHoW"
 
 #define APP_MAJOR_VERSION    0
@@ -45,7 +48,6 @@
 typedef struct SDL_Window SDL_Window;
 
 namespace ohw {
-	class ModManager;
 	class App {
 	public:
 		App( int argc, char **argv );
@@ -100,7 +102,6 @@ namespace ohw {
 		///////////////////////////////////////////////
 		// System
 
-	public:
 		static const char *GetVersionString();
 
 		bool IsRunning();
@@ -120,6 +121,7 @@ namespace ohw {
 		std::vector< DisplayPreset > myDisplayPresets;
 		int myDesiredDisplay{ 0 };
 
+		InputManager *myInputManager;
 		ModManager *myModManager;
 
 		double deltaTime;

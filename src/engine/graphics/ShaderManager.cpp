@@ -16,7 +16,7 @@
  */
 
 #include "App.h"
-#include "json_reader.h"
+#include "JsonReader.h"
 #include "ShaderManager.h"
 
 static std::map<std::string, ShaderProgram*> programs;
