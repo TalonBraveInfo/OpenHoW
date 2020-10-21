@@ -53,6 +53,6 @@ namespace ohw {
 
 		std::map< std::string, Resource* > resourcesMap;
 
-		friend class Engine;
+		friend class App;
 	};
 }
