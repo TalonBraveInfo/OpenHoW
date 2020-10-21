@@ -52,7 +52,7 @@ typedef enum {
 
 class AudioSource;
 
-#define AUDIO_MUSIC_FIELD    "music/track01.ogg"
+#define AUDIO_MUSIC_FIELD   "music/track01.ogg"
 #define AUDIO_MUSIC_MENU    "music/track02.ogg"
 #define AUDIO_MUSIC_VICTORY "music/track31.ogg"
 
@@ -65,19 +65,14 @@ struct AudioSample {
 	bool preserve_{ false };
 };
 
-namespace ohw {
-class Engine;
-}
-
 class AudioManager {
-	friend class AudioSample;
+	friend struct AudioSample;
 	friend class AudioSource;
 
-private:
+public:
 	AudioManager();
 	~AudioManager();
 
-public:
 	void SetupMusicSource();
 
 	void Tick();
@@ -139,8 +134,6 @@ private:
 	std::set<AudioSource *> temp_sources_;
 
 	AudioSource *musicSource{ nullptr };
-
-	friend class ohw::Engine;
 };
 
 class AudioSource {

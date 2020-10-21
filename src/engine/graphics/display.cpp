@@ -20,7 +20,7 @@
 #include "Menu.h"
 #include "Map.h"
 
-#include "game/actor_manager.h"
+#include "game/ActorManager.h"
 
 #include "ShaderManager.h"
 #include "display.h"

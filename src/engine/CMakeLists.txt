@@ -39,7 +39,7 @@ file( GLOB OPENHOW_SOURCE_FILES
         script/duktape-2.2.0/*.c
         script/duktape-2.2.0/*.h
 
-        audio/audio.cpp
+        audio/AudioManager.cpp
 
         # Physics Sub-System
         physics/PhysicsInterface.cpp

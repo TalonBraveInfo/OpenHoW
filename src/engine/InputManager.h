@@ -58,27 +58,6 @@ namespace ohw {
 			MAX_KEYS
 		};
 
-		enum Button {
-			BUTTON_INVALID = -1,
-			BUTTON_CROSS,
-			BUTTON_CIRCLE,
-			BUTTON_TRIANGLE,
-			BUTTON_SQUARE,
-			BUTTON_R1,
-			BUTTON_R2,
-			BUTTON_R3,
-			BUTTON_L1,
-			BUTTON_L2,
-			BUTTON_L3,
-			BUTTON_UP,
-			BUTTON_DOWN,
-			BUTTON_LEFT,
-			BUTTON_RIGHT,
-			BUTTON_START,
-			BUTTON_SELECT,
-			MAX_BUTTONS
-		};
-
 		enum Action {
 			ACTION_INVALID = -1,
 			ACTION_MOVE_FORWARD,
@@ -120,11 +99,11 @@ namespace ohw {
 
 		bool GetKeyState( int input );
 		bool GetJoystickState( unsigned int slot, JoystickAxis input, float *x, float *y );
-		bool GetButtonState( unsigned int slot, Button input );
+		bool GetButtonState( unsigned int slot, SDL_GameControllerButton input );
 		bool GetActionState( unsigned int slot, Action input );
 
 		void SetAxisState( unsigned int slot, JoystickAxis input, const PLVector2 &status );
-		void SetButtonState( unsigned int slot, Button input, bool status );
+		void SetButtonState( unsigned int slot, unsigned char input, bool status );
 		void SetKeyState( int input, bool status );
 		void SetMouseState( int x, int y, MouseButton input, bool status );
 
@@ -154,7 +133,7 @@ namespace ohw {
 				keys.push_back( k );
 			}
 
-			inline void Bind( Button b ) {
+			inline void Bind( SDL_GameControllerButton b ) {
 				// Check it's not been bound already
 				auto i = std::find( buttons.begin(), buttons.end(), b );
 				if ( i != buttons.end() ) {
@@ -175,7 +154,7 @@ namespace ohw {
 			}
 
 			std::vector< int > keys;
-			std::vector< Button > buttons;
+			std::vector< SDL_GameControllerButton > buttons;
 			std::vector< MouseButton > mouseButtons;
 		};
 
@@ -185,8 +164,11 @@ namespace ohw {
 			Controller( unsigned int slot );
 			~Controller();
 
-			bool buttonStates[MAX_BUTTONS];
+			bool buttonStates[SDL_CONTROLLER_BUTTON_MAX];
 			PLVector2 axisStates[MAX_JOYSTICK_AXIS];
+
+			std::string name;
+			unsigned int inputSlot;
 
 			void *sdlGameController{ nullptr };
 		};

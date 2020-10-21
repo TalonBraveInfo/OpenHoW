@@ -69,7 +69,7 @@ void ohw::ModelResource::Tick() {
 }
 
 void ohw::ModelResource::Draw( bool batchDraw ) {
-	Camera *camera = Engine::Game()->GetCamera();
+	Camera *camera = GetApp()->gameManager->GetCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -84,7 +84,7 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 	}
 
 	if ( meshesVector.empty() ) {
-		PLModel *model = Engine::Resource()->GetFallbackModel();
+		PLModel *model = GetApp()->resourceManager->GetFallbackModel();
 		if ( model == nullptr ) {
 			return;
 		}
@@ -123,7 +123,7 @@ PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 	return meshesVector[ i ];
 }
 
-ohw::TextureResource *ohw::ModelResource::GetTextureResource(unsigned int i) {
+ohw::TextureResource *ohw::ModelResource::GetTextureResource( unsigned int i ) {
 	u_assert( i < texturesVector.size() );
 	if ( i >= texturesVector.size() ) {
 		Warning( "Attempted to access an invalid texture (%d/%d)!\n", i, texturesVector.size() );
@@ -158,12 +158,12 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 
 		std::string textureName = obj.materials[ obj.attributes[ 0 ] ].strTexture;
 		if ( obj.materials.size() > 1 && !textureName.empty() ) {
-			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( textureName );
+			SharedTextureResourcePointer texture = GetApp()->resourceManager->LoadTexture( textureName );
 			texturesVector.push_back( texture );
 
 			mesh->texture = texture->GetInternalTexture();
 		} else {
-			mesh->texture = Engine::Resource()->GetFallbackTexture();
+			mesh->texture = GetApp()->resourceManager->GetFallbackTexture();
 		}
 
 		// Push the mesh into our vector
@@ -209,12 +209,12 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		        sizeof( unsigned int ) * j->second.indices.size() );
 
 		if ( !j->second.material.strTexture.empty() ) {
-			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture );
+			SharedTextureResourcePointer texture = GetApp()->resourceManager->LoadTexture( j->second.material.strTexture );
 			texturesVector.push_back( texture );
 
 			meshesVector[ i ]->texture = texture->GetInternalTexture();
 		} else {
-			meshesVector[ i ]->texture = Engine::Resource()->GetFallbackTexture();
+			meshesVector[ i ]->texture = GetApp()->resourceManager->GetFallbackTexture();
 		}
 
 		++i;
@@ -223,14 +223,13 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 	// Done!
 }
 
-static TextureAtlas *
-ModelResource_GenerateVtxTextureAtlas( const FacHandle *facHandle, const std::string &texturePath ) {
+static ohw::TextureAtlas *ModelResource_GenerateVtxTextureAtlas( const FacHandle *facHandle, const std::string &texturePath ) {
 	if ( facHandle->texture_table_size == 0 ) {
 		Warning( "Empty texture table!\n" );
 		return nullptr;
 	}
 
-	TextureAtlas *atlas = new TextureAtlas( 128, 128 );
+	ohw::TextureAtlas *atlas = new ohw::TextureAtlas( 128, 128 );
 
 	for ( unsigned int i = 0; i < facHandle->texture_table_size; ++i ) {
 		if ( facHandle->texture_table[ i ].name[ 0 ] == '\0' ) {
@@ -316,7 +315,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		Vtx_DestroyHandle( vtxHandle );
 		Fac_DestroyHandle( facHandle );
 
-		mesh->texture = Engine::Resource()->GetFallbackTexture();
+		mesh->texture = GetApp()->resourceManager->GetFallbackTexture();
 
 		meshesVector.push_back( mesh );
 		return;
@@ -397,7 +396,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		// TODO: we have no way of cleaning this up right now...
 		mesh->texture = textureAtlas->GetTexture();
 	} else {
-		mesh->texture = Engine::Resource()->GetFallbackTexture();
+		mesh->texture = GetApp()->resourceManager->GetFallbackTexture();
 	}
 
 	delete textureAtlas;

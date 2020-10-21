@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <list>
-
 #include <PL/platform_filesystem.h>
 
 #include "App.h"

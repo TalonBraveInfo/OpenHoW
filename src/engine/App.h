@@ -25,14 +25,13 @@
 #include <PL/pl_graphics.h>
 #include <PL/platform_console.h>
 
+#include <SDL2/SDL.h>
+
 #include <list>
 #include <vector>
 
 #include "Utilities.h"
 #include "Console.h"
-
-#include "ModManager.h"
-#include "InputManager.h"
 
 #define APP_NAME    "OpenHoW"
 
@@ -44,8 +43,11 @@
 #define SKIP_TICKS          (1000 / TICKS_PER_SECOND)
 #define MAX_FRAMESKIP       5
 
-// I'm sorry, but I refuse to include the SDL2 headers here!
-typedef struct SDL_Window SDL_Window;
+#include "ModManager.h"
+#include "InputManager.h"
+#include "ResourceManager.h"
+#include "GameManager.h"
+#include "AudioManager.h"
 
 namespace ohw {
 	class App {
@@ -91,6 +93,9 @@ namespace ohw {
 			return &myDisplayPresets;
 		}
 
+		static void SetClipboardText( void *, const char *text );
+		static const char *GetClipboardText( void * );
+
 	private:
 		void CreateDisplay( int w, int h, int flags );
 
@@ -109,9 +114,13 @@ namespace ohw {
 		static void *MAlloc( size_t size, bool abortOnFail );
 		static void *CAlloc( size_t num, size_t size, bool abortOnFail );
 
+		InputManager *inputManager;
+		ModManager *modManager;
+		GameManager *gameManager;
+		AudioManager *audioManager;
+		ResourceManager *resourceManager;
+
 	private:
-		static const char *GetClipboardText( void * );
-		static void SetClipboardText( void *, const char *text );
 
 		void SetWindowIcon( const char *path );
 
@@ -120,9 +129,6 @@ namespace ohw {
 
 		std::vector< DisplayPreset > myDisplayPresets;
 		int myDesiredDisplay{ 0 };
-
-		InputManager *myInputManager;
-		ModManager *myModManager;
 
 		double deltaTime;
 		unsigned int numSysTicks{ 0 };

@@ -22,7 +22,7 @@
 #include "graphics/display.h"
 #include "graphics/video.h"
 #include "graphics/Camera.h"
-#include "game/actor_manager.h"
+#include "game/ActorManager.h"
 
 using namespace ohw;
 
@@ -46,14 +46,14 @@ static void FrontendInputCallback( int key, bool is_pressed ) {
 
 		/* we've hit our key, we can take away this
 		 * callback now and carry on to whatever */
-		Input_SetKeyboardFocusCallback( nullptr );
+		GetApp()->inputManager->SetKeyboardFocusCallback( nullptr );
 		FrontEnd_SetState( FE_MODE_MAIN_MENU );
 		return;
 	}
 }
 
 static void FrontEnd_CacheMenuData() {
-	fe_background = Engine::Resource()->LoadTexture( "frontend/pigbkpc1", TextureResource::FLAG_NOMIPS, true );
+	fe_background = GetApp()->resourceManager->LoadTexture( "frontend/pigbkpc1", TextureResource::FLAG_NOMIPS, true );
 }
 
 /************************************************************/
@@ -62,11 +62,11 @@ void FE_Initialize( void ) {
 	FrontEnd_CacheMenuData();
 
 	// Cache all the minimap icons
-	minimapIcons[ MINIMAP_ICON_BOMB ] = Engine::Resource()->LoadTexture( "frontend/map/bomb", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_HEALTH ] = Engine::Resource()->LoadTexture( "frontend/map/iconhart", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PIG ] = Engine::Resource()->LoadTexture( "frontend/map/iconpig", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PICKUP ] = Engine::Resource()->LoadTexture( "frontend/map/iconpkup.png", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PROP ] = Engine::Resource()->LoadTexture( "frontend/map/iconprop", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_BOMB ] = GetApp()->resourceManager->LoadTexture( "frontend/map/bomb", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_HEALTH ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconhart", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PIG ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconpig", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PICKUP ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconpkup.png", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PROP ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconprop", TextureResource::FLAG_NOMIPS, true );
 
 	// Cache the default fonts
 
@@ -104,11 +104,11 @@ void FE_ProcessInput( void ) {
 			/* this is... kind of a hack... but ensures that
 			 * nothing will take away our check for a key during
 			 * the 'start' screen, e.g. bringing the console up */
-			Input_SetKeyboardFocusCallback( FrontendInputCallback );
+			GetApp()->inputManager->SetKeyboardFocusCallback( FrontendInputCallback );
 			break;
 
 		case FE_MODE_VIDEO:
-			if ( Input_GetKeyState( INPUT_KEY_SPACE ) || Input_GetKeyState( INPUT_KEY_ESCAPE ) ) {
+			if ( GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_SPACE ) || GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_ESCAPE ) ) {
 				Video_SkipCurrent();
 			}
 			break;
@@ -135,7 +135,7 @@ void FE_SetLoadingBackground( const char *name ) {
 		snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/loadmult" );
 	}
 
-	fe_background = Engine::Resource()->LoadTexture( screen_path, TextureResource::FLAG_NOMIPS );
+	fe_background = GetApp()->resourceManager->LoadTexture( screen_path, TextureResource::FLAG_NOMIPS );
 	Redraw();
 }
 
@@ -164,7 +164,7 @@ static void DrawTimer() {
 		return;
 	}
 
-	IGameMode *mode = Engine::Game()->GetMode();
+	IGameMode *mode = GetApp()->gameManager->GetMode();
 	if ( !mode->HasRoundStarted() ) {
 		return;
 	}
@@ -183,12 +183,12 @@ static void DrawTimer() {
  * Draw the 3D minimap on the bottom left corner of the screen.
  */
 static void FrontEnd_DrawMinimap() {
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
 
-	Camera *camera = Engine::Game()->GetCamera();
+	Camera *camera = GetApp()->gameManager->GetCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -225,7 +225,7 @@ static void FrontEnd_DrawMinimap() {
 		}
 
 		// Figure out what icon we're using
-		PLTexture *iconTexture = Engine::Resource()->GetFallbackTexture();
+		PLTexture *iconTexture = GetApp()->resourceManager->GetFallbackTexture();
 		unsigned int iconStyle = actor->GetMinimapIconStyle();
 		if ( iconStyle < MAX_MINIMAP_ICONS ) {
 			iconTexture = minimapIcons[ iconStyle ]->GetInternalTexture();
@@ -361,7 +361,7 @@ void FrontEnd_SetState( unsigned int state ) {
 
 		case FE_MODE_MAIN_MENU:
 			// start playing the default theme
-			Engine::Audio()->PlayMusic( AUDIO_MUSIC_MENU );
+			GetApp()->audioManager->PlayMusic( AUDIO_MUSIC_MENU );
 			break;
 
 		case FE_MODE_START:
@@ -371,7 +371,7 @@ void FrontEnd_SetState( unsigned int state ) {
 
 		case FE_MODE_LOADING: {
 			// stop the music as soon as we switch to a loading screen...
-			Engine::Audio()->StopMusic();
+			GetApp()->audioManager->StopMusic();
 
 			loading_description[ 0 ] = '\0';
 			loading_progress = 0;

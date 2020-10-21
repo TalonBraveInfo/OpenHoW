@@ -16,39 +16,34 @@
  */
 
 #include "../engine.h"
+#include "ActorManager.h"
+#include "AParachuteWeapon.h"
 
-#include "actor_manager.h"
-#include "actor_airship.h"
+// Parachute, not really a weapon but hey ho!
 
-REGISTER_ACTOR_BASIC( AAirship )
+REGISTER_ACTOR_BASIC( AParachuteWeapon )
 
-using namespace ohw;
-
-AAirship::AAirship() : SuperClass() {}
-
-AAirship::~AAirship() {
-	delete ambientSource;
+AParachuteWeapon::AParachuteWeapon() : SuperClass() {
+	SetModel( "weapons/we_para.vtx" );
+	ShowModel( false );
 }
 
-void AAirship::Tick() {
+AParachuteWeapon::~AParachuteWeapon() = default;
+
+void AParachuteWeapon::Tick() {
 	SuperClass::Tick();
 
-	ambientSource->SetPosition( GetPosition() );
+	if ( !isWeaponDeployed ) {
+		return;
+	}
+
+	/* todo: make parachute noises... */
 }
 
-void AAirship::Deserialize( const ActorSpawn &spawn ) {
-	SuperClass::Deserialize( spawn );
+void AParachuteWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
+	SuperClass::Fire( pos, dir );
+}
 
-	ambientSource = Engine::Audio()->CreateSource( "audio/en_bip.wav",
-												   { 0.0f, 0.0f, 0.0f },
-												   { 0.0f, 0.0f, 0.0f },
-												   true,
-												   1.0f,
-												   1.0f,
-												   true );
-	ambientSource->StartPlaying();
-
-	SetModel( "scenery/airship1.vtx" );
-	SetAngles( { 180.0f, 0.0f, 0.0f } );
-	ShowModel( true );
+void AParachuteWeapon::Deploy() {
+	SuperClass::Deploy();
 }

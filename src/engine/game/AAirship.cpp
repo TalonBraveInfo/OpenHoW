@@ -17,17 +17,38 @@
 
 #include "../engine.h"
 
-#include "actor_vehicle.h"
+#include "ActorManager.h"
+#include "AAirship.h"
 
-AVehicle::AVehicle() : SuperClass() {}
-AVehicle::~AVehicle() = default;
+REGISTER_ACTOR_BASIC( AAirship )
 
-void AVehicle::Occupy( Actor *occupant ) {
-	occupant_ = occupant;
-	isOccupied_ = true;
+using namespace ohw;
+
+AAirship::AAirship() : SuperClass() {}
+
+AAirship::~AAirship() {
+	delete ambientSource;
 }
 
-void AVehicle::Unoccupy() {
-	occupant_ = nullptr;
-	isOccupied_ = false;
+void AAirship::Tick() {
+	SuperClass::Tick();
+
+	ambientSource->SetPosition( GetPosition() );
+}
+
+void AAirship::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
+
+	ambientSource = Engine::Audio()->CreateSource( "audio/en_bip.wav",
+												   { 0.0f, 0.0f, 0.0f },
+												   { 0.0f, 0.0f, 0.0f },
+												   true,
+												   1.0f,
+												   1.0f,
+												   true );
+	ambientSource->StartPlaying();
+
+	SetModel( "scenery/airship1.vtx" );
+	SetAngles( { 180.0f, 0.0f, 0.0f } );
+	ShowModel( true );
 }

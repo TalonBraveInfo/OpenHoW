@@ -19,30 +19,32 @@
 
 typedef struct PLShaderProgram PLShaderProgram;
 
-class ShaderProgram {
-public:
-	ShaderProgram( const std::string& vertPath, const std::string& fragPath );
-	~ShaderProgram();
+namespace ohw {
+	class ShaderProgram {
+	public:
+		ShaderProgram( const std::string &vertPath, const std::string &fragPath );
+		~ShaderProgram();
 
-	void Rebuild();
+		void Rebuild();
 
-	void Enable();
-	void Disable();
+		void Enable();
+		void Disable();
 
-	// This is awful, but we need it for passing shader programs into
-	// the platform library. Urgh...
-	PLShaderProgram* GetInternalProgram() const { return shaderProgram; }
+		// This is awful, but we need it for passing shader programs into
+		// the platform library. Urgh...
+		PLShaderProgram *GetInternalProgram() const { return shaderProgram; }
 
-private:
-	void RegisterShaderStage( const char* path, PLShaderType type );
+	private:
+		void RegisterShaderStage( const char *path, PLShaderType type );
 
-	std::string vertPath;
-	std::string fragPath;
+		std::string vertPath;
+		std::string fragPath;
 
-	PLShaderProgram* shaderProgram{ nullptr };
-};
+		PLShaderProgram *shaderProgram{ nullptr };
+	};
+}
 
-ShaderProgram* Shaders_GetProgram( const std::string& name );
+ohw::ShaderProgram* Shaders_GetProgram( const std::string& name );
 
 void Shaders_SetProgramByName( const std::string& name );
 

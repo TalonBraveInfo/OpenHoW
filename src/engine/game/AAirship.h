@@ -17,20 +17,20 @@
 
 #pragma once
 
-#include "actor.h"
-#include "actor_model.h"
+#include "AVehicle.h"
 
-class AStaticModel : public AModel {
-	IMPLEMENT_ACTOR( AStaticModel, AModel )
+class AAirship : public AVehicle {
+	IMPLEMENT_ACTOR( AAirship, AVehicle )
 
 public:
-	AStaticModel();
-	~AStaticModel() override;
+	AAirship();
+	~AAirship() override;
 
-	void Draw() override;
+	void Tick() override;
 
 	void Deserialize( const ActorSpawn &spawn ) override;
 
 protected:
 private:
+	AudioSource *ambientSource{ nullptr };
 };

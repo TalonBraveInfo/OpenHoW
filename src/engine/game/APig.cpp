@@ -19,9 +19,9 @@
 #include "../Menu.h"
 #include "../Map.h"
 
-#include "player.h"
-#include "actor_manager.h"
-#include "actor_pig.h"
+#include "Player.h"
+#include "ActorManager.h"
+#include "APig.h"
 
 REGISTER_ACTOR( ac_me, APig )    // Ace
 REGISTER_ACTOR( gr_me, APig )    // Grunt

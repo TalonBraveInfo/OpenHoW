@@ -15,26 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "Sprite.h"
-#include "display.h"
 #include "ShaderManager.h"
 
-Sprite::Sprite( SpriteType type, const std::string &texturePath, PLColour colour, float scale ) :
-	type_( type ), colour_( colour ), scale_( scale ) {
+ohw::Sprite::Sprite( SpriteType type, const std::string &texturePath, PLColour colour, float scale ) :
+		type_( type ), colour_( colour ), scale_( scale ) {
 	mesh_ = plCreateMeshRectangle( -64, -64, 64, 64, colour_ );
 
 	// Load in the texture we need
-	texture = ohw::Engine::Resource()->LoadTexture( texturePath );
+	texture = ohw::GetApp()->resourceManager->LoadTexture( texturePath );
 
 	defaultProgram = Shaders_GetProgram( "generic_textured" );
 
 	modelMatrix.Identity();
 }
 
-Sprite::~Sprite() {}
+ohw::Sprite::~Sprite() {}
 
-void Sprite::Draw() {
+void ohw::Sprite::Draw() {
 	if ( !cv_graphics_draw_sprites->b_value ) {
 		return;
 	}
@@ -55,7 +54,7 @@ void Sprite::Draw() {
 	modelMatrix.Rotate( angles_.z, { 0, 0, 1 } );
 	modelMatrix.Translate( position_ );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", modelMatrix, true );
+	plSetShaderUniformValue( defaultProgram->GetInternalProgram(), "pl_model", &modelMatrix, true );
 
 	plUploadMesh( mesh_ );
 
@@ -69,31 +68,31 @@ void Sprite::Draw() {
 }
 
 #if 0
-void Sprite::SetAnimation(SpriteAnimation* anim) {
+void ohw::Sprite::SetAnimation(SpriteAnimation* anim) {
   u_assert(anim != nullptr, "Invalid pointer passed for animation!\n");
   current_frame_ = 0;
   current_animation_ = anim;
 }
 #endif
 
-void Sprite::SetScale( float scale ) {
+void ohw::Sprite::SetScale( float scale ) {
 	scale_ = scale;
 }
 
-void Sprite::SetPosition( const PLVector3& position ) {
+void ohw::Sprite::SetPosition( const PLVector3 &position ) {
 	position_ = position;
 }
 
-void Sprite::SetAngles( const PLVector3& angles ) {
+void ohw::Sprite::SetAngles( const PLVector3 &angles ) {
 	angles_ = angles;
 }
 
-void Sprite::SetColour( const PLColour& colour ) {
+void ohw::Sprite::SetColour( const PLColour &colour ) {
 	plSetMeshUniformColour( mesh_, colour );
 	colour_ = colour;
 }
 
-void Sprite::SetTexture( const std::string &texturePath ) {
+void ohw::Sprite::SetTexture( const std::string &texturePath ) {
 	if ( texture != nullptr ) {
 		// TODO: this will currently fail (internal uses absolute)
 		if ( texturePath == texture->GetInternalTexture()->path ) {
@@ -103,5 +102,5 @@ void Sprite::SetTexture( const std::string &texturePath ) {
 		texture->Release();
 	}
 
-	texture = ohw::Engine::Resource()->LoadTexture( texturePath );
+	texture = ohw::GetApp()->resourceManager->LoadTexture( texturePath );
 }

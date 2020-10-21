@@ -44,15 +44,21 @@ static void FrontendModeCommand(unsigned int argc, char* argv[]) {
 #endif
 
 static void UpdateDisplayCommand( unsigned int argc, char *argv[] ) {
+	u_unused( argc );
+	u_unused( argv );
 	Display_UpdateState();
 }
 
 static void QuitCommand( unsigned int argc, char *argv[] ) {
+	u_unused( argc );
+	u_unused( argv );
 	GetApp()->Shutdown();
 }
 
 static void DisconnectCommand( unsigned int argc, char *argv[] ) {
-	Engine::Game()->EndMode();
+	u_unused( argc );
+	u_unused( argv );
+	GetApp()->gameManager->EndMode();
 }
 
 static void LoadConfigCommand( unsigned int argc, char **argv ) {

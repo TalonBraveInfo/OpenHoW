@@ -16,19 +16,8 @@
  */
 
 #include <PL/platform_filesystem.h>
-#include <PL/platform_mesh.h>
-#include <PL/platform_model.h>
 
-#include "engine.h"
 #include "model.h"
-#include "loaders/Loaders.h"
-
-#include "graphics/display.h"
-#include "graphics/ShaderManager.h"
-#include "graphics/TextureAtlas.h"
-#include "graphics/mesh.h"
-
-using namespace ohw;
 
 const char *Model_GetAnimationDescription( unsigned int i ) {
 	static const char *animationNames[] = {

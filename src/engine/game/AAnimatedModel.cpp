@@ -15,37 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
+#include "../../engine.h"
+#include "AAnimatedModel.h"
 
-#include "actor_weapon.h"
+AAnimatedModel::AAnimatedModel() : SuperClass() {}
+AAnimatedModel::~AAnimatedModel() = default;
 
-AWeapon::AWeapon() : SuperClass() {}
-AWeapon::~AWeapon() = default;
-
-void AWeapon::Tick() {
-	SuperClass::Tick();
-
-	Actor *parent = GetParent();
-	if ( parent != nullptr ) {
-		SetPosition( parent->GetPosition() );
-		SetAngles( parent->GetAngles() );
-	}
-}
-
-void AWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {}
-
-void AWeapon::Deploy() {
-	ShowModel( true );
-
-	/* todo: make deploy sound */
-
-	isWeaponDeployed = true;
-}
-
-void AWeapon::Holster() {
-	ShowModel( false );
-
-	/* todo: make holster sound */
-
-	isWeaponDeployed = false;
+void AAnimatedModel::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
 }

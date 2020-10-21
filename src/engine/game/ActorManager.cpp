@@ -18,7 +18,7 @@
 #include "engine.h"
 #include "Menu.h"
 #include "graphics/ShaderManager.h"
-#include "actor_manager.h"
+#include "ActorManager.h"
 #include "JsonReader.h"
 
 /************************************************************/

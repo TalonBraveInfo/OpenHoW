@@ -17,9 +17,9 @@
 
 #include "App.h"
 #include "Map.h"
-#include "actor_manager.h"
-#include "player.h"
-#include "actor.h"
+#include "ActorManager.h"
+#include "Player.h"
+#include "Actor.h"
 
 #include "graphics/Camera.h"
 

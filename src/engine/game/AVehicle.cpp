@@ -15,22 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
 
-#include "actor_vehicle.h"
+#include "AVehicle.h"
 
-class AAirship : public AVehicle {
-	IMPLEMENT_ACTOR( AAirship, AVehicle )
+AVehicle::AVehicle() : SuperClass() {}
+AVehicle::~AVehicle() = default;
 
-public:
-	AAirship();
-	~AAirship() override;
+void AVehicle::Occupy( Actor *occupant ) {
+	occupant_ = occupant;
+	isOccupied_ = true;
+}
 
-	void Tick() override;
-
-	void Deserialize( const ActorSpawn &spawn ) override;
-
-protected:
-private:
-	AudioSource *ambientSource{ nullptr };
-};
+void AVehicle::Unoccupy() {
+	occupant_ = nullptr;
+	isOccupied_ = false;
+}

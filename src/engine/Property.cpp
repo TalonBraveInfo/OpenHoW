@@ -18,61 +18,51 @@
 #include "App.h"
 #include "Property.h"
 
-Property::Property(PropertyOwner &po, const std::string &name, unsigned flags):
-	name(name),
-	flags(flags),
-	po_(po),
-	is_dirty_(false)
-{
-	auto x = po_.properties_.insert(std::make_pair(name, this));
-	u_assert(x.second); /* Check for name collision */
+Property::Property( PropertyOwner &po, const std::string &name, unsigned flags ) :
+		name( name ),
+		flags( flags ),
+		po_( po ),
+		is_dirty_( false ) {
+	auto x = po_.properties_.insert( std::make_pair( name, this ) );
+	u_assert( x.second ); /* Check for name collision */
 }
 
-Property::Property(PropertyOwner &po, const Property &src):
-	name(src.name),
-	flags(src.flags),
-	po_(po),
-	is_dirty_(src.is_dirty_),
-	dirty_since_(src.dirty_since_),
-	clean_serialised_(src.clean_serialised_)
-{
-	auto x = po_.properties_.insert(std::make_pair(name, this));
-	u_assert(x.second); /* Check for name collision */
+Property::Property( PropertyOwner &po, const Property &src ) :
+		name( src.name ),
+		flags( src.flags ),
+		po_( po ),
+		is_dirty_( src.is_dirty_ ),
+		dirty_since_( src.dirty_since_ ),
+		clean_serialised_( src.clean_serialised_ ) {
+	auto x = po_.properties_.insert( std::make_pair( name, this ) );
+	u_assert( x.second ); /* Check for name collision */
 }
 
-Property::~Property()
-{
-	po_.properties_.erase(name);
+Property::~Property() {
+	po_.properties_.erase( name );
 }
 
-void Property::MarkClean()
-{
+void Property::MarkClean() {
 	clean_serialised_ = Serialise();
 	is_dirty_ = false;
 }
 
-void Property::MarkDirty()
-{
-	if(!is_dirty_)
-	{
+void Property::MarkDirty() {
+	if ( !is_dirty_ ) {
 		is_dirty_ = true;
-		dirty_since_ = g_state.sim_ticks;
+		dirty_since_ = ohw::GetApp()->GetTicks();
 	}
 }
 
-void Property::ResetToClean()
-{
-	Deserialise(clean_serialised_);
+void Property::ResetToClean() {
+	Deserialise( clean_serialised_ );
 	MarkClean();
 }
 
-unsigned int Property::DirtyTicks() const
-{
-	if(is_dirty_)
-	{
-		return g_state.sim_ticks - dirty_since_;
-	}
-	else{
+unsigned int Property::DirtyTicks() const {
+	if ( is_dirty_ ) {
+		return ohw::GetApp()->GetTicks() - dirty_since_;
+	} else {
 		return 0;
 	}
 }
@@ -81,5 +71,5 @@ PropertyOwner::PropertyOwner() {}
 PropertyOwner::~PropertyOwner() {}
 
 std::string PropertyOwner::SerializePropertiesAsJson() {
-  return "";
+	return "";
 }

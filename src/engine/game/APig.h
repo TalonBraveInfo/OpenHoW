@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include "actor_model.h"
-#include "actor_animated_model.h"
-#include "actor_weapon.h"
-#include "weapon_parachute.h"
-#include "inventory.h"
+#include "AModel.h"
+#include "AAnimatedModel.h"
+#include "AWeapon.h"
+#include "AParachuteWeapon.h"
+#include "Inventory.h"
 
 class APig : public AAnimatedModel, public InventoryManager {
 	IMPLEMENT_ACTOR( APig, AAnimatedModel )

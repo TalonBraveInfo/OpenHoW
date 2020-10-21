@@ -16,7 +16,6 @@
  */
 
 #include "App.h"
-#include "TextureResource.h"
 
 // TODO: we should be able to query the platform library for this!!
 const char *supportedTextureFormats[] = { "png", "tga", "bmp", "tim", nullptr };
@@ -50,7 +49,7 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 			}
 
 			Warning( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
-			texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
+			texturePtr = GetApp()->resourceManager->GetFallbackTexture();
 		}
 
 		return;
@@ -88,12 +87,12 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 
 	Warning( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 
-	texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
+	texturePtr = GetApp()->resourceManager->GetFallbackTexture();
 }
 
 ohw::TextureResource::~TextureResource() {
 	// Don't destroy the fallback!
-	PLTexture *placeholderTexture = Engine::Resource()->GetFallbackTexture();
+	PLTexture *placeholderTexture = GetApp()->resourceManager->GetFallbackTexture();
 	if ( texturePtr == placeholderTexture ) {
 		return;
 	}

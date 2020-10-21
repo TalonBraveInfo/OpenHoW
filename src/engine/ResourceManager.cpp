@@ -160,7 +160,7 @@ void ohw::ResourceManager::ListCachedResources( unsigned int argc, char** argv )
 	u_unused( argv );
 
 	Print( "Printing cache...\n" );
-	for ( auto const& i : Engine::Resource()->resourcesMap ) {
+	for ( auto const& i : GetApp()->resourceManager->resourcesMap ) {
 		Print(
 			" CachedName(%s)"
             " CanDestroy(%s)"
@@ -187,7 +187,7 @@ void ohw::ResourceManager::ClearAllResourcesCommand( unsigned int argc, char **a
 		}
 	}
 
-	ohw::Engine::Resource()->ClearAllResources( force );
+	GetApp()->resourceManager->ClearAllResources( force );
 }
 
 void ohw::ResourceManager::ClearResourceCommand( unsigned int argc, char **argv ) {
@@ -217,5 +217,5 @@ void ohw::ResourceManager::ClearResourceCommand( unsigned int argc, char **argv 
 		}
 	}
 
-	ohw::Engine::Resource()->ClearResource( resourceName, force );
+	GetApp()->resourceManager->ClearResource( resourceName, force );
 }

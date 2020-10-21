@@ -18,7 +18,7 @@
 #include "../engine.h"
 #include "../model.h"
 
-#include "actor_model.h"
+#include "AModel.h"
 
 using namespace ohw;
 

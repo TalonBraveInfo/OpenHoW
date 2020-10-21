@@ -16,34 +16,36 @@
  */
 
 #include "../engine.h"
-#include "actor_manager.h"
-#include "weapon_parachute.h"
 
-// Parachute, not really a weapon but hey ho!
+#include "Inventory.h"
 
-REGISTER_ACTOR_BASIC( AParachuteWeapon )
-
-AParachuteWeapon::AParachuteWeapon() : SuperClass() {
-	SetModel( "weapons/we_para.vtx" );
-	ShowModel( false );
+/**
+ * Clear the inventory of items.
+ */
+void InventoryManager::ClearItems() {
+	items_.clear();
 }
 
-AParachuteWeapon::~AParachuteWeapon() = default;
+void InventoryManager::AddInventoryItem( ItemIdentifier identifier, unsigned int quantity ) {
+#if 0
+	u_assert(identifier != InventoryItem::Identifier::INVALID_ID, "Attempted to add a null item to inventory!\n");
 
-void AParachuteWeapon::Tick() {
-	SuperClass::Tick();
+	LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
 
-	if ( !isWeaponDeployed ) {
-		return;
-	}
-
-	/* todo: make parachute noises... */
+	items_.emplace(std::pair<std::string, InventoryItem*>(item->GetInventoryDescription(), item));
+#endif
 }
 
-void AParachuteWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
-	SuperClass::Fire( pos, dir );
+InventoryItem *InventoryManager::GetItem( ItemIdentifier identifier ) {
+	return nullptr;
 }
 
-void AParachuteWeapon::Deploy() {
-	SuperClass::Deploy();
+/// Inventory Items
+
+PLTexture *InventoryItem::GetInventoryIcon() {
+	return nullptr;
+}
+
+void InventoryItem::Equipped( Actor *other ) {
+
 }

@@ -20,7 +20,7 @@
 #include "../graphics/ParticleEmitter.h"
 #include "../graphics/particles.h"
 
-#include "actor_manager.h"
+#include "ActorManager.h"
 
 class AParticleEffect : public Actor {
 	IMPLEMENT_ACTOR( AParticleEffect, Actor )

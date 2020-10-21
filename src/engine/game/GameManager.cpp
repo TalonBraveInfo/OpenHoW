@@ -19,17 +19,17 @@
 #include "Menu.h"
 #include "Map.h"
 #include "Language.h"
-#include "actor_manager.h"
+#include "ActorManager.h"
 #include "GameMode.h"
-#include "player.h"
+#include "Player.h"
 
 #include "graphics/Camera.h"
 
 #include "script/JsonReader.h"
 
-#include "actor_pig.h"
-#include "actor_static_model.h"
-#include "game.h"
+#include "APig.h"
+#include "AStaticModel.h"
+#include "GameManager.h"
 
 
 std::string MapManifest::Serialize() {

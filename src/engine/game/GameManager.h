@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include "actor.h"
-#include "mode_interface.h"
+#include "Actor.h"
+#include "GameModeInterface.h"
 
 enum class CharacterStatus {
 	NONE = -1,
@@ -196,9 +196,7 @@ typedef std::vector< Player * > PlayerPtrVector;
 
 namespace ohw {
 	class Map;
-
 	class Camera;
-
 	class GameManager {
 	private:
 		GameManager();

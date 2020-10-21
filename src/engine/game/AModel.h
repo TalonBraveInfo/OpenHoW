@@ -17,18 +17,25 @@
 
 #pragma once
 
-#include "actor.h"
-#include "actor_model.h"
+#include "Actor.h"
 
-class AAnimatedModel : public AModel {
-	IMPLEMENT_ACTOR( AAnimatedModel, AModel )
+class AModel : public Actor {
+	IMPLEMENT_ACTOR( AModel, Actor )
 
 public:
-	AAnimatedModel();
-	~AAnimatedModel() override;
+	AModel();
+	~AModel() override;
 
-	void Deserialize( const ActorSpawn &spawn ) override;
+	void Draw() override;
+	void ShowModel( bool show = true );
+
+	void SetModel( const std::string &path );
 
 protected:
+	ohw::SharedModelResourcePointer model{ nullptr };
+
 private:
+	bool show_model_{ true };
+
+	StringProperty modelPath;
 };

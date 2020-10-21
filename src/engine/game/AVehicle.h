@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "actor_model.h"
+#include "AModel.h"
 
 class AVehicle : public AModel {
 	IMPLEMENT_ACTOR( AVehicle, AModel )

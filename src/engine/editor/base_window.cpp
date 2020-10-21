@@ -17,8 +17,7 @@
 
 #include <imgui.h>
 
-#include "../engine.h"
-
+#include "App.h"
 #include "base_window.h"
 
 void BaseWindow::Begin( const std::string &windowTitle, unsigned int flags ) {
@@ -26,8 +25,7 @@ void BaseWindow::Begin( const std::string &windowTitle, unsigned int flags ) {
 		flags |= ImGuiWindowFlags_NoDecoration;
 
 		int width, height;
-		bool fullscreen;
-		System_GetWindowDrawableSize( &width, &height, &fullscreen );
+		ohw::GetApp()->GetDisplaySize( &width, &height );
 
 		ImGui::SetNextWindowPos( ImVec2( 0, 0 ) );
 		ImGui::SetNextWindowSize( ImVec2( static_cast< float >( width ), static_cast< float >( height ) ),

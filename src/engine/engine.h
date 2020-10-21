@@ -28,8 +28,8 @@
 #include "pork_math.h"
 #include "Console.h"
 #include "ResourceManager.h"
-#include "audio.h"
-#include "game.h"
+#include "AudioManager.h"
+#include "GameManager.h"
 #include "PhysicsInterface.h"
 
 namespace ohw {
@@ -42,19 +42,6 @@ public:
 	Engine();
 	~Engine();
 
-	static AudioManager *Audio() {
-		return engine->audioManager;
-	}
-	static GameManager *Game() {
-		return engine->gameManager;
-	}
-	static ResourceManager *Resource() {
-		return engine->resourceManager;
-	}
-	static PhysicsInterface *Physics() {
-		return engine->physicsInterface;
-	}
-
 	void Initialize();
 
 	bool IsRunning();
@@ -62,11 +49,6 @@ public:
 	double GetDeltaTime() { return deltaTime; }
 
 private:
-	GameManager *gameManager{ nullptr };
-	AudioManager *audioManager{ nullptr };
-	ResourceManager *resourceManager{ nullptr };
-	PhysicsInterface *physicsInterface{ nullptr };
-
 	double deltaTime{ 0 };
 };
 

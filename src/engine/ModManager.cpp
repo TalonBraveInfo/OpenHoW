@@ -16,7 +16,6 @@
  */
 
 #include "App.h"
-#include "engine.h"
 
 #include "script/JsonReader.h"
 
@@ -89,7 +88,7 @@ void ohw::ModManager::Unmount() {
 	}
 
 	// Clear out all the content we've loaded, we'll need to load all our major dependencies after
-	Engine::Resource()->ClearAllResources( true );
+	GetApp()->resourceManager->ClearAllResources( true );
 }
 
 /**

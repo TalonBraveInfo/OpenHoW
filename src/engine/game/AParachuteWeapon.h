@@ -17,26 +17,20 @@
 
 #pragma once
 
-#include "actor_model.h"
+#include "AWeapon.h"
 
-class AWeapon : public AModel {
-	IMPLEMENT_ACTOR( AWeapon, AModel )
+class AParachuteWeapon : public AWeapon {
+	IMPLEMENT_ACTOR( AParachuteWeapon, AWeapon )
 
 public:
-	AWeapon();
-	~AWeapon() override;
+	AParachuteWeapon();
+	~AParachuteWeapon() override;
 
 	void Tick() override;
 
-	virtual void Fire( const PLVector3 &pos, const PLVector3 &dir );
-	virtual void Deploy();
-	virtual void Holster();
-
-	bool IsDeployed() const { return isWeaponDeployed; }
+	void Fire( const PLVector3 &pos, const PLVector3 &dir ) override;
+	void Deploy() override;
 
 protected:
-
-	bool isWeaponDeployed{ false };
-
 private:
 };

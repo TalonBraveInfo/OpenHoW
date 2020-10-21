@@ -47,7 +47,7 @@ const static unsigned int chunk_indices[96] = {
 ohw::Terrain::Terrain( const std::string &tileset ) {
 	// attempt to load in the atlas sheet
 	// TODO: allow us to change this on the fly
-	textureAtlas = new TextureAtlas( 512, 8 );
+	textureAtlas = new ohw::TextureAtlas( 512, 8 );
 	for ( unsigned int i = 0; i < 256; ++i ) {
 		if ( !textureAtlas->AddImage( tileset + std::to_string( i ) ) ) {
 			break;
@@ -302,9 +302,7 @@ void ohw::Terrain::Update() {
 }
 
 void ohw::Terrain::Draw() {
-	g_state.gfx.num_chunks_drawn = 0;
-
-	ohw::Camera *cameraPtr = ohw::Engine::Game()->GetCamera();
+	ohw::Camera *cameraPtr = GetApp()->gameManager->GetCamera();
 	if ( cameraPtr == nullptr ) {
 		return;
 	}
@@ -335,8 +333,6 @@ void ohw::Terrain::Draw() {
 
 			plUploadMesh( chunk.solidMesh );
 			plDrawMesh( chunk.solidMesh );
-
-			g_state.gfx.num_chunks_drawn++;
 		}
 	}
 
@@ -356,8 +352,6 @@ void ohw::Terrain::Draw() {
 
 				plUploadMesh( chunk.waterMesh );
 				plDrawMesh( chunk.waterMesh );
-
-				g_state.gfx.num_chunks_drawn++;
 			}
 		}
 

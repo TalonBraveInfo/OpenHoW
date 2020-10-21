@@ -17,7 +17,7 @@
 
 #include "../engine.h"
 
-#include "player.h"
+#include "Player.h"
 
 Player::Player(PlayerType type) : type_(type) {}
 Player::~Player() = default;

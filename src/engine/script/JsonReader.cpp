@@ -19,7 +19,7 @@
 #include <duktape.h>
 #include <sstream>
 
-#include "../engine.h"
+#include "App.h"
 #include "JsonReader.h"
 
 #define LogMissingProperty( P )   Warning("Failed to get JSON property \"%s\"!\n", (P))

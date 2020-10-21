@@ -16,7 +16,6 @@
  */
 
 #include "App.h"
-#include "Resource.h"
 
 ohw::Resource::Resource( const std::string &path, bool persist ) :
 	referencePath( path ),

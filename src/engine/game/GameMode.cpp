@@ -18,10 +18,10 @@
 #include "engine.h"
 #include "Map.h"
 #include "GameMode.h"
-#include "actor_manager.h"
-#include "player.h"
-#include "actor_pig.h"
-#include "actor_airship.h"
+#include "ActorManager.h"
+#include "Player.h"
+#include "APig.h"
+#include "AAirship.h"
 #include "graphics/Camera.h"
 
 using namespace ohw;

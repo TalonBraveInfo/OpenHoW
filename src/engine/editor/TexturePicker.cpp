@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "TexturePicker.h"
 #include "Language.h"
 #include "imgui_layer.h"
 
 ohw::TexturePicker::TexturePicker() : BaseWindow() {
-	std::string mapDir = Engine::Game()->GetCurrentMapDirectory();
+	std::string mapDir = GetApp()->gameManager->GetCurrentMapDirectory();
 	if ( mapDir.empty() ) {
 		return;
 	}
@@ -36,7 +36,7 @@ ohw::TexturePicker::TexturePicker() : BaseWindow() {
 		for ( unsigned int j = 0; j < numFormats; ++j ) {
 			std::string texturePath = mapDir + std::to_string( i ) + "." + formatExtensions[ j ];
 			if ( plFileExists( texturePath.c_str() ) ) {
-				SharedTextureResourcePointer sharedTexture = Engine::Resource()->LoadTexture(
+				SharedTextureResourcePointer sharedTexture = GetApp()->resourceManager->LoadTexture(
 						texturePath,
 						TextureResource::FLAG_NOMIPS | TextureResource::FLAG_NEAREST
 				);

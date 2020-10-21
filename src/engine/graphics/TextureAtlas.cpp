@@ -15,29 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "App.h"
 #include "display.h"
 #include "TextureAtlas.h"
 
-TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {
-	texture_ = ohw::Engine::Resource()->GetFallbackTexture();
+ohw::TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {
+	texture_ = ohw::GetApp()->resourceManager->GetFallbackTexture();
 }
 
-TextureAtlas::~TextureAtlas() {
+ohw::TextureAtlas::~TextureAtlas() {
 	for ( auto &id : images_by_name_ ) {
 		PLImage *image = id.second;
 		plDestroyImage( image );
 		id.second = nullptr;
 	}
 
-	if ( texture_ != ohw::Engine::Resource()->GetFallbackTexture() ) {
+	if ( texture_ != ohw::GetApp()->resourceManager->GetFallbackTexture() ) {
 		// TODO: reintroduce once we have a wrapper around PLModel to hold this!
 		//plDestroyTexture(texture_);
 	}
 }
 
-bool TextureAtlas::AddImage( const std::string &path, bool absolute ) {
+bool ohw::TextureAtlas::AddImage( const std::string &path, bool absolute ) {
 	const auto image = images_by_name_.find( path );
 	if ( image != images_by_name_.end() ) {
 		return true;
@@ -61,13 +60,13 @@ bool TextureAtlas::AddImage( const std::string &path, bool absolute ) {
 	return true;
 }
 
-void TextureAtlas::AddImages( const std::vector<std::string> &textures ) {
+void ohw::TextureAtlas::AddImages( const std::vector< std::string > &textures ) {
 	for ( const auto &path : textures ) {
 		AddImage( path );
 	}
 }
 
-void TextureAtlas::Finalize() {
+void ohw::TextureAtlas::Finalize() {
 	if ( images_by_height_.empty() ) {
 		Warning( "Failed to finalize texture atlas, no textures loaded!\n" );
 		return;
@@ -99,11 +98,11 @@ void TextureAtlas::Finalize() {
 		const char *extension = plGetFileExtension( image->path );
 		std::string index_name = std::string( filename ).substr( 0, strlen( filename ) - ( strlen( extension ) + 1 ) );
 		textures_.emplace( index_name, Index{
-			.x = cur_x,
-			.y = cur_y,
-			.w = image->width,
-			.h = image->height,
-			.image = image
+				.x = cur_x,
+				.y = cur_y,
+				.w = image->width,
+				.h = image->height,
+				.image = image
 		} );
 
 		cur_x += image->width;
@@ -144,7 +143,7 @@ void TextureAtlas::Finalize() {
 	if ( plCreatePath( "./debug/generated/" ) ) {
 		char buf[PL_SYSTEM_MAX_PATH];
 		snprintf( buf, sizeof( buf ) - 1, "./debug/generated/%dx%d_%d.png",
-				  cache->width, cache->height, gen_id++ );
+		          cache->width, cache->height, gen_id++ );
 		plWriteImage( cache, buf );
 	}
 #endif
@@ -168,7 +167,7 @@ void TextureAtlas::Finalize() {
 	plDestroyImage( cache );
 }
 
-bool TextureAtlas::GetTextureCoords( const std::string &name, float *x, float *y, float *w, float *h ) {
+bool ohw::TextureAtlas::GetTextureCoords( const std::string &name, float *x, float *y, float *w, float *h ) {
 	auto index = textures_.find( name );
 	if ( index == textures_.end() ) {
 		*x = *y = 0;
@@ -189,7 +188,7 @@ bool TextureAtlas::GetTextureCoords( const std::string &name, float *x, float *y
 	return true;
 }
 
-std::pair<unsigned int, unsigned int> TextureAtlas::GetTextureSize( const std::string &name ) {
+std::pair< unsigned int, unsigned int > ohw::TextureAtlas::GetTextureSize( const std::string &name ) {
 	auto index = textures_.find( name );
 	if ( index == textures_.end() ) {
 		return std::make_pair( texture_->w, texture_->h );

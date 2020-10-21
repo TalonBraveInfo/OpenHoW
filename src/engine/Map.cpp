@@ -16,12 +16,10 @@
  */
 
 #include "App.h"
-#include "engine.h"
 #include "Map.h"
 
 #include "graphics/ShaderManager.h"
 #include "graphics/TextureAtlas.h"
-#include "Utilities.h"
 
 ohw::Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	std::string base_path = "maps/" + manifest_->filename + "/";
@@ -58,7 +56,7 @@ ohw::Map::~Map() {
 }
 
 ohw::SharedModelResourcePointer ohw::Map::LoadSkyModel( const std::string &path ) {
-	SharedModelResourcePointer model = Engine::Resource()->LoadModel( path, true, true );
+	SharedModelResourcePointer model = GetApp()->resourceManager->LoadModel( path, true, true );
 
 	// Default skydome is smaller than the map, so we'll scale it
 	model->modelMatrix.Identity();

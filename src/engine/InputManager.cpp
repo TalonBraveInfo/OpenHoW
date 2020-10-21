@@ -26,39 +26,38 @@ ohw::InputManager::InputManager() {
 
 	myBindings[ ACTION_MOVE_FORWARD ].Bind( KEY_UP );
 	myBindings[ ACTION_MOVE_FORWARD ].Bind( 'w' );
-	myBindings[ ACTION_MOVE_FORWARD ].Bind( BUTTON_DOWN );
+	myBindings[ ACTION_MOVE_FORWARD ].Bind( SDL_CONTROLLER_BUTTON_DPAD_DOWN );
 
 	myBindings[ ACTION_MOVE_BACKWARD ].Bind( KEY_DOWN );
 	myBindings[ ACTION_MOVE_BACKWARD ].Bind( 's' );
-	myBindings[ ACTION_MOVE_BACKWARD ].Bind( BUTTON_DOWN );
+	myBindings[ ACTION_MOVE_BACKWARD ].Bind( SDL_CONTROLLER_BUTTON_DPAD_DOWN );
 
 	myBindings[ ACTION_TURN_LEFT ].Bind( KEY_LEFT );
 	myBindings[ ACTION_TURN_LEFT ].Bind( 'a' );
-	myBindings[ ACTION_TURN_LEFT ].Bind( BUTTON_LEFT );
+	myBindings[ ACTION_TURN_LEFT ].Bind( SDL_CONTROLLER_BUTTON_DPAD_LEFT );
 
 	myBindings[ ACTION_TURN_RIGHT ].Bind( KEY_RIGHT );
 	myBindings[ ACTION_TURN_RIGHT ].Bind( 'd' );
-	myBindings[ ACTION_TURN_RIGHT ].Bind( BUTTON_RIGHT );
+	myBindings[ ACTION_TURN_RIGHT ].Bind( SDL_CONTROLLER_BUTTON_DPAD_RIGHT );
 
 	myBindings[ ACTION_JUMP ].Bind( KEY_SPACE );
-	myBindings[ ACTION_JUMP ].Bind( BUTTON_CROSS );
+	myBindings[ ACTION_JUMP ].Bind( SDL_CONTROLLER_BUTTON_A );
 
 	myBindings[ ACTION_SELECT ].Bind( KEY_TAB );
-	myBindings[ ACTION_SELECT ].Bind( BUTTON_CIRCLE );
+	myBindings[ ACTION_SELECT ].Bind( SDL_CONTROLLER_BUTTON_B );
 
 	myBindings[ ACTION_AIM ].Bind( KEY_TAB );
-	myBindings[ ACTION_AIM ].Bind( BUTTON_L1 );
+	myBindings[ ACTION_AIM ].Bind( SDL_CONTROLLER_BUTTON_LEFTSHOULDER );
 
 	myBindings[ ACTION_AIM_UP ].Bind( KEY_PAGEUP );
 	myBindings[ ACTION_AIM_UP ].Bind( 'a' );
-	myBindings[ ACTION_AIM_UP ].Bind( BUTTON_R1 );
+	myBindings[ ACTION_AIM_UP ].Bind( SDL_CONTROLLER_BUTTON_RIGHTSHOULDER );
 
 	myBindings[ ACTION_AIM_DOWN ].Bind( KEY_PAGEDOWN );
 	myBindings[ ACTION_AIM_UP ].Bind( 'z' );
-	myBindings[ ACTION_AIM_DOWN ].Bind( BUTTON_R2 );
 
 	myBindings[ ACTION_PAUSE ].Bind( KEY_ESCAPE );
-	myBindings[ ACTION_PAUSE ].Bind( BUTTON_START );
+	myBindings[ ACTION_PAUSE ].Bind( SDL_CONTROLLER_BUTTON_START );
 }
 
 ohw::InputManager::~InputManager() {
@@ -94,7 +93,7 @@ bool ohw::InputManager::GetJoystickState( unsigned int slot, JoystickAxis input,
 	return true;
 }
 
-bool ohw::InputManager::GetButtonState( unsigned int slot, Button input ) {
+bool ohw::InputManager::GetButtonState( unsigned int slot, SDL_GameControllerButton input ) {
 	Controller *controller = GetControllerForSlot( slot );
 	if ( controller == nullptr ) {
 		return false;
@@ -132,7 +131,12 @@ void ohw::InputManager::SetAxisState( unsigned int slot, JoystickAxis input, con
 	controller->axisStates[ input ] = status / 100.0f;
 }
 
-void ohw::InputManager::SetButtonState( unsigned int slot, Button input, bool status ) {
+void ohw::InputManager::SetButtonState( unsigned int slot, unsigned char input, bool status ) {
+	if ( input >= SDL_CONTROLLER_BUTTON_MAX ) {
+		Warning( "Unhandled controller button %d!\n", input );
+		return;
+	}
+
 	Controller *controller = GetControllerForSlot( slot );
 	if ( controller == nullptr ) {
 		return;
@@ -180,7 +184,7 @@ void ohw::InputManager::SetupControllers() {
 		return;
 	}
 
-	for( unsigned int i = 0; i < numJoysticks; ++i ) {
+	for( int i = 0; i < numJoysticks; ++i ) {
 		if ( !SDL_IsGameController( i ) ) {
 			continue;
 		}
@@ -192,19 +196,19 @@ void ohw::InputManager::SetupControllers() {
 ///////////////////////////////////////////
 // Controller
 
-ohw::InputManager::Controller::Controller( unsigned int slot ) {
+ohw::InputManager::Controller::Controller( unsigned int slot ) : inputSlot( slot ) {
 	sdlGameController = SDL_GameControllerOpen( slot );
 	if( sdlGameController == nullptr ) {
 		Warning( "Failed to open controller %d!\nSDL: %s\n", SDL_GetError() );
 		return;
 	}
 
-	const char *name = SDL_GameControllerNameForIndex( slot );
-	if( name == nullptr ) {
+	name = SDL_GameControllerNameForIndex( slot );
+	if( name.empty() ) {
 		name = "unknown";
 	}
 
-	Print( "Controller %s\n", name );
+	Print( "Controller %s\n", name.c_str() );
 }
 
 ohw::InputManager::Controller::~Controller() {

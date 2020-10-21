@@ -17,11 +17,13 @@
 
 #pragma once
 
-class PostProcess {
- public:
+namespace ohw {
+	class PostProcess {
+	public:
 
-  virtual void Draw() = 0;
+		virtual void Draw() = 0;
 
- protected:
- private:
-};
+	protected:
+	private:
+	};
+}

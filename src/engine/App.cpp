@@ -23,13 +23,12 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
 
 #define WINDOW_TITLE        "OpenHoW"
 #define WINDOW_MIN_WIDTH    640
 #define WINDOW_MIN_HEIGHT   480
 
-static ohw::App *appInstance;
+ohw::App *appInstance;
 ohw::App *ohw::GetApp() {
 	return appInstance;
 }
@@ -93,15 +92,15 @@ ohw::App::App( int argc, char **argv ) {
 	SDL_StartTextInput();
 
 	// Setup the mod manager and mount the default mod
-	myModManager = new ModManager();
+	modManager = new ModManager();
 	const char *var = plGetCommandLineArgumentValue( "-mod" );
 	if ( var == nullptr ) {
 		// otherwise default to base campaign
 		var = "how";
 	}
-	myModManager->Mount( var );
+	modManager->Mount( var );
 
-	myInputManager = new InputManager();
+	inputManager = new InputManager();
 
 	plParseConsoleString( "fsListMounted" );
 }
@@ -231,6 +230,8 @@ void ohw::App::InitializeDisplay() {
 	//SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse( SDL_TRUE );
 	SDL_ShowCursor( SDL_TRUE );
+
+	ImGuiImpl_Setup();
 }
 
 void ohw::App::SwapDisplay() {
@@ -324,246 +325,152 @@ static int TranslateSDLKey( int key ) {
 
 	switch ( key ) {
 		case SDLK_F1:
-			return INPUT_KEY_F1;
+			return ohw::InputManager::KEY_F1;
 		case SDLK_F2:
-			return INPUT_KEY_F2;
+			return ohw::InputManager::KEY_F2;
 		case SDLK_F3:
-			return INPUT_KEY_F3;
+			return ohw::InputManager::KEY_F3;
 		case SDLK_F4:
-			return INPUT_KEY_F4;
+			return ohw::InputManager::KEY_F4;
 		case SDLK_F5:
-			return INPUT_KEY_F5;
+			return ohw::InputManager::KEY_F5;
 		case SDLK_F6:
-			return INPUT_KEY_F6;
+			return ohw::InputManager::KEY_F6;
 		case SDLK_F7:
-			return INPUT_KEY_F7;
+			return ohw::InputManager::KEY_F7;
 		case SDLK_F8:
-			return INPUT_KEY_F8;
+			return ohw::InputManager::KEY_F8;
 		case SDLK_F9:
-			return INPUT_KEY_F9;
+			return ohw::InputManager::KEY_F9;
 		case SDLK_F10:
-			return INPUT_KEY_F10;
+			return ohw::InputManager::KEY_F10;
 		case SDLK_F11:
-			return INPUT_KEY_F11;
+			return ohw::InputManager::KEY_F11;
 		case SDLK_F12:
-			return INPUT_KEY_F12;
+			return ohw::InputManager::KEY_F12;
 
 		case SDLK_ESCAPE:
-			return INPUT_KEY_ESCAPE;
+			return ohw::InputManager::KEY_ESCAPE;
 
 		case SDLK_PAUSE:
-			return INPUT_KEY_PAUSE;
+			return ohw::InputManager::KEY_PAUSE;
 		case SDLK_INSERT:
-			return INPUT_KEY_INSERT;
+			return ohw::InputManager::KEY_INSERT;
 		case SDLK_HOME:
-			return INPUT_KEY_HOME;
+			return ohw::InputManager::KEY_HOME;
 
 		case SDLK_UP:
-			return INPUT_KEY_UP;
+			return ohw::InputManager::KEY_UP;
 		case SDLK_DOWN:
-			return INPUT_KEY_DOWN;
+			return ohw::InputManager::KEY_DOWN;
 		case SDLK_LEFT:
-			return INPUT_KEY_LEFT;
+			return ohw::InputManager::KEY_LEFT;
 		case SDLK_RIGHT:
-			return INPUT_KEY_RIGHT;
+			return ohw::InputManager::KEY_RIGHT;
 
 		case SDLK_SPACE:
-			return INPUT_KEY_SPACE;
+			return ohw::InputManager::KEY_SPACE;
 
 		case SDLK_LSHIFT:
-			return INPUT_KEY_LSHIFT;
+			return ohw::InputManager::KEY_LSHIFT;
 		case SDLK_RSHIFT:
-			return INPUT_KEY_RSHIFT;
+			return ohw::InputManager::KEY_RSHIFT;
 
 		case SDLK_PAGEUP:
-			return INPUT_KEY_PAGEUP;
+			return ohw::InputManager::KEY_PAGEUP;
 		case SDLK_PAGEDOWN:
-			return INPUT_KEY_PAGEDOWN;
+			return ohw::InputManager::KEY_PAGEDOWN;
 
 		default:
 			return -1;
 	}
 }
 
-static int TranslateSDLMouseButton( int button ) {
+static ohw::InputManager::MouseButton TranslateSDLMouseButton( int button ) {
 	switch ( button ) {
 		case SDL_BUTTON_LEFT:
-			return INPUT_MOUSE_BUTTON_LEFT;
+			return ohw::InputManager::MOUSE_BUTTON_LEFT;
 		case SDL_BUTTON_RIGHT:
-			return INPUT_MOUSE_BUTTON_RIGHT;
+			return ohw::InputManager::MOUSE_BUTTON_RIGHT;
 		case SDL_BUTTON_MIDDLE:
-			return INPUT_MOUSE_BUTTON_MIDDLE;
+			return ohw::InputManager::MOUSE_BUTTON_MIDDLE;
 		default:
-			return -1;
-	}
-}
-
-static int TranslateSDLButton( int button ) {
-	switch ( button ) {
-		case SDL_CONTROLLER_BUTTON_A:
-			return INPUT_BUTTON_CROSS;
-		case SDL_CONTROLLER_BUTTON_B:
-			return INPUT_BUTTON_CIRCLE;
-		case SDL_CONTROLLER_BUTTON_X:
-			return INPUT_BUTTON_SQUARE;
-		case SDL_CONTROLLER_BUTTON_Y:
-			return INPUT_BUTTON_TRIANGLE;
-
-		case SDL_CONTROLLER_BUTTON_BACK:
-			return INPUT_BUTTON_SELECT;
-		case SDL_CONTROLLER_BUTTON_START:
-			return INPUT_BUTTON_START;
-
-		case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-			return INPUT_BUTTON_L1;
-		case SDL_CONTROLLER_BUTTON_LEFTSTICK:
-			return INPUT_BUTTON_L3;
-		case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-			return INPUT_BUTTON_R1;
-		case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
-			return INPUT_BUTTON_R3;
-
-		case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-			return INPUT_BUTTON_DOWN;
-		case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-			return INPUT_BUTTON_LEFT;
-		case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-			return INPUT_BUTTON_RIGHT;
-		case SDL_CONTROLLER_BUTTON_DPAD_UP:
-			return INPUT_BUTTON_UP;
-
-		default:
-			return -1;
+			return ohw::InputManager::MOUSE_BUTTON_INVALID;
 	}
 }
 
 void ohw::App::PollEvents() {
-	ImGuiIO& io = ImGui::GetIO();
-
 	SDL_Event event;
 	while ( SDL_PollEvent( &event ) ) {
+		// Check if ImGui wants to handle the event first
+		if ( ImGuiImpl_HandleEvent( event ) ) {
+			continue;
+		}
+
 		switch ( event.type ) {
 			default:break;
 
 			case SDL_KEYUP:
 			case SDL_KEYDOWN: {
-				// Always update if key-up; see
-				// https://github.com/TalonBraveInfo/OpenHoW/issues/70#issuecomment-507377604
-				if ( event.type == SDL_KEYUP || io.WantCaptureKeyboard ) {
-					int key = event.key.keysym.scancode;
-					IM_ASSERT( key >= 0 && key < IM_ARRAYSIZE( io.KeysDown ) );
-					io.KeysDown[ key ] = ( event.type == SDL_KEYDOWN );
-					io.KeyShift = ( ( SDL_GetModState() & KMOD_SHIFT ) != 0 );
-					io.KeyCtrl = ( ( SDL_GetModState() & KMOD_CTRL ) != 0 );
-					io.KeyAlt = ( ( SDL_GetModState() & KMOD_ALT ) != 0 );
-					io.KeySuper = ( ( SDL_GetModState() & KMOD_GUI ) != 0 );
-					if ( event.type != SDL_KEYUP ) break;
-				}
-
 				int key = TranslateSDLKey( event.key.keysym.sym );
 				if ( key != -1 ) {
-					Input_SetKeyState( key, ( event.type == SDL_KEYDOWN ) );
+					inputManager->SetKeyState( key, ( event.type == SDL_KEYDOWN ) );
 				}
 				break;
 			}
 
 			case SDL_TEXTINPUT:
-				if ( io.WantCaptureKeyboard ) {
-					io.AddInputCharactersUTF8( event.text.text );
-					break;
-				}
-
-				Input_AddTextCharacter( event.text.text );
+				inputManager->AddTextCharacter( event.text.text );
 				break;
 
 			case SDL_MOUSEBUTTONUP:
 			case SDL_MOUSEBUTTONDOWN: {
-				if ( io.WantCaptureMouse ) {
-					switch ( event.button.button ) {
-						case SDL_BUTTON_LEFT:io.MouseDown[ 0 ] = event.button.state;
-							break;
-						case SDL_BUTTON_RIGHT:io.MouseDown[ 1 ] = event.button.state;
-							break;
-						case SDL_BUTTON_MIDDLE:io.MouseDown[ 2 ] = event.button.state;
-							break;
-
-						default:break;
-					}
-
-					break;
-				}
-
-				int button = TranslateSDLMouseButton( event.button.button );
-				Input_SetMouseState( event.motion.x, event.motion.y, button, event.button.state );
+				ohw::InputManager::MouseButton button = TranslateSDLMouseButton( event.button.button );
+				inputManager->SetMouseState( event.motion.x, event.motion.y, button, event.button.state );
 				break;
 			}
 
-			case SDL_MOUSEWHEEL:
-				if ( event.wheel.x > 0 ) {
-					io.MouseWheelH += 1;
-				} else if ( event.wheel.x < 0 ) {
-					io.MouseWheelH -= 1;
-				}
-
-				if ( event.wheel.y > 0 ) {
-					io.MouseWheel += 1;
-				} else if ( event.wheel.y < 0 ) {
-					io.MouseWheel -= 1;
-				}
+			case SDL_MOUSEMOTION: {
+				inputManager->SetMouseState( event.motion.x, event.motion.y, ohw::InputManager::MOUSE_BUTTON_INVALID, false );
 				break;
+			}
 
-			case SDL_MOUSEMOTION:io.MousePos.x = event.motion.x;
-				io.MousePos.y = event.motion.y;
-
-				Input_SetMouseState( event.motion.x, event.motion.y, -1, false );
-				break;
-
+			case SDL_CONTROLLERBUTTONDOWN:
 			case SDL_CONTROLLERBUTTONUP: {
-				int button = TranslateSDLButton( event.cbutton.button );
-				if ( button != -1 ) {
-					Input_SetButtonState( ( unsigned int ) event.cbutton.which, button, false );
-				}
-				break;
-			}
-			case SDL_CONTROLLERBUTTONDOWN: {
-				int button = TranslateSDLButton( event.cbutton.button );
-				if ( button != -1 ) {
-					Input_SetButtonState( ( unsigned int ) event.cbutton.which, button, true );
-				}
+				inputManager->SetButtonState( ( unsigned int ) event.cbutton.which, event.cbutton.button, ( event.type == SDL_CONTROLLERBUTTONDOWN ) );
 				break;
 			}
 
 			case SDL_CONTROLLERAXISMOTION:
+#if 0 // TODO: return to this later
 				if ( event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value > 1000 ) {
-					Input_SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_L2, true );
+					inputManager->SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_L2, true );
 				} else if ( event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT && event.caxis.value <= 1000 ) {
-					Input_SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_L2, false );
+					inputManager->SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_L2, false );
 				}
 
 				if ( event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value > 1000 ) {
-					Input_SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_R2, true );
+					inputManager->SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_R2, true );
 				} else if ( event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT && event.caxis.value <= 1000 ) {
-					Input_SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_R2, false );
+					inputManager->SetButtonState( ( unsigned int ) event.caxis.which, INPUT_BUTTON_R2, false );
 				}
 
-				Input_SetAxisState( event.caxis.which, event.caxis.axis, event.caxis.value );
+				inputManager->SetAxisState( event.caxis.which, event.caxis.axis, event.caxis.value );
+#endif
 				break;
 
-			case SDL_QUIT:
+			case SDL_QUIT: {
 				Shutdown();
 				break;
+			}
 
 			case SDL_WINDOWEVENT: {
-				if ( event.window.event == SDL_WINDOWEVENT_RESIZED ||
-				     event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
+				if ( event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
 					char buf[16];
 					plSetConsoleVariable( cv_display_width, pl_itoa( event.window.data1, buf, 16, 10 ) );
 					plSetConsoleVariable( cv_display_height, pl_itoa( event.window.data2, buf, 16, 10 ) );
 
 					Display_UpdateViewport( 0, 0, event.window.data1, event.window.data2 );
-
-					ImGuiImpl_UpdateViewport( event.window.data1, event.window.data2 );
-					io.DisplaySize = ImVec2( event.window.data1, event.window.data2 );
 				}
 				break;
 			}

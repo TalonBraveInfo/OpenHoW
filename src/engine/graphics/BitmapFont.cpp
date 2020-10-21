@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "BitmapFont.h"
 #include "display.h"
 
@@ -54,7 +54,7 @@ bool ohw::BitmapFont::Load( const char *tabPath, const char *texturePath ) {
 		return false;
 	}
 
-	texture = Engine::Resource()->LoadTexture( texturePath, TextureResource::FLAG_DISCARD | TextureResource::FLAG_NOMIPS );
+	texture = GetApp()->resourceManager->LoadTexture( texturePath, TextureResource::FLAG_DISCARD | TextureResource::FLAG_NOMIPS );
 
 	// Now setup the character table
 	unsigned int originX = tabIndices[ 0 ].x;

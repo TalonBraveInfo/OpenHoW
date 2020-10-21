@@ -29,9 +29,8 @@
 
 #define TERRAIN_PIXEL_WIDTH         (TERRAIN_TILE_PIXEL_WIDTH * TERRAIN_ROW_TILES)
 
-class TextureAtlas;
-
 namespace ohw {
+	class TextureAtlas;
 	class Terrain {
 	public:
 		explicit Terrain( const std::string &tileset );
@@ -121,7 +120,7 @@ namespace ohw {
 
 		std::vector< Chunk > chunks_;
 
-		TextureAtlas *textureAtlas{ nullptr };
+		ohw::TextureAtlas *textureAtlas{ nullptr };
 		PLTexture *overview_{ nullptr };
 	};
 }

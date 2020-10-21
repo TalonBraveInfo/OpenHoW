@@ -17,8 +17,8 @@
 
 #include "engine.h"
 #include "Sprite.h"
-#include "actor_manager.h"
-#include "actor.h"
+#include "ActorManager.h"
+#include "Actor.h"
 
 // ASprite
 // Can be used for very basic effects etc.

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "mode_interface.h"
+#include "GameModeInterface.h"
 
 class GameMode : public IGameMode {
 public:

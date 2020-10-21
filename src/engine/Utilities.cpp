@@ -17,18 +17,7 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "Utilities.h"
-
-#if defined(COMPILE_ENGINE)
-# include "../engine/engine.h"
-#endif
-
-/****************************************************/
-/* Logs */
-
-void u_init_logs( const char* log_path ) {
-
-}
+#include "App.h"
 
 /****************************************************/
 /* Memory */
@@ -75,7 +64,7 @@ const char* u_scan( const char* path, const char** preference ) {
 		preference++;
 	}
 
-	LogDebug( "Failed to find \"%s\"\n", path );
+	DebugMsg( "Failed to find \"%s\"\n", path );
 	return "";
 }
 

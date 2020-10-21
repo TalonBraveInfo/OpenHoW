@@ -15,20 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "weapon_trotter.h"
+#pragma once
 
-// Basic Melee Attack
+#include "Actor.h"
+#include "AModel.h"
 
-ATrotterWeapon::ATrotterWeapon() {}
-ATrotterWeapon::~ATrotterWeapon() {
+class AAnimatedModel : public AModel {
+	IMPLEMENT_ACTOR( AAnimatedModel, AModel )
 
-}
+public:
+	AAnimatedModel();
+	~AAnimatedModel() override;
 
-void ATrotterWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
-	AWeapon::Fire( pos, dir );
-}
+	void Deserialize( const ActorSpawn &spawn ) override;
 
-void ATrotterWeapon::Deploy() {
-	AWeapon::Deploy();
-}
+protected:
+private:
+};

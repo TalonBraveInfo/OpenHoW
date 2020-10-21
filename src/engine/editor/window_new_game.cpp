@@ -19,7 +19,7 @@
 
 #include "../engine.h"
 #include "../Language.h"
-#include "../game/player.h"
+#include "../game/Player.h"
 
 #include "window_new_game.h"
 

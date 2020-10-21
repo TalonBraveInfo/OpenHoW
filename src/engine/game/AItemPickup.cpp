@@ -18,9 +18,9 @@
 #include "../engine.h"
 #include "../Menu.h"
 
-#include "actor_manager.h"
-#include "inventory.h"
-#include "actor_pig.h"
+#include "ActorManager.h"
+#include "Inventory.h"
+#include "APig.h"
 
 class AItemPickup : public AModel {
 	IMPLEMENT_ACTOR( AItemPickup, AModel )

@@ -15,10 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "imgui_layer.h"
 #include "graphics/display.h"
 #include "graphics/Camera.h"
+
+#include <SDL2/SDL_syswm.h>
+
+#undef far
+#undef near
 
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
@@ -40,7 +45,7 @@ static bool show_file = false;
 static bool show_console = false;
 static bool show_settings = false;
 
-static std::vector<BaseWindow *> windows;
+static std::vector< BaseWindow * > windows;
 
 static PLCamera *imgui_camera = nullptr;
 
@@ -52,6 +57,78 @@ using namespace ohw;
     static_cast<float>(cv_display_height->i_value) * 0.5f ), \
     ImGuiCond_Once, \
     ImVec2( 0.5f, 0.5f )
+
+void ImGuiImpl_Setup() {
+	IMGUI_CHECKVERSION();
+
+	ImGui::CreateContext();
+
+	ImGuiIO &io = ImGui::GetIO();
+
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	//io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
+	io.KeyMap[ ImGuiKey_Tab ] = SDL_SCANCODE_TAB;
+	io.KeyMap[ ImGuiKey_LeftArrow ] = SDL_SCANCODE_LEFT;
+	io.KeyMap[ ImGuiKey_RightArrow ] = SDL_SCANCODE_RIGHT;
+	io.KeyMap[ ImGuiKey_UpArrow ] = SDL_SCANCODE_UP;
+	io.KeyMap[ ImGuiKey_DownArrow ] = SDL_SCANCODE_DOWN;
+	io.KeyMap[ ImGuiKey_PageUp ] = SDL_SCANCODE_PAGEUP;
+	io.KeyMap[ ImGuiKey_PageDown ] = SDL_SCANCODE_PAGEDOWN;
+	io.KeyMap[ ImGuiKey_Home ] = SDL_SCANCODE_HOME;
+	io.KeyMap[ ImGuiKey_End ] = SDL_SCANCODE_END;
+	io.KeyMap[ ImGuiKey_Insert ] = SDL_SCANCODE_INSERT;
+	io.KeyMap[ ImGuiKey_Delete ] = SDL_SCANCODE_DELETE;
+	io.KeyMap[ ImGuiKey_Backspace ] = SDL_SCANCODE_BACKSPACE;
+	io.KeyMap[ ImGuiKey_Space ] = SDL_SCANCODE_SPACE;
+	io.KeyMap[ ImGuiKey_Enter ] = SDL_SCANCODE_RETURN;
+	io.KeyMap[ ImGuiKey_Escape ] = SDL_SCANCODE_ESCAPE;
+	io.KeyMap[ ImGuiKey_A ] = SDL_SCANCODE_A;
+	io.KeyMap[ ImGuiKey_C ] = SDL_SCANCODE_C;
+	io.KeyMap[ ImGuiKey_V ] = SDL_SCANCODE_V;
+	io.KeyMap[ ImGuiKey_X ] = SDL_SCANCODE_X;
+	io.KeyMap[ ImGuiKey_Y ] = SDL_SCANCODE_Y;
+	io.KeyMap[ ImGuiKey_Z ] = SDL_SCANCODE_Z;
+
+	io.SetClipboardTextFn = GetApp()->SetClipboardText;
+	io.GetClipboardTextFn = GetApp()->GetClipboardText;
+	io.ClipboardUserData = nullptr;
+
+#if 0
+#ifdef _WIN32
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(window, &wmInfo);
+	io.ImeWindowHandle = wmInfo.info.win.window;
+#endif
+#endif
+
+	ImGui_ImplOpenGL3_Init();
+
+
+	io.Fonts->Clear();
+
+	// Load in the default font
+
+	const char *fontPath = "fonts/OpenSans-SemiBold.ttf";
+	PLFile *fontFile = plOpenFile( fontPath, false );
+	if ( fontFile == nullptr ) {
+		Warning( "Failed to load font, \"%s\", for ImGui (%s)! Falling back to default...\n", fontPath, plGetError() );
+		io.Fonts->AddFontDefault();
+		return;
+	}
+
+	size_t fileSize = plGetFileSize( fontFile );
+	uint8_t *buf = new uint8_t[fileSize];
+	plReadFile( fontFile, buf, 1, fileSize );
+	plCloseFile( fontFile );
+
+	if ( io.Fonts->AddFontFromMemoryTTF( buf, fileSize, 16.f, nullptr, nullptr ) == nullptr ) {
+		Warning( "Failed to add font from memory! Falling back to default...\n" );
+		io.Fonts->AddFontDefault();
+	}
+}
 
 void ImGuiImpl_SetupCamera( void ) {
 	if ( ( imgui_camera = plCreateCamera() ) == nullptr ) {
@@ -71,11 +148,6 @@ void ImGuiImpl_SetupFrame( void ) {
 	ImGui::NewFrame();
 }
 
-void ImGuiImpl_UpdateViewport( int w, int h ) {
-	imgui_camera->viewport.w = w;
-	imgui_camera->viewport.h = h;
-}
-
 void ImGuiImpl_Draw( void ) {
 	ImGui::Render();
 
@@ -88,6 +160,7 @@ void ImGuiImpl_Draw( void ) {
 /************************************************************/
 /* Settings */
 
+#if 0 // TODO: REDO
 void UI_DisplaySettings() {
 	if ( !show_settings ) {
 		return;
@@ -97,7 +170,7 @@ void UI_DisplaySettings() {
 
 	static int item_current = 0;
 	bool display_changed = false;
-	const DisplayPreset *mode = Display_GetVideoPreset( item_current );
+	const ohw::App::DisplayPreset *mode = GetApp()->GetVideoPreset( item_current );
 	char s[32] = { 0 };
 	snprintf( s, 32, "%dx%d", mode->width, mode->height );
 	if ( ImGui::BeginCombo( "Resolution", s, 0 ) ) {
@@ -198,7 +271,7 @@ typedef struct FileDescriptor {
 	unsigned int type;
 } FileDescriptor;
 
-static std::vector<FileDescriptor> file_list;
+static std::vector< FileDescriptor > file_list;
 
 void AddFilePath( const char *path, void *userData ) {
 	u_unused( userData );
@@ -210,32 +283,32 @@ void AddFilePath( const char *path, void *userData ) {
 	const char *ext = plGetFileExtension( path );
 	if ( ext != nullptr ) {
 		if (
-			strcmp( ext, "tim" ) == 0 ||
+				strcmp( ext, "tim" ) == 0 ||
 				strcmp( ext, "bmp" ) == 0 ||
 				strcmp( ext, "png" ) == 0 ) {
 			descriptor.type = FILE_TYPE_IMAGE;
 		} else if (
-			strcmp( ext, "pps" ) == 0
-			) {
+				strcmp( ext, "pps" ) == 0
+				) {
 			descriptor.type = FILE_TYPE_PARTICLE;
 		} else if (
-			strcmp( ext, "wav" ) == 0
-			) {
+				strcmp( ext, "wav" ) == 0
+				) {
 			descriptor.type = FILE_TYPE_AUDIO;
 		} else if (
-			strcmp( ext, "ptg" ) == 0
-			) {
+				strcmp( ext, "ptg" ) == 0
+				) {
 			descriptor.type = FILE_TYPE_MAP_PTG;
 		} else if (
-			strcmp( ext, "pog" ) == 0
-			) {
+				strcmp( ext, "pog" ) == 0
+				) {
 			descriptor.type = FILE_TYPE_MAP_POG;
 		} else if (
-			strcmp( ext, "pmg" ) == 0
-			) {
+				strcmp( ext, "pmg" ) == 0
+				) {
 			descriptor.type = FILE_TYPE_MAP_PMG;
 		} else if (
-			pl_strcasecmp( ext, "vtx" ) == 0 ||
+				pl_strcasecmp( ext, "vtx" ) == 0 ||
 				pl_strcasecmp( ext, "min" ) == 0 ||
 				pl_strcasecmp( ext, "obj" ) == 0 ) {
 			descriptor.type = FILE_TYPE_MODEL;
@@ -291,19 +364,21 @@ void UI_DisplayFileBox() {
 					}
 						break;
 #if 0
-					case FILE_TYPE_MODEL:
-						try {
-							auto* viewer = new ModelViewer( i.path );
-							windows.push_back( viewer );
-						} catch ( const std::runtime_error& error ) {
-							LogWarn( "%s\n", error.what() );
-						}
-						break;
+						case FILE_TYPE_MODEL:
+							try {
+								auto* viewer = new ModelViewer( i.path );
+								windows.push_back( viewer );
+							} catch ( const std::runtime_error& error ) {
+								LogWarn( "%s\n", error.what() );
+							}
+							break;
 #endif
-					case FILE_TYPE_AUDIO: Engine::Audio()->PlayGlobalSound( i.path );
+					case FILE_TYPE_AUDIO:
+						Engine::Audio()->PlayGlobalSound( i.path );
 						break;
 
-					default:break;
+					default:
+						break;
 				}
 			}
 
@@ -311,19 +386,26 @@ void UI_DisplayFileBox() {
 
 			const char *type = "Unknown";
 			switch ( i.type ) {
-				case FILE_TYPE_AUDIO: type = "Audio";
+				case FILE_TYPE_AUDIO:
+					type = "Audio";
 					break;
-				case FILE_TYPE_PARTICLE: type = "Particle System";
+				case FILE_TYPE_PARTICLE:
+					type = "Particle System";
 					break;
-				case FILE_TYPE_IMAGE: type = "Image";
+				case FILE_TYPE_IMAGE:
+					type = "Image";
 					break;
-				case FILE_TYPE_MAP_POG: type = "Map Objects";
+				case FILE_TYPE_MAP_POG:
+					type = "Map Objects";
 					break;
-				case FILE_TYPE_MAP_PTG: type = "Map Textures";
+				case FILE_TYPE_MAP_PTG:
+					type = "Map Textures";
 					break;
-				case FILE_TYPE_MAP_PMG: type = "Map Geometry";
+				case FILE_TYPE_MAP_PMG:
+					type = "Map Geometry";
 					break;
-				default:break;
+				default:
+					break;
 			}
 
 			ImGui::Text( "%s", type );
@@ -337,13 +419,14 @@ void UI_DisplayFileBox() {
 
 	ImGui::End();
 }
+#endif
 
 class QuitWindow : public BaseWindow {
 public:
 	void Display() override {
 		ImGui::SetNextWindowPos( IMGUI_POS_CENTER );
 		ImGui::Begin( "Are you sure?", &show_quit, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
-			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings );
+		                                           ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings );
 		ImGui::Text( "Are you sure you want to quit the game?\nAny unsaved changes will be lost!\n" );
 		ImGui::Dummy( ImVec2( 0, 5 ) );
 		ImGui::Separator();
@@ -351,7 +434,7 @@ public:
 
 		if ( ImGui::Button( "Yes", ImVec2( 64, 0 ) ) ) {
 			ImGui::End();
-			System_Shutdown();
+			GetApp()->Shutdown();
 		}
 
 		ImGui::SameLine();
@@ -375,12 +458,12 @@ public:
 	}
 
 	void Display() override {
-		Camera *camera = Engine::Game()->GetCamera();
+		Camera *camera = GetApp()->gameManager->GetCamera();
 		ImGui::SetNextWindowSize( ImVec2( ( float ) ( camera->GetViewportWidth() ) - 20, 128 ), ImGuiCond_Once );
 		ImGui::SetNextWindowPos( ImVec2( 10, ( float ) ( camera->GetViewportHeight() ) - 138 ) );
 		ImGui::Begin( "Console", &show_console );
 		if ( ImGui::InputText( "", input_buf_, 256, ImGuiInputTextFlags_EnterReturnsTrue )
-			&& input_buf_[ 0 ] != '\0' ) {
+		     && input_buf_[ 0 ] != '\0' ) {
 			SendCommand();
 		}
 		ImGui::SameLine();
@@ -429,10 +512,10 @@ void UI_DisplayDebugMenu( void ) {
 		if ( ImGui::BeginMenu( "Debug" ) ) {
 			static bool simStatus = false;
 			if ( ImGui::MenuItem( "Toggle Simulation", "T", simStatus ) ) {
-				Engine::Game()->ToggleSimulation( ( simStatus = !simStatus ) );
+				GetApp()->gameManager->ToggleSimulation( ( simStatus = !simStatus ) );
 			}
 			if ( ImGui::MenuItem( "Step Simulation", "S" ) ) {
-				Engine::Game()->StepSimulation( 1 );
+				GetApp()->gameManager->StepSimulation( 1 );
 			}
 
 			ImGui::Separator();
@@ -478,13 +561,13 @@ void UI_DisplayDebugMenu( void ) {
 					switch ( ( *var )->type ) {
 						case pl_float_var:
 							if ( ImGui::InputFloat( ( *var )->var, &( *var )->f_value, 0, 10, nullptr,
-													ImGuiInputTextFlags_EnterReturnsTrue ) ) {
+							                        ImGuiInputTextFlags_EnterReturnsTrue ) ) {
 								plSetConsoleVariable( ( *var ), std::to_string( ( *var )->f_value ).c_str() );
 							}
 							break;
 						case pl_int_var:
 							if ( ImGui::InputInt( ( *var )->var, &( *var )->i_value, 1, 10,
-												  ImGuiInputTextFlags_EnterReturnsTrue ) ) {
+							                      ImGuiInputTextFlags_EnterReturnsTrue ) ) {
 								plSetConsoleVariable( ( *var ), std::to_string( ( *var )->i_value ).c_str() );
 							}
 							break;
@@ -492,7 +575,8 @@ void UI_DisplayDebugMenu( void ) {
 							// read-only for now
 							ImGui::LabelText( ( *var )->var, "%s", ( *var )->s_value );
 							break;
-						case pl_bool_var:bool b = ( *var )->b_value;
+						case pl_bool_var:
+							bool b = ( *var )->b_value;
 							if ( ImGui::Checkbox( ( *var )->var, &b ) ) {
 								plSetConsoleVariable( ( *var ), b ? "true" : "false" );
 							}
@@ -537,7 +621,7 @@ void UI_DisplayDebugMenu( void ) {
 			if ( ImGui::MenuItem( "Particle Editor..." ) ) {
 				windows.push_back( new ParticleEditor() );
 			}
-			if ( Engine::Game()->IsModeActive() ) {
+			if ( GetApp()->gameManager->IsModeActive() ) {
 				if ( ImGui::MenuItem( "Import Heightmap..." ) ) {
 					windows.push_back( new WindowTerrainImport() );
 				}
@@ -570,18 +654,18 @@ void UI_DisplayDebugMenu( void ) {
 	// Prompt to notify players that games can be started
 	// via File > New Game, until we get an actual frontend
 	// implementation done.
-	if ( !Engine::Game()->IsModeActive() ) {
+	if ( !GetApp()->gameManager->IsModeActive() ) {
 		ImGui::SetNextWindowSize( ImVec2( 320, 128 ) );
 		ImGui::SetNextWindowPos( ImVec2(
-			static_cast<float>(cv_display_width->i_value) * 0.5f,
-			static_cast<float>(cv_display_height->i_value) * 0.5f ),
-								 ImGuiCond_Always,
-								 ImVec2( 0.5f, 0.5f ) );
+				static_cast<float>(cv_display_width->i_value) * 0.5f,
+				static_cast<float>(cv_display_height->i_value) * 0.5f ),
+		                         ImGuiCond_Always,
+		                         ImVec2( 0.5f, 0.5f ) );
 		static bool state = false;
 		if ( ImGui::Begin(
-			"InstructionMenu",
-			&state,
-			ImGuiWindowFlags_NoDecoration |
+				"InstructionMenu",
+				&state,
+				ImGuiWindowFlags_NoDecoration |
 				ImGuiWindowFlags_NoInputs |
 				ImGuiWindowFlags_NoSavedSettings |
 				ImGuiWindowFlags_NoBackground
@@ -594,14 +678,6 @@ void UI_DisplayDebugMenu( void ) {
 			ImGui::End();
 		}
 	}
-
-	UI_DisplayFileBox();
-	UI_DisplaySettings();
-
-#if 0
-	bool showDemoWindow = true;
-	ImGui::ShowDemoWindow( &showDemoWindow );
-#endif
 
 	for ( auto window = windows.begin(); window != windows.end(); ) {
 		if ( ( *window )->GetStatus() ) {
@@ -617,4 +693,109 @@ void UI_DisplayDebugMenu( void ) {
 
 void ImGuiImpl_RegisterWindow( BaseWindow *window ) {
 	windows.push_back( window );
+}
+
+bool ImGuiImpl_HandleEvent( const SDL_Event &event ) {
+	ImGuiIO &io = ImGui::GetIO();
+
+	if ( !io.WantCaptureKeyboard && !io.WantCaptureMouse ) {
+		return false;
+	}
+
+	switch ( event.type ) {
+		case SDL_KEYUP:
+		case SDL_KEYDOWN: {
+			if ( !io.WantCaptureKeyboard ) {
+				break;
+			}
+
+			// Always update if key-up; see
+			// https://github.com/TalonBraveInfo/OpenHoW/issues/70#issuecomment-507377604
+			int key = event.key.keysym.scancode;
+			IM_ASSERT( key >= 0 && key < IM_ARRAYSIZE( io.KeysDown ) );
+			io.KeysDown[ key ] = ( event.type == SDL_KEYDOWN );
+			io.KeyShift = ( ( SDL_GetModState() & KMOD_SHIFT ) != 0 );
+			io.KeyCtrl = ( ( SDL_GetModState() & KMOD_CTRL ) != 0 );
+			io.KeyAlt = ( ( SDL_GetModState() & KMOD_ALT ) != 0 );
+			io.KeySuper = ( ( SDL_GetModState() & KMOD_GUI ) != 0 );
+			if ( event.type != SDL_KEYUP ) {
+				return true;
+			}
+
+			break;
+		}
+
+		case SDL_TEXTINPUT: {
+			if ( !io.WantCaptureKeyboard ) {
+				break;
+			}
+
+			io.AddInputCharactersUTF8( event.text.text );
+			return true;
+		}
+
+		case SDL_MOUSEWHEEL: {
+			if ( !io.WantCaptureMouse ) {
+				break;
+			}
+
+			if ( event.wheel.x > 0 ) {
+				io.MouseWheelH += 1;
+			} else if ( event.wheel.x < 0 ) {
+				io.MouseWheelH -= 1;
+			}
+
+			if ( event.wheel.y > 0 ) {
+				io.MouseWheel += 1;
+			} else if ( event.wheel.y < 0 ) {
+				io.MouseWheel -= 1;
+			}
+
+			return true;
+		}
+
+		case SDL_MOUSEBUTTONUP:
+		case SDL_MOUSEBUTTONDOWN: {
+			if ( !io.WantCaptureMouse ) {
+				break;
+			}
+
+			switch ( event.button.button ) {
+				case SDL_BUTTON_LEFT: {
+					io.MouseDown[ 0 ] = event.button.state;
+					break;
+				}
+				case SDL_BUTTON_RIGHT: {
+					io.MouseDown[ 1 ] = event.button.state;
+					break;
+				}
+				case SDL_BUTTON_MIDDLE: {
+					io.MouseDown[ 2 ] = event.button.state;
+					break;
+				}
+
+				default:
+					break;
+			}
+
+			return true;
+		}
+
+		case SDL_MOUSEMOTION: {
+			io.MousePos.x = event.motion.x;
+			io.MousePos.y = event.motion.y;
+			break;
+		}
+
+		case SDL_WINDOWEVENT: {
+			if ( event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
+				imgui_camera->viewport.w = event.window.data1;
+				imgui_camera->viewport.h = event.window.data2;
+				io.DisplaySize = ImVec2( event.window.data1, event.window.data2 );
+			}
+			break;
+		}
+	}
+
+	return false;
 }

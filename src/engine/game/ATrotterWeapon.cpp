@@ -16,36 +16,19 @@
  */
 
 #include "../engine.h"
+#include "ATrotterWeapon.h"
 
-#include "inventory.h"
+// Basic Melee Attack
 
-/**
- * Clear the inventory of items.
- */
-void InventoryManager::ClearItems() {
-	items_.clear();
+ATrotterWeapon::ATrotterWeapon() {}
+ATrotterWeapon::~ATrotterWeapon() {
+
 }
 
-void InventoryManager::AddInventoryItem( ItemIdentifier identifier, unsigned int quantity ) {
-#if 0
-	u_assert(identifier != InventoryItem::Identifier::INVALID_ID, "Attempted to add a null item to inventory!\n");
-
-	LogDebug("Added %s to inventory\n", item->GetInventoryDescription().c_str());
-
-	items_.emplace(std::pair<std::string, InventoryItem*>(item->GetInventoryDescription(), item));
-#endif
+void ATrotterWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
+	AWeapon::Fire( pos, dir );
 }
 
-InventoryItem *InventoryManager::GetItem( ItemIdentifier identifier ) {
-	return nullptr;
-}
-
-/// Inventory Items
-
-PLTexture *InventoryItem::GetInventoryIcon() {
-	return nullptr;
-}
-
-void InventoryItem::Equipped( Actor *other ) {
-
+void ATrotterWeapon::Deploy() {
+	AWeapon::Deploy();
 }

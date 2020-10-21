@@ -18,8 +18,8 @@
 #include "../engine.h"
 #include "../Menu.h"
 
-#include "actor_manager.h"
-#include "actor_pig.h"
+#include "ActorManager.h"
+#include "APig.h"
 
 class AHealthPickup : public AModel {
 	IMPLEMENT_ACTOR( AHealthPickup, AModel )

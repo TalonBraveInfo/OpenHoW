@@ -17,25 +17,26 @@
 
 #pragma once
 
-#include "actor.h"
+#include "AModel.h"
 
-class AModel : public Actor {
-	IMPLEMENT_ACTOR( AModel, Actor )
+class AWeapon : public AModel {
+	IMPLEMENT_ACTOR( AWeapon, AModel )
 
 public:
-	AModel();
-	~AModel() override;
+	AWeapon();
+	~AWeapon() override;
 
-	void Draw() override;
-	void ShowModel( bool show = true );
+	void Tick() override;
 
-	void SetModel( const std::string &path );
+	virtual void Fire( const PLVector3 &pos, const PLVector3 &dir );
+	virtual void Deploy();
+	virtual void Holster();
+
+	bool IsDeployed() const { return isWeaponDeployed; }
 
 protected:
-	ohw::SharedModelResourcePointer model{ nullptr };
+
+	bool isWeaponDeployed{ false };
 
 private:
-	bool show_model_{ true };
-
-	StringProperty modelPath;
 };

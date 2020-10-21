@@ -15,20 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../engine.h"
 
-#include "actor_weapon.h"
+#include "AWeapon.h"
 
-class ATrotterWeapon : public AWeapon {
-	IMPLEMENT_ACTOR( ATrotterWeapon, AWeapon )
+AWeapon::AWeapon() : SuperClass() {}
+AWeapon::~AWeapon() = default;
 
-public:
-	ATrotterWeapon();
-	~ATrotterWeapon() override;
+void AWeapon::Tick() {
+	SuperClass::Tick();
 
-	void Fire( const PLVector3 &pos, const PLVector3 &dir ) override;
-	void Deploy() override;
+	Actor *parent = GetParent();
+	if ( parent != nullptr ) {
+		SetPosition( parent->GetPosition() );
+		SetAngles( parent->GetAngles() );
+	}
+}
 
-protected:
-private:
-};
+void AWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {}
+
+void AWeapon::Deploy() {
+	ShowModel( true );
+
+	/* todo: make deploy sound */
+
+	isWeaponDeployed = true;
+}
+
+void AWeapon::Holster() {
+	ShowModel( false );
+
+	/* todo: make holster sound */
+
+	isWeaponDeployed = false;
+}
