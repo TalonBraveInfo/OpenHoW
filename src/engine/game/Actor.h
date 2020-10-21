@@ -75,7 +75,7 @@ namespace ohw {
 #define IMPLEMENT_SUPER( a ) typedef a SuperClass;
 #define IMPLEMENT_ACTOR( base, parent ) \
   IMPLEMENT_SUPER(parent) \
-  public: const char* GetClassName() override { return PL_STRINGIFY(base) ; } \
+  public: inline const char* GetClassName() override { return PL_STRINGIFY(base) ; } \
   private:
 
 class Player;
@@ -91,9 +91,9 @@ public:
 	virtual void Draw() {}  // draw tick, called per-frame
 
 	virtual bool Damage( const Actor *attacker,
-						 uint16_t damageInflicted,
-						 PLVector3 direction = { 0.0f, 0.0f, 0.0f },
-						 PLVector3 velocity = { 0.0f, 0.0f, 0.0f } );
+	                     uint16_t damageInflicted,
+	                     PLVector3 direction = { 0.0f, 0.0f, 0.0f },
+	                     PLVector3 velocity = { 0.0f, 0.0f, 0.0f } );
 	virtual void Killed();
 
 	virtual void SetHealth( int16_t health ) { health_ = health; }
@@ -110,7 +110,7 @@ public:
 	virtual void SetAngles( PLVector3 angles );
 
 	virtual bool Possessed( const Player *player );
-	virtual void Dispossessed(const Player *player );
+	virtual void Dispossessed( const Player *player );
 	virtual void HandleInput() {}   // handle any player input, if applicable
 
 	virtual ActorSpawn Serialize() { return ActorSpawn(); }
@@ -127,7 +127,7 @@ public:
 	Actor *GetParent() { return parentActor; }
 	void LinkChild( Actor *actor );
 	unsigned int GetNumOfChildren() { return childActors.size(); }
-	std::vector<Actor *> GetChildren() { return childActors; }
+	std::vector< Actor * > GetChildren() { return childActors; }
 
 	bool CheckTouching();
 	virtual void Touch( Actor *other );
@@ -147,9 +147,9 @@ protected:
 
 	bool is_visible_{ false };
 
-	NumericProperty<float> forwardVelocity;  /* -1.0 = backwards, +1.0 = forwards */
-	NumericProperty<float> inputYaw;      /* -1.0 = left, +1.0 = right */
-	NumericProperty<float> inputPitch;    /* -1.0 = down, +1.0 = up */
+	NumericProperty< float > forwardVelocity;  /* -1.0 = backwards, +1.0 = forwards */
+	NumericProperty< float > inputYaw;      /* -1.0 = left, +1.0 = right */
+	NumericProperty< float > inputPitch;    /* -1.0 = down, +1.0 = up */
 
 	PLVector3 velocity{ 0, 0, 0 }, old_velocity_{ 0, 0, 0 };
 
@@ -174,5 +174,5 @@ private:
 	bool is_activated_{ false };
 
 	Actor *parentActor{ nullptr };
-	std::vector<Actor *> childActors;
+	std::vector< Actor * > childActors;
 };

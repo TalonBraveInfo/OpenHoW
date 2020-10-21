@@ -26,9 +26,9 @@ ATrotterWeapon::~ATrotterWeapon() {
 }
 
 void ATrotterWeapon::Fire( const PLVector3 &pos, const PLVector3 &dir ) {
-	AWeapon::Fire( pos, dir );
+	SuperClass::Fire( pos, dir );
 }
 
 void ATrotterWeapon::Deploy() {
-	AWeapon::Deploy();
+	SuperClass::Deploy();
 }

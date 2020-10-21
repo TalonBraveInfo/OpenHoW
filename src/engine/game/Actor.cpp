@@ -88,6 +88,7 @@ void Actor::Deserialize( const ActorSpawn &spawn ) {
 }
 
 const ohw::PhysicsBody *Actor::CreatePhysicsBody() {
+#if 0
 	if ( physics_body_ != nullptr ) {
 		return physics_body_;
 	}
@@ -98,15 +99,20 @@ const ohw::PhysicsBody *Actor::CreatePhysicsBody() {
 	}
 
 	return physics_body_;
+#else
+	return nullptr;
+#endif
 }
 
 void Actor::DestroyPhysicsBody() {
+#if 0
 	if ( physics_body_ == nullptr ) {
 		return;
 	}
 
 	Engine::Physics()->DestroyPhysicsBody( physics_body_ );
 	physics_body_ = nullptr;
+#endif
 }
 
 /**
