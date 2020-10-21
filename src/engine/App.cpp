@@ -111,6 +111,10 @@ void ohw::App::Shutdown() {
 	ImGui::DestroyContext();
 #endif
 
+	delete gameManager;
+	delete audioManager;
+	delete resourceManager;
+
 	SDL_StopTextInput();
 
 	if ( myGLContext != nullptr ) {

@@ -121,7 +121,6 @@ namespace ohw {
 		ResourceManager *resourceManager;
 
 	private:
-
 		void SetWindowIcon( const char *path );
 
 		SDL_Window *myWindow{ nullptr };
