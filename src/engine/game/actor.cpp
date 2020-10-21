@@ -16,7 +16,7 @@
  */
 
 #include "engine.h"
-#include "input.h"
+#include "InputManager.h"
 #include "Map.h"
 #include "actor_manager.h"
 #include "player.h"

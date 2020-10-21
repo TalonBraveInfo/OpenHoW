@@ -17,7 +17,7 @@
 
 #include "App.h"
 #include "ModManager.h"
-#include "input.h"
+#include "InputManager.h"
 #include "display.h"
 #include "imgui_layer.h"
 #include "Language.h"

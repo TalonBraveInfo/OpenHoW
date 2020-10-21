@@ -25,6 +25,9 @@
 #include <PL/pl_graphics.h>
 #include <PL/platform_console.h>
 
+#include <list>
+#include <vector>
+
 #include "Utilities.h"
 #include "Console.h"
 

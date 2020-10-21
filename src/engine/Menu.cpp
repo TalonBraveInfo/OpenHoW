@@ -17,7 +17,7 @@
 
 #include "App.h"
 #include "engine.h"
-#include "input.h"
+#include "InputManager.h"
 #include "Menu.h"
 #include "Map.h"
 #include "graphics/display.h"

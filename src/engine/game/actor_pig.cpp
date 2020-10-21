@@ -22,7 +22,7 @@
 #include "player.h"
 #include "actor_manager.h"
 #include "actor_pig.h"
-#include "../input.h"
+#include "InputManager.h"
 
 REGISTER_ACTOR( ac_me, APig )    // Ace
 REGISTER_ACTOR( gr_me, APig )    // Grunt
