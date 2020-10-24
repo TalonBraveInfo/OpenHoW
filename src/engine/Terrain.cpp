@@ -302,7 +302,7 @@ void ohw::Terrain::Update() {
 }
 
 void ohw::Terrain::Draw() {
-	ohw::Camera *cameraPtr = GetApp()->gameManager->GetCamera();
+	ohw::Camera *cameraPtr = GetApp()->gameManager->GetActiveCamera();
 	if ( cameraPtr == nullptr ) {
 		return;
 	}

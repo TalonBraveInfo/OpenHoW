@@ -16,7 +16,6 @@
  */
 
 #include "App.h"
-#include "engine.h"
 #include "Menu.h"
 #include "Map.h"
 #include "graphics/display.h"
@@ -24,13 +23,11 @@
 #include "graphics/Camera.h"
 #include "game/ActorManager.h"
 
-using namespace ohw;
-
 static unsigned int frontend_state = FE_MODE_INIT;
 static unsigned int old_frontend_state = ( unsigned int ) -1;
 
 /* texture assets, these are loaded and free'd at runtime */
-static ohw::TextureResource *fe_background = nullptr;
+static ohw::TextureResource *menuBackground = nullptr;
 static ohw::TextureResource *minimapIcons[MAX_MINIMAP_ICONS];
 
 static int frontend_width = 0;
@@ -38,38 +35,19 @@ static int frontend_height = 0;
 
 ohw::BitmapFont *g_fonts[NUM_FONTS];
 
-/************************************************************/
+static PLCamera *menuCamera;
 
-static void FrontendInputCallback( int key, bool is_pressed ) {
-	if ( frontend_state == FE_MODE_START && is_pressed ) {
-		/* todo, play 'ting' sound! */
-
-		/* we've hit our key, we can take away this
-		 * callback now and carry on to whatever */
-		GetApp()->inputManager->SetKeyboardFocusCallback( nullptr );
-		FrontEnd_SetState( FE_MODE_MAIN_MENU );
-		return;
-	}
-}
-
-static void FrontEnd_CacheMenuData() {
-	fe_background = GetApp()->resourceManager->LoadTexture( "frontend/pigbkpc1", TextureResource::FLAG_NOMIPS, true );
-}
-
-/************************************************************/
-
-void FE_Initialize( void ) {
-	FrontEnd_CacheMenuData();
+void Menu_Initialize() {
+	menuBackground = ohw::GetApp()->resourceManager->LoadTexture( "frontend/pigbkpc1", ohw::TextureResource::FLAG_NOMIPS, true );
 
 	// Cache all the minimap icons
-	minimapIcons[ MINIMAP_ICON_BOMB ] = GetApp()->resourceManager->LoadTexture( "frontend/map/bomb", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_HEALTH ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconhart", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PIG ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconpig", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PICKUP ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconpkup.png", TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PROP ] = GetApp()->resourceManager->LoadTexture( "frontend/map/iconprop", TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_BOMB ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/bomb", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_HEALTH ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconhart", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PIG ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconpig", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PICKUP ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconpkup.png", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PROP ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconprop", ohw::TextureResource::FLAG_NOMIPS, true );
 
 	// Cache the default fonts
-
 	struct FontIndex {
 		const char *tab, *texture;
 	} defaultFonts[NUM_FONTS] = {
@@ -80,14 +58,70 @@ void FE_Initialize( void ) {
 			{ "frontend/text/gamechars.tab", "frontend/text/gamechars.bmp" },
 			{ "frontend/text/small.tab",     "frontend/text/small.bmp" },
 	};
-
 	for ( unsigned int i = 0; i < NUM_FONTS; ++i ) {
 		g_fonts[ i ] = new ohw::BitmapFont();
 		if ( !g_fonts[ i ]->Load( defaultFonts[ i ].tab, defaultFonts[ i ].texture ) ) {
 			Error( "Failed to load default font!\n" );
 		}
 	}
+
+	// Setup viewport
+	// TODO: move into frontend.cpp
+	menuCamera = plCreateCamera();
+	if ( menuCamera == nullptr ) {
+		Error( "Failed to create ui camera, aborting!\n%s\n", plGetError() );
+	}
+	menuCamera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
+	menuCamera->fov = 90;
+	menuCamera->near = 0;
+	menuCamera->far = 1000;
+	menuCamera->viewport.w = cv_display_width->i_value;
+	menuCamera->viewport.h = cv_display_height->i_value;
 }
+
+static void Menu_UpdateViewport( int x, int y, int width, int height ) {
+	//TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
+	//      For now, just use the same viewport aspect for both.
+	
+	float current_aspect = ( float ) width / ( float ) height;
+	float target_aspect = 4.0f / 3.0f;
+	float relative_width = target_aspect / current_aspect;
+	float relative_height = current_aspect / target_aspect;
+	relative_width = relative_width > 1.0f ? 1.0f : relative_width;
+	relative_height = relative_height > 1.0f ? 1.0f : relative_height;
+
+	int newWidth = ( float ) width * relative_width;
+	int newHeight = ( float ) height * relative_height;
+
+	if ( FrontEnd_GetState() == FE_MODE_GAME || cv_display_use_window_aspect->b_value ) {
+		//If enabled, use full window for 3d scene
+		menuCamera->viewport.x = x;
+		menuCamera->viewport.y = y;
+		menuCamera->viewport.w = width;
+		menuCamera->viewport.h = height;
+	} else {
+		menuCamera->viewport.x = ( width - newWidth ) / 2;
+		menuCamera->viewport.y = ( height - newHeight ) / 2;
+		menuCamera->viewport.w = newWidth;
+		menuCamera->viewport.h = newHeight;
+	}
+}
+
+/************************************************************/
+
+static void FrontendInputCallback( int key, bool is_pressed ) {
+	if ( frontend_state == FE_MODE_START && is_pressed ) {
+		/* todo, play 'ting' sound! */
+
+		/* we've hit our key, we can take away this
+		 * callback now and carry on to whatever */
+		ohw::GetApp()->inputManager->SetKeyboardFocusCallback( nullptr );
+		FrontEnd_SetState( FE_MODE_MAIN_MENU );
+		return;
+	}
+}
+
+/************************************************************/
 
 void FE_Shutdown( void ) {
 	for ( auto &g_font : g_fonts ) {
@@ -104,11 +138,11 @@ void FE_ProcessInput( void ) {
 			/* this is... kind of a hack... but ensures that
 			 * nothing will take away our check for a key during
 			 * the 'start' screen, e.g. bringing the console up */
-			GetApp()->inputManager->SetKeyboardFocusCallback( FrontendInputCallback );
+			ohw::GetApp()->inputManager->SetKeyboardFocusCallback( FrontendInputCallback );
 			break;
 
 		case FE_MODE_VIDEO:
-			if ( GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_SPACE ) || GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_ESCAPE ) ) {
+			if (ohw::GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_SPACE ) ||ohw::GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_ESCAPE ) ) {
 				Video_SkipCurrent();
 			}
 			break;
@@ -135,7 +169,7 @@ void FE_SetLoadingBackground( const char *name ) {
 		snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/loadmult" );
 	}
 
-	fe_background = GetApp()->resourceManager->LoadTexture( screen_path, TextureResource::FLAG_NOMIPS );
+	menuBackground =ohw::GetApp()->resourceManager->LoadTexture( screen_path, ohw::TextureResource::FLAG_NOMIPS );
 	Redraw();
 }
 
@@ -164,7 +198,7 @@ static void DrawTimer() {
 		return;
 	}
 
-	IGameMode *mode = GetApp()->gameManager->GetMode();
+	IGameMode *mode =ohw::GetApp()->gameManager->GetMode();
 	if ( !mode->HasRoundStarted() ) {
 		return;
 	}
@@ -183,18 +217,18 @@ static void DrawTimer() {
  * Draw the 3D minimap on the bottom left corner of the screen.
  */
 static void FrontEnd_DrawMinimap() {
-	Map *map = GetApp()->gameManager->GetCurrentMap();
+	ohw::Map *map =ohw::GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
 
-	Camera *camera = GetApp()->gameManager->GetCamera();
+	ohw::Camera *camera =ohw::GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
 
 	// So, we need to render the minimap from the perspective here. So swap things round
-	PLCamera *uiCamera = g_state.ui_camera;
+	PLCamera *uiCamera = menuCamera;
 	PLCamera save = *uiCamera;
 
 	// Set up the camera so we can render the minimap how it needs to be
@@ -225,7 +259,7 @@ static void FrontEnd_DrawMinimap() {
 		}
 
 		// Figure out what icon we're using
-		PLTexture *iconTexture = GetApp()->resourceManager->GetFallbackTexture();
+		PLTexture *iconTexture =ohw::GetApp()->resourceManager->GetFallbackTexture();
 		unsigned int iconStyle = actor->GetMinimapIconStyle();
 		if ( iconStyle < MAX_MINIMAP_ICONS ) {
 			iconTexture = minimapIcons[ iconStyle ]->GetInternalTexture();
@@ -273,7 +307,7 @@ static void FrontEnd_DrawMinimap() {
 
 static void DrawLoadingScreen() {
 	PLMatrix4 transform = plMatrix4Identity();
-	plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background->GetInternalTexture() );
+	plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
 
 	/* originally I wrote some code ensuring the menu bar
 	 * was centered... that was until I found out that on
@@ -304,9 +338,9 @@ static void DrawLoadingScreen() {
 	}
 }
 
-void FE_Draw( void ) {
-	frontend_width = g_state.ui_camera->viewport.w;
-	frontend_height = g_state.ui_camera->viewport.h;
+void Menu_Draw() {
+	frontend_width = menuCamera->viewport.w;
+	frontend_height = menuCamera->viewport.h;
 
 	PLMatrix4 transform = plMatrix4Identity();
 
@@ -318,7 +352,7 @@ void FE_Draw( void ) {
 		case FE_MODE_INIT:
 		case FE_MODE_START:
 		case FE_MODE_MAIN_MENU:
-			plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, fe_background->GetInternalTexture() );
+			plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
 			break;
 
 		case FE_MODE_LOADING:
@@ -361,7 +395,7 @@ void FrontEnd_SetState( unsigned int state ) {
 
 		case FE_MODE_MAIN_MENU:
 			// start playing the default theme
-			GetApp()->audioManager->PlayMusic( AUDIO_MUSIC_MENU );
+			ohw::GetApp()->audioManager->PlayMusic( AUDIO_MUSIC_MENU );
 			break;
 
 		case FE_MODE_START:
@@ -371,7 +405,7 @@ void FrontEnd_SetState( unsigned int state ) {
 
 		case FE_MODE_LOADING: {
 			// stop the music as soon as we switch to a loading screen...
-			GetApp()->audioManager->StopMusic();
+			ohw::GetApp()->audioManager->StopMusic();
 
 			loading_description[ 0 ] = '\0';
 			loading_progress = 0;

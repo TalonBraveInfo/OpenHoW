@@ -81,7 +81,7 @@ AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 ve
 	SetReferenceDistance( 300.0F );
 	SetRolloffFactor( 0.1F );
 
-	if ( reverb && Engine::Audio()->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX )) {
+	if ( reverb && ohw::GetApp()->audioManager->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX )) {
 		alSource3i( alSourceId, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
 		OALCheckErrors();
 	}
@@ -90,7 +90,7 @@ AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 ve
 		SetSample( sample );
 	}
 
-	Engine::Audio()->sources_.insert( this );
+	ohw::GetApp()->audioManager->sources_.insert( this );
 }
 
 AudioSource::~AudioSource() {
@@ -112,7 +112,7 @@ AudioSource::~AudioSource() {
 	alDeleteSources( 1, &alSourceId );
 	OALCheckErrors();
 
-	Engine::Audio()->sources_.erase( this );
+	ohw::GetApp()->audioManager->sources_.erase( this );
 }
 
 void AudioSource::SetSample( const AudioSample *sample ) {
@@ -510,7 +510,7 @@ void AudioManager::SetupMusicSource() {
 void AudioManager::Tick() {
 	PLVector3 position = { 0, 0, 0 }, angles = { 0, 0, 0 };
 
-	Camera *camera = Engine::Game()->GetCamera();
+	Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
 	if ( FrontEnd_GetState() == FE_MODE_GAME && camera != nullptr ) {
 		position = camera->GetPosition();
 		angles = camera->GetAngles();
@@ -629,7 +629,7 @@ void AudioManager::DrawSources() {
 		return;
 	}
 
-	PLModel *sprite = Engine::Resource()->GetFallbackModel();
+	PLModel *sprite = ohw::GetApp()->resourceManager->GetFallbackModel();
 	PLMesh *mesh = sprite->levels[ 0 ].meshes[ 0 ];
 	plSetMeshUniformColour( mesh, PLColour( 0, 255, 255, 255 ));
 	for ( auto source : sources_ ) {
@@ -672,14 +672,14 @@ void AudioManager::SetMusicVolume( float gain ) {
 }
 
 void AudioManager::SetMusicVolumeCommand( const PLConsoleVariable *var ) {
-	Engine::Audio()->SetMusicVolume( var->f_value );
+	ohw::GetApp()->audioManager->SetMusicVolume( var->f_value );
 }
 
 void AudioManager::StopMusicCommand( unsigned int argc, char *argv[] ) {
 	u_unused( argc );
 	u_unused( argv );
 
-	Engine::Audio()->StopMusic();
+	ohw::GetApp()->audioManager->StopMusic();
 }
 
 /************************************************************/
@@ -690,7 +690,7 @@ AudioSample::~AudioSample() {
 	 * Scanning all sources is slow, but this is only expected to be called
 	 * during game teardown.
 	*/
-	for ( auto &source: Engine::Audio()->sources_ ) {
+	for ( auto &source: ohw::GetApp()->audioManager->sources_ ) {
 		if ( source->GetSample() == this ) {
 			source->SetSample( nullptr );
 		}

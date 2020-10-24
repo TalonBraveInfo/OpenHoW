@@ -27,15 +27,15 @@
 
 #include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
 
-#include "editor/base_window.h"
-#include "editor/window_map_config.h"
-#include "editor/window_texture_viewer.h"
-#include "editor/window_new_map.h"
-#include "editor/window_model_viewer.h"
-#include "editor/window_terrain_import.h"
-#include "editor/window_actor_tree.h"
-#include "editor/window_new_game.h"
-#include "editor/window_particle_editor.h"
+#include "editor/BaseWindow.h"
+#include "editor/MapConfigEditor.h"
+#include "editor/TextureViewer.h"
+#include "editor/NewMapWindow.h"
+#include "editor/ModelViewer.h"
+#include "editor/TerrainImportWindow.h"
+#include "editor/ActorTreeWindow.h"
+#include "editor/NewGameWindow.h"
+#include "editor/ParticleEditor.h"
 #include "editor/TexturePicker.h"
 
 #include "Language.h"
@@ -458,7 +458,7 @@ public:
 	}
 
 	void Display() override {
-		Camera *camera = GetApp()->gameManager->GetCamera();
+		Camera *camera = GetApp()->gameManager->GetActiveCamera();
 		ImGui::SetNextWindowSize( ImVec2( ( float ) ( camera->GetViewportWidth() ) - 20, 128 ), ImGuiCond_Once );
 		ImGui::SetNextWindowPos( ImVec2( 10, ( float ) ( camera->GetViewportHeight() ) - 138 ) );
 		ImGui::Begin( "Console", &show_console );
@@ -623,7 +623,7 @@ void UI_DisplayDebugMenu( void ) {
 			}
 			if ( GetApp()->gameManager->IsModeActive() ) {
 				if ( ImGui::MenuItem( "Import Heightmap..." ) ) {
-					windows.push_back( new WindowTerrainImport() );
+					windows.push_back( new TerrainImportWindow() );
 				}
 				ImGui::Separator();
 				if ( ImGui::MenuItem( "Actor Inspector..." ) ) { windows.push_back( new ActorTreeWindow() ); }

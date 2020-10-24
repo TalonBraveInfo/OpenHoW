@@ -57,7 +57,7 @@ void Actor::SetAngles( PLVector3 angles ) {
 }
 
 bool Actor::IsVisible() {
-	Camera *camera = Engine::Game()->GetCamera();
+	Camera *camera = Engine::Game()->GetActiveCamera();
 	return !( camera == nullptr || !camera->IsBoxVisible( &boundingBox ) );
 }
 

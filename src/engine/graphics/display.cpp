@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "imgui_layer.h"
 #include "Menu.h"
 #include "Map.h"
@@ -28,40 +28,12 @@
 
 /* shared function */
 void Display_UpdateViewport( int x, int y, int width, int height ) {
-	Input_ResetStates();
-
-	if ( g_state.ui_camera == nullptr ) {
-		// display probably hasn't been initialised
+	ohw::Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
+	if ( camera == nullptr ) {
+		Warning( "Attempted to update the camera viewport with no active camera!\n" );
 		return;
 	}
 
-	float current_aspect = ( float ) width / ( float ) height;
-	float target_aspect = 4.0f / 3.0f;
-	float relative_width = target_aspect / current_aspect;
-	float relative_height = current_aspect / target_aspect;
-	relative_width = relative_width > 1.0f ? 1.0f : relative_width;
-	relative_height = relative_height > 1.0f ? 1.0f : relative_height;
-
-	int newWidth = ( float ) width * relative_width;
-	int newHeight = ( float ) height * relative_height;
-
-	//TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
-	//      For now, just use the same viewport aspect for both.
-
-	if ( FrontEnd_GetState() == FE_MODE_GAME || cv_display_use_window_aspect->b_value ) {
-		//If enabled, use full window for 3d scene
-		g_state.ui_camera->viewport.x = x;
-		g_state.ui_camera->viewport.y = y;
-		g_state.ui_camera->viewport.w = width;
-		g_state.ui_camera->viewport.h = height;
-	} else {
-		g_state.ui_camera->viewport.x = ( width - newWidth ) / 2;
-		g_state.ui_camera->viewport.y = ( height - newHeight ) / 2;
-		g_state.ui_camera->viewport.w = newWidth;
-		g_state.ui_camera->viewport.h = newHeight;
-	}
-
-	ohw::Camera *camera = ohw::Engine::Game()->GetCamera();
 	camera->SetViewport( x, y, width, height );
 }
 
@@ -107,20 +79,6 @@ void Display_Initialize() {
 	Shaders_Initialize();
 
 	//////////////////////////////////////////////////////////
-
-	// TODO: move into frontend.cpp
-	g_state.ui_camera = plCreateCamera();
-	if ( g_state.ui_camera == nullptr ) {
-		Error( "Failed to create ui camera, aborting!\n%s\n", plGetError() );
-	}
-	g_state.ui_camera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
-	g_state.ui_camera->fov = 90;
-	g_state.ui_camera->near = 0;
-	g_state.ui_camera->far = 1000;
-	g_state.ui_camera->viewport.w = cv_display_width->i_value;
-	g_state.ui_camera->viewport.h = cv_display_height->i_value;
-
-	ImGuiImpl_SetupCamera();
 
 	plSetCullMode( PL_CULL_POSTIVE );
 
@@ -170,7 +128,7 @@ static void Display_DrawMap() {
 }
 
 void Display_DrawScene() {
-	ohw::Camera *camera = ohw::Engine::Game()->GetCamera();
+	ohw::Camera *camera = ohw::Engine::Game()->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -207,7 +165,7 @@ void Display_DrawInterface() {
 	plSetupCamera( g_state.ui_camera );
 	plSetDepthBufferMode( PL_DEPTHBUFFER_DISABLE );
 
-	FE_Draw();
+	Menu_Draw();
 
 	DrawDebugOverlay();
 }

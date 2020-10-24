@@ -18,9 +18,7 @@
 #include <PL/platform_filesystem.h>
 
 #include "App.h"
-#include "engine.h"
 #include "Language.h"
-#include "graphics/display.h"
 #include "config.h"
 
 using namespace ohw;
@@ -42,12 +40,6 @@ static void FrontendModeCommand(unsigned int argc, char* argv[]) {
   FrontEnd_SetState((unsigned int) mode);
 }
 #endif
-
-static void UpdateDisplayCommand( unsigned int argc, char *argv[] ) {
-	u_unused( argc );
-	u_unused( argv );
-	Display_UpdateState();
-}
 
 static void QuitCommand( unsigned int argc, char *argv[] ) {
 	u_unused( argc );
@@ -216,7 +208,6 @@ void Console_Initialize( void ) {
 	plRegisterConsoleCommand( "loadConfig", LoadConfigCommand, "Loads the specified config" );
 	plRegisterConsoleCommand( "saveConfig", SaveConfigCommand, "Save current config" );
 	plRegisterConsoleCommand( "disconnect", DisconnectCommand, "Disconnects and unloads current map" );
-	plRegisterConsoleCommand( "displayUpdate", UpdateDisplayCommand, "Updates the display to match current settings" );
 	//plRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 	//plRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 

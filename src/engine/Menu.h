@@ -99,17 +99,17 @@ enum {
 
 extern ohw::BitmapFont *g_fonts[NUM_FONTS];
 
-void FE_Initialize(void);
-void FE_Shutdown(void);
-void FE_ProcessInput(void);
-void FrontEnd_Tick(void);
-void FE_Draw(void);
+void Menu_Initialize();
+void FE_Shutdown();
+void FE_ProcessInput();
+void FrontEnd_Tick();
+void Menu_Draw();
 
 void FE_SetLoadingBackground(const char *name);
 void FE_SetLoadingDescription(const char *description);
 void FE_SetLoadingProgress(uint8_t progress);
-uint8_t FE_GetLoadingProgress(void);
+uint8_t FE_GetLoadingProgress();
 
-unsigned int FrontEnd_GetState(void);
+unsigned int FrontEnd_GetState();
 void FrontEnd_SetState(unsigned int state);
-void FE_RestoreLastState(void);
+void FE_RestoreLastState();

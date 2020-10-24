@@ -205,7 +205,7 @@ namespace ohw {
 	public:
 		void Tick();
 
-		PL_INLINE Camera *GetCamera() const { return defaultCamera; }
+		PL_INLINE Camera *GetActiveCamera() const { return defaultCamera; }
 
 		void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
 		void EndMode();

@@ -69,7 +69,7 @@ void ohw::ModelResource::Tick() {
 }
 
 void ohw::ModelResource::Draw( bool batchDraw ) {
-	Camera *camera = GetApp()->gameManager->GetCamera();
+	Camera *camera = GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
