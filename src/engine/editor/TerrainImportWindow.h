@@ -17,12 +17,12 @@
 
 #pragma once
 
-#include "base_window.h"
+#include "BaseWindow.h"
 
-class WindowTerrainImport : public BaseWindow {
+class TerrainImportWindow : public BaseWindow {
  public:
-  WindowTerrainImport();
-  ~WindowTerrainImport() override;
+  TerrainImportWindow();
+  ~TerrainImportWindow() override;
 
   void Display() override;
 

@@ -21,7 +21,7 @@
 #include "../Language.h"
 #include "../game/Player.h"
 
-#include "window_new_game.h"
+#include "NewGameWindow.h"
 
 using namespace ohw;
 

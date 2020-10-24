@@ -23,8 +23,8 @@
 #include "model.h"
 #include "Language.h"
 
-#include "window_model_viewer.h"
-#include "window_texture_viewer.h"
+#include "ModelViewer.h"
+#include "TextureViewer.h"
 
 #define VIEWER_WIDTH  640
 #define VIEWER_HEIGHT 480

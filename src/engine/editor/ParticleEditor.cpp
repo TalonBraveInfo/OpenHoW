@@ -25,7 +25,7 @@
 #include "Language.h"
 #include "imgui_layer.h"
 
-#include "window_particle_editor.h"
+#include "ParticleEditor.h"
 
 #define VIEWER_WIDTH  640
 #define VIEWER_HEIGHT 480

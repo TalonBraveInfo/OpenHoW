@@ -18,7 +18,7 @@
 #include <imgui.h>
 
 #include "App.h"
-#include "window_actor_tree.h"
+#include "ActorTreeWindow.h"
 #include "ActorManager.h"
 
 using namespace ohw;

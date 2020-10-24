@@ -19,7 +19,7 @@
 
 #include "engine.h"
 #include "Map.h"
-#include "window_map_config.h"
+#include "MapConfigEditor.h"
 
 ohw::MapConfigEditor::MapConfigEditor() {
 	map_ = Engine::Game()->GetCurrentMap();

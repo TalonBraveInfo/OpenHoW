@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "base_window.h"
+#include "BaseWindow.h"
 
 class TextureViewer : public BaseWindow {
 public:

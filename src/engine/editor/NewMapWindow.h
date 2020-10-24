@@ -17,17 +17,15 @@
 
 #pragma once
 
-#include "base_window.h"
+#include "BaseWindow.h"
 
-class NewGameWindow : public BaseWindow {
+class NewMapWindow : public BaseWindow {
  public:
 
   void Display() override;
 
  protected:
  private:
-  char  team_name_[32]{'\0'};
-  bool  training_mission_{true};
-
-  PlayerTeam  team_;
+  char name_buffer_[32]{'\0'};
+  char author_buffer_[32]{'\0'};
 };

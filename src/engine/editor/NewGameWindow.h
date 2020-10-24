@@ -17,17 +17,17 @@
 
 #pragma once
 
-#include "base_window.h"
+#include "BaseWindow.h"
 
-class ActorTreeWindow : public BaseWindow {
-public:
-	ActorTreeWindow();
-	~ActorTreeWindow() override;
+class NewGameWindow : public BaseWindow {
+ public:
 
-	void Display() override;
-	void DisplayActorProperties( Actor* actor );
+  void Display() override;
 
-protected:
-private:
-	bool showReadOnly{ false };
+ protected:
+ private:
+  char  team_name_[32]{'\0'};
+  bool  training_mission_{true};
+
+  PlayerTeam  team_;
 };

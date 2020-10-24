@@ -15,42 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "base_window.h"
-
-class ParticleEffect;
+#include "BaseWindow.h"
 
 namespace ohw {
 	class Camera;
-
-	class ParticleEditor : public BaseWindow {
+	class ModelViewer : public BaseWindow {
 	public:
-		explicit ParticleEditor();
-		~ParticleEditor() override;
+		explicit ModelViewer();
+		~ModelViewer() override;
 
 		void Display() override;
+
 		void DrawViewport();
 
+	protected:
 	private:
 		void GenerateFrameBuffer( unsigned int width, unsigned int height );
 
-		ParticleEffect *particleEffect{ nullptr };
-
+		SharedModelResourcePointer model{ nullptr };
 		struct PLFrameBuffer *drawBuffer{ nullptr };
 		struct PLTexture *textureAttachment{ nullptr };
 
 		Camera *camera{ nullptr };
 
-		PLVector3 modelRotation{ 0, 0, 0 };
+		PLVector3 modelRotation;
 
 		float oldMousePos[ 2 ]{ 0, 0 };
 
 		bool viewRotate{ true };
 		bool viewDebugNormals{ false };
+		bool viewSkeleton{ false };
 		bool viewGrid{ true };
 
-		static void AppendParticleList( const char *path );
-		static std::list< std::string > particleList;
+		static void AppendModelList( const char *path, void *userData );
+		static std::list< std::string > modelList;
 	};
 }

@@ -18,7 +18,7 @@
 #include <imgui.h>
 
 #include "App.h"
-#include "base_window.h"
+#include "BaseWindow.h"
 
 void BaseWindow::Begin( const std::string &windowTitle, unsigned int flags ) {
 	if ( IsFullscreen() ) {
