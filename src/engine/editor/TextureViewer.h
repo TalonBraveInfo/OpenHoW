@@ -25,7 +25,7 @@ public:
 	}
 
 	explicit TextureViewer( const std::string &path ) {
-		texturePtr = ohw::Engine::Resource()->LoadTexture( path, ohw::TextureResource::FLAG_NOMIPS );
+		texturePtr = ohw::GetApp()->resourceManager->LoadTexture( path, ohw::TextureResource::FLAG_NOMIPS );
 		if ( texturePtr == nullptr ) {
 			throw std::runtime_error( "Failed to load specified texture, \"" + path + "\" (" + plGetError() + ")!" );
 		}
@@ -45,9 +45,9 @@ public:
 		}
 
 		texturePtr->Release();
-		ohw::Engine::Resource()->ClearAllResources();
+		ohw::GetApp()->resourceManager->ClearAllResources();
 
-		texturePtr = ohw::Engine::Resource()->LoadTexture( texturePath, filter_mode );
+		texturePtr = ohw::GetApp()->resourceManager->LoadTexture( texturePath, filter_mode );
 		filterMode = filter_mode;
 	}
 

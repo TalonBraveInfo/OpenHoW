@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "graphics/ShaderManager.h"
 #include "graphics/display.h"
 #include "graphics/ParticleEffect.h"
@@ -61,9 +61,9 @@ void ohw::ParticleEditor::DrawViewport() {
 	camera->MakeActive();
 
 	PLVector3 angles(
-		plDegreesToRadians( modelRotation.x ),
-		plDegreesToRadians( modelRotation.y ),
-		plDegreesToRadians( modelRotation.z ) );
+			plDegreesToRadians( modelRotation.x ),
+			plDegreesToRadians( modelRotation.y ),
+			plDegreesToRadians( modelRotation.z ) );
 
 	if ( viewGrid ) {
 		ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
@@ -89,10 +89,10 @@ void ohw::ParticleEditor::Display() {
 	DrawViewport();
 
 	unsigned int flags =
-		ImGuiWindowFlags_MenuBar |
-		ImGuiWindowFlags_NoScrollWithMouse |
-		ImGuiWindowFlags_NoScrollbar |
-		ImGuiWindowFlags_NoSavedSettings;
+			ImGuiWindowFlags_MenuBar |
+			ImGuiWindowFlags_NoScrollWithMouse |
+			ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoSavedSettings;
 	ImGui::SetNextWindowSize( ImVec2( VIEWER_WIDTH, VIEWER_HEIGHT ), ImGuiCond_Once );
 
 	Begin( lm_gtr( "$window_particle_editor" ), flags );

@@ -17,9 +17,9 @@
 
 #include <imgui.h>
 
-#include "../engine.h"
-#include "../Language.h"
-#include "../game/Player.h"
+#include "App.h"
+#include "Language.h"
+#include "game/Player.h"
 
 #include "NewGameWindow.h"
 
@@ -31,7 +31,7 @@ void NewGameWindow::Display() {
 
 	// Team Selection
 	ImGui::Text( "Select Team" );
-	GameManager::PlayerTeamVector teams = Engine::Game()->GetDefaultTeams();
+	GameManager::PlayerTeamVector teams = GetApp()->gameManager->GetDefaultTeams();
 	std::vector<const char *> options;
 	for ( const auto &team : teams ) {
 		options.push_back( team.name.c_str() );
@@ -95,7 +95,7 @@ void NewGameWindow::Display() {
 			game_mode_descriptor.sudden_death = false;
 		}
 
-		Engine::Game()->StartMode( mapname, players, game_mode_descriptor );
+		GetApp()->gameManager->StartMode( mapname, players, game_mode_descriptor );
 
 		SetStatus( false );
 	}

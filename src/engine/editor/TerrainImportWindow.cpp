@@ -17,9 +17,9 @@
 
 #include <imgui.h>
 
-#include "../engine.h"
-#include "../Map.h"
-#include "../Terrain.h"
+#include "App.h"
+#include "Map.h"
+#include "Terrain.h"
 
 #include "TerrainImportWindow.h"
 
@@ -44,7 +44,7 @@ void TerrainImportWindow::Display() {
 }
 
 void TerrainImportWindow::ImportTerrain() {
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "graphics/ShaderManager.h"
 #include "graphics/display.h"
 #include "graphics/Camera.h"
@@ -29,7 +29,7 @@
 #define VIEWER_WIDTH  640
 #define VIEWER_HEIGHT 480
 
-std::list<std::string> ohw::ModelViewer::modelList;
+std::list< std::string > ohw::ModelViewer::modelList;
 
 static const char *supportedModelFormats[] = { "obj", "vtx", "min", nullptr };
 
@@ -68,9 +68,9 @@ void ohw::ModelViewer::DrawViewport() {
 	camera->MakeActive();
 
 	PLVector3 angles(
-		plDegreesToRadians( modelRotation.x ),
-		plDegreesToRadians( modelRotation.y ),
-		plDegreesToRadians( modelRotation.z ) );
+			plDegreesToRadians( modelRotation.x ),
+			plDegreesToRadians( modelRotation.y ),
+			plDegreesToRadians( modelRotation.z ) );
 
 	if ( viewGrid ) {
 		ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
@@ -102,9 +102,9 @@ void ohw::ModelViewer::DrawViewport() {
 		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_colour", &sunColour, false );
 		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "ambient_colour", &ambience, false );
 	}
-
+	
 	if ( viewRotate ) {
-		modelRotation.y += 0.01f * g_state.last_draw_ms;
+		modelRotation.y += 0.01f * GetApp()->GetDeltaTime();
 	}
 
 	model->modelMatrix.Identity();
@@ -130,7 +130,7 @@ void ohw::ModelViewer::Display() {
 	DrawViewport();
 
 	unsigned int flags =
-		ImGuiWindowFlags_MenuBar |
+			ImGuiWindowFlags_MenuBar |
 			ImGuiWindowFlags_NoScrollWithMouse |
 			ImGuiWindowFlags_NoScrollbar |
 			ImGuiWindowFlags_NoSavedSettings;
@@ -159,10 +159,10 @@ void ohw::ModelViewer::Display() {
 						model = nullptr;
 
 						// Force a cleanup
-						ohw::Engine::Resource()->ClearAllResources();
+						GetApp()->resourceManager->ClearAllResources();
 					}
 
-					model = ohw::Engine::Resource()->LoadModel( i );
+					model = GetApp()->resourceManager->LoadModel( i );
 				}
 			}
 			ImGui::EndMenu();
@@ -277,19 +277,19 @@ void ohw::ModelViewer::Display() {
 	ImVec2 region = ImGui::GetContentRegionAvail();
 	GenerateFrameBuffer( static_cast< unsigned int>( region.x ), static_cast< unsigned int>( region.y ) );
 	ImGui::ImageButton(
-		reinterpret_cast<ImTextureID>(textureAttachment->internal.id),
-		region, ImVec2( 0, 0 ), ImVec2( 1, 1 ), 0 );
+			reinterpret_cast<ImTextureID>(textureAttachment->internal.id),
+			region, ImVec2( 0, 0 ), ImVec2( 1, 1 ), 0 );
 	if ( ImGui::IsItemHovered() ) {
 		float newXPos = ImGui::GetMousePos().x - oldMousePos[ 0 ];
 		float newYPos = ImGui::GetMousePos().y - oldMousePos[ 1 ];
 		const static float posMod = 200.0f;
 		if ( ImGui::IsMouseDown( ImGuiMouseButton_Left ) ) { // Rotation
-			modelRotation.x += newYPos / posMod * g_state.last_draw_ms;
-			modelRotation.y += newXPos / posMod * g_state.last_draw_ms;
+			modelRotation.x += newYPos / posMod * GetApp()->GetDeltaTime();
+			modelRotation.y += newXPos / posMod * GetApp()->GetDeltaTime();
 		} else if ( ImGui::IsMouseDown( ImGuiMouseButton_Middle ) ) { // Panning
 			PLVector3 position = camera->GetPosition();
-			position.z += newXPos / posMod * g_state.last_draw_ms;
-			position.y += newYPos / posMod * g_state.last_draw_ms;
+			position.z += newXPos / posMod * GetApp()->GetDeltaTime();
+			position.y += newYPos / posMod * GetApp()->GetDeltaTime();
 			camera->SetPosition( position );
 		} else {
 			oldMousePos[ 0 ] = ImGui::GetMousePos().x;

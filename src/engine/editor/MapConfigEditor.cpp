@@ -17,12 +17,12 @@
 
 #include <imgui.h>
 
-#include "engine.h"
+#include "App.h"
 #include "Map.h"
 #include "MapConfigEditor.h"
 
 ohw::MapConfigEditor::MapConfigEditor() {
-	map_ = Engine::Game()->GetCurrentMap();
+	map_ = GetApp()->gameManager->GetCurrentMap();
 	if ( map_ == nullptr ) {
 		throw std::runtime_error( "Attempted to create config editor without a valid map loaded!\n" );
 	}
@@ -42,7 +42,7 @@ void ohw::MapConfigEditor::DisplayTemperature() {
 	enum {
 		TEMP_NORMAL, TEMP_HOT, TEMP_COLD, MAX_TEMP
 	};
-	static const char* temperatures[MAX_TEMP] = { "Normal", "Hot", "Cold" };
+	static const char *temperatures[MAX_TEMP] = { "Normal", "Hot", "Cold" };
 	static int temperature_index = -1;
 	if ( temperature_index == -1 ) {
 		if ( pl_strcasecmp( manifest_->temperature.c_str(), "hot" ) == 0 ) {
@@ -71,7 +71,7 @@ void ohw::MapConfigEditor::DisplayWeather() {
 	enum {
 		WEATHER_CLEAR, WEATHER_RAIN, WEATHER_SNOW, MAX_WEATHER
 	};
-	static const char* weather_labels[MAX_WEATHER] = { "Clear", "Rain", "Snow" };
+	static const char *weather_labels[MAX_WEATHER] = { "Clear", "Rain", "Snow" };
 	static int weather_index = -1;
 	if ( weather_index == -1 ) {
 		if ( pl_strcasecmp( manifest_->weather.c_str(), "rain" ) == 0 ) {
@@ -100,7 +100,7 @@ void ohw::MapConfigEditor::DisplayTime() {
 	enum {
 		TIME_DAY, TIME_NIGHT, MAX_TIME
 	};
-	static const char* times[MAX_TIME] = { "Day", "Night" };
+	static const char *times[MAX_TIME] = { "Day", "Night" };
 	static int time_index = -1;
 	if ( time_index == -1 ) {
 		if ( pl_strcasecmp( manifest_->time.c_str(), "day" ) == 0 ) {
@@ -223,8 +223,8 @@ void ohw::MapConfigEditor::Display() {
 	ImGui::End();
 }
 
-void ohw::MapConfigEditor::SaveManifest( const std::string& path ) {
-	const ModDirectory* currentMod = Mod_GetCurrentMod();
+void ohw::MapConfigEditor::SaveManifest( const std::string &path ) {
+	const ModManager::ModDescription *currentMod = GetApp()->modManager->GetCurrentModDescription();
 	std::ofstream output( "mods/" + currentMod->directory + path );
 	if ( !output.is_open() ) {
 		Warning( "Failed to write to \"%s\", aborting!n\"\n", filename_buffer );

@@ -17,7 +17,6 @@
 
 #include "App.h"
 #include "TexturePicker.h"
-#include "Language.h"
 #include "imgui_layer.h"
 
 ohw::TexturePicker::TexturePicker() : BaseWindow() {
