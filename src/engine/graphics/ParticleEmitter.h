@@ -17,67 +17,71 @@
 
 #pragma once
 
-class Particle;
+//#include "Property.h"
+
+namespace ohw {
+	class Particle;
 
 // This creates the particles
-class ParticleEmitter : public PropertyOwner {
-public:
-	explicit ParticleEmitter( JsonReader &jsonReader );
-	~ParticleEmitter() {}
+	class ParticleEmitter : public PropertyOwner {
+	public:
+		explicit ParticleEmitter( JsonReader &jsonReader );
+		~ParticleEmitter() {}
 
-	void Tick();
-	void Draw();
+		void Tick();
+		void Draw();
 
-	void SetGravity( float gravity ) { myGravity = gravity; }
-	float GetGravity() { return myGravity; }
+		void SetGravity( float gravity ) { myGravity = gravity; }
+		float GetGravity() { return myGravity; }
 
-protected:
-private:
-	std::vector<Particle> particles;
+	protected:
+	private:
+		std::vector <Particle> particles;
 
-	float myGravity{ 0.0f };
+		float myGravity{ 0.0f };
 
-	float randomLifeSpanFactor{ 0.0f };
-	float lifeSpan{ 1.0f };
+		float randomLifeSpanFactor{ 0.0f };
+		float lifeSpan{ 1.0f };
 
-	PLVector4 randomColourFactor{ 0.0f, 0.0f, 0.0f, 0.0f };
-	PLColour startColour;
-	PLColour endColour;
+		PLVector4 randomColourFactor{ 0.0f, 0.0f, 0.0f, 0.0f };
+		PLColour startColour;
+		PLColour endColour;
 
-	float randomScaleFactor{ 0.0f };
-	float startScale{ 0.0f };
-	float endScale{ 1.0f };
+		float randomScaleFactor{ 0.0f };
+		float startScale{ 0.0f };
+		float endScale{ 1.0f };
 
-	float drawDistance{ 10000.0f };
+		float drawDistance{ 10000.0f };
 
-	float spawnRadius{ 0.0f };
+		float spawnRadius{ 0.0f };
 
-	bool sortParticles{ false };
+		bool sortParticles{ false };
 
-	// todo; consider more typical collision mask?
-	bool collideActors{ false };
-	bool collideWorld{ false };
+		// todo; consider more typical collision mask?
+		bool collideActors{ false };
+		bool collideWorld{ false };
 
-	unsigned int maxParticles{ 0 };
+		unsigned int maxParticles{ 0 };
 
-	enum class ParticleType {
-		SPRITE,
-		MODEL,
-		TRAIL,
-		TEXT,
+		enum class ParticleType {
+			SPRITE,
+			MODEL,
+			TRAIL,
+			TEXT,
+		};
+
+		enum class BlendType {
+			NONE,
+			ADDITIVE,
+			SUBTRACTIVE,
+			DIFFERENCE
+		};
+
+		ParticleType myParticleType{ ParticleType::SPRITE };
+		BlendType myBlendType{ BlendType::ADDITIVE };
+
+		bool isActive{ false };
+
+		PLVector3 position;
 	};
-
-	enum class BlendType {
-		NONE,
-		ADDITIVE,
-		SUBTRACTIVE,
-		DIFFERENCE
-	};
-
-	ParticleType myParticleType{ ParticleType::SPRITE };
-	BlendType myBlendType{ BlendType::ADDITIVE };
-
-	bool isActive{ false };
-
-	PLVector3 position;
-};
+}

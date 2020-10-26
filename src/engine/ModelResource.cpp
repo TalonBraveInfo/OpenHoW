@@ -16,7 +16,6 @@
  */
 
 #include "App.h"
-#include "engine.h"
 #include "ModelResource.h"
 #include "TextureAtlas.h"
 #include "mesh.h"
@@ -92,7 +91,6 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 		model->model_matrix = modelMatrix;
 
 		plDrawModel( model );
-		g_state.gfx.numModelsDrawn++;
 		return;
 	}
 
@@ -109,8 +107,6 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 	if ( cv_graphics_debug_normals->b_value ) {
 		DrawNormals();
 	}
-
-	g_state.gfx.numModelsDrawn++;
 }
 
 PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {

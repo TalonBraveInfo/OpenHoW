@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../Menu.h"
-#include "../Map.h"
-
+#include "App.h"
+#include "Menu.h"
+#include "Map.h"
 #include "Player.h"
 #include "ActorManager.h"
 #include "APig.h"
@@ -38,7 +37,7 @@ REGISTER_ACTOR_BASIC( APig )
 using namespace ohw;
 
 APig::APig() : SuperClass() {
-	speechEmitter = Engine::Audio()->CreateSource();
+	speechEmitter = GetApp()->audioManager->CreateSource();
 }
 
 APig::~APig() {
@@ -46,7 +45,7 @@ APig::~APig() {
 }
 
 void APig::HandleInput() {
-	IGameMode *mode = Engine::Game()->GetMode();
+	IGameMode *mode = GetApp()->gameManager->GetMode();
 	if ( mode == nullptr ) {
 		return;
 	}
@@ -56,33 +55,34 @@ void APig::HandleInput() {
 		return;
 	}
 
-	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_JUMP ) ) {
+	if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_JUMP ) ) {
 		Jump();
 		return;
 	}
 
-	PLVector2 cl = Input_GetJoystickState( player->GetControllerSlot(), INPUT_JOYSTICK_LEFT );
-	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_MOVE_FORWARD ) ) {
+	PLVector2 cl;
+	GetApp()->inputManager->GetJoystickState( player->GetControllerSlot(), InputManager::JOYSTICK_AXIS_LEFT_STICK, &cl.x, &cl.y );
+	if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_MOVE_FORWARD ) ) {
 		forwardVelocity = 1.0f;
-	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_MOVE_BACKWARD ) ) {
+	} else if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_MOVE_BACKWARD ) ) {
 		forwardVelocity = -1.0f;
 	} else {
 		forwardVelocity = -cl.y / 327.0f;
 	}
 
-	PLVector2 cr = Input_GetJoystickState( player->GetControllerSlot(), INPUT_JOYSTICK_RIGHT );
-
-	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_TURN_LEFT ) ) {
+	PLVector2 cr;
+	GetApp()->inputManager->GetJoystickState( player->GetControllerSlot(), InputManager::JOYSTICK_AXIS_RIGHT_STICK, &cr.x, &cr.y );
+	if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_TURN_LEFT ) ) {
 		inputYaw = -1.0f;
-	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_TURN_RIGHT ) ) {
+	} else if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_TURN_RIGHT ) ) {
 		inputYaw = 1.0f;
 	} else {
 		inputYaw = cr.x / 327.0f;
 	}
 
-	if ( Input_GetActionState( player->GetControllerSlot(), ACTION_AIM_UP ) ) {
+	if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_AIM_UP ) ) {
 		inputPitch = 1.0f;
-	} else if ( Input_GetActionState( player->GetControllerSlot(), ACTION_AIM_DOWN ) ) {
+	} else if ( GetApp()->inputManager->GetActionState( player->GetControllerSlot(), InputManager::ACTION_AIM_DOWN ) ) {
 		inputPitch = -1.0f;
 	} else {
 		inputPitch = -cr.y / 327.0f;
@@ -115,7 +115,7 @@ void APig::Tick() {
 		}
 
 		// TODO: actor that produces explosion fx (AFXExplosion / effect_explosion) ?
-		Engine::Audio()->PlayLocalSound( "audio/e_1.wav", GetPosition(), PLVector3(), true );
+		GetApp()->audioManager->PlayLocalSound( "audio/e_1.wav", GetPosition(), PLVector3(), true );
 
 		SetModel( "scenery/boots.vtx" );
 		DropToFloor();
@@ -137,7 +137,7 @@ void APig::Tick() {
 	nPosition += velocity + forwardDirection;
 
 	// Clamp height based on current tile pos
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
 	if ( ( nPosition.y - ( boundingBox.maxs.y / 2 ) ) < height ) {
 		nPosition.y = height + ( boundingBox.maxs.y / 2 );
@@ -161,7 +161,7 @@ void APig::Tick() {
 }
 
 void APig::SetClass( const std::string &classIdentifer ) {
-	const CharacterClass *characterClass = Engine::Game()->GetDefaultClass( classIdentifer );
+	const CharacterClass *characterClass = GetApp()->gameManager->GetDefaultClass( classIdentifer );
 	if ( characterClass == nullptr ) {
 		Warning( "Failed to fetch valid character class for pig!\n" );
 		return;
@@ -176,7 +176,7 @@ void APig::SetPersonality( unsigned int personality ) {
 }
 
 void APig::SetPlayerOwner( Player *owner ) {
-	IGameMode *mode = Engine::Game()->GetMode();
+	IGameMode *mode = GetApp()->gameManager->GetMode();
 	if ( mode == nullptr ) {
 		Warning( "Attempted to set player owner without an active mode!\n" );
 		return;
@@ -194,14 +194,14 @@ void APig::SetTeam( unsigned int team ) {
 	team_ = team;
 
 #if 0
-	Player* player = Engine::Game()->GetPlayerByIndex(team);
+	Player* player = GetApp()->gameManager->GetPlayerByIndex(team);
 	if(player == nullptr) {
 	  ActorManager::GetInstance()->DestroyActor(this);
 	  LogWarn("Failed to set team for pig!\n");
 	  return;
 	}
 
-	Engine::Game()->GetMode()->AssignActorToPlayer(this, player);
+	GetApp()->gameManager->GetMode()->AssignActorToPlayer(this, player);
 #endif
 }
 
@@ -209,7 +209,7 @@ void APig::Deserialize( const ActorSpawn &spawn ) {
 	SuperClass::Deserialize( spawn );
 
 	// Ensure pig is spawned up in the air for deployment
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	SetPosition( { position_.GetValue().x, map->GetTerrain()->GetMaxHeight(), position_.GetValue().z } );
 
 	SetClass( spawn.class_name );
@@ -302,7 +302,7 @@ void APig::PlayVoiceSample( VoiceCategory category ) {
 		rand() % 6 + 1
 		);
 
-	const AudioSample* sample = Engine::Audio()->CacheSample(path);
+	const AudioSample* sample = GetApp()->audioManager->CacheSample(path);
 	if(sample == nullptr) {
 	  return;
 	}
@@ -316,14 +316,14 @@ void APig::PlayVoiceSample( VoiceCategory category ) {
  * Lift that pig into the air like you just don't care!
  */
 void APig::Jump() {
-	LogDebug( "Jumping...\n" );
+	DebugMsg( "Jumping...\n" );
 
 	// Make sure we can't jump again if we're already off the ground!
 	if ( !IsGrounded() ) {
 		return;
 	}
 
-	Engine::Audio()->PlayLocalSound( "audio/p_snort1.wav", GetPosition(), GetVelocity(), true );
+	GetApp()->audioManager->PlayLocalSound( "audio/p_snort1.wav", GetPosition(), GetVelocity(), true );
 
 	velocity.y += 8.0f;
 }
@@ -332,11 +332,11 @@ void APig::Jump() {
  * Landed after a jump.
  */
 void APig::Land() {
-	LogDebug( "Landing...\n" );
+	DebugMsg( "Landing...\n" );
 
 	PLVector3 curVelocity = GetVelocity();
 	if ( curVelocity.Length() > 120.0f ) {
-		Engine::Audio()->PlayLocalSound( "audio/p_land1.wav", GetPosition(), GetVelocity(), true );
+		GetApp()->audioManager->PlayLocalSound( "audio/p_land1.wav", GetPosition(), GetVelocity(), true );
 		Damage( nullptr, 20, PLVector3(), PLVector3() );
 	}
 }

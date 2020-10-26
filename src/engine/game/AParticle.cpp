@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../graphics/ParticleEffect.h"
-#include "../graphics/ParticleEmitter.h"
-#include "../graphics/particles.h"
-
+#include "App.h"
+#include "graphics/ParticleEffect.h"
+#include "graphics/ParticleEmitter.h"
+#include "graphics/particles.h"
 #include "ActorManager.h"
 
 class AParticleEffect : public Actor {

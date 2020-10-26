@@ -28,6 +28,8 @@
 
 /* shared function */
 void Display_UpdateViewport( int x, int y, int width, int height ) {
+	Menu_UpdateViewport( x, y, width, height );
+
 	ohw::Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		Warning( "Attempted to update the camera viewport with no active camera!\n" );

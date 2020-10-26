@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../Menu.h"
-
+#include "App.h"
+#include "Menu.h"
 #include "ActorManager.h"
 #include "Inventory.h"
 #include "APig.h"
@@ -36,8 +35,8 @@ public:
 	PLColour GetMinimapIconColour() const override { return PLColour( 210, 105, 30 ); }
 
 private:
-	ItemIdentifier pickup_id_{ ItemIdentifier::NONE };
-	unsigned int pickup_quantity_{ 0 };
+	ItemIdentifier myPickupId{ ItemIdentifier::NONE };
+	unsigned int myPickupQuantity{ 0 };
 };
 
 AItemPickup::AItemPickup() : SuperClass() {}
@@ -52,7 +51,7 @@ void AItemPickup::Touch( Actor *other ) {
 		return;
 	}
 
-	pig->AddInventoryItem( pickup_id_, pickup_quantity_ );
+	pig->AddInventoryItem( myPickupId, myPickupQuantity );
 
 #if 0
 	// On pickup, we'll need to pass the item into

@@ -194,6 +194,8 @@ struct GameModeDescriptor {
 
 typedef std::vector< Player * > PlayerPtrVector;
 
+struct AudioSample;
+
 namespace ohw {
 	class Map;
 	class Camera;
@@ -303,7 +305,7 @@ namespace ohw {
 
 #define MAX_AMBIENT_SAMPLES 8
 		double ambient_emit_delay_{ 0 };
-		const struct AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
+		const AudioSample *ambient_samples_[MAX_AMBIENT_SAMPLES]{};
 
 		friend class App;
 	};

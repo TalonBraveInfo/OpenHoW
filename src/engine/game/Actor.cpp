@@ -57,7 +57,7 @@ void Actor::SetAngles( PLVector3 angles ) {
 }
 
 bool Actor::IsVisible() {
-	Camera *camera = Engine::Game()->GetActiveCamera();
+	Camera *camera = GetApp()->gameManager->GetActiveCamera();
 	return !( camera == nullptr || !camera->IsBoxVisible( &boundingBox ) );
 }
 
@@ -162,7 +162,7 @@ void Actor::Dispossessed(const Player *player ) {
  * Drop the actor to the ground based on it's bounding box size.
  */
 void Actor::DropToFloor() {
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
@@ -268,7 +268,7 @@ void Actor::Touch( Actor *other ) {
  * Check whether or not this actor is currently on the ground.
  */
 bool Actor::IsGrounded() {
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return false;
 	}

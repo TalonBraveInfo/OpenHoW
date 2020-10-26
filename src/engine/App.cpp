@@ -20,6 +20,7 @@
 #include "imgui_layer.h"
 #include "Language.h"
 #include "config.h"
+#include "Menu.h"
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -91,6 +92,8 @@ ohw::App::App( int argc, char **argv ) {
 	 * ourselves                            */
 	SDL_StartTextInput();
 
+	resourceManager = new ResourceManager();
+
 	// Setup the mod manager and mount the default mod
 	modManager = new ModManager();
 	const char *var = plGetCommandLineArgumentValue( "-mod" );
@@ -106,6 +109,8 @@ ohw::App::App( int argc, char **argv ) {
 }
 
 void ohw::App::Shutdown() {
+	Config_Save( Config_GetUserConfigPath() );
+
 #if 0
 	ImGui_ImplOpenGL3_DestroyDeviceObjects();
 	ImGui::DestroyContext();
@@ -114,6 +119,10 @@ void ohw::App::Shutdown() {
 	delete gameManager;
 	delete audioManager;
 	delete resourceManager;
+
+	Display_Shutdown();
+
+	LanguageManager::DestroyInstance();
 
 	SDL_StopTextInput();
 
@@ -236,6 +245,18 @@ void ohw::App::InitializeDisplay() {
 	SDL_ShowCursor( SDL_TRUE );
 
 	ImGuiImpl_Setup();
+}
+
+void ohw::App::InitializeAudio() {
+	audioManager = new AudioManager();
+	audioManager->SetupMusicSource();
+}
+
+void ohw::App::InitializeGame() {
+	gameManager = new GameManager();
+	gameManager->CachePersistentData();
+
+	Menu_Initialize();
 }
 
 void ohw::App::SwapDisplay() {
@@ -590,6 +611,8 @@ int main( int argc, char** argv ) {
 	appInstance = new ohw::App( argc, argv );
 	appInstance->InitializeConfig();
 	appInstance->InitializeDisplay();
+	appInstance->InitializeAudio();
+	appInstance->InitializeGame();
 
 	while ( appInstance->IsRunning() );
 

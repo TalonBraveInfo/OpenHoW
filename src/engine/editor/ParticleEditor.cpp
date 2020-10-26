@@ -20,7 +20,6 @@
 #include "graphics/display.h"
 #include "graphics/ParticleEffect.h"
 #include "graphics/ParticleEmitter.h"
-#include "graphics/particles.h"
 #include "graphics/Camera.h"
 #include "Language.h"
 #include "imgui_layer.h"

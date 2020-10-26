@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "App.h"
 #include "AWeapon.h"
 
 AWeapon::AWeapon() : SuperClass() {}

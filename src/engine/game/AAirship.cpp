@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "App.h"
 #include "ActorManager.h"
 #include "AAirship.h"
 
@@ -39,13 +38,14 @@ void AAirship::Tick() {
 void AAirship::Deserialize( const ActorSpawn &spawn ) {
 	SuperClass::Deserialize( spawn );
 
-	ambientSource = Engine::Audio()->CreateSource( "audio/en_bip.wav",
-												   { 0.0f, 0.0f, 0.0f },
-												   { 0.0f, 0.0f, 0.0f },
-												   true,
-												   1.0f,
-												   1.0f,
-												   true );
+	ambientSource = GetApp()->audioManager->CreateSource(
+			"audio/en_bip.wav",
+			{ 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f },
+			true,
+			1.0f,
+			1.0f,
+			true );
 	ambientSource->StartPlaying();
 
 	SetModel( "scenery/airship1.vtx" );

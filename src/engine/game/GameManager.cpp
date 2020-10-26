@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "Menu.h"
 #include "Map.h"
 #include "Language.h"
@@ -111,7 +111,7 @@ void ohw::GameManager::Tick() {
 		return;
 	}
 
-	if ( ambient_emit_delay_ < g_state.sim_ticks ) {
+	if ( ambient_emit_delay_ < GetApp()->GetSimulationTicks() ) {
 		const AudioSample *sample = ambient_samples_[ rand() % MAX_AMBIENT_SAMPLES ];
 		if ( sample != nullptr ) {
 			PLVector3 position = {
@@ -119,10 +119,10 @@ void ohw::GameManager::Tick() {
 					currentMap->GetTerrain()->GetMaxHeight(),
 					plGenerateRandomf( TERRAIN_PIXEL_WIDTH )
 			};
-			Engine::Audio()->PlayLocalSound( sample, position, { 0, 0, 0 }, true, 0.5f );
+			GetApp()->audioManager->PlayLocalSound( sample, position, { 0, 0, 0 }, true, 0.5f );
 		}
 
-		ambient_emit_delay_ = g_state.sim_ticks + TICKS_PER_SECOND + rand() % ( 7 * TICKS_PER_SECOND );
+		ambient_emit_delay_ = GetApp()->GetSimulationTicks() + TICKS_PER_SECOND + rand() % ( 7 * TICKS_PER_SECOND );
 	}
 
 	currentMode->Tick();
@@ -161,7 +161,7 @@ Player *ohw::GameManager::GetPlayerByIndex( unsigned int i ) const {
 }
 
 void ohw::GameManager::LoadMap( const std::string &name ) {
-	MapManifest *manifest = Engine::Game()->GetMapManifest( name );
+	MapManifest *manifest = GetApp()->gameManager->GetMapManifest( name );
 	if ( manifest == nullptr ) {
 		Warning( "Failed to get map descriptor, \"%s\"\n", name.c_str() );
 		return;
@@ -283,7 +283,7 @@ void ohw::GameManager::RegisterMapManifest( const std::string &path ) {
 
 static void RegisterManifestInterface( const char *path, void *userPtr ) {
 	u_unused( userPtr );
-	ohw::Engine::Game()->RegisterMapManifest( path );
+	ohw::GetApp()->gameManager->RegisterMapManifest( path );
 }
 
 /**
@@ -316,12 +316,12 @@ MapManifest *ohw::GameManager::GetMapManifest( const std::string &name ) {
  */
 MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 	// ensure the map doesn't exist already
-	if ( Engine::Game()->GetMapManifest( name ) != nullptr ) {
+	if ( GetApp()->gameManager->GetMapManifest( name ) != nullptr ) {
 		Warning( "Unable to create map, it already exists!\n" );
 		return nullptr;
 	}
 
-	const ModDirectory *currentMod = Mod_GetCurrentMod();
+	const ModManager::ModDescription *currentMod = GetApp()->modManager->GetCurrentModDescription();
 	std::string path = "mods/" + currentMod->directory + "maps/" + name + ".map";
 	std::ofstream output( path );
 	if ( !output.is_open() ) {
@@ -335,8 +335,8 @@ MapManifest *ohw::GameManager::CreateManifest( const std::string &name ) {
 
 	Print( "Wrote \"%s\"!\n", path.c_str() );
 
-	Engine::Game()->RegisterMapManifest( path );
-	return Engine::Game()->GetMapManifest( name );
+	GetApp()->gameManager->RegisterMapManifest( path );
+	return GetApp()->gameManager->GetMapManifest( name );
 }
 
 const CharacterClass *ohw::GameManager::GetDefaultClass( const std::string &classIdentifer ) const {
@@ -355,12 +355,12 @@ void ohw::GameManager::CreateMapCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	MapManifest *manifest = Engine::Game()->CreateManifest( argv[ 1 ] );
+	MapManifest *manifest = GetApp()->gameManager->CreateManifest( argv[ 1 ] );
 	if ( manifest == nullptr ) {
 		return;
 	}
 
-	Engine::Game()->LoadMap( argv[ 1 ] );
+	GetApp()->gameManager->LoadMap( argv[ 1 ] );
 }
 
 /**
@@ -373,26 +373,26 @@ void ohw::GameManager::OpenMapCommand( unsigned int argc, char **argv ) {
 	}
 
 	std::string modeString = "singleplayer";
-	const MapManifest *desc = Engine::Game()->GetMapManifest( argv[ 1 ] );
+	const MapManifest *desc = GetApp()->gameManager->GetMapManifest( argv[ 1 ] );
 	if ( desc != nullptr && !desc->modes.empty() ) {
 		modeString = desc->modes[ 0 ];
 	}
 
 	// Set up a mode with some defaults.
 	GameModeDescriptor descriptor = GameModeDescriptor();
-	Engine::Game()->StartMode( argv[ 1 ], { new Player( PlayerType::LOCAL ) }, descriptor );
+	GetApp()->gameManager->StartMode( argv[ 1 ], { new Player( PlayerType::LOCAL ) }, descriptor );
 }
 
 /**
  * Provide a list of all the currently registered maps.
  */
 void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
-	if ( Engine::Game()->mapManifests.empty() ) {
+	if ( GetApp()->gameManager->mapManifests.empty() ) {
 		Warning( "No maps available!\n" );
 		return;
 	}
 
-	for ( auto manifest : Engine::Game()->mapManifests ) {
+	for ( auto manifest : GetApp()->gameManager->mapManifests ) {
 		MapManifest *desc = &manifest.second;
 		std::string out =
 				desc->name + "/" + manifest.first +
@@ -405,7 +405,7 @@ void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 		Print( "%s\n", out.c_str() );
 	}
 
-	Print( "%u maps\n", Engine::Game()->mapManifests.size() );
+	Print( "%u maps\n", GetApp()->gameManager->mapManifests.size() );
 }
 
 void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
@@ -414,7 +414,7 @@ void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
+	GameMode *mode = dynamic_cast<GameMode *>(GetApp()->gameManager->GetMode());
 	if ( mode == nullptr ) {
 		Print( "Command cannot function outside of game!\n" );
 		return;
@@ -442,7 +442,7 @@ void ohw::GameManager::GiveItemCommand( unsigned int argc, char **argv ) {
 }
 
 void ohw::GameManager::KillSelfCommand( unsigned int argc, char **argv ) {
-	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
+	GameMode *mode = dynamic_cast<GameMode *>(GetApp()->gameManager->GetMode());
 	if ( mode == nullptr ) {
 		Print( "Command cannot function outside of game!\n" );
 		return;
@@ -463,7 +463,7 @@ void ohw::GameManager::SpawnModelCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
+	GameMode *mode = dynamic_cast<GameMode *>(GetApp()->gameManager->GetMode());
 	if ( mode == nullptr ) {
 		Print( "Command cannot function outside of game!\n" );
 		return;
@@ -493,7 +493,7 @@ void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	GameMode *mode = dynamic_cast<GameMode *>(Engine::Game()->GetMode());
+	GameMode *mode = dynamic_cast<GameMode *>(GetApp()->gameManager->GetMode());
 	if ( mode == nullptr ) {
 		Print( "Command cannot function outside of game!\n" );
 		return;
@@ -513,25 +513,25 @@ void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 void ohw::GameManager::FirstPersonCommand( unsigned int argc, char **argv ) {
 	static CameraMode oldCameraMode = CameraMode::FOLLOW;
 
-	if ( Engine::Game()->cameraMode != CameraMode::FIRSTPERSON ) {
-		oldCameraMode = Engine::Game()->cameraMode;
-		Engine::Game()->cameraMode = CameraMode::FIRSTPERSON;
+	if ( GetApp()->gameManager->cameraMode != CameraMode::FIRSTPERSON ) {
+		oldCameraMode = GetApp()->gameManager->cameraMode;
+		GetApp()->gameManager->cameraMode = CameraMode::FIRSTPERSON;
 		return;
 	}
 
-	Engine::Game()->cameraMode = oldCameraMode;
+	GetApp()->gameManager->cameraMode = oldCameraMode;
 }
 
 void ohw::GameManager::FreeCamCommand( unsigned int argc, char **argv ) {
 	static CameraMode oldCameraMode = CameraMode::FOLLOW;
 
-	if ( Engine::Game()->cameraMode != CameraMode::FLY ) {
-		oldCameraMode = Engine::Game()->cameraMode;
-		Engine::Game()->cameraMode = CameraMode::FLY;
+	if ( GetApp()->gameManager->cameraMode != CameraMode::FLY ) {
+		oldCameraMode = GetApp()->gameManager->cameraMode;
+		GetApp()->gameManager->cameraMode = CameraMode::FLY;
 		return;
 	}
 
-	Engine::Game()->cameraMode = oldCameraMode;
+	GetApp()->gameManager->cameraMode = oldCameraMode;
 }
 
 void ohw::GameManager::StartMode( const std::string &map,
@@ -540,7 +540,7 @@ void ohw::GameManager::StartMode( const std::string &map,
 	FrontEnd_SetState( FE_MODE_LOADING );
 
 	// Free up all our unreferenced resources
-	Engine::Resource()->ClearAllResources();
+	GetApp()->resourceManager->ClearAllResources();
 
 	LoadMap( map );
 
@@ -555,19 +555,19 @@ void ohw::GameManager::StartMode( const std::string &map,
 		sample_ext = "n";
 	}
 
-	ambient_emit_delay_ = g_state.sim_ticks + plGenerateRandomd( 100 ) + 1;
+	ambient_emit_delay_ = GetApp()->GetSimulationTicks() + plGenerateRandomd( 100 ) + 1;
 	for ( unsigned int i = 1, idx = 0; i < 4; ++i ) {
 		std::string snum = std::to_string( i );
 		std::string path = "audio/amb_";
 		if ( i < 3 ) {
 			path += snum + sample_ext + ".wav";
-			ambient_samples_[ idx++ ] = Engine::Audio()->CacheSample( path, false );
+			ambient_samples_[ idx++ ] = GetApp()->audioManager->CacheSample( path, false );
 		}
 
 		path = "audio/batt_s" + snum + ".wav";
-		ambient_samples_[ idx++ ] = Engine::Audio()->CacheSample( path, false );
+		ambient_samples_[ idx++ ] = GetApp()->audioManager->CacheSample( path, false );
 		path = "audio/batt_l" + snum + ".wav";
-		ambient_samples_[ idx++ ] = Engine::Audio()->CacheSample( path, false );
+		ambient_samples_[ idx++ ] = GetApp()->audioManager->CacheSample( path, false );
 	}
 
 	FrontEnd_SetState( FE_MODE_GAME );
@@ -594,10 +594,10 @@ void ohw::GameManager::EndMode() {
 	ActorManager::GetInstance()->DestroyActors();
 
 	// Free up all our unreferenced resources
-	Engine::Resource()->ClearAllResources();
+	GetApp()->resourceManager->ClearAllResources();
 
-	Engine::Audio()->FreeSources();
-	Engine::Audio()->FreeSamples();
+	GetApp()->audioManager->FreeSources();
+	GetApp()->audioManager->FreeSamples();
 }
 
 /**

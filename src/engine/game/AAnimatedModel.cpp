@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../engine.h"
+#include "App.h"
 #include "AAnimatedModel.h"
 
 AAnimatedModel::AAnimatedModel() : SuperClass() {}

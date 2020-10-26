@@ -79,7 +79,7 @@ void Menu_Initialize() {
 	menuCamera->viewport.h = cv_display_height->i_value;
 }
 
-static void Menu_UpdateViewport( int x, int y, int width, int height ) {
+void Menu_UpdateViewport( int x, int y, int width, int height ) {
 	//TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
 	//      For now, just use the same viewport aspect for both.
 	

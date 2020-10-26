@@ -100,6 +100,7 @@ enum {
 extern ohw::BitmapFont *g_fonts[NUM_FONTS];
 
 void Menu_Initialize();
+void Menu_UpdateViewport( int x, int y, int width, int height );
 void FE_Shutdown();
 void FE_ProcessInput();
 void FrontEnd_Tick();

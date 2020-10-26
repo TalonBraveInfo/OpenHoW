@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "Sprite.h"
 #include "ActorManager.h"
-#include "Actor.h"
 
 // ASprite
 // Can be used for very basic effects etc.
@@ -37,7 +36,7 @@ public:
 
 protected:
 private:
-	Sprite *spritePtr;
+	ohw::Sprite *spritePtr;
 };
 
 REGISTER_ACTOR_BASIC( ASprite )

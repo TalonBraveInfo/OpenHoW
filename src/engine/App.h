@@ -66,13 +66,17 @@ namespace ohw {
 		inline unsigned int GetTicks() const {
 			return numSysTicks;
 		}
-
+		inline unsigned int GetSimulationTicks() const {
+			return numSimTicks;
+		}
 		inline double GetDeltaTime() const {
 			return deltaTime;
 		}
 
 		void InitializeConfig();
 		void InitializeDisplay();
+		void InitializeAudio();
+		void InitializeGame();
 
 		void SwapDisplay();
 		int SetSwapInterval( int interval );

@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../Menu.h"
-
+#include "App.h"
+#include "Menu.h"
 #include "ActorManager.h"
 #include "APig.h"
 
@@ -36,7 +35,7 @@ public:
 
 protected:
 private:
-	unsigned int pickup_quantity_{ 0 };
+	unsigned int myPickupQuantity{ 0 };
 };
 
 REGISTER_ACTOR( crate2, AHealthPickup )
@@ -55,7 +54,7 @@ void AHealthPickup::Touch( Actor *other ) {
 		return;
 	}
 
-	pig->AddHealth( pickup_quantity_ );
+	pig->AddHealth( myPickupQuantity );
 
 	// may want to introduce networking logic here for actor destruction
 	// hence why it's done this way for now

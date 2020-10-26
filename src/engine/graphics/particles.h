@@ -20,37 +20,42 @@
 #include "Sprite.h"
 
 // And this is the individual particle
-class Particle {
-public:
-	Particle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan );
+namespace ohw {
+	class Particle {
+	public:
+		Particle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan );
 
-	void Tick() {}
+		void Tick() {}
 
-protected:
-private:
-	PLColour    myColour;
-	PLVector3   myVelocity;
-	PLVector3   myScale{ 0.0f, 0.0f, 0.0f };
-	PLVector3   myPosition;
+	protected:
+	private:
+		PLColour myColour;
+		PLVector3 myVelocity;
+		PLVector3 myScale{ 0.0f, 0.0f, 0.0f };
+		PLVector3 myPosition;
 
-	float myLifeSpan{ 0.0f };
-};
+		float myLifeSpan{ 0.0f };
+	};
 
-class SpriteParticle : public Particle, Sprite {
-	SpriteParticle( const std::string &texturePath, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan );
-	~SpriteParticle();
+	class SpriteParticle : public Particle, Sprite {
+		SpriteParticle( const std::string &texturePath, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan );
+		~SpriteParticle();
 
-private:
-};
+	private:
+	};
 
-class ModelParticle : public Particle {
-	ModelParticle( const std::string &modelPath, PLVector3 position, PLVector3 velocity, PLColour start_colour, float life_span );
-	~ModelParticle();
+	class ModelParticle : public Particle {
+		ModelParticle( const std::string &modelPath, PLVector3 position, PLVector3 velocity, PLColour start_colour, float life_span );
+		~ModelParticle();
 
-private:
-	ohw::SharedModelResourcePointer modelPtr{ nullptr };
-};
+	private:
+		SharedModelResourcePointer modelPtr{ nullptr };
+	};
 
 // TODO
-class TrailParticle : public Particle {};
-class TextParticle : public Particle {};
+	class TrailParticle : public Particle {
+	};
+
+	class TextParticle : public Particle {
+	};
+}

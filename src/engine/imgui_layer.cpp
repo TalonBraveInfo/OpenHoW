@@ -47,7 +47,7 @@ static bool show_settings = false;
 
 static std::vector< BaseWindow * > windows;
 
-static PLCamera *imgui_camera = nullptr;
+static PLCamera *imguiCamera = nullptr;
 
 using namespace ohw;
 
@@ -128,19 +128,22 @@ void ImGuiImpl_Setup() {
 		Warning( "Failed to add font from memory! Falling back to default...\n" );
 		io.Fonts->AddFontDefault();
 	}
-}
 
-void ImGuiImpl_SetupCamera( void ) {
-	if ( ( imgui_camera = plCreateCamera() ) == nullptr ) {
+	imguiCamera = plCreateCamera();
+	if ( imguiCamera == nullptr ) {
 		Error( "failed to create ui camera, aborting!\n%s\n", plGetError() );
 	}
 
-	imgui_camera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
-	imgui_camera->fov = 90;
-	imgui_camera->near = 0;
-	imgui_camera->far = 1000;
-	imgui_camera->viewport.w = cv_display_width->i_value;
-	imgui_camera->viewport.h = cv_display_height->i_value;
+	imguiCamera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
+	imguiCamera->fov = 90;
+	imguiCamera->near = 0;
+	imguiCamera->far = 1000;
+	imguiCamera->viewport.w = cv_display_width->i_value;
+	imguiCamera->viewport.h = cv_display_height->i_value;
+}
+
+void ImGuiImpl_SetupCamera( void ) {
+
 }
 
 void ImGuiImpl_SetupFrame( void ) {
@@ -151,7 +154,7 @@ void ImGuiImpl_SetupFrame( void ) {
 void ImGuiImpl_Draw( void ) {
 	ImGui::Render();
 
-	plSetupCamera( imgui_camera );
+	plSetupCamera( imguiCamera );
 	plSetShaderProgram( nullptr );
 
 	ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
@@ -789,8 +792,8 @@ bool ImGuiImpl_HandleEvent( const SDL_Event &event ) {
 
 		case SDL_WINDOWEVENT: {
 			if ( event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
-				imgui_camera->viewport.w = event.window.data1;
-				imgui_camera->viewport.h = event.window.data2;
+				imguiCamera->viewport.w = event.window.data1;
+				imguiCamera->viewport.h = event.window.data2;
 				io.DisplaySize = ImVec2( event.window.data1, event.window.data2 );
 			}
 			break;

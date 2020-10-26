@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "Menu.h"
 #include "graphics/ShaderManager.h"
 #include "ActorManager.h"
@@ -56,7 +56,7 @@ void ActorManager::DestroyActor( Actor *actor ) {
 
 	// Ensure it's not already queued for destruction
 	if ( std::find( destructionQueue.begin(), destructionQueue.end(), actor ) != destructionQueue.end() ) {
-		LogDebug( "Attempted to queue actor for deletion twice, ignoring...\n" );
+		DebugMsg( "Attempted to queue actor for deletion twice, ignoring...\n" );
 		return;
 	}
 
