@@ -17,11 +17,10 @@
 
 #pragma once
 
-//#include "Property.h"
+#include "Property.h"
+#include "particles.h"
 
 namespace ohw {
-	class Particle;
-
 // This creates the particles
 	class ParticleEmitter : public PropertyOwner {
 	public:
@@ -36,7 +35,7 @@ namespace ohw {
 
 	protected:
 	private:
-		std::vector <Particle> particles;
+		std::vector< ohw::Particle > particles;
 
 		float myGravity{ 0.0f };
 

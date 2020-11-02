@@ -21,51 +21,53 @@ struct PlayerTeam;
 
 class Player;
 
-class IGameMode {
-public:
-	virtual ~IGameMode() = default;
+namespace ohw {
+	class IGameMode {
+	public:
+		virtual ~IGameMode() = default;
 
-	virtual void Tick() = 0;
+		virtual void Tick() = 0;
 
-	virtual void StartRound() = 0;
-	virtual void RestartRound() = 0;
-	virtual void EndRound() = 0;
+		virtual void StartRound() = 0;
+		virtual void RestartRound() = 0;
+		virtual void EndRound() = 0;
 
-	virtual void PlayerJoined( Player *player ) = 0;
-	virtual void PlayerLeft( Player *player ) = 0;
+		virtual void PlayerJoined( Player *player ) = 0;
+		virtual void PlayerLeft( Player *player ) = 0;
 
-	virtual void SpectatorJoined( Player *player ) = 0;
-	virtual void SpectatorLeft( Player *player ) = 0;
+		virtual void SpectatorJoined( Player *player ) = 0;
+		virtual void SpectatorLeft( Player *player ) = 0;
 
-	virtual unsigned int GetMaxSpectators() const = 0;
-	virtual unsigned int GetMaxPlayers() const = 0;
+		virtual unsigned int GetMaxSpectators() const = 0;
+		virtual unsigned int GetMaxPlayers() const = 0;
 
-	virtual Player *GetCurrentPlayer() = 0;
+		virtual Player *GetCurrentPlayer() = 0;
 
-	bool HasModeStarted() const { return mode_started_; }
-	bool HasRoundStarted() const { return hasRoundStarted; }
-	bool HasTurnStarted() const { return turn_started_; }
+		bool HasModeStarted() const { return mode_started_; }
+		bool HasRoundStarted() const { return hasRoundStarted; }
+		bool HasTurnStarted() const { return turn_started_; }
 
-	unsigned int GetTurnTime() { return num_turn_ticks; }
-	unsigned int GetTurnTimeSeconds() { return num_turn_ticks / TICKS_PER_SECOND; }
-	unsigned int GetMaxTurnTime() { return max_turn_ticks; }
-	unsigned int GetMaxTurnTimeSeconds() { return max_turn_ticks / TICKS_PER_SECOND; }
+		unsigned int GetTurnTime() { return num_turn_ticks; }
+		unsigned int GetTurnTimeSeconds() { return num_turn_ticks / TICKS_PER_SECOND; }
+		unsigned int GetMaxTurnTime() { return max_turn_ticks; }
+		unsigned int GetMaxTurnTimeSeconds() { return max_turn_ticks / TICKS_PER_SECOND; }
 
-	virtual void AssignActorToPlayer( Actor *target, Player *owner ) = 0;
+		virtual void AssignActorToPlayer( Actor *target, Player *owner ) = 0;
 
-protected:
-	virtual void StartTurn( Player *player ) = 0;
-	virtual void EndTurn( Player *player ) = 0;
+	protected:
+		virtual void StartTurn( Player *player ) = 0;
+		virtual void EndTurn( Player *player ) = 0;
 
-	virtual void SpawnActors() = 0;
-	virtual void DestroyActors() = 0;
+		virtual void SpawnActors() = 0;
+		virtual void DestroyActors() = 0;
 
-	unsigned int max_turn_ticks{ 0 }; // Maximum ticks for a turn
-	unsigned int num_turn_ticks{ 0 }; // Current number of ticks in the turn
+		unsigned int max_turn_ticks{ 0 }; // Maximum ticks for a turn
+		unsigned int num_turn_ticks{ 0 }; // Current number of ticks in the turn
 
-	bool mode_started_{ false };
-	bool hasRoundStarted{ false };
-	bool turn_started_{ false };
+		bool mode_started_{ false };
+		bool hasRoundStarted{ false };
+		bool turn_started_{ false };
 
-	unsigned int currentPlayer{ 0 };
-};
+		unsigned int currentPlayer{ 0 };
+	};
+}

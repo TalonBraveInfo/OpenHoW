@@ -18,6 +18,7 @@
 #include <PL/platform_filesystem.h>
 #include <PL/platform_mesh.h>
 
+#include "App.h"
 #include "Utilities.h"
 #include "No2Loader.h"
 
@@ -32,7 +33,7 @@
  */
 No2Handle *No2_LoadFile( const char *path ) {
 	PLFile *fp = plOpenFile( path, false );
-	if ( fp == NULL) {
+	if ( fp == NULL ) {
 		Warning( "Failed to load no2 \"%s\"!\n", path );
 		return NULL;
 	}
@@ -42,8 +43,8 @@ No2Handle *No2_LoadFile( const char *path ) {
 		float bone_index;
 	} No2Coord;
 
-	unsigned int numNormals = ( unsigned int ) ( plGetFileSize( fp ) / sizeof( No2Coord ));
-	No2Coord *normals = malloc( sizeof( No2Coord ) * numNormals );
+	unsigned int numNormals = ( unsigned int ) ( plGetFileSize( fp ) / sizeof( No2Coord ) );
+	No2Coord *normals = ( No2Coord * ) ohw::GetApp()->CAlloc( numNormals, sizeof( No2Coord ), true );
 	unsigned int numReadNormals = plReadFile( fp, normals, sizeof( No2Coord ), numNormals );
 
 	plCloseFile( fp );
@@ -54,9 +55,9 @@ No2Handle *No2_LoadFile( const char *path ) {
 		return NULL;
 	}
 
-	No2Handle *handle = malloc( sizeof( No2Handle ) );
+	No2Handle *handle = ( No2Handle * ) ohw::GetApp()->MAlloc( sizeof( No2Handle ), true );
 	handle->numNormals = numNormals;
-	handle->normals = malloc( sizeof( PLVector3 ) * handle->numNormals );
+	handle->normals = ( PLVector3 * ) ohw::GetApp()->MAlloc( sizeof( PLVector3 ) * handle->numNormals, true );
 	for ( unsigned int i = 0; i < numNormals; ++i ) {
 		handle->normals[ i ].x = normals->v[ 0 ];
 		handle->normals[ i ].y = normals->v[ 1 ];

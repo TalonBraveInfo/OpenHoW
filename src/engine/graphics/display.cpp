@@ -39,44 +39,8 @@ void Display_UpdateViewport( int x, int y, int width, int height ) {
 	camera->SetViewport( x, y, width, height );
 }
 
-/**
- * Update display to match the current settings.
- */
-void Display_UpdateState() {
-	char buf[4];
-
-	// bound check both the width and height to lowest supported width and height
-	if ( cv_display_width->i_value < MIN_DISPLAY_WIDTH ) {
-		plSetConsoleVariable( cv_display_width, pl_itoa( MIN_DISPLAY_WIDTH, buf, 4, 10 ) );
-	}
-	if ( cv_display_height->i_value < MIN_DISPLAY_HEIGHT ) {
-		plSetConsoleVariable( cv_display_height, pl_itoa( MIN_DISPLAY_HEIGHT, buf, 4, 10 ) );
-	}
-
-	// attempt to set the new display size, otherwise update cvars to match
-	int w = cv_display_width->i_value;
-	int h = cv_display_height->i_value;
-	if ( !System_SetWindowSize( w, h, false ) ) {
-		Warning( "failed to set display size to %dx%d!\n", cv_display_width->i_value, cv_display_height->i_value );
-		Print( "display set to %dx%d\n", w, h );
-
-		// ... not sure if we'll force the engine to only render a specific display size ...
-		if ( w < MIN_DISPLAY_WIDTH ) w = MIN_DISPLAY_WIDTH;
-		if ( h < MIN_DISPLAY_HEIGHT ) h = MIN_DISPLAY_HEIGHT;
-
-		plSetConsoleVariable( cv_display_width, pl_itoa( w, buf, 4, 10 ) );
-		plSetConsoleVariable( cv_display_height, pl_itoa( h, buf, 4, 10 ) );
-	} else {
-		Print( "display set to %dx%d\n", w, h );
-	}
-
-	Display_UpdateViewport( 0, 0, cv_display_width->i_value, cv_display_height->i_value );
-}
-
 void Display_Initialize() {
-	System_SetSwapInterval( cv_display_vsync->b_value ? 1 : 0 );
-
-	Display_UpdateState();
+	ohw::GetApp()->SetSwapInterval( cv_display_vsync->b_value ? 1 : 0 );
 
 	Shaders_Initialize();
 
@@ -93,18 +57,17 @@ void Display_Shutdown() {
 
 /************************************************************/
 
-void DEBUGDrawSkeleton();
-void DEBUGDrawModel();
-
 void Display_GetFramesCount( unsigned int *fps, unsigned int *ms ) {
 	static unsigned int fps_ = 0;
 	static unsigned int ms_ = 0;
 	static unsigned int update_delay = 60;
+#if 0 // todo: revisit
 	if ( update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0 ) {
 		ms_ = g_state.last_draw_ms;
 		fps_ = 1000 / ms_;
 		update_delay = g_state.draw_ticks + 60;
 	}
+#endif
 
 	*fps = fps_;
 	*ms = ms_;
@@ -121,7 +84,7 @@ static void DrawDebugOverlay() {
 double cur_delta = 0;
 
 static void Display_DrawMap() {
-	ohw::Map *map = ohw::Engine::Game()->GetCurrentMap();
+	ohw::Map *map = ohw::GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
@@ -130,7 +93,7 @@ static void Display_DrawMap() {
 }
 
 void Display_DrawScene() {
-	ohw::Camera *camera = ohw::Engine::Game()->GetActiveCamera();
+	ohw::Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -158,27 +121,11 @@ void Display_DrawScene() {
 
 	Shaders_SetProgramByName( "generic_untextured" );
 
-	ohw::Engine::Audio()->DrawSources();
-}
-
-void Display_DrawInterface() {
-	Shaders_SetProgramByName( "generic_textured" );
-
-	plSetupCamera( g_state.ui_camera );
-	plSetDepthBufferMode( PL_DEPTHBUFFER_DISABLE );
-
-	Menu_Draw();
-
-	DrawDebugOverlay();
+	ohw::GetApp()->audioManager->DrawSources();
 }
 
 void Display_Draw( double delta ) {
-	g_state.gfx.numModelsDrawn = 0;
-
 	ImGuiImpl_SetupFrame();
-
-	cur_delta = delta;
-	g_state.draw_ticks = System_GetTicks();
 
 	plSetClearColour( PLColour( 0, 0, 0, 255 ) );
 
@@ -193,14 +140,11 @@ void Display_Draw( double delta ) {
 	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
 
 	Display_DrawScene();
-	Display_DrawInterface();
+
+	Menu_Draw();
+	DrawDebugOverlay();
 
 	ImGuiImpl_Draw();
 
-	Display_Flush();
-}
-
-void Display_Flush() {
-	System_SwapDisplay();
-	g_state.last_draw_ms = System_GetTicks() - g_state.draw_ticks;
+	ohw::GetApp()->SwapDisplay();
 }

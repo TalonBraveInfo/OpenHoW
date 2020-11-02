@@ -17,6 +17,9 @@
 
 #pragma once
 
+#include <vector>
+#include <list>
+
 #include <PL/platform.h>
 #include <PL/platform_string.h>
 #include <PL/platform_image.h>
@@ -26,9 +29,6 @@
 #include <PL/platform_console.h>
 
 #include <SDL2/SDL.h>
-
-#include <list>
-#include <vector>
 
 #include "Utilities.h"
 #include "Console.h"

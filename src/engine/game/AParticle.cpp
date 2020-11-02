@@ -36,7 +36,7 @@ public:
 
 protected:
 private:
-	ParticleEffect *effect;
+	ohw::ParticleEffect *effect;
 };
 
 REGISTER_ACTOR_BASIC( AParticleEffect )

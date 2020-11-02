@@ -21,7 +21,7 @@
 #include "ParticleEffect.h"
 #include "ParticleEmitter.h"
 
-ParticleEffect::ParticleEffect( const std::string &effectPath ) {
+ohw::ParticleEffect::ParticleEffect( const std::string &effectPath ) {
 	try {
 		JsonReader jsonBlob( effectPath );
 
@@ -53,17 +53,17 @@ ParticleEffect::ParticleEffect( const std::string &effectPath ) {
 	}
 }
 
-ParticleEffect::~ParticleEffect() {
+ohw::ParticleEffect::~ParticleEffect() {
 
 }
 
-void ParticleEffect::Draw() {
+void ohw::ParticleEffect::Draw() {
 	for( auto &i : myEmitters ) {
 		i.Draw();
 	}
 }
 
-void ParticleEffect::Tick() {
+void ohw::ParticleEffect::Tick() {
 	for( auto &i : myEmitters ) {
 		i.Tick();
 	}

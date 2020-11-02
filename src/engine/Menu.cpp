@@ -21,6 +21,7 @@
 #include "graphics/display.h"
 #include "graphics/video.h"
 #include "graphics/Camera.h"
+#include "graphics/ShaderManager.h"
 #include "game/ActorManager.h"
 
 static unsigned int frontend_state = FE_MODE_INIT;
@@ -41,11 +42,11 @@ void Menu_Initialize() {
 	menuBackground = ohw::GetApp()->resourceManager->LoadTexture( "frontend/pigbkpc1", ohw::TextureResource::FLAG_NOMIPS, true );
 
 	// Cache all the minimap icons
-	minimapIcons[ MINIMAP_ICON_BOMB ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/bomb", ohw::TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_HEALTH ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconhart", ohw::TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PIG ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconpig", ohw::TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PICKUP ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconpkup.png", ohw::TextureResource::FLAG_NOMIPS, true );
-	minimapIcons[ MINIMAP_ICON_PROP ] =ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconprop", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_BOMB ] = ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/bomb", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_HEALTH ] = ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconhart", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PIG ] = ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconpig", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PICKUP ] = ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconpkup.png", ohw::TextureResource::FLAG_NOMIPS, true );
+	minimapIcons[ MINIMAP_ICON_PROP ] = ohw::GetApp()->resourceManager->LoadTexture( "frontend/map/iconprop", ohw::TextureResource::FLAG_NOMIPS, true );
 
 	// Cache the default fonts
 	struct FontIndex {
@@ -82,7 +83,7 @@ void Menu_Initialize() {
 void Menu_UpdateViewport( int x, int y, int width, int height ) {
 	//TODO: Only adjust viewport aspect of ingame camera once ingame scene is working. Force UI camera to 4:3 viewport always.
 	//      For now, just use the same viewport aspect for both.
-	
+
 	float current_aspect = ( float ) width / ( float ) height;
 	float target_aspect = 4.0f / 3.0f;
 	float relative_width = target_aspect / current_aspect;
@@ -142,7 +143,7 @@ void FE_ProcessInput( void ) {
 			break;
 
 		case FE_MODE_VIDEO:
-			if (ohw::GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_SPACE ) ||ohw::GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_ESCAPE ) ) {
+			if ( ohw::GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_SPACE ) || ohw::GetApp()->inputManager->GetKeyState( ohw::InputManager::KEY_ESCAPE ) ) {
 				Video_SkipCurrent();
 			}
 			break;
@@ -169,7 +170,7 @@ void FE_SetLoadingBackground( const char *name ) {
 		snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/loadmult" );
 	}
 
-	menuBackground =ohw::GetApp()->resourceManager->LoadTexture( screen_path, ohw::TextureResource::FLAG_NOMIPS );
+	menuBackground = ohw::GetApp()->resourceManager->LoadTexture( screen_path, ohw::TextureResource::FLAG_NOMIPS );
 	Redraw();
 }
 
@@ -198,7 +199,7 @@ static void DrawTimer() {
 		return;
 	}
 
-	IGameMode *mode =ohw::GetApp()->gameManager->GetMode();
+	ohw::IGameMode *mode = ohw::GetApp()->gameManager->GetMode();
 	if ( !mode->HasRoundStarted() ) {
 		return;
 	}
@@ -217,12 +218,12 @@ static void DrawTimer() {
  * Draw the 3D minimap on the bottom left corner of the screen.
  */
 static void FrontEnd_DrawMinimap() {
-	ohw::Map *map =ohw::GetApp()->gameManager->GetCurrentMap();
+	ohw::Map *map = ohw::GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return;
 	}
 
-	ohw::Camera *camera =ohw::GetApp()->gameManager->GetActiveCamera();
+	ohw::Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -259,7 +260,7 @@ static void FrontEnd_DrawMinimap() {
 		}
 
 		// Figure out what icon we're using
-		PLTexture *iconTexture =ohw::GetApp()->resourceManager->GetFallbackTexture();
+		PLTexture *iconTexture = ohw::GetApp()->resourceManager->GetFallbackTexture();
 		unsigned int iconStyle = actor->GetMinimapIconStyle();
 		if ( iconStyle < MAX_MINIMAP_ICONS ) {
 			iconTexture = minimapIcons[ iconStyle ]->GetInternalTexture();
@@ -339,6 +340,11 @@ static void DrawLoadingScreen() {
 }
 
 void Menu_Draw() {
+	Shaders_SetProgramByName( "generic_textured" );
+
+	plSetupCamera( menuCamera );
+	plSetDepthBufferMode( PL_DEPTHBUFFER_DISABLE );
+
 	frontend_width = menuCamera->viewport.w;
 	frontend_height = menuCamera->viewport.h;
 

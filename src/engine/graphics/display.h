@@ -21,7 +21,6 @@
 
 void Display_Initialize( void );
 void Display_Shutdown( void );
-void Display_UpdateState( void );
 
 void Display_UpdateViewport( int x, int y, int width, int height );
 
@@ -29,6 +28,5 @@ void Display_UpdateViewport( int x, int y, int width, int height );
 void Display_GetFramesCount( unsigned int *fps, unsigned int *ms );
 
 void Display_Draw( double delta );
-void Display_Flush( void );
 
 extern const char *supportedTextureFormats[];

@@ -19,38 +19,40 @@
 
 #include "GameModeInterface.h"
 
-class GameMode : public IGameMode {
-public:
-	explicit GameMode( const GameModeDescriptor &descriptor );
-	~GameMode() override;
+namespace ohw {
+	class GameMode : public IGameMode {
+	public:
+		explicit GameMode( const GameModeDescriptor &descriptor );
+		~GameMode() override;
 
-	void Tick() override;
+		void Tick() override;
 
-	void StartRound() override;
-	void RestartRound() override;
-	void EndRound() override;
+		void StartRound() override;
+		void RestartRound() override;
+		void EndRound() override;
 
-	void PlayerJoined( Player *player ) override;
-	void PlayerLeft( Player *player ) override;
+		void PlayerJoined( Player *player ) override;
+		void PlayerLeft( Player *player ) override;
 
-	void SpectatorJoined( Player *player ) override;
-	void SpectatorLeft( Player *player ) override;
+		void SpectatorJoined( Player *player ) override;
+		void SpectatorLeft( Player *player ) override;
 
-	unsigned int GetMaxSpectators() const override;
-	unsigned int GetMaxPlayers() const override;
+		unsigned int GetMaxSpectators() const override;
+		unsigned int GetMaxPlayers() const override;
 
-	Player *GetCurrentPlayer() override;
-	Actor *GetPossessedActor();
-	void CyclePlayers();
+		Player *GetCurrentPlayer() override;
+		Actor *GetPossessedActor();
+		void CyclePlayers();
 
-	void AssignActorToPlayer( Actor *target, Player *owner ) override;
+		void AssignActorToPlayer( Actor *target, Player *owner ) override;
 
-protected:
-	void StartTurn( Player *player ) override;
-	void EndTurn( Player *player ) override;
+	protected:
+		void StartTurn( Player *player ) override;
+		void EndTurn( Player *player ) override;
 
-	void SpawnActors() override;
-	void DestroyActors() override;
+		void SpawnActors() override;
+		void DestroyActors() override;
 
-private:
-};
+	private:
+	};
+}

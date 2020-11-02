@@ -41,9 +41,9 @@
  * OFF : File offset sizes                  (done)
  */
 
-#include "../../shared/fac.h"
-#include "../../shared/vtx.h"
-#include "../../shared/no2.h"
+#include "FacLoader.h"
+#include "VtxLoader.h"
+#include "No2Loader.h"
 
 typedef enum HirSkeletonBone {
 	PELVIS = 0,

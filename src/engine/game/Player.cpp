@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "App.h"
 #include "Player.h"
 
 Player::Player(PlayerType type) : type_(type) {}
@@ -34,7 +33,7 @@ void Player::PossessCurrentChild() {
 		return;
 	}
 
-	LogDebug("%s possessed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
+	DebugMsg("%s possessed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }
 
 void Player::DispossessCurrentChild() {
@@ -45,7 +44,7 @@ void Player::DispossessCurrentChild() {
 
 	actor_ptr->Dispossessed(this);
 
-	LogDebug("%s depossed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
+	DebugMsg("%s depossed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }
 
 Actor* Player::GetCurrentChild() {
@@ -77,14 +76,14 @@ void Player::CycleChildren(bool forward) {
 		currentChildIndex = children_.size() - 1;
 	}
 
-	LogDebug("%s cycled to child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
+	DebugMsg("%s cycled to child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
 }
 
 void Player::AddChild(Actor* actor) {
 	u_assert(actor != nullptr, "Attempted to pass a null actor reference to player!\n");
 	children_.push_back(actor);
 
-	LogDebug("%s received child %d...\n", GetTeam()->name.c_str(), children_.size());
+	DebugMsg("%s received child %d...\n", GetTeam()->name.c_str(), children_.size());
 }
 
 void Player::RemoveChild(Actor* actor) {

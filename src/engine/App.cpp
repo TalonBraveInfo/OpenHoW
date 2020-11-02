@@ -261,6 +261,9 @@ void ohw::App::InitializeGame() {
 
 void ohw::App::SwapDisplay() {
 	SDL_GL_SwapWindow( myWindow );
+
+	// Best place to do this?
+	lastDrawMS = GetTicks() - numDrawTicks;
 }
 
 int ohw::App::SetSwapInterval( int interval ) {
@@ -491,10 +494,6 @@ void ohw::App::PollEvents() {
 
 			case SDL_WINDOWEVENT: {
 				if ( event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
-					char buf[16];
-					plSetConsoleVariable( cv_display_width, pl_itoa( event.window.data1, buf, 16, 10 ) );
-					plSetConsoleVariable( cv_display_height, pl_itoa( event.window.data2, buf, 16, 10 ) );
-
 					Display_UpdateViewport( 0, 0, event.window.data1, event.window.data2 );
 				}
 				break;
@@ -541,6 +540,8 @@ bool ohw::App::IsRunning() {
 	}
 
 	deltaTime = ( double ) ( SDL_GetTicks() + SKIP_TICKS - nextTick ) / ( double ) ( SKIP_TICKS );
+	numDrawTicks = GetTicks();
+
 	Display_Draw( deltaTime );
 
 	return true;

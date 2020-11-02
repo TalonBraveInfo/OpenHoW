@@ -73,6 +73,11 @@ bool ohw::BitmapFont::Load( const char *tabPath, const char *texturePath ) {
  * Immediately draw the given character.
  */
 void ohw::BitmapFont::DrawCharacter( float x, float y, float scale, PLColour colour, char character ) {
+	PLShaderProgram *program = plGetCurrentShaderProgram();
+	if ( program == nullptr ) {
+		return;
+	}
+
 	if ( scale <= 0.0f ) {
 		return;
 	}
@@ -83,7 +88,10 @@ void ohw::BitmapFont::DrawCharacter( float x, float y, float scale, PLColour col
 
 	AddCharacterToPass( x, y, scale, colour, character );
 
-	plSetNamedShaderUniformMatrix4( nullptr, "pl_model", plMatrix4Identity(), false );
+	PLMatrix4 matrix;
+	matrix.Identity();
+
+	plSetShaderUniformValue( program, "pl_model", &matrix, false );
 
 	plUploadMesh( renderMesh );
 	plDrawMesh( renderMesh );
@@ -161,9 +169,8 @@ void ohw::BitmapFont::AddCharacterToPass( float x, float y, float scale, PLColou
 	}
 
 	// Ensure it's on screen
-	// TODO: pull these from somewhere better!
-	int dW = g_state.ui_camera->viewport.w;
-	int dH = g_state.ui_camera->viewport.h;
+	int dW, dH;
+	GetApp()->GetDisplaySize( &dW, &dH );
 	if ( x > dW || y > dH || x + bitmapChar->w < 0 || y + bitmapChar->h < 0 ) {
 		return;
 	}

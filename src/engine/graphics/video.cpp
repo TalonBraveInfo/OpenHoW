@@ -17,8 +17,8 @@
 
 #include <PL/platform_filesystem.h>
 
-#include "../engine.h"
-#include "../Menu.h"
+#include "App.h"
+#include "Menu.h"
 #include "video.h"
 #include "ShaderManager.h"
 

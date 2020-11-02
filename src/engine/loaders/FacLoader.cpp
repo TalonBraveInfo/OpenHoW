@@ -17,6 +17,7 @@
 
 #include <PL/platform_filesystem.h>
 
+#include "App.h"
 #include "Utilities.h"
 #include "FacLoader.h"
 
@@ -33,7 +34,7 @@ typedef struct FacQuad {
 
 static FacQuad *Fac_LoadQuads( PLFile *filePtr, unsigned int numQuads ) {
 	bool status = false;
-	FacQuad *quads = u_alloc( numQuads, sizeof( FacQuad ), true );
+	FacQuad *quads = ( FacQuad * ) u_alloc( numQuads, sizeof( FacQuad ), true );
 	for ( unsigned int i = 0; i < numQuads; ++i ) {
 		for ( unsigned int j = 0; j < 8; ++j ) {
 			quads[ i ].uv_coords[ j ] = plReadInt8( filePtr, &status );
@@ -59,7 +60,7 @@ static FacQuad *Fac_LoadQuads( PLFile *filePtr, unsigned int numQuads ) {
 
 static FacTriangle *Fac_LoadTriangles( PLFile *filePtr, unsigned int numTriangles ) {
 	bool status = false;
-	FacTriangle *triangles = u_alloc( numTriangles, sizeof( FacTriangle ), true );
+	FacTriangle *triangles = ( FacTriangle * ) u_alloc( numTriangles, sizeof( FacTriangle ), true );
 	for ( unsigned int i = 0; i < numTriangles; ++i ) {
 		for ( unsigned int j = 0; j < 6; ++j ) {
 			triangles[ i ].uv_coords[ j ] = plReadInt8( filePtr, &status );
@@ -127,7 +128,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 	uint8_t num_textures = plReadInt8( filePtr, &status );
 	FacTextureIndex *texture_table = NULL;
 	if ( num_textures > 0 ) {
-		texture_table = u_alloc( num_textures, sizeof( FacTextureIndex ), true );
+		texture_table = ( FacTextureIndex * ) u_alloc( num_textures, sizeof( FacTextureIndex ), true );
 		for ( unsigned int i = 0; i < num_textures; ++i ) {
 			plReadFile( filePtr, texture_table[ i ].name, 1, sizeof( texture_table[ i ].name ) );
 		}
@@ -135,9 +136,9 @@ FacHandle *Fac_LoadFile( const char *path ) {
 
 	plCloseFile( filePtr );
 
-	FacHandle *handle = u_alloc( 1, sizeof( FacHandle ), true );
+	FacHandle *handle = ( FacHandle * ) u_alloc( 1, sizeof( FacHandle ), true );
 	handle->num_triangles = numTriangles + ( numQuads * 2 );
-	handle->triangles = u_alloc( handle->num_triangles, sizeof( FacTriangle ), true );
+	handle->triangles = ( FacTriangle * ) u_alloc( handle->num_triangles, sizeof( FacTriangle ), true );
 
 	for ( unsigned int i = 0; i < numTriangles; ++i ) {
 		handle->triangles[ i ].texture_index = triangles[ i ].texture_index;
@@ -151,8 +152,8 @@ FacHandle *Fac_LoadFile( const char *path ) {
 
 	for ( unsigned int i = 0, tri = numTriangles; i < numQuads; ++i ) {
 		int quad_to_tri[2][3] = {
-			{ 0, 1, 2 },
-			{ 2, 3, 0 },
+				{ 0, 1, 2 },
+				{ 2, 3, 0 },
 		};
 
 		for ( int q = 0; q < 2; ++q, ++tri ) {

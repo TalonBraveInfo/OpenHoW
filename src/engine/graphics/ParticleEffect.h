@@ -17,33 +17,34 @@
 
 #pragma once
 
-class ParticleEmitter;
+namespace ohw {
+	class ParticleEmitter;
 
 #define PARTICLE_EFFECT_VERSION 15052020
 
 // On-disk representation of an effect
-class ParticleEffect {
-public:
-	ParticleEffect( const std::string &effectPath );
-	~ParticleEffect();
+	class ParticleEffect {
+	public:
+		ParticleEffect( const std::string &effectPath );
+		~ParticleEffect();
 
-	const std::stringstream Serialize();
+		const std::stringstream Serialize();
 
-	void Draw();
-	void Tick();
+		void Draw();
+		void Tick();
 
-	std::string GetPath() const { return path; }
+		std::string GetPath() const { return path; }
 
-protected:
-private:
-	std::string path;
+	protected:
+	private:
+		std::string path;
 
-	PLVector3 myPosition{ 0, 0, 0 };
+		PLVector3 myPosition{ 0, 0, 0 };
 
 #if 0
-	std::map<std::string, ParticleEmitter> myEmitters;
+		std::map<std::string, ParticleEmitter> myEmitters;
 #else
-	std::vector< ParticleEmitter > myEmitters;
+		std::vector <ParticleEmitter> myEmitters;
 #endif
-};
-
+	};
+}

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "Map.h"
 #include "GameMode.h"
 #include "ActorManager.h"
@@ -40,7 +40,7 @@ void GameMode::StartRound() {
 	SpawnActors();
 
 	// Play the deployment music
-	Engine::Audio()->PlayMusic( "music/track" + std::to_string( std::rand() % 4 + 27 ) + ".ogg" );
+	GetApp()->audioManager->PlayMusic( "music/track" + std::to_string( std::rand() % 4 + 27 ) + ".ogg" );
 
 	StartTurn( GetCurrentPlayer() );
 
@@ -89,7 +89,7 @@ void GameMode::Tick() {
 }
 
 void GameMode::SpawnActors() {
-	Map *map = Engine::Game()->GetCurrentMap();
+	Map *map = GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		Error( "Attempted to spawn actors without having loaded a map!\n" );
 		return;
@@ -107,7 +107,7 @@ void GameMode::SpawnActors() {
 			continue;
 		}
 
-		Player *player = Engine::Game()->GetPlayerByIndex( pig->GetTeam() );
+		Player *player = GetApp()->gameManager->GetPlayerByIndex( pig->GetTeam() );
 		if ( player == nullptr ) {
 			Warning( "Failed to assign pig to team!\n" );
 			continue;
@@ -121,7 +121,7 @@ void GameMode::SpawnActors() {
 		Error( "Failed to create model actor!\n" );
 	}
 
-	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2.0f, Engine::Game()->GetCurrentMap()->GetTerrain()->GetMaxHeight(), TERRAIN_PIXEL_WIDTH / 2.0f, } );
+	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2.0f, GetApp()->gameManager->GetCurrentMap()->GetTerrain()->GetMaxHeight(), TERRAIN_PIXEL_WIDTH / 2.0f, } );
 
 	ActorManager::GetInstance()->ActivateActors();
 }
@@ -185,7 +185,7 @@ unsigned int GameMode::GetMaxPlayers() const {
 }
 
 Player *GameMode::GetCurrentPlayer() {
-	return Engine::Game()->GetPlayerByIndex( currentPlayer );
+	return GetApp()->gameManager->GetPlayerByIndex( currentPlayer );
 }
 
 Actor *GameMode::GetPossessedActor() {
@@ -200,7 +200,7 @@ Actor *GameMode::GetPossessedActor() {
 void GameMode::CyclePlayers() {
 	currentPlayer++;
 
-	PlayerPtrVector players = Engine::Game()->GetPlayers();
+	PlayerPtrVector players = GetApp()->gameManager->GetPlayers();
 	if ( currentPlayer >= players.size() ) {
 		currentPlayer = 0;
 	}

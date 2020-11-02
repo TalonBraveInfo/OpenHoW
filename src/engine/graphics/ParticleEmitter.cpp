@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-#include "../script/JsonReader.h"
-
+#include "App.h"
+#include "script/JsonReader.h"
 #include "particles.h"
 #include "ParticleEmitter.h"
 
-ParticleEmitter::ParticleEmitter( JsonReader &jsonReader ) {
+ohw::ParticleEmitter::ParticleEmitter( JsonReader &jsonReader ) {
 	myGravity = jsonReader.GetFloatProperty( "gravity" );
 
 	randomLifeSpanFactor = jsonReader.GetFloatProperty( "randomLifeSpawnFactor" );
@@ -79,12 +78,12 @@ ParticleEmitter::ParticleEmitter( JsonReader &jsonReader ) {
 	isActive = jsonReader.GetBooleanProperty( "isActive" );
 }
 
-void ParticleEmitter::Tick() {
+void ohw::ParticleEmitter::Tick() {
 	for ( auto &i : particles ) {
 		i.Tick();
 	}
 }
 
-void ParticleEmitter::Draw() {
+void ohw::ParticleEmitter::Draw() {
 	// TODO: figure out how we're going to batch these depending on type...
 }
