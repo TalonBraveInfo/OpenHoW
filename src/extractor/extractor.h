@@ -22,7 +22,9 @@
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
-#include "../../shared/util.h"
+#define Print( ... )    plLogMessage( 0, __VA_ARGS__ )
+#define Warning( ... )  plLogMessage( 1, __VA_ARGS__ )
+#define Error( ... )    plLogMessage( 2, __VA_ARGS__ ); exit( EXIT_FAILURE )
 
 typedef enum ERegion {
 	REGION_UNKNOWN = -1,

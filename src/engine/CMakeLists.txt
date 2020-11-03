@@ -25,14 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project( engine )
+project(OpenHoW)
 
 add_definitions(
         "-DIMGUI_IMPL_OPENGL_LOADER_GLEW"   # Required for OpenGL3.x imgui setup
-        "-DCOMPILE_ENGINE"
 )
 
-file( GLOB OPENHOW_SOURCE_FILES
+file(GLOB OPENHOW_SOURCE_FILES
         *.cpp *.c
         *.h
 
@@ -64,9 +63,9 @@ file( GLOB OPENHOW_SOURCE_FILES
         ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 
-add_executable( engine ${OPENHOW_SOURCE_FILES} App.cpp App.h)
+add_executable(OpenHoW ${OPENHOW_SOURCE_FILES} App.cpp App.h)
 
-target_include_directories( engine PRIVATE
+target_include_directories(OpenHoW PRIVATE
         ./
         ./audio/
         ./editor/
@@ -74,32 +73,35 @@ target_include_directories( engine PRIVATE
         ./graphics/
         ./loaders/
         ./physics/
-        ./script/ )
-target_link_libraries( engine platform )
+        ./script/)
+target_link_libraries(OpenHoW platform)
 
-if(WIN32)
-    add_dependencies( engine OpenAL)
+if (WIN32)
+    add_dependencies(OpenHoW OpenAL)
 
-    target_include_directories( engine PRIVATE
+    target_include_directories(OpenHoW PRIVATE
             ../3rdparty/SDL2/include/
             ../3rdparty/openal-soft/include/
             # below is hack to get imgui compiled on Windows with GLEW.
             ../3rdparty/platform/platform/3rdparty/glew-2.2.0/include/
             )
-    target_link_directories( engine PRIVATE ../3rdparty/SDL2/lib/ ../3rdparty/openal-soft/lib/ ../../lib/)
-    target_link_options( engine PRIVATE -mwindows)
-    target_link_libraries( engine -Wl,-Bstatic SDL2 OpenAL32 stdc++ winpthread -Wl,-Bdynamic -static-libstdc++ -static-libgcc
+    target_link_directories(OpenHoW PRIVATE
+            ../3rdparty/SDL2/lib/
+            ../3rdparty/openal-soft/lib/
+            ../../lib/)
+    target_link_options(OpenHoW PRIVATE -mwindows)
+    target_link_libraries(OpenHoW -Wl,-Bstatic SDL2 OpenAL32 stdc++ winpthread -Wl,-Bdynamic -static-libstdc++ -static-libgcc
             # Window Libraries
             Version SetupAPI Winmm Imm32)
-elseif(APPLE)
-    target_include_directories( engine PRIVATE
+elseif (APPLE)
+    target_include_directories(OpenHoW PRIVATE
             ../3rdparty/platform/platform/3rdparty/glew-2.2.0/include/)
-    target_link_libraries( engine OpenAL SDL2)
-else()
-    target_link_libraries( engine openal SDL2 pthread dl)
-endif()
+    target_link_libraries(OpenHoW OpenAL SDL2)
+elseif (UNIX)
+    target_link_libraries(OpenHoW openal SDL2 pthread dl)
+else ()
+    message("Unsupported platform!")
+endif ()
 
-#set_target_properties(src PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
-
-target_compile_options( engine PUBLIC -fPIC )
-target_include_directories( engine PUBLIC ../3rdparty/imgui/ script/duktape-2.2.0/ )
+target_compile_options(OpenHoW PUBLIC -fPIC)
+target_include_directories(OpenHoW PUBLIC ../3rdparty/imgui/ script/duktape-2.2.0/)

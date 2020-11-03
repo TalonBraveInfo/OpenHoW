@@ -20,8 +20,6 @@
 
 #include "extractor.h"
 
-#include "../../shared/fac.h"
-
 static char g_input_path[PL_SYSTEM_MAX_PATH] = { '\0' };
 static char g_output_path[PL_SYSTEM_MAX_PATH];
 
@@ -264,7 +262,7 @@ static void ConvertModelData( void ) {
 			fac->texture_table = u_alloc( table_size, sizeof( FacTextureIndex ), true );
 			fac->texture_table_size = table_size;
 			memcpy( fac->texture_table, table, sizeof( FacTextureIndex ) * table_size );
-			u_free( table );
+			free( table );
 
 			// write out the fac and replace it (we'll append the table to the end)
 			snprintf( fac_path, PL_SYSTEM_MAX_PATH, "%s.fac", model_paths[ j ] );
@@ -308,7 +306,7 @@ static void ExtractPtgPackage( const char *input_path, const char *output_path )
 		ConvertImageToPng( out_path );
 	}
 
-	u_fclose( file );
+	fclose( file );
 }
 
 static void ExtractMadPackage( const char *input_path, const char *output_path ) {
@@ -550,7 +548,11 @@ int main( int argc, char **argv ) {
 
 	char log_path[PL_SYSTEM_MAX_PATH];
 	snprintf( log_path, PL_SYSTEM_MAX_PATH, "%s/extractor", app_dir );
-	u_init_logs( log_path );
+	plSetupLogOutput( log_path );
+
+	plSetupLogLevel( 0, "print", PL_COLOUR_GREEN, true );
+	plSetupLogLevel( 1, "warning", PL_COLOUR_YELLOW, true );
+	plSetupLogLevel( 2, "error", PL_COLOUR_RED, true );
 
 	/* now deal with any arguments */
 

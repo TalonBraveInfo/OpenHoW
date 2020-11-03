@@ -28,13 +28,10 @@ For more information, please refer to <http://unlicense.org>
 project(extractor)
 
 add_executable(extractor
-        ../../shared/util.c
-        ../../shared/fac.c
-        ../../shared/min.c
-        ../../shared/no2.c
-        ../../shared/vtx.c
-
-        extractor.c
+        extractor.c extractor.h
+        pc_copy_paths.h
+        pc_music_paths.h
+        pc_package_paths.h
         version.c
         )
 

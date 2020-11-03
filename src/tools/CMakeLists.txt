@@ -44,5 +44,5 @@ endif()
 set(PL_USE_GRAPHICS OFF CACHE BOOL "Graphics")
 add_subdirectory(../3rdparty/platform/platform ${CMAKE_SOURCE_DIR}../../lib/ EXCLUDE_FROM_ALL)
 
-add_subdirectory(extractor)
 add_subdirectory(ptgtool)
+add_subdirectory(img2pmg)
