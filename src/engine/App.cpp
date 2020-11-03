@@ -22,9 +22,6 @@
 #include "config.h"
 #include "Menu.h"
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-
 #define WINDOW_TITLE        "OpenHoW"
 #define WINDOW_MIN_WIDTH    640
 #define WINDOW_MIN_HEIGHT   480

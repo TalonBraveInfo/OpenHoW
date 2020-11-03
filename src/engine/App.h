@@ -28,6 +28,7 @@
 #include <PL/pl_graphics.h>
 #include <PL/platform_console.h>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
 #include "Utilities.h"
