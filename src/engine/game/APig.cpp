@@ -92,10 +92,10 @@ void APig::HandleInput() {
 void APig::Tick() {
 	SuperClass::Tick();
 
-	float speedModifier = 1.0f;
+	//float speedModifier = 1.0f;
 	if ( !IsGrounded() ) {
 		if ( parachuteWeapon->IsDeployed() ) {
-			speedModifier = 10.0f;
+			//speedModifier = 10.0f;
 		}
 
 		velocity.y = -75.0f;

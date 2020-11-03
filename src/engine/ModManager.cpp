@@ -75,6 +75,10 @@ void ohw::ModManager::Mount( const char *name ) {
 	}
 
 	Print( "Mod has been set to \"%s\"\n", mod->name.c_str() );
+
+#if defined( _DEBUG )
+	plParseConsoleString( "fsListMounted" );
+#endif
 }
 
 void ohw::ModManager::Unmount() {

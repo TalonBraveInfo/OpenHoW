@@ -16,7 +16,7 @@
  */
 
 #include "App.h"
-#include "display.h"
+#include "Display.h"
 #include "imgui_layer.h"
 #include "Language.h"
 #include "config.h"
@@ -90,19 +90,8 @@ ohw::App::App( int argc, char **argv ) {
 	SDL_StartTextInput();
 
 	resourceManager = new ResourceManager();
-
-	// Setup the mod manager and mount the default mod
 	modManager = new ModManager();
-	const char *var = plGetCommandLineArgumentValue( "-mod" );
-	if ( var == nullptr ) {
-		// otherwise default to base campaign
-		var = "how";
-	}
-	modManager->Mount( var );
-
 	inputManager = new InputManager();
-
-	plParseConsoleString( "fsListMounted" );
 }
 
 void ohw::App::Shutdown() {
@@ -171,9 +160,6 @@ void ohw::App::DisplayMessageBox( MBErrorLevel level, const char *message, ... )
 void ohw::App::InitializeConfig() {
 	Console_Initialize();
 
-	// Initialize the language manager
-	LanguageManager::GetInstance()->SetLanguage( "eng" );
-
 	/* this MUST be done after all vars have been
 	 * initialized, otherwise, right now, certain
 	 * vars will not be loaded/saved! */
@@ -229,11 +215,15 @@ void ohw::App::InitializeDisplay() {
 			continue;
 		}
 
+		// Skip any modes that are smaller than our minimum allowed sizes
+		if ( mode.w < WINDOW_MIN_WIDTH || mode.h < WINDOW_MIN_HEIGHT ) {
+			continue;
+		}
+
 		Print( " mode %d : %dx%d %d\n", i, mode.w, mode.h, mode.refresh_rate );
 
 		myDisplayPresets.push_back( DisplayPreset( mode.w, mode.h, mode.refresh_rate ) );
 	}
-	Print( "%s display modes available\n", numModes );
 
 	SDL_DisableScreenSaver();
 
@@ -250,6 +240,17 @@ void ohw::App::InitializeAudio() {
 }
 
 void ohw::App::InitializeGame() {
+	const char *var = plGetCommandLineArgumentValue( "-mod" );
+	if ( var == nullptr ) {
+		// otherwise default to base campaign
+		var = "how";
+	}
+
+	modManager->Mount( var );
+
+	// Initialize the language manager
+	LanguageManager::GetInstance()->SetLanguage( "eng" );
+
 	gameManager = new GameManager();
 	gameManager->CachePersistentData();
 
@@ -338,6 +339,9 @@ void ohw::App::CreateDisplay( int w, int h, int flags ) {
 	}
 
 	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
+	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		Error( "Failed to set graphics subsystem!\nPL: %s\n", plGetError() );
+	}
 }
 
 ///////////////////////////////////////////////
@@ -607,6 +611,7 @@ int main( int argc, char** argv ) {
 #endif
 
 	appInstance = new ohw::App( argc, argv );
+
 	appInstance->InitializeConfig();
 	appInstance->InitializeDisplay();
 	appInstance->InitializeAudio();

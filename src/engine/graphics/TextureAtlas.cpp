@@ -16,7 +16,7 @@
  */
 
 #include "App.h"
-#include "display.h"
+#include "Display.h"
 #include "TextureAtlas.h"
 
 ohw::TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {

@@ -17,7 +17,7 @@
 
 #include "App.h"
 #include "BitmapFont.h"
-#include "display.h"
+#include "Display.h"
 
 ohw::BitmapFont::BitmapFont() {
 	renderMesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 512, 256 );

@@ -47,7 +47,7 @@ namespace ohw {
 		Resource *GetCachedResource( const std::string &path );
 		PL_INLINE Resource *CacheResource( const std::string &path, Resource *resourcePtr, bool persist = false ) {
 			resourcesMap.insert( std::pair< std::string, Resource* >( path, resourcePtr ) );
-			DebugMsg( "Cached resource, \"%s\"\n", path.c_str() );
+			//DebugMsg( "Cached resource, \"%s\"\n", path.c_str() );
 			return resourcePtr;
 		}
 

@@ -17,7 +17,7 @@
 
 #include "App.h"
 #include "graphics/ShaderManager.h"
-#include "graphics/display.h"
+#include "graphics/Display.h"
 #include "graphics/Camera.h"
 #include "imgui_layer.h"
 #include "model.h"

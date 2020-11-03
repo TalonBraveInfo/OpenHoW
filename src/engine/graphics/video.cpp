@@ -176,8 +176,9 @@ void Video_SkipCurrent(void) {
     FE_RestoreLastState();
 }
 
-static void ProcessVideo(void) {
 #if 0
+static void ProcessVideo(void) {
+
     do {
         /* decode the video */
 
@@ -212,8 +213,8 @@ static void ProcessVideo(void) {
 
 
     } while(video.av_packet->stream_index != video.stream_index);
-#endif
 }
+#endif
 
 void Video_Draw(void) {
     static PLMesh *mesh = NULL;
@@ -246,7 +247,16 @@ void Video_Draw(void) {
 
     Shaders_SetProgramByName("generic_textured");
 
+    PLShaderProgram *program = plGetCurrentShaderProgram();
+    if ( program == nullptr ) {
+    	return;
+    }
+
     /* todo pass correct texture */
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
+    PLMatrix4 matrix;
+    matrix.Identity();
+
+    plSetShaderUniformValue( program, "pl_model", &matrix, false );
+
     plDrawMesh(mesh);
 }

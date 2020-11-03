@@ -18,7 +18,7 @@
 #include "App.h"
 #include "Menu.h"
 #include "Map.h"
-#include "graphics/display.h"
+#include "graphics/Display.h"
 #include "graphics/video.h"
 #include "graphics/Camera.h"
 #include "graphics/ShaderManager.h"

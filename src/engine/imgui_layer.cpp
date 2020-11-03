@@ -17,7 +17,7 @@
 
 #include "App.h"
 #include "imgui_layer.h"
-#include "graphics/display.h"
+#include "graphics/Display.h"
 #include "graphics/Camera.h"
 
 #include <SDL2/SDL_syswm.h>
@@ -41,7 +41,6 @@
 #include "Language.h"
 
 static bool show_quit = false;
-static bool show_file = false;
 static bool show_console = false;
 static bool show_settings = false;
 

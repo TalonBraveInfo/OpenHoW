@@ -23,7 +23,7 @@
 #include "game/ActorManager.h"
 
 #include "ShaderManager.h"
-#include "display.h"
+#include "Display.h"
 #include "Camera.h"
 
 /* shared function */
@@ -60,7 +60,7 @@ void Display_Shutdown() {
 void Display_GetFramesCount( unsigned int *fps, unsigned int *ms ) {
 	static unsigned int fps_ = 0;
 	static unsigned int ms_ = 0;
-	static unsigned int update_delay = 60;
+	//static unsigned int update_delay = 60;
 #if 0 // todo: revisit
 	if ( update_delay < g_state.draw_ticks && g_state.last_draw_ms > 0 ) {
 		ms_ = g_state.last_draw_ms;
