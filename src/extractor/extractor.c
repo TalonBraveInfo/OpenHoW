@@ -26,15 +26,13 @@ static char g_output_path[PL_SYSTEM_MAX_PATH];
 
 //#define PARANOID_DATA
 //#define EXPORT_NORMALS
-//#define CONVERT_TIMS
+#define CONVERT_TIMS
 
 /************************************************************/
 /* Data Conversion */
 
 static void ConvertImageToPng( const char *path ) {
 #if defined( CONVERT_TIMS )
-	LogInfo( "Converting %s...\n", path );
-
 	// figure out if the file already exists before
 	// we even start trying to convert this thing
 	char out_path[PL_SYSTEM_MAX_PATH];
@@ -45,26 +43,26 @@ static void ConvertImageToPng( const char *path ) {
 		return;
 	}
 
-	PLImage image;
-	if ( !plLoadImage( path, &image ) ) {
-		LogWarn( "Failed to load image, \"%s\" (%s)!\n", path, plGetError() );
+	PLImage *image = plLoadImage( path );
+	if ( image == NULL ) {
+		Warning( "Failed to load image, \"%s\" (%s)!\n", path, plGetError() );
 		return;
 	}
 
 	const char *ext = plGetFileExtension( path );
 	if ( ext != NULL && ext[ 0 ] != '\0' && strcmp( ext, "tim" ) == 0 ) {
 		// ensure that it's a format we're able to convert from
-		if ( image.format == PL_IMAGEFORMAT_RGB5A1 ) {
-			if ( plConvertPixelFormat( &image, PL_IMAGEFORMAT_RGBA8 ) ) {
-				plReplaceImageColour( &image, PLColour( 255, 0, 255, 255 ), PLColour( 0, 0, 0, 0 ) );
-				if ( !plWriteImage( &image, out_path ) ) {
-					LogWarn( "Failed to write PNG, \"%s\" (%s)!\n", out_path, plGetError() );
+		if ( image->format == PL_IMAGEFORMAT_RGB5A1 ) {
+			if ( plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 ) ) {
+				plReplaceImageColour( image, PLColour( 255, 0, 255, 255 ), PLColour( 0, 0, 0, 0 ) );
+				if ( !plWriteImage( image, out_path ) ) {
+					Warning( "Failed to write PNG, \"%s\" (%s)!\n", out_path, plGetError() );
 				}
 			} else {
-				LogWarn( "Failed to convert \"%s\", %s, aborting!\n", path, plGetError() );
+				Warning( "Failed to convert \"%s\", %s, aborting!\n", path, plGetError() );
 			}
 		} else {
-			LogWarn( "Unexpected pixel format in \"%s\", aborting!\n", path );
+			Warning( "Unexpected pixel format in \"%s\", aborting!\n", path );
 		}
 	}
 
@@ -72,7 +70,7 @@ static void ConvertImageToPng( const char *path ) {
 		plDeleteFile( path );
 	}
 
-	plFreeImage( &image );
+	plDestroyImage( image );
 #endif
 }
 
@@ -548,7 +546,7 @@ int main( int argc, char **argv ) {
 	plInitialize( argc, argv );
 
 	plRegisterStandardPackageLoaders();
-	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TIM | PL_IMAGE_FILEFORMAT_BMP );
+	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TIM | PL_IMAGE_FILEFORMAT_BMP | PL_IMAGE_FILEFORMAT_PNG );
 
 	char app_dir[PL_SYSTEM_MAX_PATH];
 	plGetApplicationDataDirectory( "OpenHoW", app_dir, PL_SYSTEM_MAX_PATH );
