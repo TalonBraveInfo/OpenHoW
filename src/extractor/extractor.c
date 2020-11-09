@@ -19,6 +19,7 @@
 #include <PL/platform_package.h>
 
 #include "extractor.h"
+#include "fac.h"
 
 static char g_input_path[PL_SYSTEM_MAX_PATH] = { '\0' };
 static char g_output_path[PL_SYSTEM_MAX_PATH];
@@ -220,7 +221,12 @@ static void ConvertModelData( void ) {
 			}
 
 			// we'll resize this later...
-			FacTextureIndex *table = u_alloc( package->table_size, sizeof( FacTextureIndex ), true );
+			FacTextureIndex *table = calloc( package->table_size, sizeof( FacTextureIndex ) );
+			if ( table == NULL ) {
+				Warning( "Failed to allocate texture table!\n" );
+				continue;
+			}
+
 			unsigned int table_size = 0;
 
 			FacHandle *fac = Fac_LoadFile( fac_path );
@@ -259,7 +265,11 @@ static void ConvertModelData( void ) {
 				fac->triangles[ k ].texture_index = l;
 			}
 
-			fac->texture_table = u_alloc( table_size, sizeof( FacTextureIndex ), true );
+			fac->texture_table = calloc( table_size, sizeof( FacTextureIndex ) );
+			if ( fac->texture_table == NULL ) {
+				Error( "Failed to allocate texture table for output!\n" );
+			}
+
 			fac->texture_table_size = table_size;
 			memcpy( fac->texture_table, table, sizeof( FacTextureIndex ) * table_size );
 			free( table );

@@ -29,6 +29,7 @@ project(extractor)
 
 add_executable(extractor
         extractor.c extractor.h
+        fac.c fac.h
         pc_copy_paths.h
         pc_music_paths.h
         pc_package_paths.h
