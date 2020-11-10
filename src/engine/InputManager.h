@@ -113,8 +113,8 @@ namespace ohw {
 
 	protected:
 	private:
-		void (*InputFocusCallback)( int input, bool status );
-		void (*InputTextCallback)( const char *c );
+		void (*InputFocusCallback)( int input, bool status ){ nullptr };
+		void (*InputTextCallback)( const char *c ){ nullptr };
 
 		PLVector2 myMouseCoords;
 		bool myMouseButtonStates[MAX_MOUSE_BUTTONS];
