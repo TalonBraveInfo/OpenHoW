@@ -168,9 +168,14 @@ void ohw::BitmapFont::AddCharacterToPass( float x, float y, float scale, PLColou
 		return;
 	}
 
+	Display *display = GetApp()->GetDisplay();
+	if ( display == nullptr ) {
+		return;
+	}
+
 	// Ensure it's on screen
 	int dW, dH;
-	GetApp()->GetDisplaySize( &dW, &dH );
+	display->GetDisplaySize( &dW, &dH );
 	if ( x > dW || y > dH || x + bitmapChar->w < 0 || y + bitmapChar->h < 0 ) {
 		return;
 	}

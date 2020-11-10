@@ -161,11 +161,10 @@ static void Cmd_RebuildShaderProgram( unsigned int argc, char *argv[] ) {
 }
 
 void Shaders_Initialize() {
-	plRegisterConsoleCommand( "Listohw::ShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
-	plRegisterConsoleCommand( "Rebuildohw::ShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
-	plRegisterConsoleCommand( "Rebuildohw::ShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
-	plRegisterConsoleCommand( "Rebuildohw::ShaderProgramCache", Cmd_RebuildShaderProgramCache,
-	                          "Rebuild shader program cache" );
+	plRegisterConsoleCommand( "ListShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
+	plRegisterConsoleCommand( "RebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
+	plRegisterConsoleCommand( "RebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
+	plRegisterConsoleCommand( "RebuildShaderProgramCache", Cmd_RebuildShaderProgramCache, "Rebuild shader program cache" );
 
 	Shaders_CachePrograms();
 }

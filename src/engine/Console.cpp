@@ -125,7 +125,12 @@ static void DebugModeCallback( const PLConsoleVariable *variable ) {
 }
 
 static void GraphicsVsyncCallback( const PLConsoleVariable *var ) {
-	GetApp()->SetSwapInterval( var->b_value ? 1 : 0 );
+	Display *display = GetApp()->GetDisplay();
+	if ( display == nullptr ) {
+		return;
+	}
+
+	display->SetSwapInterval( var->b_value ? 1 : 0 );
 }
 
 /************************************************************/

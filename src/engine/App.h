@@ -32,7 +32,10 @@
 #include <SDL2/SDL.h>
 
 #include "Utilities.h"
+#include "Timer.h"
 #include "Console.h"
+
+#include "graphics/Display.h"
 
 #define APP_NAME    "OpenHoW"
 
@@ -79,11 +82,7 @@ namespace ohw {
 		void InitializeAudio();
 		void InitializeGame();
 
-		void SwapDisplay();
-		int SetSwapInterval( int interval );
-
-		void SetDisplaySize( int width, int height, bool fullscreen );
-		void GetDisplaySize( int *width, int *height );
+		inline Display *GetDisplay() { return myDisplay; }
 
 		struct DisplayPreset {
 			DisplayPreset( int w, int h, int r ) : width( w ), height( h ), refresh( r ) {}
@@ -92,7 +91,6 @@ namespace ohw {
 			int height;
 			int refresh;
 		};
-
 		typedef std::vector< DisplayPreset > DisplayPresetVector;
 		inline const DisplayPresetVector *GetDisplayPresets() const {
 			return &myDisplayPresets;
@@ -100,9 +98,6 @@ namespace ohw {
 
 		static void SetClipboardText( void *, const char *text );
 		static const char *GetClipboardText( void * );
-
-	private:
-		void CreateDisplay( int w, int h, int flags );
 
 		///////////////////////////////////////////////
 		// Events
@@ -125,23 +120,32 @@ namespace ohw {
 		AudioManager *audioManager;
 		ResourceManager *resourceManager;
 
-	private:
-		void SetWindowIcon( const char *path );
+		//////////////////////////////////////////////////////
+		// PROFILING
 
-		SDL_Window *myWindow{ nullptr };
-		void *myGLContext{ nullptr };
+		void StartPerformanceTimer( const char *identifier );
+		void EndPerformanceTimer( const char *identifier );
+
+	private:
+		Display *myDisplay;
 
 		std::vector< DisplayPreset > myDisplayPresets;
-		int myDesiredDisplay{ 0 };
 
 		double deltaTime;
 		unsigned int numSysTicks{ 0 };
 		unsigned int lastSysTick{ 0 };
-		unsigned int numDrawTicks{ 0 };
-		unsigned int lastDrawTick{ 0 };
-		unsigned int lastDrawMS{ 0 };
 		unsigned int numSimTicks{ 0 };
+
+		std::map< std::string, Timer > myPerformanceTimers;
 	};
 
 	App *GetApp();
 }
+
+#if defined( DEBUG_BUILD )
+#   define START_MEASURE() ohw::GetApp()->StartPerformanceTimer( __PRETTY_FUNCTION__ )
+#   define END_MEASURE()   ohw::GetApp()->EndPerformanceTimer( __PRETTY_FUNCTION__ )
+#else
+#   define START_MEASURE()
+#   define END_MEASURE()
+#endif

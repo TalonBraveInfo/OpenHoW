@@ -19,14 +19,44 @@
 
 #include <PL/pl_graphics_camera.h>
 
-void Display_Initialize( void );
-void Display_Shutdown( void );
+#define DISPLAY_MIN_WIDTH    640
+#define DISPLAY_MIN_HEIGHT   480
 
-void Display_UpdateViewport( int x, int y, int width, int height );
+namespace ohw {
+	class Display {
+	public:
+		Display( const char *title, int w, int h, unsigned int desiredScreen, bool fullscreen);
+		~Display();
+
+		void SetIcon( const char *path );
+
+		void Render( double delta );
+
+		void SetDisplaySize( int w, int h, bool fullscreen );
+		void GetDisplaySize( int *w, int *h );
+
+		void Swap();
+		int SetSwapInterval( int desiredInterval );
+
+		bool HandleEvent( const SDL_Event &event );
+
+	protected:
+	private:
+		void RenderScene();
+		void RenderOverlays();
+		void RenderDebugOverlays();
+
+		unsigned int numDrawTicks{ 0 };
+		unsigned int lastDrawTick{ 0 };
+		unsigned int lastDrawMS{ 0 };
+
+		int myDesiredScreen{ 0 };
+
+		SDL_Window *myWindow{ nullptr };
+		SDL_GLContext myGLContext{ nullptr };
+	};
+}
 
 // debugging
 void Display_GetFramesCount( unsigned int *fps, unsigned int *ms );
-
-void Display_Draw( double delta );
-
 extern const char *supportedTextureFormats[];

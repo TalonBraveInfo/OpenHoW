@@ -597,10 +597,10 @@ void UI_DisplayDebugMenu( void ) {
 
 			if ( ImGui::BeginMenu( "Console Commands" ) ) {
 				size_t num;
-				const PLConsoleCommand **cmds;
+				PLConsoleCommand **cmds;
 				plGetConsoleCommands( &cmds, &num );
 
-				for ( const PLConsoleCommand **cmd = cmds; cmd < num + cmds; ++cmd ) {
+				for ( PLConsoleCommand **cmd = cmds; cmd < num + cmds; ++cmd ) {
 					if ( ImGui::MenuItem( ( *cmd )->cmd ) ) {
 						plParseConsoleString( ( *cmd )->cmd );
 					}

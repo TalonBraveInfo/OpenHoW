@@ -19,41 +19,10 @@
 #include "imgui_layer.h"
 #include "Menu.h"
 #include "Map.h"
-
-#include "game/ActorManager.h"
-
 #include "ShaderManager.h"
-#include "Display.h"
 #include "Camera.h"
 
-/* shared function */
-void Display_UpdateViewport( int x, int y, int width, int height ) {
-	Menu_UpdateViewport( x, y, width, height );
-
-	ohw::Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
-	if ( camera == nullptr ) {
-		Warning( "Attempted to update the camera viewport with no active camera!\n" );
-		return;
-	}
-
-	camera->SetViewport( x, y, width, height );
-}
-
-void Display_Initialize() {
-	ohw::GetApp()->SetSwapInterval( cv_display_vsync->b_value ? 1 : 0 );
-
-	Shaders_Initialize();
-
-	//////////////////////////////////////////////////////////
-
-	plSetCullMode( PL_CULL_POSTIVE );
-
-	plSetDepthMask( true );
-}
-
-void Display_Shutdown() {
-	Shaders_Shutdown();
-}
+#include "game/ActorManager.h"
 
 /************************************************************/
 
@@ -73,16 +42,6 @@ void Display_GetFramesCount( unsigned int *fps, unsigned int *ms ) {
 	*ms = ms_;
 }
 
-static void DrawDebugOverlay() {
-	if ( cv_debug_mode->i_value <= 0 ) {
-		return;
-	}
-
-	UI_DisplayDebugMenu(); /* aka imgui */
-}
-
-double cur_delta = 0;
-
 static void Display_DrawMap() {
 	ohw::Map *map = ohw::GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
@@ -92,11 +51,150 @@ static void Display_DrawMap() {
 	map->Draw();
 }
 
-void Display_DrawScene() {
+ohw::Display::Display( const char *title, int w, int h, unsigned int desiredScreen, bool fullscreen ) :
+	myDesiredScreen( desiredScreen ) {
+	// Fetch the display size.
+	SDL_Rect displayBounds;
+	SDL_GetDisplayBounds( myDesiredScreen, &displayBounds );
+	if ( fullscreen || w < DISPLAY_MIN_WIDTH || h < DISPLAY_MIN_HEIGHT ) {
+		w = displayBounds.w;
+		h = displayBounds.h;
+	}
+
+	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+	SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
+#ifdef _DEBUG
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
+#else
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
+#endif
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+
+	int defaultFlags =
+			SDL_WINDOW_OPENGL |
+			SDL_WINDOW_MOUSE_FOCUS |
+			SDL_WINDOW_INPUT_FOCUS |
+			SDL_WINDOW_ALLOW_HIGHDPI;
+	// Assume borderless if it matches desktop resolution.
+	if ( w == displayBounds.w && h == displayBounds.h ) {
+		defaultFlags |= SDL_WINDOW_BORDERLESS;
+	}
+
+	myWindow = SDL_CreateWindow(
+			title,
+			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredScreen ),
+			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredScreen ),
+			w, h,
+			defaultFlags );
+	if ( myWindow == nullptr ) {
+		Error( "Failed to create window!\nSDL: %s\n", SDL_GetError() );
+	}
+
+	SDL_SetWindowMinimumSize( myWindow, DISPLAY_MIN_WIDTH, DISPLAY_MIN_HEIGHT );
+
+	//SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_CaptureMouse( SDL_TRUE );
+
+	// Now create the GL context
+	myGLContext = SDL_GL_CreateContext( myWindow );
+	if ( myGLContext == nullptr ) {
+		Error( "Failed to create OpenGL context!\nSDL: %s\n", SDL_GetError() );
+	}
+
+	// platform library graphics subsystem can init now
+	if ( plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS ) != PL_RESULT_SUCCESS ) {
+		Error( "Failed to initialize platform graphics subsystem!\nPL: %s\n", plGetError() );
+	}
+
+	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
+	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		Error( "Failed to set graphics subsystem!\nPL: %s\n", plGetError() );
+	}
+
+	Shaders_Initialize();
+}
+
+ohw::Display::~Display() {
+	Shaders_Shutdown();
+
+	SDL_CaptureMouse( SDL_FALSE );
+
+	if ( myGLContext != nullptr ) {
+		SDL_GL_DeleteContext( myGLContext );
+	}
+	if ( myWindow != nullptr ) {
+		SDL_DestroyWindow( myWindow );
+	}
+}
+
+void ohw::Display::SetIcon( const char *path ) {
+	PLImage *image = plLoadImage( path );
+	if ( image == nullptr ) {
+		Warning( "Failed to load image, %s!\nPL: %s\n", path, plGetError() );
+		return;
+	}
+
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+			image->data[ 0 ],
+			// Casting casting casting, why o why
+			static_cast<signed>( image->width ),
+			static_cast<signed>( image->height ),
+			32,
+			static_cast<signed>( image->width * 4 ),
+			0x000000ff,
+			0x0000ff00,
+			0x00ff0000,
+			0xff000000
+	);
+	if ( surface != nullptr ) {
+		SDL_SetWindowIcon( myWindow, surface );
+		SDL_FreeSurface( surface );
+	} else {
+		Warning( "Failed to create requested SDL surface!\nSDL: %s\n", SDL_GetError() );
+	}
+
+	plDestroyImage( image );
+}
+
+void ohw::Display::Render( double delta ) {
+	START_MEASURE();
+
+	numDrawTicks = GetApp()->GetTicks();
+
+	plSetCullMode( PL_CULL_POSTIVE );
+
+	plSetDepthMask( true );
+	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
+
+	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+
+	plSetClearColour( PLColour( 0, 0, 0, 255 ) );
+	plClearBuffers( PL_BUFFER_DEPTH | PL_BUFFER_COLOUR );
+
+	RenderScene();
+	RenderOverlays();
+
+	END_MEASURE();
+
+	RenderDebugOverlays();
+
+	Swap();
+}
+
+void ohw::Display::RenderScene() {
 	ohw::Camera *camera = ohw::GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
+
+	START_MEASURE();
+
+	int w, h;
+	GetDisplaySize( &w, &h );
+	camera->SetViewport( 0, 0, w, h );
 
 	// Sync the camera state before we make it active
 	camera->SetFieldOfView( cv_camera_fov->f_value );
@@ -122,29 +220,84 @@ void Display_DrawScene() {
 	Shaders_SetProgramByName( "generic_untextured" );
 
 	ohw::GetApp()->audioManager->DrawSources();
+
+	END_MEASURE();
 }
 
-void Display_Draw( double delta ) {
-	ImGuiImpl_SetupFrame();
-
-	plSetClearColour( PLColour( 0, 0, 0, 255 ) );
-
-	unsigned int clear_flags = PL_BUFFER_DEPTH;
-	if ( FrontEnd_GetState() == FE_MODE_GAME || cv_debug_mode->i_value > 0 ) {
-		clear_flags |= PL_BUFFER_COLOUR;
-	}
-	plClearBuffers( clear_flags );
-
-	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
-
-	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
-
-	Display_DrawScene();
+void ohw::Display::RenderOverlays() {
+	START_MEASURE();
 
 	Menu_Draw();
-	DrawDebugOverlay();
 
-	ImGuiImpl_Draw();
+	END_MEASURE();
+}
 
-	ohw::GetApp()->SwapDisplay();
+void ohw::Display::RenderDebugOverlays() {
+	if ( cv_debug_mode->i_value <= 0 ) {
+		return;
+	}
+
+	UI_DisplayDebugMenu(); /* aka imgui */
+}
+
+void ohw::Display::SetDisplaySize( int w, int h, bool fullscreen ) {
+	if ( fullscreen ) {
+		// Fetch the display size
+		SDL_Rect displayBounds;
+		SDL_GetDisplayBounds( myDesiredScreen, &displayBounds );
+		w = displayBounds.w;
+		h = displayBounds.h;
+
+		SDL_SetWindowBordered( myWindow, SDL_FALSE );
+	} else {
+		SDL_SetWindowBordered( myWindow, SDL_TRUE );
+	}
+
+	SDL_SetWindowSize( myWindow, w, h );
+	SDL_SetWindowPosition( myWindow,
+	                       SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredScreen ),
+	                       SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredScreen ) );
+
+	plSetConsoleVariable( cv_display_width, std::to_string( w ).c_str() );
+	plSetConsoleVariable( cv_display_height, std::to_string( h ).c_str() );
+	plSetConsoleVariable( cv_display_fullscreen, fullscreen ? "1" : "0" );
+}
+
+void ohw::Display::GetDisplaySize( int *w, int *h ) {
+	SDL_GL_GetDrawableSize( myWindow, w, h );
+}
+
+void ohw::Display::Swap() {
+	SDL_GL_SwapWindow( myWindow );
+
+	// Best place to do this?
+	lastDrawMS = GetApp()->GetTicks() - numDrawTicks;
+}
+
+int ohw::Display::SetSwapInterval( int desiredInterval ) {
+	if ( SDL_GL_SetSwapInterval( desiredInterval ) != 0 ) {
+		Warning( "Failed to set desired swap interval \"%d\"!\n", desiredInterval );
+	}
+
+	return SDL_GL_GetSwapInterval();
+}
+
+bool ohw::Display::HandleEvent( const SDL_Event &event ) {
+	switch( event.type ) {
+		default: break;
+		case SDL_WINDOWEVENT: {
+			switch( event.window.type ) {
+				default: break;
+				case SDL_WINDOWEVENT_RESIZED:
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+					plSetConsoleVariable( cv_display_width, std::to_string( event.window.data1 ).c_str() );
+					plSetConsoleVariable( cv_display_height, std::to_string( event.window.data2 ).c_str() );
+					Menu_UpdateViewport(0, 0, event.window.data1, event.window.data2 );
+					return true;
+			}
+			break;
+		}
+	}
+
+	return false;
 }

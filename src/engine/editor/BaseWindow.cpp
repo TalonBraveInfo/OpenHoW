@@ -24,8 +24,13 @@ void BaseWindow::Begin( const std::string &windowTitle, unsigned int flags ) {
 	if ( IsFullscreen() ) {
 		flags |= ImGuiWindowFlags_NoDecoration;
 
+		ohw::Display *display = ohw::GetApp()->GetDisplay();
+		if ( display == nullptr ) {
+			Error( "Attempted to setup ImGui window before display initialized!\n" );
+		}
+
 		int width, height;
-		ohw::GetApp()->GetDisplaySize( &width, &height );
+		display->GetDisplaySize( &width, &height );
 
 		ImGui::SetNextWindowPos( ImVec2( 0, 0 ) );
 		ImGui::SetNextWindowSize( ImVec2( static_cast< float >( width ), static_cast< float >( height ) ),

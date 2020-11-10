@@ -23,8 +23,6 @@
 #include "Menu.h"
 
 #define WINDOW_TITLE        "OpenHoW"
-#define WINDOW_MIN_WIDTH    640
-#define WINDOW_MIN_HEIGHT   480
 
 ohw::App *appInstance;
 ohw::App *ohw::GetApp() {
@@ -84,6 +82,8 @@ ohw::App::App( int argc, char **argv ) {
 		Error( "Failed to initialize SDL2!\nSDL: %s", SDL_GetError() );
 	}
 
+	SDL_DisableScreenSaver();
+
 	/* using this to catch modified keys
 	 * without having to do the conversion
 	 * ourselves                            */
@@ -105,22 +105,11 @@ void ohw::App::Shutdown() {
 	delete gameManager;
 	delete audioManager;
 	delete resourceManager;
-
-	Display_Shutdown();
+	delete myDisplay;
 
 	LanguageManager::DestroyInstance();
 
 	SDL_StopTextInput();
-
-	if ( myGLContext != nullptr ) {
-		SDL_GL_DeleteContext( myGLContext );
-	}
-
-	if ( myWindow != nullptr ) {
-		SDL_DestroyWindow( myWindow );
-	}
-
-	SDL_ShowCursor( SDL_TRUE );
 
 	SDL_EnableScreenSaver();
 	SDL_Quit();
@@ -174,62 +163,46 @@ void ohw::App::InitializeDisplay() {
 		int i = std::strtol( arg, nullptr, 10 );
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, i );
 	}
+
 	int width = 0;
 	arg = plGetCommandLineArgumentValue( "-width" );
 	if ( arg != nullptr ) {
 		width = std::strtol( arg, nullptr, 10 );
 	}
+
 	int height = 0;
 	arg = plGetCommandLineArgumentValue( "-height" );
 	if ( arg != nullptr ) {
 		height = std::strtol( arg, nullptr, 10 );
 	}
+
+	int desiredDisplay = 0;
 	arg = plGetCommandLineArgumentValue( "-display" );
 	if ( arg != nullptr ) {
-		myDesiredDisplay = std::strtol( arg, nullptr, 10 );
+		desiredDisplay = std::strtol( arg, nullptr, 10 );
 	}
 
-	int defaultFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_ALLOW_HIGHDPI;
-
-	// Fetch the display size
-	SDL_Rect displayBounds;
-	SDL_GetDisplayBounds( myDesiredDisplay, &displayBounds );
-	if ( width == 0 || height == 0 ) {
-		width = displayBounds.w;
-		height = displayBounds.h;
-	}
-
-	// Assume borderless if it matches desktop resolution
-	if ( width == displayBounds.w && height == displayBounds.h ) {
-		defaultFlags |= SDL_WINDOW_BORDERLESS;
-	}
-
-	CreateDisplay( width, height, defaultFlags );
+	myDisplay = new Display( WINDOW_TITLE, width, height, desiredDisplay, true );
+	myDisplay->SetIcon( "icon.png" );
 
 	// Fetch all the available display modes
-	int numModes = SDL_GetNumDisplayModes( myDesiredDisplay );
+	Print( "Querying display modes...\n" );
+	int numModes = SDL_GetNumDisplayModes( desiredDisplay );
 	for ( int i = 0; i < numModes; ++i ) {
 		SDL_DisplayMode mode;
-		if ( SDL_GetDisplayMode( myDesiredDisplay, i, &mode ) != 0 ) {
+		if ( SDL_GetDisplayMode( desiredDisplay, i, &mode ) != 0 ) {
 			Warning( "Failed to get display mode %d via SDL!\nSDL: %s\n", i, SDL_GetError() );
 			continue;
 		}
 
 		// Skip any modes that are smaller than our minimum allowed sizes
-		if ( mode.w < WINDOW_MIN_WIDTH || mode.h < WINDOW_MIN_HEIGHT ) {
+		if ( mode.w < DISPLAY_MIN_WIDTH || mode.h < DISPLAY_MIN_HEIGHT ) {
 			continue;
 		}
 
-		Print( " mode %d : %dx%d %d\n", i, mode.w, mode.h, mode.refresh_rate );
-
+		//Print( " mode %d : %dx%d %d\n", i, mode.w, mode.h, mode.refresh_rate );
 		myDisplayPresets.push_back( DisplayPreset( mode.w, mode.h, mode.refresh_rate ) );
 	}
-
-	SDL_DisableScreenSaver();
-
-	//SDL_SetRelativeMouseMode(SDL_TRUE);
-	SDL_CaptureMouse( SDL_TRUE );
-	SDL_ShowCursor( SDL_TRUE );
 
 	ImGuiImpl_Setup();
 }
@@ -240,14 +213,6 @@ void ohw::App::InitializeAudio() {
 }
 
 void ohw::App::InitializeGame() {
-	const char *var = plGetCommandLineArgumentValue( "-mod" );
-	if ( var == nullptr ) {
-		// otherwise default to base campaign
-		var = "how";
-	}
-
-	modManager->Mount( var );
-
 	// Initialize the language manager
 	LanguageManager::GetInstance()->SetLanguage( "eng" );
 
@@ -255,93 +220,6 @@ void ohw::App::InitializeGame() {
 	gameManager->CachePersistentData();
 
 	Menu_Initialize();
-}
-
-void ohw::App::SwapDisplay() {
-	SDL_GL_SwapWindow( myWindow );
-
-	// Best place to do this?
-	lastDrawMS = GetTicks() - numDrawTicks;
-}
-
-int ohw::App::SetSwapInterval( int interval ) {
-	if ( SDL_GL_SetSwapInterval( interval ) != 0 ) {
-		Warning( "Failed to set desired swap interval (%d)!\n", interval );
-	}
-
-	return SDL_GL_GetSwapInterval();
-}
-
-void ohw::App::SetDisplaySize( int width, int height, bool fullscreen ) {
-	plSetConsoleVariable( cv_display_fullscreen, fullscreen ? "true" : "false" );
-
-	if ( fullscreen ) {
-		// Fetch the display size
-		SDL_Rect displayBounds;
-		SDL_GetDisplayBounds( myDesiredDisplay, &displayBounds );
-		width = displayBounds.w;
-		height = displayBounds.h;
-
-		SDL_SetWindowBordered( myWindow, SDL_FALSE );
-	} else {
-		SDL_SetWindowBordered( myWindow, SDL_TRUE );
-	}
-
-	SDL_SetWindowSize( myWindow, width, height );
-	SDL_SetWindowPosition( myWindow,
-	                       SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
-	                       SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ) );
-
-	plSetConsoleVariable( cv_display_width, std::to_string( width ).c_str() );
-	plSetConsoleVariable( cv_display_height, std::to_string( height ).c_str() );
-}
-
-void ohw::App::GetDisplaySize( int *width, int *height ) {
-	SDL_GL_GetDrawableSize( myWindow, width, height );
-}
-
-void ohw::App::CreateDisplay( int w, int h, int flags ) {
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
-	SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
-#ifdef _DEBUG
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
-#else
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
-#endif
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
-
-	myWindow = SDL_CreateWindow(
-			WINDOW_TITLE,
-			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
-			SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredDisplay ),
-			w, h,
-			flags );
-	if ( myWindow == nullptr ) {
-		Error( "Failed to create window!\nSDL: %s\n", SDL_GetError() );
-	}
-
-	SetWindowIcon( "icon.png" );
-
-	SDL_SetWindowMinimumSize( myWindow, WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT );
-
-	// Now create the GL context
-	myGLContext = SDL_GL_CreateContext( myWindow );
-	if ( myGLContext == nullptr ) {
-		Error( "Failed to create OpenGL context!\nSDL: %s\n", SDL_GetError() );
-	}
-
-	// platform library graphics subsystem can init now
-	if ( plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS ) != PL_RESULT_SUCCESS ) {
-		Error( "Failed to initialize platform graphics subsystem!\nPL: %s\n", plGetError() );
-	}
-
-	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		Error( "Failed to set graphics subsystem!\nPL: %s\n", plGetError() );
-	}
 }
 
 ///////////////////////////////////////////////
@@ -432,7 +310,7 @@ void ohw::App::PollEvents() {
 	SDL_Event event;
 	while ( SDL_PollEvent( &event ) ) {
 		// Check if ImGui wants to handle the event first
-		if ( ImGuiImpl_HandleEvent( event ) ) {
+		if ( ImGuiImpl_HandleEvent( event ) || myDisplay->HandleEvent( event ) ) {
 			continue;
 		}
 
@@ -492,13 +370,6 @@ void ohw::App::PollEvents() {
 				Shutdown();
 				break;
 			}
-
-			case SDL_WINDOWEVENT: {
-				if ( event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
-					Display_UpdateViewport( 0, 0, event.window.data1, event.window.data2 );
-				}
-				break;
-			}
 		}
 	}
 }
@@ -517,6 +388,9 @@ const char *ohw::App::GetVersionString() {
 }
 
 bool ohw::App::IsRunning() {
+	// Clear all the profiling timers
+	myPerformanceTimers.clear();
+
 	PollEvents();
 
 	static unsigned int nextTick = 0;
@@ -529,11 +403,8 @@ bool ohw::App::IsRunning() {
 		numSysTicks = SDL_GetTicks();
 		numSimTicks++;
 
-#if 0
-		Physics()->Tick();
-		Game()->Tick();
-		Audio()->Tick();
-#endif
+		gameManager->Tick();
+		audioManager->Tick();
 
 		lastSysTick = SDL_GetTicks();
 		nextTick += SKIP_TICKS;
@@ -541,9 +412,8 @@ bool ohw::App::IsRunning() {
 	}
 
 	deltaTime = ( double ) ( SDL_GetTicks() + SKIP_TICKS - nextTick ) / ( double ) ( SKIP_TICKS );
-	numDrawTicks = GetTicks();
 
-	Display_Draw( deltaTime );
+	myDisplay->Render( deltaTime );
 
 	return true;
 }
@@ -575,34 +445,21 @@ void ohw::App::SetClipboardText( void *, const char *text ) {
 	SDL_SetClipboardText( text );
 }
 
-void ohw::App::SetWindowIcon( const char *path ) {
-	PLImage *image = plLoadImage( path );
-	if ( image == nullptr ) {
-		Warning( "Failed to load image, %s!\nPL: %s\n", path, plGetError() );
+//////////////////////////////////////////////////////
+// PROFILING
+
+void ohw::App::StartPerformanceTimer( const char *identifier ) {
+	myPerformanceTimers.insert( std::pair< std::string, Timer >( identifier, Timer() ) );
+}
+
+void ohw::App::EndPerformanceTimer( const char *identifier ) {
+	auto i = myPerformanceTimers.find( identifier );
+	if ( i == myPerformanceTimers.end() ) {
+		Warning( "Attempted to end an invalid timer, \"%s\"!\n", identifier );
 		return;
 	}
 
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
-			image->data[ 0 ],
-			// Casting casting casting, why o why
-			static_cast<signed>( image->width ),
-			static_cast<signed>( image->height ),
-			32,
-			static_cast<signed>( image->width * 4 ),
-			0x000000ff,
-			0x0000ff00,
-			0x00ff0000,
-			0xff000000
-	);
-	if ( surface == nullptr ) {
-		Warning( "Failed to create requested SDL surface!\nSDL: %s\n", SDL_GetError() );
-	} else {
-		SDL_SetWindowIcon( myWindow, surface );
-	}
-
-	SDL_FreeSurface( surface );
-
-	plDestroyImage( image );
+	i->second.End();
 }
 
 int main( int argc, char** argv ) {
@@ -611,6 +468,14 @@ int main( int argc, char** argv ) {
 #endif
 
 	appInstance = new ohw::App( argc, argv );
+
+	// Check the mod here, so we can add our VFS paths.
+	const char *var = plGetCommandLineArgumentValue( "-mod" );
+	if ( var == nullptr ) {
+		// otherwise default to base campaign
+		var = "how";
+	}
+	appInstance->modManager->Mount( var );
 
 	appInstance->InitializeConfig();
 	appInstance->InitializeDisplay();
