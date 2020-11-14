@@ -76,8 +76,8 @@ void Menu_Initialize() {
 	menuCamera->fov = 90;
 	menuCamera->near = 0;
 	menuCamera->far = 1000;
-	menuCamera->viewport.w = cv_display_width->i_value;
-	menuCamera->viewport.h = cv_display_height->i_value;
+	menuCamera->viewport.w = DISPLAY_MIN_WIDTH;
+	menuCamera->viewport.h = DISPLAY_MIN_HEIGHT;
 }
 
 void Menu_UpdateViewport( int x, int y, int width, int height ) {
@@ -340,6 +340,15 @@ static void DrawLoadingScreen() {
 }
 
 void Menu_Draw() {
+	ohw::Display *display = ohw::GetApp()->GetDisplay();
+	if ( display == nullptr ) {
+		return;
+	}
+
+	int w, h;
+	display->GetDisplaySize( &w, &h );
+	Menu_UpdateViewport( 0, 0, w, h );
+
 	Shaders_SetProgramByName( "generic_textured" );
 
 	plSetupCamera( menuCamera );

@@ -46,8 +46,6 @@ static bool show_settings = false;
 
 static std::vector< BaseWindow * > windows;
 
-static PLCamera *imguiCamera = nullptr;
-
 using namespace ohw;
 
 #define IMGUI_POS_CENTER \
@@ -64,9 +62,10 @@ void ImGuiImpl_Setup() {
 
 	ImGuiIO &io = ImGui::GetIO();
 
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	io.BackendFlags |=
+			ImGuiBackendFlags_HasMouseCursors |
+			ImGuiBackendFlags_HasSetMousePos;
 	//io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
-	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
 	io.KeyMap[ ImGuiKey_Tab ] = SDL_SCANCODE_TAB;
 	io.KeyMap[ ImGuiKey_LeftArrow ] = SDL_SCANCODE_LEFT;
@@ -105,7 +104,6 @@ void ImGuiImpl_Setup() {
 
 	ImGui_ImplOpenGL3_Init();
 
-
 	io.Fonts->Clear();
 
 	// Load in the default font
@@ -127,33 +125,39 @@ void ImGuiImpl_Setup() {
 		Warning( "Failed to add font from memory! Falling back to default...\n" );
 		io.Fonts->AddFontDefault();
 	}
-
-	imguiCamera = plCreateCamera();
-	if ( imguiCamera == nullptr ) {
-		Error( "failed to create ui camera, aborting!\n%s\n", plGetError() );
-	}
-
-	imguiCamera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
-	imguiCamera->fov = 90;
-	imguiCamera->near = 0;
-	imguiCamera->far = 1000;
-	imguiCamera->viewport.w = cv_display_width->i_value;
-	imguiCamera->viewport.h = cv_display_height->i_value;
-}
-
-void ImGuiImpl_SetupCamera( void ) {
-
 }
 
 void ImGuiImpl_SetupFrame( void ) {
+	const PLViewport *viewport = plGetCurrentViewport();
+	if ( viewport == nullptr ) {
+		return;
+	}
+
+	ImGuiIO &io = ImGui::GetIO();
+	io.DisplaySize = ImVec2( viewport->w, viewport->h );
+
 	ImGui_ImplOpenGL3_NewFrame();
+
 	ImGui::NewFrame();
+}
+
+void ImGuiImpl_Tick( void ) {
+	ImGuiIO &io = ImGui::GetIO();
+	if ( io.WantSetMousePos ) {
+		ohw::Display *display = ohw::GetApp()->GetDisplay();
+		if ( display != nullptr ) {
+			display->SetMousePosition( io.MousePos.x, io.MousePos.y );
+		}
+	} else {
+		io.MousePos = ImVec2( -FLT_MAX, -FLT_MAX );
+	}
+
+
 }
 
 void ImGuiImpl_Draw( void ) {
 	ImGui::Render();
 
-	plSetupCamera( imguiCamera );
 	plSetShaderProgram( nullptr );
 
 	ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
@@ -681,6 +685,30 @@ void UI_DisplayDebugMenu( void ) {
 		}
 	}
 
+	static bool perfMenuState = false;
+	ImGui::SetNextWindowSize( ImVec2( 320, 128 ) );
+	ImGui::SetNextWindowPos( ImVec2(
+			static_cast<float>(cv_display_width->i_value) - 322,
+			static_cast<float>(cv_display_height->i_value) - 130 ), ImGuiCond_Always );
+	if ( ImGui::Begin( "PerfMenu", &perfMenuState, ImGuiWindowFlags_NoDecoration ) ) {
+		static std::vector< float > deltaTimes;
+		if ( deltaTimes.size() >= 64 ) {
+			deltaTimes.erase( deltaTimes.begin() );
+		}
+		deltaTimes.push_back( ohw::GetApp()->GetDeltaTime() );
+		ImGui::PlotLines( "Delta Time", deltaTimes.data(), deltaTimes.size(), 0, nullptr, 0.0f, 1.0f );
+
+		ImGui::Text( "Simulation Ticks\n%d", ohw::GetApp()->GetSimulationTicks() );
+		ImGui::SameLine();
+		ImGui::Text( "Total Ticks\n%d", ohw::GetApp()->GetTicks() );
+
+		ImGui::Text( "Version\n%s", ohw::GetApp()->GetVersionString() );
+
+		ImGui::End();
+	}
+
+	//ImGui::ShowDemoWindow();
+
 	for ( auto window = windows.begin(); window != windows.end(); ) {
 		if ( ( *window )->GetStatus() ) {
 			( *window )->Display();
@@ -699,10 +727,6 @@ void ImGuiImpl_RegisterWindow( BaseWindow *window ) {
 
 bool ImGuiImpl_HandleEvent( const SDL_Event &event ) {
 	ImGuiIO &io = ImGui::GetIO();
-
-	if ( !io.WantCaptureKeyboard && !io.WantCaptureMouse ) {
-		return false;
-	}
 
 	switch ( event.type ) {
 		case SDL_KEYUP:
@@ -786,15 +810,6 @@ bool ImGuiImpl_HandleEvent( const SDL_Event &event ) {
 		case SDL_MOUSEMOTION: {
 			io.MousePos.x = event.motion.x;
 			io.MousePos.y = event.motion.y;
-			break;
-		}
-
-		case SDL_WINDOWEVENT: {
-			if ( event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
-				imguiCamera->viewport.w = event.window.data1;
-				imguiCamera->viewport.h = event.window.data2;
-				io.DisplaySize = ImVec2( event.window.data1, event.window.data2 );
-			}
 			break;
 		}
 	}

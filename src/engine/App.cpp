@@ -157,23 +157,31 @@ void ohw::App::InitializeConfig() {
 
 void ohw::App::InitializeDisplay() {
 	const char* arg;
+
 	// check the command line for any arguments
+
 	arg = plGetCommandLineArgumentValue( "-msaa" );
 	if ( arg != nullptr ) {
 		int i = std::strtol( arg, nullptr, 10 );
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, i );
 	}
 
-	int width = 0;
+	int width = cv_display_width->i_value;
 	arg = plGetCommandLineArgumentValue( "-width" );
 	if ( arg != nullptr ) {
 		width = std::strtol( arg, nullptr, 10 );
 	}
 
-	int height = 0;
+	int height = cv_display_height->i_value;
 	arg = plGetCommandLineArgumentValue( "-height" );
 	if ( arg != nullptr ) {
 		height = std::strtol( arg, nullptr, 10 );
+	}
+
+	bool fullscreen = cv_display_fullscreen->b_value;
+	arg = plGetCommandLineArgumentValue(  "-fullscreen" );
+	if ( arg != nullptr ) {
+		fullscreen = ( arg[ 0 ] == '1' );
 	}
 
 	int desiredDisplay = 0;
@@ -182,7 +190,7 @@ void ohw::App::InitializeDisplay() {
 		desiredDisplay = std::strtol( arg, nullptr, 10 );
 	}
 
-	myDisplay = new Display( WINDOW_TITLE, width, height, desiredDisplay, true );
+	myDisplay = new Display( WINDOW_TITLE, width, height, desiredDisplay, fullscreen );
 	myDisplay->SetIcon( "icon.png" );
 
 	// Fetch all the available display modes

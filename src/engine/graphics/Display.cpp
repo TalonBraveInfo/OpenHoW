@@ -23,6 +23,8 @@
 #include "Camera.h"
 
 #include "game/ActorManager.h"
+#include "Display.h"
+
 
 /************************************************************/
 
@@ -78,6 +80,8 @@ ohw::Display::Display( const char *title, int w, int h, unsigned int desiredScre
 			SDL_WINDOW_MOUSE_FOCUS |
 			SDL_WINDOW_INPUT_FOCUS |
 			SDL_WINDOW_ALLOW_HIGHDPI;
+	// SDL_WINDOW_ALLOW_HIGHDPI currently does nothing on Windows,
+	// see https://bugzilla.libsdl.org/show_bug.cgi?id=3281
 	// Assume borderless if it matches desktop resolution.
 	if ( w == displayBounds.w && h == displayBounds.h ) {
 		defaultFlags |= SDL_WINDOW_BORDERLESS;
@@ -237,7 +241,11 @@ void ohw::Display::RenderDebugOverlays() {
 		return;
 	}
 
+	ImGuiImpl_SetupFrame();
+
 	UI_DisplayDebugMenu(); /* aka imgui */
+
+	ImGuiImpl_Draw();
 }
 
 void ohw::Display::SetDisplaySize( int w, int h, bool fullscreen ) {
@@ -292,7 +300,6 @@ bool ohw::Display::HandleEvent( const SDL_Event &event ) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
 					plSetConsoleVariable( cv_display_width, std::to_string( event.window.data1 ).c_str() );
 					plSetConsoleVariable( cv_display_height, std::to_string( event.window.data2 ).c_str() );
-					Menu_UpdateViewport(0, 0, event.window.data1, event.window.data2 );
 					return true;
 			}
 			break;
@@ -300,4 +307,8 @@ bool ohw::Display::HandleEvent( const SDL_Event &event ) {
 	}
 
 	return false;
+}
+
+void ohw::Display::SetMousePosition( int x, int y ) {
+	SDL_WarpMouseInWindow( myWindow, x, y );
 }

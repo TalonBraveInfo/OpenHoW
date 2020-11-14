@@ -58,6 +58,8 @@ ohw::InputManager::InputManager() {
 
 	myBindings[ ACTION_PAUSE ].Bind( KEY_ESCAPE );
 	myBindings[ ACTION_PAUSE ].Bind( SDL_CONTROLLER_BUTTON_START );
+
+	ResetStates();
 }
 
 ohw::InputManager::~InputManager() {

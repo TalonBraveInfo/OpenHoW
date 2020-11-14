@@ -57,10 +57,9 @@ file(GLOB OPENHOW_SOURCE_FILES
         ../3rdparty/imgui/imgui.cpp
         ../3rdparty/imgui/imgui_draw.cpp
         ../3rdparty/imgui/imgui_widgets.cpp
-        #../3rdparty/imgui/imgui_demo.cpp
+        ../3rdparty/imgui/imgui_demo.cpp
         ../3rdparty/imgui/examples/imgui_impl_opengl3.cpp
         ../3rdparty/imgui/examples/imgui_impl_opengl3.h
-        ../3rdparty/imgui_tabs/imgui_tabs.cpp
         )
 
 add_executable(OpenHoW ${OPENHOW_SOURCE_FILES} App.cpp App.h)

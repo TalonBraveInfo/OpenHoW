@@ -157,7 +157,7 @@ void ohw::TextureAtlas::Finalize() {
 		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_LINEAR;
 	} else {
 		plSetTextureAnisotropy( texture_, 0 );
-		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR;
+		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST;
 	}
 
 	if ( !plUploadTextureImage( texture_, cache ) ) {

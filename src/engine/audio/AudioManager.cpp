@@ -533,7 +533,7 @@ void AudioManager::Tick() {
 
 	// ensure destruction of temporary sources
 	for ( auto source = temp_sources_.begin(); source != temp_sources_.end(); ) {
-		if (( *source )->IsPlaying() || ( *source )->IsPaused()) {
+		if ( ( *source )->IsPlaying() || ( *source )->IsPaused() ) {
 			++source;
 			continue;
 		}

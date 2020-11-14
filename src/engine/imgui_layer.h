@@ -29,7 +29,6 @@ class BaseWindow;
 
 void ImGuiImpl_Setup();
 
-void ImGuiImpl_SetupCamera();
 void ImGuiImpl_SetupFrame();
 void ImGuiImpl_Draw();
 

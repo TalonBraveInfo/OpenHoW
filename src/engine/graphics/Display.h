@@ -40,6 +40,8 @@ namespace ohw {
 
 		bool HandleEvent( const SDL_Event &event );
 
+		void SetMousePosition( int x, int y );
+
 	protected:
 	private:
 		void RenderScene();
