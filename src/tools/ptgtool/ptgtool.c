@@ -20,11 +20,11 @@
 
 #include "../../engine/engine.h"
 
-#undef LogInfo
-#undef LogWarn
+#undef Print
+#undef Warning
 #undef Error
-#define LogInfo(...)  plLogMessage(0, __VA_ARGS__)
-#define LogWarn(...)  plLogMessage(1, __VA_ARGS__)
+#define Print(...)  plLogMessage(0, __VA_ARGS__)
+#define Warning(...)  plLogMessage(1, __VA_ARGS__)
 #define Error(...)    plLogMessage(2, __VA_ARGS__); exit(EXIT_FAILURE)
 
 static FILE *ptg_fp = NULL;
@@ -51,7 +51,7 @@ static void PTG_CountDirectoryTextures(const char *path, void *userData) {
 
     /* now index it */
 
-    LogInfo("(%d) %s\n", num_textures, path);
+    Print( "(%d) %s\n", num_textures, path);
     strncpy(dir_textures[num_textures++], path, PL_SYSTEM_MAX_PATH);
 }
 
@@ -105,7 +105,7 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
 
         uint8_t tim[tim_size];
         if(fread(tim, tim_size, 1, file) != 1) {
-            LogInfo("failed to read tim, aborting!\n");
+            Print( "failed to read tim, aborting!\n");
             goto ABORT_PTG;
         }
 
@@ -113,13 +113,13 @@ static void PTG_Extract(const char *input_path, const char *output_path) {
         sprintf(out_path, "%s/%d.tim", output_path, i);
         FILE* out = fopen(out_path, "wb");
         if(out == NULL) {
-            LogInfo("failed to open %s for writing, aborting!\n", out_path);
+            Print( "failed to open %s for writing, aborting!\n", out_path);
             goto ABORT_PTG;
         }
 
         //print(" %s\n", out_path);
         if(fwrite(tim, tim_size, 1, out) != 1) {
-            LogInfo("Failed to write \"%s\", aborting!\n", out_path);
+            Print( "Failed to write \"%s\", aborting!\n", out_path);
         }
 
         u_fclose(out);
@@ -142,14 +142,14 @@ int main(int argc, char **argv) {
     plGetApplicationDataDirectory(ENGINE_APP_NAME, app_dir, PL_SYSTEM_MAX_PATH);
 
     if(!plCreatePath(app_dir)) {
-        LogWarn("Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError());
+        Warning( "Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError());
     }
 
     char log_path[PL_SYSTEM_MAX_PATH];
     snprintf(log_path, PL_SYSTEM_MAX_PATH, "%s/ptgtool", app_dir);
     plSetupLogOutput(log_path);
 
-    LogInfo("Log path: %s\n", log_path);
+    Print( "Log path: %s\n", log_path);
 
     plSetupLogLevel(0, "info", PLColour(0, 255, 0, 255), true);
     plSetupLogLevel(1, "warning", PLColour(255, 255, 0, 255), true);
@@ -179,10 +179,10 @@ int main(int argc, char **argv) {
     }
 
     strncpy(in_path, arg, sizeof(in_path));
-    LogInfo("Input: %s\n", in_path);
+    Print( "Input: %s\n", in_path);
     if(argc > 3 && (argv[3] != NULL && argv[3][0] != '\0')) {
         strncpy(out_path, argv[3], sizeof(out_path));
-        LogInfo("Output: %s\n", out_path);
+        Print( "Output: %s\n", out_path);
     } else if(mode == MODE_PACKAGE) {
         Error("Valid output path is required for packaging, aborting!\n");
     }
@@ -206,12 +206,12 @@ int main(int argc, char **argv) {
 
         plScanDirectory(in_path, "tim", PTG_CountDirectoryTextures, false, NULL );
 
-        LogInfo("Found %d textures for writing into \"%s\"...\n", num_textures, out_path);
+        Print( "Found %d textures for writing into \"%s\"...\n", num_textures, out_path);
 
         fwrite(&num_textures, sizeof(uint32_t), 1, ptg_fp);
         qsort(dir_textures[0], num_textures, PL_SYSTEM_MAX_PATH, PTG_SortTextures);
         for(unsigned int i = 0; i < num_textures; ++i) {
-            LogInfo("Writing \"%s\" (%d)\n", dir_textures[i], i);
+            Print( "Writing \"%s\" (%d)\n", dir_textures[i], i);
 			size_t tim_size = plGetLocalFileSize( dir_textures[ i ] );
 			uint8_t buf[tim_size];
             FILE *tim_fp = fopen(dir_textures[i], "rb");
@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
         fclose(ptg_fp);
     }
 
-    LogInfo("Done!\n");
+    Print( "Done!\n");
 
     return EXIT_SUCCESS;
 }

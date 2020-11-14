@@ -27,10 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 cmake_minimum_required(VERSION 3.5.1)
 
-project( OpenHoW )
+project(OpenHoW)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
-option( OHW_BUILD_TOOLS "Build tools and utilities" ON )
+option(OHW_BUILD_TOOLS "Build tools and utilities" ON)
 
 # Set all of our output directories.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
@@ -43,7 +43,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #GCC
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wsign-compare -Wno-unused-function -Wno-unused-variable -Wno-format-truncation -Wold-style-declaration")
-endif()
+endif ()
 
 add_definitions("-D_DEBUG")
 
@@ -51,15 +51,15 @@ function(build_openal)
     set(LIBTYPE "STATIC")
     add_definitions("-DAL_LIBTYPE_STATIC")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/src/3rdparty/openal-soft/lib/")
-    set(ALSOFT_UTILS    OFF CACHE BOOL "Build and install utility programs")
+    set(ALSOFT_UTILS OFF CACHE BOOL "Build and install utility programs")
     set(ALSOFT_EXAMPLES OFF CACHE BOOL "Build and install example programs")
-    set(ALSOFT_TESTS    OFF CACHE BOOL "Build and install test programs")
+    set(ALSOFT_TESTS OFF CACHE BOOL "Build and install test programs")
     add_subdirectory(src/3rdparty/openal-soft)
 endfunction()
 
-if(WIN32 OR APPLE)
+if (WIN32 OR APPLE)
     build_openal()
-endif()
+endif ()
 
 # Get the current working branch
 execute_process(
@@ -92,14 +92,6 @@ add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
 # 3rd-party libraries
 add_subdirectory(src/3rdparty/platform/platform)
 
-# tools and utilities
-if ( OHW_BUILD_TOOLS )
-    add_subdirectory(src/tools/extractor)
-    add_subdirectory(src/tools/ptgtool)
-    add_subdirectory(src/tools/img2pmg)
-endif()
-
 # core openhow components
-add_subdirectory( src/engine )
-#add_subdirectory( src/game )
-#add_subdirectory( src/launcher_sdl2 )
+add_subdirectory(src/extractor)
+add_subdirectory(src/engine)

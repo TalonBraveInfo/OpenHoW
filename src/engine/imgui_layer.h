@@ -27,11 +27,13 @@
 
 class BaseWindow;
 
-void ImGuiImpl_SetupCamera();
+void ImGuiImpl_Setup();
+
 void ImGuiImpl_SetupFrame();
 void ImGuiImpl_Draw();
-void ImGuiImpl_UpdateViewport(int w, int h);
 
 void ImGuiImpl_RegisterWindow( BaseWindow *window );
+
+bool ImGuiImpl_HandleEvent( const SDL_Event &event );
 
 void UI_DisplayDebugMenu(void);

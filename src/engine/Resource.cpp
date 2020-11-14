@@ -15,18 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
-#include "Resource.h"
+#include "App.h"
 
 ohw::Resource::Resource( const std::string &path, bool persist ) :
 	referencePath( path ),
 	persist( persist ) {
 	u_assert( !path.empty() );
-	LogDebug( "Created resource, \"%s\"\n", path.c_str() );
+	//DebugMsg( "Created resource, \"%s\"\n", path.c_str() );
 }
 
 ohw::Resource::~Resource() {
-	LogDebug( "Destroyed resource, \"%s\"\n", referencePath.c_str() );
+	DebugMsg( "Destroyed resource, \"%s\"\n", referencePath.c_str() );
 }
 
 /**

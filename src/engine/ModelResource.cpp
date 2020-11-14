@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "ModelResource.h"
-#include "texture_atlas.h"
+#include "TextureAtlas.h"
 #include "mesh.h"
 #include "WaveFrontReader.h"
-#include "graphics/camera.h"
+#include "graphics/Camera.h"
 
-#include "../shared/vtx.h"
-#include "../shared/fac.h"
-#include "../shared/no2.h"
+#include "loaders/VtxLoader.h"
+#include "loaders/FacLoader.h"
+#include "loaders/No2Loader.h"
 
 ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool abortOnFail ) :
 		Resource( path, persist ) {
@@ -34,7 +34,7 @@ ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool a
 			Error( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
 		}
 
-		LogWarn( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
+		Warning( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
 		return;
 	}
 
@@ -52,7 +52,7 @@ ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool a
 			Error( "Unrecognised file extension, \"%s\"!\n", fileExt );
 		}
 
-		LogWarn( "Unrecognised file extension, \"%s\"!\n", fileExt );
+		Warning( "Unrecognised file extension, \"%s\"!\n", fileExt );
 		return;
 	}
 
@@ -68,7 +68,7 @@ void ohw::ModelResource::Tick() {
 }
 
 void ohw::ModelResource::Draw( bool batchDraw ) {
-	Camera *camera = Engine::Game()->GetCamera();
+	Camera *camera = GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
@@ -83,7 +83,7 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 	}
 
 	if ( meshesVector.empty() ) {
-		PLModel *model = Engine::Resource()->GetFallbackModel();
+		PLModel *model = GetApp()->resourceManager->GetFallbackModel();
 		if ( model == nullptr ) {
 			return;
 		}
@@ -91,7 +91,6 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 		model->model_matrix = modelMatrix;
 
 		plDrawModel( model );
-		g_state.gfx.numModelsDrawn++;
 		return;
 	}
 
@@ -108,24 +107,22 @@ void ohw::ModelResource::Draw( bool batchDraw ) {
 	if ( cv_graphics_debug_normals->b_value ) {
 		DrawNormals();
 	}
-
-	g_state.gfx.numModelsDrawn++;
 }
 
 PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 	u_assert( i < meshesVector.size() );
 	if ( i >= meshesVector.size() ) {
-		LogWarn( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
+		Warning( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
 		return nullptr;
 	}
 
 	return meshesVector[ i ];
 }
 
-ohw::TextureResource *ohw::ModelResource::GetTextureResource(unsigned int i) {
+ohw::TextureResource *ohw::ModelResource::GetTextureResource( unsigned int i ) {
 	u_assert( i < texturesVector.size() );
 	if ( i >= texturesVector.size() ) {
-		LogWarn( "Attempted to access an invalid texture (%d/%d)!\n", i, texturesVector.size() );
+		Warning( "Attempted to access an invalid texture (%d/%d)!\n", i, texturesVector.size() );
 		return nullptr;
 	}
 
@@ -146,7 +143,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 				Error( "Failed to create mesh! (%s)\n", plGetError() );
 			}
 
-			LogWarn( "Failed to create mesh! (%s)\n", plGetError() );
+			Warning( "Failed to create mesh! (%s)\n", plGetError() );
 			return;
 		}
 
@@ -157,12 +154,12 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 
 		std::string textureName = obj.materials[ obj.attributes[ 0 ] ].strTexture;
 		if ( obj.materials.size() > 1 && !textureName.empty() ) {
-			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( textureName );
+			SharedTextureResourcePointer texture = GetApp()->resourceManager->LoadTexture( textureName );
 			texturesVector.push_back( texture );
 
 			mesh->texture = texture->GetInternalTexture();
 		} else {
-			mesh->texture = Engine::Resource()->GetFallbackTexture();
+			mesh->texture = GetApp()->resourceManager->GetFallbackTexture();
 		}
 
 		// Push the mesh into our vector
@@ -199,7 +196,7 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 			// Destroy all the attached meshes
 			DestroyMeshes();
 
-			LogWarn( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
 			return;
 		}
 
@@ -208,12 +205,12 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 		        sizeof( unsigned int ) * j->second.indices.size() );
 
 		if ( !j->second.material.strTexture.empty() ) {
-			SharedTextureResourcePointer texture = Engine::Resource()->LoadTexture( j->second.material.strTexture );
+			SharedTextureResourcePointer texture = GetApp()->resourceManager->LoadTexture( j->second.material.strTexture );
 			texturesVector.push_back( texture );
 
 			meshesVector[ i ]->texture = texture->GetInternalTexture();
 		} else {
-			meshesVector[ i ]->texture = Engine::Resource()->GetFallbackTexture();
+			meshesVector[ i ]->texture = GetApp()->resourceManager->GetFallbackTexture();
 		}
 
 		++i;
@@ -222,25 +219,24 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 	// Done!
 }
 
-static TextureAtlas *
-ModelResource_GenerateVtxTextureAtlas( const FacHandle *facHandle, const std::string &texturePath ) {
+static ohw::TextureAtlas *ModelResource_GenerateVtxTextureAtlas( const FacHandle *facHandle, const std::string &texturePath ) {
 	if ( facHandle->texture_table_size == 0 ) {
-		LogWarn( "Empty texture table!\n" );
+		Warning( "Empty texture table!\n" );
 		return nullptr;
 	}
 
-	TextureAtlas *atlas = new TextureAtlas( 128, 128 );
+	ohw::TextureAtlas *atlas = new ohw::TextureAtlas( 128, 128 );
 
 	for ( unsigned int i = 0; i < facHandle->texture_table_size; ++i ) {
 		if ( facHandle->texture_table[ i ].name[ 0 ] == '\0' ) {
-			LogWarn( "Invalid texture name in table, skipping (%d)!\n", i );
+			Warning( "Invalid texture name in table, skipping (%d)!\n", i );
 			continue;
 		}
 
 		std::string str = texturePath;
 		std::string texture_path = str.erase( str.find_last_of( '/' ) ) + "/";
 		if ( !atlas->AddImage( texture_path + facHandle->texture_table[ i ].name + ".png", true ) ) {
-			LogWarn( "Failed to add texture \"%s\" to atlas!\n", facHandle->texture_table[ i ].name );
+			Warning( "Failed to add texture \"%s\" to atlas!\n", facHandle->texture_table[ i ].name );
 		}
 	}
 
@@ -260,7 +256,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 			Error( "Failed to load Vtx, \"%s\"!\n", path.c_str() );
 		}
 
-		LogWarn( "Failed to load Vtx, \"%s\"!\n", path.c_str() );
+		Warning( "Failed to load Vtx, \"%s\"!\n", path.c_str() );
 		return;
 	}
 
@@ -275,7 +271,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 
 		Vtx_DestroyHandle( vtxHandle );
 
-		LogWarn( "Failed to load Fac, \"%s\"!\n", facesPath );
+		Warning( "Failed to load Fac, \"%s\"!\n", facesPath );
 		return;
 	}
 
@@ -292,7 +288,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 			Vtx_DestroyHandle( vtxHandle );
 			Fac_DestroyHandle( facHandle );
 
-			LogWarn( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
 			return;
 		}
 
@@ -315,7 +311,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		Vtx_DestroyHandle( vtxHandle );
 		Fac_DestroyHandle( facHandle );
 
-		mesh->texture = Engine::Resource()->GetFallbackTexture();
+		mesh->texture = GetApp()->resourceManager->GetFallbackTexture();
 
 		meshesVector.push_back( mesh );
 		return;
@@ -331,7 +327,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		Vtx_DestroyHandle( vtxHandle );
 		Fac_DestroyHandle( facHandle );
 
-		LogWarn( "Failed to create mesh!\nPL: %s\n", plGetError() );
+		Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
 		return;
 	}
 
@@ -396,7 +392,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		// TODO: we have no way of cleaning this up right now...
 		mesh->texture = textureAtlas->GetTexture();
 	} else {
-		mesh->texture = Engine::Resource()->GetFallbackTexture();
+		mesh->texture = GetApp()->resourceManager->GetFallbackTexture();
 	}
 
 	delete textureAtlas;

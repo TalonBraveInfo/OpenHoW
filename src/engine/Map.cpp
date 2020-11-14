@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
+#include "App.h"
 #include "Map.h"
 
-#include "graphics/shaders.h"
-#include "graphics/texture_atlas.h"
+#include "graphics/ShaderManager.h"
+#include "graphics/TextureAtlas.h"
 
 ohw::Map::Map( MapManifest *manifest ) : manifest_( manifest ) {
 	std::string base_path = "maps/" + manifest_->filename + "/";
@@ -56,7 +56,7 @@ ohw::Map::~Map() {
 }
 
 ohw::SharedModelResourcePointer ohw::Map::LoadSkyModel( const std::string &path ) {
-	SharedModelResourcePointer model = Engine::Resource()->LoadModel( path, true, true );
+	SharedModelResourcePointer model = GetApp()->resourceManager->LoadModel( path, true, true );
 
 	// Default skydome is smaller than the map, so we'll scale it
 	model->modelMatrix.Identity();
@@ -139,7 +139,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 	const char *cPath = path.c_str();
 	PLFile *fp = plOpenFile( cPath, false );
 	if ( fp == NULL ) {
-		LogWarn( "Failed to open actor data, \"%s\" (%s)!\n", cPath, plGetError() );
+		Warning( "Failed to open actor data, \"%s\" (%s)!\n", cPath, plGetError() );
 		return;
 	}
 
@@ -177,7 +177,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 		try {
 			spawns_[ i ].attachment = &spawns_.at( spawns[ i ].attached_actor_num );
 		} catch ( const std::out_of_range &e ) {
-			LogWarn( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
+			Warning( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
 			         plPrintVector3( &spawns_[ i ].position, pl_int_var ) );
 		}
 

@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../engine.h"
-
+#include "App.h"
 #include "particles.h"
 
-Particle::Particle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) :
+ohw::Particle::Particle( PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) :
 	myColour( startColour ),
 	myVelocity( velocity ),
 	myPosition( position ),
@@ -28,16 +27,16 @@ Particle::Particle( PLVector3 position, PLVector3 velocity, PLColour startColour
 
 // SpriteParticle
 
-SpriteParticle::SpriteParticle( const std::string &texturePath, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan ) :
+ohw::SpriteParticle::SpriteParticle( const std::string &texturePath, PLColour startColour, PLVector3 position, PLVector3 velocity, float lifeSpan ) :
 	Particle( position, velocity, startColour, lifeSpan ),
 	Sprite( SpriteType::TYPE_DEFAULT, texturePath ) {}
 
-SpriteParticle::~SpriteParticle() {}
+ohw::SpriteParticle::~SpriteParticle() {}
 
 // ModelParticle
 
-ModelParticle::ModelParticle( const std::string &modelPath, PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) : Particle( position, velocity, startColour, lifeSpan ) {
-	modelPtr = ohw::Engine::Resource()->LoadModel( modelPath );
+ohw::ModelParticle::ModelParticle( const std::string &modelPath, PLVector3 position, PLVector3 velocity, PLColour startColour, float lifeSpan ) : Particle( position, velocity, startColour, lifeSpan ) {
+	modelPtr = GetApp()->resourceManager->LoadModel( modelPath );
 }
 
-ModelParticle::~ModelParticle() {}
+ohw::ModelParticle::~ModelParticle() {}

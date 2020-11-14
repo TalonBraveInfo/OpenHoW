@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "terrain.h"
+#include "Terrain.h"
 
 struct MapManifest;
 

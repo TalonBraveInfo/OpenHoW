@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "base_window.h"
+#include "BaseWindow.h"
 
 namespace ohw {
 	class TexturePicker : public BaseWindow {

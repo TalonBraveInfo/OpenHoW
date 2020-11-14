@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "engine.h"
-#include "TextureResource.h"
+#include "App.h"
 
 // TODO: we should be able to query the platform library for this!!
 const char *supportedTextureFormats[] = { "png", "tga", "bmp", "tim", nullptr };
@@ -49,8 +48,8 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 				Error( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 			}
 
-			LogWarn( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
-			texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
+			Warning( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
+			texturePtr = GetApp()->resourceManager->GetFallbackTexture();
 		}
 
 		return;
@@ -86,14 +85,14 @@ ohw::TextureResource::TextureResource( const std::string &path, unsigned int fla
 		Error( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 	}
 
-	LogWarn( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
+	Warning( "Failed to load texture, \"%s\"!\nPL: %s\n", path.c_str(), plGetError() );
 
-	texturePtr = ohw::Engine::Resource()->GetFallbackTexture();
+	texturePtr = GetApp()->resourceManager->GetFallbackTexture();
 }
 
 ohw::TextureResource::~TextureResource() {
 	// Don't destroy the fallback!
-	PLTexture *placeholderTexture = Engine::Resource()->GetFallbackTexture();
+	PLTexture *placeholderTexture = GetApp()->resourceManager->GetFallbackTexture();
 	if ( texturePtr == placeholderTexture ) {
 		return;
 	}
