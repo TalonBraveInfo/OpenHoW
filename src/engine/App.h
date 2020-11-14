@@ -123,8 +123,11 @@ namespace ohw {
 		//////////////////////////////////////////////////////
 		// PROFILING
 
-		void StartPerformanceTimer( const char *identifier );
-		void EndPerformanceTimer( const char *identifier );
+		void StartProfilingGroup( const char *identifier );
+		void EndProfilingGroup( const char *identifier );
+
+		typedef std::map< std::string, Timer > ProfilerMap;
+		const ProfilerMap &GetProfilers() const { return myProfilers; }
 
 	private:
 		Display *myDisplay;
@@ -136,15 +139,15 @@ namespace ohw {
 		unsigned int lastSysTick{ 0 };
 		unsigned int numSimTicks{ 0 };
 
-		std::map< std::string, Timer > myPerformanceTimers;
+		ProfilerMap myProfilers;
 	};
 
 	App *GetApp();
 }
 
 #if defined( DEBUG_BUILD )
-#   define START_MEASURE() ohw::GetApp()->StartPerformanceTimer( __PRETTY_FUNCTION__ )
-#   define END_MEASURE()   ohw::GetApp()->EndPerformanceTimer( __PRETTY_FUNCTION__ )
+#   define START_MEASURE() ohw::GetApp()->StartProfilingGroup( __PRETTY_FUNCTION__ )
+#   define END_MEASURE()   ohw::GetApp()->EndProfilingGroup( __PRETTY_FUNCTION__ )
 #else
 #   define START_MEASURE()
 #   define END_MEASURE()

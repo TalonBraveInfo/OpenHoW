@@ -17,7 +17,6 @@
 
 #include "App.h"
 #include "imgui_layer.h"
-#include "graphics/Display.h"
 #include "graphics/Camera.h"
 
 #include <SDL2/SDL_syswm.h>
@@ -37,12 +36,21 @@
 #include "editor/NewGameWindow.h"
 #include "editor/ParticleEditor.h"
 #include "editor/TexturePicker.h"
+#include "editor/ConsoleWindow.h"
 
 #include "Language.h"
 
 static bool show_quit = false;
-static bool show_console = false;
 static bool show_settings = false;
+
+static ohw::ConsoleWindow *mainConsole = nullptr;
+static void ConsoleOutputCallback( int level, const char *msg ) {
+	if ( mainConsole == nullptr ) {
+		return;
+	}
+
+	mainConsole->PushMessage( level, msg );
+}
 
 static std::vector< BaseWindow * > windows;
 
@@ -122,9 +130,14 @@ void ImGuiImpl_Setup() {
 	plCloseFile( fontFile );
 
 	if ( io.Fonts->AddFontFromMemoryTTF( buf, fileSize, 16.f, nullptr, nullptr ) == nullptr ) {
-		Warning( "Failed to add font from memory! Falling back to default...\n" );
+		Warning( "Failed to add font, \"%s\", from memory!\n", fontPath );
 		io.Fonts->AddFontDefault();
 	}
+
+	mainConsole = new ohw::ConsoleWindow();
+	mainConsole->SetStatus( false );
+
+	plSetConsoleOutputCallback( ConsoleOutputCallback );
 }
 
 void ImGuiImpl_SetupFrame( void ) {
@@ -456,35 +469,10 @@ protected:
 private:
 };
 
-class ConsoleWindow : public BaseWindow {
-public:
-	void SendCommand() {
-		plParseConsoleString( input_buf_ );
-		strncpy( input_buf_, "", sizeof( input_buf_ ) );
-	}
-
-	void Display() override {
-		Camera *camera = GetApp()->gameManager->GetActiveCamera();
-		ImGui::SetNextWindowSize( ImVec2( ( float ) ( camera->GetViewportWidth() ) - 20, 128 ), ImGuiCond_Once );
-		ImGui::SetNextWindowPos( ImVec2( 10, ( float ) ( camera->GetViewportHeight() ) - 138 ) );
-		ImGui::Begin( "Console", &show_console );
-		if ( ImGui::InputText( "", input_buf_, 256, ImGuiInputTextFlags_EnterReturnsTrue )
-		     && input_buf_[ 0 ] != '\0' ) {
-			SendCommand();
-		}
-		ImGui::SameLine();
-		if ( ImGui::Button( "Submit" ) ) {
-			SendCommand();
-		}
-		ImGui::End();
-	}
-
-protected:
-private:
-	char input_buf_[256]{ '\0' };
-};
-
 void UI_DisplayDebugMenu( void ) {
+	int dW = cv_display_width->i_value;
+	int dH = cv_display_height->i_value;
+
 	static bool show_about = false;
 	if ( ImGui::BeginMainMenuBar() ) {
 		if ( ImGui::BeginMenu( "File" ) ) {
@@ -526,29 +514,9 @@ void UI_DisplayDebugMenu( void ) {
 
 			ImGui::Separator();
 
-			if ( ImGui::MenuItem( "Show Console", "`" ) ) {
-				windows.push_back( new ConsoleWindow() );
+			if ( ImGui::MenuItem( "Show Console", "`", mainConsole->GetStatus() ) ) {
+				mainConsole->ToggleStatus();
 			}
-
-#if 0
-			static int tc = 0;
-			if (ImGui::SliderInt("Show Texture Cache", &tc, 0, MAX_TEXTURE_INDEX)) {
-			  char buf[4];
-			  plSetConsoleVariable(cv_display_texture_cache, pl_itoa(tc - 1, buf, 4, 10));
-			}
-
-			if (ImGui::IsItemHovered() && tc > 0) {
-			  const PLTexture *texture = Display_GetCachedTexture(
-				  (unsigned int) cv_display_texture_cache->i_value);
-			  if (texture != nullptr) {
-				ImGui::BeginTooltip();
-				ImGui::Image(reinterpret_cast<ImTextureID>(texture->internal.id),
-							 ImVec2(texture->w, texture->h));
-				ImGui::Text("%d (%dx%d)", cv_display_texture_cache->i_value, texture->w, texture->h);
-				ImGui::EndTooltip();
-			  }
-			}
-#endif
 
 			ImGui::Separator();
 
@@ -662,11 +630,7 @@ void UI_DisplayDebugMenu( void ) {
 	// implementation done.
 	if ( !GetApp()->gameManager->IsModeActive() ) {
 		ImGui::SetNextWindowSize( ImVec2( 320, 128 ) );
-		ImGui::SetNextWindowPos( ImVec2(
-				static_cast<float>(cv_display_width->i_value) * 0.5f,
-				static_cast<float>(cv_display_height->i_value) * 0.5f ),
-		                         ImGuiCond_Always,
-		                         ImVec2( 0.5f, 0.5f ) );
+		ImGui::SetNextWindowPos( ImVec2( dW * 0.5f, dH * 0.5f ), ImGuiCond_Always, ImVec2( 0.5f, 0.5f ) );
 		static bool state = false;
 		if ( ImGui::Begin(
 				"InstructionMenu",
@@ -685,27 +649,19 @@ void UI_DisplayDebugMenu( void ) {
 		}
 	}
 
-	static bool perfMenuState = false;
-	ImGui::SetNextWindowSize( ImVec2( 320, 128 ) );
-	ImGui::SetNextWindowPos( ImVec2(
-			static_cast<float>(cv_display_width->i_value) - 322,
-			static_cast<float>(cv_display_height->i_value) - 130 ), ImGuiCond_Always );
-	if ( ImGui::Begin( "PerfMenu", &perfMenuState, ImGuiWindowFlags_NoDecoration ) ) {
-		static std::vector< float > deltaTimes;
-		if ( deltaTimes.size() >= 64 ) {
-			deltaTimes.erase( deltaTimes.begin() );
-		}
-		deltaTimes.push_back( ohw::GetApp()->GetDeltaTime() );
-		ImGui::PlotLines( "Delta Time", deltaTimes.data(), deltaTimes.size(), 0, nullptr, 0.0f, 1.0f );
-
-		ImGui::Text( "Simulation Ticks\n%d", ohw::GetApp()->GetSimulationTicks() );
-		ImGui::SameLine();
-		ImGui::Text( "Total Ticks\n%d", ohw::GetApp()->GetTicks() );
-
+#if defined( _DEBUG )
+	static bool versionMenuState = false;
+	static const int vW = 256, vH = 64;
+	ImGui::SetNextWindowSize( ImVec2( vW, vH ) );
+	ImGui::SetNextWindowPos( ImVec2( dW - ( vW + 2 ), dH - ( vH + 2 ) ), ImGuiCond_Always );
+	ImGui::SetNextWindowBgAlpha( 0.5f );
+	if ( ImGui::Begin( "VersionMenu", &versionMenuState, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize ) ) {
 		ImGui::Text( "Version\n%s", ohw::GetApp()->GetVersionString() );
-
 		ImGui::End();
 	}
+#endif
+
+	mainConsole->Display();
 
 	//ImGui::ShowDemoWindow();
 

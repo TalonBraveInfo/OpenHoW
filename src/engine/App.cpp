@@ -397,7 +397,7 @@ const char *ohw::App::GetVersionString() {
 
 bool ohw::App::IsRunning() {
 	// Clear all the profiling timers
-	myPerformanceTimers.clear();
+	myProfilers.clear();
 
 	PollEvents();
 
@@ -456,13 +456,13 @@ void ohw::App::SetClipboardText( void *, const char *text ) {
 //////////////////////////////////////////////////////
 // PROFILING
 
-void ohw::App::StartPerformanceTimer( const char *identifier ) {
-	myPerformanceTimers.insert( std::pair< std::string, Timer >( identifier, Timer() ) );
+void ohw::App::StartProfilingGroup( const char *identifier ) {
+	myProfilers.insert( std::pair< std::string, Timer >( identifier, Timer() ) );
 }
 
-void ohw::App::EndPerformanceTimer( const char *identifier ) {
-	auto i = myPerformanceTimers.find( identifier );
-	if ( i == myPerformanceTimers.end() ) {
+void ohw::App::EndProfilingGroup( const char *identifier ) {
+	auto i = myProfilers.find( identifier );
+	if ( i == myProfilers.end() ) {
 		Warning( "Attempted to end an invalid timer, \"%s\"!\n", identifier );
 		return;
 	}
