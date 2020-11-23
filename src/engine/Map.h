@@ -36,7 +36,7 @@ namespace ohw {
 		MapManifest *GetManifest() { return manifest_; }
 		Terrain *GetTerrain() { return terrain_; }
 
-		const std::vector< ActorSpawn > &GetSpawns() { return spawns_; }
+		const std::vector< ActorSpawn > &GetSpawns() { return actorSpawns; }
 
 		void UpdateSky();
 
@@ -49,7 +49,7 @@ namespace ohw {
 
 		MapManifest *manifest_{ nullptr };
 
-		std::vector< ActorSpawn > spawns_;
+		std::vector< ActorSpawn > actorSpawns;
 
 		SharedModelResourcePointer skyModelTop{ nullptr };
 		SharedModelResourcePointer skyModelBottom{ nullptr };

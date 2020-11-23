@@ -212,7 +212,7 @@ void APig::Deserialize( const ActorSpawn &spawn ) {
 	Map *map = GetApp()->gameManager->GetCurrentMap();
 	SetPosition( { position_.GetValue().x, map->GetTerrain()->GetMaxHeight(), position_.GetValue().z } );
 
-	SetClass( spawn.class_name );
+	SetClass( spawn.className );
 	SetTeam( spawn.team );
 
 	// Create and equip our parachute, and then

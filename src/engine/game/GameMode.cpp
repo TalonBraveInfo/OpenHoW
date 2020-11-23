@@ -97,7 +97,7 @@ void GameMode::SpawnActors() {
 
 	const std::vector< ActorSpawn > &spawns = map->GetSpawns();
 	for ( const auto &spawn : spawns ) {
-		Actor *actor = ActorManager::GetInstance()->CreateActor( spawn.class_name, spawn );
+		Actor *actor = ActorManager::GetInstance()->CreateActor( spawn.className, spawn );
 		if ( actor == nullptr ) {
 			actor = ActorManager::GetInstance()->CreateActor( "model_static", spawn );
 		}

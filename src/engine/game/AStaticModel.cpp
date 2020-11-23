@@ -27,10 +27,10 @@ AStaticModel::~AStaticModel() = default;
 void AStaticModel::Deserialize( const ActorSpawn &spawn ) {
 	SuperClass::Deserialize( spawn );
 
-	SetModel( "scenery/" + spawn.class_name + ".vtx" );
+	SetModel( "scenery/" + spawn.className + ".vtx" );
 
 	// Some models are horrible special cases
-	if ( spawn.class_name == "brid2_s" ) {
+	if ( spawn.className == "brid2_s" ) {
 		SetAngles( PLVector3( angles_.GetValue().x, plDegreesToRadians( -45.f ), angles_.GetValue().z ) );
 	}
 }

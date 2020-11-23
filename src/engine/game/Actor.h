@@ -45,7 +45,7 @@ enum ActorEvent {
 };
 
 struct ActorSpawn {
-	std::string class_name;
+	std::string className;
 	PLVector3 position; // position in the world
 	uint16_t index;                  // todo
 	PLVector3 angles; // angles in the world
@@ -62,7 +62,7 @@ struct ActorSpawn {
 	uint8_t objective_actor_id;
 	uint8_t objective_extra[2];
 
-	PLVector3 fallback_position;
+	PLVector3 fallbackPosition;
 
 	int16_t extra;
 	ActorSpawn *attachment{ nullptr };

@@ -156,39 +156,39 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 
 	plCloseFile( fp );
 
-	spawns_.resize( num_indices );
+	actorSpawns.resize( num_indices );
 
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
-		spawns_[ i ].position.x = static_cast<float>(spawns[ i ].position[ 0 ] + ( TERRAIN_PIXEL_WIDTH / 2 ));
-		spawns_[ i ].position.y = static_cast<float>(spawns[ i ].position[ 1 ]);
-		spawns_[ i ].position.z = static_cast<float>(( spawns[ i ].position[ 2 ] * -1 ) + ( TERRAIN_PIXEL_WIDTH / 2 ));
+		actorSpawns[ i ].position.x = static_cast<float>(spawns[ i ].position[ 0 ] + ( TERRAIN_PIXEL_WIDTH / 2 ));
+		actorSpawns[ i ].position.y = static_cast<float>(spawns[ i ].position[ 1 ]);
+		actorSpawns[ i ].position.z = static_cast<float>(( spawns[ i ].position[ 2 ] * -1 ) + ( TERRAIN_PIXEL_WIDTH / 2 ));
 
-		spawns_[ i ].fallback_position.x = ( spawns[ i ].fallback_position[ 0 ] += ( TERRAIN_PIXEL_WIDTH / 2 ) );
-		spawns_[ i ].fallback_position.y = ( spawns[ i ].fallback_position[ 1 ] );
-		spawns_[ i ].fallback_position.z = ( spawns[ i ].fallback_position[ 2 ] += ( TERRAIN_PIXEL_WIDTH / 2 ) * -1 );
+		actorSpawns[ i ].fallbackPosition.x = ( spawns[ i ].fallback_position[ 0 ] += ( TERRAIN_PIXEL_WIDTH / 2 ) );
+		actorSpawns[ i ].fallbackPosition.y = ( spawns[ i ].fallback_position[ 1 ] );
+		actorSpawns[ i ].fallbackPosition.z = ( spawns[ i ].fallback_position[ 2 ] += ( TERRAIN_PIXEL_WIDTH / 2 ) * -1 );
 
-		spawns_[ i ].angles.x = ( float ) ( spawns[ i ].angles[ 0 ] ) * ( 360.f / 4096.f );
-		spawns_[ i ].angles.y = ( float ) ( spawns[ i ].angles[ 1 ] ) * ( 360.f / 4096.f ) - 90.0f;
-		spawns_[ i ].angles.z = ( float ) ( spawns[ i ].angles[ 2 ] ) * ( 360.f / 4096.f ) + 180.0f;
+		actorSpawns[ i ].angles.x = ( float ) ( spawns[ i ].angles[ 0 ] ) * ( 360.f / 4096.f );
+		actorSpawns[ i ].angles.y = ( float ) ( spawns[ i ].angles[ 1 ] ) * ( 360.f / 4096.f ) - 90.0f;
+		actorSpawns[ i ].angles.z = ( float ) ( spawns[ i ].angles[ 2 ] ) * ( 360.f / 4096.f ) + 180.0f;
 
-		spawns_[ i ].class_name = u_stringtolower( spawns[ i ].name );
-		spawns_[ i ].appearance = spawns[ i ].appearance;
+		actorSpawns[ i ].className = u_stringtolower( spawns[ i ].name );
+		actorSpawns[ i ].appearance = spawns[ i ].appearance;
 
 		try {
-			spawns_[ i ].attachment = &spawns_.at( spawns[ i ].attached_actor_num );
+			actorSpawns[ i ].attachment = &actorSpawns.at( spawns[ i ].attached_actor_num );
 		} catch ( const std::out_of_range &e ) {
-			Warning( "Failed to get valid attachment for spawn (%s, %s)!\n", spawns_[ i ].class_name.c_str(),
-			         plPrintVector3( &spawns_[ i ].position, pl_int_var ) );
+			Warning( "Failed to get valid attachment for spawn (%s, %s)!\n", actorSpawns[ i ].className.c_str(),
+			         plPrintVector3( &actorSpawns[ i ].position, pl_int_var ) );
 		}
 
-		spawns_[ i ].energy = spawns[ i ].energy;
-		spawns_[ i ].index = spawns[ i ].index;
+		actorSpawns[ i ].energy = spawns[ i ].energy;
+		actorSpawns[ i ].index = spawns[ i ].index;
 
 		// todo: retain or set on per-actor basis?
 		for ( unsigned int j = 0; j < 3; ++j ) {
-			spawns_[ i ].bounds[ j ] = spawns[ i ].bounds[ j ];
+			actorSpawns[ i ].bounds[ j ] = spawns[ i ].bounds[ j ];
 		}
-		spawns_[ i ].bounds_type = spawns[ i ].bounds_type;
+		actorSpawns[ i ].bounds_type = spawns[ i ].bounds_type;
 	}
 }
 
