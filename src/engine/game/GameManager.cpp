@@ -231,7 +231,7 @@ void ohw::GameManager::RegisterClassManifest( const std::string &path ) {
 		config.EnterChildNode( i );
 
 		CharacterClass playerClass;
-		playerClass.identifer = config.GetStringProperty( "identifer" );
+		playerClass.identifer = config.GetStringProperty( "identifier" );
 		playerClass.cost = config.GetIntegerProperty( "cost" );
 		playerClass.health = config.GetIntegerProperty( "health" );
 		playerClass.model = config.GetStringProperty( "model" );
