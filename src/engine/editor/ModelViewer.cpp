@@ -326,7 +326,7 @@ void ohw::ModelViewer::GenerateFrameBuffer( unsigned int width, unsigned int hei
 		}
 
 		plDestroyTexture( textureAttachment );
-		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer );
+		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer, PL_BUFFER_COLOUR, PL_TEXTURE_FILTER_LINEAR );
 		if ( textureAttachment == nullptr ) {
 			Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
 		}

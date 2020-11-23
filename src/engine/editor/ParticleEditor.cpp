@@ -147,7 +147,7 @@ void ohw::ParticleEditor::GenerateFrameBuffer( unsigned int width, unsigned int 
 		}
 
 		plDestroyTexture( textureAttachment );
-		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer );
+		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer, PL_BUFFER_COLOUR, PL_TEXTURE_FILTER_LINEAR );
 		if ( textureAttachment == nullptr ) {
 			Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
 		}
