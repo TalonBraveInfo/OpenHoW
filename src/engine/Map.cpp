@@ -199,8 +199,8 @@ void ohw::Map::Draw() {
 
 	Shaders_SetProgramByName( "generic_untextured" );
 
-	skyModelTop->Draw();
-	skyModelBottom->Draw();
+	skyModelTop->Draw( false );
+	skyModelBottom->Draw( false );
 
 	// TODO: move this somewhere else???
 	PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();
