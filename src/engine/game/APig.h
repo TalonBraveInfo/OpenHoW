@@ -34,16 +34,16 @@ public:
 	void Tick() override;
 
 	void SetClass( const std::string &classIdentier );
-	unsigned int GetClass() { return class_; }
+	unsigned int GetClass() { return myClass; }
 
 	void SetPersonality( unsigned int personality );
-	unsigned int GetPersonality() { return personality_; }
+	unsigned int GetPersonality() { return myPersonality; }
 
 	void SetPlayerOwner( Player *owner );
 	const Player *GetPlayerOwner() const;
 
 	void SetTeam( unsigned int team );
-	unsigned int GetTeam() const { return team_; }
+	unsigned int GetTeam() const { return myTeam; }
 
 	bool Possessed( const Player *player ) override;
 	void Dispossessed(const Player *player ) override;
@@ -83,9 +83,9 @@ private:
 
 	float aimPitch{ 0 };
 
-	unsigned int team_{ 0 };
-	unsigned int personality_{ 0 };
-	unsigned int class_{ 0 };
+	unsigned int myTeam{ 0 };
+	unsigned int myPersonality{ 0 };
+	unsigned int myClass{ 0 };
 
 	LifeState lifeState{ LifeState::ALIVE };
 

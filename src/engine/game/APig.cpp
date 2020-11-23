@@ -191,7 +191,7 @@ const Player *APig::GetPlayerOwner() const {
 }
 
 void APig::SetTeam( unsigned int team ) {
-	team_ = team;
+	myTeam = team;
 
 #if 0
 	Player* player = GetApp()->gameManager->GetPlayerByIndex(team);
