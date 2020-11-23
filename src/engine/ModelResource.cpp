@@ -67,14 +67,14 @@ void ohw::ModelResource::Tick() {
 	// TODO: animation is handled here...
 }
 
-void ohw::ModelResource::Draw( bool batchDraw ) {
+void ohw::ModelResource::Draw( bool cull, bool batchDraw ) {
 	Camera *camera = GetApp()->gameManager->GetActiveCamera();
 	if ( camera == nullptr ) {
 		return;
 	}
 
 	bounds.origin = plGetMatrix4Translation( &modelMatrix );
-	if ( cv_graphics_cull->b_value && !camera->IsBoxVisible( &bounds ) ) {
+	if ( cv_graphics_cull->b_value && cull && !camera->IsBoxVisible( &bounds ) ) {
 		return;
 	}
 

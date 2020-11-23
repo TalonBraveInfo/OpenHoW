@@ -43,7 +43,7 @@ namespace ohw {
 
 		void Tick();
 
-		void Draw( bool batchDraw = false );
+		void Draw( bool cull = true, bool batchDraw = false );
 		void DrawNormals();
 		void DrawSkeleton();
 

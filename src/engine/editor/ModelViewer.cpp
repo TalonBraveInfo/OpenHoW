@@ -111,7 +111,7 @@ void ohw::ModelViewer::DrawViewport() {
 	model->modelMatrix.Rotate( angles.y, { 0, 1, 0 } );
 	model->modelMatrix.Rotate( angles.x, { 0, 0, 1 } );
 
-	model->Draw();
+	model->Draw( false );
 
 	if ( viewDebugNormals ) {
 		model->DrawNormals();
