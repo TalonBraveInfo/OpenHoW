@@ -18,7 +18,7 @@ protected:
 private:
 
 	// Always use the initialisers
-	unsigned int someVar { 0 };
+	unsigned int myVar { 0 };
 };
 
 // (OpenHoW) Actor derived class prefixed with 'A'
@@ -43,13 +43,13 @@ void Function( void ) {
 	int castMe = 0;
 	bool castYou = static_cast< bool >( castMe );
 	
-	bool myVar = false;
-	if ( !myVar ) {
+	bool fooVar = false;
+	if ( !fooVar ) {
 		printf( "False Var\n" );
 	}
 	
-	void *myPointer = NULL;
-	if ( myPointer == NULL ) {
+	void *fooPointer = NULL;
+	if ( fooPointer == NULL ) {
 		printf( "Pointer is null\n" );
 	}
 	
@@ -64,14 +64,9 @@ void Function( void ) {
 
 ## Platform Library
 
-```c++
+```c
 
-// If some C++ specific class, use namespace 'pl'
-namespace pl {
-	class Thing {}
-}
-
-// Otherwise the platform library is primarily C
+// The platform library is primarily C
 
 #define PL_THING_DEFAULT_SOMETHING	2
 
