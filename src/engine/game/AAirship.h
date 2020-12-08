@@ -32,5 +32,10 @@ public:
 
 protected:
 private:
+	PLVector3 myDestination;
+	float myDestinationTolerance{ 0.0f };
+	float myTurnSpeed{ 0.0f };
+	unsigned int myTurnFrames{ 0 };
+
 	AudioSource *ambientSource{ nullptr };
 };
