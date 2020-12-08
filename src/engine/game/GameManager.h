@@ -135,6 +135,7 @@ struct PlayerTeam : PropertyOwner {
 			COPY_PROPERTY( paper_texture, src ),
 			COPY_PROPERTY( debrief_texture, src ),
 			COPY_PROPERTY( voice_set, src ),
+			colour( src.colour ),
 			slots( src.slots ) {}
 
 	StringProperty name;
