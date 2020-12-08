@@ -93,7 +93,7 @@ void APig::Tick() {
 	SuperClass::Tick();
 
 	//float speedModifier = 1.0f;
-	if ( !IsGrounded() ) {
+	if ( !IsOnGround() ) {
 		if ( parachuteWeapon->IsDeployed() ) {
 			//speedModifier = 10.0f;
 		}
@@ -129,16 +129,15 @@ void APig::Tick() {
 
 	PLVector3 nPosition = GetPosition();
 
-	PLVector3 forward = GetForward();
 	PLVector3 forwardDirection;
-	forwardDirection.x = forwardVelocity * 50.0f * forward.x;
-	forwardDirection.y = forwardVelocity * 50.0f * forward.y;
-	forwardDirection.z = forwardVelocity * 50.0f * forward.z;
+	forwardDirection.x = forwardVelocity * 50.0f * myForward.x;
+	forwardDirection.y = forwardVelocity * 50.0f * myForward.y;
+	forwardDirection.z = forwardVelocity * 50.0f * myForward.z;
 	nPosition += velocity + forwardDirection;
 
 	// Clamp height based on current tile pos
 	Map *map = GetApp()->gameManager->GetCurrentMap();
-	float height = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
+	float height = map->GetTerrain()->GetHeight( nPosition.x, nPosition.z );
 	if ( ( nPosition.y - ( boundingBox.maxs.y / 2 ) ) < height ) {
 		nPosition.y = height + ( boundingBox.maxs.y / 2 );
 	}
@@ -319,7 +318,7 @@ void APig::Jump() {
 	DebugMsg( "Jumping...\n" );
 
 	// Make sure we can't jump again if we're already off the ground!
-	if ( !IsGrounded() ) {
+	if ( !IsOnGround() ) {
 		return;
 	}
 

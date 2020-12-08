@@ -96,18 +96,34 @@ public:
 	                     PLVector3 velocity = { 0.0f, 0.0f, 0.0f } );
 	virtual void Killed();
 
-	virtual void SetHealth( int16_t health ) { health_ = health; }
+	virtual void SetHealth( int16_t health ) { myHealth = health; }
 	virtual void AddHealth( int16_t health );
-	int16_t GetHealth() { return health_; }
+	int16_t GetHealth() { return myHealth; }
 
 	virtual bool IsVisible();
 
-	PLVector3 GetVelocity() { return velocity; }
+	inline PLVector3 GetVelocity() const {
+		return velocity;
+	}
 	virtual void SetVelocity( PLVector3 newVelocity );
-	PLVector3 GetPosition() { return position_; }
+
+	inline PLVector3 GetPosition() const {
+		return position_;
+	}
 	virtual void SetPosition( PLVector3 position );
-	PLVector3 GetAngles() { return angles_; }
+
+	inline PLVector3 GetAngles() const {
+		return myAngles;
+	}
 	virtual void SetAngles( PLVector3 angles );
+
+	inline PLVector3 GetForward() const {
+		return myForward;
+	}
+
+	inline float GetHeight() const {
+		return position_.GetValue().y;
+	}
 
 	virtual bool Possessed( const Player *player );
 	virtual void Dispossessed( const Player *player );
@@ -116,9 +132,9 @@ public:
 	virtual ActorSpawn Serialize() { return ActorSpawn(); }
 	virtual void Deserialize( const ActorSpawn &spawn );
 
-	virtual void Activate() { is_activated_ = true; }
-	virtual void Deactivate() { is_activated_ = false; }
-	virtual bool IsActivated() { return is_activated_; }
+	virtual void Activate() { isActive = true; }
+	virtual void Deactivate() { isActive = false; }
+	virtual bool IsActivated() { return isActive; }
 
 	virtual bool IsVisibleOnMinimap() const { return false; }
 	virtual unsigned int GetMinimapIconStyle() const { return 0; }
@@ -134,16 +150,22 @@ public:
 
 	void DropToFloor();
 
-	PLVector3 GetForward();
-
 	// Physics
+
 	const ohw::PhysicsBody *CreatePhysicsBody();
 	void DestroyPhysicsBody();
 
 	PLCollisionAABB *GetBoundingBox() { return &boundingBox; }
 
+	// Networking
+
+	void SendUpdate();
+	void ReceiveUpdate();
+
 protected:
-	bool IsGrounded();
+	PLVector3 CalculateForwardVector();
+
+	bool IsOnGround();
 
 	bool is_visible_{ false };
 
@@ -158,20 +180,22 @@ protected:
 
 	Vector3Property fallback_position_;
 
-	Vector3Property angles_;
-	PLVector3 old_angles_{ 0, 0, 0 };
+	Vector3Property myAngles;
+	PLVector3 myOldAngles{ 0.0f, 0.0f, 0.0f };
+	PLVector3 myForward{ 0.0f, 0.0f, 0.0f };
 
 	PLCollisionAABB boundingBox;
 
-	// Use this if you want your actor to have a helpful descriptor in it's
-	std::string reference_name_{ "actor" };
-
 private:
-	int16_t health_{ 0 };
+	inline void ClearInput() {
+		forwardVelocity = inputPitch = inputYaw = 0.0f;
+	}
 
-	ohw::PhysicsBody *physics_body_{ nullptr };
+	int16_t myHealth{ 0 };
 
-	bool is_activated_{ false };
+	ohw::PhysicsBody *myPhysicsBody{ nullptr };
+
+	bool isActive{ false };
 
 	Actor *parentActor{ nullptr };
 	std::vector< Actor * > childActors;

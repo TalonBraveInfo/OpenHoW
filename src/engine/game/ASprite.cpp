@@ -58,10 +58,10 @@ void ASprite::SetSpriteTexture( const std::string &path ) {
 void ASprite::Tick() {
 	SuperClass::Tick();
 
-	SetAngles( angles_.GetValue() + 0.2f );
+	SetAngles( myAngles.GetValue() + 0.2f );
 
 	spritePtr->SetPosition( position_ );
-	spritePtr->SetAngles( angles_ );
+	spritePtr->SetAngles( myAngles );
 }
 
 void ASprite::Draw() {

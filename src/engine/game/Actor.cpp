@@ -31,7 +31,7 @@ Actor::Actor() :
 	INIT_PROPERTY( inputPitch, PROP_PUSH, 0.00 ),
 	INIT_PROPERTY( position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
 	INIT_PROPERTY( fallback_position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
-	INIT_PROPERTY( angles_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
+	INIT_PROPERTY( myAngles, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
 
 Actor::~Actor() {
 	for ( auto actor : childActors ) {
@@ -48,12 +48,14 @@ Actor::~Actor() {
 /**
  * Simulation tick, called per-frame.
  */
-void Actor::Tick() {}
+void Actor::Tick() {
+	myForward = CalculateForwardVector();
+}
 
 void Actor::SetAngles( PLVector3 angles ) {
 	VecAngleClamp( &angles );
-	old_angles_ = angles_;
-	angles_ = angles;
+	myOldAngles = myAngles;
+	myAngles = angles;
 }
 
 bool Actor::IsVisible() {
@@ -88,32 +90,10 @@ void Actor::Deserialize( const ActorSpawn &spawn ) {
 }
 
 const ohw::PhysicsBody *Actor::CreatePhysicsBody() {
-#if 0
-	if ( physics_body_ != nullptr ) {
-		return physics_body_;
-	}
-
-	physics_body_ = Engine::Physics()->CreatePhysicsBody();
-	if ( physics_body_ == nullptr ) {
-		return nullptr;
-	}
-
-	return physics_body_;
-#else
 	return nullptr;
-#endif
 }
 
-void Actor::DestroyPhysicsBody() {
-#if 0
-	if ( physics_body_ == nullptr ) {
-		return;
-	}
-
-	Engine::Physics()->DestroyPhysicsBody( physics_body_ );
-	physics_body_ = nullptr;
-#endif
-}
+void Actor::DestroyPhysicsBody() {}
 
 /**
  * Used for inflicting damage upon the actor.
@@ -124,12 +104,12 @@ void Actor::DestroyPhysicsBody() {
  * @return Returns true if the actor is killed.
  */
 bool Actor::Damage( const Actor *attacker, uint16_t damageInflicted, PLVector3 direction, PLVector3 velocity ) {
-	if ( health_ <= 0 ) {
+	if ( myHealth <= 0 ) {
 		return true;
 	}
 
-	health_ -= damageInflicted;
-	if ( health_ <= 0 ) {
+	myHealth -= damageInflicted;
+	if ( myHealth <= 0 ) {
 		Killed();
 		return true;
 	}
@@ -146,16 +126,19 @@ void Actor::AddHealth( int16_t health ) {
 		return;
 	}
 
-	health_ += health;
+	myHealth += health;
 }
 
 bool Actor::Possessed( const Player *player ) {
+	if ( myHealth <= 0 ) {
+		return false;
+	}
+
 	return true;
 }
 
 void Actor::Dispossessed(const Player *player ) {
-	// Clear all the input, otherwise we'll just run off forever
-	forwardVelocity = inputPitch = inputYaw = 0.0f;
+	ClearInput();
 }
 
 /**
@@ -172,22 +155,43 @@ void Actor::DropToFloor() {
 		return;
 	}
 
-	// Fetch the height based on where we're currently positioned
-	PLVector3 newPos = position_;
-	float height = terrain->GetHeight( PLVector2( newPos.x, newPos.z ) );
+	// Fetch each of the tiles we're possibly touching.
+	const Terrain::Tile *tiles[ 4 ];
+	tiles[ 0 ] = terrain->GetTile( boundingBox.mins.x + position_.GetValue().x, boundingBox.mins.z + position_.GetValue().z );
+	tiles[ 1 ] = terrain->GetTile( boundingBox.maxs.x + position_.GetValue().x, boundingBox.maxs.z + position_.GetValue().z );
+	tiles[ 2 ] = terrain->GetTile( boundingBox.mins.x + position_.GetValue().x, boundingBox.maxs.z + position_.GetValue().z );
+	tiles[ 3 ] = terrain->GetTile( boundingBox.mins.x + position_.GetValue().x, boundingBox.maxs.z + position_.GetValue().z );
 
-	// Now add the bounding box height onto that, so we're raised a little off the surface
-	newPos.y = height + ( boundingBox.maxs.y / 2 );
+	// Iterate through to figure out the height we should be at.
+	float maxTileHeight = terrain->GetMinHeight();
+	unsigned int tileNum = 0;
+	for ( ; tileNum < 4; ++tileNum ) {
+		for ( unsigned int corner = 0; corner < 4; ++corner ) {
+			if ( tiles[ tileNum ]->height[ corner ] <= maxTileHeight ) {
+				continue;
+			}
+
+			maxTileHeight = tiles[ tileNum ]->height[ corner ];
+		}
+	}
 	
 	// And finally actually update our position
-	SetPosition( newPos );
+	//SetPosition( newPos );
 }
 
-PLVector3 Actor::GetForward() {
-	float x = cosf( plDegreesToRadians( angles_.GetValue().y ) ) * cosf( plDegreesToRadians( angles_.GetValue().x ) );
-	float y = sinf( plDegreesToRadians( angles_.GetValue().x ) );
-	float z = sinf( plDegreesToRadians( angles_.GetValue().y ) ) * cosf( plDegreesToRadians( angles_.GetValue().x ) );
-	return plNormalizeVector3( PLVector3( x, y, z ) );
+/**
+ * Get forward vector based on current angles.
+ */
+PLVector3 Actor::CalculateForwardVector() {
+	float rx = plDegreesToRadians( myAngles.GetValue().x );
+	float ry = plDegreesToRadians( myAngles.GetValue().y );
+
+	PLVector3 v;
+	v.x = std::cos( ry ) * std::cos( rx );
+	v.y = std::sin( rx );
+	v.z = std::sin( ry ) * std::cos( rx );
+
+	return plNormalizeVector3( v );
 }
 
 /**
@@ -267,13 +271,13 @@ void Actor::Touch( Actor *other ) {
 /**
  * Check whether or not this actor is currently on the ground.
  */
-bool Actor::IsGrounded() {
+bool Actor::IsOnGround() {
 	Map *map = GetApp()->gameManager->GetCurrentMap();
 	if ( map == nullptr ) {
 		return false;
 	}
 
 	PLVector3 nPosition = position_;
-	float tileHeight = map->GetTerrain()->GetHeight( PLVector2( nPosition.x, nPosition.z ) );
+	float tileHeight = map->GetTerrain()->GetHeight( nPosition.x, nPosition.z );
 	return ( nPosition.y - ( boundingBox.maxs.y / 2 ) ) <= tileHeight;
 }

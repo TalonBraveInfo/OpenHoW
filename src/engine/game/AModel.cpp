@@ -33,9 +33,9 @@ void AModel::Draw() {
 	}
 
 	PLVector3 angles(
-			plDegreesToRadians( angles_.GetValue().x ),
-			plDegreesToRadians( angles_.GetValue().y ),
-			plDegreesToRadians( angles_.GetValue().z ) );
+			plDegreesToRadians( myAngles.GetValue().x ),
+			plDegreesToRadians( myAngles.GetValue().y ),
+			plDegreesToRadians( myAngles.GetValue().z ) );
 
 	model->modelMatrix.Identity();
 	model->modelMatrix.Rotate( angles.z, { 1, 0, 0 } );
