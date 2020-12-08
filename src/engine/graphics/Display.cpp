@@ -219,13 +219,26 @@ void ohw::Display::RenderScene() {
 		plDisableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
 	}
 
-	/* debug methods */
+	RenderSceneDebug();
 
+	END_MEASURE();
+}
+
+void ohw::Display::RenderSceneDebug() {
 	Shaders_SetProgramByName( "generic_untextured" );
 
 	ohw::GetApp()->audioManager->DrawSources();
 
-	END_MEASURE();
+	plPushMatrix();
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plLoadIdentityMatrix();
+
+	for ( const auto &i : debugLines ) {
+		plDrawSimpleLine( *plGetMatrix( PL_MODELVIEW_MATRIX ), i.start, i.end, i.colour );
+	}
+	debugLines.clear();
+
+	plPopMatrix();
 }
 
 void ohw::Display::RenderOverlays() {
@@ -311,4 +324,14 @@ bool ohw::Display::HandleEvent( const SDL_Event &event ) {
 
 void ohw::Display::SetMousePosition( int x, int y ) {
 	SDL_WarpMouseInWindow( myWindow, x, y );
+}
+
+// Debugging
+
+void ohw::Display::DebugDrawLine( const PLVector3 &startPos, const PLVector3 &endPos, const PLColour &colour ) {
+	DebugLine debugLine;
+	debugLine.start = startPos;
+	debugLine.end = endPos;
+	debugLine.colour = colour;
+	debugLines.push_back( debugLine );
 }

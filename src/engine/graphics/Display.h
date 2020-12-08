@@ -42,11 +42,20 @@ namespace ohw {
 
 		void SetMousePosition( int x, int y );
 
+		void DebugDrawLine( const PLVector3 &startPos, const PLVector3 &endPos, const PLColour &colour );
+
 	protected:
 	private:
 		void RenderScene();
+		void RenderSceneDebug();
 		void RenderOverlays();
 		void RenderDebugOverlays();
+
+		struct DebugLine {
+			PLVector3 start, end;
+			PLColour colour;
+		};
+		std::vector< DebugLine > debugLines;
 
 		unsigned int numDrawTicks{ 0 };
 		unsigned int lastDrawTick{ 0 };
