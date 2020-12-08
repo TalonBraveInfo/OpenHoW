@@ -97,9 +97,9 @@ namespace ohw {
 		};
 
 		Chunk *GetChunk( const PLVector2 &pos );
-		Tile *GetTile( const PLVector2 &pos );
+		Tile *GetTile( float x, float y );
 
-		float GetHeight( const PLVector2 &pos );
+		float GetHeight( float x, float y );
 		float GetMaxHeight() { return max_height_; }
 		float GetMinHeight() { return min_height_; }
 

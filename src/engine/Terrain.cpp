@@ -84,15 +84,15 @@ ohw::Terrain::Chunk *ohw::Terrain::GetChunk( const PLVector2 &pos ) {
 	return &chunks_[ idx ];
 }
 
-ohw::Terrain::Tile *ohw::Terrain::GetTile( const PLVector2 &pos ) {
-	Chunk *chunk = GetChunk( pos );
+ohw::Terrain::Tile *ohw::Terrain::GetTile( float x, float y ) {
+	Chunk *chunk = GetChunk( PLVector2( x, y ) );
 	if ( chunk == nullptr ) {
 		return nullptr;
 	}
 
 	unsigned int idx =
-			( ( ( unsigned int ) ( pos.x ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) +
-			( ( ( ( unsigned int ) ( pos.y ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) * TERRAIN_CHUNK_ROW_TILES );
+			( ( ( unsigned int ) ( x ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) +
+			( ( ( ( unsigned int ) ( y ) / TERRAIN_TILE_PIXEL_WIDTH ) % TERRAIN_CHUNK_ROW_TILES ) * TERRAIN_CHUNK_ROW_TILES );
 	if ( idx >= TERRAIN_CHUNK_TILES ) {
 		Warning( "Attempted to get an out of bounds tile index!\n" );
 		return nullptr;
@@ -104,20 +104,20 @@ ohw::Terrain::Tile *ohw::Terrain::GetTile( const PLVector2 &pos ) {
 /**
  * Return the height at the given point. If we fail to find a tile there, we just return 0.
  */
-float ohw::Terrain::GetHeight( const PLVector2 &pos ) {
-	Tile *tile = GetTile( pos );
+float ohw::Terrain::GetHeight( float x, float y ) {
+	const Tile *tile = GetTile( x, y );
 	if ( tile == nullptr ) {
 		return 0;
 	}
 
-	float tile_x = pos.x - std::floor( pos.x );
-	float tile_y = pos.y - std::floor( pos.y );
+	float tile_x = x - std::floor( x );
+	float tile_y = y - std::floor( y );
 
-	float x = tile->height[ 0 ] + ( ( tile->height[ 1 ] - tile->height[ 0 ] ) * tile_x );
-	float y = tile->height[ 2 ] + ( ( tile->height[ 3 ] - tile->height[ 2 ] ) * tile_x );
-	float z = x + ( ( y - x ) * tile_y );
+	float nx = tile->height[ 0 ] + ( ( tile->height[ 1 ] - tile->height[ 0 ] ) * tile_x );
+	float ny = tile->height[ 2 ] + ( ( tile->height[ 3 ] - tile->height[ 2 ] ) * tile_x );
+	float nz = nx + ( ( ny - nx ) * tile_y );
 
-	return z;
+	return nz;
 }
 
 void ohw::Terrain::GenerateChunkMesh( Chunk *chunk, const PLVector2 &offset ) {
@@ -234,13 +234,13 @@ void ohw::Terrain::GenerateOverview() {
 	for ( uint8_t y = 0; y < 64; ++y ) {
 		for ( uint8_t x = 0; x < 64; ++x ) {
 			PLVector2 position( x * ( TERRAIN_PIXEL_WIDTH / 64 ), y * ( TERRAIN_PIXEL_WIDTH / 64 ) );
-			const Tile *tile = GetTile( position );
+			const Tile *tile = GetTile( position.x, position.y );
 			u_assert( tile != nullptr, "Hit an invalid tile during overview generation!\n" );
 			if ( tile == nullptr ) {
 				continue;
 			}
 
-			auto mod = static_cast<int>(( GetHeight( position ) + ( ( GetMaxHeight() + GetMinHeight() ) / 2 ) ) / 255);
+			auto mod = static_cast<int>(( GetHeight( position.x, position.y ) + ( ( GetMaxHeight() + GetMinHeight() ) / 2 ) ) / 255);
 			PLColour rgb = PLColour(
 					std::min( ( colours[ tile->surface ].r / 9 ) * mod, 255 ),
 					std::min( ( colours[ tile->surface ].g / 9 ) * mod, 255 ),
