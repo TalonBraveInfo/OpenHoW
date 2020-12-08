@@ -18,11 +18,11 @@
 #include "App.h"
 #include "Player.h"
 
-Player::Player(PlayerType type) : type_(type) {}
+Player::Player(PlayerType type) : myType( type) {}
 Player::~Player() = default;
 
 void Player::PossessCurrentChild() {
-	Actor* child = children_[currentChildIndex];
+	Actor* child = myChildActors[myCurrentChildActorIndex];
 	if(child == nullptr) {
 		Warning( "Child of player is null!\n");
 		return;
@@ -33,7 +33,7 @@ void Player::PossessCurrentChild() {
 		return;
 	}
 
-	DebugMsg("%s possessed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
+	DebugMsg( "%s possessed child %d...\n", GetTeam()->name.c_str(), myCurrentChildActorIndex);
 }
 
 void Player::DispossessCurrentChild() {
@@ -44,24 +44,24 @@ void Player::DispossessCurrentChild() {
 
 	actor_ptr->Dispossessed(this);
 
-	DebugMsg("%s depossed child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
+	DebugMsg( "%s depossed child %d...\n", GetTeam()->name.c_str(), myCurrentChildActorIndex);
 }
 
 Actor* Player::GetCurrentChild() {
-	if(currentChildIndex >= children_.size()) {
+	if( myCurrentChildActorIndex >= myChildActors.size()) {
 		return nullptr;
 	}
 
-	return children_[currentChildIndex];
+	return myChildActors[myCurrentChildActorIndex];
 }
 
 void Player::CycleChildren(bool forward) {
 	if ( forward ) {
-		currentChildIndex++;
+		myCurrentChildActorIndex++;
 
 		// Check if we need to wrap it round
-		if ( currentChildIndex >= children_.size() ) {
-			currentChildIndex = 0;
+		if ( myCurrentChildActorIndex >= myChildActors.size() ) {
+			myCurrentChildActorIndex = 0;
 		}
 
 		return;
@@ -69,21 +69,21 @@ void Player::CycleChildren(bool forward) {
 
 	// Else we're decrementing
 
-	currentChildIndex--;
+	myCurrentChildActorIndex--;
 
 	// Check if we need to wrap it round
-	if ( currentChildIndex < 0 ) {
-		currentChildIndex = children_.size() - 1;
+	if ( myCurrentChildActorIndex < 0 ) {
+		myCurrentChildActorIndex = myChildActors.size() - 1;
 	}
 
-	DebugMsg("%s cycled to child %d...\n", GetTeam()->name.c_str(), currentChildIndex);
+	DebugMsg( "%s cycled to child %d...\n", GetTeam()->name.c_str(), myCurrentChildActorIndex);
 }
 
 void Player::AddChild(Actor* actor) {
 	u_assert(actor != nullptr, "Attempted to pass a null actor reference to player!\n");
-	children_.push_back(actor);
+	myChildActors.push_back( actor);
 
-	DebugMsg("%s received child %d...\n", GetTeam()->name.c_str(), children_.size());
+	DebugMsg( "%s received child %d...\n", GetTeam()->name.c_str(), myChildActors.size());
 }
 
 void Player::RemoveChild(Actor* actor) {

@@ -18,41 +18,45 @@
 #pragma once
 
 enum class PlayerType {
-  LOCAL,
-  NETWORKED,
-  COMPUTER,
+	LOCAL,
+	NETWORKED,
+	COMPUTER,
 };
 
 class Player {
- public:
-  Player(PlayerType type);
-  ~Player();
+public:
+	Player( PlayerType type );
+	~Player();
 
-  unsigned int GetNumChildren() { return children_.size(); }
+	unsigned int GetNumChildren() { return myChildActors.size(); }
 
-  void AddChild(Actor *actor);
-  void RemoveChild(Actor *actor);
+	void AddChild( Actor *actor );
+	void RemoveChild( Actor *actor );
 
-  void PossessCurrentChild();
-  void DispossessCurrentChild();
+	void PossessCurrentChild();
+	void DispossessCurrentChild();
 
-  Actor *GetCurrentChild();
+	Actor *GetCurrentChild();
 
-  void CycleChildren(bool forward = true);
+	void CycleChildren( bool forward = true );
 
-  void SetControllerSlot(unsigned int slot) { input_slot = slot; }
-  unsigned int GetControllerSlot() { return input_slot; }
+	void SetControllerSlot( unsigned int slot ) { myControllerSlot = slot; }
+	unsigned int GetControllerSlot() { return myControllerSlot; }
 
-  void SetTeam(const PlayerTeam &team) { team_ = team; }
-  const PlayerTeam *GetTeam() const { return &team_; }
+	inline void SetTeam( const PlayerTeam &team ) {
+		myTeam = team;
+	}
+	inline const PlayerTeam *GetTeam() const {
+		return &myTeam;
+	}
 
- protected:
- private:
-  unsigned int input_slot{0}; // Controller slot
+protected:
+private:
+	unsigned int myControllerSlot{ 0 }; // Controller slot
 
-  PlayerType type_;
-  PlayerTeam team_;
+	PlayerType myType;
+	PlayerTeam myTeam;
 
-  std::vector<Actor *> children_;
-  unsigned int currentChildIndex{0};
+	std::vector< Actor * > myChildActors;
+	unsigned int myCurrentChildActorIndex{ 0 };
 };
