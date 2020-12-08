@@ -40,6 +40,9 @@ namespace ohw {
 
 		void UpdateSky();
 
+		PLVector2 GetRandomPointInPlayArea() const;
+		void GetPlayArea( PLVector2 *min, PLVector2 *max ) const;
+
 	protected:
 	private:
 		void LoadSpawns( const std::string &path );

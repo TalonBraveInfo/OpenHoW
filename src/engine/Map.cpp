@@ -111,6 +111,25 @@ void ohw::Map::UpdateSkyModel( SharedModelResourcePointer model ) {
 	plUploadMesh( mesh );
 }
 
+/**
+ * Fetches a random spot in the playable area of the map.
+ */
+PLVector2 ohw::Map::GetRandomPointInPlayArea() const {
+	return PLVector2(
+			TERRAIN_PLAYABLE_BORDER + plGenerateRandomf( TERRAIN_PLAYABLE_AREA ),
+			TERRAIN_PLAYABLE_BORDER + plGenerateRandomf( TERRAIN_PLAYABLE_AREA ) );
+}
+
+/**
+ * Fetch the bounds of the playable area.
+ */
+void ohw::Map::GetPlayArea( PLVector2 *min, PLVector2 *max ) const {
+	min->x = TERRAIN_PLAYABLE_BORDER;
+	max->x = TERRAIN_PLAYABLE_AREA;
+	min->y = TERRAIN_PLAYABLE_BORDER;
+	max->y = TERRAIN_PLAYABLE_AREA;
+}
+
 void ohw::Map::LoadSpawns( const std::string &path ) {
 	struct PogIndex {
 		char name[16];               // class name
@@ -193,14 +212,32 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 }
 
 void ohw::Map::Draw() {
-	if ( !cv_graphics_draw_world->b_value ) {
-		return;
-	}
-
 	Shaders_SetProgramByName( "generic_untextured" );
 
 	skyModelTop->Draw( false );
 	skyModelBottom->Draw( false );
+
+#if 1
+	PLCollisionAABB bounds;
+
+	bounds.origin.x = TERRAIN_PLAYABLE_BORDER;
+	bounds.origin.y = 512.0f;
+	bounds.origin.z = TERRAIN_PLAYABLE_BORDER;
+
+	bounds.maxs.x = TERRAIN_PLAYABLE_AREA;
+	bounds.maxs.y = terrain_->GetMaxHeight();
+	bounds.maxs.z = TERRAIN_PLAYABLE_AREA;
+
+	bounds.mins.x = 0;
+	bounds.mins.y = terrain_->GetMinHeight();
+	bounds.mins.z = 0;
+
+	plDrawBoundingVolume( &bounds, PL_COLOUR_RED );
+#endif
+
+	if ( !cv_GraphicsDrawTerrain->b_value ) {
+		return;
+	}
 
 	// TODO: move this somewhere else???
 	PLShaderProgram *program = Shaders_GetProgram( "generic_textured_lit" )->GetInternalProgram();

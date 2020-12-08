@@ -154,7 +154,7 @@ PLConsoleVariable *cv_display_ui_scale = nullptr;
 PLConsoleVariable *cv_display_vsync = nullptr;
 
 PLConsoleVariable *cv_graphics_cull = nullptr;
-PLConsoleVariable *cv_graphics_draw_world = nullptr;
+PLConsoleVariable *cv_GraphicsDrawTerrain = nullptr;
 PLConsoleVariable *cv_graphics_draw_sprites = nullptr;
 PLConsoleVariable *cv_graphics_draw_audio_sources = nullptr;
 PLConsoleVariable *cv_graphics_texture_filter = nullptr;
@@ -194,7 +194,7 @@ void Console_Initialize( void ) {
 	rvar( cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync" );
 
 	rvar( cv_graphics_cull, false, "true", pl_bool_var, nullptr, "Toggles culling of visible objects." );
-	rvar( cv_graphics_draw_world, false, "true", pl_bool_var, nullptr, "toggles rendering of world" );
+	rvar( cv_GraphicsDrawTerrain, false, "true", pl_bool_var, nullptr, "Toggles rendering of the terrain." );
 	rvar( cv_graphics_draw_sprites, false, "true", pl_bool_var, nullptr, "Toggles rendering of sprites." );
 	rvar( cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources" );
 	rvar( cv_graphics_texture_filter, true, "true", pl_bool_var, nullptr, "Filter level/model textures?" );
