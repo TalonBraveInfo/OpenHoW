@@ -205,12 +205,12 @@ void ohw::GameManager::RegisterTeamManifest( const std::string &path ) {
 		config.EnterChildNode( i );
 
 		PlayerTeam team;
-		team.name = lm_gtr( config.GetStringProperty( "name", team.name ).c_str() );
-		team.colour = config.GetColourProperty( "colour", PLColour( 255, 255, 255 ) );
-		team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture );
-		team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture );
-		team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures );
-		team.voice_set = config.GetStringProperty( "voiceSet", team.voice_set );
+		team.name = lm_gtr( config.GetStringProperty( "name", team.name, false ).c_str() );
+		team.colour = config.GetColourProperty( "colour", PLColour( 255, 255, 255 ), false );
+		team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture, false );
+		team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture, false );
+		team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures, false );
+		team.voice_set = config.GetStringProperty( "voiceSet", team.voice_set, false );
 
 		defaultTeams.push_back( team );
 
