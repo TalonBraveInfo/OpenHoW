@@ -36,7 +36,7 @@ public:
 
     bool GetStatus() { return status_; }
 
-    void SetStatus(bool status) { status_ = status; }
+    void SetWindowStatus( bool status) { status_ = status; }
 
     void Begin( const std::string &windowTitle, unsigned int flags );
 

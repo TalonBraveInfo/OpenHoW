@@ -31,11 +31,11 @@ void NewMapWindow::Display() {
 	if ( ImGui::Button( "Create" ) ) {
 		GetApp()->gameManager->CreateManifest( name_buffer_ );
 		GetApp()->gameManager->LoadMap( name_buffer_ );
-		SetStatus( false );
+		SetWindowStatus( false );
 	}
 	ImGui::SameLine();
 	if ( ImGui::Button( "Cancel" ) ) {
-		SetStatus( false );
+		SetWindowStatus( false );
 	}
 	ImGui::End();
 }

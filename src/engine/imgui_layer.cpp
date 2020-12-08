@@ -135,7 +135,7 @@ void ImGuiImpl_Setup() {
 	}
 
 	mainConsole = new ohw::ConsoleWindow();
-	mainConsole->SetStatus( false );
+	mainConsole->SetWindowStatus( false );
 
 	plSetConsoleOutputCallback( ConsoleOutputCallback );
 }

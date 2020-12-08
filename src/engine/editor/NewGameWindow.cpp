@@ -18,9 +18,7 @@
 #include <imgui.h>
 
 #include "App.h"
-#include "Language.h"
 #include "game/Player.h"
-
 #include "NewGameWindow.h"
 
 using namespace ohw;
@@ -32,19 +30,19 @@ void NewGameWindow::Display() {
 	// Team Selection
 	ImGui::Text( "Select Team" );
 	GameManager::PlayerTeamVector teams = GetApp()->gameManager->GetDefaultTeams();
-	std::vector<const char *> options;
+	std::vector< const char * > options;
 	for ( const auto &team : teams ) {
 		options.push_back( team.name.c_str() );
 	}
 
-	static int selected_team = 0;
-	if ( ImGui::ListBox( "Teams", &selected_team, &options[ 0 ], options.size(), 10 ) ) {
-		snprintf( team_name_, sizeof( team_name_ ), "%s", teams[ selected_team ].name.c_str() );
-		team_ = teams[ selected_team ];
+	static int selectedTeamNum = 0;
+	if ( ImGui::ListBox( "Teams", &selectedTeamNum, &options[ 0 ], options.size(), 10 ) ) {
+		snprintf( teamName, sizeof( teamName ), "%s", teams[ selectedTeamNum ].name.c_str() );
+		selectedTeam = teams[ selectedTeamNum ];
 	}
 
-	if ( ImGui::InputText( "Team Name", team_name_, sizeof( team_name_ ) ) ) {
-		team_.name = team_name_;
+	if ( ImGui::InputText( "Team Name", teamName, sizeof( teamName ) ) ) {
+		selectedTeam.name = teamName;
 	}
 
 	if ( ImGui::Button( "Configure Team" ) ) {
@@ -53,20 +51,20 @@ void NewGameWindow::Display() {
 
 	ImGui::Separator();
 
-	ImGui::Checkbox( "Play training mission?", &training_mission_ );
+	ImGui::Checkbox( "Play training mission?", &playTrainingMission );
 
 	if ( ImGui::Button( "Start Game" ) ) {
 		// Setup local player
 		Player *player = new Player( PlayerType::LOCAL );
-		player->SetTeam( team_ );
+		player->SetTeam( selectedTeam );
 
 		PlayerPtrVector players = {
-			player
+				player
 		};
 
 		GameModeDescriptor game_mode_descriptor;
 		std::string mapname;
-		if ( !training_mission_ ) {
+		if ( !playTrainingMission ) {
 			mapname = "estu";
 
 			// crap for now, need to fill this in with the correct data...
@@ -77,7 +75,7 @@ void NewGameWindow::Display() {
 			game_mode_descriptor.sudden_death = false;
 
 			Player *enemy = new Player( PlayerType::COMPUTER );
-			unsigned int enemy_team = selected_team + 1;
+			unsigned int enemy_team = selectedTeamNum + 1;
 			if ( enemy_team >= teams.size() ) {
 				enemy->SetTeam( teams[ enemy_team - 2 ] );
 			} else {
@@ -97,11 +95,11 @@ void NewGameWindow::Display() {
 
 		GetApp()->gameManager->StartMode( mapname, players, game_mode_descriptor );
 
-		SetStatus( false );
+		SetWindowStatus( false );
 	}
 	ImGui::SameLine();
 	if ( ImGui::Button( "Cancel" ) ) {
-		SetStatus( false );
+		SetWindowStatus( false );
 	}
 	ImGui::End();
 }

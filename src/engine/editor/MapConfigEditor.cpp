@@ -217,7 +217,7 @@ void ohw::MapConfigEditor::Display() {
 		RestoreManifest();
 
 		// Close the window
-		SetStatus( false );
+		SetWindowStatus( false );
 	}
 
 	ImGui::End();

@@ -38,7 +38,7 @@ void TerrainImportWindow::Display() {
 	}
 	ImGui::SameLine();
 	if ( ImGui::Button( "Cancel" ) ) {
-		SetStatus( false );
+		SetWindowStatus( false );
 	}
 	ImGui::End();
 }

@@ -20,14 +20,14 @@
 #include "BaseWindow.h"
 
 class NewGameWindow : public BaseWindow {
- public:
+public:
 
-  void Display() override;
+	void Display() override;
 
- protected:
- private:
-  char  team_name_[32]{'\0'};
-  bool  training_mission_{true};
+protected:
+private:
+	char teamName[32]{ '\0' };
+	bool playTrainingMission{ true };
 
-  PlayerTeam  team_;
+	PlayerTeam selectedTeam;
 };
