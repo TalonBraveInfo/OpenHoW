@@ -36,9 +36,10 @@ void NewGameWindow::Display() {
 	}
 
 	static int selectedTeamNum = 0;
+	selectedTeam = teams[ selectedTeamNum ];
+
 	if ( ImGui::ListBox( "Teams", &selectedTeamNum, &options[ 0 ], options.size(), 10 ) ) {
 		snprintf( teamName, sizeof( teamName ), "%s", teams[ selectedTeamNum ].name.c_str() );
-		selectedTeam = teams[ selectedTeamNum ];
 	}
 
 	if ( ImGui::InputText( "Team Name", teamName, sizeof( teamName ) ) ) {
