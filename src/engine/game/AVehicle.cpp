@@ -18,15 +18,60 @@
 #include "App.h"
 #include "AVehicle.h"
 
-AVehicle::AVehicle() : SuperClass() {}
-AVehicle::~AVehicle() = default;
+using namespace ohw;
 
-void AVehicle::Occupy( Actor *occupant ) {
-	occupant_ = occupant;
-	isOccupied_ = true;
+AVehicle::AVehicle() : SuperClass() {}
+
+AVehicle::~AVehicle() {
+	delete audioSource;
+
+	myOccupants.clear();
 }
 
-void AVehicle::Unoccupy() {
-	occupant_ = nullptr;
-	isOccupied_ = false;
+void AVehicle::Tick() {
+	SuperClass::Tick();
+
+	audioSource->SetPosition( position_ );
+}
+
+bool AVehicle::EnterVehicle( Actor *occupant ) {
+	// TODO: pass by reference, not by pointer...
+	if ( GetMaxOccupants() == 0 || myOccupants.size() > GetMaxOccupants() ) {
+		return false;
+	}
+
+	myOccupants.push_back( occupant );
+
+	return true;
+}
+
+void AVehicle::ExitVehicle( Actor *occupant ) {
+	// TODO: pass by reference, not by pointer...
+}
+
+bool AVehicle::IsOccupied() const {
+	return ( myOccupants.size() > 0 );
+}
+
+Actor *AVehicle::GetOccupant( unsigned int slot ) {
+	if ( slot > myOccupants.size() || slot >= GetMaxOccupants() ) {
+		Warning( "Invalid occupant slot, \"%d\"!\n", slot );
+		return nullptr;
+	}
+
+	return myOccupants[ slot ];
+}
+
+void AVehicle::Deserialize( const ActorSpawn &spawn ) {
+	SuperClass::Deserialize( spawn );
+
+	audioSource = GetApp()->audioManager->CreateSource();
+	audioSource->SetPosition( position_ );
+	audioSource->SetLooping( true );
+
+	const AudioSample *audioSample = GetApp()->audioManager->CacheSample( GetEngineIdleSound() );
+	if ( audioSample != nullptr ) {
+		audioSource->SetSample( audioSample );
+		audioSource->StartPlaying();
+	}
 }

@@ -26,13 +26,23 @@ public:
 	AVehicle();
 	~AVehicle();
 
-	virtual void Occupy( Actor *occupant );
-	virtual void Unoccupy();
-	bool IsOccupied() { return isOccupied_; } //occupant_ == nullptr instead?
-	Actor *GetOccupant() { return occupant_; }
+	void Tick() override;
+
+	virtual bool EnterVehicle( Actor *occupant );
+	virtual void ExitVehicle( Actor *occupant );
+
+	bool IsOccupied() const;
+
+	Actor *GetOccupant( unsigned int slot );
+
+	virtual inline unsigned int GetMaxOccupants() const { return 1;	}
+	virtual inline const char *GetEngineIdleSound() const {	return "audio/en_tank.wav";	}
+
+	void Deserialize( const ActorSpawn &spawn ) override;
 
 protected:
 private:
-	bool isOccupied_;
-	Actor *occupant_;
+	std::vector< Actor * > myOccupants;
+
+	AudioSource *audioSource{ nullptr };
 };

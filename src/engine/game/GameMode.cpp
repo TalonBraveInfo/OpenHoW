@@ -121,8 +121,6 @@ void GameMode::SpawnActors() {
 		Error( "Failed to create model actor!\n" );
 	}
 
-	model_actor->SetPosition( { TERRAIN_PIXEL_WIDTH / 2.0f, GetApp()->gameManager->GetCurrentMap()->GetTerrain()->GetMaxHeight(), TERRAIN_PIXEL_WIDTH / 2.0f, } );
-
 	ActorManager::GetInstance()->ActivateActors();
 }
 
