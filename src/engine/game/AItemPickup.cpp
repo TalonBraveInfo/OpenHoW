@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Menu.h"
@@ -32,7 +18,7 @@ public:
 
 	bool IsVisibleOnMinimap() const override { return true; }
 	unsigned int GetMinimapIconStyle() const override { return MINIMAP_ICON_PICKUP; }
-	PLColour GetMinimapIconColour() const override { return PLColour( 210, 105, 30 ); }
+	PLColour GetMinimapIconColour() const override { return hei::Colour( 210, 105, 30 ); }
 
 private:
 	ItemIdentifier myPickupId{ ItemIdentifier::NONE };

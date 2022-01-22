@@ -1,23 +1,9 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
-typedef struct PLShaderProgram PLShaderProgram;
+#include <plgraphics/plg.h>
 
 namespace ohw {
 	class ShaderProgram {
@@ -32,15 +18,15 @@ namespace ohw {
 
 		// This is awful, but we need it for passing shader programs into
 		// the platform library. Urgh...
-		PLShaderProgram *GetInternalProgram() const { return shaderProgram; }
+		PLGShaderProgram *GetInternalProgram() const { return shaderProgram; }
 
 	private:
-		void RegisterShaderStage( const char *path, PLShaderType type );
+		void RegisterShaderStage( const char *path, PLGShaderStageType type );
 
 		std::string vertPath;
 		std::string fragPath;
 
-		PLShaderProgram *shaderProgram{ nullptr };
+		PLGShaderProgram *shaderProgram{ nullptr };
 	};
 }
 

@@ -15,10 +15,11 @@
 
 #pragma once
 
-#include <PL/platform.h>
-#include <PL/platform_math.h>
-#include <PL/platform_console.h>
-#include <PL/platform_filesystem.h>
+#include <unordered_map>
+
+#include <plcore/pl_math.h>
+#include <plcore/pl_console.h>
+#include <plcore/pl_filesystem.h>
 
 class WaveFrontReader {
 public:
@@ -32,15 +33,15 @@ public:
         static const size_t MAX_POLY = 64;
 
         // For now just read the whole thing into memory...
-        PLFile *filePtr = plOpenFile( szFilePath.c_str(), true );
+        PLFile *filePtr = PlOpenFile( szFilePath.c_str(), true );
         if ( filePtr == nullptr ) {
 			Warning( "Failed to open \"%s\"!\n", szFilePath.c_str());
 			return false;
         }
 
         std::stringstream InFile;
-        InFile << plGetFileData( filePtr );
-        plCloseFile( filePtr );
+        InFile << PlGetFileData( filePtr );
+        PlCloseFile( filePtr );
 
         name = szFilePath;
 
@@ -87,25 +88,25 @@ public:
                 // Vertex Position
                 float x, y, z;
                 InFile >> x >> y >> z;
-                positions.emplace_back(PLVector3(x, y, z));
+                positions.emplace_back(hei::Vector3(x, y, z));
             } else if (strCommand == "vt") {
                 // Vertex TexCoord
                 float u, v;
                 InFile >> u >> v;
-                texCoords.emplace_back(PLVector2(u, 1.0f - v));
+                texCoords.emplace_back(hei::Vector2(u, 1.0f - v));
 
                 hasTexcoords = true;
             } else if (strCommand == "vn") {
                 // Vertex Normal
                 float x, y, z;
                 InFile >> x >> y >> z;
-                normals.emplace_back(PLVector3(x, y, z));
+                normals.emplace_back(hei::Vector3(x, y, z));
 
                 hasNormals = true;
             } else if (strCommand == "f") {
                 // Face
                 int iPosition, iTexCoord, iNormal;
-                PLVertex vertex;
+                PLGVertex vertex;
 
                 uint32_t faceIndex[MAX_POLY];
                 size_t iFace = 0;
@@ -183,7 +184,7 @@ public:
                                 // Some Objs we tested provide normal indices, but no normals
                                 // ... GREAT!
                                 Warning( "Out of range normal, ignoring!\n");
-                                vertex.normal = PLVector3(0, 0, 0);
+                                vertex.normal = {0, 0, 0};
                             } else {
                                 vertex.normal = normals[normIndex];
                             }
@@ -300,15 +301,15 @@ public:
 
     bool LoadMTL(const std::string &szFilePath) {
         // Assumes MTL is in CWD along with OBJ
-        PLFile *filePtr = plOpenFile( szFilePath.c_str(), true );
+        PLFile *filePtr = PlOpenFile( szFilePath.c_str(), true );
         if ( filePtr == nullptr ) {
 			Warning( "Failed to open material, \"%s\"!\n", szFilePath.c_str());
 			return false;
         }
 
 		std::stringstream InFile;
-		InFile << plGetFileData( filePtr );
-		plCloseFile( filePtr );
+		InFile << PlGetFileData( filePtr );
+		PlCloseFile( filePtr );
 
         auto curMaterial = materials.end();
 
@@ -343,22 +344,22 @@ public:
                 // Ambient color
                 float r, g, b;
                 InFile >> r >> g >> b;
-                curMaterial->vAmbient = PLVector3(r, g, b);
+                curMaterial->vAmbient = (r, g, b);
             } else if (strCommand == "Kd") {
                 // Diffuse color
                 float r, g, b;
                 InFile >> r >> g >> b;
-                curMaterial->vDiffuse = PLVector3(r, g, b);
+                curMaterial->vDiffuse = (r, g, b);
             } else if (strCommand == "Ks") {
                 // Specular color
                 float r, g, b;
                 InFile >> r >> g >> b;
-                curMaterial->vSpecular = PLVector3(r, g, b);
+                curMaterial->vSpecular = (r, g, b);
             } else if (strCommand == "Ke") {
                 // Emissive color
                 float r, g, b;
                 InFile >> r >> g >> b;
-                curMaterial->vEmissive = PLVector3(r, g, b);
+                curMaterial->vEmissive = (r, g, b);
                 if (r > 0.f || g > 0.f || b > 0.f) {
                     curMaterial->bEmissive = true;
                 }
@@ -420,10 +421,10 @@ public:
     }
 
     struct Material {
-        PLVector3 vAmbient;
-        PLVector3 vDiffuse;
-        PLVector3 vSpecular;
-        PLVector3 vEmissive;
+        hei::Vector3 vAmbient;
+        hei::Vector3 vDiffuse;
+        hei::Vector3 vSpecular;
+        hei::Vector3 vEmissive;
         uint32_t nShininess;
         float fAlpha;
 
@@ -455,7 +456,7 @@ public:
         }
     };
 
-    std::vector<PLVertex> vertices;
+    std::vector<PLGVertex> vertices;
     std::vector<index_t> indices;
     std::vector<uint32_t> attributes;
     std::vector<Material> materials;
@@ -466,11 +467,11 @@ public:
 
 private:
     typedef std::unordered_multimap<uint32_t, uint32_t> VertexCache;
-    uint32_t AddVertex(uint32_t hash, const PLVertex *pVertex, VertexCache &cache) {
+    uint32_t AddVertex(uint32_t hash, const PLGVertex *pVertex, VertexCache &cache) {
         auto f = cache.equal_range(hash);
         for (auto it = f.first; it != f.second; ++it) {
             auto &tv = vertices[it->second];
-            if (0 == memcmp(pVertex, &tv, sizeof(PLVertex))) {
+            if (0 == memcmp(pVertex, &tv, sizeof(PLGVertex))) {
                 return it->second;
             }
         }

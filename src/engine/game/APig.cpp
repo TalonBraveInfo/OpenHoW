@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Menu.h"
@@ -127,7 +113,7 @@ void APig::Tick() {
 
 	// Update position
 
-	PLVector3 nPosition = GetPosition();
+	hei::Vector3 nPosition = GetPosition();
 
 	PLVector3 forwardDirection;
 	forwardDirection.x = forwardVelocity * 50.0f * myForward.x;
@@ -152,7 +138,7 @@ void APig::Tick() {
 	if ( aimPitch < -MAX_PITCH ) aimPitch = -MAX_PITCH;
 	if ( aimPitch > MAX_PITCH ) aimPitch = MAX_PITCH;
 
-	PLVector3 nAngles = GetAngles();
+	hei::Vector3 nAngles = GetAngles();
 	nAngles.y += inputYaw * 2.0f;
 	VecAngleClamp( &nAngles );
 
@@ -333,7 +319,7 @@ void APig::Jump() {
 void APig::Land() {
 	DebugMsg( "Landing...\n" );
 
-	PLVector3 curVelocity = GetVelocity();
+	hei::Vector3 curVelocity = GetVelocity();
 	if ( curVelocity.Length() > 120.0f ) {
 		GetApp()->audioManager->PlayLocalSound( "audio/p_land1.wav", GetPosition(), GetVelocity(), true );
 		Damage( nullptr, 20, PLVector3(), PLVector3() );

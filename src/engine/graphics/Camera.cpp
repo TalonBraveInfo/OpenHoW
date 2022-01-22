@@ -1,38 +1,24 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Camera.h"
 
 ohw::Camera::Camera( const PLVector3 &pos, const PLVector3 &angles ) {
-	internalCameraPtr = plCreateCamera();
+	internalCameraPtr = PlgCreateCamera();
 	if ( internalCameraPtr == nullptr ) {
-		Error( "Failed to create camera object!\n%s\n", plGetError() );
+		Error( "Failed to create camera object!\n%s\n", PlGetError() );
 	}
 }
 
 ohw::Camera::~Camera() {
-	plDestroyCamera( internalCameraPtr );
+	PlgDestroyCamera( internalCameraPtr );
 }
 
 void ohw::Camera::SetFieldOfView( float fov ) {
 	// Call the platform lib function for this,
 	// which'll do some validation for us
-	plSetCameraFieldOfView( internalCameraPtr, fov );
+	PlgSetCameraFieldOfView( internalCameraPtr, fov );
 }
 
 /**
@@ -48,13 +34,13 @@ void ohw::Camera::SetViewport( int x, int y, int width, int height ) {
 }
 
 void ohw::Camera::MakeActive() {
-	plSetupCamera( internalCameraPtr );
+	PlgSetupCamera( internalCameraPtr );
 }
 
 bool ohw::Camera::IsBoxVisible( const PLCollisionAABB *bounds ) const {
-	return plIsBoxInsideView( internalCameraPtr, bounds );
+	return PlgIsBoxInsideView( internalCameraPtr, bounds );
 }
 
 bool ohw::Camera::IsSphereVisible( const PLCollisionSphere *sphere ) const {
-	return plIsSphereInsideView( internalCameraPtr, sphere );
+	return PlgIsSphereInsideView( internalCameraPtr, sphere );
 }

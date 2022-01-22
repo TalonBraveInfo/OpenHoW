@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Menu.h"
@@ -36,7 +22,7 @@ static int frontend_height = 0;
 
 ohw::BitmapFont *g_fonts[NUM_FONTS];
 
-static PLCamera *menuCamera;
+static PLGCamera *menuCamera;
 
 void Menu_Initialize() {
 	menuBackground = ohw::GetApp()->resourceManager->LoadTexture( "frontend/pigbkpc1", ohw::TextureResource::FLAG_NOMIPS, true );
@@ -68,11 +54,11 @@ void Menu_Initialize() {
 
 	// Setup viewport
 	// TODO: move into frontend.cpp
-	menuCamera = plCreateCamera();
+	menuCamera = PlgCreateCamera();
 	if ( menuCamera == nullptr ) {
-		Error( "Failed to create ui camera, aborting!\n%s\n", plGetError() );
+		Error( "Failed to create ui camera, aborting!\n%s\n", PlGetError() );
 	}
-	menuCamera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
+	menuCamera->mode = PLG_CAMERA_MODE_ORTHOGRAPHIC;
 	menuCamera->fov = 90;
 	menuCamera->near = 0;
 	menuCamera->far = 1000;
@@ -166,7 +152,7 @@ uint8_t loading_progress = 0;
 void FE_SetLoadingBackground( const char *name ) {
 	char screen_path[PL_SYSTEM_MAX_PATH];
 	snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/%s", name );
-	if ( !plFileExists( screen_path ) ) {
+	if ( !PlFileExists( screen_path ) ) {
 		snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/loadmult" );
 	}
 
@@ -229,29 +215,29 @@ static void FrontEnd_DrawMinimap() {
 	}
 
 	// So, we need to render the minimap from the perspective here. So swap things round
-	PLCamera *uiCamera = menuCamera;
-	PLCamera save = *uiCamera;
+	PLGCamera *uiCamera = menuCamera;
+	PLGCamera save = *uiCamera;
 
 	// Set up the camera so we can render the minimap how it needs to be
-	uiCamera->mode = PL_CAMERA_MODE_PERSPECTIVE;
+	uiCamera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
 	uiCamera->near = 0.1f;
 	uiCamera->far = 100.0f;
 	uiCamera->fov = 65.0f;
-	uiCamera->position = PLVector3( -120.0f, 64.0f, 0.0f );
-	uiCamera->angles = PLVector3( -45.0f, 0.0f, 0.0f );
+	uiCamera->position = { -120.0f, 64.0f, 0.0f };
+	uiCamera->angles = { -45.0f, 0.0f, 0.0f };
 	uiCamera->viewport.x = 0;
 	uiCamera->viewport.y = 0;
 	uiCamera->viewport.w = 450;
 	uiCamera->viewport.h = 256;
 
-	plSetupCamera( uiCamera );
+	PlgSetupCamera( uiCamera );
 
-	PLMatrix4 transform;
+	hei::Matrix4 transform;
 	transform.Identity();
-	transform.Rotate( plDegreesToRadians( 90.0f ), PLVector3( 1, 0, 0 ) );
-	transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
+	transform.Rotate( PlDegreesToRadians( 90.0f ), { 1, 0, 0 } );
+	transform.Rotate( PlDegreesToRadians( camera->GetAngles().y ), { 0, 1, 0 } );
 
-	plDrawTexturedRectangle( &transform, -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
+	PlgDrawTexturedRectangle( &transform, -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
 
 	// Now draw everything on top
 	for ( const auto &actor : ActorManager::GetInstance()->GetActors() ) {
@@ -260,13 +246,13 @@ static void FrontEnd_DrawMinimap() {
 		}
 
 		// Figure out what icon we're using
-		PLTexture *iconTexture = ohw::GetApp()->resourceManager->GetFallbackTexture();
+		PLGTexture *iconTexture = ohw::GetApp()->resourceManager->GetFallbackTexture();
 		unsigned int iconStyle = actor->GetMinimapIconStyle();
 		if ( iconStyle < MAX_MINIMAP_ICONS ) {
 			iconTexture = minimapIcons[ iconStyle ]->GetInternalTexture();
 		}
 
-		plSetTexture( iconTexture, 0 );
+		PlgSetTexture( iconTexture, 0 );
 
 		// And now figure out where relatively speaking they should be
 		PLVector3 curPosition = actor->GetPosition();
@@ -275,28 +261,28 @@ static void FrontEnd_DrawMinimap() {
 
 		transform.Identity();
 		// Angle the plane towards the camera
-		transform.Rotate( plDegreesToRadians( 135.0f ), PLVector3( 1, 0, 0 ) );
+		transform.Rotate( PlDegreesToRadians( 135.0f ), { 1, 0, 0 } );
 		// Rotate the yaw so it's always facing the camera
-		transform.Rotate( plDegreesToRadians( -camera->GetAngles().y - 90.0f ), PLVector3( 0, 1, 0 ) );
+		transform.Rotate( PlDegreesToRadians( -camera->GetAngles().y - 90.0f ), { 0, 1, 0 } );
 		// And now position and rotate it so it appears on top of the map
-		transform.Translate( PLVector3( x, 0.0f, y ) );
-		transform.Rotate( plDegreesToRadians( camera->GetAngles().y ), PLVector3( 0, 1, 0 ) );
+		transform.Translate( { x, 0.0f, y } );
+		transform.Rotate( PlDegreesToRadians( camera->GetAngles().y ), { 0, 1, 0 } );
 
 		// Fetch the transformed distance from the camera
 		PLVector3 translation = transform.GetTranslation();
-		PLVector3 distance = uiCamera->position - translation;
+		hei::Vector3 distance = hei::Vector3( uiCamera->position ) - translation;
 		float lengthDistance = distance.Length();
 		// And now scale it up as it moves further away (this isn't perfect...)
 		float scale = 8.0f * lengthDistance / 100.0f;
 
-		plDrawRectangle( &transform, -( scale / 2 ), -( scale / 2 ), scale, scale, actor->GetMinimapIconColour() );
+		PlgDrawRectangle( &transform, -( scale / 2 ), -( scale / 2 ), scale, scale, actor->GetMinimapIconColour() );
 	}
 
-	plSetTexture( nullptr, 0 );
+	PlgSetTexture( nullptr, 0 );
 
 	// Restore what we originally had for the camera
 	*uiCamera = save;
-	plSetupCamera( uiCamera );
+	PlgSetupCamera( uiCamera );
 }
 
 /* Hogs of War's menu was designed
@@ -307,8 +293,8 @@ static void FrontEnd_DrawMinimap() {
  * later. */
 
 static void DrawLoadingScreen() {
-	PLMatrix4 transform = plMatrix4Identity();
-	plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
+	hei::Matrix4 transform;
+	PlgDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
 
 	/* originally I wrote some code ensuring the menu bar
 	 * was centered... that was until I found out that on
@@ -319,14 +305,14 @@ static void DrawLoadingScreen() {
 	int bar_y = 450;
 	if ( loading_progress > 0 ) {
 		PLRectangle2D box = plCreateRectangle(
-				PLVector2( bar_x, bar_y ),
-				PLVector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
+				hei::Vector2( bar_x, bar_y ),
+				hei::Vector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
 				PL_COLOUR_INDIAN_RED,
 				PL_COLOUR_INDIAN_RED,
 				PL_COLOUR_RED,
 				PL_COLOUR_RED
 		);
-		plDrawFilledRectangle( &box );
+		PlgDrawFilledRectangle( &box );
 	}
 
 	if ( loading_description[ 0 ] != ' ' && loading_description[ 0 ] != '\0' ) {
@@ -351,13 +337,13 @@ void Menu_Draw() {
 
 	Shaders_SetProgramByName( "generic_textured" );
 
-	plSetupCamera( menuCamera );
-	plSetDepthBufferMode( PL_DEPTHBUFFER_DISABLE );
+	PlgSetupCamera( menuCamera );
+	PlgSetDepthBufferMode( PLG_DEPTHBUFFER_DISABLE );
 
 	frontend_width = menuCamera->viewport.w;
 	frontend_height = menuCamera->viewport.h;
 
-	PLMatrix4 transform = plMatrix4Identity();
+	hei::Matrix4 transform;
 
 	/* render and handle the main menu */
 	switch ( frontend_state ) {
@@ -367,7 +353,7 @@ void Menu_Draw() {
 		case FE_MODE_INIT:
 		case FE_MODE_START:
 		case FE_MODE_MAIN_MENU:
-			plDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
+			PlgDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
 			break;
 
 		case FE_MODE_LOADING:

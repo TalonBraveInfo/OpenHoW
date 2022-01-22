@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Terrain.h"
@@ -63,8 +49,8 @@ ohw::Terrain::Terrain( const std::string &tileset ) {
 ohw::Terrain::~Terrain() {
 	delete textureAtlas;
 
-	for ( auto &chunk : chunks_ ) {
-		plDestroyMesh( chunk.solidMesh );
+	for ( auto &chunk: chunks_ ) {
+		PlgDestroyMesh( chunk.solidMesh );
 	}
 }
 
@@ -85,7 +71,7 @@ ohw::Terrain::Chunk *ohw::Terrain::GetChunk( const PLVector2 &pos ) {
 }
 
 ohw::Terrain::Tile *ohw::Terrain::GetTile( float x, float y ) {
-	Chunk *chunk = GetChunk( PLVector2( x, y ) );
+	Chunk *chunk = GetChunk( { x, y } );
 	if ( chunk == nullptr ) {
 		return nullptr;
 	}
@@ -123,21 +109,21 @@ float ohw::Terrain::GetHeight( float x, float y ) {
 void ohw::Terrain::GenerateChunkMesh( Chunk *chunk, const PLVector2 &offset ) {
 	// We will need to generate the mesh for the cunk again if the terrain is modified
 	if ( chunk->solidMesh != nullptr ) {
-		plDestroyMesh( chunk->solidMesh );
+		PlgDestroyMesh( chunk->solidMesh );
 	}
 
-	chunk->solidMesh = plCreateMeshInit( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, chunk_indices, nullptr );
+	chunk->solidMesh = PlgCreateMeshInit( PLG_MESH_TRIANGLES, PLG_DRAW_DYNAMIC, 32, 64, chunk_indices, nullptr );
 	if ( chunk->solidMesh == nullptr ) {
-		Error( "Unable to create map chunk mesh, aborting!\nPL: %s\n", plGetError() );
+		Error( "Unable to create map chunk mesh, aborting!\nPL: %s\n", PlGetError() );
 	}
 
 	if ( chunk->waterMesh != nullptr ) {
-		plDestroyMesh( chunk->waterMesh );
+		PlgDestroyMesh( chunk->waterMesh );
 	}
 
-	chunk->waterMesh = plCreateMeshInit( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 32, 64, chunk_indices, nullptr );
+	chunk->waterMesh = PlgCreateMeshInit( PLG_MESH_TRIANGLES, PLG_DRAW_DYNAMIC, 32, 64, chunk_indices, nullptr );
 	if ( chunk->waterMesh == nullptr ) {
-		Error( "Unable to create water chunk mesh, aborting!\nPL: %s\n", plGetError() );
+		Error( "Unable to create water chunk mesh, aborting!\nPL: %s\n", PlGetError() );
 	}
 
 	int cm_idx = 0;
@@ -186,18 +172,18 @@ void ohw::Terrain::GenerateChunkMesh( Chunk *chunk, const PLVector2 &offset ) {
 				float x = ( offset.x * TERRAIN_CHUNK_PIXEL_WIDTH ) + ( tile_x + ( i % 2 ) ) * TERRAIN_TILE_PIXEL_WIDTH;
 				float z = ( offset.y * TERRAIN_CHUNK_PIXEL_WIDTH ) + ( tile_y + ( i / 2 ) ) * TERRAIN_TILE_PIXEL_WIDTH;
 
-				PLVector3 position = PLVector3( x, current_tile->height[ i ], z );
-				PLColour shadedColour = PLColour( current_tile->shading[ i ], current_tile->shading[ i ], current_tile->shading[ i ] );
+				PLVector3 position = hei::Vector3( x, current_tile->height[ i ], z );
+				PLColour shadedColour = hei::Colour( current_tile->shading[ i ], current_tile->shading[ i ], current_tile->shading[ i ] );
 
-				plSetMeshVertexPosition( chunk->solidMesh, cm_idx, position );
-				plSetMeshVertexColour( chunk->solidMesh, cm_idx, shadedColour );
-				plSetMeshVertexST( chunk->solidMesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
+				PlgSetMeshVertexPosition( chunk->solidMesh, cm_idx, position );
+				PlgSetMeshVertexColour( chunk->solidMesh, cm_idx, shadedColour );
+				PlgSetMeshVertexST( chunk->solidMesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
 
 				if ( current_tile->behaviour == Tile::BEHAVIOUR_WATERY ) {
 					shadedColour.a = 145;
-					plSetMeshVertexPosition( chunk->waterMesh, cm_idx, position );
-					plSetMeshVertexColour( chunk->waterMesh, cm_idx, shadedColour );
-					plSetMeshVertexST( chunk->waterMesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
+					PlgSetMeshVertexPosition( chunk->waterMesh, cm_idx, position );
+					PlgSetMeshVertexColour( chunk->waterMesh, cm_idx, shadedColour );
+					PlgSetMeshVertexST( chunk->waterMesh, cm_idx, tx_Ax[ i ], tx_Ay[ i ] );
 					numWaterTiles++;
 				}
 			}
@@ -205,7 +191,7 @@ void ohw::Terrain::GenerateChunkMesh( Chunk *chunk, const PLVector2 &offset ) {
 	}
 
 	if ( numWaterTiles == 0 ) {
-		plDestroyMesh( chunk->waterMesh );
+		PlgDestroyMesh( chunk->waterMesh );
 		chunk->waterMesh = nullptr;
 	}
 }
@@ -227,13 +213,13 @@ void ohw::Terrain::GenerateOverview() {
 	};
 
 	// Create our storage
-	PLImage *image = plCreateImage( nullptr, 64, 64, PL_COLOURFORMAT_RGB, PL_IMAGEFORMAT_RGB8 );
+	PLImage *image = PlCreateImage( nullptr, 64, 64, PL_COLOURFORMAT_RGB, PL_IMAGEFORMAT_RGB8 );
 
 	// Now write into the image buffer
 	uint8_t *buf = image->data[ 0 ];
 	for ( uint8_t y = 0; y < 64; ++y ) {
 		for ( uint8_t x = 0; x < 64; ++x ) {
-			PLVector2 position( x * ( TERRAIN_PIXEL_WIDTH / 64 ), y * ( TERRAIN_PIXEL_WIDTH / 64 ) );
+			hei::Vector2 position( x * ( TERRAIN_PIXEL_WIDTH / 64 ), y * ( TERRAIN_PIXEL_WIDTH / 64 ) );
 			const Tile *tile = GetTile( position.x, position.y );
 			u_assert( tile != nullptr, "Hit an invalid tile during overview generation!\n" );
 			if ( tile == nullptr ) {
@@ -241,13 +227,13 @@ void ohw::Terrain::GenerateOverview() {
 			}
 
 			auto mod = static_cast<int>(( GetHeight( position.x, position.y ) + ( ( GetMaxHeight() + GetMinHeight() ) / 2 ) ) / 255);
-			PLColour rgb = PLColour(
+			PLColour rgb = hei::Colour(
 					std::min( ( colours[ tile->surface ].r / 9 ) * mod, 255 ),
 					std::min( ( colours[ tile->surface ].g / 9 ) * mod, 255 ),
 					std::min( ( colours[ tile->surface ].b / 9 ) * mod, 255 )
 			);
 			if ( tile->behaviour & Tile::BEHAVIOUR_MINE ) {
-				rgb = PLColour( 255, 0, 0 );
+				rgb = { 255, 0, 0 };
 			}
 
 			*( buf++ ) = rgb.r;
@@ -256,24 +242,24 @@ void ohw::Terrain::GenerateOverview() {
 		}
 	}
 
-#ifdef _DEBUG
-	if ( plCreatePath( "./debug/generated/" ) ) {
+#if !defined( NDEBUG )
+	if ( PlCreatePath( "./debug/generated/" ) ) {
 		char path[PL_SYSTEM_MAX_PATH];
 		static unsigned int id = 0;
 		snprintf( path, sizeof( path ) - 1, "./debug/generated/%dx%d_%d.png", image->width, image->height, id );
-		plWriteImage( image, path );
+		PlWriteImage( image, path );
 	}
 #endif
 
 	// Allow rebuilding overview texture
-	plDestroyTexture( overview_ );
+	PlgDestroyTexture( overview_ );
 
-	if ( ( overview_ = plCreateTexture() ) == nullptr ) {
-		Error( "Failed to generate overview texture slot!\n%s\n", plGetError() );
+	if ( ( overview_ = PlgCreateTexture() ) == nullptr ) {
+		Error( "Failed to generate overview texture slot!\n%s\n", PlGetError() );
 	}
 
-	plUploadTextureImage( overview_, image );
-	plDestroyImage( image );
+	PlgUploadTextureImage( overview_, image );
+	PlDestroyImage( image );
 }
 
 void ohw::Terrain::Update() {
@@ -286,8 +272,8 @@ void ohw::Terrain::Update() {
 		}
 	}
 
-	std::list< PLMesh * > meshes;
-	for ( auto &chunk : chunks_ ) {
+	std::list< PLGMesh * > meshes;
+	for ( auto &chunk: chunks_ ) {
 		if ( chunk.solidMesh != nullptr ) {
 			meshes.push_back( chunk.solidMesh );
 		}
@@ -308,31 +294,31 @@ void ohw::Terrain::Draw() {
 	}
 
 	if ( !cv_graphics_debug_normals->b_value ) {
-		plSetTexture( textureAtlas->GetTexture(), 0 );
+		PlgSetTexture( textureAtlas->GetTexture(), 0 );
 	}
 
-	plMatrixMode( PL_MODELVIEW_MATRIX );
-	plPushMatrix();
+	PlMatrixMode( PL_MODELVIEW_MATRIX );
+	PlPushMatrix();
 
-	plLoadIdentityMatrix();
+	PlLoadIdentityMatrix();
 
-	PLShaderProgram *program;
+	PLGShaderProgram *program;
 
 	// Solid
 	program = Shaders_GetProgram( cv_graphics_debug_normals->b_value ? "debug_normals" : "generic_textured_lit" )->GetInternalProgram();
 	if ( program != nullptr ) {
-		plSetShaderProgram( program );
-		plSetShaderUniformValue( program, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+		PlgSetShaderProgram( program );
+		PlgSetShaderUniformValue( program, "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
-		plSetBlendMode( PL_BLEND_DISABLE );
+		PlgSetBlendMode( PLG_BLEND_DISABLE );
 
-		for ( const auto &chunk : chunks_ ) {
+		for ( const auto &chunk: chunks_ ) {
 			if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) || chunk.solidMesh == nullptr ) {
 				continue;
 			}
 
-			plUploadMesh( chunk.solidMesh );
-			plDrawMesh( chunk.solidMesh );
+			PlgUploadMesh( chunk.solidMesh );
+			PlgDrawMesh( chunk.solidMesh );
 		}
 	}
 
@@ -340,43 +326,43 @@ void ohw::Terrain::Draw() {
 		// Water
 		program = Shaders_GetProgram( "water" )->GetInternalProgram();
 		if ( program != nullptr ) {
-			plSetShaderProgram( program );
-			plSetShaderUniformValue( program, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+			PlgSetShaderProgram( program );
+			PlgSetShaderUniformValue( program, "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
-			plSetBlendMode( PL_BLEND_DEFAULT );
+			PlgSetBlendMode( PLG_BLEND_DEFAULT );
 
-			for ( const auto &chunk : chunks_ ) {
+			for ( const auto &chunk: chunks_ ) {
 				if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) || chunk.waterMesh == nullptr ) {
 					continue;
 				}
 
-				plUploadMesh( chunk.waterMesh );
-				plDrawMesh( chunk.waterMesh );
+				PlgUploadMesh( chunk.waterMesh );
+				PlgDrawMesh( chunk.waterMesh );
 			}
 		}
 
 		if ( cv_debug_bounds->b_value ) {
 			Shaders_SetProgramByName( "generic_untextured" );
 
-			for ( const auto &chunk : chunks_ ) {
+			for ( const auto &chunk: chunks_ ) {
 				if ( ( cv_graphics_cull->b_value && !cameraPtr->IsBoxVisible( &chunk.bounds ) ) ) {
 					continue;
 				}
 
-				plDrawBoundingVolume( &chunk.bounds, PL_COLOUR_ORANGE );
+				PlgDrawBoundingVolume( &chunk.bounds, PL_COLOUR_ORANGE );
 			}
 		}
 	}
 
 	if ( !cv_graphics_debug_normals->b_value ) {
-		plSetTexture( nullptr, 0 );
+		PlgSetTexture( nullptr, 0 );
 	}
 
-	plPopMatrix();
+	PlPopMatrix();
 }
 
 void ohw::Terrain::LoadPmg( const std::string &path ) {
-	PLFile *fh = plOpenFile( path.c_str(), false );
+	PLFile *fh = PlOpenFile( path.c_str(), false );
 	if ( fh == nullptr ) {
 		Warning( "Failed to open tile data, \"%s\", aborting\n", path.c_str() );
 		return;
@@ -387,17 +373,17 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 			Chunk &chunk = chunks_[ chunk_x + chunk_y * TERRAIN_CHUNK_ROW ];
 
 			bool status;
-			chunk.x = plReadInt16( fh, false, &status );
-			chunk.y = plReadInt16( fh, false, &status );
-			chunk.z = plReadInt16( fh, false, &status );
+			chunk.x = PlReadInt16( fh, false, &status );
+			chunk.y = PlReadInt16( fh, false, &status );
+			chunk.z = PlReadInt16( fh, false, &status );
 			/* int16_t unknown0 = */
-			plReadInt16( fh, false, &status );
+			PlReadInt16( fh, false, &status );
 
 			if ( !status ) {
-				Error( "Failed to read in chunk descriptor in \"%s\"!\n", plGetFilePath( fh ) );
+				Error( "Failed to read in chunk descriptor in \"%s\"!\n", PlGetFilePath( fh ) );
 			}
 
-			chunk.bounds.origin = PLVector3( chunk_x * TERRAIN_CHUNK_PIXEL_WIDTH, 0.0f, chunk_y * TERRAIN_CHUNK_PIXEL_WIDTH );
+			chunk.bounds.origin = hei::Vector3( chunk_x * TERRAIN_CHUNK_PIXEL_WIDTH, 0.0f, chunk_y * TERRAIN_CHUNK_PIXEL_WIDTH );
 			chunk.bounds.maxs.z = chunk.bounds.maxs.x = TERRAIN_CHUNK_PIXEL_WIDTH;
 			chunk.bounds.mins.z = chunk.bounds.mins.x = -TERRAIN_CHUNK_PIXEL_WIDTH;
 
@@ -409,12 +395,12 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 			// Find the maximum and minimum points
 			chunk.bounds.maxs.y = INT16_MIN;
 			chunk.bounds.mins.y = INT16_MAX;
-			for ( auto &vertex : vertices ) {
-				vertex.height = plReadInt16( fh, false, &status );
-				vertex.lighting = plReadInt16( fh, false, &status );
+			for ( auto &vertex: vertices ) {
+				vertex.height = PlReadInt16( fh, false, &status );
+				vertex.lighting = PlReadInt16( fh, false, &status );
 
 				if ( !status ) {
-					Error( "Failed to read in vertex descriptor in \"%s\"!\n", plGetFilePath( fh ) );
+					Error( "Failed to read in vertex descriptor in \"%s\"!\n", PlGetFilePath( fh ) );
 				}
 
 				// Determine the maximum height and minimum height for this chunk
@@ -433,7 +419,7 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 				}
 			}
 
-			plFileSeek( fh, 4, PL_SEEK_CUR );
+			PlFileSeek( fh, 4, PL_SEEK_CUR );
 
 			for ( unsigned int tile_y = 0; tile_y < TERRAIN_CHUNK_ROW_TILES; ++tile_y ) {
 				for ( unsigned int tile_x = 0; tile_x < TERRAIN_CHUNK_ROW_TILES; ++tile_x ) {
@@ -448,19 +434,19 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 					} tile;
 
 					// Skip unused data
-					if ( plReadFile( fh, tile.unused0, 6, 1 ) != 1 ) {
-						Error( "Failed to skip unused bytes in \"%s\"!\n", plGetFilePath( fh ) );
+					if ( PlReadFile( fh, tile.unused0, 6, 1 ) != 1 ) {
+						Error( "Failed to skip unused bytes in \"%s\"!\n", PlGetFilePath( fh ) );
 					}
 
-					tile.type = plReadInt8( fh, &status );
-					tile.slip = plReadInt8( fh, &status );
-					tile.unused1 = plReadInt16( fh, false, &status );
-					tile.rotation = plReadInt8( fh, &status );
-					tile.texture = plReadInt32( fh, false, &status );
-					tile.unused2 = plReadInt8( fh, &status );
+					tile.type = PlReadInt8( fh, &status );
+					tile.slip = PlReadInt8( fh, &status );
+					tile.unused1 = PlReadInt16( fh, false, &status );
+					tile.rotation = PlReadInt8( fh, &status );
+					tile.texture = PlReadInt32( fh, false, &status );
+					tile.unused2 = PlReadInt8( fh, &status );
 
 					if ( !status ) {
-						Error( "Failed to read in tile descriptor in \"%s\"!\n", plGetFilePath( fh ) );
+						Error( "Failed to read in tile descriptor in \"%s\"!\n", PlGetFilePath( fh ) );
 					}
 
 					Tile *current_tile = &chunk.tiles[ tile_x + tile_y * TERRAIN_CHUNK_ROW_TILES ];
@@ -484,20 +470,20 @@ void ohw::Terrain::LoadPmg( const std::string &path ) {
 		}
 	}
 
-	plCloseFile( fh );
+	PlCloseFile( fh );
 
 	Update();
 }
 
 void ohw::Terrain::LoadHeightmap( const std::string &path, int multiplier ) {
-	PLImage *image = plLoadImage( path.c_str() );
+	PLImage *image = PlLoadImage( path.c_str() );
 	if ( image == nullptr ) {
-		Warning( "Failed to load the specified heightmap, \"%s\" (%s)!\n", path.c_str(), plGetError() );
+		Warning( "Failed to load the specified heightmap, \"%s\" (%s)!\n", path.c_str(), PlGetError() );
 		return;
 	}
 
 	if ( image->width < 65 || image->height < 65 ) {
-		plDestroyImage( image );
+		PlDestroyImage( image );
 		Warning( "Invalid image size for heightmap, %dx%d vs 65x65!\n", image->width, image->height );
 		return;
 	}
@@ -522,7 +508,7 @@ void ohw::Terrain::LoadHeightmap( const std::string &path, int multiplier ) {
 		pixel += 4;
 	}
 
-	plDestroyImage( image );
+	PlDestroyImage( image );
 
 	for ( unsigned int chunk_y = 0; chunk_y < TERRAIN_CHUNK_ROW; ++chunk_y ) {
 		for ( unsigned int chunk_x = 0; chunk_x < TERRAIN_CHUNK_ROW; ++chunk_x ) {
@@ -549,8 +535,8 @@ void ohw::Terrain::LoadHeightmap( const std::string &path, int multiplier ) {
 			max_height_ = min_height_ = current_chunk.tiles[ 0 ].height[ 0 ];
 
 			// Find the maximum and minimum points
-			for ( auto &tile : current_chunk.tiles ) {
-				for ( float i : tile.height ) {
+			for ( auto &tile: current_chunk.tiles ) {
+				for ( float i: tile.height ) {
 					if ( i > max_height_ ) {
 						max_height_ = i;
 					}

@@ -1,21 +1,8 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include <imgui.h>
+#include <fstream>
 
 #include "App.h"
 #include "Map.h"
@@ -143,23 +130,23 @@ void ohw::MapConfigEditor::Display() {
 	ImGui::Text( "Sky Settings" );
 
 	float rgb[3];
-	rgb[ 0 ] = plByteToFloat( manifest_->sky_colour_top.r );
-	rgb[ 1 ] = plByteToFloat( manifest_->sky_colour_top.g );
-	rgb[ 2 ] = plByteToFloat( manifest_->sky_colour_top.b );
+	rgb[ 0 ] = PlByteToFloat( manifest_->sky_colour_top.r );
+	rgb[ 1 ] = PlByteToFloat( manifest_->sky_colour_top.g );
+	rgb[ 2 ] = PlByteToFloat( manifest_->sky_colour_top.b );
 	if ( ImGui::ColorEdit3( "Top Colour", rgb, ImGuiColorEditFlags_InputRGB ) ) {
-		manifest_->sky_colour_top.r = plFloatToByte( rgb[ 0 ] );
-		manifest_->sky_colour_top.g = plFloatToByte( rgb[ 1 ] );
-		manifest_->sky_colour_top.b = plFloatToByte( rgb[ 2 ] );
+		manifest_->sky_colour_top.r = PlFloatToByte( rgb[ 0 ] );
+		manifest_->sky_colour_top.g = PlFloatToByte( rgb[ 1 ] );
+		manifest_->sky_colour_top.b = PlFloatToByte( rgb[ 2 ] );
 		map_->UpdateSky();
 	}
 
-	rgb[ 0 ] = plByteToFloat( manifest_->sky_colour_bottom.r );
-	rgb[ 1 ] = plByteToFloat( manifest_->sky_colour_bottom.g );
-	rgb[ 2 ] = plByteToFloat( manifest_->sky_colour_bottom.b );
+	rgb[ 0 ] = PlByteToFloat( manifest_->sky_colour_bottom.r );
+	rgb[ 1 ] = PlByteToFloat( manifest_->sky_colour_bottom.g );
+	rgb[ 2 ] = PlByteToFloat( manifest_->sky_colour_bottom.b );
 	if ( ImGui::ColorEdit3( "Bottom Colour", rgb, ImGuiColorEditFlags_InputRGB ) ) {
-		manifest_->sky_colour_bottom.r = plFloatToByte( rgb[ 0 ] );
-		manifest_->sky_colour_bottom.g = plFloatToByte( rgb[ 1 ] );
-		manifest_->sky_colour_bottom.b = plFloatToByte( rgb[ 2 ] );
+		manifest_->sky_colour_bottom.r = PlFloatToByte( rgb[ 0 ] );
+		manifest_->sky_colour_bottom.g = PlFloatToByte( rgb[ 1 ] );
+		manifest_->sky_colour_bottom.b = PlFloatToByte( rgb[ 2 ] );
 		map_->UpdateSky();
 	}
 
@@ -170,22 +157,22 @@ void ohw::MapConfigEditor::Display() {
 	ImGui::SliderAngle( "Sun Pitch", &manifest_->sun_pitch, -90, 90, nullptr );
 	ImGui::SliderAngle( "Sun Yaw", &manifest_->sun_yaw, -180, 180, nullptr );
 
-	rgb[ 0 ] = plByteToFloat( manifest_->sun_colour.r );
-	rgb[ 1 ] = plByteToFloat( manifest_->sun_colour.g );
-	rgb[ 2 ] = plByteToFloat( manifest_->sun_colour.b );
+	rgb[ 0 ] = PlByteToFloat( manifest_->sun_colour.r );
+	rgb[ 1 ] = PlByteToFloat( manifest_->sun_colour.g );
+	rgb[ 2 ] = PlByteToFloat( manifest_->sun_colour.b );
 	if ( ImGui::ColorEdit3( "Sun Colour", rgb, ImGuiColorEditFlags_InputRGB ) ) {
-		manifest_->sun_colour.r = plFloatToByte( rgb[ 0 ] );
-		manifest_->sun_colour.g = plFloatToByte( rgb[ 1 ] );
-		manifest_->sun_colour.b = plFloatToByte( rgb[ 2 ] );
+		manifest_->sun_colour.r = PlFloatToByte( rgb[ 0 ] );
+		manifest_->sun_colour.g = PlFloatToByte( rgb[ 1 ] );
+		manifest_->sun_colour.b = PlFloatToByte( rgb[ 2 ] );
 	}
 
-	rgb[ 0 ] = plByteToFloat( manifest_->ambient_colour.r );
-	rgb[ 1 ] = plByteToFloat( manifest_->ambient_colour.g );
-	rgb[ 2 ] = plByteToFloat( manifest_->ambient_colour.b );
+	rgb[ 0 ] = PlByteToFloat( manifest_->ambient_colour.r );
+	rgb[ 1 ] = PlByteToFloat( manifest_->ambient_colour.g );
+	rgb[ 2 ] = PlByteToFloat( manifest_->ambient_colour.b );
 	if ( ImGui::ColorEdit3( "Ambient Colour", rgb, ImGuiColorEditFlags_InputRGB ) ) {
-		manifest_->ambient_colour.r = plFloatToByte( rgb[ 0 ] );
-		manifest_->ambient_colour.g = plFloatToByte( rgb[ 1 ] );
-		manifest_->ambient_colour.b = plFloatToByte( rgb[ 2 ] );
+		manifest_->ambient_colour.r = PlFloatToByte( rgb[ 0 ] );
+		manifest_->ambient_colour.g = PlFloatToByte( rgb[ 1 ] );
+		manifest_->ambient_colour.b = PlFloatToByte( rgb[ 2 ] );
 	}
 
 	ImGui::Separator();
@@ -194,13 +181,13 @@ void ohw::MapConfigEditor::Display() {
 	{
 		ImGui::Text( "Fog Settings" );
 
-		rgb[ 0 ] = plByteToFloat( manifest_->fog_colour.r );
-		rgb[ 1 ] = plByteToFloat( manifest_->fog_colour.g );
-		rgb[ 2 ] = plByteToFloat( manifest_->fog_colour.b );
+		rgb[ 0 ] = PlByteToFloat( manifest_->fog_colour.r );
+		rgb[ 1 ] = PlByteToFloat( manifest_->fog_colour.g );
+		rgb[ 2 ] = PlByteToFloat( manifest_->fog_colour.b );
 		if ( ImGui::ColorEdit3( "Fog Colour", rgb, ImGuiColorEditFlags_InputRGB ) ) {
-			manifest_->fog_colour.r = plFloatToByte( rgb[ 0 ] );
-			manifest_->fog_colour.g = plFloatToByte( rgb[ 1 ] );
-			manifest_->fog_colour.b = plFloatToByte( rgb[ 2 ] );
+			manifest_->fog_colour.r = PlFloatToByte( rgb[ 0 ] );
+			manifest_->fog_colour.g = PlFloatToByte( rgb[ 1 ] );
+			manifest_->fog_colour.b = PlFloatToByte( rgb[ 2 ] );
 		}
 
 		ImGui::SliderFloat( "Fog Intensity", &manifest_->fog_intensity, -100.0f, 100.0f, "%.0f" );

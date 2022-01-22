@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "graphics/ShaderManager.h"
@@ -35,7 +21,7 @@ static const char *supportedModelFormats[] = { "obj", "vtx", "min", nullptr };
 ohw::ModelViewer::ModelViewer() : BaseWindow() {
 	const char **formatExtensions = supportedModelFormats;
 	while ( *formatExtensions != nullptr ) {
-		plScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true, nullptr );
+		PlScanDirectory( "chars", *formatExtensions, &ModelViewer::AppendModelList, true, nullptr );
 		formatExtensions++;
 	}
 
@@ -49,43 +35,47 @@ ohw::ModelViewer::ModelViewer() : BaseWindow() {
 }
 
 ohw::ModelViewer::~ModelViewer() {
-	plDestroyTexture( textureAttachment );
-	plDestroyFrameBuffer( drawBuffer );
+	PlgDestroyTexture( textureAttachment );
+	PlgDestroyFrameBuffer( drawBuffer );
 }
 
 void ohw::ModelViewer::DrawViewport() {
-	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
+	PlgBindFrameBuffer( drawBuffer, PLG_FRAMEBUFFER_DRAW );
 
-	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
+	PlgSetDepthBufferMode( PLG_DEPTHBUFFER_ENABLE );
 
-	plSetClearColour( { 0, 0, 0, 0 } );
-	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+	PlgSetClearColour( { 0, 0, 0, 0 } );
+	PlgClearBuffers( PLG_BUFFER_COLOUR | PLG_BUFFER_DEPTH );
 
 	unsigned int bufferWidth = 0, bufferHeight = 0;
-	plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
+	PlgGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
 	camera->SetViewport( 0, 0, bufferWidth, bufferHeight );
 	camera->MakeActive();
 
-	PLVector3 angles(
-			plDegreesToRadians( modelRotation.x ),
-			plDegreesToRadians( modelRotation.y ),
-			plDegreesToRadians( modelRotation.z ) );
+	hei::Vector3 angles(
+			PlDegreesToRadians( modelRotation.x ),
+			PlDegreesToRadians( modelRotation.y ),
+			PlDegreesToRadians( modelRotation.z ) );
 
 	if ( viewGrid ) {
 		ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
 		shaderProgram->Enable();
 
-		PLMatrix4 matrix;
-		matrix.Identity();
-		matrix.Rotate( plDegreesToRadians( modelRotation.z + 90.0f ), { 1, 0, 0 } );
-		matrix.Rotate( angles.y, { 0, 1, 0 } );
-		matrix.Rotate( angles.x, { 0, 0, 1 } );
+		PlMatrixMode( PL_MODELVIEW_MATRIX );
+		PlPushMatrix();
+		PlLoadIdentityMatrix();
 
-		plDrawGrid( matrix, -512, -512, 1024, 1024, 32 );
+		PlRotateMatrix( PlDegreesToRadians( modelRotation.z + 90.0f ), 1, 0, 0 );
+		PlRotateMatrix( angles.y, 0, 1, 0 );
+		PlRotateMatrix( angles.x, 0, 0, 1 );
+
+		PlgDrawGrid( -512, -512, 1024, 1024, 32 );
+
+		PlPopMatrix();
 	}
 
 	if ( model == nullptr ) {
-		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+		PlgBindFrameBuffer( nullptr, PLG_FRAMEBUFFER_DRAW );
 		return;
 	}
 
@@ -93,24 +83,26 @@ void ohw::ModelViewer::DrawViewport() {
 	shaderProgram->Enable();
 
 	if ( !viewDebugNormals ) {
-		PLVector3 sunPosition = PLVector3( 0.5f, 0.2f, 0.6f );
-		PLVector4 sunColour = PLVector4( 1.0f, 1.0f, 1.0f, 1.0f );
-		PLVector4 ambience = PLVector4( 0.75f, 0.75f, 0.75f, 1.0f );
+		hei::Vector3 sunPosition( 0.5f, 0.2f, 0.6f );
+		PLVector4 sunColour = { 1.0f, 1.0f, 1.0f, 1.0f };
+		PLVector4 ambience = { 0.75f, 0.75f, 0.75f, 1.0f };
 
-		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_position", &sunPosition, false );
-		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_colour", &sunColour, false );
-		plSetShaderUniformValue( shaderProgram->GetInternalProgram(), "ambient_colour", &ambience, false );
+		PlgSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_position", &sunPosition, false );
+		PlgSetShaderUniformValue( shaderProgram->GetInternalProgram(), "sun_colour", &sunColour, false );
+		PlgSetShaderUniformValue( shaderProgram->GetInternalProgram(), "ambient_colour", &ambience, false );
 	}
 	
 	if ( viewRotate ) {
 		modelRotation.y += 0.01f * GetApp()->GetDeltaTime();
 	}
 
-	model->modelMatrix.Identity();
-	model->modelMatrix.Rotate( angles.z, { 1, 0, 0 } );
-	model->modelMatrix.Rotate( angles.y, { 0, 1, 0 } );
-	model->modelMatrix.Rotate( angles.x, { 0, 0, 1 } );
+	hei::Matrix4 mat;
+	mat.Identity();
+	mat.Rotate( angles.z, { 1, 0, 0 } );
+	mat.Rotate( angles.y, { 0, 1, 0 } );
+	mat.Rotate( angles.x, { 0, 0, 1 } );
 
+	model->modelMatrix = mat;
 	model->Draw( false );
 
 	if ( viewDebugNormals ) {
@@ -121,7 +113,7 @@ void ohw::ModelViewer::DrawViewport() {
 		model->DrawSkeleton();
 	}
 
-	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+	PlgBindFrameBuffer( nullptr, PLG_FRAMEBUFFER_DRAW );
 }
 
 void ohw::ModelViewer::Display() {
@@ -211,7 +203,7 @@ void ohw::ModelViewer::Display() {
 
 				if ( ImGui::BeginMenu( "Textures" ) ) {
 					for ( unsigned int i = 0; i < model->GetNumberOfMeshes(); ++i ) {
-						PLMesh *mesh = model->GetInternalMesh( i );
+						PLGMesh *mesh = model->GetInternalMesh( i );
 						if ( ImGui::ImageButton( reinterpret_cast<ImTextureID>( mesh->texture->internal.id ), ImVec2( 128, 128 ) ) ) {
 							//ImGuiImpl_RegisterWindow( new TextureViewer( model->GetTextureResource( i ) ) );
 						}
@@ -248,7 +240,7 @@ void ohw::ModelViewer::Display() {
 		if ( model != nullptr ) {
 			numDrawCalls = model->GetNumberOfMeshes();
 			for ( unsigned int i = 0; i < numDrawCalls; ++i ) {
-				PLMesh *mesh = model->GetInternalMesh( i );
+				PLGMesh *mesh = model->GetInternalMesh( i );
 				numTriangles += mesh->num_triangles;
 				numVertices += mesh->num_verts;
 			}
@@ -315,22 +307,22 @@ void ohw::ModelViewer::AppendModelList( const char *path, void *userData ) {
 void ohw::ModelViewer::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
 	unsigned int bufferWidth = 0, bufferHeight = 0;
 	if ( drawBuffer != nullptr ) {
-		plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
+		PlgGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
 	}
 
 	if ( bufferWidth != width || bufferHeight != height ) {
-		plDestroyFrameBuffer( drawBuffer );
-		drawBuffer = plCreateFrameBuffer( width, height, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+		PlgDestroyFrameBuffer( drawBuffer );
+		drawBuffer = PlgCreateFrameBuffer( width, height, PLG_BUFFER_COLOUR | PLG_BUFFER_DEPTH );
 		if ( drawBuffer == nullptr ) {
-			Error( "Failed to create framebuffer for model viewer (%s)!\n", plGetError() );
+			Error( "Failed to create framebuffer for model viewer (%s)!\n", PlGetError() );
 		}
 
-		plDestroyTexture( textureAttachment );
-		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer, PL_BUFFER_COLOUR, PL_TEXTURE_FILTER_LINEAR );
+		PlgDestroyTexture( textureAttachment );
+		textureAttachment = PlgGetFrameBufferTextureAttachment( drawBuffer, PLG_BUFFER_COLOUR, PLG_TEXTURE_FILTER_LINEAR );
 		if ( textureAttachment == nullptr ) {
-			Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
+			Error( "Failed to create texture attachment for buffer (%s)!\n", PlGetError() );
 		}
 	}
 
-	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+	PlgBindFrameBuffer( nullptr, PLG_FRAMEBUFFER_DRAW );
 }

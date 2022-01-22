@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
@@ -161,15 +147,15 @@ struct MapManifest {
 	std::string description{ "none" };                //
 	std::string tile_directory;
 	std::vector< std::string > modes;                 // supported gameplay types
-	PLColour ambient_colour{ 255, 255, 255, 255 };    // ambient colour
+	hei::Colour ambient_colour{ 255, 255, 255, 255 };    // ambient colour
 	// Sky gradient
-	PLColour sky_colour_top{ 0, 104, 156 };
-	PLColour sky_colour_bottom{ 223, 255, 255 };
+	hei::Colour sky_colour_top{ 0, 104, 156 };
+	hei::Colour sky_colour_bottom{ 223, 255, 255 };
 	// Sun/lighting properties
-	PLColour sun_colour{ 255, 255, 255 };      // directional colour
+	hei::Colour sun_colour{ 255, 255, 255 };      // directional colour
 	float sun_yaw{ 0 }, sun_pitch{ 0 };       // light direction (yaw/angle)
 	// Fog
-	PLColour fog_colour{ 223, 255, 255, 255 };
+	hei::Colour fog_colour{ 223, 255, 255, 255 };
 	float fog_intensity{ 30.0f };
 	float fog_distance{ 100.0f };
 	// Misc
@@ -199,7 +185,9 @@ struct AudioSample;
 
 namespace ohw {
 	class Map;
+
 	class Camera;
+
 	class GameManager {
 	private:
 		GameManager();
@@ -208,7 +196,7 @@ namespace ohw {
 	public:
 		void Tick();
 
-		PL_INLINE Camera *GetActiveCamera() const { return defaultCamera; }
+		inline Camera *GetActiveCamera() const { return defaultCamera; }
 
 		void StartMode( const std::string &map, const PlayerPtrVector &players, const GameModeDescriptor &descriptor );
 		void EndMode();
@@ -241,16 +229,16 @@ namespace ohw {
 		typedef std::map< std::string, CharacterClass > CharacterClassMap;
 		const CharacterClass *GetDefaultClass( const std::string &classIdentifer ) const;
 
-		PL_INLINE Map *GetCurrentMap() const { return currentMap; }
-		PL_INLINE IGameMode *GetMode() const { return currentMode; }
+		inline Map *GetCurrentMap() const { return currentMap; }
+		inline IGameMode *GetMode() const { return currentMode; }
 
 		bool IsModeActive();
 
-		PL_INLINE void StepSimulation( unsigned int steps = 1 ) {
+		inline void StepSimulation( unsigned int steps = 1 ) {
 			simSteps = steps;
 		}
 
-		PL_INLINE void ToggleSimulation( bool paused ) {
+		inline void ToggleSimulation( bool paused ) {
 			pauseSim = paused;
 		}
 

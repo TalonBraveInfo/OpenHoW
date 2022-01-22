@@ -1,43 +1,29 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
-#include <PL/platform_math.h>
+#include <plcore/pl_math.h>
 
 /* extension of Platform's math functionality */
 
 #ifdef __cplusplus
 
-inline static void VectorClamp( PLVector3 *vector, float min, float max ) {
+inline static void VectorClamp( hei::Vector3 *vector, float min, float max ) {
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		if (( *vector )[ i ] >= max ) {
+		if ( ( *vector )[ i ] >= max ) {
 			( *vector )[ i ] = max;
-		} else if (( *vector )[ i ] <= min ) {
+		} else if ( ( *vector )[ i ] <= min ) {
 			( *vector )[ i ] = min;
 		}
 	}
 }
 
-inline static void VecAngleClamp( PLVector3 *vector ) {
+inline static void VecAngleClamp( hei::Vector3 *vector ) {
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		if (( *vector )[ i ] >= 360 ) {
+		if ( ( *vector )[ i ] >= 360 ) {
 			( *vector )[ i ] = 0;
-		} else if (( *vector )[ i ] <= -360 ) {
+		} else if ( ( *vector )[ i ] <= -360 ) {
 			( *vector )[ i ] = 0;
 		}
 	}

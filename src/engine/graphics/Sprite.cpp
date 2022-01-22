@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Sprite.h"
@@ -21,14 +7,12 @@
 
 ohw::Sprite::Sprite( SpriteType type, const std::string &texturePath, PLColour colour, float scale ) :
 		type_( type ), colour_( colour ), scale_( scale ) {
-	mesh_ = plCreateMeshRectangle( -64, -64, 64, 64, colour_ );
+	mesh_ = PlgCreateMeshRectangle( -64, -64, 64, 64, colour_ );
 
 	// Load in the texture we need
 	texture = ohw::GetApp()->resourceManager->LoadTexture( texturePath );
 
 	defaultProgram = Shaders_GetProgram( "generic_textured" );
-
-	modelMatrix.Identity();
 }
 
 ohw::Sprite::~Sprite() {}
@@ -44,27 +28,27 @@ void ohw::Sprite::Draw() {
 
 	defaultProgram->Enable();
 
-	plSetTexture( texture->GetInternalTexture(), 0 );
+	PlgSetTexture( texture->GetInternalTexture(), 0 );
 
 	modelMatrix.Identity();
-	modelMatrix *= PLVector3( scale_, scale_, scale_ );
+	modelMatrix *= hei::Vector3( scale_, scale_, scale_ );
 	modelMatrix.Translate( { 32 * scale_, 32 * scale_, 0 } );
 	modelMatrix.Rotate( angles_.x, { 1, 0, 0 } );
 	modelMatrix.Rotate( angles_.y, { 0, 1, 0 } );
 	modelMatrix.Rotate( angles_.z, { 0, 0, 1 } );
 	modelMatrix.Translate( position_ );
 
-	plSetShaderUniformValue( defaultProgram->GetInternalProgram(), "pl_model", &modelMatrix, true );
+	PlgSetShaderUniformValue( defaultProgram->GetInternalProgram(), "pl_model", &modelMatrix, true );
 
-	plUploadMesh( mesh_ );
+	PlgUploadMesh( mesh_ );
 
-	plSetCullMode( PL_CULL_NONE );
+	PlgSetCullMode( PLG_CULL_NONE );
 
-	plDrawMesh( mesh_ );
+	PlgDrawMesh( mesh_ );
 
-	plSetCullMode( PL_CULL_POSTIVE );
+	PlgSetCullMode( PLG_CULL_POSTIVE );
 
-	plSetTexture( NULL, 0 );
+	PlgSetTexture( NULL, 0 );
 }
 
 #if 0
@@ -88,7 +72,7 @@ void ohw::Sprite::SetAngles( const PLVector3 &angles ) {
 }
 
 void ohw::Sprite::SetColour( const PLColour &colour ) {
-	plSetMeshUniformColour( mesh_, colour );
+	PlgSetMeshUniformColour( mesh_, colour );
 	colour_ = colour;
 }
 

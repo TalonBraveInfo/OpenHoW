@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
@@ -33,9 +19,9 @@ public:
 	int GetIntegerProperty( const std::string &property, int def = 0, bool silent = true );
 	bool GetBooleanProperty( const std::string &property, bool def = false, bool silent = true );
 	float GetFloatProperty( const std::string &property, float def = 0.0f, bool silent = true );
-	PLColour GetColourProperty( const std::string &property, PLColour def = PLColour( 0, 0, 0 ), bool silent = true );
-	PLVector3 GetVector3Property( const std::string &property, PLVector3 def = PLVector3( 0, 0, 0 ), bool silent = true );
-	PLVector4 GetVector4Property( const std::string &property, PLVector4 def = PLVector4( 0, 0, 0, 0 ), bool silent = true );
+	hei::Colour GetColourProperty( const std::string &property, const hei::Colour &def = { 0, 0, 0 }, bool silent = true );
+	PLVector3 GetVector3Property( const std::string &property, PLVector3 def = { 0, 0, 0 }, bool silent = true );
+	PLVector4 GetVector4Property( const std::string &property, PLVector4 def = { 0, 0, 0, 0 }, bool silent = true );
 
 	std::list<std::string> GetObjectKeys();
 

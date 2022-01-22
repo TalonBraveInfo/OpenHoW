@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
@@ -49,28 +35,28 @@ namespace ohw {
 
 		// Batching
 
-		PL_INLINE void AddDrawToQueue( const PLMatrix4 &transform ) {
+		inline void AddDrawToQueue( const PLMatrix4 &transform ) {
 			batchedDrawCalls.push_back( transform );
 		}
 
-		PL_INLINE unsigned int GetNumberOfQueuedDraws() const {
+		inline unsigned int GetNumberOfQueuedDraws() const {
 			return batchedDrawCalls.size();
 		}
 
-		PL_INLINE void ClearQueuedDraws() {
+		inline void ClearQueuedDraws() {
 			batchedDrawCalls.clear();
 		}
 
 		// Mesh state
 
-		PL_INLINE unsigned int GetNumberOfMeshes() const { return meshesVector.size(); }
-		PLMesh *GetInternalMesh( unsigned int i );
+		inline unsigned int GetNumberOfMeshes() const { return meshesVector.size(); }
+		PLGMesh *GetInternalMesh( unsigned int i );
 
 		const PLCollisionAABB &GetBounds() const { return bounds; }
 
 		TextureResource *GetTextureResource( unsigned int i );
 
-		PL_INLINE bool IsAnimated() const { return isAnimated; }
+		inline bool IsAnimated() const { return isAnimated; }
 
 		PLMatrix4 modelMatrix{};
 
@@ -89,7 +75,7 @@ namespace ohw {
 
 		std::vector< SharedTextureResourcePointer > texturesVector; // List of textures this model depends on
 
-		std::vector< PLMesh * > meshesVector;       // Sub-meshes that are part of this model
+		std::vector< PLGMesh * > meshesVector;       // Sub-meshes that are part of this model
 		std::vector< PLMatrix4 > batchedDrawCalls;  // Draw queue. Anything queued up will be pushed to the GPU in one batch
 
 		PLCollisionAABB bounds;

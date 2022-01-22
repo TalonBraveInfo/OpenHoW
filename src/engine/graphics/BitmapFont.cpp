@@ -1,53 +1,39 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "BitmapFont.h"
 #include "Display.h"
 
 ohw::BitmapFont::BitmapFont() {
-	renderMesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 512, 256 );
+	renderMesh = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_DYNAMIC, 512, 256 );
 	if ( renderMesh == nullptr ) {
-		Error( "failed to create font mesh, %s, aborting!\n", plGetError() );
+		Error( "failed to create font mesh, %s, aborting!\n", PlGetError() );
 	}
 }
 
 ohw::BitmapFont::~BitmapFont() {
-	plDestroyMesh( renderMesh );
+	PlgDestroyMesh( renderMesh );
 }
 
 bool ohw::BitmapFont::Load( const char *tabPath, const char *texturePath ) {
-	PLFile *filePtr = plOpenFile( tabPath, false );
+	PLFile *filePtr = PlOpenFile( tabPath, false );
 	if ( filePtr == nullptr ) {
-		Warning( "Failed to load tab \"%s\"!\nPL: %s\n", tabPath, plGetError() );
+		Warning( "Failed to load tab \"%s\"!\nPL: %s\n", tabPath, PlGetError() );
 		return false;
 	}
 
 	// Don't know, don't care
-	plFileSeek( filePtr, 16, PL_SEEK_CUR );
+	PlFileSeek( filePtr, 16, PL_SEEK_CUR );
 
 	struct {
 		uint16_t x, y;
 		uint16_t w, h;
 	} tabIndices[ MAX_BITMAP_CHARS ];
-	numChars = ( unsigned int ) plReadFile( filePtr, tabIndices, sizeof( tabIndices ) / MAX_BITMAP_CHARS, MAX_BITMAP_CHARS );
+	numChars = ( unsigned int ) PlReadFile( filePtr, tabIndices, sizeof( tabIndices ) / MAX_BITMAP_CHARS, MAX_BITMAP_CHARS );
 
 	// We're done with the tab file
-	plCloseFile( filePtr );
+	PlCloseFile( filePtr );
 
 	if( numChars == 0 ) {
 		Warning( "No characters in tab \"%s\"!\n" );
@@ -73,7 +59,7 @@ bool ohw::BitmapFont::Load( const char *tabPath, const char *texturePath ) {
  * Immediately draw the given character.
  */
 void ohw::BitmapFont::DrawCharacter( float x, float y, float scale, PLColour colour, char character ) {
-	PLShaderProgram *program = plGetCurrentShaderProgram();
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
 	if ( program == nullptr ) {
 		return;
 	}
@@ -82,26 +68,25 @@ void ohw::BitmapFont::DrawCharacter( float x, float y, float scale, PLColour col
 		return;
 	}
 
-	plSetTexture( texture->GetInternalTexture(), 0 );
+	PlgSetTexture( texture->GetInternalTexture(), 0 );
 
-	plClearMesh( renderMesh );
+	PlgClearMesh( renderMesh );
 
 	AddCharacterToPass( x, y, scale, colour, character );
 
-	PLMatrix4 matrix;
-	matrix.Identity();
+	PLMatrix4 matrix = PlMatrix4Identity();
 
-	plSetShaderUniformValue( program, "pl_model", &matrix, false );
+	PlgSetShaderUniformValue( program, "pl_model", &matrix, false );
 
-	plUploadMesh( renderMesh );
-	plDrawMesh( renderMesh );
+	PlgUploadMesh( renderMesh );
+	PlgDrawMesh( renderMesh );
 }
 
 /**
  * Immediately draw the given string.
  */
 void ohw::BitmapFont::DrawString( float x, float y, float spacing, float scale, PLColour colour, const char *msg ) {
-	PLShaderProgram *program = plGetCurrentShaderProgram();
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
 	if ( program == nullptr ) {
 		Error( "Attempted to draw bitmap string without a bound shader program!\n" );
 	}
@@ -115,14 +100,14 @@ void ohw::BitmapFont::DrawString( float x, float y, float spacing, float scale, 
 		return;
 	}
 
-	plSetTexture( texture->GetInternalTexture(), 0 );
+	PlgSetTexture( texture->GetInternalTexture(), 0 );
 
-	plClearMesh( renderMesh );
+	PlgClearMesh( renderMesh );
 
-	plMatrixMode( PL_MODELVIEW_MATRIX );
-	plPushMatrix();
+	PlMatrixMode( PL_MODELVIEW_MATRIX );
+	PlPushMatrix();
 
-	plLoadIdentityMatrix();
+	PlLoadIdentityMatrix();
 
 	float nX = x;
 	float nY = y;
@@ -139,12 +124,12 @@ void ohw::BitmapFont::DrawString( float x, float y, float spacing, float scale, 
 		}
 	}
 
-	plSetShaderUniformValue( program, "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
+	PlgSetShaderUniformValue( program, "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
-	plUploadMesh( renderMesh );
-	plDrawMesh( renderMesh );
+	PlgUploadMesh( renderMesh );
+	PlgDrawMesh( renderMesh );
 
-	plPopMatrix();
+	PlPopMatrix();
 }
 
 /**
@@ -185,11 +170,11 @@ void ohw::BitmapFont::AddCharacterToPass( float x, float y, float scale, PLColou
 	float tx = ( float ) bitmapChar->x / ( float ) texture->GetWidth();
 	float ty = ( float ) bitmapChar->y / ( float ) texture->GetHeight();
 
-	unsigned int vX = plAddMeshVertex( renderMesh, PLVector3( x, y, 0 ), PLVector3(), colour, PLVector2( tx, ty ) );
-	unsigned int vY = plAddMeshVertex( renderMesh, PLVector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx, ty + th ) );
-	unsigned int vZ = plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, PLVector2( tx + tw, ty ) );
-	unsigned int vW = plAddMeshVertex( renderMesh, PLVector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, PLVector2( tx + tw, ty + th ) );
+	unsigned int vX = PlgAddMeshVertex( renderMesh, hei::Vector3( x, y, 0 ), PLVector3(), colour, { tx, ty } );
+	unsigned int vY = PlgAddMeshVertex( renderMesh, hei::Vector3( x, y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, { tx, ty + th } );
+	unsigned int vZ = PlgAddMeshVertex( renderMesh, hei::Vector3( x + ( ( float ) bitmapChar->w * scale ), y, 0 ), PLVector3(), colour, { tx + tw, ty } );
+	unsigned int vW = PlgAddMeshVertex( renderMesh, hei::Vector3( x + ( ( float ) bitmapChar->w * scale ), y + ( ( float ) bitmapChar->h * scale ), 0 ), PLVector3(), colour, { tx + tw, ty + th } );
 
-	plAddMeshTriangle( renderMesh, vX, vY, vZ );
-	plAddMeshTriangle( renderMesh, vZ, vY, vW );
+	PlgAddMeshTriangle( renderMesh, vX, vY, vZ );
+	PlgAddMeshTriangle( renderMesh, vZ, vY, vW );
 }

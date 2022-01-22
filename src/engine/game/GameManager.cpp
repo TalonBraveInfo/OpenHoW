@@ -1,19 +1,7 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
+
+#include <fstream>
 
 #include "App.h"
 #include "Menu.h"
@@ -30,7 +18,6 @@
 #include "APig.h"
 #include "AStaticModel.h"
 #include "GameManager.h"
-
 
 std::string MapManifest::Serialize() {
 	std::stringstream output;
@@ -81,15 +68,15 @@ std::string MapManifest::Serialize() {
 }
 
 ohw::GameManager::GameManager() {
-	plRegisterConsoleCommand( "CreateMap", CreateMapCommand, "Creates a new named map." );
-	plRegisterConsoleCommand( "OpenMap", OpenMapCommand, "Opens the specified map." );
-	plRegisterConsoleCommand( "ListMaps", ListMapsCommand, "Lists all of the existing maps." );
-	plRegisterConsoleCommand( "GiveItem", GiveItemCommand, "Gives a specified item to the current occupied actor." );
-	plRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
-	plRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied actor." );
-	plRegisterConsoleCommand( "Teleport", TeleportCommand, "Teleports current actor to the given destination." );
-	plRegisterConsoleCommand( "FirstPerson", FirstPersonCommand, "Toggles the camera into first-person mode." );
-	plRegisterConsoleCommand( "FreeCam", FreeCamCommand, "Toggles the camera into fly mode." );
+	PlRegisterConsoleCommand( "CreateMap", CreateMapCommand, "Creates a new named map." );
+	PlRegisterConsoleCommand( "OpenMap", OpenMapCommand, "Opens the specified map." );
+	PlRegisterConsoleCommand( "ListMaps", ListMapsCommand, "Lists all of the existing maps." );
+	PlRegisterConsoleCommand( "GiveItem", GiveItemCommand, "Gives a specified item to the current occupied actor." );
+	PlRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
+	PlRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied actor." );
+	PlRegisterConsoleCommand( "Teleport", TeleportCommand, "Teleports current actor to the given destination." );
+	PlRegisterConsoleCommand( "FirstPerson", FirstPersonCommand, "Toggles the camera into first-person mode." );
+	PlRegisterConsoleCommand( "FreeCam", FreeCamCommand, "Toggles the camera into fly mode." );
 
 	defaultCamera = new Camera( pl_vecOrigin3, pl_vecOrigin3 );
 }
@@ -115,9 +102,9 @@ void ohw::GameManager::Tick() {
 		const AudioSample *sample = ambient_samples_[ rand() % MAX_AMBIENT_SAMPLES ];
 		if ( sample != nullptr ) {
 			PLVector3 position = {
-					plGenerateRandomf( TERRAIN_PIXEL_WIDTH ),
+					PlGenerateRandomFloat( TERRAIN_PIXEL_WIDTH ),
 					currentMap->GetTerrain()->GetMaxHeight(),
-					plGenerateRandomf( TERRAIN_PIXEL_WIDTH )
+					PlGenerateRandomFloat( TERRAIN_PIXEL_WIDTH )
 			};
 			GetApp()->audioManager->PlayLocalSound( sample, position, { 0, 0, 0 }, true, 0.5f );
 		}
@@ -137,7 +124,7 @@ void ohw::GameManager::Tick() {
 }
 
 void ohw::GameManager::SetupPlayers( const PlayerPtrVector &players ) {
-	for ( auto i : players ) {
+	for ( auto i: players ) {
 		GetMode()->PlayerJoined( i );
 	}
 
@@ -145,7 +132,7 @@ void ohw::GameManager::SetupPlayers( const PlayerPtrVector &players ) {
 }
 
 void ohw::GameManager::ClearPlayers() {
-	for ( auto i : players_ ) {
+	for ( auto i: players_ ) {
 		delete i;
 	}
 	players_.clear();
@@ -206,7 +193,7 @@ void ohw::GameManager::RegisterTeamManifest( const std::string &path ) {
 
 		PlayerTeam team;
 		team.name = lm_gtr( config.GetStringProperty( "name", team.name, false ).c_str() );
-		team.colour = config.GetColourProperty( "colour", PLColour( 255, 255, 255 ), false );
+		team.colour = config.GetColourProperty( "colour", hei::Colour( 255, 255, 255 ), false );
 		team.debrief_texture = config.GetStringProperty( "debriefTexture", team.debrief_texture, false );
 		team.paper_texture = config.GetStringProperty( "paperTextures", team.paper_texture, false );
 		team.pig_textures = config.GetStringProperty( "pigTextures", team.pig_textures, false );
@@ -273,7 +260,7 @@ void ohw::GameManager::RegisterMapManifest( const std::string &path ) {
 	}
 
 	char temp_buf[64];
-	plStripExtension( temp_buf, sizeof( temp_buf ), plGetFileName( path.c_str() ) );
+	PlStripExtension( temp_buf, sizeof( temp_buf ), PlGetFileName( path.c_str() ) );
 
 	manifest.filepath = path;
 	manifest.filename = temp_buf;
@@ -291,7 +278,7 @@ static void RegisterManifestInterface( const char *path, void *userPtr ) {
  */
 void ohw::GameManager::RegisterMapManifests() {
 	mapManifests.clear();
-	plScanDirectory( "maps", "map", RegisterManifestInterface, false, nullptr );
+	PlScanDirectory( "maps", "map", RegisterManifestInterface, false, nullptr );
 }
 
 /**
@@ -392,7 +379,7 @@ void ohw::GameManager::ListMapsCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	for ( auto manifest : GetApp()->gameManager->mapManifests ) {
+	for ( auto manifest: GetApp()->gameManager->mapManifests ) {
 		MapManifest *desc = &manifest.second;
 		std::string out =
 				desc->name + "/" + manifest.first +
@@ -506,7 +493,10 @@ void ohw::GameManager::TeleportCommand( unsigned int argc, char **argv ) {
 		return;
 	}
 
-	PLVector3 teleportDestination( atof( argv[ 1 ] ), atof( argv[ 2 ] ), atof( argv[ 3 ] ) );
+	hei::Vector3 teleportDestination(
+			strtof( argv[ 1 ], nullptr ),
+			strtof( argv[ 2 ], nullptr ),
+			strtof( argv[ 3 ], nullptr ) );
 	actor->SetPosition( teleportDestination );
 }
 
@@ -555,7 +545,7 @@ void ohw::GameManager::StartMode( const std::string &map,
 		sample_ext = "n";
 	}
 
-	ambient_emit_delay_ = GetApp()->GetSimulationTicks() + plGenerateRandomd( 100 ) + 1;
+	ambient_emit_delay_ = GetApp()->GetSimulationTicks() + PlGenerateRandomDouble( 100 ) + 1;
 	for ( unsigned int i = 1, idx = 0; i < 4; ++i ) {
 		std::string snum = std::to_string( i );
 		std::string path = "audio/amb_";

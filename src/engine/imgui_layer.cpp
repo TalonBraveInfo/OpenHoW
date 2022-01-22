@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "imgui_layer.h"
@@ -44,7 +30,7 @@ static bool show_quit = false;
 static bool show_settings = false;
 
 static ohw::ConsoleWindow *mainConsole = nullptr;
-static void ConsoleOutputCallback( int level, const char *msg ) {
+static void ConsoleOutputCallback( int level, const char *msg, PLColour colour ) {
 	if ( mainConsole == nullptr ) {
 		return;
 	}
@@ -117,17 +103,17 @@ void ImGuiImpl_Setup() {
 	// Load in the default font
 
 	const char *fontPath = "fonts/OpenSans-SemiBold.ttf";
-	PLFile *fontFile = plOpenFile( fontPath, false );
+	PLFile *fontFile = PlOpenFile( fontPath, false );
 	if ( fontFile == nullptr ) {
-		Warning( "Failed to load font, \"%s\", for ImGui (%s)! Falling back to default...\n", fontPath, plGetError() );
+		Warning( "Failed to load font, \"%s\", for ImGui (%s)! Falling back to default...\n", fontPath, PlGetError() );
 		io.Fonts->AddFontDefault();
 		return;
 	}
 
-	size_t fileSize = plGetFileSize( fontFile );
+	size_t fileSize = PlGetFileSize( fontFile );
 	uint8_t *buf = new uint8_t[fileSize];
-	plReadFile( fontFile, buf, 1, fileSize );
-	plCloseFile( fontFile );
+	PlReadFile( fontFile, buf, 1, fileSize );
+	PlCloseFile( fontFile );
 
 	if ( io.Fonts->AddFontFromMemoryTTF( buf, fileSize, 16.f, nullptr, nullptr ) == nullptr ) {
 		Warning( "Failed to add font, \"%s\", from memory!\n", fontPath );
@@ -137,11 +123,11 @@ void ImGuiImpl_Setup() {
 	mainConsole = new ohw::ConsoleWindow();
 	mainConsole->SetWindowStatus( false );
 
-	plSetConsoleOutputCallback( ConsoleOutputCallback );
+	PlSetConsoleOutputCallback( ConsoleOutputCallback );
 }
 
 void ImGuiImpl_SetupFrame( void ) {
-	const PLViewport *viewport = plGetCurrentViewport();
+	const PLGViewport *viewport = PlgGetCurrentViewport();
 	if ( viewport == nullptr ) {
 		return;
 	}
@@ -171,7 +157,7 @@ void ImGuiImpl_Tick( void ) {
 void ImGuiImpl_Draw( void ) {
 	ImGui::Render();
 
-	plSetShaderProgram( nullptr );
+	PlgSetShaderProgram( nullptr );
 
 	ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 }
@@ -521,7 +507,7 @@ void UI_DisplayDebugMenu( void ) {
 			ImGui::Separator();
 
 			if ( ImGui::MenuItem( "Rebuild Shaders" ) ) {
-				plParseConsoleString( "rebuildShaderPrograms" );
+				PlParseConsoleString( "rebuildShaderPrograms" );
 			}
 
 			ImGui::Separator();
@@ -529,20 +515,20 @@ void UI_DisplayDebugMenu( void ) {
 			if ( ImGui::BeginMenu( "Console Variables" ) ) {
 				size_t num_c;
 				PLConsoleVariable **vars;
-				plGetConsoleVariables( &vars, &num_c );
+				PlGetConsoleVariables( &vars, &num_c );
 
 				for ( PLConsoleVariable **var = vars; var < num_c + vars; ++var ) {
 					switch ( ( *var )->type ) {
 						case pl_float_var:
 							if ( ImGui::InputFloat( ( *var )->var, &( *var )->f_value, 0, 10, nullptr,
 							                        ImGuiInputTextFlags_EnterReturnsTrue ) ) {
-								plSetConsoleVariable( ( *var ), std::to_string( ( *var )->f_value ).c_str() );
+								PlSetConsoleVariable( ( *var ), std::to_string( ( *var )->f_value ).c_str() );
 							}
 							break;
 						case pl_int_var:
 							if ( ImGui::InputInt( ( *var )->var, &( *var )->i_value, 1, 10,
 							                      ImGuiInputTextFlags_EnterReturnsTrue ) ) {
-								plSetConsoleVariable( ( *var ), std::to_string( ( *var )->i_value ).c_str() );
+								PlSetConsoleVariable( ( *var ), std::to_string( ( *var )->i_value ).c_str() );
 							}
 							break;
 						case pl_string_var:
@@ -552,7 +538,7 @@ void UI_DisplayDebugMenu( void ) {
 						case pl_bool_var:
 							bool b = ( *var )->b_value;
 							if ( ImGui::Checkbox( ( *var )->var, &b ) ) {
-								plSetConsoleVariable( ( *var ), b ? "true" : "false" );
+								PlSetConsoleVariable( ( *var ), b ? "true" : "false" );
 							}
 							break;
 					}
@@ -570,11 +556,11 @@ void UI_DisplayDebugMenu( void ) {
 			if ( ImGui::BeginMenu( "Console Commands" ) ) {
 				size_t num;
 				PLConsoleCommand **cmds;
-				plGetConsoleCommands( &cmds, &num );
+				PlGetConsoleCommands( &cmds, &num );
 
 				for ( PLConsoleCommand **cmd = cmds; cmd < num + cmds; ++cmd ) {
 					if ( ImGui::MenuItem( ( *cmd )->cmd ) ) {
-						plParseConsoleString( ( *cmd )->cmd );
+						PlParseConsoleString( ( *cmd )->cmd );
 					}
 
 					if ( ImGui::IsItemHovered() ) {

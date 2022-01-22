@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2019 Daniel Collins <solemnwarning@solemnwarning.net>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
@@ -86,7 +72,7 @@ public:
          * Returns the property formatted as Json.
          */
         virtual std::string SerialiseAsJson() const = 0;
-		
+
 		/**
 		 * @brief Set the property to the given serialised form.
 		 *
@@ -97,12 +83,12 @@ public:
 		 * valid.
 		*/
 		virtual void Deserialise(const std::string &serialised) = 0;
-		
+
 		/**
 		 * @brief Mark the property as clean and save the current value.
 		*/
 		void MarkClean();
-		
+
 		/**
 		 * @brief Mark the property as dirty.
 		 *
@@ -110,7 +96,7 @@ public:
 		 * otherwise does nothing.
 		*/
 		void MarkDirty();
-		
+
 		/**
 		 * @brief Restore the last clean value and mark the property clean.
 		 *
@@ -118,23 +104,23 @@ public:
 		 * as clean again.
 		*/
 		void ResetToClean();
-		
+
 		/**
 		 * @brief Returns the number of ticks the property has been dirty for.
 		*/
 		unsigned int DirtyTicks() const;
-		
+
 	protected:
 		PropertyOwner &po_;
-		
+
 		Property(PropertyOwner &po, const std::string &name, unsigned flags);
 		Property(PropertyOwner &po, const Property &src);
 		virtual ~Property();
-		
+
 	private:
 		bool is_dirty_;
 		unsigned int dirty_since_{ 0 };
-		
+
 		std::string clean_serialised_;
 };
 
@@ -146,7 +132,7 @@ typedef std::map<std::string, Property*> PropertyMap;
 class PropertyOwner
 {
 	friend Property;
-	
+
 	public:
 		/* These are no-ops because copying or assigning a PropertyOwner class should just
 		 * assign/copy the properties under it, which will be registered when the property
@@ -158,11 +144,11 @@ class PropertyOwner
 		const PropertyMap& GetProperties() { return properties_; }
 
 		virtual std::string SerializePropertiesAsJson();
-	
+
 	protected:
 		PropertyOwner();
 		virtual ~PropertyOwner();
-		
+
 	private:
 		/** Properties registered under this object */
         PropertyMap properties_;
@@ -175,14 +161,14 @@ template<typename T> class NumericProperty: public Property
 {
 	private:
 		T value_;
-		
+
 	public:
 		NumericProperty(PropertyOwner &po, const std::string &name, unsigned flags, T value = 0):
 			Property(po, name, flags), value_(value) {}
-		
+
 		NumericProperty(PropertyOwner &po, const NumericProperty<T> &src):
 			Property(po, src), value_(src.value_) {}
-		
+
 		/* Implicit conversion for using as a (const) T */
 		operator const T&() const
 		{
@@ -195,7 +181,7 @@ template<typename T> class NumericProperty: public Property
           MarkDirty();
           return value;
         }
-		
+
 		/**
 		 * @brief Assigns value, marks property dirty.
 		 *
@@ -205,10 +191,10 @@ template<typename T> class NumericProperty: public Property
 		{
 			this->value_ = value;
 			MarkDirty();
-			
+
 			return value;
 		}
-		
+
 		std::string Serialise() const override
 		{
 			return std::string((const char*)(&value_), sizeof(value_));
@@ -217,7 +203,7 @@ template<typename T> class NumericProperty: public Property
         std::string SerialiseAsJson() const override {
             return std::to_string(value_);
         }
-		
+
 		void Deserialise(const std::string &serialised) override
 		{
 			u_assert(serialised.length() == sizeof(value_));
@@ -338,22 +324,22 @@ class StringProperty : public Property {
  */
 class Vector3Property : public Property {
 private:
-	PLVector3 value_;
+	hei::Vector3 value_;
 
 public:
 	Vector3Property( PropertyOwner& po, const std::string& name, unsigned flags,
-					 PLVector3 value = PLVector3( 0, 0, 0 ) ) :
+					 hei::Vector3 value = { 0, 0, 0 } ) :
 		Property( po, name, flags ), value_( value ) {}
 
-	operator const PLVector3&() const {
+	operator const hei::Vector3&() const {
 		return value_;
 	}
 
-	const PLVector3& GetValue() const {
+	const hei::Vector3& GetValue() const {
 		return value_;
 	}
 
-	const PLVector3& operator=( const PLVector3& value ) {
+	const hei::Vector3& operator=( const hei::Vector3& value ) {
 		value_ = value;
 		MarkDirty();
 		return value;
@@ -380,13 +366,13 @@ private:
 public:
 		BooleanProperty(PropertyOwner &po, const std::string &name, unsigned flags, bool value = false):
 			Property(po, name, flags), value_(value) {}
-		
+
 		/* Implicit conversion for using as a (const) bool */
 		operator const bool&() const
 		{
 			return value_;
 		}
-		
+
 		/**
 		 * @brief Assigns value, marks property dirty.
 		 *
@@ -396,10 +382,10 @@ public:
 		{
 			value_ = value;
 			MarkDirty();
-			
+
 			return value;
 		}
-		
+
 		std::string Serialise() const override
 		{
 			return value_
@@ -410,7 +396,7 @@ public:
 		std::string SerialiseAsJson() const override {
 		  return Serialise();
 		}
-		
+
 		void Deserialise(const std::string &serialised) override
 		{
 			if(serialised == "false")

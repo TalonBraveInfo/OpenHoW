@@ -1,22 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include <PL/platform_filesystem.h>
-#include <PL/platform_mesh.h>
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Utilities.h"
@@ -32,7 +15,7 @@
  * @return Returns vertex_data on success, null on fail
  */
 No2Handle *No2_LoadFile( const char *path ) {
-	PLFile *fp = plOpenFile( path, false );
+	PLFile *fp = PlOpenFile( path, false );
 	if ( fp == NULL ) {
 		Warning( "Failed to load no2 \"%s\"!\n", path );
 		return NULL;
@@ -43,11 +26,11 @@ No2Handle *No2_LoadFile( const char *path ) {
 		float bone_index;
 	} No2Coord;
 
-	unsigned int numNormals = ( unsigned int ) ( plGetFileSize( fp ) / sizeof( No2Coord ) );
+	unsigned int numNormals = ( unsigned int ) ( PlGetFileSize( fp ) / sizeof( No2Coord ) );
 	No2Coord *normals = ( No2Coord * ) ohw::GetApp()->CAlloc( numNormals, sizeof( No2Coord ), true );
-	unsigned int numReadNormals = plReadFile( fp, normals, sizeof( No2Coord ), numNormals );
+	unsigned int numReadNormals = PlReadFile( fp, normals, sizeof( No2Coord ), numNormals );
 
-	plCloseFile( fp );
+	PlCloseFile( fp );
 
 	if ( numReadNormals != numNormals ) {
 		free( normals );
@@ -64,12 +47,12 @@ No2Handle *No2_LoadFile( const char *path ) {
 		handle->normals[ i ].z = normals->v[ 2 ];
 	}
 
-	free( normals );
+	PlFree( normals );
 
 	return handle;
 }
 
 void No2_DestroyHandle( No2Handle *handle ) {
-	free( handle->normals );
-	free( handle );
+	PlFree( handle->normals );
+	PlFree( handle );
 }

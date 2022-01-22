@@ -1,38 +1,23 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
-#include "model.h"
 #include "Loaders.h"
 
 /************************************************************/
 /* Hir Skeleton Format */
 
 HirHandle *Hir_LoadFile( const char *path ) {
-	PLFile *file = plOpenFile( path, false );
+	PLFile *file = PlOpenFile( path, false );
 	if ( file == nullptr ) {
 		Warning( "Failed to load \"%s\", aborting!\n", path );
 		return nullptr;
 	}
 
-	size_t hir_size = plGetFileSize( file );
+	size_t hir_size = PlGetFileSize( file );
 	if ( hir_size == 0 ) {
-		plCloseFile( file );
-		Warning( "Unexpected Hir size in \"%s\", aborting (%s)!\n", path, plGetError() );
+		PlCloseFile( file );
+		Warning( "Unexpected Hir size in \"%s\", aborting (%s)!\n", path, PlGetError() );
 		return nullptr;
 	}
 
@@ -44,8 +29,8 @@ HirHandle *Hir_LoadFile( const char *path ) {
 
 	auto num_bones = ( unsigned int ) ( hir_size / sizeof( HirBone ) );
 	HirBone bones[num_bones];
-	unsigned int rnum_bones = plReadFile( file, bones, sizeof( HirBone ), num_bones );
-	plCloseFile( file );
+	unsigned int rnum_bones = PlReadFile( file, bones, sizeof( HirBone ), num_bones );
+	PlCloseFile( file );
 
 	if ( rnum_bones != num_bones ) {
 		Warning( "Failed to read in all bones, %d/%d, aborting!\n", rnum_bones, num_bones );
@@ -71,10 +56,10 @@ HirHandle *Hir_LoadFile( const char *path ) {
 	}
 
 	auto *handle = static_cast<HirHandle *>(u_alloc( 1, sizeof( HirHandle ), true ));
-	handle->bones = static_cast<PLModelBone *>(u_alloc( num_bones, sizeof( PLModelBone ), true ));
+	handle->bones = static_cast<PLMModelBone *>(u_alloc( num_bones, sizeof( PLMModelBone ), true ));
 	for ( unsigned int i = 0; i < num_bones; ++i ) {
-		handle->bones[ i ].position = PLVector3( bones[ i ].coords[ 0 ], bones[ i ].coords[ 1 ],
-		                                         bones[ i ].coords[ 2 ] );
+		handle->bones[ i ].position = hei::Vector3( bones[ i ].coords[ 0 ], bones[ i ].coords[ 1 ],
+		                                            bones[ i ].coords[ 2 ] );
 		handle->bones[ i ].parent = bones[ i ].parent;
 		strcpy( handle->bones[ i ].name, bone_names[ i ] );
 	}
@@ -86,6 +71,6 @@ void Hir_DestroyHandle( HirHandle *handle ) {
 		return;
 	}
 
-	u_free( handle->bones );
-	u_free( handle );
+	PlFree( handle->bones );
+	PlFree( handle );
 }

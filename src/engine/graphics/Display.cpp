@@ -1,19 +1,7 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
+
+#include <plgraphics/plg_driver_interface.h>
 
 #include "App.h"
 #include "imgui_layer.h"
@@ -24,7 +12,6 @@
 
 #include "game/ActorManager.h"
 #include "Display.h"
-
 
 /************************************************************/
 
@@ -54,7 +41,7 @@ static void Display_DrawMap() {
 }
 
 ohw::Display::Display( const char *title, int w, int h, unsigned int desiredScreen, bool fullscreen ) :
-	myDesiredScreen( desiredScreen ) {
+		myDesiredScreen( desiredScreen ) {
 	// Fetch the display size.
 	SDL_Rect displayBounds;
 	SDL_GetDisplayBounds( myDesiredScreen, &displayBounds );
@@ -109,13 +96,25 @@ ohw::Display::Display( const char *title, int w, int h, unsigned int desiredScre
 	}
 
 	// platform library graphics subsystem can init now
-	if ( plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS ) != PL_RESULT_SUCCESS ) {
-		Error( "Failed to initialize platform graphics subsystem!\nPL: %s\n", plGetError() );
+	if ( PlInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS ) != PL_RESULT_SUCCESS ||
+	     PlgInitializeGraphics() != PL_RESULT_SUCCESS ) {
+		Error( "Failed to initialize platform graphics subsystem!\nPL: %s\n", PlGetError() );
 	}
 
-	plSetGraphicsMode( PL_GFX_MODE_OPENGL_CORE );
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		Error( "Failed to set graphics subsystem!\nPL: %s\n", plGetError() );
+	PlgScanForDrivers( "./" );
+
+	unsigned int numDrivers, i;
+	const char **drivers = PlgGetAvailableDriverInterfaces( &numDrivers );
+	for ( i = 0; i < numDrivers; ++i ) {
+		if ( PlgSetDriver( drivers[ i ] ) != PL_RESULT_SUCCESS ) {
+			continue;
+		}
+
+		break;
+	}
+
+	if ( i == numDrivers ) {
+		Error( "Failed to load a valid graphics layer!\n" );
 	}
 
 	Shaders_Initialize();
@@ -123,6 +122,8 @@ ohw::Display::Display( const char *title, int w, int h, unsigned int desiredScre
 
 ohw::Display::~Display() {
 	Shaders_Shutdown();
+
+	PlgShutdownGraphics();
 
 	SDL_CaptureMouse( SDL_FALSE );
 
@@ -135,13 +136,13 @@ ohw::Display::~Display() {
 }
 
 void ohw::Display::SetIcon( const char *path ) {
-	PLImage *image = plLoadImage( path );
+	PLImage *image = PlLoadImage( path );
 	if ( image == nullptr ) {
-		Warning( "Failed to load image, %s!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to load image, %s!\nPL: %s\n", path, PlGetError() );
 		return;
 	}
 
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
 			image->data[ 0 ],
 			// Casting casting casting, why o why
 			static_cast<signed>( image->width ),
@@ -160,7 +161,7 @@ void ohw::Display::SetIcon( const char *path ) {
 		Warning( "Failed to create requested SDL surface!\nSDL: %s\n", SDL_GetError() );
 	}
 
-	plDestroyImage( image );
+	PlDestroyImage( image );
 }
 
 void ohw::Display::Render( double delta ) {
@@ -168,15 +169,15 @@ void ohw::Display::Render( double delta ) {
 
 	numDrawTicks = GetApp()->GetTicks();
 
-	plSetCullMode( PL_CULL_POSTIVE );
+	PlgSetCullMode( PLG_CULL_POSTIVE );
 
-	plSetDepthMask( true );
-	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
+	PlgSetDepthMask( true );
+	PlgSetDepthBufferMode( PLG_DEPTHBUFFER_ENABLE );
 
-	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+	PlgBindFrameBuffer( nullptr, PLG_FRAMEBUFFER_DRAW );
 
-	plSetClearColour( PLColour( 0, 0, 0, 255 ) );
-	plClearBuffers( PL_BUFFER_DEPTH | PL_BUFFER_COLOUR );
+	PlgSetClearColour( { 0, 0, 0, 255 } );
+	PlgClearBuffers( PLG_BUFFER_DEPTH | PLG_BUFFER_COLOUR );
 
 	RenderScene();
 	RenderOverlays();
@@ -208,7 +209,7 @@ void ohw::Display::RenderScene() {
 	camera->MakeActive();
 
 	if ( cv_graphics_alpha_to_coverage->b_value ) {
-		plEnableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
+		PlgEnableGraphicsState( PLG_GFX_STATE_ALPHATOCOVERAGE );
 	}
 
 	Display_DrawMap();
@@ -216,7 +217,7 @@ void ohw::Display::RenderScene() {
 	ActorManager::GetInstance()->DrawActors();
 
 	if ( cv_graphics_alpha_to_coverage->b_value ) {
-		plDisableGraphicsState( PL_GFX_STATE_ALPHATOCOVERAGE );
+		PlgDisableGraphicsState( PLG_GFX_STATE_ALPHATOCOVERAGE );
 	}
 
 	RenderSceneDebug();
@@ -229,16 +230,16 @@ void ohw::Display::RenderSceneDebug() {
 
 	ohw::GetApp()->audioManager->DrawSources();
 
-	plPushMatrix();
-	plMatrixMode( PL_MODELVIEW_MATRIX );
-	plLoadIdentityMatrix();
+	PlPushMatrix();
+	PlMatrixMode( PL_MODELVIEW_MATRIX );
+	PlLoadIdentityMatrix();
 
-	for ( const auto &i : debugLines ) {
-		plDrawSimpleLine( *plGetMatrix( PL_MODELVIEW_MATRIX ), i.start, i.end, i.colour );
+	for ( const auto &i: debugLines ) {
+		PlgDrawSimpleLine( *PlGetMatrix( PL_MODELVIEW_MATRIX ), i.start, i.end, i.colour );
 	}
 	debugLines.clear();
 
-	plPopMatrix();
+	PlPopMatrix();
 }
 
 void ohw::Display::RenderOverlays() {
@@ -279,9 +280,9 @@ void ohw::Display::SetDisplaySize( int w, int h, bool fullscreen ) {
 	                       SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredScreen ),
 	                       SDL_WINDOWPOS_CENTERED_DISPLAY( myDesiredScreen ) );
 
-	plSetConsoleVariable( cv_display_width, std::to_string( w ).c_str() );
-	plSetConsoleVariable( cv_display_height, std::to_string( h ).c_str() );
-	plSetConsoleVariable( cv_display_fullscreen, fullscreen ? "1" : "0" );
+	PlSetConsoleVariable( cv_display_width, std::to_string( w ).c_str() );
+	PlSetConsoleVariable( cv_display_height, std::to_string( h ).c_str() );
+	PlSetConsoleVariable( cv_display_fullscreen, fullscreen ? "1" : "0" );
 }
 
 void ohw::Display::GetDisplaySize( int *w, int *h ) {
@@ -304,15 +305,17 @@ int ohw::Display::SetSwapInterval( int desiredInterval ) {
 }
 
 bool ohw::Display::HandleEvent( const SDL_Event &event ) {
-	switch( event.type ) {
-		default: break;
+	switch ( event.type ) {
+		default:
+			break;
 		case SDL_WINDOWEVENT: {
-			switch( event.window.type ) {
-				default: break;
+			switch ( event.window.type ) {
+				default:
+					break;
 				case SDL_WINDOWEVENT_RESIZED:
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					plSetConsoleVariable( cv_display_width, std::to_string( event.window.data1 ).c_str() );
-					plSetConsoleVariable( cv_display_height, std::to_string( event.window.data2 ).c_str() );
+					PlSetConsoleVariable( cv_display_width, std::to_string( event.window.data1 ).c_str() );
+					PlSetConsoleVariable( cv_display_height, std::to_string( event.window.data2 ).c_str() );
 					return true;
 			}
 			break;

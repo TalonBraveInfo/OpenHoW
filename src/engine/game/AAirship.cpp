@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "ActorManager.h"
@@ -28,10 +14,7 @@ using namespace ohw;
 #define AIRSHIP_TURN_LIMIT  32
 
 AAirship::AAirship() : SuperClass() {}
-
-AAirship::~AAirship() {
-	delete ambientSource;
-}
+AAirship::~AAirship() = default;
 
 void AAirship::Tick() {
 	SuperClass::Tick();
@@ -41,14 +24,14 @@ void AAirship::Tick() {
 		return;
 	}
 
-	PLVector3 position = GetPosition();
-	PLVector3 airshipToDestination = myDestination - position;
+	hei::Vector3 position = GetPosition();
+	hei::Vector3 airshipToDestination = myDestination - position;
 	float distance = airshipToDestination.Length();
 	if ( distance < myDestinationTolerance ) {
 		// Set a destination for us to start heading towards.
 		PLVector2 point = map->GetRandomPointInPlayArea();
-		myDestination = PLVector3( point.x, GetHeight(), point.y );
-		DebugMsg( "Set destination at %s\n", plPrintVector3( &myDestination, pl_int_var ) );
+		myDestination = hei::Vector3( point.x, GetHeight(), point.y );
+		DebugMsg( "Set destination at %s\n", PlPrintVector3( &myDestination, pl_int_var ) );
 
 		myDestinationTolerance = 5.0f;
 		myTurnFrames = 0;
@@ -80,21 +63,11 @@ void AAirship::Tick() {
 	position += myForward * AIRSHIP_SPEED;
 	SetPosition( position );
 
-	ambientSource->SetPosition( GetPosition() );
+	GetApp()->GetDisplay()->DebugDrawLine( position_, myDestination, PL_COLOUR_RED );
 }
 
 void AAirship::Deserialize( const ActorSpawn &spawn ) {
 	SuperClass::Deserialize( spawn );
-
-	ambientSource = GetApp()->audioManager->CreateSource(
-			"audio/en_bip.wav",
-			{ 0.0f, 0.0f, 0.0f },
-			{ 0.0f, 0.0f, 0.0f },
-			true,
-			1.0f,
-			1.0f,
-			true );
-	ambientSource->StartPlaying();
 
 	SetModel( "scenery/airship1.vtx" );
 	SetAngles( { 180.0f, 0.0f, 0.0f } );
@@ -106,7 +79,11 @@ void AAirship::Deserialize( const ActorSpawn &spawn ) {
 		return;
 	}
 
+	PLVector2 point;
+	// Set us up wherever
+	point = map->GetRandomPointInPlayArea();
+	SetPosition( hei::Vector3( point.x, map->GetTerrain()->GetMaxHeight(), point.y ) );
 	// Set a destination for us to start heading towards.
-	PLVector2 point = map->GetRandomPointInPlayArea();
-	myDestination = PLVector3( point.x, GetHeight(), point.y );
+	point = map->GetRandomPointInPlayArea();
+	myDestination = hei::Vector3( point.x, GetHeight(), point.y );
 }

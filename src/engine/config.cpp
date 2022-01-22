@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_filesystem.h>
-
 #include "App.h"
 #include "script/JsonReader.h"
 
@@ -24,8 +22,8 @@ const char *Config_GetUserConfigPath() {
 	static std::string config_path;
 	if ( config_path.empty() ) {
 		char out[PL_SYSTEM_MAX_PATH];
-		if ( plGetApplicationDataDirectory( APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
-			Warning( "Failed to get app data directory!\n%s\n", plGetError() );
+		if ( PlGetApplicationDataDirectory( APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
+			Warning( "Failed to get app data directory!\n%s\n", PlGetError() );
 			config_path = "./user.config";
 		} else {
 			config_path = std::string( out ) + "user.config";
@@ -46,7 +44,7 @@ void Config_Save( const char *path ) {
 	/* get access to the console variables from the platform library */
 	size_t num_c;
 	PLConsoleVariable **vars;
-	plGetConsoleVariables( &vars, &num_c );
+	PlGetConsoleVariables( &vars, &num_c );
 
 	/* and NOW save them! */
 	bool first = true;
@@ -73,7 +71,7 @@ void Config_Load( const char *path ) {
 
 		size_t num_c;
 		PLConsoleVariable **vars;
-		plGetConsoleVariables( &vars, &num_c );
+		PlGetConsoleVariables( &vars, &num_c );
 
 		for ( PLConsoleVariable **var = vars; var < vars + num_c; ++var ) {
 			std::string result = config.GetStringProperty( ( *var )->var );
@@ -81,7 +79,7 @@ void Config_Load( const char *path ) {
 				continue;
 			}
 
-			plSetConsoleVariable( ( *var ), result.c_str() );
+			PlSetConsoleVariable( ( *var ), result.c_str() );
 		}
 	} catch ( const std::exception &e ) {
 		Warning( "Failed to read user config, \"%s\"!\n%s\n", path, e.what() );

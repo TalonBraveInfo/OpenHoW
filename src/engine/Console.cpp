@@ -1,27 +1,16 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include <PL/platform_filesystem.h>
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Language.h"
 #include "config.h"
 
 using namespace ohw;
+
+unsigned int ohw::LOG_LEVEL_DEFAULT = 0;
+unsigned int ohw::LOG_LEVEL_WARNING = 0;
+unsigned int ohw::LOG_LEVEL_ERROR = 0;
+unsigned int ohw::LOG_LEVEL_DEBUG = 0;
 
 /************************************************************/
 
@@ -71,7 +60,7 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 	check_args( 2 );
 
 	const char *fpath = argv[ 1 ];
-	if ( plIsEmptyString( fpath ) ) {
+	if ( fpath == nullptr ) {
 		Warning( "invalid argument provided, ignoring!\n" );
 		return;
 	}
@@ -88,27 +77,28 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 	unsigned int type = TYPE_UNKNOWN;
 
 	/* now we just need to figure out what kind of file it is */
-	const char *ext = plGetFileExtension( fpath );
-	if ( !plIsEmptyString( ext ) ) {
+	const char *ext = PlGetFileExtension( fpath );
+	if ( ext != nullptr ) {
 		if ( pl_strncasecmp( ext, "vtx", 3 ) == 0 ||
-			pl_strncasecmp( ext, "fac", 3 ) == 0 ||
-			pl_strncasecmp( ext, "no2", 3 ) == 0 ) {
+		     pl_strncasecmp( ext, "fac", 3 ) == 0 ||
+		     pl_strncasecmp( ext, "no2", 3 ) == 0 ) {
 			type = TYPE_MODEL;
 		} else if ( pl_strncasecmp( ext, "pmg", 3 ) == 0 ||
-			pl_strncasecmp( ext, "pog", 3 ) == 0 ||
-			pl_strncasecmp( ext, "map", 3 ) == 0 ) {
+		            pl_strncasecmp( ext, "pog", 3 ) == 0 ||
+		            pl_strncasecmp( ext, "map", 3 ) == 0 ) {
 			type = TYPE_MAP;
 		}
 	}
 
 	switch ( type ) {
-		default:Warning( "unknown filetype, ignoring!\n" );
+		default:
+			Warning( "unknown filetype, ignoring!\n" );
 			break;
 
 		case TYPE_MAP: {
 			char map_name[32];
-			snprintf( map_name, sizeof( map_name ), "%s", plGetFileName( fpath ) - 4 );
-			if ( plIsEmptyString( map_name ) ) {
+			snprintf( map_name, sizeof( map_name ), "%s", PlGetFileName( fpath ) - 4 );
+			if ( *map_name == '\0' ) {
 				Warning( "invalid map name, ignoring!\n" );
 				return;
 			}
@@ -118,10 +108,6 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 			break;
 		}
 	}
-}
-
-static void DebugModeCallback( const PLConsoleVariable *variable ) {
-	plSetupLogLevel( LOG_LEVEL_DEBUG, "debug", PLColour( 0, 255, 255, 255 ), variable->b_value );
 }
 
 static void GraphicsVsyncCallback( const PLConsoleVariable *var ) {
@@ -171,11 +157,10 @@ void Console_Initialize( void ) {
 #define rvar( var, arc, ... ) \
     { \
         const char *str_##var = PL_STRINGIFY(var); \
-        (var) = plRegisterConsoleVariable(&str_##var[3], __VA_ARGS__); \
+        (var) = PlRegisterConsoleVariable(&str_##var[3], __VA_ARGS__); \
         (var)->archive = (arc); \
     }
 
-	rvar( cv_debug_mode, false, "1", pl_int_var, DebugModeCallback, "global debug level" );
 	rvar( cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons" );
 	rvar( cv_debug_bounds, false, "0", pl_bool_var, nullptr, "Display bounding volumes of all objects." );
 
@@ -207,14 +192,14 @@ void Console_Initialize( void ) {
 	rvar( cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo" );
 	rvar( cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices" );
 
-	plRegisterConsoleCommand( "open", OpenCommand, "Opens the specified file" );
-	plRegisterConsoleCommand( "exit", QuitCommand, "Closes the game" );
-	plRegisterConsoleCommand( "quit", QuitCommand, "Closes the game" );
-	plRegisterConsoleCommand( "loadConfig", LoadConfigCommand, "Loads the specified config" );
-	plRegisterConsoleCommand( "saveConfig", SaveConfigCommand, "Save current config" );
-	plRegisterConsoleCommand( "disconnect", DisconnectCommand, "Disconnects and unloads current map" );
-	//plRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
-	//plRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
+	PlRegisterConsoleCommand( "open", OpenCommand, "Opens the specified file" );
+	PlRegisterConsoleCommand( "exit", QuitCommand, "Closes the game" );
+	PlRegisterConsoleCommand( "quit", QuitCommand, "Closes the game" );
+	PlRegisterConsoleCommand( "loadConfig", LoadConfigCommand, "Loads the specified config" );
+	PlRegisterConsoleCommand( "saveConfig", SaveConfigCommand, "Save current config" );
+	PlRegisterConsoleCommand( "disconnect", DisconnectCommand, "Disconnects and unloads current map" );
+	//PlRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
+	//PlRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 
 	//ClearConsoleOutputBuffer( 0, nullptr );
 	//plSetConsoleOutputCallback( ConsoleBufferUpdate );

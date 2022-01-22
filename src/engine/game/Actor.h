@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
@@ -115,7 +101,7 @@ public:
 	inline PLVector3 GetAngles() const {
 		return myAngles;
 	}
-	virtual void SetAngles( PLVector3 angles );
+	virtual void SetAngles( hei::Vector3 angles );
 
 	inline PLVector3 GetForward() const {
 		return myForward;
@@ -138,7 +124,7 @@ public:
 
 	virtual bool IsVisibleOnMinimap() const { return false; }
 	virtual unsigned int GetMinimapIconStyle() const { return 0; }
-	virtual PLColour GetMinimapIconColour() const { return PLColour( 255, 255, 255 ); }
+	virtual PLColour GetMinimapIconColour() const { return { 255, 255, 255, 255 }; }
 
 	Actor *GetParent() { return parentActor; }
 	void LinkChild( Actor *actor );
@@ -173,16 +159,16 @@ protected:
 	NumericProperty< float > inputYaw;      /* -1.0 = left, +1.0 = right */
 	NumericProperty< float > inputPitch;    /* -1.0 = down, +1.0 = up */
 
-	PLVector3 velocity{ 0, 0, 0 }, old_velocity_{ 0, 0, 0 };
+	hei::Vector3 velocity{ 0, 0, 0 }, old_velocity_{ 0, 0, 0 };
 
 	Vector3Property position_;
-	PLVector3 old_position_{ 0, 0, 0 };
+	hei::Vector3 old_position_{ 0, 0, 0 };
 
 	Vector3Property fallback_position_;
 
 	Vector3Property myAngles;
-	PLVector3 myOldAngles{ 0.0f, 0.0f, 0.0f };
-	PLVector3 myForward{ 0.0f, 0.0f, 0.0f };
+	hei::Vector3 myOldAngles{ 0.0f, 0.0f, 0.0f };
+	hei::Vector3 myForward{ 0.0f, 0.0f, 0.0f };
 
 	PLCollisionAABB boundingBox;
 

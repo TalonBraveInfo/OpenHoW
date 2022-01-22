@@ -1,21 +1,6 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
-#include <PL/platform_filesystem.h>
 #include <duktape.h>
 #include <sstream>
 
@@ -30,21 +15,21 @@ JsonReader::JsonReader( const std::string &path ) : JsonReader() {
 		throw std::runtime_error( "Empty path for config, aborting!\n" );
 	}
 
-	PLFile *filePtr = plOpenFile( path.c_str(), false );
+	PLFile *filePtr = PlOpenFile( path.c_str(), false );
 	if ( filePtr == nullptr ) {
 		throw std::runtime_error( "Failed to load file!\n" );
 	}
 
-	size_t sz = plGetFileSize( filePtr );
+	size_t sz = PlGetFileSize( filePtr );
 	if ( sz == 0 ) {
-		plCloseFile( filePtr );
+		PlCloseFile( filePtr );
 		throw std::runtime_error( "Failed to load file, empty config!\n" );
 	}
 
 	std::vector<char> buf( sz + 1 );
-	plReadFile( filePtr, buf.data(), sizeof( char ), sz );
+	PlReadFile( filePtr, buf.data(), sizeof( char ), sz );
 	buf[ sz ] = '\0';
-	plCloseFile( filePtr );
+	PlCloseFile( filePtr );
 	ParseBuffer( buf.data() );
 }
 
@@ -143,7 +128,7 @@ std::istream &expect( std::istream &in ) {
 	return in;
 }
 
-PLColour JsonReader::GetColourProperty( const std::string &property, PLColour def, bool silent ) {
+hei::Colour JsonReader::GetColourProperty( const std::string &property, const hei::Colour &def, bool silent ) {
 	auto *context = static_cast<duk_context *>(ctx_);
 
 	const char *p = property.c_str();
@@ -171,7 +156,7 @@ PLColour JsonReader::GetColourProperty( const std::string &property, PLColour de
 		throw std::runtime_error( "Failed to parse entirety of colour from JSON property, \"" + property + "\"!\n" );
 	}
 
-	return { r, g, b, a };
+	return hei::Colour( r, g, b, a );
 }
 
 PLVector4 JsonReader::GetVector4Property( const std::string &property, PLVector4 def, bool silent ) {

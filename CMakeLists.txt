@@ -90,7 +90,10 @@ add_definitions(-DGIT_COMMIT_COUNT="${GIT_COMMIT_COUNT}")
 add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
 
 # 3rd-party libraries
-add_subdirectory(src/3rdparty/platform/platform)
+add_subdirectory(src/3rdparty/platform/plcore/)
+add_subdirectory(src/3rdparty/platform/plgraphics/)
+add_subdirectory(src/3rdparty/platform/plmodel/)
+add_subdirectory(src/3rdparty/platform/plugins/driver_opengl/)
 
 # core openhow components
 add_subdirectory(src/extractor)

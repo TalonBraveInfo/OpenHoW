@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include <SDL2/SDL_joystick.h>
 #include <SDL2/SDL_gamecontroller.h>
@@ -122,7 +108,7 @@ bool ohw::InputManager::GetActionState( unsigned int slot, Action input ) {
 	return false;
 }
 
-void ohw::InputManager::SetAxisState( unsigned int slot, JoystickAxis input, const PLVector2 &status ) {
+void ohw::InputManager::SetAxisState( unsigned int slot, JoystickAxis input, const hei::Vector2 &status ) {
 	Controller *controller = GetControllerForSlot( slot );
 	if ( controller == nullptr ) {
 		return;
@@ -157,7 +143,7 @@ void ohw::InputManager::SetKeyState( int input, bool status ) {
 }
 
 void ohw::InputManager::SetMouseState( int x, int y, MouseButton input, bool status ) {
-	myMouseCoords = PLVector2( x, y );
+	myMouseCoords = hei::Vector2( x, y );
 
 	if ( input != MOUSE_BUTTON_INVALID ) {
 		myMouseButtonStates[ input ] = status;

@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Display.h"
@@ -29,48 +15,78 @@ ohw::App *ohw::GetApp() {
 	return appInstance;
 }
 
-static void* u_malloc( size_t size ) {
-	return ohw::GetApp()->MAlloc( size, true );
+///////////////////////////////////////////////////////////////////
+// Memory Management
+
+// Override C++ new/delete operators, so we can track memory usage
+void *operator new( size_t size ) { return PlMAllocA( size ); }
+void *operator new[]( size_t size ) { return PlMAllocA( size ); }
+void operator delete( void *p ) throw() { PlFree( p ); }
+void operator delete[]( void *p ) throw() { PlFree( p ); }
+
+/**
+ * Callback, to catch any fail within hei.
+ */
+static void MemoryAbortCallback( size_t failSize )
+{
+	Error( "Failed to alloc of %lu bytes!\n", failSize );
 }
 
-static void* u_calloc( size_t num, size_t size ) {
-	return ohw::GetApp()->CAlloc( num, size, true );
+void *ohw::App::MAlloc( size_t size, bool abortOnFail ) {
+	return PlMAlloc( size, abortOnFail );
 }
+
+void *ohw::App::CAlloc( size_t num, size_t size, bool abortOnFail ) {
+	return PlCAlloc( num, size, abortOnFail );
+}
+
+///////////////////////////////////////////////////////////////////
 
 ohw::App::App( int argc, char **argv ) {
-	pl_malloc = u_malloc;
-	pl_calloc = u_calloc;
+	pl_memory_abort_cb = MemoryAbortCallback;
 
-	plInitialize( argc, argv );
-	plInitializeSubSystems( PL_SUBSYSTEM_IO );
+	if ( PlInitialize( argc, argv ) != PL_RESULT_SUCCESS ) {
+		Error( "Failed to initialize Hei: %s\n", PlGetError() );
+	}
 
-	plRegisterStandardPackageLoaders();
-	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TGA | PL_IMAGE_FILEFORMAT_PNG | PL_IMAGE_FILEFORMAT_BMP | PL_IMAGE_FILEFORMAT_TIM );
+	PlInitializeSubSystems( PL_SUBSYSTEM_IO );
+
+	PlRegisterStandardPackageLoaders();
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TGA | PL_IMAGE_FILEFORMAT_PNG | PL_IMAGE_FILEFORMAT_BMP | PL_IMAGE_FILEFORMAT_TIM );
+
+	const char *wd = PlGetWorkingDirectory();
+	if ( wd == nullptr ) {
+		Error( "Failed to get working directory: %s\n", PlGetError() );
+	}
 
 	// Mount the working directory first (./mods/...)
-	plMountLocalLocation( plGetWorkingDirectory() );
+	if ( PlMountLocalLocation( wd ) == nullptr ) {
+		Error( "Failed to mount working directory: %s\n", PlGetError() );
+	}
 
 	char appDataPath[PL_SYSTEM_MAX_PATH];
-	plGetApplicationDataDirectory( APP_NAME, appDataPath, PL_SYSTEM_MAX_PATH );
+	PlGetApplicationDataDirectory( APP_NAME, appDataPath, PL_SYSTEM_MAX_PATH );
 
-	if ( !plCreatePath( appDataPath ) ) {
-		DisplayMessageBox( MBErrorLevel::WARNING_MSG, "Unable to create %s: %s\nSettings will not be saved.", appDataPath, plGetError() );
+	if ( !PlCreatePath( appDataPath ) ) {
+		DisplayMessageBox( MBErrorLevel::WARNING_MSG, "Unable to create %s: %s\nSettings will not be saved.", appDataPath, PlGetError() );
 	}
 
 	// Then mount the app data dir so we can read from the config
 	// or load any mods that have been placed under there
-	plMountLocalLocation( appDataPath );
+	if ( PlMountLocalLocation( appDataPath ) == nullptr ) {
+		Error( "Failed to mount app data directory: %s\n", PlGetError() );
+	}
 
-	char logPath[ PL_SYSTEM_MAX_PATH ];
+	char logPath[PL_SYSTEM_MAX_PATH];
 	snprintf( logPath, sizeof( logPath ), "%s/debug.txt", appDataPath );
-	plSetupLogOutput( logPath );
+	PlSetupLogOutput( logPath );
 
-	plSetupLogLevel( LOG_LEVEL_DEFAULT, "info", PLColour( 0, 255, 0, 255 ), true );
-	plSetupLogLevel( LOG_LEVEL_WARNING, "warning", PLColour( 255, 255, 0, 255 ), true );
-	plSetupLogLevel( LOG_LEVEL_ERROR, "error", PLColour( 255, 0, 0, 255 ), true );
-	plSetupLogLevel( LOG_LEVEL_DEBUG, "debug", PLColour( 0, 255, 255, 255 ),
-#ifdef _DEBUG
-                     true
+	ohw::LOG_LEVEL_DEFAULT = PlAddLogLevel( "info", { 0, 255, 0, 255 }, true );
+	ohw::LOG_LEVEL_WARNING = PlAddLogLevel( "warning", { 255, 255, 0, 255 }, true );
+	ohw::LOG_LEVEL_ERROR = PlAddLogLevel( "error", { 255, 0, 0, 255 }, true );
+	ohw::LOG_LEVEL_DEBUG = PlAddLogLevel( "debug", { 0, 255, 255, 255 },
+#if !defined( NDEBUG )
+                                          true
 #else
 			false
 #endif
@@ -114,14 +130,14 @@ void ohw::App::Shutdown() {
 	SDL_EnableScreenSaver();
 	SDL_Quit();
 
-	plShutdown();
+	PlShutdown();
 
 	exit( EXIT_SUCCESS );
 }
 
 void ohw::App::DisplayMessageBox( MBErrorLevel level, const char *message, ... ) {
 	unsigned int sdlLevel;
-	switch( level ) {
+	switch ( level ) {
 		case MBErrorLevel::INFORMATION_MSG:
 			sdlLevel = SDL_MESSAGEBOX_INFORMATION;
 			break;
@@ -156,36 +172,36 @@ void ohw::App::InitializeConfig() {
 }
 
 void ohw::App::InitializeDisplay() {
-	const char* arg;
+	const char *arg;
 
 	// check the command line for any arguments
 
-	arg = plGetCommandLineArgumentValue( "-msaa" );
+	arg = PlGetCommandLineArgumentValue( "-msaa" );
 	if ( arg != nullptr ) {
 		int i = std::strtol( arg, nullptr, 10 );
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, i );
 	}
 
 	int width = cv_display_width->i_value;
-	arg = plGetCommandLineArgumentValue( "-width" );
+	arg = PlGetCommandLineArgumentValue( "-width" );
 	if ( arg != nullptr ) {
 		width = std::strtol( arg, nullptr, 10 );
 	}
 
 	int height = cv_display_height->i_value;
-	arg = plGetCommandLineArgumentValue( "-height" );
+	arg = PlGetCommandLineArgumentValue( "-height" );
 	if ( arg != nullptr ) {
 		height = std::strtol( arg, nullptr, 10 );
 	}
 
 	bool fullscreen = cv_display_fullscreen->b_value;
-	arg = plGetCommandLineArgumentValue(  "-fullscreen" );
+	arg = PlGetCommandLineArgumentValue( "-fullscreen" );
 	if ( arg != nullptr ) {
 		fullscreen = ( arg[ 0 ] == '1' );
 	}
 
 	int desiredDisplay = 0;
-	arg = plGetCommandLineArgumentValue( "-display" );
+	arg = PlGetCommandLineArgumentValue( "-display" );
 	if ( arg != nullptr ) {
 		desiredDisplay = std::strtol( arg, nullptr, 10 );
 	}
@@ -323,7 +339,8 @@ void ohw::App::PollEvents() {
 		}
 
 		switch ( event.type ) {
-			default:break;
+			default:
+				break;
 
 			case SDL_KEYUP:
 			case SDL_KEYDOWN: {
@@ -387,60 +404,49 @@ void ohw::App::PollEvents() {
 
 const char *ohw::App::GetVersionString() {
 	const char *version = "v"
-			PL_TOSTRING( APP_MAJOR_VERSION ) "."
-			PL_TOSTRING( APP_MINOR_VERSION ) "."
-			PL_TOSTRING( APP_PATCH_VERSION ) "-"
-			GIT_BRANCH ":" GIT_COMMIT_HASH "-" GIT_COMMIT_COUNT;
+	                      PL_TOSTRING( APP_MAJOR_VERSION ) "."
+	                      PL_TOSTRING( APP_MINOR_VERSION ) "."
+	                      PL_TOSTRING( APP_PATCH_VERSION ) "-"
+	                      GIT_BRANCH ":" GIT_COMMIT_HASH "-" GIT_COMMIT_COUNT;
 
 	return version;
 }
 
-bool ohw::App::IsRunning() {
-	// Clear all the profiling timers
-	myProfilers.clear();
+[[noreturn]] bool ohw::App::Loop() {
+	while ( true ) {
+		// Clear all the profiling timers
+		myProfilers.clear();
 
-	PollEvents();
+		PollEvents();
 
-	static unsigned int nextTick = 0;
-	if ( nextTick == 0 ) {
-		nextTick = SDL_GetTicks();
+		static unsigned int nextTick = 0;
+		if ( nextTick == 0 ) {
+			nextTick = SDL_GetTicks();
+		}
+
+		unsigned int loops = 0;
+		while ( SDL_GetTicks() > nextTick && loops < MAX_FRAMESKIP ) {
+			numSysTicks = SDL_GetTicks();
+			numSimTicks++;
+
+			gameManager->Tick();
+			audioManager->Tick();
+
+			lastSysTick = SDL_GetTicks();
+			nextTick += SKIP_TICKS;
+			loops++;
+		}
+
+		deltaTime = ( double ) ( SDL_GetTicks() + SKIP_TICKS - nextTick ) / ( double ) ( SKIP_TICKS );
+
+		myDisplay->Render( deltaTime );
 	}
-
-	unsigned int loops = 0;
-	while ( SDL_GetTicks() > nextTick && loops < MAX_FRAMESKIP ) {
-		numSysTicks = SDL_GetTicks();
-		numSimTicks++;
-
-		gameManager->Tick();
-		audioManager->Tick();
-
-		lastSysTick = SDL_GetTicks();
-		nextTick += SKIP_TICKS;
-		loops++;
-	}
-
-	deltaTime = ( double ) ( SDL_GetTicks() + SKIP_TICKS - nextTick ) / ( double ) ( SKIP_TICKS );
-
-	myDisplay->Render( deltaTime );
-
-	return true;
 }
 
-void *ohw::App::MAlloc( size_t size, bool abortOnFail ) {
-	return CAlloc( 1, size, abortOnFail );
-}
-
-void *ohw::App::CAlloc( size_t num, size_t size, bool abortOnFail ) {
-	void *mem = calloc( num, size );
-	if ( mem == nullptr && abortOnFail ) {
-		Error( "Failed to allocate %u bytes!\n", size * num );
-	}
-
-	return mem;
-}
+///////////////////////////////////////////////////////////////////
 
 const char *ohw::App::GetClipboardText( void * ) {
-	static char* clipboard = nullptr;
+	static char *clipboard = nullptr;
 	if ( clipboard != nullptr ) {
 		SDL_free( clipboard );
 	}
@@ -470,7 +476,7 @@ void ohw::App::EndProfilingGroup( const char *identifier ) {
 	i->second.End();
 }
 
-int main( int argc, char** argv ) {
+int main( int argc, char **argv ) {
 #if defined( _DEBUG )
 	setvbuf( stdout, nullptr, _IONBF, 0 );
 #endif
@@ -478,7 +484,7 @@ int main( int argc, char** argv ) {
 	appInstance = new ohw::App( argc, argv );
 
 	// Check the mod here, so we can add our VFS paths.
-	const char *var = plGetCommandLineArgumentValue( "-mod" );
+	const char *var = PlGetCommandLineArgumentValue( "-mod" );
 	if ( var == nullptr ) {
 		// otherwise default to base campaign
 		var = "how";
@@ -490,9 +496,5 @@ int main( int argc, char** argv ) {
 	appInstance->InitializeAudio();
 	appInstance->InitializeGame();
 
-	while ( appInstance->IsRunning() );
-
-	appInstance->Shutdown();
-
-	return EXIT_SUCCESS;
+	appInstance->Loop();
 }

@@ -20,13 +20,15 @@
 #include <vector>
 #include <list>
 
-#include <PL/platform.h>
-#include <PL/platform_string.h>
-#include <PL/platform_image.h>
-#include <PL/platform_package.h>
-#include <PL/platform_model.h>
-#include <PL/pl_graphics.h>
-#include <PL/platform_console.h>
+#include <plcore/pl.h>
+#include <plcore/pl_string.h>
+#include <plcore/pl_image.h>
+#include <plcore/pl_package.h>
+#include <plcore/pl_console.h>
+
+#include <plmodel/plm.h>
+
+#include <plgraphics/plg.h>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -109,7 +111,7 @@ namespace ohw {
 
 		static const char *GetVersionString();
 
-		bool IsRunning();
+		[[noreturn]] bool Loop();
 
 		static void *MAlloc( size_t size, bool abortOnFail );
 		static void *CAlloc( size_t num, size_t size, bool abortOnFail );

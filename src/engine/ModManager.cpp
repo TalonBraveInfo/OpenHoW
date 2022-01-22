@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 
@@ -26,7 +12,7 @@
  */
 
 ohw::ModManager::ModManager() {
-	plScanDirectory( "mods", "mod", RegisterMod, false, this );
+	PlScanDirectory( "mods", "mod", RegisterMod, false, this );
 }
 
 void ohw::ModManager::Mount( const char *name ) {
@@ -37,7 +23,7 @@ void ohw::ModManager::Mount( const char *name ) {
 
 		char path[PL_SYSTEM_MAX_PATH];
 		snprintf( path, sizeof( path ), "mods/%s.mod", name );
-		if ( plFileExists( path ) ) {
+		if ( PlFileExists( path ) ) {
 			RegisterMod( path, this );
 			mod = GetModDescription( name );
 		}
@@ -62,12 +48,12 @@ void ohw::ModManager::Mount( const char *name ) {
 
 	// Now attempt to mount everything
 	myCurrentMod = mod;
-	for ( const auto &i : dirSet ) {
+	for ( const auto &i: dirSet ) {
 		char mountPath[PL_SYSTEM_MAX_PATH];
 		snprintf( mountPath, sizeof( mountPath ), "mods/%s", i.c_str() );
-		PLFileSystemMount *mount = plMountLocation( mountPath );
+		PLFileSystemMount *mount = PlMountLocation( mountPath );
 		if ( mount == nullptr ) {
-			Warning( "Failed to mount location, \"%s\" (%s)!\n", i.c_str(), plGetError() );
+			Warning( "Failed to mount location, \"%s\" (%s)!\n", i.c_str(), PlGetError() );
 			continue;
 		}
 
@@ -77,15 +63,15 @@ void ohw::ModManager::Mount( const char *name ) {
 	Print( "Mod has been set to \"%s\"\n", mod->name.c_str() );
 
 #if defined( _DEBUG )
-	plParseConsoleString( "fsListMounted" );
+	PlParseConsoleString( "fsListMounted" );
 #endif
 }
 
 void ohw::ModManager::Unmount() {
 	// If a modification is already mounted, unmount it
 	if ( myCurrentMod != nullptr ) {
-		for ( const auto &i : myCurrentMod->mountList ) {
-			plClearMountedLocation( i );
+		for ( const auto &i: myCurrentMod->mountList ) {
+			PlClearMountedLocation( i );
 		}
 
 		myCurrentMod->mountList.clear();
@@ -113,7 +99,7 @@ void ohw::ModManager::FetchDependencies( ModDescription *modDescription, Directo
 		return;
 	}
 
-	for ( const auto &i : modDescription->dependencies ) {
+	for ( const auto &i: modDescription->dependencies ) {
 		const char *name = i.c_str();
 		ModDescription *dependency = GetModDescription( name );
 		if ( dependency == nullptr ) {
@@ -152,7 +138,7 @@ ohw::ModManager::ModDescription ohw::ModManager::LoadDescription( const char *pa
 		modDescription.isVisible = config.GetBooleanProperty( "isVisible", false, true );
 
 		char filename[64];
-		snprintf( filename, sizeof( filename ), "%s", plGetFileName( path ) );
+		snprintf( filename, sizeof( filename ), "%s", PlGetFileName( path ) );
 		modDescription.fileName = path;
 		modDescription.internalName = std::string( filename, strlen( filename ) - 4 );
 		modDescription.directory = modDescription.internalName + "/";

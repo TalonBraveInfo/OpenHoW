@@ -102,7 +102,7 @@ namespace ohw {
 		bool GetButtonState( unsigned int slot, SDL_GameControllerButton input );
 		bool GetActionState( unsigned int slot, Action input );
 
-		void SetAxisState( unsigned int slot, JoystickAxis input, const PLVector2 &status );
+		void SetAxisState( unsigned int slot, JoystickAxis input, const hei::Vector2 &status );
 		void SetButtonState( unsigned int slot, unsigned char input, bool status );
 		void SetKeyState( int input, bool status );
 		void SetMouseState( int x, int y, MouseButton input, bool status );

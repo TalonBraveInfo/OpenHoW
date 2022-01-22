@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "ModelResource.h"
@@ -28,7 +14,7 @@
 
 ohw::ModelResource::ModelResource( const std::string &path, bool persist, bool abortOnFail ) :
 		Resource( path, persist ) {
-	const char *fileExt = plGetFileExtension( path.c_str() );
+	const char *fileExt = PlGetFileExtension( path.c_str() );
 	if ( fileExt == nullptr ) {
 		if ( abortOnFail ) {
 			Error( "Failed to fetch file extension, \"%s\"!\n", path.c_str() );
@@ -73,24 +59,24 @@ void ohw::ModelResource::Draw( bool cull, bool batchDraw ) {
 		return;
 	}
 
-	bounds.origin = plGetMatrix4Translation( &modelMatrix );
+	bounds.origin = PlGetMatrix4Translation( &modelMatrix );
 	if ( cv_graphics_cull->b_value && cull && !camera->IsBoxVisible( &bounds ) ) {
 		return;
 	}
 
 	if ( cv_debug_bounds->b_value ) {
-		plDrawBoundingVolume( &bounds, PL_COLOUR_BLUE );
+		PlgDrawBoundingVolume( &bounds, PL_COLOUR_BLUE );
 	}
 
 	if ( meshesVector.empty() ) {
-		PLModel *model = GetApp()->resourceManager->GetFallbackModel();
+		PLMModel *model = GetApp()->resourceManager->GetFallbackModel();
 		if ( model == nullptr ) {
 			return;
 		}
 
-		model->model_matrix = modelMatrix;
+		model->modelMatrix = modelMatrix;
 
-		plDrawModel( model );
+		PlmDrawModel( model );
 		return;
 	}
 
@@ -109,7 +95,7 @@ void ohw::ModelResource::Draw( bool cull, bool batchDraw ) {
 	}
 }
 
-PLMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
+PLGMesh *ohw::ModelResource::GetInternalMesh( unsigned int i ) {
 	u_assert( i < meshesVector.size() );
 	if ( i >= meshesVector.size() ) {
 		Warning( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
@@ -137,20 +123,20 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 
 	// Single material Objs are really damn easy here...
 	if ( obj.materials.size() <= 2 ) {
-		PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, obj.indices.size(), obj.vertices.size() );
+		PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, obj.indices.size(), obj.vertices.size() );
 		if ( mesh == nullptr ) {
 			if ( abortOnFail ) {
-				Error( "Failed to create mesh! (%s)\n", plGetError() );
+				Error( "Failed to create mesh! (%s)\n", PlGetError() );
 			}
 
-			Warning( "Failed to create mesh! (%s)\n", plGetError() );
+			Warning( "Failed to create mesh! (%s)\n", PlGetError() );
 			return;
 		}
 
 		static_assert( sizeof( *mesh->indices ) == sizeof( *obj.indices.data() ), "mismatch" );
 		// Copy all of the data across
 		memcpy( mesh->indices, obj.indices.data(), sizeof( unsigned int ) * obj.indices.size() );
-		memcpy( mesh->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
+		memcpy( mesh->vertices, obj.vertices.data(), sizeof( PLGVertex ) * obj.vertices.size() );
 
 		std::string textureName = obj.materials[ obj.attributes[ 0 ] ].strTexture;
 		if ( obj.materials.size() > 1 && !textureName.empty() ) {
@@ -186,21 +172,21 @@ void ohw::ModelResource::LoadObjModel( const std::string &path, bool abortOnFail
 
 	auto j = meshSets.begin();
 	for ( unsigned int i = 0; j != meshSets.end(); ++j ) {
-		meshesVector[ i ] = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, j->second.indices.size(),
-		                                  obj.vertices.size() );
+		meshesVector[ i ] = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, j->second.indices.size(),
+		                                   obj.vertices.size() );
 		if ( meshesVector[ i ] == nullptr ) {
 			if ( abortOnFail ) {
-				Error( "Failed to create mesh!\nPL: %s\n", plGetError() );
+				Error( "Failed to create mesh!\nPL: %s\n", PlGetError() );
 			}
 
 			// Destroy all the attached meshes
 			DestroyMeshes();
 
-			Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Warning( "Failed to create mesh!\nPL: %s\n", PlGetError() );
 			return;
 		}
 
-		memcpy( meshesVector[ i ]->vertices, obj.vertices.data(), sizeof( PLVertex ) * obj.vertices.size() );
+		memcpy( meshesVector[ i ]->vertices, obj.vertices.data(), sizeof( PLGVertex ) * obj.vertices.size() );
 		memcpy( meshesVector[ i ]->indices, j->second.indices.data(),
 		        sizeof( unsigned int ) * j->second.indices.size() );
 
@@ -276,34 +262,34 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 	}
 
 	// There are some special cases, so let's go ahead and deal with those...
-	const char *fileName = plGetFileName( path.c_str() );
+	const char *fileName = PlGetFileName( path.c_str() );
 	if ( pl_strcasecmp( fileName, "skydome.vtx" ) == 0 || pl_strcasecmp( fileName, "skydomeu.vtx" ) == 0 ) {
-		PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, facHandle->num_triangles,
-		                             vtxHandle->num_vertices );
+		PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, facHandle->num_triangles,
+		                               vtxHandle->num_vertices );
 		if ( mesh == nullptr ) {
 			if ( abortOnFail ) {
-				Error( "Failed to create mesh!\nPL: %s\n", plGetError() );
+				Error( "Failed to create mesh!\nPL: %s\n", PlGetError() );
 			}
 
 			Vtx_DestroyHandle( vtxHandle );
 			Fac_DestroyHandle( facHandle );
 
-			Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Warning( "Failed to create mesh!\nPL: %s\n", PlGetError() );
 			return;
 		}
 
 		// Now we can set up our mesh
 
 		for ( unsigned int j = 0; j < vtxHandle->num_vertices; ++j ) {
-			plSetMeshVertexPosition( mesh, j, vtxHandle->vertices[ j ].position * -1.0f * 0.5f );
+			PlgSetMeshVertexPosition( mesh, j, hei::Vector3( vtxHandle->vertices[ j ].position ) * -1.0f * 0.5f );
 		}
 
 		unsigned int cur_index = 0;
 		for ( unsigned int j = 0; j < facHandle->num_triangles; ++j ) {
-			plSetMeshTrianglePosition( mesh, &cur_index,
-			                           facHandle->triangles[ j ].vertex_indices[ 0 ],
-			                           facHandle->triangles[ j ].vertex_indices[ 1 ],
-			                           facHandle->triangles[ j ].vertex_indices[ 2 ]
+			PlgSetMeshTrianglePosition( mesh, &cur_index,
+			                            facHandle->triangles[ j ].vertex_indices[ 0 ],
+			                            facHandle->triangles[ j ].vertex_indices[ 1 ],
+			                            facHandle->triangles[ j ].vertex_indices[ 2 ]
 			);
 		}
 
@@ -317,17 +303,17 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		return;
 	}
 
-	PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_STATIC, facHandle->num_triangles,
-	                             facHandle->num_triangles * 3 );
+	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, facHandle->num_triangles,
+	                               facHandle->num_triangles * 3 );
 	if ( mesh == nullptr ) {
 		if ( abortOnFail ) {
-			Error( "Failed to create mesh!\nPL: %s\n", plGetError() );
+			Error( "Failed to create mesh!\nPL: %s\n", PlGetError() );
 		}
 
 		Vtx_DestroyHandle( vtxHandle );
 		Fac_DestroyHandle( facHandle );
 
-		Warning( "Failed to create mesh!\nPL: %s\n", plGetError() );
+		Warning( "Failed to create mesh!\nPL: %s\n", PlGetError() );
 		return;
 	}
 
@@ -338,7 +324,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 
 	// Need to scale the model up, as the models are actually a little bit smaller than our terrain :(
 	for ( unsigned int j = 0; j < vtxHandle->num_vertices; ++j ) {
-		vtxHandle->vertices[ j ].position *= 0.5f;
+		vtxHandle->vertices[ j ].position = PlScaleVector3F( vtxHandle->vertices[ j ].position, 0.5f );
 	}
 
 	// automatically returns default if failed
@@ -356,19 +342,19 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 		for ( unsigned int triVtxIndex = 0; triVtxIndex < 3; ++triVtxIndex, ++nextVtxIndex ) {
 			unsigned int triVtx = facHandle->triangles[ i ].vertex_indices[ triVtxIndex ];
 
-			plSetMeshVertexColour( mesh, nextVtxIndex, PL_COLOUR_WHITE );
-			plSetMeshVertexPosition( mesh, nextVtxIndex, vtxHandle->vertices[ triVtx ].position );
+			PlgSetMeshVertexColour( mesh, nextVtxIndex, PL_COLOUR_WHITE );
+			PlgSetMeshVertexPosition( mesh, nextVtxIndex, vtxHandle->vertices[ triVtx ].position );
 
 			if ( no2Handle != nullptr ) {
 				unsigned int normalIndex = facHandle->triangles[ i ].normal_indices[ triVtxIndex ];
-				plSetMeshVertexNormal( mesh, nextVtxIndex, no2Handle->normals[ normalIndex ] );
+				PlgSetMeshVertexNormal( mesh, nextVtxIndex, no2Handle->normals[ normalIndex ] );
 			}
 
 			mesh->vertices[ nextVtxIndex ].bone_index = vtxHandle->vertices[ triVtx ].bone_index;
 			mesh->vertices[ nextVtxIndex ].bone_weight = 1.0f;
 		}
 
-		plSetMeshTrianglePosition( mesh, &curIndex, nextVtxIndex - 1, nextVtxIndex - 2, nextVtxIndex - 3 );
+		PlgSetMeshTrianglePosition( mesh, &curIndex, nextVtxIndex - 1, nextVtxIndex - 2, nextVtxIndex - 3 );
 
 		if ( facHandle->texture_table != nullptr && textureAtlas != nullptr ) {
 			const char *textureName = facHandle->texture_table[ facHandle->triangles[ i ].texture_index ].name;
@@ -379,11 +365,11 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 			std::pair< unsigned int, unsigned int > textureSize = textureAtlas->GetTextureSize( textureName );
 
 			for ( unsigned int j = 0, u = 0; j < 3; ++j, u += 2 ) {
-				plSetMeshVertexST( mesh, nextVtxIndex - ( 3 - j ),
-				                   tX + ( tW * ( 1.0f / ( float ) ( textureSize.first ) ) *
-				                          ( float ) ( facHandle->triangles[ i ].uv_coords[ u ] ) ),
-				                   tY + ( tH * ( 1.0f / ( float ) ( textureSize.second ) ) *
-				                          ( float ) ( facHandle->triangles[ i ].uv_coords[ u + 1 ] ) ) );
+				PlgSetMeshVertexST( mesh, nextVtxIndex - ( 3 - j ),
+				                    tX + ( tW * ( 1.0f / ( float ) ( textureSize.first ) ) *
+				                           ( float ) ( facHandle->triangles[ i ].uv_coords[ u ] ) ),
+				                    tY + ( tH * ( 1.0f / ( float ) ( textureSize.second ) ) *
+				                           ( float ) ( facHandle->triangles[ i ].uv_coords[ u + 1 ] ) ) );
 			}
 		}
 	}
@@ -407,7 +393,7 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 	}
 #else
 	// Always generate normals until we handle No2 correctly
-	std::list< PLMesh * > meshes( &mesh, &mesh + 1 );
+	std::list< PLGMesh * > meshes( &mesh, &mesh + 1 );
 	Mesh_GenerateFragmentedMeshNormals( meshes );
 #endif
 
@@ -432,7 +418,7 @@ void ohw::ModelResource::DrawMesh( unsigned int i ) {
 		Error( "Attempted to access an invalid mesh (%d/%d)!\n", i, meshesVector.size() );
 	}
 
-	PLShaderProgram *program = plGetCurrentShaderProgram();
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
 	if ( program == nullptr ) {
 		Error( "No bound shader program when drawing mesh %d!\n", i );
 	}
@@ -440,20 +426,20 @@ void ohw::ModelResource::DrawMesh( unsigned int i ) {
 	// TODO: This currently doesn't handle animations...
 	// TODO: We should be batching the same things too!
 
-	plSetTexture( meshesVector[ i ]->texture, 0 );
+	PlgSetTexture( meshesVector[ i ]->texture, 0 );
 
-	plSetShaderUniformValue( program, "pl_model", &modelMatrix, true );
+	PlgSetShaderUniformValue( program, "pl_model", &modelMatrix, true );
 
-	plUploadMesh( meshesVector[ i ] );
-	plDrawMesh( meshesVector[ i ] );
+	PlgUploadMesh( meshesVector[ i ] );
+	PlgDrawMesh( meshesVector[ i ] );
 }
 
 /**
  * Draws all the normals per mesh.
  */
 void ohw::ModelResource::DrawNormals() {
-	for ( auto i : meshesVector ) {
-		plDrawMeshNormals( &modelMatrix, i );
+	for ( auto i: meshesVector ) {
+		PlgDrawMeshNormals( i );
 	}
 }
 
@@ -469,12 +455,12 @@ void ohw::ModelResource::DrawSkeleton() {
 }
 
 void ohw::ModelResource::DestroyMeshes() {
-	for ( auto mesh : meshesVector ) {
+	for ( auto mesh: meshesVector ) {
 		if ( mesh == nullptr ) {
 			continue;
 		}
 
-		plDestroyMesh( mesh );
+		PlgDestroyMesh( mesh );
 	}
 
 	meshesVector.clear();
@@ -490,13 +476,13 @@ void ohw::ModelResource::GenerateBounds() {
 	}
 
 	// Gather all the vertices from every mesh
-	std::vector< PLVertex > vertices;
-	for ( const auto &mesh : meshesVector ) {
+	std::vector< PLGVertex > vertices;
+	for ( const auto &mesh: meshesVector ) {
 		vertices.insert( vertices.end(), mesh->vertices, mesh->vertices + mesh->num_verts );
 	}
 
 	// And now generate the bounds
-	bounds = plGenerateAABB( vertices.data(), vertices.size(), false );
+	bounds = PlgGenerateAabbFromVertices( vertices.data(), vertices.size(), false );
 
 	// TODO: handle animations somehow? We might need to call this for each animation frame for animated models...
 }

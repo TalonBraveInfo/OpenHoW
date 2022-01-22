@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "ResourceManager.h"
@@ -21,20 +7,20 @@
 
 ohw::ResourceManager::ResourceManager() {
 	// Allow users to enable support for all package formats if desired (disabled by default for security reasons)
-	if ( plHasCommandLineArgument( "-rapf" ) ) {
-		plRegisterStandardPackageLoaders();
+	if ( PlHasCommandLineArgument( "-rapf" ) ) {
+		PlRegisterStandardPackageLoaders();
 	}
 
-	plRegisterConsoleCommand( "ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources." );
-	plRegisterConsoleCommand( "ClearAllResources", &ResourceManager::ClearAllResourcesCommand, "Clears all cached resources." );
-	plRegisterConsoleCommand( "ClearResource", &ResourceManager::ClearResourceCommand, "Clears the specified resource." );
+	PlRegisterConsoleCommand( "ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources." );
+	PlRegisterConsoleCommand( "ClearAllResources", &ResourceManager::ClearAllResourcesCommand, "Clears all cached resources." );
+	PlRegisterConsoleCommand( "ClearResource", &ResourceManager::ClearResourceCommand, "Clears the specified resource." );
 }
 
 ohw::ResourceManager::~ResourceManager() {
 	ClearAllResources( true );
 }
 
-ohw::Resource *ohw::ResourceManager::GetCachedResource( const std::string& path ) {
+ohw::Resource *ohw::ResourceManager::GetCachedResource( const std::string &path ) {
 	auto idx = resourcesMap.find( path );
 	if ( idx != resourcesMap.end() ) {
 		return idx->second;
@@ -43,8 +29,8 @@ ohw::Resource *ohw::ResourceManager::GetCachedResource( const std::string& path 
 	return nullptr;
 }
 
-ohw::SharedTextureResourcePointer ohw::ResourceManager::LoadTexture( const std::string& path, unsigned int flags, bool persist, bool abortOnFail ) {
-	TextureResource *texturePtr = static_cast< TextureResource* >( GetCachedResource( path ) );
+ohw::SharedTextureResourcePointer ohw::ResourceManager::LoadTexture( const std::string &path, unsigned int flags, bool persist, bool abortOnFail ) {
+	TextureResource *texturePtr = static_cast< TextureResource * >( GetCachedResource( path ) );
 	if ( texturePtr != nullptr ) {
 		return texturePtr;
 	}
@@ -55,8 +41,8 @@ ohw::SharedTextureResourcePointer ohw::ResourceManager::LoadTexture( const std::
 	return texturePtr;
 }
 
-ohw::SharedModelResourcePointer ohw::ResourceManager::LoadModel( const std::string& path, bool persist, bool abortOnFail ) {
-	ModelResource *modelPtr = static_cast< ModelResource* >( GetCachedResource( path ) );
+ohw::SharedModelResourcePointer ohw::ResourceManager::LoadModel( const std::string &path, bool persist, bool abortOnFail ) {
+	ModelResource *modelPtr = static_cast< ModelResource * >( GetCachedResource( path ) );
 	if ( modelPtr != nullptr ) {
 		return modelPtr;
 	}
@@ -67,43 +53,45 @@ ohw::SharedModelResourcePointer ohw::ResourceManager::LoadModel( const std::stri
 	return modelPtr;
 }
 
-PLTexture *ohw::ResourceManager::GetFallbackTexture() {
+PLGTexture *ohw::ResourceManager::GetFallbackTexture() {
 	if ( fallbackTexture != nullptr ) {
 		return fallbackTexture;
 	}
 
 	PLColour pixelBuffer[] = {
-		{ 255, 255, 0, 255 }, { 0, 255, 255, 255 },
-		{ 0, 255, 255, 255 }, { 255, 255, 0, 255 } };
-	PLImage *image = plCreateImage(( uint8_t* ) pixelBuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+			{ 255, 255, 0,   255 },
+			{ 0,   255, 255, 255 },
+			{ 0,   255, 255, 255 },
+			{ 255, 255, 0,   255 } };
+	PLImage *image = PlCreateImage( ( uint8_t * ) pixelBuffer, 2, 2, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 	if ( image == nullptr ) {
-		Error( "Failed to generate default texture (%s)!\n", plGetError() );
+		Error( "Failed to generate default texture (%s)!\n", PlGetError() );
 	}
 
-	fallbackTexture = plCreateTexture();
-	fallbackTexture->flags &= PL_TEXTURE_FLAG_NOMIPS;
-	if ( !plUploadTextureImage( fallbackTexture, image ) ) {
-		Error( "Failed to upload default texture (%s)!\n", plGetError() );
+	fallbackTexture = PlgCreateTexture();
+	fallbackTexture->flags &= PLG_TEXTURE_FLAG_NOMIPS;
+	if ( !PlgUploadTextureImage( fallbackTexture, image ) ) {
+		Error( "Failed to upload default texture (%s)!\n", PlGetError() );
 	}
 
-	plFreeImage( image );
+	PlDestroyImage( image );
 
 	return fallbackTexture;
 }
 
-PLModel *ohw::ResourceManager::GetFallbackModel() {
+PLMModel *ohw::ResourceManager::GetFallbackModel() {
 	if ( fallbackModel != nullptr ) {
 		return fallbackModel;
 	}
 
-	PLMesh *mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 6 );
-	plSetMeshVertexPosition( mesh, 0, PLVector3( 0, 20, 0 ) );
-	plSetMeshVertexPosition( mesh, 1, PLVector3( 0, -20, 0 ) );
-	plSetMeshVertexPosition( mesh, 2, PLVector3( 20, 0, 0 ) );
-	plSetMeshVertexPosition( mesh, 3, PLVector3( -20, 0, 0 ) );
-	plSetMeshVertexPosition( mesh, 4, PLVector3( 0, 0, 20 ) );
-	plSetMeshVertexPosition( mesh, 5, PLVector3( 0, 0, -20 ) );
-	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ) );
+	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_LINES, PLG_DRAW_DYNAMIC, 0, 6 );
+	PlgSetMeshVertexPosition( mesh, 0, { 0, 20, 0 } );
+	PlgSetMeshVertexPosition( mesh, 1, { 0, -20, 0 } );
+	PlgSetMeshVertexPosition( mesh, 2, { 20, 0, 0 } );
+	PlgSetMeshVertexPosition( mesh, 3, { -20, 0, 0 } );
+	PlgSetMeshVertexPosition( mesh, 4, { 0, 0, 20 } );
+	PlgSetMeshVertexPosition( mesh, 5, { 0, 0, -20 } );
+	PlgSetMeshUniformColour( mesh, hei::Colour( 255, 0, 0, 255 ) );
 
 	ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
 	if ( shaderProgram == nullptr ) {
@@ -111,10 +99,10 @@ PLModel *ohw::ResourceManager::GetFallbackModel() {
 	}
 
 	// todo: kill this api, if we rebuild shader cache we'll die
-	plSetMeshShaderProgram( mesh, shaderProgram->GetInternalProgram() );
-	plUploadMesh( mesh );
+	PlgSetMeshShaderProgram( mesh, shaderProgram->GetInternalProgram() );
+	PlgUploadMesh( mesh );
 
-	return ( fallbackModel = plCreateBasicStaticModel( mesh ) );
+	return ( fallbackModel = PlmCreateBasicStaticModel( mesh ) );
 }
 
 /**
@@ -155,19 +143,19 @@ void ohw::ResourceManager::ClearAllResources( bool force ) {
 	}
 }
 
-void ohw::ResourceManager::ListCachedResources( unsigned int argc, char** argv ) {
+void ohw::ResourceManager::ListCachedResources( unsigned int argc, char **argv ) {
 	u_unused( argc );
 	u_unused( argv );
 
 	Print( "Printing cache...\n" );
-	for ( auto const& i : GetApp()->resourceManager->resourcesMap ) {
+	for ( auto const &i: GetApp()->resourceManager->resourcesMap ) {
 		Print(
-			" CachedName(%s)"
-            " CanDestroy(%s)"
-            " ReferenceCount(%u)\n",
-            i.first.c_str(),
-            i.second->CanDestroy() ? "true" : "false",
-            i.second->GetReferenceCount() );
+				" CachedName(%s)"
+				" CanDestroy(%s)"
+				" ReferenceCount(%u)\n",
+				i.first.c_str(),
+				i.second->CanDestroy() ? "true" : "false",
+				i.second->GetReferenceCount() );
 	}
 }
 

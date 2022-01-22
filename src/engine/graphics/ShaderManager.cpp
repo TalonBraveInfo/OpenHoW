@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "JsonReader.h"
@@ -38,7 +24,7 @@ static void Shaders_ValidateDefault() {
 			"debug_test",
 	};
 
-	for ( unsigned int i = 0; i < plArrayElements( defaultShadersStrings ); ++i ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( defaultShadersStrings ); ++i ) {
 		ohw::ShaderProgram *program = Shaders_GetProgram( defaultShadersStrings[ i ] );
 		if ( program == nullptr ) {
 			Error( "Failed to fetch default shader, \"%s\"!\n", defaultShadersStrings[ i ] );
@@ -53,7 +39,7 @@ static void Shaders_ValidateDefault() {
 static void Shaders_CacheShaderProgram( const char *path, void *userData ) {
 	u_unused( userData );
 
-	const char *fileName = plGetFileName( path );
+	const char *fileName = PlGetFileName( path );
 	if ( fileName == nullptr ) {
 		Warning( "Failed to get filename for shader program, \"%s\"!\n", path );
 		return;
@@ -94,7 +80,7 @@ static void Shaders_ClearPrograms() {
 static void Shaders_CachePrograms() {
 	Shaders_ClearPrograms();
 
-	plScanDirectory( "shaders", "program", Shaders_CacheShaderProgram, false, nullptr );
+	PlScanDirectory( "shaders", "program", Shaders_CacheShaderProgram, false, nullptr );
 
 	Shaders_ValidateDefault();
 }
@@ -161,10 +147,10 @@ static void Cmd_RebuildShaderProgram( unsigned int argc, char *argv[] ) {
 }
 
 void Shaders_Initialize() {
-	plRegisterConsoleCommand( "ListShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
-	plRegisterConsoleCommand( "RebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
-	plRegisterConsoleCommand( "RebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
-	plRegisterConsoleCommand( "RebuildShaderProgramCache", Cmd_RebuildShaderProgramCache, "Rebuild shader program cache" );
+	PlRegisterConsoleCommand( "ListShaderPrograms", Cmd_ListShaderPrograms, "Lists all of the cached shader programs" );
+	PlRegisterConsoleCommand( "RebuildShaderPrograms", Cmd_RebuildShaderPrograms, "Rebuild all shader programs" );
+	PlRegisterConsoleCommand( "RebuildShaderProgram", Cmd_RebuildShaderProgram, "Rebuild specified shader program" );
+	PlRegisterConsoleCommand( "RebuildShaderProgramCache", Cmd_RebuildShaderProgramCache, "Rebuild shader program cache" );
 
 	Shaders_CachePrograms();
 }
@@ -193,62 +179,62 @@ void Shaders_SetProgramByName( const std::string &name ) {
 }
 
 ohw::ShaderProgram::ShaderProgram( const std::string &vertPath, const std::string &fragPath ) {
-	shaderProgram = plCreateShaderProgram();
+	shaderProgram = PlgCreateShaderProgram();
 	if ( shaderProgram == nullptr ) {
-		throw std::runtime_error( plGetError() );
+		throw std::runtime_error( PlGetError() );
 	}
 
 	try {
-		RegisterShaderStage( vertPath.c_str(), PL_SHADER_TYPE_VERTEX );
-		RegisterShaderStage( fragPath.c_str(), PL_SHADER_TYPE_FRAGMENT );
+		RegisterShaderStage( vertPath.c_str(), PLG_SHADER_TYPE_VERTEX );
+		RegisterShaderStage( fragPath.c_str(), PLG_SHADER_TYPE_FRAGMENT );
 	} catch ( ... ) {
-		plDestroyShaderProgram( shaderProgram, true );
+		PlgDestroyShaderProgram( shaderProgram, true );
 		throw;
 	}
 
-	plLinkShaderProgram( shaderProgram );
+	PlgLinkShaderProgram( shaderProgram );
 
 	this->vertPath = vertPath;
 	this->fragPath = fragPath;
 }
 
 ohw::ShaderProgram::~ShaderProgram() {
-	plDestroyShaderProgram( shaderProgram, true );
+	PlgDestroyShaderProgram( shaderProgram, true );
 }
 
 void ohw::ShaderProgram::Rebuild() {
-	PLShaderProgram *newShaderProgram = plCreateShaderProgram();
+	PLGShaderProgram *newShaderProgram = PlgCreateShaderProgram();
 	if ( newShaderProgram == nullptr ) {
-		throw std::runtime_error( plGetError() );
+		throw std::runtime_error( PlGetError() );
 	}
 
-	PLShaderProgram *oldProgram = shaderProgram;
+	PLGShaderProgram *oldProgram = shaderProgram;
 	shaderProgram = newShaderProgram;
 
 	try {
-		RegisterShaderStage( vertPath.c_str(), PL_SHADER_TYPE_VERTEX );
-		RegisterShaderStage( fragPath.c_str(), PL_SHADER_TYPE_FRAGMENT );
+		RegisterShaderStage( vertPath.c_str(), PLG_SHADER_TYPE_VERTEX );
+		RegisterShaderStage( fragPath.c_str(), PLG_SHADER_TYPE_FRAGMENT );
 	} catch ( const std::exception &exception ) {
-		plDestroyShaderProgram( shaderProgram, true );
+		PlgDestroyShaderProgram( shaderProgram, true );
 		shaderProgram = oldProgram;
 		throw;
 	}
 
-	plLinkShaderProgram( shaderProgram );
+	PlgLinkShaderProgram( shaderProgram );
 
-	plDestroyShaderProgram( oldProgram, true );
+	PlgDestroyShaderProgram( oldProgram, true );
 }
 
 void ohw::ShaderProgram::Enable() {
-	plSetShaderProgram( shaderProgram );
+	PlgSetShaderProgram( shaderProgram );
 }
 
 void ohw::ShaderProgram::Disable() {
-	plSetShaderProgram( nullptr );
+	PlgSetShaderProgram( nullptr );
 }
 
-void ohw::ShaderProgram::RegisterShaderStage( const char *path, PLShaderType type ) {
-	if ( !plRegisterShaderStageFromDisk( shaderProgram, path, type ) ) {
-		throw std::runtime_error( plGetError() );
+void ohw::ShaderProgram::RegisterShaderStage( const char *path, PLGShaderStageType type ) {
+	if ( !PlgRegisterShaderStageFromDisk( shaderProgram, path, type ) ) {
+		throw std::runtime_error( PlGetError() );
 	}
 }

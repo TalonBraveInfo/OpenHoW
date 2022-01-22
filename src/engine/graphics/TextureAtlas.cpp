@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Display.h"
@@ -24,9 +10,9 @@ ohw::TextureAtlas::TextureAtlas( int w, int h ) : width_( w ), height_( h ) {
 }
 
 ohw::TextureAtlas::~TextureAtlas() {
-	for ( auto &id : images_by_name_ ) {
+	for ( auto &id: images_by_name_ ) {
 		PLImage *image = id.second;
-		plDestroyImage( image );
+		PlDestroyImage( image );
 		id.second = nullptr;
 	}
 
@@ -49,19 +35,19 @@ bool ohw::TextureAtlas::AddImage( const std::string &path, bool absolute ) {
 		snprintf( full_path, sizeof( full_path ) - 1, "%s", u_find2( path.c_str(), supportedTextureFormats, false ) );
 	}
 
-	PLImage *img = plLoadImage( full_path );
+	PLImage *img = PlLoadImage( full_path );
 	if ( img == nullptr ) {
 		return false;
 	}
 
-	plConvertPixelFormat( img, PL_IMAGEFORMAT_RGBA8 );
+	PlConvertPixelFormat( img, PL_IMAGEFORMAT_RGBA8 );
 	images_by_name_.emplace( path, img );
 	images_by_height_.emplace( img->height, img );
 	return true;
 }
 
 void ohw::TextureAtlas::AddImages( const std::vector< std::string > &textures ) {
-	for ( const auto &path : textures ) {
+	for ( const auto &path: textures ) {
 		AddImage( path );
 	}
 }
@@ -94,8 +80,8 @@ void ohw::TextureAtlas::Finalize() {
 		}
 
 		u_assert( image->path[ 0 ] != '\0', "Invalid image name!" );
-		const char *filename = plGetFileName( image->path );
-		const char *extension = plGetFileExtension( image->path );
+		const char *filename = PlGetFileName( image->path );
+		const char *extension = PlGetFileExtension( image->path );
 		std::string index_name = std::string( filename ).substr( 0, strlen( filename ) - ( strlen( extension ) + 1 ) );
 		textures_.emplace( index_name, Index{
 				.x = cur_x,
@@ -117,14 +103,14 @@ void ohw::TextureAtlas::Finalize() {
 	images_by_height_.clear();
 
 	// Now create the atlas itself
-	PLImage *cache = plCreateImage( nullptr, w, h, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	PLImage *cache = PlCreateImage( nullptr, w, h, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 	if ( cache == nullptr ) {
-		Error( "Failed to generate image cache for texture atlas (%s)!\n", plGetError() );
+		Error( "Failed to generate image cache for texture atlas (%s)!\n", PlGetError() );
 	}
 
 	//plReplaceImageColour(cache, {0, 0, 0, 0}, {0, 0, 0, 255});
 
-	for ( auto &tarr : textures_ ) {
+	for ( auto &tarr: textures_ ) {
 		Index *texture = &tarr.second;
 		uint8_t *pos = cache->data[ 0 ] + ( ( texture->y * cache->width ) + texture->x ) * 4;
 		uint8_t *src = texture->image->data[ 0 ];
@@ -134,37 +120,37 @@ void ohw::TextureAtlas::Finalize() {
 			pos += cache->width * 4;
 		}
 
-		plDestroyImage( texture->image );
+		PlDestroyImage( texture->image );
 		texture->image = nullptr;
 	}
 
 #ifdef _DEBUG
 	static unsigned int gen_id = 0;
-	if ( plCreatePath( "./debug/generated/" ) ) {
+	if ( PlCreatePath( "./debug/generated/" ) ) {
 		char buf[PL_SYSTEM_MAX_PATH];
 		snprintf( buf, sizeof( buf ) - 1, "./debug/generated/%dx%d_%d.png",
 		          cache->width, cache->height, gen_id++ );
-		plWriteImage( cache, buf );
+		PlWriteImage( cache, buf );
 	}
 #endif
 
-	if ( ( texture_ = plCreateTexture() ) == nullptr ) {
-		Error( "Failed to generate atlas texture (%s)!\n", plGetError() );
+	if ( ( texture_ = PlgCreateTexture() ) == nullptr ) {
+		Error( "Failed to generate atlas texture (%s)!\n", PlGetError() );
 	}
 
 	if ( cv_graphics_texture_filter->b_value ) {
-		plSetTextureAnisotropy( texture_, 8 );
-		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_LINEAR;
+		PlgSetTextureAnisotropy( texture_, 8 );
+		texture_->filter = PLG_TEXTURE_FILTER_MIPMAP_LINEAR;
 	} else {
-		plSetTextureAnisotropy( texture_, 0 );
-		texture_->filter = PL_TEXTURE_FILTER_MIPMAP_NEAREST;
+		PlgSetTextureAnisotropy( texture_, 0 );
+		texture_->filter = PLG_TEXTURE_FILTER_MIPMAP_NEAREST;
 	}
 
-	if ( !plUploadTextureImage( texture_, cache ) ) {
-		Error( "Failed to upload texture atlas (%s)!\n", plGetError() );
+	if ( !PlgUploadTextureImage( texture_, cache ) ) {
+		Error( "Failed to upload texture atlas (%s)!\n", PlGetError() );
 	}
 
-	plDestroyImage( cache );
+	PlDestroyImage( cache );
 }
 
 bool ohw::TextureAtlas::GetTextureCoords( const std::string &name, float *x, float *y, float *w, float *h ) {
@@ -177,7 +163,7 @@ bool ohw::TextureAtlas::GetTextureCoords( const std::string &name, float *x, flo
 
 	// HACK: work around texture leaking until we have a better solution!
 	int shift = 0;
-	if ( texture_->filter == PL_TEXTURE_FILTER_MIPMAP_LINEAR ) {
+	if ( texture_->filter == PLG_TEXTURE_FILTER_MIPMAP_LINEAR ) {
 		shift = 1;
 	}
 

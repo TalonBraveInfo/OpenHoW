@@ -1,23 +1,8 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "graphics/ShaderManager.h"
-#include "graphics/Display.h"
 #include "graphics/ParticleEffect.h"
 #include "graphics/ParticleEmitter.h"
 #include "graphics/Camera.h"
@@ -41,45 +26,49 @@ ohw::ParticleEditor::ParticleEditor() : BaseWindow() {
 ohw::ParticleEditor::~ParticleEditor() {
 	delete particleEffect;
 
-	plDestroyTexture( textureAttachment );
-	plDestroyFrameBuffer( drawBuffer );
+	PlgDestroyTexture( textureAttachment );
+	PlgDestroyFrameBuffer( drawBuffer );
 }
 
 void ohw::ParticleEditor::DrawViewport() {
-	plBindFrameBuffer( drawBuffer, PL_FRAMEBUFFER_DRAW );
+	PlgBindFrameBuffer( drawBuffer, PLG_FRAMEBUFFER_DRAW );
 
-	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
+	PlgSetDepthBufferMode( PLG_DEPTHBUFFER_ENABLE );
 
-	plSetClearColour( { 0, 0, 0, 0 } );
-	plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+	PlgSetClearColour( { 0, 0, 0, 0 } );
+	PlgClearBuffers( PLG_BUFFER_COLOUR | PLG_BUFFER_DEPTH );
 
 	unsigned int width, height;
-	plGetFrameBufferResolution( drawBuffer, &width, &height );
+	PlgGetFrameBufferResolution( drawBuffer, &width, &height );
 
 	camera->SetViewport( 0, 0, width, height );
 	camera->MakeActive();
 
-	PLVector3 angles(
-			plDegreesToRadians( modelRotation.x ),
-			plDegreesToRadians( modelRotation.y ),
-			plDegreesToRadians( modelRotation.z ) );
+	hei::Vector3 angles(
+			PlDegreesToRadians( modelRotation.x ),
+			PlDegreesToRadians( modelRotation.y ),
+			PlDegreesToRadians( modelRotation.z ) );
 
 	if ( viewGrid ) {
 		ShaderProgram *shaderProgram = Shaders_GetProgram( "generic_untextured" );
 		shaderProgram->Enable();
 
-		PLMatrix4 matrix;
-		matrix.Identity();
-		matrix.Rotate( plDegreesToRadians( modelRotation.z + 90.0f ), { 1, 0, 0 } );
-		matrix.Rotate( angles.y, { 0, 1, 0 } );
-		matrix.Rotate( angles.x, { 0, 0, 1 } );
+		PlMatrixMode( PL_MODELVIEW_MATRIX );
+		PlPushMatrix();
+		PlLoadIdentityMatrix();
 
-		plDrawGrid( matrix, -512, -512, 1024, 1024, 32 );
+		PlRotateMatrix( PlDegreesToRadians( modelRotation.z + 90.0f ), 1, 0, 0 );
+		PlRotateMatrix( angles.y, 0, 1, 0 );
+		PlRotateMatrix( angles.x, 0, 0, 1 );
+
+		PlgDrawGrid( -512, -512, 1024, 1024, 32 );
+
+		PlPopMatrix();
 	}
 
 	if ( particleEffect == nullptr ) {
 		// Fallback to default
-		plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+		PlgBindFrameBuffer( nullptr, PLG_FRAMEBUFFER_DRAW );
 		return;
 	}
 }
@@ -102,7 +91,7 @@ void ohw::ParticleEditor::Display() {
 				static ImGuiTextFilter filter;
 				filter.Draw();
 
-				for ( const auto &i : particleList ) {
+				for ( const auto &i: particleList ) {
 					if ( !filter.PassFilter( i.c_str() ) ) {
 						continue;
 					}
@@ -136,22 +125,22 @@ void ohw::ParticleEditor::Display() {
 void ohw::ParticleEditor::GenerateFrameBuffer( unsigned int width, unsigned int height ) {
 	unsigned int bufferWidth = 0, bufferHeight = 0;
 	if ( drawBuffer != nullptr ) {
-		plGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
+		PlgGetFrameBufferResolution( drawBuffer, &bufferWidth, &bufferHeight );
 	}
 
 	if ( bufferWidth != width || bufferHeight != height ) {
-		plDestroyFrameBuffer( drawBuffer );
-		drawBuffer = plCreateFrameBuffer( width, height, PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+		PlgDestroyFrameBuffer( drawBuffer );
+		drawBuffer = PlgCreateFrameBuffer( width, height, PLG_BUFFER_COLOUR | PLG_BUFFER_DEPTH );
 		if ( drawBuffer == nullptr ) {
-			Error( "Failed to create framebuffer for model viewer (%s)!\n", plGetError() );
+			Error( "Failed to create framebuffer for model viewer (%s)!\n", PlGetError() );
 		}
 
-		plDestroyTexture( textureAttachment );
-		textureAttachment = plGetFrameBufferTextureAttachment( drawBuffer, PL_BUFFER_COLOUR, PL_TEXTURE_FILTER_LINEAR );
+		PlgDestroyTexture( textureAttachment );
+		textureAttachment = PlgGetFrameBufferTextureAttachment( drawBuffer, PLG_BUFFER_COLOUR, PLG_TEXTURE_FILTER_LINEAR );
 		if ( textureAttachment == nullptr ) {
-			Error( "Failed to create texture attachment for buffer (%s)!\n", plGetError() );
+			Error( "Failed to create texture attachment for buffer (%s)!\n", PlGetError() );
 		}
 	}
 
-	plBindFrameBuffer( nullptr, PL_FRAMEBUFFER_DRAW );
+	PlgBindFrameBuffer( nullptr, PLG_FRAMEBUFFER_DRAW );
 }

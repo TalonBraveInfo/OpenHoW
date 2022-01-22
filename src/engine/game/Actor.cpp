@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include "App.h"
 #include "Map.h"
@@ -29,9 +15,9 @@ Actor::Actor() :
 	INIT_PROPERTY( forwardVelocity, PROP_PUSH, 0.00 ),
 	INIT_PROPERTY( inputYaw, PROP_PUSH, 0.00 ),
 	INIT_PROPERTY( inputPitch, PROP_PUSH, 0.00 ),
-	INIT_PROPERTY( position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
-	INIT_PROPERTY( fallback_position_, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ),
-	INIT_PROPERTY( myAngles, PROP_LOCAL | PROP_WRITE, PLVector3( 0, 0, 0 ) ) {}
+	INIT_PROPERTY( position_, PROP_LOCAL | PROP_WRITE, hei::Vector3( 0, 0, 0 ) ),
+	INIT_PROPERTY( fallback_position_, PROP_LOCAL | PROP_WRITE, hei::Vector3( 0, 0, 0 ) ),
+	INIT_PROPERTY( myAngles, PROP_LOCAL | PROP_WRITE, hei::Vector3( 0, 0, 0 ) ) {}
 
 Actor::~Actor() {
 	for ( auto actor : childActors ) {
@@ -52,7 +38,7 @@ void Actor::Tick() {
 	myForward = CalculateForwardVector();
 }
 
-void Actor::SetAngles( PLVector3 angles ) {
+void Actor::SetAngles( hei::Vector3 angles ) {
 	VecAngleClamp( &angles );
 	myOldAngles = myAngles;
 	myAngles = angles;
@@ -183,15 +169,15 @@ void Actor::DropToFloor() {
  * Get forward vector based on current angles.
  */
 PLVector3 Actor::CalculateForwardVector() {
-	float rx = plDegreesToRadians( myAngles.GetValue().x );
-	float ry = plDegreesToRadians( myAngles.GetValue().y );
+	float rx = PlDegreesToRadians( myAngles.GetValue().x );
+	float ry = PlDegreesToRadians( myAngles.GetValue().y );
 
 	PLVector3 v;
 	v.x = std::cos( ry ) * std::cos( rx );
 	v.y = std::sin( rx );
 	v.z = std::sin( ry ) * std::cos( rx );
 
-	return plNormalizeVector3( v );
+	return PlNormalizeVector3( v );
 }
 
 /**
@@ -240,7 +226,7 @@ bool Actor::CheckTouching() {
 		}
 
 		// Now check the AABB against that of the other actor
-		if( !plIsAABBIntersecting( &boundingBox, &other->boundingBox ) ) {
+		if( !PlIsAabbIntersecting( &boundingBox, &other->boundingBox ) ) {
 			// Didn't get a hit, continue onto the next
 			continue;
 		}

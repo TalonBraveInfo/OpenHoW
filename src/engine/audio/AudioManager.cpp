@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -21,8 +7,6 @@
 #include <AL/efx-presets.h>
 
 #include <SDL2/SDL_audio.h>
-
-#include <PL/platform_filesystem.h>
 
 #include "App.h"
 #include "Menu.h"
@@ -37,24 +21,30 @@ using namespace ohw;
  * todo: stream music and large samples */
 
 /* Why the hell isn't this in OpenAL?! */
-static const char *OALErrorString(ALenum err) {
+static const char *OALErrorString( ALenum err ) {
 	switch ( err ) {
-		case AL_OUT_OF_MEMORY:     return "OpenAL ran out of memory";
-		case AL_INVALID_VALUE:     return "Invalid value passed to OpenAL";
-		case AL_INVALID_OPERATION: return "Invalid operation performed with OpenAL";
-		case AL_INVALID_ENUM:      return "Invalid enum passed to OpenAL";
-		case AL_INVALID_NAME:      return "Invalid name passed to OpenAL";
+		case AL_OUT_OF_MEMORY:
+			return "OpenAL ran out of memory";
+		case AL_INVALID_VALUE:
+			return "Invalid value passed to OpenAL";
+		case AL_INVALID_OPERATION:
+			return "Invalid operation performed with OpenAL";
+		case AL_INVALID_ENUM:
+			return "Invalid enum passed to OpenAL";
+		case AL_INVALID_NAME:
+			return "Invalid name passed to OpenAL";
 
-		default: return "Unknown OpenAL error";
+		default:
+			return "Unknown OpenAL error";
 	}
 }
 
 #define OALCheckErrors() \
 { \
-	ALenum err = alGetError(); \
-	if ( err != AL_NO_ERROR ) { \
-		Error( "%s, aborting!\n", OALErrorString(err) ); \
-	} \
+    ALenum err = alGetError(); \
+    if ( err != AL_NO_ERROR ) { \
+        Error( "%s, aborting!\n", OALErrorString(err) ); \
+    } \
 }
 
 static unsigned int reverb_effect_slot = 0;
@@ -64,12 +54,12 @@ static unsigned int reverb_sound_slot = 0;
 /* Audio Source */
 
 AudioSource::AudioSource( const AudioSample *sample, float gain, float pitch, bool looping ) :
-	AudioSource( sample, PLVector3( 0, 0, 0 ), PLVector3( 0, 0, 0 ), false, gain, pitch, looping ) {
+		AudioSource( sample, { 0, 0, 0 }, { 0, 0, 0 }, false, gain, pitch, looping ) {
 	alSourcei( alSourceId, AL_SOURCE_RELATIVE, AL_TRUE );
 }
 
 AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 vel,
-						  bool reverb, float gain, float pitch, bool looping ) {
+                          bool reverb, float gain, float pitch, bool looping ) {
 	alGenSources( 1, &alSourceId );
 	OALCheckErrors();
 
@@ -81,7 +71,7 @@ AudioSource::AudioSource( const AudioSample *sample, PLVector3 pos, PLVector3 ve
 	SetReferenceDistance( 300.0F );
 	SetRolloffFactor( 0.1F );
 
-	if ( reverb && ohw::GetApp()->audioManager->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX )) {
+	if ( reverb && ohw::GetApp()->audioManager->SupportsExtension( AudioManager::ExtensionType::AUDIO_EXT_EFX ) ) {
 		alSource3i( alSourceId, AL_AUXILIARY_SEND_FILTER, reverb_sound_slot, 0, AL_FILTER_NULL );
 		OALCheckErrors();
 	}
@@ -143,7 +133,7 @@ void AudioSource::SetSample( const AudioSample *sample ) {
 	if ( sample != nullptr ) {
 		/* Need to reset looping flag after queueing buffer as it can't
 		 * be set when no buffer is queued. */
-		SetLooping(looping);
+		SetLooping( looping );
 	}
 }
 
@@ -178,24 +168,24 @@ void AudioSource::SetPitch( float pitch ) {
 void AudioSource::SetLooping( bool looping ) {
 	this->looping = looping;
 
-	if( current_sample_ != nullptr ) {
+	if ( current_sample_ != nullptr ) {
 		alSourcei( alSourceId, AL_LOOPING, looping ? AL_TRUE : AL_FALSE );
 		OALCheckErrors();
 	}
 }
 
 void AudioSource::SetReferenceDistance( float value ) {
-	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, value );	
+	alSourcef( alSourceId, AL_REFERENCE_DISTANCE, value );
 	OALCheckErrors();
 }
 
 void AudioSource::SetMaximumDistance( float value ) {
-	alSourcef( alSourceId, AL_MAX_DISTANCE, value );	
+	alSourcef( alSourceId, AL_MAX_DISTANCE, value );
 	OALCheckErrors();
 }
 
 void AudioSource::SetRolloffFactor( float value ) {
-	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, value );	
+	alSourcef( alSourceId, AL_ROLLOFF_FACTOR, value );
 	OALCheckErrors();
 }
 
@@ -233,7 +223,7 @@ bool AudioSource::IsPaused() {
 }
 
 void AudioSource::Pause() {
-	if ( !IsPlaying()) {
+	if ( !IsPlaying() ) {
 		// nothing to pause
 		return;
 	}
@@ -273,10 +263,10 @@ AudioManager::AudioManager() {
 	if ( device == nullptr ) {
 		Error( "failed to open audio device, aborting audio initialisation!\n" );
 	}
-		
-	memset( al_extensions_, 0, sizeof( al_extensions_ ));
 
-	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" )) {
+	memset( al_extensions_, 0, sizeof( al_extensions_ ) );
+
+	if ( alcIsExtensionPresent( device, "ALC_EXT_EFX" ) ) {
 		Print( "ALC_EXT_EFX detected\n" );
 
 		alGenEffects = ( LPALGENEFFECTS ) alGetProcAddress( "alGenEffects" );
@@ -287,7 +277,7 @@ AudioManager::AudioManager() {
 
 		alGenAuxiliaryEffectSlots = ( LPALGENAUXILIARYEFFECTSLOTS ) alGetProcAddress( "alGenAuxiliaryEffectSlots" );
 		alDeleteAuxiliaryEffectSlots = ( LPALDELETEAUXILIARYEFFECTSLOTS ) alGetProcAddress(
-			"alDeleteAuxiliaryEffectSlots" );
+				"alDeleteAuxiliaryEffectSlots" );
 		alIsAuxiliaryEffectSlot = ( LPALISAUXILIARYEFFECTSLOT ) alGetProcAddress( "alIsAuxiliaryEffectSlot" );
 		alAuxiliaryEffectSloti = ( LPALAUXILIARYEFFECTSLOTI ) alGetProcAddress( "alAuxiliaryEffectSloti" );
 
@@ -295,11 +285,11 @@ AudioManager::AudioManager() {
 	}
 
 	ALCcontext *context = alcCreateContext( device, nullptr );
-	if ( context == nullptr || !alcMakeContextCurrent( context )) {
+	if ( context == nullptr || !alcMakeContextCurrent( context ) ) {
 		Error( "Failed to create audio context, aborting audio initialisation!\n" );
 	}
 
-	if ( alIsExtensionPresent( "AL_SOFT_buffer_samples" )) {
+	if ( alIsExtensionPresent( "AL_SOFT_buffer_samples" ) ) {
 		Print( "AL_SOFT_buffer_samples detected\n" );
 		al_extensions_[ AUDIO_EXT_SOFT_BUFFER_SAMPLES ] = true;
 	}
@@ -329,9 +319,9 @@ AudioManager::AudioManager() {
 		alGenAuxiliaryEffectSlots( 1, &reverb_sound_slot );
 		alAuxiliaryEffectSloti( reverb_sound_slot, AL_EFFECTSLOT_EFFECT, reverb_effect_slot );
 	}
-	alDistanceModel(AL_EXPONENT_DISTANCE);
+	alDistanceModel( AL_EXPONENT_DISTANCE );
 
-	plRegisterConsoleCommand( "stopMusic", StopMusicCommand, "Stops the current music track." );
+	PlRegisterConsoleCommand( "stopMusic", StopMusicCommand, "Stops the current music track." );
 }
 
 AudioManager::~AudioManager() {
@@ -364,13 +354,13 @@ AudioManager::~AudioManager() {
 
 const AudioSample *AudioManager::CacheSample( const std::string &path, bool preserve ) {
 	auto i = samples_.find( path );
-	if ( i != samples_.end()) {
+	if ( i != samples_.end() ) {
 		return &( i->second );
 	}
 
-	const char *ext = plGetFileExtension( path.c_str());
+	const char *ext = PlGetFileExtension( path.c_str() );
 	if ( ext == nullptr ) {
-		Warning( "Unable to identify audio format, \"%s\"!\n", path.c_str());
+		Warning( "Unable to identify audio format, \"%s\"!\n", path.c_str() );
 		return nullptr;
 	}
 
@@ -380,24 +370,24 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 	uint8_t *buffer;
 	if ( pl_strcasecmp( ext, "wav" ) == 0 ) {
 		// Attempt to load the Wav file
-		PLFile *wavFile = plOpenFile( path.c_str(), false );
+		PLFile *wavFile = PlOpenFile( path.c_str(), false );
 		if ( wavFile == nullptr ) {
-			Warning( "Failed to load \"%s\"!\n", path.c_str());
+			Warning( "Failed to load \"%s\"!\n", path.c_str() );
 			return nullptr;
 		}
 
 		// Allocate buffer
-		int len = plGetFileSize( wavFile );
+		int len = PlGetFileSize( wavFile );
 		uint8_t *buf = static_cast<uint8_t *>(u_alloc( len, 1, true ));
 
 		// For now, read the whole thing into memory
 		// todo: stream!!!
-		plReadFile( wavFile, buf, 1, len );
-		plCloseFile( wavFile );
+		PlReadFile( wavFile, buf, 1, len );
+		PlCloseFile( wavFile );
 
 		SDL_AudioSpec spec;
 		if ( SDL_LoadWAV_RW( SDL_RWFromMem( buf, len ), 1, &spec, &buffer, &length ) == nullptr ) {
-			Warning( "Failed to load \"%s\"!\n", path.c_str());
+			Warning( "Failed to load \"%s\"!\n", path.c_str() );
 			return nullptr;
 		}
 
@@ -421,11 +411,12 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 					format = AL_FORMAT_STEREO16;
 				}
 				break;
-			default:break;
+			default:
+				break;
 		}
 
 		if ( format == 0 ) {
-			Warning( "Invalid audio format for \"%s\"!\n", path.c_str());
+			Warning( "Invalid audio format for \"%s\"!\n", path.c_str() );
 			SDL_FreeWAV( buffer );
 			return nullptr;
 		}
@@ -433,25 +424,25 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 		freq = spec.freq;
 	} else if ( pl_strcasecmp( ext, "ogg" ) == 0 ) {
 		// Attempt to load the Ogg file
-		PLFile *oggFile = plOpenFile( path.c_str(), false );
+		PLFile *oggFile = PlOpenFile( path.c_str(), false );
 		if ( oggFile == nullptr ) {
-			Warning( "Failed to load \"%s\"!\n", path.c_str());
+			Warning( "Failed to load \"%s\"!\n", path.c_str() );
 			return nullptr;
 		}
 
 		// Allocate buffer
-		int len = plGetFileSize( oggFile );
+		int len = PlGetFileSize( oggFile );
 		uint8_t *buf = static_cast<uint8_t *>(u_alloc( len, 1, true ));
 
 		// For now, read the whole thing into memory (todo: stream!!!)
-		plReadFile( oggFile, buf, 1, len );
-		plCloseFile( oggFile );
+		PlReadFile( oggFile, buf, 1, len );
+		PlCloseFile( oggFile );
 
 		int vchan;
 		int samples = stb_vorbis_decode_memory( buf, len, &vchan, &freq,
-												reinterpret_cast<short **>(&buffer));
+		                                        reinterpret_cast<short **>(&buffer) );
 		if ( samples == -1 ) {
-			Warning( "Failed to decode ogg audio data, \"%s\"!\n", path.c_str());
+			Warning( "Failed to decode ogg audio data, \"%s\"!\n", path.c_str() );
 			return nullptr;
 		}
 
@@ -466,9 +457,9 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 	}
 
 	auto sample = samples_.emplace(
-		std::piecewise_construct,
-		std::forward_as_tuple( path ),
-		std::forward_as_tuple( buffer, freq, format, length, preserve )
+			std::piecewise_construct,
+			std::forward_as_tuple( path ),
+			std::forward_as_tuple( buffer, freq, format, length, preserve )
 	);
 
 	return &( sample.first->second );
@@ -476,11 +467,11 @@ const AudioSample *AudioManager::CacheSample( const std::string &path, bool pres
 
 const AudioSample *AudioManager::GetCachedSample( const std::string &path ) {
 	auto i = samples_.find( path );
-	if ( i == samples_.end()) {
+	if ( i == samples_.end() ) {
 		CacheSample( path, false );
 		i = samples_.find( path );
-		if ( i == samples_.end()) {
-			Error( "Failed to load sample, \"%s\"!\n", path.c_str());
+		if ( i == samples_.end() ) {
+			Error( "Failed to load sample, \"%s\"!\n", path.c_str() );
 			/* todo: in future, fall back to first loaded sound and continue? if it exists... */
 		}
 	}
@@ -493,12 +484,12 @@ AudioSource *AudioManager::CreateSource( const std::string &path, float gain, fl
 }
 
 AudioSource *AudioManager::CreateSource( const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
-										 float pitch, bool looping ) {
+                                         float pitch, bool looping ) {
 	return new AudioSource( GetCachedSample( path ), pos, vel, reverb, gain, pitch, looping );
 }
 
 AudioSource *AudioManager::CreateSource( const AudioSample *sample, PLVector3 pos, PLVector3 vel, bool reverb,
-										 float gain, float pitch, bool looping ) {
+                                         float gain, float pitch, bool looping ) {
 	return new AudioSource( sample, pos, vel, reverb, gain, pitch, looping );
 }
 
@@ -517,7 +508,7 @@ void AudioManager::Tick() {
 	}
 
 	PLVector3 forward, left, up;
-	plAnglesAxes( angles, &left, &up, &forward );
+	PlAnglesAxes( angles, &left, &up, &forward );
 
 	float ori[6];
 	ori[ 0 ] = forward.z;
@@ -560,13 +551,13 @@ void AudioManager::PlayGlobalSound( const AudioSample *sample ) {
 }
 
 void AudioManager::PlayLocalSound( const std::string &path, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
-								   float pitch ) {
+                                   float pitch ) {
 	const AudioSample *sample = GetCachedSample( path );
 	PlayLocalSound( sample, pos, vel, reverb, gain, pitch );
 }
 
 void AudioManager::PlayLocalSound( const AudioSample *sample, PLVector3 pos, PLVector3 vel, bool reverb, float gain,
-								   float pitch ) {
+                                   float pitch ) {
 	if ( sample == nullptr ) {
 		return;
 	}
@@ -577,7 +568,7 @@ void AudioManager::PlayLocalSound( const AudioSample *sample, PLVector3 pos, PLV
 }
 
 void AudioManager::SilenceSources() {
-	for ( auto sound : sources_ ) {
+	for ( auto sound: sources_ ) {
 		sound->StopPlaying();
 	}
 }
@@ -629,18 +620,18 @@ void AudioManager::DrawSources() {
 		return;
 	}
 
-	PLModel *sprite = ohw::GetApp()->resourceManager->GetFallbackModel();
-	PLMesh *mesh = sprite->levels[ 0 ].meshes[ 0 ];
-	plSetMeshUniformColour( mesh, PLColour( 0, 255, 255, 255 ));
-	for ( auto source : sources_ ) {
-		if ( !source->IsPlaying() || source->IsPaused()) {
+	PLMModel *sprite = ohw::GetApp()->resourceManager->GetFallbackModel();
+	PLGMesh *mesh = sprite->meshes[ 0 ];
+	PlgSetMeshUniformColour( mesh, hei::Colour( 0, 255, 255, 255 ) );
+	for ( auto source: sources_ ) {
+		if ( !source->IsPlaying() || source->IsPaused() ) {
 			continue;
 		}
 
-		sprite->model_matrix = plTranslateMatrix4( source->GetPosition());
-		plDrawModel( sprite );
+		sprite->modelMatrix = PlTranslateMatrix4( source->GetPosition() );
+		PlmDrawModel( sprite );
 	}
-	plSetMeshUniformColour( mesh, PLColour( 255, 0, 0, 255 ));
+	PlgSetMeshUniformColour( mesh, hei::Colour( 255, 0, 0, 255 ) );
 }
 
 /**

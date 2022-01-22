@@ -1,19 +1,5 @@
-/* OpenHoW
- * Copyright (C) 2017-2020 TalonBrave.info and Others (see CONTRIBUTORS)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2017-2022 TalonBrave.info and Others (see CONTRIBUTORS)
 
 #pragma once
 
@@ -34,6 +20,7 @@
 
 namespace ohw {
 	class TextureAtlas;
+
 	class Terrain {
 	public:
 		explicit Terrain( const std::string &tileset );
@@ -87,8 +74,8 @@ namespace ohw {
 			// We don't currently use these...
 			int16_t x, y, z;
 
-			PLMesh *solidMesh{ nullptr };
-			PLMesh *waterMesh{ nullptr };
+			PLGMesh *solidMesh{ nullptr };
+			PLGMesh *waterMesh{ nullptr };
 
 			/* Bounding volume encompassing the chunk. Used for determining
 			 * what actors are currently within the chunk space and whether
@@ -106,7 +93,7 @@ namespace ohw {
 		void LoadPmg( const std::string &path );
 		void LoadHeightmap( const std::string &path, int multiplier );
 
-		PLTexture *GetOverview() { return overview_; }
+		PLGTexture *GetOverview() { return overview_; }
 
 		void Serialize( const std::string &path );
 
@@ -124,6 +111,6 @@ namespace ohw {
 		std::vector< Chunk > chunks_;
 
 		ohw::TextureAtlas *textureAtlas{ nullptr };
-		PLTexture *overview_{ nullptr };
+		PLGTexture *overview_{ nullptr };
 	};
 }
