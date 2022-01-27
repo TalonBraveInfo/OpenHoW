@@ -101,7 +101,7 @@ ohw::Display::Display( const char *title, int w, int h, unsigned int desiredScre
 		Error( "Failed to initialize platform graphics subsystem!\nPL: %s\n", PlGetError() );
 	}
 
-	PlgScanForDrivers( "./" );
+	PlgScanForDrivers( "." );
 
 	unsigned int numDrivers, i;
 	const char **drivers = PlgGetAvailableDriverInterfaces( &numDrivers );
