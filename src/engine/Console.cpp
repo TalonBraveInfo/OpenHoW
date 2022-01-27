@@ -14,7 +14,11 @@ unsigned int ohw::LOG_LEVEL_DEBUG = 0;
 
 /************************************************************/
 
-#define check_args( num ) if(argc < (num)) { Warning("invalid number of arguments (%d < %d), ignoring!\n", argc, (num)); return; }
+#define check_args( num )                                                               \
+	if ( argc < ( num ) ) {                                                             \
+		Warning( "invalid number of arguments (%d < %d), ignoring!\n", argc, ( num ) ); \
+		return;                                                                         \
+	}
 
 #if 0
 static void FrontendModeCommand(unsigned int argc, char* argv[]) {
@@ -96,7 +100,7 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 			break;
 
 		case TYPE_MAP: {
-			char map_name[32];
+			char map_name[ 32 ];
 			snprintf( map_name, sizeof( map_name ), "%s", PlGetFileName( fpath ) - 4 );
 			if ( *map_name == '\0' ) {
 				Warning( "invalid map name, ignoring!\n" );
@@ -121,7 +125,7 @@ static void GraphicsVsyncCallback( const PLConsoleVariable *var ) {
 
 /************************************************************/
 
-PLConsoleVariable *cv_debug_mode = nullptr;
+PLConsoleVariable *cv_imgui = nullptr;
 PLConsoleVariable *cv_debug_skeleton = nullptr;
 PLConsoleVariable *cv_debug_bounds = nullptr;
 
@@ -154,13 +158,14 @@ PLConsoleVariable *cv_audio_voices = nullptr;
 PLConsoleVariable *cv_audio_mode = nullptr;
 
 void Console_Initialize( void ) {
-#define rvar( var, arc, ... ) \
-    { \
-        const char *str_##var = PL_STRINGIFY(var); \
-        (var) = PlRegisterConsoleVariable(&str_##var[3], __VA_ARGS__); \
-        (var)->archive = (arc); \
-    }
+#define rvar( var, arc, ... )                                                \
+	{                                                                        \
+		const char *str_##var = PL_STRINGIFY( var );                         \
+		( var ) = PlRegisterConsoleVariable( &str_##var[ 3 ], __VA_ARGS__ ); \
+		( var )->archive = ( arc );                                          \
+	}
 
+	rvar( cv_imgui, false, "0", pl_bool_var, nullptr, "Enable/disable ImGui overlay." );
 	rvar( cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons" );
 	rvar( cv_debug_bounds, false, "0", pl_bool_var, nullptr, "Display bounding volumes of all objects." );
 

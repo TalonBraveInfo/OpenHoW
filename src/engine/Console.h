@@ -27,7 +27,7 @@ namespace ohw {
 
 /************************************************************/
 
-extern PLConsoleVariable *cv_debug_mode;
+extern PLConsoleVariable *cv_imgui;
 extern PLConsoleVariable *cv_debug_skeleton;
 extern PLConsoleVariable *cv_debug_bounds;
 

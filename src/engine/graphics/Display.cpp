@@ -251,7 +251,7 @@ void ohw::Display::RenderOverlays() {
 }
 
 void ohw::Display::RenderDebugOverlays() {
-	if ( cv_debug_mode->i_value <= 0 ) {
+	if ( cv_imgui->i_value <= 0 ) {
 		return;
 	}
 

@@ -40,7 +40,7 @@ const char *u_find2( const char *path, const char **preference, bool abort_on_fa
 	memset( out, 0, sizeof( out ) );
 
 	strncpy( out, u_scan( path, preference ), sizeof( out ) );
-	if ( *out != '\0' ) {
+	if ( *out == '\0' ) {
 		if ( abort_on_fail ) {
 			Error( "Failed to find \"%s\"!\n", path );
 		}
