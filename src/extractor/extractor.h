@@ -18,13 +18,17 @@
 
 #pragma once
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_image.h>
-#include <PL/platform_console.h>
+#include <plcore/pl_package.h>
+#include <plcore/pl_image.h>
+#include <plcore/pl_console.h>
 
-#define Print( ... )    plLogMessage( 0, __VA_ARGS__ )
-#define Warning( ... )  plLogMessage( 1, __VA_ARGS__ )
-#define Error( ... )    plLogMessage( 2, __VA_ARGS__ ); exit( EXIT_FAILURE )
+extern unsigned int MSG_LVL_PRINT;
+extern unsigned int MSG_LVL_WARN;
+extern unsigned int MSG_LVL_ERR;
+
+#define Print( ... )    PlLogMessage( MSG_LVL_PRINT, __VA_ARGS__ )
+#define Warning( ... )  PlLogMessage( MSG_LVL_WARN, __VA_ARGS__ )
+#define Error( ... )    PlLogMessage( MSG_LVL_ERR, __VA_ARGS__ ); exit( EXIT_FAILURE )
 
 typedef enum ERegion {
 	REGION_UNKNOWN = -1,

@@ -16,13 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_package.h>
-
 #include "extractor.h"
 #include "fac.h"
 
-static char g_input_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-static char g_output_path[PL_SYSTEM_MAX_PATH];
+static char g_input_path[ PL_SYSTEM_MAX_PATH ] = { '\0' };
+static char g_output_path[ PL_SYSTEM_MAX_PATH ];
 
 //#define PARANOID_DATA
 //#define EXPORT_NORMALS
@@ -35,42 +33,42 @@ static void ConvertImageToPng( const char *path ) {
 #if defined( CONVERT_TIMS )
 	// figure out if the file already exists before
 	// we even start trying to convert this thing
-	char out_path[PL_SYSTEM_MAX_PATH];
-	plStripExtension( out_path, sizeof( out_path ), path );
+	char out_path[ PL_SYSTEM_MAX_PATH ];
+	PlStripExtension( out_path, sizeof( out_path ), path );
 	strcat( out_path, ".png" );
-	if ( plFileExists( out_path ) ) {
-		plDeleteFile( path );
+	if ( PlFileExists( out_path ) ) {
+		PlDeleteFile( path );
 		return;
 	}
 
-	PLImage *image = plLoadImage( path );
+	PLImage *image = PlLoadImage( path );
 	if ( image == NULL ) {
-		Warning( "Failed to load image, \"%s\" (%s)!\n", path, plGetError() );
+		Warning( "Failed to load image, \"%s\" (%s)!\n", path, PlGetError() );
 		return;
 	}
 
-	const char *ext = plGetFileExtension( path );
+	const char *ext = PlGetFileExtension( path );
 	if ( ext != NULL && ext[ 0 ] != '\0' && strcmp( ext, "tim" ) == 0 ) {
 		// ensure that it's a format we're able to convert from
 		if ( image->format == PL_IMAGEFORMAT_RGB5A1 ) {
-			if ( plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 ) ) {
-				plReplaceImageColour( image, PLColour( 255, 0, 255, 255 ), PLColour( 0, 0, 0, 0 ) );
-				if ( !plWriteImage( image, out_path ) ) {
-					Warning( "Failed to write PNG, \"%s\" (%s)!\n", out_path, plGetError() );
+			if ( PlConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 ) ) {
+				PlReplaceImageColour( image, PLColour( 255, 0, 255, 255 ), PLColour( 0, 0, 0, 0 ) );
+				if ( !PlWriteImage( image, out_path ) ) {
+					Warning( "Failed to write PNG, \"%s\" (%s)!\n", out_path, PlGetError() );
 				}
 			} else {
-				Warning( "Failed to convert \"%s\", %s, aborting!\n", path, plGetError() );
+				Warning( "Failed to convert \"%s\", %s, aborting!\n", path, PlGetError() );
 			}
 		} else {
 			Warning( "Unexpected pixel format in \"%s\", aborting!\n", path );
 		}
 	}
 
-	if ( plFileExists( out_path ) ) {
-		plDeleteFile( path );
+	if ( PlFileExists( out_path ) ) {
+		PlDeleteFile( path );
 	}
 
-	plDestroyImage( image );
+	PlDestroyImage( image );
 #endif
 }
 
@@ -80,63 +78,63 @@ typedef struct ModelConversionData {
 	const char *out;
 } ModelConversionData;
 static ModelConversionData pc_conversion_data[] = {
-	{ "/Maps/BAY.MAD", "/Maps/bay.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/ICE.MAD", "/Maps/ice.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/BOOM.MAD", "/Maps/boom.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/BUTE.MAD", "/Maps/bute.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/CAMP.MAD", "/Maps/camp.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/DEMO.MAD", "/Maps/demo.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/DEVI.MAD", "/Maps/devi.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/DVAL.MAD", "/Maps/dval.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/EASY.MAD", "/Maps/easy.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/ESTU.MAD", "/Maps/estu.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/FOOT.MAD", "/Maps/foot.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/GUNS.MAD", "/Maps/guns.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/HELL2.MAD", "/Maps/hell2.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/HELL3.MAD", "/Maps/hell3.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/ICE.MAD", "/Maps/ice.mtd", "mods/how/chars/scenery/" },
-	{ "/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/BAY.MAD", "/Maps/bay.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/ICE.MAD", "/Maps/ice.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/BOOM.MAD", "/Maps/boom.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/BUTE.MAD", "/Maps/bute.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/CAMP.MAD", "/Maps/camp.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/DEMO.MAD", "/Maps/demo.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/DEVI.MAD", "/Maps/devi.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/DVAL.MAD", "/Maps/dval.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/EASY.MAD", "/Maps/easy.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/ESTU.MAD", "/Maps/estu.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/FOOT.MAD", "/Maps/foot.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/GUNS.MAD", "/Maps/guns.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/HELL2.MAD", "/Maps/hell2.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/HELL3.MAD", "/Maps/hell3.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/HILLBASE.MAD", "/Maps/hillbase.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/ICEFLOW.MAD", "/Maps/iceflow.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/ICE.MAD", "/Maps/ice.mtd", "mods/how/chars/scenery/" },
+        { "/Maps/ZULUS.MAD", "/Maps/zulus.mtd", "mods/how/chars/scenery/" },
 
-	{ "/Chars/WEAPONS.MAD", "/Chars/WEAPONS.MTD", "mods/how/chars/weapons/" },
-	{ "/Chars/PROPOINT.MAD", "/Chars/propoint.mtd", "mods/how/chars/propoint/" },
-	{ "/Chars/TOP.MAD", "/Chars/TOP.MTD", "mods/how/chars/top/" },
-	{ "/Chars/SIGHT.MAD", "/Chars/SIGHT.MTD", "mods/how/chars/sight/" },
+        { "/Chars/WEAPONS.MAD", "/Chars/WEAPONS.MTD", "mods/how/chars/weapons/" },
+        { "/Chars/PROPOINT.MAD", "/Chars/propoint.mtd", "mods/how/chars/propoint/" },
+        { "/Chars/TOP.MAD", "/Chars/TOP.MTD", "mods/how/chars/top/" },
+        { "/Chars/SIGHT.MAD", "/Chars/SIGHT.MTD", "mods/how/chars/sight/" },
 
-	{ "/Chars/british.mad", "/Chars/british.mtd", "mods/how/chars/pigs/" }, /* pig models */
+        { "/Chars/british.mad", "/Chars/british.mtd", "mods/how/chars/pigs/" }, /* pig models */
 
-	{ "/Chars/SKYDOME.MAD", "/Chars/SKYDOME.MTD", "mods/how/skys/" },
+        { "/Chars/SKYDOME.MAD", "/Chars/SKYDOME.MTD", "mods/how/skys/" },
 };
 
 static void ConvertModelData( void ) {
-	for ( unsigned long i = 0; i < plArrayElements( pc_conversion_data ); ++i ) {
-		char path[PL_SYSTEM_MAX_PATH];
+	for ( unsigned long i = 0; i < PL_ARRAY_ELEMENTS( pc_conversion_data ); ++i ) {
+		char path[ PL_SYSTEM_MAX_PATH ];
 		snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mad );
-		PLPackage *package = plLoadPackage( path );
+		PLPackage *package = PlLoadPackage( path );
 		if ( package == NULL ) {
-			Error( "Failed to load MAD package, \"%s\" (%s)!\n", path, plGetError() );
+			Error( "Failed to load MAD package, \"%s\" (%s)!\n", path, PlGetError() );
 		}
 
 		/* Write the files out to the destination. I'm lazy and we'll delete it once we're done anyway. */
-		char model_paths[package->table_size][PL_SYSTEM_MAX_PATH];
+		char model_paths[ package->table_size ][ PL_SYSTEM_MAX_PATH ];
 		unsigned int num_models = 0;
 		for ( unsigned int j = 0; j < package->table_size; ++j ) {
-			char out[PL_SYSTEM_MAX_PATH];
+			char out[ PL_SYSTEM_MAX_PATH ];
 			snprintf( out, sizeof( out ), "%s/%s%s", g_output_path, pc_conversion_data[ i ].out, pl_strtolower( package->table[ j ].fileName ) );
 
-			char dir[PL_SYSTEM_MAX_PATH];
-			const char *filename = plGetFileName( out );
+			char dir[ PL_SYSTEM_MAX_PATH ];
+			const char *filename = PlGetFileName( out );
 			strncpy( dir, out, strlen( out ) - strlen( filename ) );
 			dir[ strlen( out ) - strlen( filename ) ] = '\0';
-			if ( plCreatePath( dir ) ) {
-				PLFile *fp = plLoadPackageFile( package, package->table[ j ].fileName );
-				if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
-					Error( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
+			if ( PlCreatePath( dir ) ) {
+				PLFile *fp = PlLoadPackageFile( package, package->table[ j ].fileName );
+				if ( !PlWriteFile( out, PlGetFileData( fp ), package->table[ j ].fileSize ) ) {
+					Error( "Failed to write model, \"%s\" (%s)!\n", out, PlGetError() );
 				}
-				plCloseFile( fp );
+				PlCloseFile( fp );
 			} else {
-				Error( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
+				Error( "Failed to create output directory, \"%s\" (%s)!\n", dir, PlGetError() );
 			}
 
 			// skydome is a special case
@@ -144,66 +142,66 @@ static void ConvertModelData( void ) {
 				continue;
 			}
 
-			const char *ext = plGetFileExtension( package->table[ j ].fileName );
+			const char *ext = PlGetFileExtension( package->table[ j ].fileName );
 			if ( pl_strcasecmp( ext, "fac" ) == 0 ) {
-				plStripExtension( model_paths[ num_models++ ], PL_SYSTEM_MAX_PATH - 1, out );
+				PlStripExtension( model_paths[ num_models++ ], PL_SYSTEM_MAX_PATH - 1, out );
 			}
 		}
 
-		plDestroyPackage( package );
+		PlDestroyPackage( package );
 
 		/* Now we need to load each fac, fetch each index for each texture and figure out
 		 * the true name for that texture by comparing against the mtd. */
 
 		snprintf( path, sizeof( path ), "%s%s", g_input_path, pc_conversion_data[ i ].mtd );
-		package = plLoadPackage( path );
+		package = PlLoadPackage( path );
 		if ( package == NULL ) {
-			Error( "Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[ i ].mtd, plGetError() );
+			Error( "Failed to load MTD package, \"%s\" (%s)!\n", pc_conversion_data[ i ].mtd, PlGetError() );
 		}
 
 		/* pigs are a special case... */
 		if ( strcmp( pc_conversion_data[ i ].mad, "/Chars/british.mad" ) != 0 ) {
 			// write all the textures out
 			for ( unsigned int j = 0; j < package->table_size; ++j ) {
-				char out[PL_SYSTEM_MAX_PATH];
+				char out[ PL_SYSTEM_MAX_PATH ];
 				snprintf( out, sizeof( out ), "%s/%s%s", g_output_path, pc_conversion_data[ i ].out, pl_strtolower( package->table[ j ].fileName ) );
 
-				char dir[PL_SYSTEM_MAX_PATH];
-				const char *filename = plGetFileName( out );
+				char dir[ PL_SYSTEM_MAX_PATH ];
+				const char *filename = PlGetFileName( out );
 				strncpy( dir, out, strlen( out ) - strlen( filename ) );
 				dir[ strlen( out ) - strlen( filename ) ] = '\0';
 
-#if defined( PARANOID_DATA ) // paranoid check, doesn't happen...
-				if(plFileExists(out)) {
-				  LogInfo("The file \"%s\" already exists, comparing...\n", out);
+#if defined( PARANOID_DATA )// paranoid check, doesn't happen...
+				if ( plFileExists( out ) ) {
+					LogInfo( "The file \"%s\" already exists, comparing...\n", out );
 
-				  size_t size = plGetLocalFileSize(out);
-				  FILE *fp = fopen(out, "rb");
-				  char *data = u_alloc(size, 1, true);
-				  fread(data, 1, size, fp);
-				  fclose(fp);
+					size_t size = plGetLocalFileSize( out );
+					FILE *fp = fopen( out, "rb" );
+					char *data = u_alloc( size, 1, true );
+					fread( data, 1, size, fp );
+					fclose( fp );
 
-				  uint32_t crc_a;
-				  pl_crc32(package->table[j].file.data, package->table[j].fileSize, &crc_a);
-				  uint32_t crc_b;
-				  pl_crc32(data, size, &crc_b);
-				  if(crc_a != crc_b) {
-					LogWarn("Files are different, renaming second file!\n");
-					while(plFileExists(out)) {
-					  strcat(out, "_");
+					uint32_t crc_a;
+					pl_crc32( package->table[ j ].file.data, package->table[ j ].fileSize, &crc_a );
+					uint32_t crc_b;
+					pl_crc32( data, size, &crc_b );
+					if ( crc_a != crc_b ) {
+						LogWarn( "Files are different, renaming second file!\n" );
+						while ( plFileExists( out ) ) {
+							strcat( out, "_" );
+						}
 					}
-				  }
 				}
 #endif
 
-				if ( plCreatePath( dir ) ) {
-					PLFile *fp = plLoadPackageFile( package, package->table[ j ].fileName );
-					if ( !plWriteFile( out, plGetFileData( fp ), package->table[ j ].fileSize ) ) {
-						Error( "Failed to write model, \"%s\" (%s)!\n", out, plGetError() );
+				if ( PlCreatePath( dir ) ) {
+					PLFile *fp = PlLoadPackageFile( package, package->table[ j ].fileName );
+					if ( !PlWriteFile( out, PlGetFileData( fp ), package->table[ j ].fileSize ) ) {
+						Error( "Failed to write model, \"%s\" (%s)!\n", out, PlGetError() );
 					}
-					plCloseFile( fp );
+					PlCloseFile( fp );
 				} else {
-					Error( "Failed to create output directory, \"%s\" (%s)!\n", dir, plGetError() );
+					Error( "Failed to create output directory, \"%s\" (%s)!\n", dir, PlGetError() );
 				}
 
 				ConvertImageToPng( out );
@@ -212,9 +210,9 @@ static void ConvertModelData( void ) {
 
 		/* and now we go through again, converting everything as we do so */
 		for ( unsigned int j = 0; j < num_models; ++j ) {
-			char fac_path[PL_SYSTEM_MAX_PATH];
+			char fac_path[ PL_SYSTEM_MAX_PATH ];
 			snprintf( fac_path, PL_SYSTEM_MAX_PATH, "%s.fac", model_paths[ j ] );
-			if ( !plFileExists( fac_path ) ) {
+			if ( !PlFileExists( fac_path ) ) {
 				Error( "Failed to find FAC file, \"%s\"!\n", fac_path );
 			}
 
@@ -240,7 +238,7 @@ static void ConvertModelData( void ) {
 				}
 
 				// attempt to add it to the table
-				char texture_name[16];
+				char texture_name[ 16 ];
 				strncpy( texture_name, package->table[ texture_index ].fileName, strlen( package->table[ texture_index ].fileName ) - 4 );
 				texture_name[ strlen( package->table[ texture_index ].fileName ) - 4 ] = '\0';
 				pl_strtolower( texture_name );
@@ -283,8 +281,8 @@ static void ConvertModelData( void ) {
 /* Extraction process for initial setup */
 
 static void ExtractPtgPackage( const char *input_path, const char *output_path ) {
-	if ( !plCreatePath( output_path ) ) {
-		Error( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
+	if ( !PlCreatePath( output_path ) ) {
+		Error( "Failed to create path, \"%s\" (%s)!\n", output_path, PlGetError() );
 	}
 
 	FILE *file = fopen( input_path, "rb" );
@@ -297,18 +295,18 @@ static void ExtractPtgPackage( const char *input_path, const char *output_path )
 		Error( "Invalid PTG file, failed to get number of textures!\n" );
 	}
 
-	size_t tim_size = ( plGetLocalFileSize( input_path ) - sizeof( num_textures ) ) / num_textures;
+	size_t tim_size = ( PlGetLocalFileSize( input_path ) - sizeof( num_textures ) ) / num_textures;
 	for ( unsigned int i = 0; i < num_textures; ++i ) {
-		uint8_t tim[tim_size];
+		uint8_t tim[ tim_size ];
 		if ( fread( tim, tim_size, 1, file ) != 1 ) {
 			Print( "Failed to read Tim, \"%d\"!\n", i );
 			continue;
 		}
 
-		char out_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+		char out_path[ PL_SYSTEM_MAX_PATH ] = { '\0' };
 		sprintf( out_path, "%s%d.tim", output_path, i );
-		if ( !plWriteFile( out_path, tim, tim_size ) ) {
-			Warning( "Failed to write file, \"%s\" (%s)!\n", out_path, plGetError() );
+		if ( !PlWriteFile( out_path, tim, tim_size ) ) {
+			Warning( "Failed to write file, \"%s\" (%s)!\n", out_path, PlGetError() );
 		}
 
 		ConvertImageToPng( out_path );
@@ -318,31 +316,31 @@ static void ExtractPtgPackage( const char *input_path, const char *output_path )
 }
 
 static void ExtractMadPackage( const char *input_path, const char *output_path ) {
-	if ( !plCreatePath( output_path ) ) {
-		Error( "Failed to create output directory,  \"%s\"!\nPL: %s\n", output_path, plGetError() );
+	if ( !PlCreatePath( output_path ) ) {
+		Error( "Failed to create output directory,  \"%s\"!\nPL: %s\n", output_path, PlGetError() );
 	}
 
-	PLPackage *package = plLoadPackage( input_path );
+	PLPackage *package = PlLoadPackage( input_path );
 	if ( package == NULL ) {
-		Error( "Failed to load %s, aborting!\nPL: %s\n", input_path, plGetError() );
+		Error( "Failed to load %s, aborting!\nPL: %s\n", input_path, PlGetError() );
 	}
 
 	for ( unsigned int i = 0; i < package->table_size; i++ ) {
-		char out[PL_SYSTEM_MAX_PATH];
+		char out[ PL_SYSTEM_MAX_PATH ];
 		snprintf( out, sizeof( out ) - 1, "%s%s", output_path, pl_strtolower( package->table[ i ].fileName ) );
-		PLFile *fp = plLoadPackageFile( package, package->table[ i ].fileName );
-		if ( !plWriteFile( out, plGetFileData( fp ), package->table[ i ].fileSize ) ) {
-			Error( "Failed to write file, \"%s\" (%s)!\n", out, plGetError() );
+		PLFile *fp = PlLoadPackageFile( package, package->table[ i ].fileName );
+		if ( !PlWriteFile( out, PlGetFileData( fp ), package->table[ i ].fileSize ) ) {
+			Error( "Failed to write file, \"%s\" (%s)!\n", out, PlGetError() );
 		}
-		plCloseFile( fp );
+		PlCloseFile( fp );
 
-		const char *ext = plGetFileExtension( out );
+		const char *ext = PlGetFileExtension( out );
 		if ( strcmp( ext, "tim" ) == 0 ) {
 			ConvertImageToPng( out );
 		}
 	}
 
-	plDestroyPackage( package );
+	PlDestroyPackage( package );
 }
 
 /************************************************************/
@@ -355,96 +353,32 @@ typedef struct TextureMerge {
 	struct {
 		const char *path;
 		unsigned int x, y;
-	} targets[10];
+	} targets[ 10 ];
 } TextureMerge;
 static TextureMerge texture_targets[] = {
-	{
-		"/mods/how/frontend/dash/ang.png", 5, 152, 121, { {
-															  "/mods/how/frontend/dash/ang1.png", 0, 0
-														  }, {
-															  "/mods/how/frontend/dash/ang2.png", 64, 22
-														  }, {
-															  "/mods/how/frontend/dash/ang3.png", 0, 64
-														  }, {
-															  "/mods/how/frontend/dash/ang4.png", 64, 64
-														  }, {
-															  "/mods/how/frontend/dash/ang5.png", 128, 31
-														  } }
-	},
+        { "/mods/how/frontend/dash/ang.png", 5, 152, 121, { { "/mods/how/frontend/dash/ang1.png", 0, 0 }, { "/mods/how/frontend/dash/ang2.png", 64, 22 }, { "/mods/how/frontend/dash/ang3.png", 0, 64 }, { "/mods/how/frontend/dash/ang4.png", 64, 64 }, { "/mods/how/frontend/dash/ang5.png", 128, 31 } } },
 
-	{
-		"/mods/how/frontend/dash/clock.png", 4, 128, 96, { {
-															   "/mods/how/frontend/dash/clock01.png", 0, 0
-														   }, {
-															   "/mods/how/frontend/dash/clock02.png", 64, 0
-														   }, {
-															   "/mods/how/frontend/dash/clock03.png", 0, 28
-														   }, {
-															   "/mods/how/frontend/dash/clock04.png", 64, 28
-														   } }
-	},
+        { "/mods/how/frontend/dash/clock.png", 4, 128, 96, { { "/mods/how/frontend/dash/clock01.png", 0, 0 }, { "/mods/how/frontend/dash/clock02.png", 64, 0 }, { "/mods/how/frontend/dash/clock03.png", 0, 28 }, { "/mods/how/frontend/dash/clock04.png", 64, 28 } } },
 
-	{
-		"/mods/how/frontend/dash/timer.png", 10, 256, 32, { {
-																"/mods/how/frontend/dash/timer0.png", 0, 0
-															}, {
-																"/mods/how/frontend/dash/timer1.png", 24, 0
-															}, {
-																"/mods/how/frontend/dash/timer2.png", 48, 0
-															}, {
-																"/mods/how/frontend/dash/timer3.png", 72, 0
-															}, {
-																"/mods/how/frontend/dash/timer4.png", 96, 0
-															}, {
-																"/mods/how/frontend/dash/timer5.png", 120, 0
-															}, {
-																"/mods/how/frontend/dash/timer6.png", 144, 0
-															}, {
-																"/mods/how/frontend/dash/timer7.png", 168, 0
-															}, {
-																"/mods/how/frontend/dash/timer8.png", 192, 0
-															}, {
-																"/mods/how/frontend/dash/timer9.png", 216, 0
-															} }
-	},
+        { "/mods/how/frontend/dash/timer.png", 10, 256, 32, { { "/mods/how/frontend/dash/timer0.png", 0, 0 }, { "/mods/how/frontend/dash/timer1.png", 24, 0 }, { "/mods/how/frontend/dash/timer2.png", 48, 0 }, { "/mods/how/frontend/dash/timer3.png", 72, 0 }, { "/mods/how/frontend/dash/timer4.png", 96, 0 }, { "/mods/how/frontend/dash/timer5.png", 120, 0 }, { "/mods/how/frontend/dash/timer6.png", 144, 0 }, { "/mods/how/frontend/dash/timer7.png", 168, 0 }, { "/mods/how/frontend/dash/timer8.png", 192, 0 }, { "/mods/how/frontend/dash/timer9.png", 216, 0 } } },
 
-	{
-		"/mods/how/frontend/dash/pause.png", 8, 48, 48, { {
-															  "/mods/how/frontend/dash/pause1.png", 0, 0
-														  }, {
-															  "/mods/how/frontend/dash/pause2.png", 16, 0
-														  }, {
-															  "/mods/how/frontend/dash/pause3.png", 32, 0
-														  }, {
-															  "/mods/how/frontend/dash/pause4.png", 0, 16
-														  }, {
-															  "/mods/how/frontend/dash/pause5.png", 32, 16
-														  }, {
-															  "/mods/how/frontend/dash/pause6.png", 0, 32
-														  }, {
-															  "/mods/how/frontend/dash/pause7.png", 16, 32
-														  }, {
-															  "/mods/how/frontend/dash/pause8.png", 32, 32
-														  } }
-	}
-};
+        { "/mods/how/frontend/dash/pause.png", 8, 48, 48, { { "/mods/how/frontend/dash/pause1.png", 0, 0 }, { "/mods/how/frontend/dash/pause2.png", 16, 0 }, { "/mods/how/frontend/dash/pause3.png", 32, 0 }, { "/mods/how/frontend/dash/pause4.png", 0, 16 }, { "/mods/how/frontend/dash/pause5.png", 32, 16 }, { "/mods/how/frontend/dash/pause6.png", 0, 32 }, { "/mods/how/frontend/dash/pause7.png", 16, 32 }, { "/mods/how/frontend/dash/pause8.png", 32, 32 } } } };
 
 static void MergeTextureTargets( void ) {
-	unsigned int num_texture_targets = plArrayElements( texture_targets );
+	unsigned int num_texture_targets = PL_ARRAY_ELEMENTS( texture_targets );
 	Print( "Merging %d texture targets...\n", num_texture_targets );
 	for ( unsigned int i = 0; i < num_texture_targets; ++i ) {
 		TextureMerge *merge = &texture_targets[ i ];
 		Print( "Generating %s\n", merge->output );
-		PLImage
-			*output = plCreateImage( NULL, merge->width, merge->height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+		PLImage *output = PlCreateImage( NULL, merge->width, merge->height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 		if ( output == NULL ) {
-			Warning( "Failed to generate texture target (%s)!\n", plGetError() );
+			Warning( "Failed to generate texture target (%s)!\n", PlGetError() );
 			continue;
 		}
 
 		for ( unsigned int j = 0; j < merge->num_textures; ++j ) {
 			const char *path = merge->targets[ j ].path;
-			PLImage *image = plLoadImage( path );
+			PLImage *image = PlLoadImage( path );
 			if ( image == NULL ) {
 				Warning( "Failed to find image, \"%s\", for merge!\n", merge->targets[ j ].path );
 				continue;
@@ -453,7 +387,7 @@ static void MergeTextureTargets( void ) {
 			Print( "Writing %s into %s\n", merge->targets[ j ].path, merge->output );
 
 			uint8_t
-				*pos = output->data[ 0 ] + ( ( merge->targets[ j ].y * output->width ) + merge->targets[ j ].x ) * 4;
+			        *pos = output->data[ 0 ] + ( ( merge->targets[ j ].y * output->width ) + merge->targets[ j ].x ) * 4;
 			uint8_t *src = image->data[ 0 ];
 			for ( unsigned int y = 0; y < image->height; ++y ) {
 				memcpy( pos, src, ( image->width * 4 ) );
@@ -461,13 +395,13 @@ static void MergeTextureTargets( void ) {
 				pos += output->width * 4;
 			}
 
-			plDestroyImage( image );
-			plDeleteFile( path );
+			PlDestroyImage( image );
+			PlDeleteFile( path );
 		}
 
 		Print( "Writing %s\n", merge->output );
-		plWriteImage( output, merge->output );
-		plDestroyImage( output );
+		PlWriteImage( output, merge->output );
+		PlDestroyImage( output );
 	}
 }
 
@@ -491,17 +425,17 @@ static IOPath pc_package_paths[] = {
 
 static void ProcessPackagePaths( const char *in, const char *out, const IOPath *paths, unsigned int length ) {
 	for ( unsigned int i = 0; i < length; ++i ) {
-		char output_path[PL_SYSTEM_MAX_PATH];
+		char output_path[ PL_SYSTEM_MAX_PATH ];
 		snprintf( output_path, sizeof( output_path ), "%s%s", out, paths[ i ].output );
-		if ( !plCreatePath( output_path ) ) {
-			Warning( "%s\n", plGetError() );
+		if ( !PlCreatePath( output_path ) ) {
+			Warning( "%s\n", PlGetError() );
 			continue;
 		}
 
-		char input_path[PL_SYSTEM_MAX_PATH];
+		char input_path[ PL_SYSTEM_MAX_PATH ];
 		snprintf( input_path, sizeof( input_path ), "%s%s", in, paths[ i ].input );
 		Print( "Copying %s to %s\n", input_path, output_path );
-		const char *ext = plGetFileExtension( input_path );
+		const char *ext = PlGetFileExtension( input_path );
 		if ( pl_strncasecmp( ext, "PTG", 3 ) == 0 ) {
 			ExtractPtgPackage( input_path, output_path );
 		} else {
@@ -512,7 +446,7 @@ static void ProcessPackagePaths( const char *in, const char *out, const IOPath *
 
 static void ProcessCopyPaths( const char *in, const char *out, const IOPath *paths, unsigned int length ) {
 	for ( unsigned int i = 0; i < length; ++i ) {
-		char output_path[PL_SYSTEM_MAX_PATH];
+		char output_path[ PL_SYSTEM_MAX_PATH ];
 		snprintf( output_path, sizeof( output_path ), "%s%s", out, paths[ i ].output );
 
 		// Fudge the path if it's one of the audio tracks
@@ -522,45 +456,49 @@ static void ProcessCopyPaths( const char *in, const char *out, const IOPath *pat
 			memmove( p + 3, p + 4, strlen( p + 4 ) + 1 );
 		}
 
-		if ( !plCreatePath( output_path ) ) {
-			Error( "Failed to create path, \"%s\" (%s)!\n", output_path, plGetError() );
+		if ( !PlCreatePath( output_path ) ) {
+			Error( "Failed to create path, \"%s\" (%s)!\n", output_path, PlGetError() );
 		}
 
-		strncat( output_path, plGetFileName( paths[ i ].input ), sizeof( output_path ) - strlen( output_path ) - 1 );
+		strncat( output_path, PlGetFileName( paths[ i ].input ), sizeof( output_path ) - strlen( output_path ) - 1 );
 		pl_strtolower( output_path );
 
-		char input_path[PL_SYSTEM_MAX_PATH];
+		char input_path[ PL_SYSTEM_MAX_PATH ];
 		snprintf( input_path, sizeof( input_path ), "%s%s", in, paths[ i ].input );
 		Print( "Copying %s to %s\n", input_path, output_path );
-		plCopyFile( input_path, output_path );
+		PlCopyFile( input_path, output_path );
 	}
 }
+
+unsigned int MSG_LVL_PRINT;
+unsigned int MSG_LVL_WARN;
+unsigned int MSG_LVL_ERR;
 
 int main( int argc, char **argv ) {
 	if ( argc == 1 ) {
 		printf( "Invalid number of arguments ...\n"
-				"  extractor <game_path> -<out_path>\n" );
+		        "  extractor <game_path> -<out_path>\n" );
 		return EXIT_SUCCESS;
 	}
 
-	plInitialize( argc, argv );
+	PlInitialize( argc, argv );
 
-	plRegisterStandardPackageLoaders();
-	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TIM | PL_IMAGE_FILEFORMAT_BMP | PL_IMAGE_FILEFORMAT_PNG );
+	PlRegisterStandardPackageLoaders();
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_TIM | PL_IMAGE_FILEFORMAT_BMP | PL_IMAGE_FILEFORMAT_PNG );
 
-	char app_dir[PL_SYSTEM_MAX_PATH];
-	plGetApplicationDataDirectory( "OpenHoW", app_dir, PL_SYSTEM_MAX_PATH );
-	if ( !plCreatePath( app_dir ) ) {
-		Warning( "Unable to create %s: %s\nSettings will not be saved.", app_dir, plGetError() );
+	char app_dir[ PL_SYSTEM_MAX_PATH ];
+	PlGetApplicationDataDirectory( "OpenHoW", app_dir, PL_SYSTEM_MAX_PATH );
+	if ( !PlCreatePath( app_dir ) ) {
+		Warning( "Unable to create %s: %s\nSettings will not be saved.", app_dir, PlGetError() );
 	}
 
-	char log_path[PL_SYSTEM_MAX_PATH];
+	char log_path[ PL_SYSTEM_MAX_PATH ];
 	snprintf( log_path, PL_SYSTEM_MAX_PATH, "%s/extractor", app_dir );
-	plSetupLogOutput( log_path );
+	PlSetupLogOutput( log_path );
 
-	plSetupLogLevel( 0, "print", PL_COLOUR_GREEN, true );
-	plSetupLogLevel( 1, "warning", PL_COLOUR_YELLOW, true );
-	plSetupLogLevel( 2, "error", PL_COLOUR_RED, true );
+	MSG_LVL_PRINT = PlAddLogLevel( "print", PL_COLOUR_GREEN, true );
+	MSG_LVL_WARN = PlAddLogLevel( "warning", PL_COLOUR_YELLOW, true );
+	MSG_LVL_ERR = PlAddLogLevel( "error", PL_COLOUR_RED, true );
 
 	/* now deal with any arguments */
 
@@ -580,13 +518,13 @@ int main( int argc, char **argv ) {
 		}
 	}
 
-	if ( plIsEmptyString( g_input_path ) ) {
+	if ( *g_input_path == '\0' ) {
 		Error( "Empty game path, aborting!\n" );
 	}
 
 	Print( "\n"
-			 "output path: %s\n"
-			 "input path:  %s\n",
+	       "output path: %s\n"
+	       "input path:  %s\n",
 	       g_output_path, g_input_path );
 
 	/* ensure it's a valid version - original CD version requires
@@ -602,12 +540,12 @@ int main( int argc, char **argv ) {
 	}
 
 	if ( version_info.platform == PLATFORM_PC || version_info.platform == PLATFORM_PC_DIGITAL ) {
-		ProcessPackagePaths( g_input_path, g_output_path, pc_package_paths, plArrayElements( pc_package_paths ) );
-		ProcessCopyPaths( g_input_path, g_output_path, pc_copy_paths, plArrayElements( pc_copy_paths ) );
+		ProcessPackagePaths( g_input_path, g_output_path, pc_package_paths, PL_ARRAY_ELEMENTS( pc_package_paths ) );
+		ProcessCopyPaths( g_input_path, g_output_path, pc_copy_paths, PL_ARRAY_ELEMENTS( pc_copy_paths ) );
 
 		if ( version_info.platform == PLATFORM_PC_DIGITAL ) {
 			// They've done us the honors for the digital version
-			ProcessCopyPaths( g_input_path, g_output_path, pc_music_paths, plArrayElements( pc_music_paths ) );
+			ProcessCopyPaths( g_input_path, g_output_path, pc_music_paths, PL_ARRAY_ELEMENTS( pc_music_paths ) );
 		} else {
 			// todo: rip the disc...
 		}

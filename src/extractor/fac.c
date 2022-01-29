@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PL/platform_filesystem.h>
-
 #include "extractor.h"
 #include "fac.h"
 
@@ -41,17 +39,17 @@ static FacQuad *Fac_LoadQuads( PLFile *filePtr, unsigned int numQuads ) {
 
 	for ( unsigned int i = 0; i < numQuads; ++i ) {
 		for ( unsigned int j = 0; j < 8; ++j ) {
-			quads[ i ].uv_coords[ j ] = plReadInt8( filePtr, &status );
+			quads[ i ].uv_coords[ j ] = PlReadInt8( filePtr, &status );
 		}
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			quads[ i ].vertex_indices[ j ] = plReadInt16( filePtr, false, &status );
+			quads[ i ].vertex_indices[ j ] = PlReadInt16( filePtr, false, &status );
 		}
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			quads[ i ].normal_indices[ j ] = plReadInt16( filePtr, false, &status );
+			quads[ i ].normal_indices[ j ] = PlReadInt16( filePtr, false, &status );
 		}
-		quads[ i ].texture_index = plReadInt32( filePtr, false, &status );
+		quads[ i ].texture_index = PlReadInt32( filePtr, false, &status );
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			quads[ i ].unknown[ j ] = plReadInt16( filePtr, false, &status );
+			quads[ i ].unknown[ j ] = PlReadInt16( filePtr, false, &status );
 		}
 	}
 
@@ -73,18 +71,18 @@ static FacTriangle *Fac_LoadTriangles( PLFile *filePtr, unsigned int numTriangle
 
 	for ( unsigned int i = 0; i < numTriangles; ++i ) {
 		for ( unsigned int j = 0; j < 6; ++j ) {
-			triangles[ i ].uv_coords[ j ] = plReadInt8( filePtr, &status );
+			triangles[ i ].uv_coords[ j ] = PlReadInt8( filePtr, &status );
 		}
 		for ( unsigned int j = 0; j < 3; ++j ) {
-			triangles[ i ].vertex_indices[ j ] = plReadInt16( filePtr, false, &status );
+			triangles[ i ].vertex_indices[ j ] = PlReadInt16( filePtr, false, &status );
 		}
 		for ( unsigned int j = 0; j < 3; ++j ) {
-			triangles[ i ].normal_indices[ j ] = plReadInt16( filePtr, false, &status );
+			triangles[ i ].normal_indices[ j ] = PlReadInt16( filePtr, false, &status );
 		}
-		triangles[ i ].unknown0 = plReadInt16( filePtr, false, &status );
-		triangles[ i ].texture_index = plReadInt32( filePtr, false, &status );
+		triangles[ i ].unknown0 = PlReadInt16( filePtr, false, &status );
+		triangles[ i ].texture_index = PlReadInt32( filePtr, false, &status );
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			triangles[ i ].unknown1[ j ] = plReadInt16( filePtr, false, &status );
+			triangles[ i ].unknown1[ j ] = PlReadInt16( filePtr, false, &status );
 		}
 	}
 
@@ -97,37 +95,37 @@ static FacTriangle *Fac_LoadTriangles( PLFile *filePtr, unsigned int numTriangle
 }
 
 FacHandle *Fac_LoadFile( const char *path ) {
-	PLFile *filePtr = plOpenFile( path, false );
+	PLFile *filePtr = PlOpenFile( path, false );
 	if ( filePtr == NULL ) {
-		Warning( "Failed to load Fac \"%s\", aborting!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to load Fac \"%s\", aborting!\nPL: %s\n", path, PlGetError() );
 		return NULL;
 	}
 
 	//LogDebug( "Opened Fac \"%s\"...\n", plGetFilePath( filePtr ) );
 
 	/* 16 bytes of unknown data, just skip it for now */
-	if ( !plFileSeek( filePtr, 16, PL_SEEK_CUR ) ) {
-		plCloseFile( filePtr );
+	if ( !PlFileSeek( filePtr, 16, PL_SEEK_CUR ) ) {
+		PlCloseFile( filePtr );
 
-		Warning( "Failed to find data in Fac \"%s\"!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to find data in Fac \"%s\"!\nPL: %s\n", path, PlGetError() );
 		return NULL;
 	}
 
 	bool status;
-	uint32_t numTriangles = plReadInt32( filePtr, false, &status );
+	uint32_t numTriangles = PlReadInt32( filePtr, false, &status );
 	FacTriangle *triangles = Fac_LoadTriangles( filePtr, numTriangles );
 	if ( triangles == NULL && numTriangles > 0 ) {
-		Warning( "Failed to read in triangles, \"%s\"!\nPL: %s\n", path, plGetError() );
-		plCloseFile( filePtr );
+		Warning( "Failed to read in triangles, \"%s\"!\nPL: %s\n", path, PlGetError() );
+		PlCloseFile( filePtr );
 		return NULL;
 	}
 
-	uint32_t numQuads = plReadInt32( filePtr, false, &status );
+	uint32_t numQuads = PlReadInt32( filePtr, false, &status );
 	FacQuad *quads = Fac_LoadQuads( filePtr, numQuads );
 	if ( quads == NULL && numQuads > 0 ) {
-		Warning( "Failed to read in quads, \"%s\"!\nPL: %s\n", path, plGetError() );
+		Warning( "Failed to read in quads, \"%s\"!\nPL: %s\n", path, PlGetError() );
 		free( triangles );
-		plCloseFile( filePtr );
+		PlCloseFile( filePtr );
 		return NULL;
 	}
 
@@ -136,7 +134,7 @@ FacHandle *Fac_LoadFile( const char *path ) {
 	}
 
 	// check for textures table
-	uint8_t num_textures = plReadInt8( filePtr, &status );
+	uint8_t num_textures = PlReadInt8( filePtr, &status );
 	FacTextureIndex *texture_table = NULL;
 	if ( num_textures > 0 ) {
 		texture_table = ( FacTextureIndex * ) calloc( num_textures, sizeof( FacTextureIndex ) );
@@ -144,11 +142,11 @@ FacHandle *Fac_LoadFile( const char *path ) {
 			Error( "Failed to allocate texture table for \"%s\"!\n", path );
 		}
 		for ( unsigned int i = 0; i < num_textures; ++i ) {
-			plReadFile( filePtr, texture_table[ i ].name, 1, sizeof( texture_table[ i ].name ) );
+			PlReadFile( filePtr, texture_table[ i ].name, 1, sizeof( texture_table[ i ].name ) );
 		}
 	}
 
-	plCloseFile( filePtr );
+	PlCloseFile( filePtr );
 
 	FacHandle *handle = ( FacHandle * ) calloc( 1, sizeof( FacHandle ) );
 	if ( handle == NULL ) {

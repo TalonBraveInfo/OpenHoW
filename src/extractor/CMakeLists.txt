@@ -37,4 +37,4 @@ add_executable(extractor
         )
 
 target_include_directories(extractor PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(extractor platform)
+target_link_libraries(extractor plcore plgraphics)

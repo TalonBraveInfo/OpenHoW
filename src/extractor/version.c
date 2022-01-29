@@ -18,21 +18,19 @@
 
 #include "extractor.h"
 
-const char *region_idents[MAX_REGIONS] = {
-	"eng", "fre", "ger", "ita", "rus", "spa"
-};
+const char *region_idents[ MAX_REGIONS ] = {
+        "eng", "fre", "ger", "ita", "rus", "spa" };
 
 VersionInfo version_info = {
-	.platform = PLATFORM_UNKNOWN,
-	.region = REGION_UNKNOWN
-};
+        .platform = PLATFORM_UNKNOWN,
+        .region = REGION_UNKNOWN };
 
 void CheckGameVersion( const char *path ) {
 	Print( "checking game version...\n" );
 
-	char fcheck[PL_SYSTEM_MAX_PATH];
+	char fcheck[ PL_SYSTEM_MAX_PATH ];
 	snprintf( fcheck, sizeof( fcheck ), "%s/system.cnf", path );
-	if ( plFileExists( fcheck ) ) {
+	if ( PlFileExists( fcheck ) ) {
 		Print( "Detected system.cnf, assuming PSX version\n" );
 		version_info.platform = PLATFORM_PSX;
 
@@ -96,15 +94,15 @@ void CheckGameVersion( const char *path ) {
 		// 4 = SPA (no proof)
 		// 5 = ITA (no proof)
 
-		PLFile *languageFile = plOpenFile( path, false );
+		PLFile *languageFile = PlOpenFile( path, false );
 		if ( languageFile == NULL ) {
-			Warning( "Failed to load \"%s\", aborting (%s)!\n", path, plGetError() );
+			Warning( "Failed to load \"%s\", aborting (%s)!\n", path, PlGetError() );
 			return;
 		}
 
 		uint32_t languageId;
-		if ( plReadFile( languageFile, &languageId, sizeof( uint32_t ), 1 ) != 1 ) {
-			Warning( "Failed to get language code, \"%s\" (%s)!\n", path, plGetError() );
+		if ( PlReadFile( languageFile, &languageId, sizeof( uint32_t ), 1 ) != 1 ) {
+			Warning( "Failed to get language code, \"%s\" (%s)!\n", path, PlGetError() );
 			return;
 		}
 
@@ -126,7 +124,7 @@ void CheckGameVersion( const char *path ) {
 	}
 
 	snprintf( fcheck, sizeof( fcheck ), "%s/Data/foxscale.d3d", path );
-	if ( !plFileExists( fcheck ) ) {
+	if ( !PlFileExists( fcheck ) ) {
 		Warning( "Failed to find foxscale.d3d, unable to determine platform!\n" );
 		return;
 	}
@@ -137,9 +135,9 @@ void CheckGameVersion( const char *path ) {
 	/* todo: need better method to determine this */
 	/* todo: use checksum, not filesize!!! */
 	snprintf( fcheck, sizeof( fcheck ), "%s/Language/Text/fetext.bin", path );
-	unsigned int fetext_size = plGetLocalFileSize( fcheck );
+	unsigned int fetext_size = PlGetLocalFileSize( fcheck );
 	snprintf( fcheck, sizeof( fcheck ), "%s/Language/Text/gtext.bin", path );
-	unsigned int gtext_size = plGetLocalFileSize( fcheck );
+	unsigned int gtext_size = PlGetLocalFileSize( fcheck );
 	if ( fetext_size == 8997 && gtext_size == 4518 ) {
 		version_info.region = REGION_GER;
 	} else if ( fetext_size == 8102 && gtext_size == 4112 ) {
@@ -149,7 +147,7 @@ void CheckGameVersion( const char *path ) {
 	}
 
 	snprintf( fcheck, sizeof( fcheck ), "%s/MUSIC/Track02.ogg", path );
-	if ( plFileExists( fcheck ) ) {
+	if ( PlFileExists( fcheck ) ) {
 		Print( "Detected MUSIC/Track02.ogg, assuming GOG version\n" );
 		version_info.platform = PLATFORM_PC_DIGITAL;
 	}
