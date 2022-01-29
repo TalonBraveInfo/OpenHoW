@@ -28,6 +28,7 @@
 class BaseWindow;
 
 void ImGuiImpl_Setup();
+void ImGuiImpl_Shutdown();
 
 void ImGuiImpl_SetupFrame();
 void ImGuiImpl_Draw();
@@ -36,4 +37,4 @@ void ImGuiImpl_RegisterWindow( BaseWindow *window );
 
 bool ImGuiImpl_HandleEvent( const SDL_Event &event );
 
-void UI_DisplayDebugMenu(void);
+void UI_DisplayDebugMenu();

@@ -10,7 +10,7 @@
 #undef far
 #undef near
 
-#include "../3rdparty/imgui/examples/imgui_impl_opengl3.h"
+#include "../3rdparty/platform/extras/imgui_renderer.h"
 
 #include "editor/BaseWindow.h"
 #include "editor/MapConfigEditor.h"
@@ -96,7 +96,7 @@ void ImGuiImpl_Setup() {
 #endif
 #endif
 
-	ImGui_ImplOpenGL3_Init();
+	PlImGui_Initialize();
 
 	io.Fonts->Clear();
 
@@ -126,7 +126,12 @@ void ImGuiImpl_Setup() {
 	PlSetConsoleOutputCallback( ConsoleOutputCallback );
 }
 
-void ImGuiImpl_SetupFrame( void ) {
+void ImGuiImpl_Shutdown() {
+	PlImGui_Shutdown();
+	ImGui::DestroyContext();
+}
+
+void ImGuiImpl_SetupFrame() {
 	const PLGViewport *viewport = PlgGetCurrentViewport();
 	if ( viewport == nullptr ) {
 		return;
@@ -135,7 +140,7 @@ void ImGuiImpl_SetupFrame( void ) {
 	ImGuiIO &io = ImGui::GetIO();
 	io.DisplaySize = ImVec2( viewport->w, viewport->h );
 
-	ImGui_ImplOpenGL3_NewFrame();
+	PlImGui_NewFrame();
 
 	ImGui::NewFrame();
 }
@@ -159,7 +164,7 @@ void ImGuiImpl_Draw( void ) {
 
 	PlgSetShaderProgram( nullptr );
 
-	ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+	PlImGui_RenderDrawData( ImGui::GetDrawData() );
 }
 
 /************************************************************/
@@ -455,7 +460,7 @@ protected:
 private:
 };
 
-void UI_DisplayDebugMenu( void ) {
+void UI_DisplayDebugMenu() {
 	int dW = cv_display_width->i_value;
 	int dH = cv_display_height->i_value;
 

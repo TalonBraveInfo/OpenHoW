@@ -165,7 +165,7 @@ void Console_Initialize( void ) {
 		( var )->archive = ( arc );                                          \
 	}
 
-	rvar( cv_imgui, false, "0", pl_bool_var, nullptr, "Enable/disable ImGui overlay." );
+	rvar( cv_imgui, false, "1", pl_bool_var, nullptr, "Enable/disable ImGui overlay." );
 	rvar( cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons" );
 	rvar( cv_debug_bounds, false, "0", pl_bool_var, nullptr, "Display bounding volumes of all objects." );
 

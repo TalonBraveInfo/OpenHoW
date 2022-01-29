@@ -113,10 +113,7 @@ ohw::App::App( int argc, char **argv ) {
 void ohw::App::Shutdown() {
 	Config_Save( Config_GetUserConfigPath() );
 
-#if 0
-	ImGui_ImplOpenGL3_DestroyDeviceObjects();
-	ImGui::DestroyContext();
-#endif
+	ImGuiImpl_Shutdown();
 
 	delete gameManager;
 	delete audioManager;
