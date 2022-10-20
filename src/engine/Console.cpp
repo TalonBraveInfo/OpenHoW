@@ -90,6 +90,8 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 
 /************************************************************/
 
+// todo: kill all these global cvars - use variables instead w/ reference passed into RegisterConsoleVariable
+
 PLConsoleVariable *cv_imgui = nullptr;
 PLConsoleVariable *cv_debug_skeleton = nullptr;
 PLConsoleVariable *cv_debug_bounds = nullptr;
@@ -117,23 +119,23 @@ PLConsoleVariable *cv_audio_volume = nullptr;
 PLConsoleVariable *cv_audio_volume_music = nullptr;
 
 void Console_Initialize() {
-	PlRegisterConsoleVariable( "imgui", "Enable/disable ImGui overlay.", "1", PL_VAR_BOOL, nullptr, nullptr, false );
-	PlRegisterConsoleVariable( "debug_skeleton", "display pig skeletons", "0", PL_VAR_BOOL, nullptr, nullptr, false );
-	PlRegisterConsoleVariable( "debug_bounds", "Display bounding volumes of all objects.", "0", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_imgui = PlRegisterConsoleVariable( "imgui", "Enable/disable ImGui overlay.", "1", PL_VAR_BOOL, nullptr, nullptr, false );
+	cv_debug_skeleton = PlRegisterConsoleVariable( "debug_skeleton", "display pig skeletons", "0", PL_VAR_BOOL, nullptr, nullptr, false );
+	cv_debug_bounds = PlRegisterConsoleVariable( "debug_bounds", "Display bounding volumes of all objects.", "0", PL_VAR_BOOL, nullptr, nullptr, true );
 
 	PlRegisterConsoleVariable( "game_language", "Set the language", "eng", PL_VAR_STRING, nullptr, &LanguageManager::SetLanguageCallback, true );
 
 	PlRegisterConsoleVariable( "camera_mode", "0 = default, 1 = debug", "0", PL_VAR_I32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "camera_fov", "field of view", "75", PL_VAR_F32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "camera_near", "", "0.1", PL_VAR_F32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "camera_far", "", "999999", PL_VAR_F32, nullptr, nullptr, true );
+	cv_camera_fov = PlRegisterConsoleVariable( "camera_fov", "field of view", "75", PL_VAR_F32, nullptr, nullptr, true );
+	cv_camera_near = PlRegisterConsoleVariable( "camera_near", "", "0.1", PL_VAR_F32, nullptr, nullptr, true );
+	cv_camera_far = PlRegisterConsoleVariable( "camera_far", "", "999999", PL_VAR_F32, nullptr, nullptr, true );
 
-	PlRegisterConsoleVariable( "display_width", "", "1024", PL_VAR_I32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "display_height", "", "768", PL_VAR_I32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "display_fullscreen", "", "true", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "display_use_window_aspect", "", "false", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "display_ui_scale", "0 = automatic scale", "0", PL_VAR_I32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable(
+	cv_display_width = PlRegisterConsoleVariable( "display_width", "", "1024", PL_VAR_I32, nullptr, nullptr, true );
+	cv_display_height = PlRegisterConsoleVariable( "display_height", "", "768", PL_VAR_I32, nullptr, nullptr, true );
+	cv_display_fullscreen = PlRegisterConsoleVariable( "display_fullscreen", "", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_display_use_window_aspect = PlRegisterConsoleVariable( "display_use_window_aspect", "", "false", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_display_ui_scale = PlRegisterConsoleVariable( "display_ui_scale", "0 = automatic scale", "0", PL_VAR_I32, nullptr, nullptr, true );
+	cv_display_vsync = PlRegisterConsoleVariable(
 	        "display_vsync", "Enable / Disable vertical sync", "false", PL_VAR_BOOL, nullptr, []( const PLConsoleVariable *variable ) {
 		        Display *display = GetApp()->GetDisplay();
 		        if ( display == nullptr ) {
@@ -144,17 +146,17 @@ void Console_Initialize() {
 	        },
 	        true );
 
-	PlRegisterConsoleVariable( "graphics_cull", "Toggles culling of visible objects.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_graphics_cull = PlRegisterConsoleVariable( "graphics_cull", "Toggles culling of visible objects.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
 	PlRegisterConsoleVariable( "graphics_draw_terrain", "Toggles rendering of the terrain.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "graphics_draw_sprites", "Toggles rendering of sprites.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "graphics_draw_audio_sources", "toggles rendering of audio sources", "false", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "graphics_texture_filter", "Filter level/model textures?", "true", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "graphics_alpha_to_coverage", "Enable/disable alpha-to-coverage", "true", PL_VAR_BOOL, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "graphics_debug_normals", "Forces normals to be displayed", "false", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_graphics_draw_sprites = PlRegisterConsoleVariable( "graphics_draw_sprites", "Toggles rendering of sprites.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_graphics_draw_audio_sources = PlRegisterConsoleVariable( "graphics_draw_audio_sources", "toggles rendering of audio sources", "false", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_graphics_texture_filter = PlRegisterConsoleVariable( "graphics_texture_filter", "Filter level/model textures?", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_graphics_alpha_to_coverage = PlRegisterConsoleVariable( "graphics_alpha_to_coverage", "Enable/disable alpha-to-coverage", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	cv_graphics_debug_normals = PlRegisterConsoleVariable( "graphics_debug_normals", "Forces normals to be displayed", "false", PL_VAR_BOOL, nullptr, nullptr, true );
 
-	PlRegisterConsoleVariable( "audio_volume", "set global audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
+	cv_audio_volume = PlRegisterConsoleVariable( "audio_volume", "set global audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
 	PlRegisterConsoleVariable( "audio_volume_sfx", "set sfx audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
-	PlRegisterConsoleVariable( "audio_volume_music", "Set the music audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
+	cv_audio_volume_music = PlRegisterConsoleVariable( "audio_volume_music", "Set the music audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
 	PlRegisterConsoleVariable( "audio_mode", "0 = mono, 1 = stereo", "1", PL_VAR_I32, nullptr, nullptr, true );
 	PlRegisterConsoleVariable( "audio_voices", "enable/disable pig voices", "true", PL_VAR_BOOL, nullptr, nullptr, true );
 
