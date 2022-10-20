@@ -7,30 +7,30 @@
 #include "ShaderManager.h"
 
 #if 0
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libavfilter/avfilter.h>
-#include <libavdevice/avdevice.h>
+#	include <libavformat/avformat.h>
+#	include <libavcodec/avcodec.h>
+#	include <libavfilter/avfilter.h>
+#	include <libavdevice/avdevice.h>
 #endif
 
 const char *video_paths[] = {
-		/* intro */
-		"/streams/sheff.bik",
-		"/streams/infologo.bik",
+        /* intro */
+        "/streams/sheff.bik",
+        "/streams/infologo.bik",
 
-		/* missions - move these into script */
-		"/streams/fmv 01.bik",
-		"/streams/fmv 02.bik",
-		"/streams/fmv 03.bik",
-		"/streams/fmv 04.bik",
-		"/streams/fmv 05.bik",
-		"/streams/fmv 06.bik",
-		"/streams/fmv 07.bik",
-		"/streams/fmv 08.bik",
-		"/streams/fmv 09.bik",
+        /* missions - move these into script */
+        "/streams/fmv 01.bik",
+        "/streams/fmv 02.bik",
+        "/streams/fmv 03.bik",
+        "/streams/fmv 04.bik",
+        "/streams/fmv 05.bik",
+        "/streams/fmv 06.bik",
+        "/streams/fmv 07.bik",
+        "/streams/fmv 08.bik",
+        "/streams/fmv 09.bik",
 };
 
-#define MAX_QUEUED_VIDEOS   4
+#define MAX_QUEUED_VIDEOS 4
 
 typedef struct VideoState {
 	bool is_playing;
@@ -47,8 +47,8 @@ typedef struct VideoState {
 	unsigned int stream_index;
 
 	struct {
-		char path[PL_SYSTEM_MAX_PATH];
-	} queue[MAX_QUEUED_VIDEOS];
+		char path[ PL_SYSTEM_MAX_PATH ];
+	} queue[ MAX_QUEUED_VIDEOS ];
 	unsigned int num_videos_queued; /* elements */
 	unsigned int cur_video;         /* index */
 } VideoState;
@@ -76,7 +76,7 @@ void Video_Initialize( void ) {
 	avformat_network_init();
 #endif
 
-	PlRegisterConsoleCommand( "play_video", PlayVideoCommand, "Play the given videos." );
+	PlRegisterConsoleCommand( "play_video", "Play the given videos.", 1, PlayVideoCommand );
 	PlParseConsoleString( "play_video \"streams/fmv 01.bik\"" );
 }
 
@@ -110,7 +110,7 @@ void Video_QueuePlayback( const char **videos, unsigned int num_videos ) {
 			Warning( "unexpected length of path - %u bytes - expect issues!\n", len );
 		}
 
-		char n_path[PL_SYSTEM_MAX_PATH];
+		char n_path[ PL_SYSTEM_MAX_PATH ];
 		strncpy( n_path, videos[ i ], PL_SYSTEM_MAX_PATH );
 		if ( !PlFileExists( n_path ) ) {
 			Warning( "failed to find video at \"%s\", skipping!\n", n_path );

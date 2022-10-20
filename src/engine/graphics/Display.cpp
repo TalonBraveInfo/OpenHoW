@@ -169,7 +169,7 @@ void ohw::Display::Render( double delta ) {
 
 	numDrawTicks = GetApp()->GetTicks();
 
-	PlgSetCullMode( PLG_CULL_POSTIVE );
+	PlgSetCullMode( PLG_CULL_POSITIVE );
 
 	PlgSetDepthMask( true );
 	PlgSetDepthBufferMode( PLG_DEPTHBUFFER_ENABLE );

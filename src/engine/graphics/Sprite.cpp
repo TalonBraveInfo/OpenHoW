@@ -46,9 +46,9 @@ void ohw::Sprite::Draw() {
 
 	PlgDrawMesh( mesh_ );
 
-	PlgSetCullMode( PLG_CULL_POSTIVE );
+	PlgSetCullMode( PLG_CULL_POSITIVE );
 
-	PlgSetTexture( NULL, 0 );
+	PlgSetTexture( nullptr, 0 );
 }
 
 #if 0

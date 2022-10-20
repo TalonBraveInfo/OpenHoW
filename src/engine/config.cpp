@@ -21,7 +21,7 @@
 const char *Config_GetUserConfigPath() {
 	static std::string config_path;
 	if ( config_path.empty() ) {
-		char out[PL_SYSTEM_MAX_PATH];
+		char out[ PL_SYSTEM_MAX_PATH ];
 		if ( PlGetApplicationDataDirectory( APP_NAME, out, PL_SYSTEM_MAX_PATH ) == nullptr ) {
 			Warning( "Failed to get app data directory!\n%s\n", PlGetError() );
 			config_path = "./user.config";
@@ -57,7 +57,7 @@ void Config_Save( const char *path ) {
 			fprintf( fp, ",\n" );
 		}
 
-		fprintf( fp, "\t\t\"%s\":\"%s\"", ( *var )->var, ( *var )->value );
+		fprintf( fp, "\t\t\"%s\":\"%s\"", ( *var )->name, ( *var )->value );
 		first = false;
 	}
 
@@ -74,7 +74,7 @@ void Config_Load( const char *path ) {
 		PlGetConsoleVariables( &vars, &num_c );
 
 		for ( PLConsoleVariable **var = vars; var < vars + num_c; ++var ) {
-			std::string result = config.GetStringProperty( ( *var )->var );
+			std::string result = config.GetStringProperty( ( *var )->name );
 			if ( result.empty() ) {
 				continue;
 			}

@@ -47,7 +47,7 @@ VtxHandle *Vtx_LoadFile( const char *path ) {
 	handle->num_vertices = num_vertices;
 	for ( unsigned int i = 0; i < num_vertices; ++i ) {
 		handle->vertices[ i ].position = hei::Vector3( vertices[ i ].v[ 0 ], vertices[ i ].v[ 1 ], vertices[ i ].v[ 2 ] );
-		handle->vertices[ i ].bone_index = vertices[ i ].bone_index;
+		//handle->vertices[ i ].bone_index = vertices[ i ].bone_index;
 		handle->vertices[ i ].colour = PL_COLOUR_WHITE;
 	}
 	return handle;

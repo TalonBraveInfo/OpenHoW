@@ -185,7 +185,7 @@ void ohw::Map::LoadSpawns( const std::string &path ) {
 			actorSpawns[ i ].attachment = &actorSpawns.at( spawns[ i ].attached_actor_num );
 		} catch ( const std::out_of_range &e ) {
 			Warning( "Failed to get valid attachment for spawn (%s, %s)!\n", actorSpawns[ i ].className.c_str(),
-			         PlPrintVector3( &actorSpawns[ i ].position, pl_int_var ) );
+			         PlPrintVector3( &actorSpawns[ i ].position, PL_VAR_I32 ) );
 		}
 
 		actorSpawns[ i ].energy = spawns[ i ].energy;

@@ -524,25 +524,25 @@ void UI_DisplayDebugMenu() {
 
 				for ( PLConsoleVariable **var = vars; var < num_c + vars; ++var ) {
 					switch ( ( *var )->type ) {
-						case pl_float_var:
-							if ( ImGui::InputFloat( ( *var )->var, &( *var )->f_value, 0, 10, nullptr,
+						case PL_VAR_F32:
+							if ( ImGui::InputFloat( ( *var )->name, &( *var )->f_value, 0, 10, nullptr,
 							                        ImGuiInputTextFlags_EnterReturnsTrue ) ) {
 								PlSetConsoleVariable( ( *var ), std::to_string( ( *var )->f_value ).c_str() );
 							}
 							break;
-						case pl_int_var:
-							if ( ImGui::InputInt( ( *var )->var, &( *var )->i_value, 1, 10,
+						case PL_VAR_I32:
+							if ( ImGui::InputInt( ( *var )->name, &( *var )->i_value, 1, 10,
 							                      ImGuiInputTextFlags_EnterReturnsTrue ) ) {
 								PlSetConsoleVariable( ( *var ), std::to_string( ( *var )->i_value ).c_str() );
 							}
 							break;
-						case pl_string_var:
+						case PL_VAR_STRING:
 							// read-only for now
-							ImGui::LabelText( ( *var )->var, "%s", ( *var )->s_value );
+							ImGui::LabelText( ( *var )->name, "%s", ( *var )->s_value );
 							break;
-						case pl_bool_var:
+						case PL_VAR_BOOL:
 							bool b = ( *var )->b_value;
-							if ( ImGui::Checkbox( ( *var )->var, &b ) ) {
+							if ( ImGui::Checkbox( ( *var )->name, &b ) ) {
 								PlSetConsoleVariable( ( *var ), b ? "true" : "false" );
 							}
 							break;
@@ -564,8 +564,8 @@ void UI_DisplayDebugMenu() {
 				PlGetConsoleCommands( &cmds, &num );
 
 				for ( PLConsoleCommand **cmd = cmds; cmd < num + cmds; ++cmd ) {
-					if ( ImGui::MenuItem( ( *cmd )->cmd ) ) {
-						PlParseConsoleString( ( *cmd )->cmd );
+					if ( ImGui::MenuItem( ( *cmd )->name ) ) {
+						PlParseConsoleString( ( *cmd )->name );
 					}
 
 					if ( ImGui::IsItemHovered() ) {

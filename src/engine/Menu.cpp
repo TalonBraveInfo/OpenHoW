@@ -15,12 +15,12 @@ static unsigned int old_frontend_state = ( unsigned int ) -1;
 
 /* texture assets, these are loaded and free'd at runtime */
 static ohw::TextureResource *menuBackground = nullptr;
-static ohw::TextureResource *minimapIcons[MAX_MINIMAP_ICONS];
+static ohw::TextureResource *minimapIcons[ MAX_MINIMAP_ICONS ];
 
 static int frontend_width = 0;
 static int frontend_height = 0;
 
-ohw::BitmapFont *g_fonts[NUM_FONTS];
+ohw::BitmapFont *g_fonts[ NUM_FONTS ];
 
 static PLGCamera *menuCamera;
 
@@ -37,13 +37,13 @@ void Menu_Initialize() {
 	// Cache the default fonts
 	struct FontIndex {
 		const char *tab, *texture;
-	} defaultFonts[NUM_FONTS] = {
-			{ "frontend/text/big.tab",       "frontend/text/big.bmp" },
-			{ "frontend/text/bigchars.tab",  "frontend/text/bigchars.bmp" },
-			{ "frontend/text/chars2.tab",    "frontend/text/chars2l.bmp" },
-			{ "frontend/text/chars3.tab",    "frontend/text/chars3.bmp" },
-			{ "frontend/text/gamechars.tab", "frontend/text/gamechars.bmp" },
-			{ "frontend/text/small.tab",     "frontend/text/small.bmp" },
+	} defaultFonts[ NUM_FONTS ] = {
+	        { "frontend/text/big.tab", "frontend/text/big.bmp" },
+	        { "frontend/text/bigchars.tab", "frontend/text/bigchars.bmp" },
+	        { "frontend/text/chars2.tab", "frontend/text/chars2l.bmp" },
+	        { "frontend/text/chars3.tab", "frontend/text/chars3.bmp" },
+	        { "frontend/text/gamechars.tab", "frontend/text/gamechars.bmp" },
+	        { "frontend/text/small.tab", "frontend/text/small.bmp" },
 	};
 	for ( unsigned int i = 0; i < NUM_FONTS; ++i ) {
 		g_fonts[ i ] = new ohw::BitmapFont();
@@ -140,17 +140,17 @@ void FrontEnd_Tick( void ) {}
 
 /************************************************************/
 
-char loading_description[256];
+char loading_description[ 256 ];
 uint8_t loading_progress = 0;
 
 #if 0
-#	define Redraw()   Display_DrawInterface();
+#	define Redraw() Display_DrawInterface();
 #else
 #	define Redraw()
 #endif
 
 void FE_SetLoadingBackground( const char *name ) {
-	char screen_path[PL_SYSTEM_MAX_PATH];
+	char screen_path[ PL_SYSTEM_MAX_PATH ];
 	snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/%s", name );
 	if ( !PlFileExists( screen_path ) ) {
 		snprintf( screen_path, sizeof( screen_path ), "frontend/briefing/loadmult" );
@@ -190,7 +190,7 @@ static void DrawTimer() {
 		return;
 	}
 
-	char str[64];
+	char str[ 64 ];
 	snprintf( str, sizeof( str ), "%0d", mode->GetMaxTurnTimeSeconds() - mode->GetTurnTimeSeconds() );
 	g_fonts[ FONT_BIG ]->DrawString( frontend_width - 256,
 	                                 frontend_height - 100,
@@ -237,7 +237,11 @@ static void FrontEnd_DrawMinimap() {
 	transform.Rotate( PlDegreesToRadians( 90.0f ), { 1, 0, 0 } );
 	transform.Rotate( PlDegreesToRadians( camera->GetAngles().y ), { 0, 1, 0 } );
 
-	PlgDrawTexturedRectangle( &transform, -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
+	PlMatrixMode( PL_MODELVIEW_MATRIX );
+	PlPushMatrix();
+	PlLoadMatrix( &transform );
+
+	PlgDrawTexturedRectangle( -64, -64, 128, 128, map->GetTerrain()->GetOverview() );
 
 	// Now draw everything on top
 	for ( const auto &actor : ActorManager::GetInstance()->GetActors() ) {
@@ -275,8 +279,11 @@ static void FrontEnd_DrawMinimap() {
 		// And now scale it up as it moves further away (this isn't perfect...)
 		float scale = 8.0f * lengthDistance / 100.0f;
 
-		PlgDrawRectangle( &transform, -( scale / 2 ), -( scale / 2 ), scale, scale, actor->GetMinimapIconColour() );
+		PlLoadMatrix( &transform );
+		PlgDrawRectangle( -( scale / 2 ), -( scale / 2 ), scale, scale, actor->GetMinimapIconColour() );
 	}
+
+	PlPopMatrix();
 
 	PlgSetTexture( nullptr, 0 );
 
@@ -293,25 +300,24 @@ static void FrontEnd_DrawMinimap() {
  * later. */
 
 static void DrawLoadingScreen() {
-	hei::Matrix4 transform;
-	PlgDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
+#if 0 //todo: revisit
+	PlgDrawTexturedRectangle( 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
 
 	/* originally I wrote some code ensuring the menu bar
 	 * was centered... that was until I found out that on
 	 * the background, the slot for the bar ISN'T centered
 	 * at all. JOY... */
 	static const int bar_w = 330;
-	int bar_x = 151; //c_x + (FRONTEND_MENU_WIDTH / 2) - bar_w / 2;
+	int bar_x = 151;//c_x + (FRONTEND_MENU_WIDTH / 2) - bar_w / 2;
 	int bar_y = 450;
 	if ( loading_progress > 0 ) {
-		PLRectangle2D box = plCreateRectangle(
-				hei::Vector2( bar_x, bar_y ),
-				hei::Vector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
-				PL_COLOUR_INDIAN_RED,
-				PL_COLOUR_INDIAN_RED,
-				PL_COLOUR_RED,
-				PL_COLOUR_RED
-		);
+		PLRectangle2D box = PlCreateRectangle(
+		        hei::Vector2( bar_x, bar_y ),
+		        hei::Vector2( ( ( float ) ( bar_w ) / 100 ) * loading_progress, 18 ),
+		        PL_COLOUR_INDIAN_RED,
+		        PL_COLOUR_INDIAN_RED,
+		        PL_COLOUR_RED,
+		        PL_COLOUR_RED );
 		PlgDrawFilledRectangle( &box );
 	}
 
@@ -323,6 +329,7 @@ static void DrawLoadingScreen() {
 		                                    PL_COLOUR_WHITE,
 		                                    loading_description );
 	}
+#endif
 }
 
 void Menu_Draw() {
@@ -343,8 +350,6 @@ void Menu_Draw() {
 	frontend_width = menuCamera->viewport.w;
 	frontend_height = menuCamera->viewport.h;
 
-	hei::Matrix4 transform;
-
 	/* render and handle the main menu */
 	switch ( frontend_state ) {
 		default:
@@ -353,7 +358,7 @@ void Menu_Draw() {
 		case FE_MODE_INIT:
 		case FE_MODE_START:
 		case FE_MODE_MAIN_MENU:
-			PlgDrawTexturedRectangle( &transform, 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
+			PlgDrawTexturedRectangle( 0, 0, frontend_width, frontend_height, menuBackground->GetInternalTexture() );
 			break;
 
 		case FE_MODE_LOADING:
@@ -419,4 +424,3 @@ void FrontEnd_SetState( unsigned int state ) {
 	old_frontend_state = frontend_state;
 	frontend_state = state;
 }
-

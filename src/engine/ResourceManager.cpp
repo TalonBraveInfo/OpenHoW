@@ -11,9 +11,9 @@ ohw::ResourceManager::ResourceManager() {
 		PlRegisterStandardPackageLoaders();
 	}
 
-	PlRegisterConsoleCommand( "ListCachedResources", &ResourceManager::ListCachedResources, "List all cached resources." );
-	PlRegisterConsoleCommand( "ClearAllResources", &ResourceManager::ClearAllResourcesCommand, "Clears all cached resources." );
-	PlRegisterConsoleCommand( "ClearResource", &ResourceManager::ClearResourceCommand, "Clears the specified resource." );
+	PlRegisterConsoleCommand( "ListCachedResources", "List all cached resources.", 0, &ResourceManager::ListCachedResources );
+	PlRegisterConsoleCommand( "ClearAllResources", "Clears all cached resources.", 0, &ResourceManager::ClearAllResourcesCommand );
+	PlRegisterConsoleCommand( "ClearResource", "Clears the specified resource.", 0, &ResourceManager::ClearResourceCommand );
 }
 
 ohw::ResourceManager::~ResourceManager() {

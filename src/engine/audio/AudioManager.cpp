@@ -321,7 +321,7 @@ AudioManager::AudioManager() {
 	}
 	alDistanceModel( AL_EXPONENT_DISTANCE );
 
-	PlRegisterConsoleCommand( "stopMusic", StopMusicCommand, "Stops the current music track." );
+	PlRegisterConsoleCommand( "stopMusic", "Stops the current music track.", 0, StopMusicCommand );
 }
 
 AudioManager::~AudioManager() {

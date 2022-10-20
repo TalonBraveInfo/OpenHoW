@@ -34,32 +34,6 @@ static void FrontendModeCommand(unsigned int argc, char* argv[]) {
 }
 #endif
 
-static void QuitCommand( unsigned int argc, char *argv[] ) {
-	u_unused( argc );
-	u_unused( argv );
-	GetApp()->Shutdown();
-}
-
-static void DisconnectCommand( unsigned int argc, char *argv[] ) {
-	u_unused( argc );
-	u_unused( argv );
-	GetApp()->gameManager->EndMode();
-}
-
-static void LoadConfigCommand( unsigned int argc, char **argv ) {
-	check_args( 2 );
-	Config_Load( argv[ 1 ] );
-}
-
-static void SaveConfigCommand( unsigned int argc, char **argv ) {
-	const char *name = Config_GetUserConfigPath();
-	if ( argc > 1 && argv[ 1 ] != nullptr ) {
-		name = argv[ 1 ];
-	}
-
-	Config_Save( name );
-}
-
 static void OpenCommand( unsigned int argc, char *argv[] ) {
 	check_args( 2 );
 
@@ -114,24 +88,12 @@ static void OpenCommand( unsigned int argc, char *argv[] ) {
 	}
 }
 
-static void GraphicsVsyncCallback( const PLConsoleVariable *var ) {
-	Display *display = GetApp()->GetDisplay();
-	if ( display == nullptr ) {
-		return;
-	}
-
-	display->SetSwapInterval( var->b_value ? 1 : 0 );
-}
-
 /************************************************************/
 
 PLConsoleVariable *cv_imgui = nullptr;
 PLConsoleVariable *cv_debug_skeleton = nullptr;
 PLConsoleVariable *cv_debug_bounds = nullptr;
 
-PLConsoleVariable *cv_game_language = nullptr;
-
-PLConsoleVariable *cv_camera_mode = nullptr;
 PLConsoleVariable *cv_camera_fov = nullptr;
 PLConsoleVariable *cv_camera_near = nullptr;
 PLConsoleVariable *cv_camera_far = nullptr;
@@ -152,57 +114,69 @@ PLConsoleVariable *cv_graphics_alpha_to_coverage = nullptr;
 PLConsoleVariable *cv_graphics_debug_normals = nullptr;
 
 PLConsoleVariable *cv_audio_volume = nullptr;
-PLConsoleVariable *cv_audio_volume_sfx = nullptr;
 PLConsoleVariable *cv_audio_volume_music = nullptr;
-PLConsoleVariable *cv_audio_voices = nullptr;
-PLConsoleVariable *cv_audio_mode = nullptr;
 
-void Console_Initialize( void ) {
-#define rvar( var, arc, ... )                                                \
-	{                                                                        \
-		const char *str_##var = PL_STRINGIFY( var );                         \
-		( var ) = PlRegisterConsoleVariable( &str_##var[ 3 ], __VA_ARGS__ ); \
-		( var )->archive = ( arc );                                          \
-	}
+void Console_Initialize() {
+	PlRegisterConsoleVariable( "imgui", "Enable/disable ImGui overlay.", "1", PL_VAR_BOOL, nullptr, nullptr, false );
+	PlRegisterConsoleVariable( "debug_skeleton", "display pig skeletons", "0", PL_VAR_BOOL, nullptr, nullptr, false );
+	PlRegisterConsoleVariable( "debug_bounds", "Display bounding volumes of all objects.", "0", PL_VAR_BOOL, nullptr, nullptr, true );
 
-	rvar( cv_imgui, false, "1", pl_bool_var, nullptr, "Enable/disable ImGui overlay." );
-	rvar( cv_debug_skeleton, false, "0", pl_bool_var, nullptr, "display pig skeletons" );
-	rvar( cv_debug_bounds, false, "0", pl_bool_var, nullptr, "Display bounding volumes of all objects." );
+	PlRegisterConsoleVariable( "game_language", "Set the language", "eng", PL_VAR_STRING, nullptr, &LanguageManager::SetLanguageCallback, true );
 
-	rvar( cv_game_language, true, "eng", pl_string_var, &LanguageManager::SetLanguageCallback, "Set the language" );
+	PlRegisterConsoleVariable( "camera_mode", "0 = default, 1 = debug", "0", PL_VAR_I32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "camera_fov", "field of view", "75", PL_VAR_F32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "camera_near", "", "0.1", PL_VAR_F32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "camera_far", "", "999999", PL_VAR_F32, nullptr, nullptr, true );
 
-	rvar( cv_camera_mode, false, "0", pl_int_var, nullptr, "0 = default, 1 = debug" );
-	rvar( cv_camera_fov, true, "75", pl_float_var, nullptr, "field of view" );
-	rvar( cv_camera_near, false, "0.1", pl_float_var, nullptr, "" );
-	rvar( cv_camera_far, false, "999999", pl_float_var, nullptr, "" );
+	PlRegisterConsoleVariable( "display_width", "", "1024", PL_VAR_I32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "display_height", "", "768", PL_VAR_I32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "display_fullscreen", "", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "display_use_window_aspect", "", "false", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "display_ui_scale", "0 = automatic scale", "0", PL_VAR_I32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable(
+	        "display_vsync", "Enable / Disable vertical sync", "false", PL_VAR_BOOL, nullptr, []( const PLConsoleVariable *variable ) {
+		        Display *display = GetApp()->GetDisplay();
+		        if ( display == nullptr ) {
+			        return;
+		        }
 
-	rvar( cv_display_width, true, "1024", pl_int_var, nullptr, "" );
-	rvar( cv_display_height, true, "768", pl_int_var, nullptr, "" );
-	rvar( cv_display_fullscreen, true, "true", pl_bool_var, nullptr, "" );
-	rvar( cv_display_use_window_aspect, false, "false", pl_bool_var, nullptr, "" );
-	rvar( cv_display_ui_scale, true, "0", pl_int_var, nullptr, "0 = automatic scale" );
-	rvar( cv_display_vsync, true, "false", pl_bool_var, GraphicsVsyncCallback, "Enable / Disable vertical sync" );
+		        display->SetSwapInterval( variable->b_value ? 1 : 0 );
+	        },
+	        true );
 
-	rvar( cv_graphics_cull, false, "true", pl_bool_var, nullptr, "Toggles culling of visible objects." );
-	rvar( cv_GraphicsDrawTerrain, false, "true", pl_bool_var, nullptr, "Toggles rendering of the terrain." );
-	rvar( cv_graphics_draw_sprites, false, "true", pl_bool_var, nullptr, "Toggles rendering of sprites." );
-	rvar( cv_graphics_draw_audio_sources, false, "false", pl_bool_var, nullptr, "toggles rendering of audio sources" );
-	rvar( cv_graphics_texture_filter, true, "true", pl_bool_var, nullptr, "Filter level/model textures?" );
-	rvar( cv_graphics_alpha_to_coverage, true, "true", pl_bool_var, nullptr, "Enable/disable alpha-to-coverage" );
-	rvar( cv_graphics_debug_normals, false, "false", pl_bool_var, nullptr, "Forces normals to be displayed" );
+	PlRegisterConsoleVariable( "graphics_cull", "Toggles culling of visible objects.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "graphics_draw_terrain", "Toggles rendering of the terrain.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "graphics_draw_sprites", "Toggles rendering of sprites.", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "graphics_draw_audio_sources", "toggles rendering of audio sources", "false", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "graphics_texture_filter", "Filter level/model textures?", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "graphics_alpha_to_coverage", "Enable/disable alpha-to-coverage", "true", PL_VAR_BOOL, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "graphics_debug_normals", "Forces normals to be displayed", "false", PL_VAR_BOOL, nullptr, nullptr, true );
 
-	rvar( cv_audio_volume, true, "1", pl_float_var, nullptr, "set global audio volume" );
-	rvar( cv_audio_volume_sfx, true, "1", pl_float_var, nullptr, "set sfx audio volume" );
-	rvar( cv_audio_volume_music, true, "1", pl_float_var, nullptr, "Set the music audio volume" );
-	rvar( cv_audio_mode, true, "1", pl_int_var, nullptr, "0 = mono, 1 = stereo" );
-	rvar( cv_audio_voices, true, "true", pl_bool_var, nullptr, "enable/disable pig voices" );
+	PlRegisterConsoleVariable( "audio_volume", "set global audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "audio_volume_sfx", "set sfx audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "audio_volume_music", "Set the music audio volume", "1", PL_VAR_F32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "audio_mode", "0 = mono, 1 = stereo", "1", PL_VAR_I32, nullptr, nullptr, true );
+	PlRegisterConsoleVariable( "audio_voices", "enable/disable pig voices", "true", PL_VAR_BOOL, nullptr, nullptr, true );
 
-	PlRegisterConsoleCommand( "open", OpenCommand, "Opens the specified file" );
-	PlRegisterConsoleCommand( "exit", QuitCommand, "Closes the game" );
-	PlRegisterConsoleCommand( "quit", QuitCommand, "Closes the game" );
-	PlRegisterConsoleCommand( "loadConfig", LoadConfigCommand, "Loads the specified config" );
-	PlRegisterConsoleCommand( "saveConfig", SaveConfigCommand, "Save current config" );
-	PlRegisterConsoleCommand( "disconnect", DisconnectCommand, "Disconnects and unloads current map" );
+	PlRegisterConsoleCommand( "open", "Opens the specified file", 1, OpenCommand );
+
+	PlRegisterConsoleCommand( "quit", "Closes the game", 0, []( unsigned int argc, char *argv[] ) {
+		GetApp()->Shutdown();
+	} );
+
+	PlRegisterConsoleCommand( "loadConfig", "Loads the specified config", 1, []( unsigned int argc, char **argv ) {
+		Config_Load( argv[ 1 ] );
+	} );
+	PlRegisterConsoleCommand( "saveConfig", "Save current config", 0, []( unsigned int argc, char **argv ) {
+		const char *name = Config_GetUserConfigPath();
+		if ( argc > 1 && argv[ 1 ] != nullptr ) {
+			name = argv[ 1 ];
+		}
+
+		Config_Save( name );
+	} );
+
+	PlRegisterConsoleCommand( "disconnect", "Disconnects and unloads current map", 0, []( unsigned int argc, char *argv[] ) { GetApp()->gameManager->EndMode(); } );
 	//PlRegisterConsoleCommand( "clear", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 	//PlRegisterConsoleCommand( "cls", ClearConsoleOutputBuffer, "Clears the console output buffer" );
 

@@ -68,15 +68,15 @@ std::string MapManifest::Serialize() {
 }
 
 ohw::GameManager::GameManager() {
-	PlRegisterConsoleCommand( "CreateMap", CreateMapCommand, "Creates a new named map." );
-	PlRegisterConsoleCommand( "OpenMap", OpenMapCommand, "Opens the specified map." );
-	PlRegisterConsoleCommand( "ListMaps", ListMapsCommand, "Lists all of the existing maps." );
-	PlRegisterConsoleCommand( "GiveItem", GiveItemCommand, "Gives a specified item to the current occupied actor." );
-	PlRegisterConsoleCommand( "SpawnModel", SpawnModelCommand, "Creates a model at your current position." );
-	PlRegisterConsoleCommand( "KillSelf", KillSelfCommand, "Kills the currently occupied actor." );
-	PlRegisterConsoleCommand( "Teleport", TeleportCommand, "Teleports current actor to the given destination." );
-	PlRegisterConsoleCommand( "FirstPerson", FirstPersonCommand, "Toggles the camera into first-person mode." );
-	PlRegisterConsoleCommand( "FreeCam", FreeCamCommand, "Toggles the camera into fly mode." );
+	PlRegisterConsoleCommand( "CreateMap", "Creates a new named map.", 1, CreateMapCommand );
+	PlRegisterConsoleCommand( "OpenMap", "Opens the specified map.", 1, OpenMapCommand );
+	PlRegisterConsoleCommand( "ListMaps", "Lists all of the existing maps.", 0, ListMapsCommand );
+	PlRegisterConsoleCommand( "GiveItem", "Gives a specified item to the current occupied actor.", 1, GiveItemCommand );
+	PlRegisterConsoleCommand( "SpawnModel", "Creates a model at your current position.", 1, SpawnModelCommand );
+	PlRegisterConsoleCommand( "KillSelf", "Kills the currently occupied actor.", 1, KillSelfCommand );
+	PlRegisterConsoleCommand( "Teleport", "Teleports current actor to the given destination.", 1, TeleportCommand );
+	PlRegisterConsoleCommand( "FirstPerson", "Toggles the camera into first-person mode.", 1, FirstPersonCommand );
+	PlRegisterConsoleCommand( "FreeCam", "Toggles the camera into fly mode.", 1, FreeCamCommand );
 
 	defaultCamera = new Camera( pl_vecOrigin3, pl_vecOrigin3 );
 }

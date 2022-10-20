@@ -31,7 +31,7 @@ void AAirship::Tick() {
 		// Set a destination for us to start heading towards.
 		PLVector2 point = map->GetRandomPointInPlayArea();
 		myDestination = hei::Vector3( point.x, GetHeight(), point.y );
-		DebugMsg( "Set destination at %s\n", PlPrintVector3( &myDestination, pl_int_var ) );
+		DebugMsg( "Set destination at %s\n", PlPrintVector3( &myDestination, PL_VAR_I32 ) );
 
 		myDestinationTolerance = 5.0f;
 		myTurnFrames = 0;

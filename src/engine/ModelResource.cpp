@@ -350,8 +350,9 @@ void ohw::ModelResource::LoadVtxModel( const std::string &path, bool abortOnFail
 				PlgSetMeshVertexNormal( mesh, nextVtxIndex, no2Handle->normals[ normalIndex ] );
 			}
 
-			mesh->vertices[ nextVtxIndex ].bone_index = vtxHandle->vertices[ triVtx ].bone_index;
-			mesh->vertices[ nextVtxIndex ].bone_weight = 1.0f;
+			//todo
+			//mesh->vertices[ nextVtxIndex ].bone_index = vtxHandle->vertices[ triVtx ].bone_index;
+			//mesh->vertices[ nextVtxIndex ].bone_weight = 1.0f;
 		}
 
 		PlgSetMeshTrianglePosition( mesh, &curIndex, nextVtxIndex - 1, nextVtxIndex - 2, nextVtxIndex - 3 );
