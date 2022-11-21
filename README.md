@@ -1,3 +1,15 @@
+Hello! :wave: 
+
+This project has been archived, for now. For those not aware, there is an [official Hogs of War remaster](https://www.hogsofwar.org/reheated) currently in the works which seems likely to fulfil many of the goals this project set out to accomplish. Rather than compete with that, I've decided to move on to do my own thing.
+
+This repository will remain, just on the chance that there's a reason to return to it or someone finds something here useful. Thanks to all that contributed and helped out too! :heart:
+
+Regardless of whether or not I ever return to this, this was a really enlightening project to work on. I met a lot of great folks and learnt a lot about engine design and reverse engineering. That said, I've also learnt a lot _since_ and if I _do_ return to this particular project, much of what's here will probably be thrown out a window.
+
+If you're interested to see what I'm working on next, feel free to check out my blog [here](https://www.hogsy.me/), otherwise thanks for checking the project out! :smile:
+
+----
+
 # OpenHoW
 
 [![Project Stats](https://www.openhub.net/p/openhow/widgets/project_thin_badge.gif)](https://www.openhub.net/p/openhow) 
